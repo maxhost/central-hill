@@ -60,14 +60,22 @@
   try { saved = localStorage.getItem("ch-theme"); } catch (e) {}
   apply(saved || body.getAttribute("data-theme") || "warm-editorial");
 
-  /* ---- nav: transparent over hero → frosted on scroll ---- */
+  /* ---- nav: transparent over a dark hero → frosted on scroll.
+          Pages without a dark hero (or with body[data-nav="solid"]) get the SOLID
+          frosted nav from the top, so light-background pages (e.g. Blog) stay legible. ---- */
   var nav = document.querySelector("header.nav");
   if (nav) {
     var hero = document.querySelector(".hero");
-    var trigger = function () { return hero ? hero.offsetHeight * 0.7 : 80; };
-    var onScroll = function () { nav.classList.toggle("scrolled", window.scrollY > trigger()); };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
+    var solidNav = body.dataset.nav === "solid" || !hero;
+    if (solidNav) {
+      nav.classList.add("scrolled");
+      body.style.paddingTop = nav.offsetHeight + "px";
+    } else {
+      var trigger = function () { return hero.offsetHeight * 0.7; };
+      var onScroll = function () { nav.classList.toggle("scrolled", window.scrollY > trigger()); };
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+    }
   }
 
   /* ---- subtle scroll reveal ---- */
