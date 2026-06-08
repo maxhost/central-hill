@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Central Hill — Home (design preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ============ DESIGN TOKENS — palettes (WCAG AA verified) ============ */
+  :root{
+    --max:1240px;
+    --serif:"Fraunces",Georgia,serif;
+    --sans:"Inter",system-ui,sans-serif;
+    --section-y:clamp(72px,10vw,150px);
+    --ease:cubic-bezier(.4,0,.2,1);
+    --on-feature:#fbf7f0;
+    --on-feature-soft:rgba(251,247,240,.72);
+  }
+  /* 1 · Warm Editorial (default — closest to ukio) */
+  body[data-theme="warm-editorial"]{
+    --ink:#2B2622;--ink-soft:#6E655B;--bg:#FBF8F3;--surface:#FFFFFF;--line:#E8E0D4;
+    --accent:#B5562D;--accent-deep:#8F3F1E;--feature:#2E2A26;--feature-accent:#E9D9BF;}
+  /* 2 · Deep Luxe Green */
+  body[data-theme="deep-green"]{
+    --ink:#14201B;--ink-soft:#5A6660;--bg:#F5F3EC;--surface:#FFFFFF;--line:#DFE0D5;
+    --accent:#1F5C45;--accent-deep:#143F2F;--feature:#0E3326;--feature-accent:#C49A4A;}
+  /* 3 · Coastal Portugal */
+  body[data-theme="coastal"]{
+    --ink:#16242E;--ink-soft:#566872;--bg:#F7F9FA;--surface:#FFFFFF;--line:#DEE6E9;
+    --accent:#2C6E8F;--accent-deep:#1F5169;--feature:#14323F;--feature-accent:#BBD3DF;}
+  /* 4 · Monochrome Boutique */
+  body[data-theme="monochrome"]{
+    --ink:#111111;--ink-soft:#5C5C5A;--bg:#FAFAF8;--surface:#FFFFFF;--line:#E6E4DF;
+    --accent:#111111;--accent-deep:#000000;--feature:#0A0A0A;--feature-accent:#E8E8E4;}
+  /* 5 · Terracotta Mediterranean (accent tuned to AA-safe deep) */
+  body[data-theme="terracotta"]{
+    --ink:#3A2A22;--ink-soft:#7A6253;--bg:#FAF4EC;--surface:#FFFFFF;--line:#ECDFCF;
+    --accent:#9E4A26;--accent-deep:#7E3A1E;--feature:#3D2B22;--feature-accent:#E7C8A8;}
+  /* 6 · Sand & Navy (institutional) */
+  body[data-theme="sand-navy"]{
+    --ink:#1B2433;--ink-soft:#5B6473;--bg:#F6F4EF;--surface:#FFFFFF;--line:#E3DED3;
+    --accent:#1C3A5E;--accent-deep:#12283F;--feature:#131C2B;--feature-accent:#D6C39E;}
+
+  /* ============ BASE ============ */
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--sans);color:var(--ink);background:var(--bg);line-height:1.6;
+       -webkit-font-smoothing:antialiased;transition:background .4s var(--ease),color .4s var(--ease)}
+  img{display:block;max-width:100%}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 28px}
+  .eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent-deep);font-weight:600}
+  h1,h2,h3{font-family:var(--serif);font-weight:500;line-height:1.08;letter-spacing:-.015em;color:var(--ink)}
+  h2.section-title{font-size:clamp(30px,4vw,50px);margin:14px 0 0}
+  .lede{font-size:18px;color:var(--ink-soft);max-width:62ch}
+  section{padding:var(--section-y) 0;scroll-margin-top:84px}
+
+  .btn{display:inline-flex;align-items:center;gap:.5em;font-size:14px;font-weight:500;letter-spacing:.01em;
+       padding:14px 28px;border-radius:3px;border:1px solid transparent;transition:.25s var(--ease);cursor:pointer}
+  .btn-accent{background:var(--accent);color:#fff}
+  .btn-accent:hover{background:var(--accent-deep)}
+  .btn-solid{background:var(--ink);color:var(--bg)}
+  .btn-solid:hover{background:var(--feature)}
+  .btn-ghost{border-color:var(--ink);color:var(--ink)}
+  .btn-ghost:hover{background:var(--ink);color:var(--bg)}
+  .btn-light{border-color:rgba(255,255,255,.65);color:#fff}
+  .btn-light:hover{background:#fff;color:var(--ink)}
+
+  /* ============ NAV (transparent over hero → frosted on scroll) ============ */
+  header.nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:.35s var(--ease);
+             border-bottom:1px solid transparent}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:76px}
+  .brand{font-family:var(--serif);font-size:25px;letter-spacing:.02em;font-weight:600;color:#fff}
+  .brand span{color:#e9d9bf;transition:color .35s}
+  nav.links{display:flex;gap:30px}
+  nav.links a{font-size:14px;color:rgba(255,255,255,.86);transition:.2s}
+  nav.links a:hover{color:#fff}
+  .nav-cta{display:flex;gap:12px;align-items:center}
+  .nav-cta .btn{padding:11px 20px}
+  header.nav:not(.scrolled) .btn-ghost{border-color:rgba(255,255,255,.6);color:#fff}
+  header.nav:not(.scrolled) .btn-ghost:hover{background:#fff;color:var(--ink)}
+  header.nav:not(.scrolled) .btn-solid{background:#fff;color:var(--ink)}
+  .menu-btn{display:none;font-size:24px;background:none;border:0;color:inherit;cursor:pointer}
+  header.nav.scrolled{background:color-mix(in srgb,var(--bg) 88%,transparent);
+                      backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom-color:var(--line)}
+  header.nav.scrolled .brand{color:var(--ink)}
+  header.nav.scrolled .brand span{color:var(--accent)}
+  header.nav.scrolled nav.links a{color:var(--ink-soft)}
+  header.nav.scrolled nav.links a:hover{color:var(--ink)}
+
+  /* ============ HERO ============ */
+  .hero{position:relative;min-height:92vh;display:flex;align-items:flex-end;color:#fff;overflow:hidden}
+  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(18,16,13,.30) 0%,rgba(18,16,13,.12) 42%,rgba(18,16,13,.74) 100%)}
+  .hero .wrap{position:relative;z-index:2;padding-bottom:88px;padding-top:130px}
+  .hero .eyebrow{color:#ecdcc2}
+  .hero h1{font-size:clamp(46px,7.4vw,92px);margin:18px 0 22px;max-width:15ch;font-weight:500;color:#fff}
+  .hero p{font-size:19px;max-width:46ch;color:#f1ece2;margin-bottom:34px}
+  .hero-cta{display:flex;gap:16px;flex-wrap:wrap}
+
+  /* ============ STATS BAND ============ */
+  .stats{background:var(--feature);color:var(--on-feature);padding:58px 0;transition:background .4s var(--ease)}
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
+  .stat .num{font-family:var(--serif);font-size:clamp(36px,4vw,54px);line-height:1;color:var(--feature-accent)}
+  .stat .lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--on-feature-soft);margin-top:12px}
+
+  .sec-head{max-width:720px;margin-bottom:54px}
+  .sec-head.center{margin-left:auto;margin-right:auto;text-align:center}
+  .alt{background:color-mix(in srgb,var(--line) 38%,var(--bg))}
+
+  /* ============ BENEFIT CARDS ============ */
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+  .bcard{background:var(--surface);padding:40px 34px}
+  .bcard .ic{width:32px;height:32px;color:var(--accent-deep);margin-bottom:20px}
+  .bcard h3{font-size:23px;margin-bottom:10px}
+  .bcard p{font-size:15px;color:var(--ink-soft)}
+  .cta-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:44px;align-items:center}
+  .cta-note{font-size:13px;color:var(--ink-soft)}
+
+  /* ============ PORTFOLIO ============ */
+  .pf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+  .pcard{background:var(--surface);border:1px solid var(--line);overflow:hidden;transition:.3s var(--ease)}
+  .pcard:hover{transform:translateY(-4px);box-shadow:0 20px 44px -26px rgba(0,0,0,.42)}
+  .pcard .ph{position:relative;aspect-ratio:4/3;overflow:hidden}
+  .pcard .ph img{width:100%;height:100%;object-fit:cover;transition:transform .6s var(--ease)}
+  .pcard:hover .ph img{transform:scale(1.04)}
+  .badge{position:absolute;top:14px;left:14px;background:var(--accent);color:#fff;font-size:11px;
+         letter-spacing:.13em;text-transform:uppercase;padding:6px 12px;font-weight:600}
+  .pbody{padding:22px 24px 26px}
+  .pbody h3{font-size:25px;margin-bottom:6px}
+  .pmeta{font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft)}
+  .pbody .view{margin-top:16px;font-size:14px;color:var(--accent-deep);font-weight:600}
+
+  /* ============ TESTIMONIALS ============ */
+  .t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+  .tcard{background:var(--surface);border:1px solid var(--line);padding:34px}
+  .ttype{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);font-weight:600}
+  .stars{color:var(--accent);letter-spacing:2px;margin:14px 0;font-size:14px}
+  .tcard blockquote{font-family:var(--serif);font-size:21px;line-height:1.42;color:var(--ink)}
+  .tauthor{margin-top:18px;font-size:14px;color:var(--ink-soft)}
+  .tauthor b{color:var(--ink);font-weight:600}
+
+  /* ============ STORY ============ */
+  .story{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center}
+  .story img{aspect-ratio:4/5;object-fit:cover;width:100%}
+  .story h2{font-size:clamp(28px,3.4vw,44px);margin:14px 0 18px}
+  .story p{color:var(--ink-soft);margin-bottom:16px}
+
+  /* ============ DUAL CTA ============ */
+  .dual{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+  .dcol{background:var(--surface);padding:62px 48px}
+  .dcol.owner{background:var(--feature);color:var(--on-feature)}
+  .dcol h3{font-size:30px;margin:10px 0 14px}
+  .dcol.owner h3{color:#fff}
+  .dcol.owner .eyebrow{color:var(--feature-accent)}
+  .dcol p{color:var(--ink-soft);margin-bottom:24px}
+  .dcol.owner p{color:var(--on-feature-soft)}
+  .contact-line{margin-top:20px;font-size:13px;letter-spacing:.03em}
+  .dcol.owner .contact-line{color:var(--on-feature-soft)}
+
+  /* ============ FOOTER ============ */
+  footer{background:var(--feature);color:var(--on-feature-soft);padding:74px 0 36px;transition:background .4s var(--ease)}
+  .f-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:48px}
+  footer .brand{color:#fff;font-family:var(--serif);font-size:27px}
+  footer h4{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--on-feature-soft);margin-bottom:18px;font-weight:600;opacity:.8}
+  footer ul{list-style:none}
+  footer li{margin-bottom:11px;font-size:14px}
+  footer li a:hover{color:#fff}
+  .f-contact{font-size:14px;line-height:1.9;margin-top:18px;color:var(--on-feature-soft)}
+  .f-social{display:flex;gap:14px;margin-top:20px}
+  .f-social a{width:34px;height:34px;border:1px solid rgba(255,255,255,.22);border-radius:50%;display:grid;place-items:center;font-size:13px;color:var(--on-feature)}
+  .f-bottom{border-top:1px solid rgba(255,255,255,.12);margin-top:52px;padding-top:24px;display:flex;
+            justify-content:space-between;font-size:12px;color:var(--on-feature-soft);flex-wrap:wrap;gap:10px;opacity:.8}
+
+  /* ============ REVEAL (respects reduced motion) ============ */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+
+  /* ============ PALETTE SWITCHER (preview tool) ============ */
+  .switcher{position:fixed;right:18px;bottom:18px;z-index:90;background:var(--surface);
+            border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+            box-shadow:0 18px 50px -22px rgba(0,0,0,.45);max-width:280px;font-family:var(--sans)}
+  .switcher .sw-title{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;margin-bottom:10px}
+  .sw-dots{display:flex;gap:9px}
+  .sw-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);cursor:pointer;
+          position:relative;transition:.2s;padding:0}
+  .sw-dot:hover{transform:scale(1.12)}
+  .sw-dot[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--surface),0 0 0 3px var(--ink)}
+  .sw-name{margin-top:11px;font-family:var(--serif);font-size:18px;color:var(--ink)}
+  .sw-hint{margin-top:3px;font-size:11.5px;color:var(--ink-soft)}
+  .mock-flag{position:fixed;left:18px;bottom:18px;z-index:90;background:var(--feature);color:var(--feature-accent);
+             font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:8px 13px;border-radius:4px;opacity:.9}
+
+  @media(max-width:980px){
+    .grid-3,.pf-grid,.t-grid{grid-template-columns:1fr 1fr}
+    .stats-grid{grid-template-columns:1fr 1fr;gap:34px}
+    .story{grid-template-columns:1fr;gap:32px}.dual{grid-template-columns:1fr}.f-grid{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:680px){
+    nav.links,.nav-cta .btn{display:none}.menu-btn{display:block;color:#fff}
+    header.nav.scrolled .menu-btn{color:var(--ink)}
+    .grid-3,.pf-grid,.t-grid,.f-grid{grid-template-columns:1fr}
+    .mock-flag{display:none}
+  }
+</style>
+</head>
+<body data-theme="warm-editorial">
+
+<!-- NAV -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#">Central<span>Hill</span></a>
+    <nav class="links">
+      <a href="#owners">Owners</a><a href="#portfolio">Buildings</a><a href="#">Real Estate</a>
+      <a href="#guests">Guests</a><a href="#story">About Us</a><a href="#">Blog</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="#">Book Now</a>
+      <a class="btn btn-solid" href="#owners">List Your Property →</a>
+    </div>
+    <button class="menu-btn" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" style="padding:0">
+  <img src="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=2000&q=72" alt="Lisbon at golden hour">
+  <div class="wrap">
+    <span class="eyebrow">Portugal · Furnished Apartments</span>
+    <h1>Turning moments into memories</h1>
+    <p>Professionally managed, design-led apartments across Portugal's most sought-after locations.</p>
+    <div class="hero-cta">
+      <a class="btn btn-accent" href="#portfolio">Book Our Apartments →</a>
+      <a class="btn btn-light" href="#owners">Get Your Free Earnings Estimate →</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="wrap stats-grid">
+    <div class="stat"><div class="num">60,000+</div><div class="lbl">Bookings Completed</div></div>
+    <div class="stat"><div class="num">12+</div><div class="lbl">Years of Experience</div></div>
+    <div class="stat"><div class="num">700,000+</div><div class="lbl">Guests Hosted</div></div>
+    <div class="stat"><div class="num">€55M+</div><div class="lbl">Revenue Generated</div></div>
+  </div>
+</div>
+
+<!-- OWNERS -->
+<section id="owners">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">For Property Owners</span>
+      <h2 class="section-title">Own a Property in Portugal?</h2>
+      <p class="lede" style="margin-top:16px">We turn it into a high-performing asset — fully managed, fully transparent, and consistently above-market returns.</p>
+    </div>
+    <div class="grid-3 reveal">
+      <div class="bcard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 4-6"/></svg><h3>AI-Powered Pricing</h3><p>Daily automated rate adjustments based on real-time market data to maximise every booking.</p></div>
+      <div class="bcard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg><h3>Profit-First Management</h3><p>Every decision is guided by one goal: increasing your net income, not just occupancy.</p></div>
+      <div class="bcard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 11a4 4 0 10-8 0"/><path d="M3 20a7 7 0 0118 0"/></svg><h3>Competitive Plans</h3><p>The best commissions and management plans in the market — transparent, with no surprises.</p></div>
+      <div class="bcard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg><h3>Dedicated Account Manager</h3><p>A named contact who knows your property personally and is always one message away.</p></div>
+      <div class="bcard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-7-5.5-7-11a7 7 0 0114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><h3>Deep Local Expertise</h3><p>12+ years on the ground in Portugal, with a team that lives and breathes hospitality.</p></div>
+      <div class="bcard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><h3>Full Transparency</h3><p>Monthly reports and a real-time dashboard — see exactly how your property performs.</p></div>
+    </div>
+    <div class="cta-row reveal">
+      <a class="btn btn-accent" href="#">Get Your Free Earnings Estimate →</a>
+      <span class="cta-note">Free, instant, no obligation.</span>
+      <a class="btn btn-ghost" href="#">Explore Owner Page →</a>
+    </div>
+  </div>
+</section>
+
+<!-- GUESTS -->
+<section id="guests" class="alt">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">For Guests</span>
+      <h2 class="section-title">Why You Should Book With Us</h2>
+      <p class="lede" style="margin-top:16px">Professionally managed apartments across Portugal's most sought-after locations — booked direct, for the best price.</p>
+    </div>
+    <div class="grid-3 reveal">
+      <div class="bcard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10l9-7 9 7v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 21v-7h6v7"/></svg><h3>Small to Spacious</h3><p>From intimate studios to 8-bedroom apartments for up to 27 guests.</p></div>
+      <div class="bcard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-7-5.5-7-11a7 7 0 0114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><h3>Prime Locations</h3><p>Every Central Hill property is handpicked in Portugal's best neighbourhoods.</p></div>
+      <div class="bcard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9.5 14a2.5 2.5 0 005 0c0-3-5-2-5-5a2.5 2.5 0 015 0"/></svg><h3>Best Price Guarantee</h3><p>You won't find our apartments at a better price anywhere else.</p></div>
+      <div class="bcard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 7a4 4 0 11-1.5 7.7L7 21H4v-3l6.3-6.3A4 4 0 0115 7z"/></svg><h3>Flexible Check-In</h3><p>Remote keyless entry or in-person check-in — whatever suits your arrival.</p></div>
+      <div class="bcard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg><h3>24/7 Guest Support</h3><p>A multilingual team on hand around the clock, throughout your stay.</p></div>
+      <div class="bcard"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 6L9 17l-5-5"/></svg><h3>Professionally Managed</h3><p>Every property is quality-checked and cared for to a consistent standard.</p></div>
+    </div>
+    <div class="cta-row reveal"><a class="btn btn-accent" href="#portfolio">Browse Our Apartments →</a><span class="cta-note">View the full portfolio across Portugal.</span></div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section id="portfolio">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">The Portfolio</span>
+      <h2 class="section-title">Explore Our Portfolio</h2>
+      <p class="lede" style="margin:16px auto 0">Carefully selected properties across Portugal's most iconic locations.</p>
+    </div>
+    <div class="pf-grid reveal">
+      <article class="pcard"><div class="ph"><span class="badge">★ Featured</span><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=70" alt="Big Bairro Alto"></div><div class="pbody"><h3>Big Bairro Alto</h3><div class="pmeta">8 Bedrooms · Up to 27 Guests</div><div class="view">View →</div></div></article>
+      <article class="pcard"><div class="ph"><img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=70" alt="Central Downtown"></div><div class="pbody"><h3>Central Downtown</h3><div class="pmeta">2 Bedrooms · Up to 6 Guests</div><div class="view">View →</div></div></article>
+      <article class="pcard"><div class="ph"><img src="https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&w=900&q=70" alt="Large Bairro Alto View"></div><div class="pbody"><h3>Large Bairro Alto View</h3><div class="pmeta">4 Bedrooms · Up to 10 Guests</div><div class="view">View →</div></div></article>
+    </div>
+    <div class="cta-row reveal" style="justify-content:center"><a class="btn btn-ghost" href="#">View All Properties →</a></div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="alt">
+  <div class="wrap">
+    <div class="sec-head center reveal"><span class="eyebrow">Reviews</span><h2 class="section-title">We Care About Our Partners &amp; Guests</h2></div>
+    <div class="t-grid reveal">
+      <div class="tcard"><div class="ttype">Owner</div><div class="stars">★★★★★</div><blockquote>“Central Hill turned my apartment into a genuinely passive, high-performing asset.”</blockquote><div class="tauthor"><b>Till Madsen</b> · Denmark</div></div>
+      <div class="tcard"><div class="ttype">Guest</div><div class="stars">★★★★★</div><blockquote>“The apartment was stunning and the team made check-in effortless. Faultless.”</blockquote><div class="tauthor"><b>Emma &amp; James</b> · United Kingdom</div></div>
+      <div class="tcard"><div class="ttype">Owner</div><div class="stars">★★★★★</div><blockquote>“Transparent reporting and returns above what I expected. Truly hands-off.”</blockquote><div class="tauthor"><b>Sebastian Harrington</b> · United Kingdom</div></div>
+      <div class="tcard"><div class="ttype">Guest</div><div class="stars">★★★★★</div><blockquote>“A boutique feel with hotel-level service. We'll book with Central Hill again.”</blockquote><div class="tauthor"><b>Lars Andersen</b> · Denmark</div></div>
+      <div class="tcard"><div class="ttype">Owner</div><div class="stars">★★★★★</div><blockquote>“Local expertise you can feel. My property has never performed better.”</blockquote><div class="tauthor"><b>André Távares</b> · Portugal</div></div>
+      <div class="tcard"><div class="ttype">Guest</div><div class="stars">★★★★★</div><blockquote>“Beautiful design, perfect location, and the most responsive host team.”</blockquote><div class="tauthor"><b>Sophie Martin</b> · France</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- STORY -->
+<section id="story">
+  <div class="wrap story">
+    <img class="reveal" src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=1100&q=70" alt="Lisbon">
+    <div class="reveal">
+      <span class="eyebrow">Our Story</span>
+      <h2>Portugal's Trusted Hospitality Management Company</h2>
+      <p>Since 2012, Central Hill has grown into a leading hospitality management company — today caring for 40+ apartments across 14+ buildings in Portugal's most iconic locations.</p>
+      <p>We've hosted over 700,000 guests, combining design-led spaces with attentive, professional service that owners and travellers can rely on.</p>
+      <a class="btn btn-ghost" href="#" style="margin-top:10px">Read Our Full Story →</a>
+    </div>
+  </div>
+</section>
+
+<!-- DUAL CTA -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="dual reveal">
+      <div class="dcol owner">
+        <span class="eyebrow">Owners</span><h3>Own a Property? Start earning more.</h3>
+        <p>Free, no obligation. We'll assess your property and come back to you within 48 hours.</p>
+        <a class="btn btn-accent" href="#">Get Your Free Earnings Estimate →</a>
+        <div class="contact-line">Call +351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725</div>
+      </div>
+      <div class="dcol">
+        <span class="eyebrow">Guests</span><h3>Planning a Stay? Find your perfect apartment.</h3>
+        <p>Browse our full portfolio of professionally managed apartments across Portugal.</p>
+        <a class="btn btn-solid" href="#portfolio">Browse Our Apartments →</a>
+        <div class="contact-line">Bookings +351 910 075 725 · info@centralhill.pt</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div>
+        <div class="brand">Central<span style="color:var(--feature-accent)">Hill</span></div>
+        <div class="f-contact">Call +351 910 075 725<br>info@centralhill.pt<br>WhatsApp +351 910 075 725</div>
+        <div class="f-social"><a href="#">f</a><a href="#">in</a><a href="#">ig</a></div>
+      </div>
+      <div><h4>For Owners</h4><ul><li><a href="#">Earnings Estimate</a></li><li><a href="#">Owner Services</a></li><li><a href="#">Owner Dashboard</a></li><li><a href="#">Pricing &amp; Plans</a></li><li><a href="#">List Your Property</a></li><li><a href="#">Owner Testimonials</a></li></ul></div>
+      <div><h4>Guests &amp; Company</h4><ul><li><a href="#">Browse Apartments</a></li><li><a href="#">Buildings</a></li><li><a href="#">About Us</a></li><li><a href="#">Blog</a></li><li><a href="#">Contact</a></li></ul></div>
+    </div>
+    <div class="f-bottom"><span>© 2026 Central Hill Apartments · Lisbon, Portugal</span><span>EN · PT · ES · FR</span></div>
+  </div>
+</footer>
+
+<!-- PALETTE SWITCHER -->
+<div class="switcher" role="group" aria-label="Color palette preview">
+  <div class="sw-title">Palette preview</div>
+  <div class="sw-dots" id="swDots"></div>
+  <div class="sw-name" id="swName">Warm Editorial</div>
+  <div class="sw-hint">Click a swatch to preview · share with the client</div>
+</div>
+<div class="mock-flag">Static design preview · Home</div>
+
+<script>
+  /* ---- Palette switcher ---- */
+  var PALETTES=[
+    {id:"warm-editorial",name:"Warm Editorial",dot:"#B5562D"},
+    {id:"deep-green",    name:"Deep Luxe Green",dot:"#1F5C45"},
+    {id:"coastal",       name:"Coastal Portugal",dot:"#2C6E8F"},
+    {id:"monochrome",    name:"Monochrome Boutique",dot:"#111111"},
+    {id:"terracotta",    name:"Terracotta Mediterranean",dot:"#C0653A"},
+    {id:"sand-navy",     name:"Sand & Navy",dot:"#1C3A5E"}
+  ];
+  var body=document.body, dots=document.getElementById("swDots"), nameEl=document.getElementById("swName");
+  function apply(id){
+    var p=PALETTES.find(function(x){return x.id===id})||PALETTES[0];
+    body.setAttribute("data-theme",p.id); nameEl.textContent=p.name;
+    try{localStorage.setItem("ch-theme",p.id);}catch(e){}
+    [].forEach.call(dots.children,function(b){b.setAttribute("aria-pressed",String(b.dataset.id===p.id));});
+  }
+  PALETTES.forEach(function(p){
+    var b=document.createElement("button");
+    b.className="sw-dot"; b.dataset.id=p.id; b.style.background=p.dot;
+    b.title=p.name; b.setAttribute("aria-label",p.name); b.setAttribute("aria-pressed","false");
+    b.onclick=function(){apply(p.id);}; dots.appendChild(b);
+  });
+  var saved; try{saved=localStorage.getItem("ch-theme");}catch(e){}
+  apply(saved||"warm-editorial");
+
+  /* ---- Nav: transparent over hero → frosted on scroll ---- */
+  var nav=document.querySelector("header.nav");
+  function onScroll(){nav.classList.toggle("scrolled",window.scrollY>window.innerHeight*0.7);}
+  window.addEventListener("scroll",onScroll,{passive:true}); onScroll();
+
+  /* ---- Subtle scroll reveal (respects reduced motion) ---- */
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(!reduce && "IntersectionObserver" in window){
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}});
+    },{threshold:0.12});
+    document.querySelectorAll(".reveal").forEach(function(el){io.observe(el);});
+  } else {
+    document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("in");});
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.*
+
+# Next.js / build output
+.next/
+out/
+build/
+dist/
+.turbo/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# Testing / coverage
+coverage/
+.nyc_output/
+
+# OS files
+.DS_Store
+Thumbs.db
+.AppleDouble
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Local agent / workspace tooling (machine-local, may hold local config)
+.claude/
+.glados/
+
+# Client material — NOT pushed to the public repo
+cliente-docs/
+
+# Local DB artifacts (keep drizzle/ migrations, ignore local sqlite)
+*.sqlite
+*.sqlite3
