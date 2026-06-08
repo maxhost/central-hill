@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Central Hill — Buildings (design preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  /* Page-only: filter / IA bar (decorative, kernel-variable based) */
+  .filterbar{border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--line) 26%,var(--bg))}
+  .filterbar .wrap{padding-top:26px;padding-bottom:26px;display:flex;flex-wrap:wrap;align-items:center;gap:18px}
+  .fb-city{position:relative}
+  .fb-city select{appearance:none;-webkit-appearance:none;font-family:var(--sans);font-size:14px;font-weight:500;
+    color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:3px;
+    padding:11px 38px 11px 16px;cursor:pointer}
+  .fb-city::after{content:"▾";position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    color:var(--ink-soft);font-size:12px;pointer-events:none}
+  .fb-chips{display:flex;flex-wrap:wrap;gap:9px;flex:1;min-width:240px}
+  .chip{font-size:13px;font-weight:500;letter-spacing:.01em;color:var(--ink-soft);background:var(--surface);
+    border:1px solid var(--line);border-radius:100px;padding:9px 16px;cursor:pointer;transition:.2s var(--ease)}
+  .chip:hover{border-color:var(--ink-soft);color:var(--ink)}
+  .chip.is-active{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+  .fb-count{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;white-space:nowrap}
+  @media(max-width:680px){.fb-count{width:100%}}
+</style>
+</head>
+<body data-theme="warm-editorial" data-page="Buildings">
+
+<!-- NAV -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="home.html">Central<span>Hill</span></a>
+    <nav class="links">
+      <a href="home.html#owners">Owners</a><a href="buildings.html">Buildings</a><a href="#">Real Estate</a>
+      <a href="home.html#guests">Guests</a><a href="home.html#story">About Us</a><a href="#">Blog</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="#">Book Now</a>
+      <a class="btn btn-solid" href="home.html#owners">List Your Property →</a>
+    </div>
+    <button class="menu-btn" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero compact" style="padding:0">
+  <img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70" alt="Rooftops and the river over Lisbon's historic centre at golden hour">
+  <div class="wrap">
+    <span class="eyebrow">Lisbon · Portugal</span>
+    <h1>Explore Our Buildings in Lisbon</h1>
+    <p>Fourteen handpicked addresses across the city's most storied neighbourhoods — each a collection of design-led, professionally managed apartments.</p>
+  </div>
+</section>
+
+<!-- FILTER / IA BAR (decorative) -->
+<div class="filterbar">
+  <div class="wrap">
+    <label class="fb-city"><select aria-label="Select city">
+      <option>Lisbon</option>
+      <option>Porto</option>
+      <option>Cascais</option>
+    </select></label>
+    <div class="fb-chips">
+      <button class="chip is-active">All</button>
+      <button class="chip">Bairro Alto</button>
+      <button class="chip">Chiado</button>
+      <button class="chip">Baixa</button>
+      <button class="chip">Alfama</button>
+      <button class="chip">Avenida da Liberdade</button>
+      <button class="chip">Príncipe Real</button>
+    </div>
+    <span class="fb-count">14 Buildings</span>
+  </div>
+</div>
+
+<!-- BUILDING GRID -->
+<section>
+  <div class="wrap">
+    <div class="pf-grid reveal">
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><span class="badge">★ New</span><img src="https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&w=900&q=70" alt="Sunlit living room with rooftop views in Bairro Alto"></div>
+        <div class="pbody">
+          <h3>Large Bairro Alto View</h3>
+          <div class="pmeta">Bairro Alto · 6 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Six light-filled apartments crowning Bairro Alto, with sweeping rooftop and river views above the city's most spirited streets, cafés and miradouros.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1591825729269-caeb344f6df2?auto=format&fit=crop&w=900&q=70" alt="Tiled Alfama façade overlooking the Tagus river"></div>
+        <div class="pbody">
+          <h3>Downtown Alfama River View</h3>
+          <div class="pmeta">Alfama · 1 Apartment</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">A single tranquil apartment tucked into Alfama's medieval lanes, where Fado drifts through tiled streets and the Tagus glimmers just beyond the window.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=70" alt="Elegant Chiado apartment opening onto a private terrace"></div>
+        <div class="pbody">
+          <h3>Big Chiado Terrace</h3>
+          <div class="pmeta">Chiado · 1 Apartment</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">A generous apartment opening onto a private terrace in elegant Chiado — moments from the city's finest theatres, boutiques and historic coffee houses.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=70" alt="Refined interior in the heart of Chiado"></div>
+        <div class="pbody">
+          <h3>Central Chiado</h3>
+          <div class="pmeta">Chiado · 3 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Three refined apartments in the cultural heart of Chiado, where literary cafés and designer storefronts sit a short stroll from the river and Baixa.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=900&q=70" alt="Bright apartment overlooking Rossio square"></div>
+        <div class="pbody">
+          <h3>Central Downtown Rossio</h3>
+          <div class="pmeta">Rossio · 1 Apartment</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">An apartment perched above Rossio's wave-patterned plaza, placing the theatres, fountains and bustle of Lisbon's grand square right at your doorstep.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=70" alt="Spacious apartment in Lisbon's downtown Baixa grid"></div>
+        <div class="pbody">
+          <h3>Central Downtown</h3>
+          <div class="pmeta">Baixa · 8 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Eight apartments within Baixa's elegant Pombaline grid, steps from riverside terraces, the Arco da Rua Augusta and the city's best-connected streets.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=900&q=70" alt="Warm apartment interior in lively Bairro Alto"></div>
+        <div class="pbody">
+          <h3>Central Bairro Alto</h3>
+          <div class="pmeta">Bairro Alto · 2 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Two characterful apartments in the beating heart of Bairro Alto, where quiet by day gives way to the city's most celebrated nightlife after dark.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&w=900&q=70" alt="Grand building on tree-lined Avenida da Liberdade"></div>
+        <div class="pbody">
+          <h3>Big Central Avenue</h3>
+          <div class="pmeta">Avenida da Liberdade · 1 Apartment</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">A spacious residence on Lisbon's grandest boulevard, surrounded by flagship fashion houses, leafy promenades and the city's most prestigious address.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=900&q=70" alt="Split-level duplex apartment with city views in Bairro Alto"></div>
+        <div class="pbody">
+          <h3>Bairro Alto Duplex View</h3>
+          <div class="pmeta">Bairro Alto · 1 Apartment</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">A striking split-level duplex high in Bairro Alto, framing rooftop panoramas across two storeys of light, calm and quietly indulgent living space.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=70" alt="Bright apartment with avenue views near Avenida da Liberdade"></div>
+        <div class="pbody">
+          <h3>Large Central View</h3>
+          <div class="pmeta">Avenida da Liberdade · 2 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Two expansive apartments overlooking the avenue's canopy of trees, blending boulevard glamour with the ease of Lisbon's most walkable district.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=70" alt="Cosy, characterful apartment in downtown Baixa"></div>
+        <div class="pbody">
+          <h3>Cozy Central Downtown</h3>
+          <div class="pmeta">Baixa · 4 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Four intimate apartments in the lively Baixa quarter, pairing warm, characterful interiors with riverside walks and the pulse of downtown Lisbon.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=900&q=70" alt="Large bright apartment in historic Bairro Alto"></div>
+        <div class="pbody">
+          <h3>Big Bairro Alto</h3>
+          <div class="pmeta">Bairro Alto · 2 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Two generously sized apartments in historic Bairro Alto, ideal for larger groups who want space, soul and the city's liveliest streets on their doorstep.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><span class="badge">★ New</span><img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=70" alt="Contemporary apartment on Avenida da Liberdade"></div>
+        <div class="pbody">
+          <h3>Downtown Avenue</h3>
+          <div class="pmeta">Avenida da Liberdade · 3 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Three contemporary apartments on the elegant Avenida da Liberdade, where designer boutiques, fine dining and the city's cultural core converge.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="building-detail.html">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1560566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=70" alt="Cosy apartment with avenue outlook near Avenida da Liberdade"></div>
+        <div class="pbody">
+          <h3>Cozy Downtown Avenue</h3>
+          <div class="pmeta">Avenida da Liberdade · 2 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Two welcoming apartments just off the grand avenue, offering boutique comfort and effortless access to Lisbon's shopping, gardens and metro links.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- OWNER CTA BAND -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="dual reveal" style="grid-template-columns:1fr">
+      <div class="dcol owner">
+        <span class="eyebrow">For Owners</span>
+        <h3>Looking to add your property to our portfolio?</h3>
+        <p>Join the buildings above. We'll assess your apartment and show you what it could earn — free, no obligation, within 48 hours.</p>
+        <a class="btn btn-accent" href="home.html#owners">Get Your Free Earnings Estimate →</a>
+        <div class="contact-line">Call +351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div>
+        <div class="brand">Central<span style="color:var(--feature-accent)">Hill</span></div>
+        <div class="f-contact">Call +351 910 075 725<br>info@centralhill.pt<br>WhatsApp +351 910 075 725</div>
+        <div class="f-social"><a href="#">f</a><a href="#">in</a><a href="#">ig</a></div>
+      </div>
+      <div><h4>For Owners</h4><ul><li><a href="#">Earnings Estimate</a></li><li><a href="#">Owner Services</a></li><li><a href="#">Owner Dashboard</a></li><li><a href="#">Pricing &amp; Plans</a></li><li><a href="#">List Your Property</a></li><li><a href="#">Owner Testimonials</a></li></ul></div>
+      <div><h4>Guests &amp; Company</h4><ul><li><a href="buildings.html">Browse Apartments</a></li><li><a href="buildings.html">Buildings</a></li><li><a href="home.html#story">About Us</a></li><li><a href="#">Blog</a></li><li><a href="#">Contact</a></li></ul></div>
+    </div>
+    <div class="f-bottom"><span>© 2026 Central Hill Apartments · Lisbon, Portugal</span><span>EN · PT · ES · FR</span></div>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+</body>
+</html>
