@@ -71,8 +71,10 @@
       nav.classList.add("scrolled");
       body.style.paddingTop = nav.offsetHeight + "px";
     } else {
-      var trigger = function () { return hero.offsetHeight * 0.7; };
-      var onScroll = function () { nav.classList.toggle("scrolled", window.scrollY > trigger()); };
+      // Frost the nav as soon as the user scrolls a little (~60px), so the menu text
+      // stays legible over the hero instead of staying transparent until the hero is
+      // mostly scrolled past. Transparent only at the very top over the hero.
+      var onScroll = function () { nav.classList.toggle("scrolled", window.scrollY > 60); };
       window.addEventListener("scroll", onScroll, { passive: true });
       onScroll();
     }
