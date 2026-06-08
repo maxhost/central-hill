@@ -11,6 +11,19 @@
 <style>
   /* Page-only components — all colours via kernel variables (adapt to all 6 palettes) */
 
+  /* owner sub-nav anchor bar — sits directly under the fixed main nav */
+  .owner-subnav{position:sticky;top:76px;z-index:40;background:color-mix(in srgb,var(--bg) 92%,transparent);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .owner-subnav .wrap{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;padding:0}
+  .owner-subnav .wrap::-webkit-scrollbar{display:none}
+  .owner-subnav a{flex:0 0 auto;white-space:nowrap;font-size:13px;font-weight:500;color:var(--ink-soft);
+    padding:14px 14px;border-bottom:2px solid transparent;transition:.2s var(--ease)}
+  .owner-subnav a:hover{color:var(--accent-deep);border-bottom-color:var(--accent)}
+
+  /* offset anchor jumps for fixed main nav + sticky sub-nav */
+  [id]{scroll-margin-top:130px}
+
   /* hero overlap layout: form card sits over the bottom of the hero */
   .owner-hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:end}
   .owner-hero .hero-copy{max-width:34ch}
@@ -103,14 +116,30 @@
   </div>
 </header>
 
+<!-- OWNER SUB-NAV ANCHOR BAR -->
+<nav class="owner-subnav" aria-label="Owner page sections">
+  <div class="wrap">
+    <a href="#worth">What's My Property Worth?</a>
+    <a href="#numbers">Numbers That Speak for Themselves</a>
+    <a href="#why">Why Owners Choose Us</a>
+    <a href="#services">Everything Done for You</a>
+    <a href="#plans">Find Your Perfect Plan</a>
+    <a href="#journey">Your Growth Path</a>
+    <a href="#technology">Full Visibility from Anywhere</a>
+    <a href="#testimonials">What Our Owners Say</a>
+    <a href="#faq">Got Questions? We Have Answers.</a>
+    <a href="#start">Start Earning More Today</a>
+  </div>
+</nav>
+
 <!-- SECTION 1 · HERO + EARNINGS-ESTIMATE FORM -->
-<section class="hero compact owner-hero" style="padding:0">
+<section id="worth" class="hero compact owner-hero" style="padding:0">
   <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1900&q=72" alt="Bright, designer-furnished Lisbon apartment interior">
   <div class="wrap">
     <div class="hero-copy">
       <span class="earn-badge">★ Earn +25%</span>
       <h1>Your Property. Our Expertise. Maximum Returns.</h1>
-      <p>Central Hill turns your property into a high-performing asset — fully managed, transparent, and optimized for maximum profit using AI-driven pricing and unmatched local expertise.</p>
+      <p>Central Hill Apartments turns your property into a high-performing asset — fully managed, transparent, and optimized for maximum profit using AI-driven pricing and unmatched local expertise.</p>
     </div>
 
     <form class="est-card reveal" onsubmit="return false">
@@ -141,7 +170,7 @@
 </section>
 
 <!-- SECTION 2 · BUSINESS PROOF STATS -->
-<div class="stats">
+<div id="numbers" class="stats">
   <div class="wrap stats-grid">
     <div class="stat"><div class="num">400,000+</div><div class="lbl">Bookings Completed</div></div>
     <div class="stat"><div class="num">12+</div><div class="lbl">Years of Experience</div></div>
@@ -151,11 +180,11 @@
 </div>
 
 <!-- SECTION 3 · WHY OWNERS CHOOSE US -->
-<section>
+<section id="why">
   <div class="wrap">
     <div class="sec-head center reveal">
       <span class="eyebrow">Why Owners Choose Us</span>
-      <h2 class="section-title">Why Property Owners Trust Central Hill</h2>
+      <h2 class="section-title">Why Property Owners Trust Central Hill Apartments</h2>
     </div>
     <div class="grid-3 reveal">
       <div class="bcard">
@@ -193,12 +222,12 @@
 </section>
 
 <!-- SECTION 4 · EVERYTHING DONE FOR YOU -->
-<section class="alt">
+<section id="services" class="alt">
   <div class="wrap">
     <div class="sec-head center reveal">
       <span class="eyebrow">Everything Done for You</span>
       <h2 class="section-title">Everything Handled. Nothing Overlooked.</h2>
-      <p class="lede" style="margin:16px auto 0">From the first listing to each guest's departure, Central Hill manages every detail so you don't have to.</p>
+      <p class="lede" style="margin:16px auto 0">From the first listing to each guest's departure, Central Hill Apartments manages every detail so you don't have to.</p>
     </div>
     <div class="grid-3 reveal">
       <div class="bcard">
@@ -251,7 +280,7 @@
 </section>
 
 <!-- SECTION 5 · COMMISSION PLANS -->
-<section>
+<section id="plans">
   <div class="wrap">
     <div class="sec-head center reveal">
       <span class="eyebrow">Find Your Perfect Plan</span>
@@ -324,7 +353,7 @@
 </section>
 
 <!-- SECTION 6 · YOUR GROWTH PATH -->
-<section class="alt">
+<section id="journey" class="alt">
   <div class="wrap">
     <div class="sec-head center reveal">
       <span class="eyebrow">Your Growth Path</span>
@@ -362,7 +391,7 @@
 </section>
 
 <!-- SECTION 7 · TECHNOLOGY / DASHBOARD -->
-<section>
+<section id="technology">
   <div class="wrap">
     <div class="sec-head center reveal">
       <span class="eyebrow">Full Visibility from Anywhere</span>
@@ -405,7 +434,7 @@
 </section>
 
 <!-- SECTION 8 · TESTIMONIALS -->
-<section class="alt">
+<section id="testimonials" class="alt">
   <div class="wrap">
     <div class="sec-head center reveal">
       <span class="eyebrow">What Our Owners Say</span>
@@ -436,13 +465,13 @@
     </div>
     <p class="lede reveal" style="text-align:center;margin:48px auto 0">
       <strong style="color:var(--ink)">12+ Years Optimizing Owner Returns in Portugal.</strong>
-      A proven track record of delivering above-market rental income for all property sizes — from compact city studios to large family apartments accommodating up to 27 guests.
+      Central Hill Apartments has a proven track record of delivering above-market rental income for all property sizes — from compact city studios to large family apartments accommodating up to 27 guests.
     </p>
   </div>
 </section>
 
 <!-- SECTION 9 · FAQ -->
-<section>
+<section id="faq">
   <div class="wrap">
     <div class="sec-head center reveal">
       <span class="eyebrow">Got Questions? We Have Answers.</span>
@@ -450,7 +479,7 @@
     </div>
     <div class="faq reveal">
       <details>
-        <summary>What types of properties does Central Hill manage?</summary>
+        <summary>What types of properties does Central Hill Apartments manage?</summary>
         <div class="faq-a">We manage all property types across Portugal, from compact studios to large 8-bedroom apartments accommodating up to 27 guests. Whether you own a single apartment or a growing portfolio, we have the right plan for you.</div>
       </details>
       <details>
@@ -458,7 +487,7 @@
         <div class="faq-a">We operate on a commission model — we earn when you earn. Your personalized proposal includes a full, transparent breakdown of all fees and platform commissions with no hidden costs.</div>
       </details>
       <details>
-        <summary>Do I need to be in Portugal to work with Central Hill?</summary>
+        <summary>Do I need to be in Portugal to work with Central Hill Apartments?</summary>
         <div class="faq-a">Not at all. Many of our owners are based overseas. Our fully remote management model means you can monitor your property and receive your earnings from anywhere in the world.</div>
       </details>
       <details>
@@ -482,11 +511,11 @@
 </section>
 
 <!-- SECTION 10 · FINAL CTA -->
-<section class="stats" style="padding:var(--section-y) 0">
+<section id="start" class="stats" style="padding:var(--section-y) 0">
   <div class="wrap" style="text-align:center;max-width:760px">
     <span class="eyebrow" style="color:var(--feature-accent)">Start Earning More Today</span>
     <h2 class="section-title" style="color:#fff;margin-top:14px">Ready to Make Your Property Work for You?</h2>
-    <p style="color:var(--on-feature-soft);font-size:18px;margin:18px auto 0;max-width:60ch">Join the growing number of property owners across Portugal who trust Central Hill to deliver exceptional results. Start with a free, no-obligation profitability analysis.</p>
+    <p style="color:var(--on-feature-soft);font-size:18px;margin:18px auto 0;max-width:60ch">Join the growing number of property owners across Portugal who trust Central Hill Apartments to deliver exceptional results. Start with a free, no-obligation profitability analysis.</p>
     <div style="margin-top:34px">
       <a class="btn btn-accent" href="#">Get Your Free Earnings Estimate →</a>
     </div>
