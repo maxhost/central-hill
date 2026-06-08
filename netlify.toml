@@ -32,3 +32,13 @@
   from = "/building"
   to = "/building-detail.html"
   status = 200
+
+[[redirects]]
+  from = "/owners"
+  to = "/owners.html"
+  status = 200
+
+[[redirects]]
+  from = "/real-estate"
+  to = "/real-estate.html"
+  status = 200
