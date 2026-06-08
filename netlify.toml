@@ -1,0 +1,19 @@
+# Netlify config — static preview phase.
+# The repo currently has no app build; Netlify publishes the repo root as static files.
+# This rewrite serves the Home design mock at the bare URL so the client can review it at
+# https://central-hill.netlify.app/  (instead of /mock/home.html).
+#
+# NOTE: once the real Next.js app (S0 · platform-foundation) lands, replace this with the
+# proper build config:
+#   [build] command = "pnpm build"  publish = ".next"   (+ @netlify/plugin-nextjs)
+
+[[redirects]]
+  from = "/"
+  to = "/mock/home.html"
+  status = 200
+
+# Convenience alias
+[[redirects]]
+  from = "/home"
+  to = "/mock/home.html"
+  status = 200
