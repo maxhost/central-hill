@@ -42,3 +42,28 @@
   from = "/real-estate"
   to = "/real-estate.html"
   status = 200
+
+[[redirects]]
+  from = "/guest"
+  to = "/guest.html"
+  status = 200
+
+[[redirects]]
+  from = "/services"
+  to = "/services.html"
+  status = 200
+
+[[redirects]]
+  from = "/what-to-do"
+  to = "/what-to-do.html"
+  status = 200
+
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog"
+  to = "/blog.html"
+  status = 200

@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Central Hill — Blog (design preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/iconoir/css/iconoir.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  /* ===== Page-only (Blog) — kernel-variable based; category tag colours are
+     intentionally hardcoded brand hexes per the content brief ===== */
+
+  /* Page header (compact, editorial) */
+  .blog-head{background:color-mix(in srgb,var(--line) 30%,var(--bg));border-bottom:1px solid var(--line)}
+  .blog-head .wrap{padding-top:128px;padding-bottom:64px;text-align:center}
+  .blog-head h1{font-size:clamp(34px,4.6vw,58px);max-width:18ch;margin:14px auto 18px}
+  .blog-head .lede{margin:0 auto;max-width:60ch}
+
+  /* Search bar (non-functional, decorative) */
+  .blog-search{max-width:560px;margin:34px auto 0;position:relative}
+  .blog-search i{position:absolute;left:20px;top:50%;transform:translateY(-50%);
+    font-size:20px;color:var(--ink-soft);line-height:1}
+  .blog-search input{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);
+    background:var(--surface);border:1px solid var(--line);border-radius:100px;
+    padding:16px 22px 16px 52px;transition:.2s var(--ease)}
+  .blog-search input::placeholder{color:var(--ink-soft)}
+  .blog-search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+
+  /* Category filter tabs (pills) */
+  .cat-tabs{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  .cat-tab{font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:.01em;
+    color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);
+    border-radius:100px;padding:9px 18px;cursor:pointer;transition:.2s var(--ease);
+    display:inline-flex;align-items:center;gap:8px}
+  .cat-tab:hover{border-color:var(--ink-soft);color:var(--ink)}
+  .cat-tab .swatch{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .cat-tab.is-active{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+
+  /* Coloured category tag (used on cards + featured) — hardcoded brand hexes */
+  .ctag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.13em;
+    text-transform:uppercase;color:#fff;padding:5px 11px;border-radius:3px}
+  .ctag.owner-guides{background:#0E7C7B}
+  .ctag.str-tips{background:#2C6E8F}
+  .ctag.pt-regs{background:#B23A3A}
+  .ctag.lisbon{background:#B08D57}
+  .ctag.portugal{background:#6B7280}
+
+  /* Featured article card */
+  .featured{display:grid;grid-template-columns:1.15fr .85fr;gap:0;background:var(--surface);
+    border:1px solid var(--line);overflow:hidden}
+  .featured .feat-img{position:relative;min-height:340px}
+  .featured .feat-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .featured .feat-body{padding:46px 48px;display:flex;flex-direction:column;justify-content:center}
+  .featured h3{font-size:clamp(26px,2.6vw,36px);margin:16px 0 14px;line-height:1.12}
+  .featured p{font-size:16px;color:var(--ink-soft);margin-bottom:22px}
+  .feat-meta,.card-meta{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-soft);
+    flex-wrap:wrap}
+  .feat-meta i,.card-meta i{font-size:15px;line-height:1}
+  .feat-meta .sep,.card-meta .sep{opacity:.5}
+  .read-link{margin-top:24px;font-size:14px;font-weight:600;color:var(--accent-deep);
+    display:inline-flex;align-items:center;gap:6px}
+
+  /* Article card body tweaks (built on kernel .pcard) */
+  .pcard .pbody{padding:22px 24px 26px}
+  .pcard .ctag{margin-bottom:14px}
+  .pcard .pbody h3{font-size:21px;line-height:1.18;margin-bottom:8px}
+  .pcard .excerpt{font-size:14.5px;color:var(--ink-soft);margin-bottom:16px}
+  .pcard .card-meta{margin-bottom:14px}
+  .pcard .read-link{margin-top:0;font-size:13.5px}
+
+  /* Newsletter band */
+  .newsletter{background:var(--feature);color:var(--on-feature)}
+  .newsletter .wrap{text-align:center;max-width:720px}
+  .newsletter .eyebrow{color:var(--feature-accent)}
+  .newsletter h2{color:#fff;font-size:clamp(28px,3.4vw,44px);margin:14px 0 14px}
+  .newsletter p{color:var(--on-feature-soft);font-size:17px;margin:0 auto 30px;max-width:54ch}
+  .nl-form{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .nl-form input{font-family:var(--sans);font-size:15px;color:#fff;min-width:300px;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.28);
+    border-radius:3px;padding:15px 20px}
+  .nl-form input::placeholder{color:var(--on-feature-soft)}
+  .nl-form input:focus{outline:none;border-color:var(--feature-accent)}
+
+  /* Load more */
+  .load-more{display:flex;justify-content:center;margin-top:48px}
+
+  @media(max-width:880px){
+    .featured{grid-template-columns:1fr}
+    .featured .feat-img{min-height:240px}
+    .featured .feat-body{padding:34px 30px}
+    .nl-form input{min-width:0;width:100%}
+  }
+</style>
+</head>
+<body data-theme="warm-editorial" data-page="Blog">
+
+<!-- NAV -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="home.html">Central<span>Hill</span></a>
+    <nav class="links">
+      <a href="owners.html">Owners</a><a href="buildings.html">Buildings</a><a href="real-estate.html">Real Estate</a>
+      <a href="guest.html">Guests</a><a href="about.html">About Us</a><a href="blog.html">Blog</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="buildings.html">Book Now</a>
+      <a class="btn btn-solid" href="owners.html">List Your Property →</a>
+    </div>
+    <button class="menu-btn" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<!-- PAGE HEADER + SEARCH -->
+<section class="blog-head" style="padding:0">
+  <div class="wrap reveal">
+    <span class="eyebrow">The Central Hill Journal</span>
+    <h1>Insights on Short-Term Rentals, Property Management &amp; Portugal</h1>
+    <p class="lede">Expert guides, practical tips, and local knowledge for property owners, investors, and anyone navigating the Portuguese short-term rental market.</p>
+    <div class="blog-search">
+      <i class="iconoir-search" aria-hidden="true"></i>
+      <input type="search" placeholder="Search articles…" aria-label="Search articles" />
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORY FILTER TABS -->
+<section style="padding-top:48px;padding-bottom:0">
+  <div class="wrap reveal">
+    <div class="cat-tabs">
+      <button class="cat-tab is-active"><span class="swatch" style="background:var(--accent)"></span>All</button>
+      <button class="cat-tab"><span class="swatch" style="background:#0E7C7B"></span>Owner Guides</button>
+      <button class="cat-tab"><span class="swatch" style="background:#2C6E8F"></span>Short-Term Rental Tips</button>
+      <button class="cat-tab"><span class="swatch" style="background:#B23A3A"></span>Portugal Regulations</button>
+      <button class="cat-tab"><span class="swatch" style="background:#B08D57"></span>Lisbon</button>
+      <button class="cat-tab"><span class="swatch" style="background:#6B7280"></span>Portugal</button>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED ARTICLE -->
+<section style="padding-top:52px;padding-bottom:0">
+  <div class="wrap">
+    <div class="sec-head reveal" style="margin-bottom:28px">
+      <span class="eyebrow">Featured</span>
+    </div>
+    <article class="featured reveal">
+      <div class="feat-img">
+        <img src="https://images.unsplash.com/photo-1556155092-490a1ba16284?auto=format&fit=crop&w=1200&q=70" alt="A registration certificate and keys on a table inside a prepared Lisbon apartment">
+      </div>
+      <div class="feat-body">
+        <div><span class="ctag pt-regs">Portugal Regulations</span></div>
+        <h3>Short-Term Rental Registration in Portugal: Everything You Need to Know (2025 Update)</h3>
+        <p>A complete guide to the legal requirements for operating a short-term rental in Portugal — from the AL licence and mandatory signage to fire extinguishers, guest registration, and tourist tax obligations.</p>
+        <div class="feat-meta">
+          <span>By Central Hill Apartments</span><span class="sep">·</span>
+          <span>June 2025</span><span class="sep">·</span>
+          <i class="iconoir-clock" aria-hidden="true"></i><span>8 min read</span>
+        </div>
+        <a class="read-link" href="#">Read Article →</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ARTICLE GRID -->
+<section>
+  <div class="wrap">
+    <div class="sec-head reveal" style="margin-bottom:34px">
+      <span class="eyebrow">Latest Articles</span>
+      <h2 class="section-title">From the Journal</h2>
+    </div>
+
+    <div class="pf-grid reveal">
+
+      <!-- 1 -->
+      <article class="pcard">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=900&q=70" alt="An official short-term rental registration sign mounted by an apartment entrance"></div>
+        <div class="pbody">
+          <span class="ctag pt-regs">Portugal Regulations</span>
+          <h3>Short-Term Rental Registration in Portugal: Everything You Need to Know (2025 Update)</h3>
+          <p class="excerpt">A complete guide to AL registration, mandatory signage, safety equipment, guest reporting, and the tourist-tax rules every operator must comply with.</p>
+          <div class="card-meta"><span>May 2026</span><span class="sep">·</span><i class="iconoir-clock" aria-hidden="true"></i><span>8 min read</span></div>
+          <a class="read-link" href="#">Read Article →</a>
+        </div>
+      </article>
+
+      <!-- 2 -->
+      <article class="pcard">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=900&q=70" alt="A bright, well-presented apartment living room ready for guests"></div>
+        <div class="pbody">
+          <span class="ctag str-tips">Short-Term Rental Tips</span>
+          <h3>Top 5 Mistakes in Short-Term Rental Management — and How to Avoid Them</h3>
+          <p class="excerpt">Even experienced owners make these common mistakes. Recognising them early can be the difference between a profitable rental and a costly one.</p>
+          <div class="card-meta"><span>March 2026</span><span class="sep">·</span><i class="iconoir-clock" aria-hidden="true"></i><span>6 min read</span></div>
+          <a class="read-link" href="#">Read Article →</a>
+        </div>
+      </article>
+
+      <!-- 3 -->
+      <article class="pcard">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=70" alt="An owner reviewing property paperwork with a management team at a desk"></div>
+        <div class="pbody">
+          <span class="ctag owner-guides">Owner Guides</span>
+          <h3>How to Choose the Best Property Management Company in Portugal</h3>
+          <p class="excerpt">In a crowded market, choosing the right management partner is one of the most important decisions you can make as an owner. Here is what to look for.</p>
+          <div class="card-meta"><span>January 2026</span><span class="sep">·</span><i class="iconoir-clock" aria-hidden="true"></i><span>5 min read</span></div>
+          <a class="read-link" href="#">Read Article →</a>
+        </div>
+      </article>
+
+      <!-- 4 -->
+      <article class="pcard">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=70" alt="A laptop showing a revenue and occupancy analytics dashboard"></div>
+        <div class="pbody">
+          <span class="ctag str-tips">Short-Term Rental Tips</span>
+          <h3>Dynamic Pricing Explained: How to Maximise Your Rental Income</h3>
+          <p class="excerpt">Static pricing is leaving money on the table. Here is how dynamic pricing works, why it matters, and what the data says about its impact on revenue.</p>
+          <div class="card-meta"><span>November 2025</span><span class="sep">·</span><i class="iconoir-clock" aria-hidden="true"></i><span>6 min read</span></div>
+          <a class="read-link" href="#">Read Article →</a>
+        </div>
+      </article>
+
+      <!-- 5 -->
+      <article class="pcard">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=900&q=70" alt="Aerial view of Lisbon rooftops, the river, and the castle at golden hour"></div>
+        <div class="pbody">
+          <span class="ctag lisbon">Lisbon</span>
+          <h3>Lisbon's Best Neighbourhoods for Short-Term Rental Investment</h3>
+          <p class="excerpt">From Bairro Alto to Alfama, each Lisbon neighbourhood offers a different risk-return profile. Here is how to evaluate which location works best for your goals.</p>
+          <div class="card-meta"><span>September 2025</span><span class="sep">·</span><i class="iconoir-clock" aria-hidden="true"></i><span>7 min read</span></div>
+          <a class="read-link" href="#">Read Article →</a>
+        </div>
+      </article>
+
+      <!-- 6 -->
+      <article class="pcard">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&w=900&q=70" alt="A property owner reviewing documents with house keys on a table"></div>
+        <div class="pbody">
+          <span class="ctag owner-guides">Owner Guides</span>
+          <h3>5 Things Every Property Owner Should Know Before Renting Short-Term</h3>
+          <p class="excerpt">Before your first booking, there are five things every short-term rental owner in Portugal needs to understand — from registration to pricing strategy.</p>
+          <div class="card-meta"><span>July 2025</span><span class="sep">·</span><i class="iconoir-clock" aria-hidden="true"></i><span>5 min read</span></div>
+          <a class="read-link" href="#">Read Article →</a>
+        </div>
+      </article>
+
+      <!-- 7 -->
+      <article class="pcard">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=900&q=70" alt="A beautifully staged, well-lit bedroom in a short-term rental apartment"></div>
+        <div class="pbody">
+          <span class="ctag str-tips">Short-Term Rental Tips</span>
+          <h3>5 Interior Design Tips That Make Guests Book Again and Again</h3>
+          <p class="excerpt">The way your property looks — in photos and in person — directly affects your bookings, your reviews, and your nightly rate. Here is how to get it right.</p>
+          <div class="card-meta"><span>May 2025</span><span class="sep">·</span><i class="iconoir-clock" aria-hidden="true"></i><span>5 min read</span></div>
+          <a class="read-link" href="#">Read Article →</a>
+        </div>
+      </article>
+
+      <!-- 8 -->
+      <article class="pcard">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1469022563428-aa04fef9f5a2?auto=format&fit=crop&w=900&q=70" alt="A panoramic view of Portugal's coastline and city skyline at sunset"></div>
+        <div class="pbody">
+          <span class="ctag portugal">Portugal</span>
+          <h3>Why Portugal Remains One of Europe's Best Short-Term Rental Markets in 2025</h3>
+          <p class="excerpt">Record visitor numbers, a stable regulatory framework, and consistently strong yields — here is the investment case for Portugal's short-term rental sector.</p>
+          <div class="card-meta"><span>March 2025</span><span class="sep">·</span><i class="iconoir-clock" aria-hidden="true"></i><span>6 min read</span></div>
+          <a class="read-link" href="#">Read Article →</a>
+        </div>
+      </article>
+
+      <!-- 9 -->
+      <article class="pcard">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=70" alt="A freshly prepared apartment with a made bed, ready for its first guest"></div>
+        <div class="pbody">
+          <span class="ctag owner-guides">Owner Guides</span>
+          <h3>The Essential Setup Checklist for Your First Short-Term Rental</h3>
+          <p class="excerpt">Getting your property ready for its first guest involves more than cleaning and photography. Here is the complete checklist — from registration to listing optimisation.</p>
+          <div class="card-meta"><span>January 2025</span><span class="sep">·</span><i class="iconoir-clock" aria-hidden="true"></i><span>7 min read</span></div>
+          <a class="read-link" href="#">Read Article →</a>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="load-more reveal">
+      <button class="btn btn-ghost">Load More Articles</button>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter">
+  <div class="wrap reveal">
+    <span class="eyebrow">Newsletter</span>
+    <h2>Stay Informed. Stay Ahead.</h2>
+    <p>Get our latest articles on short-term rental management, Portugal regulations, and market insights — delivered to your inbox.</p>
+    <form class="nl-form" onsubmit="return false">
+      <input type="email" placeholder="Your email address" aria-label="Your email address" />
+      <button class="btn btn-accent" type="submit">Subscribe <i class="iconoir-send-diagonal" aria-hidden="true"></i></button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="f-grid">
+      <div>
+        <div class="brand">Central<span style="color:var(--feature-accent)">Hill</span></div>
+        <div class="f-contact">Call +351 910 075 725<br>info@centralhill.pt<br>WhatsApp +351 910 075 725</div>
+        <div class="f-social"><a href="#">f</a><a href="#">in</a><a href="#">ig</a></div>
+      </div>
+      <div><h4>For Owners</h4><ul><li><a href="owners.html">Earnings Estimate</a></li><li><a href="owners.html">Owner Services</a></li><li><a href="#">Owner Dashboard</a></li><li><a href="owners.html">Pricing &amp; Plans</a></li><li><a href="owners.html">List Your Property</a></li><li><a href="real-estate.html">Real Estate Partnerships</a></li></ul></div>
+      <div><h4>Guests &amp; Company</h4><ul><li><a href="buildings.html">Browse Apartments</a></li><li><a href="guest.html">Guest Services</a></li><li><a href="about.html">About Us</a></li><li><a href="blog.html">Blog</a></li><li><a href="about.html">Contact</a></li></ul></div>
+    </div>
+    <div class="f-bottom"><span>© 2026 Central Hill Apartments · Lisbon, Portugal</span><span>EN · PT · ES · FR</span></div>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+</body>
+</html>
