@@ -169,6 +169,9 @@ footer li a:hover{color:#fff}
 .f-contact{font-size:14px;line-height:1.9;margin-top:18px;color:var(--on-feature-soft)}
 .f-social{display:flex;gap:14px;margin-top:20px}
 .f-social a{width:34px;height:34px;border:1px solid rgba(255,255,255,.22);border-radius:50%;display:grid;place-items:center;font-size:13px;color:var(--on-feature)}
+.f-toggle{font-size:13px;letter-spacing:.02em;color:var(--on-feature-soft);margin-bottom:38px;padding-bottom:26px;border-bottom:1px solid rgba(255,255,255,.12)}
+.f-toggle a{color:var(--on-feature);border-bottom:1px solid rgba(255,255,255,.42);padding-bottom:1px;transition:.2s}
+.f-toggle a:hover{color:#fff;border-bottom-color:#fff}
 .f-bottom{border-top:1px solid rgba(255,255,255,.12);margin-top:52px;padding-top:24px;display:flex;
           justify-content:space-between;font-size:12px;color:var(--on-feature-soft);flex-wrap:wrap;gap:10px;opacity:.8}
 
