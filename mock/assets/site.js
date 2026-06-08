@@ -80,6 +80,11 @@
 
   /* ---- subtle scroll reveal ---- */
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce) {
+    [].forEach.call(document.querySelectorAll(".hero video"), function (v) {
+      v.removeAttribute("autoplay"); try { v.pause(); } catch (e) {}
+    });
+  }
   var els = document.querySelectorAll(".reveal");
   if (!reduce && "IntersectionObserver" in window) {
     var io = new IntersectionObserver(function (entries) {
