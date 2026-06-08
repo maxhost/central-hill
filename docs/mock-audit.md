@@ -1,5 +1,31 @@
 # Mock Coverage Audit — pages vs client briefs
 
+## ✅ Re-audit result (2026-06-08, after fixes) — ALL 10 PAGES PASS
+
+Every previously-flagged content gap was closed and re-verified by a second per-page agent. No
+regressions, no emojis (Iconoir throughout), footers consistent site-wide.
+
+| Page | Re-audit verdict | Gaps closed |
+|---|---|---|
+| Home | Complete | stats heading, brief-verbatim testimonials + owner cards, restored copy, "by Central Hill" ×3, footer toggle |
+| Owners | Pass | 10-anchor sub-nav bar (ids verified), full "Central Hill Apartments" brand, footer toggle |
+| Buildings | Pass | Stats band + Earnings calculator added, street addresses ×14, brief headline/teasers, "by Central Hill" ×14 |
+| Building detail | Pass | brief-verbatim long description + "The Neighbourhood", H1 suffix |
+| Real Estate | Excellent | select "Mixed", footer toggle; all sections intact |
+| Guests | Pass | footer toggle; full coverage |
+| Services | Pass | all 7 services, footer toggle |
+| What to Do | Pass | Families & Kids + Groups & Friends + Secrets added (11 cards, all brief sub-pages covered) |
+| About | Pass | full hero mission, www.centralhill.pt line, "Independently Verified" heading |
+| Blog | Excellent | footer toggle; 9 articles + 5 category colours verbatim |
+
+**Remaining items are all build-stage (not mock gaps):** hero video/GIF, per-service & per-guide
+detail sub-pages, functional search/filters/forms, and the `€XXM+` revenue placeholder (which mirrors
+the brief's own placeholder). These are resolved when the real Next.js app (S0) is built.
+
+---
+
+## Original audit (pre-fix) — kept for the record
+
 Audit date: 2026-06-08. One agent per page compared each mock against its `cliente-docs/` brief.
 Verdict scale: Excellent / Complete / Mostly complete / Partial. Items are content-fidelity gaps —
 not design-mock limitations (static image instead of video/GIF is expected and noted as low priority).
