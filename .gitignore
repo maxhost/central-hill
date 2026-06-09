@@ -46,3 +46,6 @@ cliente-docs/
 # Local DB artifacts (keep drizzle/ migrations, ignore local sqlite)
 *.sqlite
 *.sqlite3
+
+# GlaDOS Studio image context
+glados-images/

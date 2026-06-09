@@ -65,9 +65,6 @@ section{padding:var(--section-y) 0;scroll-margin-top:84px}
 
 /* ---------- nav (transparent over hero → frosted on scroll) ---------- */
 header.nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:.35s var(--ease);border-bottom:1px solid transparent}
-/* scrim behind the transparent (top-of-page) nav so white menu text stays legible over any hero; fades out once frosted */
-header.nav::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:1;transition:opacity .35s var(--ease);background:linear-gradient(180deg,rgba(15,13,11,.6) 0%,rgba(15,13,11,.32) 55%,rgba(15,13,11,0) 100%)}
-header.nav.scrolled::before{opacity:0}
 .nav-inner{display:flex;align-items:center;justify-content:space-between;height:76px}
 .brand{font-family:var(--serif);font-size:25px;letter-spacing:.02em;font-weight:600;color:#fff}
 .brand span{color:#e9d9bf;transition:color .35s}
