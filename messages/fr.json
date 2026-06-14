@@ -23,5 +23,29 @@
       "button": "S'abonner",
       "success": "Merci — vous êtes inscrit."
     }
+  },
+  "buildings": {
+    "metaTitle": "Immeubles — Central Hill",
+    "metaDescription": "Découvrez le portfolio sélectionné d'immeubles meublés premium de Central Hill dans les quartiers les plus emblématiques de Lisbonne.",
+    "eyebrow": "Lisbonne · Portugal",
+    "title": "Des propriétés stratégiques dans des emplacements de choix",
+    "intro": "Découvrez notre portfolio soigneusement sélectionné d'immeubles d'exception, chacun choisi pour son emplacement, son caractère et l'expérience offerte aux voyageurs.",
+    "all": "Tous",
+    "empty": "Aucun immeuble publié pour l'instant — revenez bientôt.",
+    "count": "{count, plural, =0 {Aucun immeuble} one {# Immeuble} other {# Immeubles}}",
+    "apartments": "{count, plural, =0 {Aucun appartement} one {# Appartement} other {# Appartements}}",
+    "new": "Nouveau",
+    "viewMore": "Voir plus",
+    "breadcrumb": "Immeubles",
+    "statApartments": "Appartements",
+    "statCapacity": "Jusqu'à voyageurs",
+    "statBeds": "Lits",
+    "theBuilding": "L'Immeuble",
+    "theNeighbourhood": "Le Quartier",
+    "amenities": "Équipements",
+    "faq": "Questions fréquentes",
+    "bookTitle": "Réservez un appartement dans cet immeuble",
+    "bookIntro": "Choisissez la configuration idéale pour votre séjour et réservez en temps réel — disponibilités et tarifs en direct via notre moteur de réservation.",
+    "bookCta": "Vérifier les disponibilités"
   }
 }

@@ -23,5 +23,29 @@
       "button": "Subscrever",
       "success": "Obrigado — já está na lista."
     }
+  },
+  "buildings": {
+    "metaTitle": "Edifícios — Central Hill",
+    "metaDescription": "Explore o portefólio selecionado de edifícios mobilados premium da Central Hill nos bairros mais icónicos de Lisboa.",
+    "eyebrow": "Lisboa · Portugal",
+    "title": "Propriedades estratégicas em localizações privilegiadas",
+    "intro": "Explore o nosso portefólio cuidadosamente selecionado de edifícios excecionais, cada um escolhido a dedo pela sua localização, carácter e experiência para o hóspede.",
+    "all": "Todos",
+    "empty": "Ainda não há edifícios publicados — volte em breve.",
+    "count": "{count, plural, =0 {Sem edifícios} one {# Edifício} other {# Edifícios}}",
+    "apartments": "{count, plural, =0 {Sem apartamentos} one {# Apartamento} other {# Apartamentos}}",
+    "new": "Novo",
+    "viewMore": "Ver mais",
+    "breadcrumb": "Edifícios",
+    "statApartments": "Apartamentos",
+    "statCapacity": "Até hóspedes",
+    "statBeds": "Camas",
+    "theBuilding": "O Edifício",
+    "theNeighbourhood": "O Bairro",
+    "amenities": "Comodidades",
+    "faq": "Perguntas frequentes",
+    "bookTitle": "Reserve um apartamento neste edifício",
+    "bookIntro": "Escolha a tipologia ideal para a sua estadia e reserve em tempo real — disponibilidade e preços ao vivo através do nosso motor de reservas.",
+    "bookCta": "Ver disponibilidade"
   }
 }
