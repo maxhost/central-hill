@@ -452,6 +452,70 @@
       "blog": "Blog",
       "contact": "Contacto",
       "rights": "© {year} Central Hill Apartments · Lisboa, Portugal"
+    },
+    "admin": {
+      "errors": {
+        "invalidJson": "Introduza JSON válido (um objeto)."
+      },
+      "globals": {
+        "title": "Definições da empresa",
+        "subtitle": "Contactos, estatísticas, escritório e configuração Avantio do site.",
+        "sections": {
+          "contact": "Contacto",
+          "social": "Redes sociais",
+          "stats": "Estatísticas em destaque",
+          "office": "Escritório",
+          "brand": "Marca",
+          "avantio": "Avantio"
+        },
+        "fields": {
+          "email": "Email",
+          "phone": "Telefone",
+          "whatsapp": "WhatsApp",
+          "statValue": "Número",
+          "statLabel": "Etiqueta",
+          "officeAddress": "Morada do escritório",
+          "officeHours": "Horário",
+          "officeHoursLabel": "Etiqueta do horário",
+          "ogImage": "Imagem social predefinida",
+          "ogImageHint": "Imagem de reserva quando uma entidade não define nenhuma.",
+          "avantioAccount": "ID de conta Avantio",
+          "avantioConfig": "Config. do widget Avantio",
+          "avantioConfigHint": "Objeto JSON passado ao widget de reservas."
+        },
+        "social": {
+          "instagram": "Instagram",
+          "facebook": "Facebook",
+          "linkedin": "LinkedIn",
+          "youtube": "YouTube",
+          "tiktok": "TikTok"
+        },
+        "stats": {
+          "bookings": "Reservas",
+          "years": "Anos",
+          "guests": "Hóspedes",
+          "revenue": "Receita",
+          "buildings": "Edifícios",
+          "apartments": "Apartamentos"
+        }
+      },
+      "nav": {
+        "title": "Navegação",
+        "subtitle": "Menus de cabeçalho e rodapé (um nível de subitens).",
+        "noItems": "Ainda sem itens.",
+        "itemLabel": "Item {n}",
+        "children": "Subitens",
+        "addItem": "Adicionar item",
+        "addChild": "Adicionar subitem",
+        "locations": {
+          "header": "Cabeçalho",
+          "footer": "Rodapé"
+        },
+        "fields": {
+          "label": "Etiqueta",
+          "url": "URL"
+        }
+      }
     }
   },
   "apartments": {
@@ -765,7 +829,9 @@
       "services": "Serviços",
       "blogCategories": "Categorias do blogue",
       "authors": "Autores",
-      "posts": "Artigos"
+      "posts": "Artigos",
+      "settings": "Definições",
+      "navigation": "Navegação"
     },
     "shell": {
       "signedInAs": "Sessão iniciada como",

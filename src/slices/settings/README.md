@@ -63,10 +63,28 @@ DB content ([T] fields: stat labels, office-hours label, nav labels) resolves th
 `nav` tags and revalidates each locale's layout tree (the chrome is in the root
 layout). Called by the settings admin actions (S12).
 
-## Deferred (not in this slice's first cut)
+## Backoffice (`admin/`) — globals singleton + navigation builder (S12)
 
-- **Admin CRUD** (`admin/`): plugs into the backoffice shell **S12** — settings form,
-  nav builder (drag-order, parent/child), translation review. Not buildable before S12.
+Plugs into the backoffice shell. Contributes two **admin-only** `system`-group editors
+(`admin/screens.ts` → `settingsAdminScreens`): "Settings" (globals, order 10) and
+"Navigation" (order 20); they mount under `app/(admin)/admin/(panel)/{settings,navigation}/…`
+(both gated with `requireStaff(["admin"])`).
+
+- `admin/validation.ts` — `companySettingsSaveInput` (contact, social URLs, the six stats,
+  office, currency, default OG, Avantio account + widget-config object) and
+  `navigationSaveInput` (header/footer trees, each item with one level of children).
+- `admin/queries.ts` (server-only) — `getGlobalsForEdit` (the singleton, **scaffolded from
+  `DEFAULT_GLOBALS` when no row exists**, source [T] labels resolved) and
+  `getNavigationForEdit` (the two trees). Not cache-wrapped.
+- `admin/actions.ts` (`"use server"`, **admin-only**) — `saveGlobals` (singleton upsert:
+  scalars/jsonb as columns; the [T] stat labels + office-hours label via the `core/i18n`
+  write seam, ADR 0019; `revalidateGlobals`) and `saveNavigation` (nav items upserted **by
+  id** preserving label translations, removed ones purged; `revalidateNav`).
+- `admin/ui/` — `globals-form` (Avantio config edited as JSON) and `nav-form` (header/footer
+  builder with add/remove/reorder + sub-items).
+
+## Deferred
+
 - **Transparent-over-hero nav**: the `mock/` prototype has a scrim/transparency that
   reacts to scroll per page; the shell ships a clean solid sticky header. A
   page-scoped transparent variant can layer on later.
@@ -78,5 +96,6 @@ layout). Called by the settings admin actions (S12).
 ## Tests
 
 `tests/settings.test.ts` — company-settings / nav-item input validation + the
-translatable-path contract. Run:
-`npx tsx --test src/slices/settings/tests/settings.test.ts`.
+translatable-path contract. `tests/settings-admin.test.ts` — the admin save schemas
+(globals + navigation trees). Run:
+`npx tsx --test src/slices/settings/tests/settings.test.ts src/slices/settings/tests/settings-admin.test.ts`.

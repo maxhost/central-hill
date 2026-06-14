@@ -80,3 +80,11 @@ export interface NavLink {
 }
 
 export { getGlobals, getNav } from "./server/queries";
+
+/**
+ * Backoffice contribution (S12). `settingsAdminScreens` is spread into
+ * `composeAdminNav` by the admin panel layout; the globals + navigation editors mount
+ * under `app/(admin)/admin/(panel)/{settings,navigation}/…` (admin-only). Pure data —
+ * safe to import anywhere.
+ */
+export { settingsAdminScreens } from "./admin/screens";

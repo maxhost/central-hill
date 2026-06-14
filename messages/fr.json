@@ -452,6 +452,70 @@
       "blog": "Blog",
       "contact": "Contact",
       "rights": "© {year} Central Hill Apartments · Lisbonne, Portugal"
+    },
+    "admin": {
+      "errors": {
+        "invalidJson": "Saisissez un JSON valide (un objet)."
+      },
+      "globals": {
+        "title": "Paramètres de l’entreprise",
+        "subtitle": "Contact, statistiques, bureau et configuration Avantio du site.",
+        "sections": {
+          "contact": "Contact",
+          "social": "Réseaux sociaux",
+          "stats": "Statistiques clés",
+          "office": "Bureau",
+          "brand": "Marque",
+          "avantio": "Avantio"
+        },
+        "fields": {
+          "email": "E-mail",
+          "phone": "Téléphone",
+          "whatsapp": "WhatsApp",
+          "statValue": "Chiffre",
+          "statLabel": "Libellé",
+          "officeAddress": "Adresse du bureau",
+          "officeHours": "Horaires",
+          "officeHoursLabel": "Libellé des horaires",
+          "ogImage": "Image sociale par défaut",
+          "ogImageHint": "Image de repli quand une entité n’en définit aucune.",
+          "avantioAccount": "ID de compte Avantio",
+          "avantioConfig": "Config. du widget Avantio",
+          "avantioConfigHint": "Objet JSON transmis au widget de réservation."
+        },
+        "social": {
+          "instagram": "Instagram",
+          "facebook": "Facebook",
+          "linkedin": "LinkedIn",
+          "youtube": "YouTube",
+          "tiktok": "TikTok"
+        },
+        "stats": {
+          "bookings": "Réservations",
+          "years": "Années",
+          "guests": "Voyageurs",
+          "revenue": "Revenu",
+          "buildings": "Immeubles",
+          "apartments": "Appartements"
+        }
+      },
+      "nav": {
+        "title": "Navigation",
+        "subtitle": "Menus d’en-tête et de pied de page (un niveau de sous-éléments).",
+        "noItems": "Aucun élément pour le moment.",
+        "itemLabel": "Élément {n}",
+        "children": "Sous-éléments",
+        "addItem": "Ajouter un élément",
+        "addChild": "Ajouter un sous-élément",
+        "locations": {
+          "header": "En-tête",
+          "footer": "Pied de page"
+        },
+        "fields": {
+          "label": "Libellé",
+          "url": "URL"
+        }
+      }
     }
   },
   "apartments": {
@@ -765,7 +829,9 @@
       "services": "Services",
       "blogCategories": "Catégories du blog",
       "authors": "Auteurs",
-      "posts": "Articles"
+      "posts": "Articles",
+      "settings": "Paramètres",
+      "navigation": "Navigation"
     },
     "shell": {
       "signedInAs": "Connecté en tant que",

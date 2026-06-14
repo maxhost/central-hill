@@ -452,6 +452,70 @@
       "blog": "Blog",
       "contact": "Contact",
       "rights": "© {year} Central Hill Apartments · Lisbon, Portugal"
+    },
+    "admin": {
+      "errors": {
+        "invalidJson": "Enter valid JSON (an object)."
+      },
+      "globals": {
+        "title": "Company settings",
+        "subtitle": "Site-wide contact, stats, office and Avantio configuration.",
+        "sections": {
+          "contact": "Contact",
+          "social": "Social",
+          "stats": "Headline stats",
+          "office": "Office",
+          "brand": "Brand",
+          "avantio": "Avantio"
+        },
+        "fields": {
+          "email": "Email",
+          "phone": "Phone",
+          "whatsapp": "WhatsApp",
+          "statValue": "Figure",
+          "statLabel": "Label",
+          "officeAddress": "Office address",
+          "officeHours": "Office hours",
+          "officeHoursLabel": "Office-hours label",
+          "ogImage": "Default social image",
+          "ogImageHint": "Fallback image when an entity sets none.",
+          "avantioAccount": "Avantio account ID",
+          "avantioConfig": "Avantio widget config",
+          "avantioConfigHint": "JSON object passed to the booking widget."
+        },
+        "social": {
+          "instagram": "Instagram",
+          "facebook": "Facebook",
+          "linkedin": "LinkedIn",
+          "youtube": "YouTube",
+          "tiktok": "TikTok"
+        },
+        "stats": {
+          "bookings": "Bookings",
+          "years": "Years",
+          "guests": "Guests",
+          "revenue": "Revenue",
+          "buildings": "Buildings",
+          "apartments": "Apartments"
+        }
+      },
+      "nav": {
+        "title": "Navigation",
+        "subtitle": "Header and footer menus (one level of sub-items).",
+        "noItems": "No items yet.",
+        "itemLabel": "Item {n}",
+        "children": "Sub-items",
+        "addItem": "Add item",
+        "addChild": "Add sub-item",
+        "locations": {
+          "header": "Header",
+          "footer": "Footer"
+        },
+        "fields": {
+          "label": "Label",
+          "url": "URL"
+        }
+      }
     }
   },
   "apartments": {
@@ -765,7 +829,9 @@
       "services": "Services",
       "blogCategories": "Blog categories",
       "authors": "Authors",
-      "posts": "Posts"
+      "posts": "Posts",
+      "settings": "Settings",
+      "navigation": "Navigation"
     },
     "shell": {
       "signedInAs": "Signed in as",
