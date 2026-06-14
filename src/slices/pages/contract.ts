@@ -69,3 +69,10 @@ export {
   getOwnersPage,
   getRealEstatePage,
 } from "./server/queries";
+
+/**
+ * Backoffice contribution (S12). `pagesAdminScreens` is spread into
+ * `composeAdminNav` by the admin panel layout; the list + schema-driven editor
+ * mount under `app/(admin)/admin/(panel)/pages/…`. Pure data — safe to import anywhere.
+ */
+export { pagesAdminScreens } from "./admin/screens";

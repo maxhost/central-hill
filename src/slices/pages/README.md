@@ -79,20 +79,38 @@ All page *content* prose are [T] DB fields resolved through `core/i18n`.
 - `publish.ts`: `revalidatePage(key)` — busts `page:<key>` and `revalidatePath` for all 4
   locales (called by the S12 admin publish action).
 
+## Backoffice (`admin/`) — schema-driven page editor (S12)
+
+Plugs into the backoffice shell. Contributes one `content`-group screen (top of the group,
+`admin/screens.ts` → `pagesAdminScreens`); the list + per-page editor mount under
+`app/(admin)/admin/(panel)/pages/…`.
+
+- `admin/form-model.ts` (pure, unit-tested) — `describe(schema)` walks a page's **fixed Zod
+  schema** into a serializable `FieldNode` tree; `emptyValue` / `applyDefaults` scaffold a `data`
+  object (fixed-count arrays padded to length); `humanizeKey` makes labels. Leaf mapping:
+  `*_media_id` → media picker, ZodBoolean → checkbox, ZodString → text (textarea when long).
+- `admin/queries.ts` (server-only) — `listPagesAdmin` (the five pages + status), `getPageForEdit`
+  (source `data` + og image + media previews), `getPageEditModel` (adds the `FieldNode` tree,
+  computed **server-side** so Zod stays out of the client bundle).
+- `admin/actions.ts` (`"use server"`, `requireStaff`-gated) — `savePage`: validates `data` against
+  `pageSchemas[key]` (single source of truth for shape), upserts `page_content`, `revalidatePage`.
+  **No translation-table writes** — source lives in `data`; target locales are S14's job.
+- `admin/ui/` — `list.tsx` (server), `page-editor.tsx` (client island; status + og image + nested
+  `data` edited immutably by path), `schema-fields.tsx` (recursive `FieldNode` renderer).
+
+Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton from the schema.
+
 ## Deferred / escalations / handoffs
 
-- **Lead forms (S10)**: the earnings-estimate / deal-enquiry / contact form *fields* belong to
-  the `leads` slice. `lead-cta.tsx` renders the section copy with a direct contact CTA (never a
-  non-functional form); swap in the leads widget via its contract once S10 lands.
+- **Lead forms (S10)**: ✅ wired — `lead-cta.tsx` embeds the leads widget via its contract.
 - **Richer JSON-LD** (`Organization`/`LocalBusiness`/`FAQPage`/`Service`): belongs in
   `core/seo` (**S13**, ADR — golden rule 3), not hand-written here.
-- **Page CRUD + translation review** (`admin/`): plugs into the backoffice shell **S12**.
-- **Seed content**: no `page_content` rows exist yet — pages `notFound()` until the S12 admin
-  (or a seed) inserts the published source `data`. The full read/render path is in place.
+- **Translation review** of page [T] blocks: **S14**, on the `core/i18n` seam.
 
 ## Tests
 
 `tests/pages.test.ts` — the per-page translatable-path contract + the pure overlay logic
 (`expand`, `overlayTranslations` with source fallback, `collectMediaIds`) + schema validation
-(fixed-count arity, unknown key). Run:
-`npx tsx --test src/slices/pages/tests/pages.test.ts`.
+(fixed-count arity, unknown key). `tests/pages-admin.test.ts` — the schema → form model
+(`describe` leaf/array detection, `emptyValue`/`applyDefaults` scaffolding, `humanizeKey`). Run:
+`npx tsx --test src/slices/pages/tests/pages.test.ts src/slices/pages/tests/pages-admin.test.ts`.

@@ -353,6 +353,37 @@
       "metaDescription": "A empresa de gestão hoteleira de confiança de Portugal desde 2012 — gerindo apartamentos premium e proporcionando experiências excecionais em escala.",
       "communityEyebrow": "Comunidade",
       "contactNote": "Normalmente respondemos em 24 horas."
+    },
+    "admin": {
+      "title": "Páginas",
+      "subtitle": "Edite as páginas de marketing fixas.",
+      "backToList": "Voltar às páginas",
+      "formSubtitle": "O conteúdo de origem é escrito em inglês; os outros idiomas são traduzidos no pipeline.",
+      "validationError": "Alguns campos precisam de atenção antes de guardar.",
+      "columns": {
+        "page": "Página",
+        "status": "Estado"
+      },
+      "status": {
+        "draft": "Rascunho",
+        "published": "Publicado",
+        "none": "Por criar"
+      },
+      "pages": {
+        "home": "Início",
+        "owners": "Proprietários",
+        "real_estate": "Imobiliário",
+        "about": "Sobre",
+        "guest": "Página de hóspedes"
+      },
+      "sections": {
+        "publish": "Publicação"
+      },
+      "fields": {
+        "status": "Estado",
+        "ogImage": "Imagem de partilha social",
+        "ogImageHint": "Opcional; usada quando a página é partilhada nas redes sociais."
+      }
     }
   },
   "leads": {

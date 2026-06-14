@@ -353,6 +353,37 @@
       "metaDescription": "Portugal's trusted hospitality management company since 2012 — managing premium apartments and delivering exceptional experiences at scale.",
       "communityEyebrow": "Community",
       "contactNote": "We typically reply within 24 hours."
+    },
+    "admin": {
+      "title": "Pages",
+      "subtitle": "Edit the fixed marketing pages.",
+      "backToList": "Back to pages",
+      "formSubtitle": "Source content is authored in English; other languages are translated in the pipeline.",
+      "validationError": "Some fields need attention before saving.",
+      "columns": {
+        "page": "Page",
+        "status": "Status"
+      },
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "none": "Not created"
+      },
+      "pages": {
+        "home": "Home",
+        "owners": "Owners",
+        "real_estate": "Real Estate",
+        "about": "About",
+        "guest": "Guest landing"
+      },
+      "sections": {
+        "publish": "Publish"
+      },
+      "fields": {
+        "status": "Status",
+        "ogImage": "Social share image",
+        "ogImageHint": "Optional; used when the page is shared on social media."
+      }
     }
   },
   "leads": {

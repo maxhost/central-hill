@@ -4,6 +4,7 @@ import { AdminShell, composeAdminNav } from "@slices/backoffice/contract";
 import { apartmentsAdminScreens } from "@slices/apartments/contract";
 import { buildingsAdminScreens } from "@slices/buildings/contract";
 import { leadsAdminScreens } from "@slices/leads/contract";
+import { pagesAdminScreens } from "@slices/pages/contract";
 
 /**
  * Gated backoffice shell. `requireStaff()` redirects to `/admin/login` when
@@ -15,7 +16,12 @@ import { leadsAdminScreens } from "@slices/leads/contract";
 export default async function PanelLayout({ children }: { children: ReactNode }) {
   const staff = await requireStaff();
   const nav = composeAdminNav(
-    [...buildingsAdminScreens, ...apartmentsAdminScreens, ...leadsAdminScreens],
+    [
+      ...pagesAdminScreens,
+      ...buildingsAdminScreens,
+      ...apartmentsAdminScreens,
+      ...leadsAdminScreens,
+    ],
     staff.role,
   );
   return (
