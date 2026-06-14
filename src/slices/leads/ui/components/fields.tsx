@@ -1,5 +1,12 @@
 "use client";
-import { useId, useState, useTransition, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useId,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react";
 import { useLocale } from "next-intl";
 import { cn } from "@core/ui";
 import { submitLead } from "../../server/actions";
@@ -11,10 +18,44 @@ import type { LeadActionResult } from "../../types";
  * `leads`). Inputs are controlled; labels/messages are passed in by each form from
  * `useTranslations("leads")`. The hook injects `locale` (from next-intl) +
  * `source_page` and posts through the `submitLead` server action.
+ *
+ * Theme: forms default to the light surface palette; wrapping a form in
+ * `<LeadFormTheme theme="dark">` switches the primitives to light-on-dark colours so
+ * a form can sit on a dark band (e.g. the blog newsletter on `bg-feature`). Layout
+ * is shared; only colours change.
  */
 
-const inputClass =
-  "w-full rounded-md border border-line bg-surface px-4 py-3 text-sm text-ink placeholder:text-ink-soft/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+type Theme = "light" | "dark";
+
+const THEME = {
+  light: {
+    input: "border-line bg-surface text-ink placeholder:text-ink-soft/60",
+    label: "text-ink",
+    consent: "text-ink-soft",
+    error: "text-accent-deep",
+    statusOk: "bg-accent/10 text-accent-deep",
+    statusErr: "border border-accent/40 bg-accent/5 text-accent-deep",
+  },
+  dark: {
+    input: "border-bg/20 bg-bg/5 text-bg placeholder:text-bg/50",
+    label: "text-bg",
+    consent: "text-bg/80",
+    error: "text-amber-200",
+    statusOk: "bg-bg/10 text-bg",
+    statusErr: "border border-bg/30 bg-bg/5 text-bg",
+  },
+} as const satisfies Record<Theme, Record<string, string>>;
+
+const ThemeContext = createContext<Theme>("light");
+const useThemeStyles = () => THEME[useContext(ThemeContext)];
+
+/** Switches the enclosed lead-form primitives to the given colour theme. */
+export function LeadFormTheme({ theme, children }: { theme: Theme; children: ReactNode }) {
+  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;
+}
+
+const inputBase =
+  "w-full rounded-md border px-4 py-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
 export function Field({
   label,
@@ -29,14 +70,15 @@ export function Field({
   error?: string;
   children: ReactNode;
 }) {
+  const s = useThemeStyles();
   return (
     <div>
-      <label htmlFor={htmlFor} className="block text-sm font-medium text-ink">
+      <label htmlFor={htmlFor} className={cn("block text-sm font-medium", s.label)}>
         {label}
         {required ? <span className="text-accent"> *</span> : null}
       </label>
       <div className="mt-1.5">{children}</div>
-      {error ? <p className="mt-1 text-xs text-accent-deep">{error}</p> : null}
+      {error ? <p className={cn("mt-1 text-xs", s.error)}>{error}</p> : null}
     </div>
   );
 }
@@ -63,6 +105,7 @@ export function TextField({
   autoComplete?: string;
 }) {
   const id = useId();
+  const s = useThemeStyles();
   return (
     <Field label={label} htmlFor={id} required={required} error={error}>
       <input
@@ -75,7 +118,7 @@ export function TextField({
         autoComplete={autoComplete}
         aria-invalid={error ? true : undefined}
         onChange={(e) => onChange(e.target.value)}
-        className={inputClass}
+        className={cn(inputBase, s.input)}
       />
     </Field>
   );
@@ -103,6 +146,7 @@ export function TextAreaField({
   rows?: number;
 }) {
   const id = useId();
+  const s = useThemeStyles();
   return (
     <Field label={label} htmlFor={id} required={required} error={error}>
       <textarea
@@ -113,7 +157,7 @@ export function TextAreaField({
         value={value}
         aria-invalid={error ? true : undefined}
         onChange={(e) => onChange(e.target.value)}
-        className={cn(inputClass, "resize-y")}
+        className={cn(inputBase, s.input, "resize-y")}
       />
     </Field>
   );
@@ -131,9 +175,10 @@ export function ConsentCheckbox({
   error?: string;
 }) {
   const id = useId();
+  const s = useThemeStyles();
   return (
     <div>
-      <label htmlFor={id} className="flex items-start gap-3 text-sm leading-relaxed text-ink-soft">
+      <label htmlFor={id} className={cn("flex items-start gap-3 text-sm leading-relaxed", s.consent)}>
         <input
           id={id}
           type="checkbox"
@@ -144,7 +189,7 @@ export function ConsentCheckbox({
         />
         <span>{label}</span>
       </label>
-      {error ? <p className="mt-1 text-xs text-accent-deep">{error}</p> : null}
+      {error ? <p className={cn("mt-1 text-xs", s.error)}>{error}</p> : null}
     </div>
   );
 }
@@ -188,15 +233,11 @@ export function SubmitButton({
 }
 
 export function FormStatus({ kind, message }: { kind: "ok" | "error"; message: string }) {
+  const s = useThemeStyles();
   return (
     <p
       role={kind === "error" ? "alert" : "status"}
-      className={cn(
-        "rounded-md px-4 py-3 text-sm",
-        kind === "ok"
-          ? "bg-accent/10 text-accent-deep"
-          : "border border-accent/40 bg-accent/5 text-accent-deep",
-      )}
+      className={cn("rounded-md px-4 py-3 text-sm", kind === "ok" ? s.statusOk : s.statusErr)}
     >
       {message}
     </p>
