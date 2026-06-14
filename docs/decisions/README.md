@@ -25,6 +25,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0016 — `core/email`: provider-interface seam, vendor deferred](#0016)
 - [0017 — Backoffice routing: interim path `/admin`; host split deferred](#0017)
 - [0018 — Media R2 upload: presigned direct PUT + serve-time resizing](#0018)
+- [0019 — `core/i18n` content + slug write seam (admin write path)](#0019)
 
 ---
 
@@ -248,3 +249,37 @@ deferred**; **R2 CORS must allow PUT from the admin origin** (ops config); **orp
 deferred** (`deleteMedia` is explicit; safe-delete checks belong to the admin slices). The R2 bucket
 must be created **EU-jurisdiction** with a public base domain (`R2_PUBLIC_BASE_URL`). **Status:**
 Accepted.
+
+## 0019 — `core/i18n` content + slug write seam (admin write path) <a id="0019"></a>
+**Context:** `core/i18n` (the cross-cutting `translation` + `slug` tables) shipped **read-only**
+(`loadContent`, `resolveSlug`, `loadSlugs`, `loadAlternateSlugs`). But the catalog admin (S12 for
+S2 buildings / S3 apartments) must **persist** the source-locale (`en`) values of every **[T]** field —
+those entities have *no* `name`/`headline`/… columns; the source text is a `translation` row
+(`locale='en'`) — and must create the per-locale `slug` rows that make a detail page resolvable
+(`resolveSlug` reads the slug table; no row ⇒ 404). Three options were weighed: (a) add a small write
+seam to the kernel; (b) do pages admin first and defer; (c) let each slice write the kernel tables
+directly. (c) violates golden rule 4 (writing another owner's tables) and would scatter the
+`source_hash`/state-machine/slug-collision invariants into every slice, diverging from what the S14
+translation pipeline assumes. (b) only delays the core product. **Decision:** add an **additive,
+server-only write seam** to `core/i18n` (`server/content-write.ts`, exported from a new `index.ts`),
+the single authorized path that writes the translation/slug tables:
+- `setSourceContent(type, id, fields, opts?)` — upsert the **source-locale** (`en`) value of each [T]
+  field as `state='draft'` (one multi-row `onConflictDoUpdate` on `translation_key`); a field set to
+  `null`/empty is **cleared** (its rows for all locales deleted). Source rows carry **no `source_hash`**
+  — staleness is detected by S14 hashing the live source against each *target* row's `source_hash`.
+- `setSlug(type, id, locale, value)` / `setSlugs(type, id, slugByLocale)` — upsert one slug row per
+  `(type, id, locale)`, **collision-checked** against other entities (throws `SlugConflictError`; the
+  DB `slug_key` unique backstops races).
+- `deleteContent(type, id)` / `deleteSlugs(type, id)` — remove all rows for an entity (polymorphic
+  tables have no FK cascade from the owning entity, so admin delete must clean them up).
+
+Writes are gated at the **slice admin action** (`requireStaff`, ADR 0009) and use sequential
+statements (Neon HTTP driver — no interactive transactions, matching the existing write style); the
+per-statement upserts are atomic and the unique constraints backstop concurrency. **Target-locale**
+writes (LLM draft → `needs_review` → `approved`) are **out of scope here** — they remain S14's job,
+through this same seam later. **Consequences:** one write path for all multilingual content, reused by
+S14; the kernel surface grows by one small server-only module (read API unchanged); **no migration**
+(tables already exist). Trade-offs: slug **history/redirects** are not modelled (one live slug per
+entity/locale — re-slugging overwrites; a redirect table is a future additive ADR); admin sets the
+source slug and may copy it across locales (localized slugs are an editor refinement, not required for
+reachability). **Status:** Accepted.
