@@ -1,5 +1,27 @@
 {
   "common": {
     "tagline": "Alojamento mobilado premium em Lisboa"
+  },
+  "blog": {
+    "metaTitle": "Blog — Central Hill",
+    "metaDescription": "Guias para proprietários, dicas de alojamento local e a vida em Lisboa, pela equipa Central Hill.",
+    "eyebrow": "Jornal",
+    "title": "Ideias sobre ter, arrendar e viver em Lisboa",
+    "intro": "Guias práticos para proprietários, conhecimento sobre alojamento local e uma visão de dentro da vida na cidade.",
+    "featured": "Em destaque",
+    "readArticle": "Ler artigo",
+    "all": "Todos",
+    "empty": "Ainda não há artigos publicados — volte em breve.",
+    "breadcrumb": "Blog",
+    "related": "Artigos relacionados",
+    "readingMinutes": "{minutes} min de leitura",
+    "newsletter": {
+      "eyebrow": "Fique a par",
+      "title": "Receba os nossos guias no seu email",
+      "description": "Atualizações ocasionais e úteis sobre imobiliário e hospitalidade em Lisboa. Sem ruído.",
+      "placeholder": "O seu endereço de email",
+      "button": "Subscrever",
+      "success": "Obrigado — já está na lista."
+    }
   }
 }

@@ -1,7 +1,31 @@
 @import "tailwindcss";
 
 /*
- * Design tokens (color, type scale, spacing, radius, shadow) will be defined in
- * `core/ui` per ADR and surfaced here as Tailwind theme variables. Placeholder
- * for the scaffold — no raw component styling lives here.
+ * Design tokens — "Warm Editorial" (design-system.md default palette ⭐, closest
+ * to the ukio reference). Surfaced as Tailwind v4 theme variables so utilities
+ * like `bg-bg`, `text-ink`, `text-accent`, `border-line`, `font-serif` exist.
+ * Components consume these tokens — never raw hex (conventions.md → Styling).
+ * Adding/changing a palette is change-controlled (ADR), like the rest of core/ui.
  */
+@theme {
+  --color-bg: #fbf8f3; /* warm paper background */
+  --color-surface: #fffdf8; /* cards/raised — warm white, never pure #fff */
+  --color-ink: #2b2622; /* primary text */
+  --color-ink-soft: #5c544c; /* secondary text — AA on bg */
+  --color-line: #e7e0d6; /* hairline borders */
+  --color-accent: #b5562d; /* actions only: CTAs, links, active */
+  --color-accent-deep: #8e421f; /* hover/pressed accent */
+  --color-feature: #2e2a26; /* dark feature band */
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}

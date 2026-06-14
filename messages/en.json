@@ -1,5 +1,27 @@
 {
   "common": {
     "tagline": "Premium furnished rentals in Lisbon"
+  },
+  "blog": {
+    "metaTitle": "Blog — Central Hill",
+    "metaDescription": "Owner guides, short-term-rental tips and Lisbon living, from the Central Hill team.",
+    "eyebrow": "Journal",
+    "title": "Insights on owning, renting and living in Lisbon",
+    "intro": "Practical guides for property owners, short-term-rental know-how, and an insider's view of life in the city.",
+    "featured": "Featured",
+    "readArticle": "Read article",
+    "all": "All",
+    "empty": "No articles published yet — check back soon.",
+    "breadcrumb": "Blog",
+    "related": "Related articles",
+    "readingMinutes": "{minutes} min read",
+    "newsletter": {
+      "eyebrow": "Stay in the loop",
+      "title": "Get our latest guides in your inbox",
+      "description": "Occasional, useful updates on Lisbon property and hospitality. No noise.",
+      "placeholder": "Your email address",
+      "button": "Subscribe",
+      "success": "Thanks — you're on the list."
+    }
   }
 }

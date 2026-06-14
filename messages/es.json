@@ -1,5 +1,27 @@
 {
   "common": {
     "tagline": "Alquileres premium amueblados en Lisboa"
+  },
+  "blog": {
+    "metaTitle": "Blog — Central Hill",
+    "metaDescription": "Guías para propietarios, consejos de alquiler vacacional y vida en Lisboa, del equipo de Central Hill.",
+    "eyebrow": "Diario",
+    "title": "Ideas sobre tener, alquilar y vivir en Lisboa",
+    "intro": "Guías prácticas para propietarios, conocimiento sobre el alquiler de corta estancia y una mirada desde dentro de la vida en la ciudad.",
+    "featured": "Destacado",
+    "readArticle": "Leer artículo",
+    "all": "Todos",
+    "empty": "Aún no hay artículos publicados — vuelve pronto.",
+    "breadcrumb": "Blog",
+    "related": "Artículos relacionados",
+    "readingMinutes": "{minutes} min de lectura",
+    "newsletter": {
+      "eyebrow": "Mantente al día",
+      "title": "Recibe nuestras guías en tu correo",
+      "description": "Actualizaciones ocasionales y útiles sobre inmobiliaria y hospitalidad en Lisboa. Sin ruido.",
+      "placeholder": "Tu dirección de correo",
+      "button": "Suscribirse",
+      "success": "Gracias — ya estás en la lista."
+    }
   }
 }

@@ -1,5 +1,27 @@
 {
   "common": {
     "tagline": "Locations meublées premium à Lisbonne"
+  },
+  "blog": {
+    "metaTitle": "Blog — Central Hill",
+    "metaDescription": "Guides pour propriétaires, conseils de location courte durée et vie à Lisbonne, par l'équipe Central Hill.",
+    "eyebrow": "Journal",
+    "title": "Réflexions sur posséder, louer et vivre à Lisbonne",
+    "intro": "Des guides pratiques pour les propriétaires, un savoir-faire sur la location courte durée et un regard de l'intérieur sur la vie en ville.",
+    "featured": "À la une",
+    "readArticle": "Lire l'article",
+    "all": "Tous",
+    "empty": "Aucun article publié pour l'instant — revenez bientôt.",
+    "breadcrumb": "Blog",
+    "related": "Articles liés",
+    "readingMinutes": "{minutes} min de lecture",
+    "newsletter": {
+      "eyebrow": "Restez informé",
+      "title": "Recevez nos derniers guides par e-mail",
+      "description": "Des nouvelles occasionnelles et utiles sur l'immobilier et l'hospitalité à Lisbonne. Sans bruit.",
+      "placeholder": "Votre adresse e-mail",
+      "button": "S'abonner",
+      "success": "Merci — vous êtes inscrit."
+    }
   }
 }
