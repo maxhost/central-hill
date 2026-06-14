@@ -514,7 +514,8 @@
       "buildings": "Buildings",
       "apartments": "Apartments",
       "testimonials": "Testimonials",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "cities": "Cities"
     },
     "shell": {
       "signedInAs": "Signed in as",
@@ -646,6 +647,56 @@
       "addItem": "Add question",
       "noItems": "No questions yet.",
       "itemLabel": "Question {n}"
+    }
+  },
+  "geography": {
+    "admin": {
+      "title": "Cities",
+      "subtitle": "Cities and their neighbourhoods — the catalog taxonomy.",
+      "newCity": "New city",
+      "empty": "No cities yet",
+      "emptyHint": "Create your first city to scope buildings and guides.",
+      "newTitle": "New city",
+      "editTitle": "Edit city",
+      "formSubtitle": "Names and intro are authored in English; other languages are translated later.",
+      "backToList": "Back to cities",
+      "columns": {
+        "name": "Name",
+        "status": "Status",
+        "country": "Country",
+        "neighbourhoods": "Neighbourhoods"
+      },
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "sections": {
+        "identity": "Identity",
+        "hero": "Hero image",
+        "neighbourhoods": "Neighbourhoods"
+      },
+      "fields": {
+        "name": "Name",
+        "slug": "Slug",
+        "slugHint": "Used in public URLs; lowercase kebab-case.",
+        "country": "Country",
+        "status": "Status",
+        "position": "Position",
+        "positionHint": "Lower numbers appear first.",
+        "intro": "Intro",
+        "introHint": "Short editorial introduction (optional).",
+        "hero": "Hero image",
+        "heroHint": "Shown on city-scoped pages and guide headers.",
+        "nbName": "Name",
+        "nbSlug": "Slug"
+      },
+      "errors": {
+        "slugConflict": "That slug is already in use."
+      },
+      "noNeighbourhoods": "No neighbourhoods yet.",
+      "addNeighbourhood": "Add neighbourhood",
+      "neighbourhoodLabel": "Neighbourhood {n}"
     }
   }
 }

@@ -4,6 +4,7 @@ import { AdminShell, composeAdminNav } from "@slices/backoffice/contract";
 import { apartmentsAdminScreens } from "@slices/apartments/contract";
 import { buildingsAdminScreens } from "@slices/buildings/contract";
 import { faqAdminScreens } from "@slices/faq/contract";
+import { geographyAdminScreens } from "@slices/geography/contract";
 import { leadsAdminScreens } from "@slices/leads/contract";
 import { pagesAdminScreens } from "@slices/pages/contract";
 import { testimonialsAdminScreens } from "@slices/testimonials/contract";
@@ -24,6 +25,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
       ...apartmentsAdminScreens,
       ...testimonialsAdminScreens,
       ...faqAdminScreens,
+      ...geographyAdminScreens,
       ...leadsAdminScreens,
     ],
     staff.role,

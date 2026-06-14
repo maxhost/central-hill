@@ -514,7 +514,8 @@
       "buildings": "Immeubles",
       "apartments": "Appartements",
       "testimonials": "Témoignages",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "cities": "Villes"
     },
     "shell": {
       "signedInAs": "Connecté en tant que",
@@ -646,6 +647,56 @@
       "addItem": "Ajouter une question",
       "noItems": "Aucune question pour le moment.",
       "itemLabel": "Question {n}"
+    }
+  },
+  "geography": {
+    "admin": {
+      "title": "Villes",
+      "subtitle": "Villes et leurs quartiers — la taxonomie du catalogue.",
+      "newCity": "Nouvelle ville",
+      "empty": "Aucune ville pour le moment",
+      "emptyHint": "Créez votre première ville pour cadrer immeubles et guides.",
+      "newTitle": "Nouvelle ville",
+      "editTitle": "Modifier la ville",
+      "formSubtitle": "Les noms et l’introduction sont rédigés en anglais ; les autres langues sont traduites ensuite.",
+      "backToList": "Retour aux villes",
+      "columns": {
+        "name": "Nom",
+        "status": "Statut",
+        "country": "Pays",
+        "neighbourhoods": "Quartiers"
+      },
+      "status": {
+        "draft": "Brouillon",
+        "published": "Publié",
+        "archived": "Archivé"
+      },
+      "sections": {
+        "identity": "Identité",
+        "hero": "Image principale",
+        "neighbourhoods": "Quartiers"
+      },
+      "fields": {
+        "name": "Nom",
+        "slug": "Slug",
+        "slugHint": "Utilisé dans les URL publiques ; minuscules en kebab-case.",
+        "country": "Pays",
+        "status": "Statut",
+        "position": "Position",
+        "positionHint": "Les numéros les plus bas apparaissent en premier.",
+        "intro": "Introduction",
+        "introHint": "Brève introduction éditoriale (facultatif).",
+        "hero": "Image principale",
+        "heroHint": "Affichée sur les pages de ville et les en-têtes de guides.",
+        "nbName": "Nom",
+        "nbSlug": "Slug"
+      },
+      "errors": {
+        "slugConflict": "Ce slug est déjà utilisé."
+      },
+      "noNeighbourhoods": "Aucun quartier pour le moment.",
+      "addNeighbourhood": "Ajouter un quartier",
+      "neighbourhoodLabel": "Quartier {n}"
     }
   }
 }

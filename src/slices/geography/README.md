@@ -38,9 +38,10 @@ them too — this is the contract-level cross-slice invalidation channel (golden
 
 ## i18n
 
-No UI chrome of its own → no `messages/` namespace. Content translations resolve through
-`core/i18n` with the source-locale (`en`) fallback + `approved`-only gating for target locales
-(docs/seo-i18n.md). Per-locale public slugs live in the `slug` table.
+Public content has no UI chrome → content translations resolve through `core/i18n` with the
+source-locale (`en`) fallback + `approved`-only gating for target locales (docs/seo-i18n.md).
+Per-locale public slugs live in the `slug` table. The **backoffice** screens add a `geography`
+namespace (`geography.admin.*`) authored for en/pt/es/fr.
 
 ## Revalidation (`server/publish.ts`)
 
@@ -48,14 +49,32 @@ No UI chrome of its own → no `messages/` namespace. Content translations resol
 on publish. No paths to revalidate (no own routes); cascades to consumers via `GEO_TAGS.list` +
 the sitemap tag. Called by the geography admin actions once the backoffice shell (S12) lands.
 
-## Deferred (not in this slice's first cut)
+## Backoffice (`admin/`) — city editor with inline neighbourhoods (S12)
 
-- **Admin CRUD** (`admin/`): plugs into the backoffice shell **S12** — list/form + translation
-  review. Not buildable before S12.
-- **Sitemap entries**: if cities ever get standalone pages, **S13** enumerates them from
-  `listCityParams()` / the contract. Today guides (S6) own the city-scoped public URLs.
+Plugs into the backoffice shell. Contributes one `content`-group screen ("Cities",
+`admin/screens.ts` → `geographyAdminScreens`, order 50); the city list + editor mount under
+`app/(admin)/admin/(panel)/cities/…`. A city is edited together with its neighbourhoods.
+
+- `admin/validation.ts` — `citySaveInput` (city slug/status/country/hero + [T] name/intro,
+  plus a `neighbourhoods` array; each `id?`, slug, `min(1)` name).
+- `admin/queries.ts` (server-only) — `listCitiesAdmin` (every status, source names,
+  neighbourhood counts) and `getCityForEdit` (city + neighbourhoods source values + hero
+  preview). Not cache-wrapped.
+- `admin/actions.ts` (`"use server"`, `requireStaff`-gated) — `saveCity` (city + neighbourhood
+  slugs written identically across the four locales via the `core/i18n` write seam, ADR 0019;
+  source [T] names through the same seam; neighbourhoods upserted **by id** preserving
+  translations, removed ones purged; `revalidateCity`) and `deleteCity` (purges city +
+  neighbourhoods + all their translations/slugs).
+- `admin/ui/` — `list.tsx` (server) and `city-form.tsx` (client island; hero media picker +
+  inline neighbourhood rows).
+
+## Sitemap (deferred)
+
+If cities ever get standalone pages, **S13** enumerates them from `listCityParams()` / the
+contract. Today guides (S6) own the city-scoped public URLs.
 
 ## Tests
 
 `tests/geography.test.ts` — city/neighbourhood input validation + the translatable-path contract.
-Run: `npx tsx --test src/slices/geography/tests/geography.test.ts`.
+`tests/geography-admin.test.ts` — the admin `citySaveInput` schema. Run:
+`npx tsx --test src/slices/geography/tests/geography.test.ts src/slices/geography/tests/geography-admin.test.ts`.

@@ -514,7 +514,8 @@
       "buildings": "Edifícios",
       "apartments": "Apartamentos",
       "testimonials": "Testemunhos",
-      "faq": "FAQ"
+      "faq": "FAQ",
+      "cities": "Cidades"
     },
     "shell": {
       "signedInAs": "Sessão iniciada como",
@@ -646,6 +647,56 @@
       "addItem": "Adicionar pergunta",
       "noItems": "Ainda sem perguntas.",
       "itemLabel": "Pergunta {n}"
+    }
+  },
+  "geography": {
+    "admin": {
+      "title": "Cidades",
+      "subtitle": "Cidades e os seus bairros — a taxonomia do catálogo.",
+      "newCity": "Nova cidade",
+      "empty": "Ainda sem cidades",
+      "emptyHint": "Crie a sua primeira cidade para enquadrar edifícios e guias.",
+      "newTitle": "Nova cidade",
+      "editTitle": "Editar cidade",
+      "formSubtitle": "Os nomes e a introdução são redigidos em inglês; os outros idiomas são traduzidos depois.",
+      "backToList": "Voltar às cidades",
+      "columns": {
+        "name": "Nome",
+        "status": "Estado",
+        "country": "País",
+        "neighbourhoods": "Bairros"
+      },
+      "status": {
+        "draft": "Rascunho",
+        "published": "Publicado",
+        "archived": "Arquivado"
+      },
+      "sections": {
+        "identity": "Identidade",
+        "hero": "Imagem principal",
+        "neighbourhoods": "Bairros"
+      },
+      "fields": {
+        "name": "Nome",
+        "slug": "Slug",
+        "slugHint": "Usado nos URLs públicos; minúsculas em kebab-case.",
+        "country": "País",
+        "status": "Estado",
+        "position": "Posição",
+        "positionHint": "Números menores aparecem primeiro.",
+        "intro": "Introdução",
+        "introHint": "Breve introdução editorial (opcional).",
+        "hero": "Imagem principal",
+        "heroHint": "Mostrada nas páginas da cidade e nos cabeçalhos dos guias.",
+        "nbName": "Nome",
+        "nbSlug": "Slug"
+      },
+      "errors": {
+        "slugConflict": "Esse slug já está em uso."
+      },
+      "noNeighbourhoods": "Ainda sem bairros.",
+      "addNeighbourhood": "Adicionar bairro",
+      "neighbourhoodLabel": "Bairro {n}"
     }
   }
 }

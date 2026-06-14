@@ -51,3 +51,11 @@ export {
   getNeighbourhoodBySlug,
   listCityParams,
 } from "./server/queries";
+
+/**
+ * Backoffice contribution (S12). `geographyAdminScreens` is spread into
+ * `composeAdminNav` by the admin panel layout; the city list + editor (with inline
+ * neighbourhoods) mount under `app/(admin)/admin/(panel)/cities/…`. Pure data — safe
+ * to import anywhere.
+ */
+export { geographyAdminScreens } from "./admin/screens";
