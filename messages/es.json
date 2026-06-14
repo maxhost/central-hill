@@ -125,5 +125,78 @@
     "beds": "{count, plural, one {# cama} other {# camas}}",
     "checkAvailability": "Ver disponibilidad",
     "poweredBy": "Reservas con tecnología de Avantio — disponibilidad en tiempo real y confirmación inmediata."
+  },
+  "pages": {
+    "faqEyebrow": "Preguntas frecuentes",
+    "leadNote": "Gratis, inmediato, sin compromiso.",
+    "stats": {
+      "eyebrow": "En Cifras",
+      "title": "Una Empresa de Confianza y Líder del Sector"
+    },
+    "reviews": {
+      "eyebrow": "Reseñas",
+      "title": "Cuidamos de Nuestros Socios y Huéspedes",
+      "owner": "Propietario",
+      "guest": "Huésped"
+    },
+    "portfolio": {
+      "eyebrow": "El Portfolio",
+      "title": "Explora Nuestro Portfolio",
+      "intro": "Propiedades cuidadosamente seleccionadas en las ubicaciones más icónicas de Portugal — cada una elegida por su carácter y una experiencia excepcional.",
+      "viewAll": "Ver Todas las Propiedades",
+      "featured": "Destacado",
+      "view": "Ver →",
+      "apartments": "{count, plural, =0 {Sin apartamentos} one {# Apartamento} other {# Apartamentos}}",
+      "guests": "Hasta {count, plural, one {# huésped} other {# huéspedes}}"
+    },
+    "dualCta": {
+      "ownerEyebrow": "Propietarios",
+      "ownerTitle": "¿Tienes una propiedad? Empieza a ganar más — gratis, sin compromiso.",
+      "ownerBody": "Descubre cuánto podría generar tu propiedad con un análisis de rentabilidad gratuito y sin compromiso. Nuestro equipo evaluará tu propiedad y te responderá en 48 horas.",
+      "ownerCta": "Consigue Tu Estimación de Ingresos Gratuita",
+      "guestEyebrow": "Huéspedes",
+      "guestTitle": "¿Planeas una estancia? Encuentra tu apartamento perfecto.",
+      "guestBody": "Explora nuestro portfolio completo de apartamentos gestionados profesionalmente en las ubicaciones más solicitadas de Portugal — de estudios a apartamentos de 8 habitaciones, para cada tipo de estancia.",
+      "guestCta": "Ver Nuestros Apartamentos"
+    },
+    "home": {
+      "metaTitle": "Central Hill — Apartamentos Amueblados Premium en Portugal",
+      "metaDescription": "Apartamentos amueblados, gestionados profesionalmente y con diseño cuidado, en las ubicaciones más solicitadas de Portugal — y gestión integral para propietarios.",
+      "ownersEyebrow": "Para Propietarios",
+      "guestsEyebrow": "Para Huéspedes",
+      "storyEyebrow": "Nuestra Historia"
+    },
+    "owners": {
+      "metaTitle": "Para Propietarios — Central Hill",
+      "metaDescription": "Convierte tu propiedad en Portugal en un activo de alto rendimiento — totalmente gestionada, transparente y con retornos consistentemente por encima del mercado.",
+      "heroCta": "Consigue Tu Estimación de Ingresos Gratuita",
+      "navEstimate": "Estimación de Ingresos",
+      "servicesEyebrow": "Servicios al Propietario",
+      "popular": "Más Popular",
+      "estimateEyebrow": "Estimación de Ingresos Gratuita",
+      "faqTitle": "Preguntas de Propietarios, Resueltas"
+    },
+    "guests": {
+      "metaTitle": "Para Huéspedes — Central Hill",
+      "metaDescription": "Apartamentos gestionados profesionalmente en todo Portugal — cada propiedad totalmente equipada, verificada y con asistencia 24/7.",
+      "whyEyebrow": "Para Huéspedes",
+      "servicesEyebrow": "Servicios al Huésped",
+      "activitiesEyebrow": "Qué Hacer"
+    },
+    "realEstate": {
+      "metaTitle": "Inmobiliario e Inversión — Central Hill",
+      "metaDescription": "Gestión hotelera y alianzas de inversión de nivel institucional en Portugal — clases de activos, modelos y una trayectoria probada.",
+      "partnersEyebrow": "Con Quién Trabajamos",
+      "enquiryEyebrow": "Hablemos",
+      "enquiryCta": "Iniciar una Conversación",
+      "featuredModel": "Recomendado",
+      "faqTitle": "Preguntas de Inversores, Resueltas"
+    },
+    "about": {
+      "metaTitle": "Sobre Nosotros — Central Hill",
+      "metaDescription": "La empresa de gestión hotelera de confianza de Portugal desde 2012 — gestionando apartamentos premium y ofreciendo experiencias excepcionales a gran escala.",
+      "communityEyebrow": "Comunidad",
+      "contactNote": "Normalmente respondemos en 24 horas."
+    }
   }
 }

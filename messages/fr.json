@@ -125,5 +125,78 @@
     "beds": "{count, plural, one {# Lit} other {# Lits}}",
     "checkAvailability": "Voir les disponibilités",
     "poweredBy": "Réservation propulsée par Avantio — disponibilités en temps réel et confirmation immédiate."
+  },
+  "pages": {
+    "faqEyebrow": "FAQ",
+    "leadNote": "Gratuit, instantané, sans engagement.",
+    "stats": {
+      "eyebrow": "En Chiffres",
+      "title": "Une Entreprise de Confiance et Leader du Marché"
+    },
+    "reviews": {
+      "eyebrow": "Avis",
+      "title": "Nous Prenons Soin de Nos Partenaires et de Nos Voyageurs",
+      "owner": "Propriétaire",
+      "guest": "Voyageur"
+    },
+    "portfolio": {
+      "eyebrow": "Le Portfolio",
+      "title": "Découvrez Notre Portfolio",
+      "intro": "Des biens soigneusement sélectionnés dans les lieux les plus emblématiques du Portugal — chacun choisi pour son caractère et une expérience d'exception.",
+      "viewAll": "Voir Tous les Biens",
+      "featured": "À la une",
+      "view": "Voir →",
+      "apartments": "{count, plural, =0 {Aucun appartement} one {# Appartement} other {# Appartements}}",
+      "guests": "Jusqu'à {count, plural, one {# voyageur} other {# voyageurs}}"
+    },
+    "dualCta": {
+      "ownerEyebrow": "Propriétaires",
+      "ownerTitle": "Vous possédez un bien ? Gagnez plus — gratuitement, sans engagement.",
+      "ownerBody": "Découvrez ce que votre bien pourrait rapporter grâce à une analyse de rentabilité gratuite et sans engagement. Notre équipe évalue votre bien et vous répond sous 48 heures.",
+      "ownerCta": "Obtenez Votre Estimation de Revenus Gratuite",
+      "guestEyebrow": "Voyageurs",
+      "guestTitle": "Vous préparez un séjour ? Trouvez l'appartement idéal.",
+      "guestBody": "Parcourez notre portfolio complet d'appartements gérés par des professionnels dans les lieux les plus prisés du Portugal — du studio au 8 chambres, pour chaque type de séjour.",
+      "guestCta": "Voir Nos Appartements"
+    },
+    "home": {
+      "metaTitle": "Central Hill — Appartements Meublés Premium au Portugal",
+      "metaDescription": "Des appartements meublés, gérés par des professionnels et au design soigné, dans les lieux les plus prisés du Portugal — et une gestion complète pour les propriétaires.",
+      "ownersEyebrow": "Pour les Propriétaires",
+      "guestsEyebrow": "Pour les Voyageurs",
+      "storyEyebrow": "Notre Histoire"
+    },
+    "owners": {
+      "metaTitle": "Pour les Propriétaires — Central Hill",
+      "metaDescription": "Transformez votre bien au Portugal en un actif performant — entièrement géré, transparent et avec des rendements régulièrement supérieurs au marché.",
+      "heroCta": "Obtenez Votre Estimation de Revenus Gratuite",
+      "navEstimate": "Estimation de Revenus",
+      "servicesEyebrow": "Services aux Propriétaires",
+      "popular": "Le Plus Populaire",
+      "estimateEyebrow": "Estimation de Revenus Gratuite",
+      "faqTitle": "Questions des Propriétaires, Répondues"
+    },
+    "guests": {
+      "metaTitle": "Pour les Voyageurs — Central Hill",
+      "metaDescription": "Des appartements gérés par des professionnels partout au Portugal — chaque bien entièrement équipé, contrôlé et soutenu par une assistance 24/7.",
+      "whyEyebrow": "Pour les Voyageurs",
+      "servicesEyebrow": "Services aux Voyageurs",
+      "activitiesEyebrow": "Que Faire"
+    },
+    "realEstate": {
+      "metaTitle": "Immobilier et Investissement — Central Hill",
+      "metaDescription": "Gestion hôtelière et partenariats d'investissement de niveau institutionnel au Portugal — classes d'actifs, modèles et un historique éprouvé.",
+      "partnersEyebrow": "Avec Qui Nous Travaillons",
+      "enquiryEyebrow": "Discutons",
+      "enquiryCta": "Démarrer une Conversation",
+      "featuredModel": "Recommandé",
+      "faqTitle": "Questions des Investisseurs, Répondues"
+    },
+    "about": {
+      "metaTitle": "À Propos — Central Hill",
+      "metaDescription": "L'entreprise de gestion hôtelière de confiance du Portugal depuis 2012 — gérant des appartements premium et offrant des expériences d'exception à grande échelle.",
+      "communityEyebrow": "Communauté",
+      "contactNote": "Nous répondons généralement sous 24 heures."
+    }
   }
 }

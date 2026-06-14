@@ -4,7 +4,7 @@
  * arrays (the admin form shows N slots, never "add block") per ADR 0012.
  */
 import { z } from "zod";
-import { iconKey, tStr, tStrOpt } from "@core/validation/primitives";
+import { iconKey, tStr } from "@core/validation/primitives";
 
 /** The ubiquitous "icon + title + description" card (benefits, features…). */
 export const iconCard = z.object({

@@ -1,0 +1,98 @@
+# Slice `pages` (S9)
+
+The five **editable fixed marketing pages** — Home, Owners, Real Estate, About, and the
+Guest landing — stored one row per `key` in `page_content`, each validated by a fixed
+per-page Zod schema (ADR 0012 / `docs/data-model.md` → Page content model). This slice is
+**pure composition**: it owns only its own page rows and resolves their [T] blocks + media,
+then its UI embeds the dynamic/shared pieces through *other slices' contracts*. It holds **no
+foreign tables**. See `docs/vertical-slices.md` → S9.
+
+## Owns
+
+**Table** (`schema.ts`, migration `0000`):
+- `page_content` — `key (unique: home|owners|real_estate|about|guest), status (draft|
+  published), data jsonb (SOURCE-locale values, validated per `key`), og_image_media_id?`.
+  Target-locale [T] values live in the cross-cutting `translation` table with
+  `entity_type='page_content'`, `field='block:<dot.path>'` (e.g. `block:owners.benefits.0.title`).
+
+**Page schemas** (`schemas/`): one fixed Zod schema per page (`home`, `owners`, `real-estate`,
+`about`, `guest`) composed from `_shared.ts` (`iconCard`, `step`, `titledItem`, fixed/range
+array helpers). `schemas/index.ts` maps `key → schema` (`pageSchemas`) and derives
+`translatablePathsByPage` (the [T] leaf paths the translation pipeline extracts). Repeating
+groups are **fixed-count arrays** (e.g. exactly 6 benefits) — the admin form shows N slots.
+
+## Contract (`contract.ts`)
+
+Reads (all return `null` when the page is not published):
+- `getHomePage(locale)`, `getOwnersPage(locale)`, `getGuestPage(locale)`,
+  `getRealEstatePage(locale)`, `getAboutPage(locale)`.
+
+Each returns `PageResult<T> = { content, media, ogImage }`:
+- `content` — the page's fixed schema with every [T] leaf resolved for the locale (approved
+  target, else source `en`);
+- `media` — `Record<mediaId, MediaImageData>` for every `*_media_id` referenced in `content`
+  (hero videos read `.url`);
+- `ogImage` — the optional social-card override.
+
+Cache tag: `PAGE_TAGS.page(key)` = `page:<key>` (one singleton per page). Reads are
+`unstable_cache`-wrapped. The **embedded** slice data (featured buildings, testimonials, faq,
+settings) is fetched by the page-section components through those slices' own cached+tagged
+queries, so a publish there busts the composed page automatically (Next associates a route's
+full-route cache with every data-cache tag read during render) — this slice doesn't re-declare
+those tags.
+
+## UI
+
+Page compositions (`ui/*-page.tsx`): `HomePage`, `OwnersPage`, `GuestPage`, `RealEstatePage`,
+`AboutPage` — each fetches its `getXPage`, `notFound()`s when unpublished, and lays the page
+out from `content` + `media`. Shared pieces in `ui/components/`:
+- presentational (`blocks.tsx`: `SectionHeading`, `FeatureGrid`, `Steps`, `CtaRow`, `Prose`,
+  `Band`; `hero.tsx`: `PageHero` image/video);
+- data-composing (`stats-band.tsx` → settings, `testimonials-row.tsx` → testimonials,
+  `featured-portfolio.tsx` → buildings, `faq-section.tsx` → faq, `dual-cta.tsx` → settings,
+  `lead-cta.tsx` → settings contact).
+
+All cross-slice data is read **through contracts only** (golden rule 2) — e.g. the featured
+portfolio builds its own card from `BuildingSummary` rather than importing buildings' UI.
+
+## Routes (`src/app/[locale]/…`)
+
+`/[locale]` (home), `/owners`, `/guests`, `/real-estate`, `/about` — each ISR (`revalidate =
+3600`), prebuilds all 4 locales, and emits canonical + `hreflang` alternates via
+`buildMetadata`. Page meta titles/descriptions come from the `pages` i18n namespace; the OG
+image override comes from the page row.
+
+## i18n
+
+UI-chrome strings live in the root `messages/<locale>.json` under the `pages` namespace
+(authored for en/pt/es/fr): per-page meta, section connective labels (stats/reviews/portfolio
+eyebrows), the dual-CTA copy, and plural helpers (`portfolio.apartments`, `portfolio.guests`).
+All page *content* prose are [T] DB fields resolved through `core/i18n`.
+
+## Resolution internals (`server/`)
+
+- `overlay.ts` (pure, DB-free, unit tested): `expand` (pattern → concrete numeric paths),
+  `overlayTranslations` (clone + overlay approved leaves, source fallback), `collectMediaIds`.
+- `resolve.ts` (`server-only`): wraps the overlay with the `core/i18n` translation resolver
+  and resolves media via `core/media`.
+- `queries.ts`: the cached public reads.
+- `publish.ts`: `revalidatePage(key)` — busts `page:<key>` and `revalidatePath` for all 4
+  locales (called by the S12 admin publish action).
+
+## Deferred / escalations / handoffs
+
+- **Lead forms (S10)**: the earnings-estimate / deal-enquiry / contact form *fields* belong to
+  the `leads` slice. `lead-cta.tsx` renders the section copy with a direct contact CTA (never a
+  non-functional form); swap in the leads widget via its contract once S10 lands.
+- **Richer JSON-LD** (`Organization`/`LocalBusiness`/`FAQPage`/`Service`): belongs in
+  `core/seo` (**S13**, ADR — golden rule 3), not hand-written here.
+- **Page CRUD + translation review** (`admin/`): plugs into the backoffice shell **S12**.
+- **Seed content**: no `page_content` rows exist yet — pages `notFound()` until the S12 admin
+  (or a seed) inserts the published source `data`. The full read/render path is in place.
+
+## Tests
+
+`tests/pages.test.ts` — the per-page translatable-path contract + the pure overlay logic
+(`expand`, `overlayTranslations` with source fallback, `collectMediaIds`) + schema validation
+(fixed-count arity, unknown key). Run:
+`npx tsx --test src/slices/pages/tests/pages.test.ts`.
