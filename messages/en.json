@@ -115,5 +115,15 @@
       "contact": "Contact",
       "rights": "© {year} Central Hill Apartments · Lisbon, Portugal"
     }
+  },
+  "apartments": {
+    "eyebrow": "Bookable Units",
+    "title": "Apartments in this Building",
+    "intro": "Distinct homes under one roof. Choose the layout that suits your stay and book in real time — availability and pricing are live through our booking engine.",
+    "bedrooms": "{count, plural, =0 {Studio} one {# Bedroom} other {# Bedrooms}}",
+    "guests": "Up to {count, plural, one {# Guest} other {# Guests}}",
+    "beds": "{count, plural, one {# Bed} other {# Beds}}",
+    "checkAvailability": "Check availability",
+    "poweredBy": "Booking powered by Avantio — real-time availability and instant confirmation."
   }
 }
