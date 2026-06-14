@@ -22,6 +22,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0013 — Blog post body as a constrained portable-JSON block set](#0013)
 - [0014 — Lead capture shape: `lead` + `lead_field` KV + explicit GDPR consent](#0014)
 - [0015 — Data residency: production Neon project in an EU region](#0015)
+- [0016 — `core/email`: provider-interface seam, vendor deferred](#0016)
 
 ---
 
@@ -154,3 +155,19 @@ Auth / a data API is ever exposed). **Consequences:** GDPR residency satisfied a
 client; clean dev/prod split; prod creation is a one-time manual step outside the MCP. R2 buckets and the
 email/LLM processors should likewise prefer EU. **Status:** Accepted. *(Dev sandbox
 `weathered-cake-89640915` in `us-east-1`; prod = client account, EU, from the `drizzle/` SQL.)*
+
+## 0016 — `core/email`: provider-interface seam, vendor deferred <a id="0016"></a>
+**Context:** Refines **0011**. S10 leads must "persist → `core/email` notifies staff → backoffice
+inbox". The kernel slot `core/email` was specified (CLAUDE.md) but unbuilt, and no transactional
+vendor/dep has been chosen. We needed a kernel email capability now without (a) prematurely picking
+a vendor + adding a dependency, or (b) letting a mail failure ever lose a captured lead.
+**Decision:** Add `core/email` as a **thin provider-interface seam** (mirrors `core/i18n/translate`):
+a typed `EmailMessage` + `EmailProvider` interface and a single `sendEmail()` entry point that
+**never throws** (returns `{ ok:false, error }`). Provider selection is dependency-free for now —
+**dev** logs to the console (so local lead notifications are visible), **prod-without-a-vendor**
+no-ops. Email is **best-effort**: leads are durably persisted in Neon + the inbox (S12) regardless.
+A staff recipient is read from a new optional env var `LEAD_NOTIFY_TO`; sender from existing
+`EMAIL_FROM`. **Consequences:** S10 ships against a stable kernel contract with no new dependency.
+Wiring a real transactional vendor (Resend/Postmark/SES, **EU region** per ADR 0015) is a later
+additive step — add the dep + an `EmailProvider` impl + select it when `EMAIL_API_KEY`/`EMAIL_FROM`
+are set — with **no call-site changes**. **Status:** Accepted.

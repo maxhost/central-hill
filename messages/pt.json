@@ -198,5 +198,48 @@
       "communityEyebrow": "Comunidade",
       "contactNote": "Normalmente respondemos em 24 horas."
     }
+  },
+  "leads": {
+    "submitting": "A enviar…",
+    "error": "Algo correu mal. Tente novamente ou contacte-nos por email.",
+    "consent": {
+      "notice": "Concordo que a Central Hill armazene e processe os meus dados para responder ao meu pedido, de acordo com a Política de Privacidade.",
+      "newsletter": "Sim, desejo receber novidades e ofertas da Central Hill por email. Posso cancelar a subscrição a qualquer momento."
+    },
+    "fields": {
+      "name": "Nome completo",
+      "email": "Email",
+      "subject": "Assunto",
+      "message": "Mensagem",
+      "property_address": "Morada do imóvel",
+      "num_properties": "Número de imóveis",
+      "num_bedrooms": "Quartos (total)",
+      "company_name": "Empresa",
+      "contact_name": "Nome do contacto",
+      "contact_title": "Cargo",
+      "phone": "Telefone",
+      "country": "País",
+      "asset_type": "Tipo de ativo",
+      "units_count": "Número de unidades",
+      "locations": "Localizações pretendidas",
+      "notes": "Algo mais que devamos saber?"
+    },
+    "contact": {
+      "submit": "Enviar mensagem",
+      "success": "Obrigado — a sua mensagem está a caminho. Entraremos em contacto em breve."
+    },
+    "newsletter": {
+      "submit": "Subscrever",
+      "placeholder": "voce@email.com",
+      "success": "Subscrição confirmada. Bem-vindo à Central Hill."
+    },
+    "earnings": {
+      "submit": "Pedir a minha estimativa",
+      "success": "Obrigado — vamos preparar a sua estimativa de rendimento e responder em 48 horas."
+    },
+    "deal": {
+      "submit": "Enviar pedido",
+      "success": "Obrigado — a nossa equipa de investimento vai analisar o seu pedido e responder em breve."
+    }
   }
 }

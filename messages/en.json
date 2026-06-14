@@ -198,5 +198,48 @@
       "communityEyebrow": "Community",
       "contactNote": "We typically reply within 24 hours."
     }
+  },
+  "leads": {
+    "submitting": "Sending…",
+    "error": "Something went wrong. Please try again, or email us directly.",
+    "consent": {
+      "notice": "I agree that Central Hill may store and process my details to respond to my enquiry, in line with the Privacy Policy.",
+      "newsletter": "Yes, I'd like to receive Central Hill news and offers by email. I can unsubscribe at any time."
+    },
+    "fields": {
+      "name": "Full name",
+      "email": "Email",
+      "subject": "Subject",
+      "message": "Message",
+      "property_address": "Property address",
+      "num_properties": "Number of properties",
+      "num_bedrooms": "Bedrooms (total)",
+      "company_name": "Company",
+      "contact_name": "Contact name",
+      "contact_title": "Job title",
+      "phone": "Phone",
+      "country": "Country",
+      "asset_type": "Asset type",
+      "units_count": "Number of units",
+      "locations": "Target locations",
+      "notes": "Anything else we should know?"
+    },
+    "contact": {
+      "submit": "Send message",
+      "success": "Thanks — your message is on its way. We'll be in touch shortly."
+    },
+    "newsletter": {
+      "submit": "Subscribe",
+      "placeholder": "you@email.com",
+      "success": "You're subscribed. Welcome to Central Hill."
+    },
+    "earnings": {
+      "submit": "Request my estimate",
+      "success": "Thanks — we'll prepare your earnings estimate and get back to you within 48 hours."
+    },
+    "deal": {
+      "submit": "Submit enquiry",
+      "success": "Thanks — our investment team will review your enquiry and respond shortly."
+    }
   }
 }
