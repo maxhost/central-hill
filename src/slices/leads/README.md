@@ -73,15 +73,13 @@ UI-chrome strings live in the root `messages/<locale>.json` under the `leads` na
 consent notices. The consent notice the user sees is sent back as `consent_text` and stored
 verbatim, so the proof survives later copy changes (ADR 0014).
 
-## Integration handoffs (other slices, after S10)
+## Integration handoffs (other slices)
 
-- **S9 pages** — `lead-cta.tsx` should embed `EarningsEstimateForm` (Owners),
-  `DealEnquiryForm` (Real Estate) and `ContactForm` (About) via this contract, replacing the
-  interim contact CTA. (Edit is pages-owned.)
-- **S5 blog** — `newsletter-signup.tsx` should call `submitLead({ kind: "newsletter", … })`
-  or embed `NewsletterForm`. (Edit is blog-owned.)
-- **S12 backoffice** — leads inbox: list/filter by `kind`/`status`, assignment, and the
-  consent audit trail. Reads `lead` + `lead_field` directly in its admin slice.
+- **S9 pages** — ✅ done: `lead-cta.tsx` embeds `EarningsEstimateForm` (Owners), and the
+  Real Estate / About blocks embed `DealEnquiryForm` / `ContactForm` via this contract.
+- **S5 blog** — ✅ done: `newsletter-signup.tsx` wraps `NewsletterForm` (`theme="dark"`).
+- **S12 backoffice** — ⏳ pending: leads inbox — list/filter by `kind`/`status`, assignment,
+  and the consent audit trail. Reads `lead` + `lead_field` directly in its admin slice.
 
 ## Tests
 
