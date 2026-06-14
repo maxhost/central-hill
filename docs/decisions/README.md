@@ -24,6 +24,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0015 — Data residency: production Neon project in an EU region](#0015)
 - [0016 — `core/email`: provider-interface seam, vendor deferred](#0016)
 - [0017 — Backoffice routing: interim path `/admin`; host split deferred](#0017)
+- [0018 — Media R2 upload: presigned direct PUT + serve-time resizing](#0018)
 
 ---
 
@@ -189,3 +190,61 @@ works on localhost with no setup. The eventual `backoffice.*` host split (0004) 
 additive middleware rewrite of `backoffice.*` → `/admin/*` with **no change to these routes**. The
 backoffice owns no tables (auth tables belong to `core/auth`), so there is no migration.
 **Status:** Accepted.
+
+## 0018 — Media R2 upload: presigned direct PUT + serve-time resizing <a id="0018"></a>
+**Context:** `core/media` ships only the **read** half (`loadMedia`, `mediaUrl`, `MediaImage`) and the
+`media_asset` table (migration `0000`). The **upload/ingest** half is unbuilt and is a kernel addition
+(golden rule 3 → ADR). Three forks needed deciding: (1) **how bytes reach R2** — through our
+Next/Netlify function (server action) vs. **directly from the admin browser**; (2) **whether we
+pre-generate a responsive derivative ladder** in R2 or resize at request time; (3) **what we add as
+dependencies** (no S3/image deps exist yet; "no tech without an ADR"). Constraints: media includes
+**video heroes** (schema chooses the player by `mime`), so files can be tens of MB — past Netlify's
+synchronous-function body limit (~6 MB); the admin is **low-volume, staff-only** (ADR 0009/0017);
+performance is the product (CLS≈0 needs `width`/`height`; LCP wants a blurhash placeholder); EU data
+residency is the default (ADR 0015); the public hot path stays DB-free/CDN-served (ADR 0002/0003).
+
+**Decision:**
+1. **Upload = presigned direct PUT, browser → R2, two-phase**, uniform for images *and* video.
+   (a) **Presign:** a `requireStaff`-gated server action mints the `media_asset` **id** (uuid) and an
+   `r2_key = "${id}/${safeFilename}"`, then returns a short-lived **S3 presigned PUT URL** scoped to
+   that key with a pinned `Content-Type` and a **max size** constraint; mime is checked against a
+   server-side allowlist (`image/*` subset + `video/mp4`,`video/webm`). (b) The browser **PUTs the
+   file straight to R2** — bytes never transit our functions, so the ~6 MB limit is irrelevant and
+   video heroes upload fine. (c) **Finalize:** the browser calls a second `requireStaff` server action
+   (`finalizeUpload`) which verifies the object exists (HEAD) and **inserts the `media_asset` row**.
+2. **No derivative ladder is stored.** Only the **original** lands in R2. Responsive `srcset` resizing
+   is delegated to **Next/Image** at request time, from the original — consistent with the existing
+   `MediaImage` (`next/image` + explicit dims). The R2 public host is added to `next.config.ts`
+   `images.remotePatterns`. **Portability rationale:** `next/image` is a *Next.js* abstraction, not a
+   host feature — on Netlify it uses Netlify's optimizer, and a future **Netlify→Vercel** migration
+   (ADR 0003 is "revisit-only") swaps to Vercel's optimizer with **zero code/content change**. A
+   pre-baked ladder would remove all host-optimizer dependency but reimplements what the platform gives
+   free (incl. per-browser AVIF/WebP) at extra storage+code cost. If full host-independence is ever
+   wanted, the `MediaImage` component is the **single seam** to plug a **custom Cloudflare Image
+   Resizing loader** (optimizer next to the R2 bytes, host-neutral) — an **additive** change needing no
+   schema/content migration. So serve-time resizing is both production-grade and the lowest-friction
+   portable default.
+3. **Derived metadata is computed server-side on finalize**, not trusted from the client: the finalize
+   action **re-reads the object from R2** (R2 egress is free) and, for images, uses **`sharp`** to read
+   `width`/`height` and a downscaled pixel buffer, then **`blurhash`** to encode the placeholder; these
+   populate `media_asset.width/height/blurhash`. For video, those stay `null` (a poster/blurhash flow
+   is deferred). `alt` is authored later in admin and translated via the `translation` table (existing).
+4. **Dependencies added** (the tech this ADR authorizes): **`@aws-sdk/client-s3`** +
+   **`@aws-sdk/s3-request-presigner`** (R2 is S3-compatible), **`sharp`**, **`blurhash`**. All are
+   **server-only**, imported under `core/media/server/` — never by public render code.
+5. **Kernel surface added to `core/media`** (additive; read API unchanged): `server/r2.ts` (the S3
+   client built from existing `R2_*` env vars, EU-jurisdiction bucket per ADR 0015) and three functions
+   exported from `index.ts` — `presignUpload(input)`, `finalizeUpload(input)`, `deleteMedia(id)`
+   (removes row + object). The **media admin UI** that calls these lives in the **S12 backoffice** /
+   each slice's `admin/` (consumers), not in the kernel. No new migration (`media_asset` already exists).
+
+**Consequences:** One upload path for all media; large video heroes work without a server relay; our
+functions stay light (sign + HEAD + small re-read, no multi-MB request bodies). The hot path is
+unchanged and DB-free; correctness-critical metadata (dims/blurhash) is server-computed, not
+client-trusted. Cost is a presign + a finalize round trip and one server-side re-read per asset
+(acceptable at staff volume; R2 egress free). Trade-offs accepted: **no pre-baked size ladder** (we
+lean on the Image CDN — revisit only if a derivative-cache need appears); **video poster/blurhash
+deferred**; **R2 CORS must allow PUT from the admin origin** (ops config); **orphan/refcount GC is
+deferred** (`deleteMedia` is explicit; safe-delete checks belong to the admin slices). The R2 bucket
+must be created **EU-jurisdiction** with a public base domain (`R2_PUBLIC_BASE_URL`). **Status:**
+Accepted.

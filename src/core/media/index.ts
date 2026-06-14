@@ -1,8 +1,11 @@
 /**
  * Public surface of `core/media`. R2-backed media reads + the responsive image
- * component. The S3/R2 upload pipeline (admin-side) lands with the media admin.
+ * component, plus the presigned upload pipeline (ADR 0018, server-only — consumed by
+ * the `requireStaff`-gated media admin actions).
  */
 export type { MediaAsset } from "./queries";
 export { loadMedia } from "./queries";
 export type { MediaImageData } from "./image";
 export { MediaImage, mediaUrl } from "./image";
+export type { FinalizeInput, PresignInput, PresignResult } from "./server/ingest";
+export { deleteMedia, finalizeUpload, presignUpload } from "./server/ingest";
