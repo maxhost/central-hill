@@ -62,9 +62,6 @@ export async function BlogListing({ locale }: { locale: Locale }) {
             eyebrow={t("newsletter.eyebrow")}
             title={t("newsletter.title")}
             description={t("newsletter.description")}
-            placeholder={t("newsletter.placeholder")}
-            button={t("newsletter.button")}
-            success={t("newsletter.success")}
           />
         </Container>
       </Section>
