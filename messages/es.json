@@ -1,4 +1,24 @@
 {
+  "guides": {
+    "metaTitle": "Qué Hacer en Lisboa — Guías de Ciudad de Central Hill",
+    "metaDescription": "Guías de ciudad seleccionadas por quienes viven aquí: dónde comer, nadar, explorar y relajarse por Portugal.",
+    "eyebrow": "Qué Hacer",
+    "title": "Guías de ciudad, por quienes viven aquí",
+    "intro": "Dónde comer, dónde nadar y dónde pasear: nuestras guías probadas en el barrio para aprovechar al máximo tu estancia.",
+    "citiesEyebrow": "Explorar",
+    "guidesIn": "Guías de {city}",
+    "empty": "Nuestras guías de ciudad están en camino.",
+    "breadcrumb": "Qué Hacer",
+    "viewGuide": "Abrir guía",
+    "localTip": "Consejo local",
+    "address": "Dirección",
+    "hours": "Horario",
+    "phone": "Teléfono",
+    "website": "Web",
+    "book": "Reservar",
+    "directions": "Cómo llegar",
+    "backToGuides": "Todas las guías"
+  },
   "common": {
     "tagline": "Alquileres premium amueblados en Lisboa"
   },

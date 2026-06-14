@@ -1,4 +1,24 @@
 {
+  "guides": {
+    "metaTitle": "Que Faire à Lisbonne — Guides de Ville Central Hill",
+    "metaDescription": "Des guides de ville sélectionnés par ceux qui y vivent : où manger, se baigner, explorer et se détendre au Portugal.",
+    "eyebrow": "Que Faire",
+    "title": "Des guides de ville, par ceux qui y vivent",
+    "intro": "Où manger, où se baigner et où flâner — nos guides testés dans le quartier pour profiter au mieux de votre séjour.",
+    "citiesEyebrow": "Explorer",
+    "guidesIn": "Guides pour {city}",
+    "empty": "Nos guides de ville arrivent bientôt.",
+    "breadcrumb": "Que Faire",
+    "viewGuide": "Ouvrir le guide",
+    "localTip": "Astuce locale",
+    "address": "Adresse",
+    "hours": "Horaires",
+    "phone": "Téléphone",
+    "website": "Site web",
+    "book": "Réserver",
+    "directions": "Itinéraire",
+    "backToGuides": "Tous les guides"
+  },
   "common": {
     "tagline": "Locations meublées premium à Lisbonne"
   },

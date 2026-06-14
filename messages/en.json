@@ -1,4 +1,24 @@
 {
+  "guides": {
+    "metaTitle": "What to Do in Lisbon — Central Hill City Guides",
+    "metaDescription": "Curated city guides from the people who live here: where to eat, swim, explore and unwind across Portugal.",
+    "eyebrow": "What to Do",
+    "title": "City guides, by the people who live here",
+    "intro": "Where to eat, where to swim, and where to wander — our neighbourhood-tested guides to making the most of your stay.",
+    "citiesEyebrow": "Explore",
+    "guidesIn": "Guides for {city}",
+    "empty": "Our city guides are on their way.",
+    "breadcrumb": "What to Do",
+    "viewGuide": "Open guide",
+    "localTip": "Local tip",
+    "address": "Address",
+    "hours": "Hours",
+    "phone": "Phone",
+    "website": "Website",
+    "book": "Book",
+    "directions": "Directions",
+    "backToGuides": "All guides"
+  },
   "common": {
     "tagline": "Premium furnished rentals in Lisbon"
   },

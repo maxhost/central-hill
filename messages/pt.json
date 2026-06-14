@@ -1,4 +1,24 @@
 {
+  "guides": {
+    "metaTitle": "O Que Fazer em Lisboa — Guias da Cidade Central Hill",
+    "metaDescription": "Guias da cidade selecionados por quem cá vive: onde comer, nadar, explorar e descansar por Portugal.",
+    "eyebrow": "O Que Fazer",
+    "title": "Guias da cidade, por quem cá vive",
+    "intro": "Onde comer, onde nadar e onde passear — os nossos guias testados no bairro para aproveitar ao máximo a sua estadia.",
+    "citiesEyebrow": "Explorar",
+    "guidesIn": "Guias para {city}",
+    "empty": "Os nossos guias da cidade estão a caminho.",
+    "breadcrumb": "O Que Fazer",
+    "viewGuide": "Abrir guia",
+    "localTip": "Dica local",
+    "address": "Morada",
+    "hours": "Horário",
+    "phone": "Telefone",
+    "website": "Site",
+    "book": "Reservar",
+    "directions": "Direções",
+    "backToGuides": "Todos os guias"
+  },
   "common": {
     "tagline": "Alojamento mobilado premium em Lisboa"
   },
