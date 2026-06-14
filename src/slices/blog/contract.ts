@@ -68,3 +68,11 @@ export {
   getFeaturedPost,
   listPostParams,
 } from "./server/queries";
+
+/**
+ * Backoffice contribution (S12). `blogAdminScreens` is spread into `composeAdminNav`
+ * by the admin panel layout; the category/author managers + post list + editors mount
+ * under `app/(admin)/admin/(panel)/{blog-categories,authors,posts}/…`. Pure data —
+ * safe to import anywhere.
+ */
+export { blogAdminScreens } from "./admin/screens";

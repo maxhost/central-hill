@@ -42,6 +42,161 @@
       "placeholder": "O seu endereço de email",
       "button": "Subscrever",
       "success": "Obrigado — já está na lista."
+    },
+    "admin": {
+      "status": {
+        "draft": "Rascunho",
+        "published": "Publicado",
+        "archived": "Arquivado"
+      },
+      "cat": {
+        "title": "Categorias do blogue",
+        "subtitle": "Agrupamentos do blogue editorial.",
+        "newCategory": "Nova categoria",
+        "empty": "Ainda sem categorias",
+        "emptyHint": "Crie a sua primeira categoria para agrupar artigos.",
+        "editTitle": "Editar categoria",
+        "newTitle": "Nova categoria",
+        "formSubtitle": "O nome é redigido em inglês; os outros idiomas são traduzidos depois.",
+        "backToList": "Voltar às categorias",
+        "inUse": "Esta categoria ainda tem artigos e não pode ser eliminada.",
+        "columns": {
+          "name": "Nome",
+          "slug": "Slug",
+          "color": "Cor"
+        },
+        "sections": {
+          "details": "Detalhes"
+        },
+        "fields": {
+          "name": "Nome",
+          "slug": "Slug",
+          "color": "Cor",
+          "colorHint": "Hex, ex.: #8a8178.",
+          "position": "Posição",
+          "positionHint": "Números menores aparecem primeiro."
+        }
+      },
+      "author": {
+        "title": "Autores",
+        "subtitle": "Assinaturas do blogue editorial.",
+        "newAuthor": "Novo autor",
+        "empty": "Ainda sem autores",
+        "emptyHint": "Crie um autor para atribuir os artigos.",
+        "editTitle": "Editar autor",
+        "newTitle": "Novo autor",
+        "formSubtitle": "O nome e a biografia são redigidos em inglês; os outros idiomas são traduzidos depois.",
+        "backToList": "Voltar aos autores",
+        "inUse": "Este autor ainda tem artigos e não pode ser eliminado.",
+        "columns": {
+          "name": "Nome",
+          "slug": "Slug",
+          "status": "Estado"
+        },
+        "sections": {
+          "details": "Detalhes",
+          "avatar": "Avatar"
+        },
+        "fields": {
+          "name": "Nome",
+          "slug": "Slug",
+          "status": "Estado",
+          "bio": "Biografia",
+          "avatar": "Imagem de avatar"
+        }
+      },
+      "post": {
+        "title": "Artigos",
+        "subtitle": "Artigos do blogue editorial.",
+        "newPost": "Novo artigo",
+        "empty": "Ainda sem artigos",
+        "emptyHint": "Crie primeiro uma categoria e um autor e depois escreva um artigo.",
+        "editTitle": "Editar artigo",
+        "newTitle": "Novo artigo",
+        "formSubtitle": "O texto é redigido em inglês; os outros idiomas são traduzidos depois.",
+        "backToList": "Voltar aos artigos",
+        "featured": "Destaque",
+        "columns": {
+          "title": "Título",
+          "status": "Estado",
+          "category": "Categoria",
+          "featured": "Destaque"
+        },
+        "sections": {
+          "status": "Estado",
+          "identity": "Identidade",
+          "media": "Multimédia",
+          "body": "Conteúdo",
+          "cta": "Apelo à ação",
+          "related": "Artigos relacionados",
+          "seo": "SEO"
+        },
+        "fields": {
+          "status": "Estado",
+          "publishedAt": "Publicado em",
+          "publishedAtHint": "Deixe em branco para manter por publicar.",
+          "readingMinutes": "Minutos de leitura",
+          "featured": "Destaque",
+          "featuredLabel": "Destacar na página inicial do blogue",
+          "category": "Categoria",
+          "author": "Autor",
+          "choose": "Escolher…",
+          "title": "Título",
+          "slug": "Slug",
+          "slugHint": "Usado nos URLs públicos; minúsculas em kebab-case.",
+          "excerpt": "Resumo",
+          "cover": "Imagem de capa",
+          "ogImage": "Imagem social",
+          "ogImageHint": "Substituição opcional para cartões sociais.",
+          "ctaLabel": "Texto do CTA",
+          "ctaUrl": "URL do CTA",
+          "metaTitle": "Meta título",
+          "metaDescription": "Meta descrição"
+        },
+        "errors": {
+          "coverRequired": "É obrigatória uma imagem de capa.",
+          "slugConflict": "Esse slug já está em uso."
+        },
+        "related": {
+          "empty": "Ainda não há outros artigos para relacionar.",
+          "hint": "Escolha até {max} artigos relacionados."
+        },
+        "body": {
+          "empty": "Ainda sem blocos de conteúdo.",
+          "addBlock": "Adicionar bloco:",
+          "addItem": "Adicionar item",
+          "dividerNote": "Um separador horizontal.",
+          "types": {
+            "heading": "Título",
+            "paragraph": "Parágrafo",
+            "list": "Lista",
+            "image": "Imagem",
+            "quote": "Citação",
+            "callout": "Destaque",
+            "divider": "Separador",
+            "cta": "CTA"
+          },
+          "variants": {
+            "info": "Informação",
+            "tip": "Dica",
+            "warning": "Aviso",
+            "note": "Nota"
+          },
+          "fields": {
+            "level": "Nível",
+            "number": "Número",
+            "text": "Texto",
+            "ordered": "Lista ordenada (numerada)",
+            "image": "Imagem",
+            "caption": "Legenda",
+            "alt": "Texto alternativo",
+            "attribution": "Atribuição",
+            "variant": "Variante",
+            "ctaLabel": "Texto",
+            "ctaUrl": "URL"
+          }
+        }
+      }
     }
   },
   "buildings": {
@@ -607,7 +762,10 @@
       "faq": "FAQ",
       "cities": "Cidades",
       "serviceCategories": "Categorias de serviços",
-      "services": "Serviços"
+      "services": "Serviços",
+      "blogCategories": "Categorias do blogue",
+      "authors": "Autores",
+      "posts": "Artigos"
     },
     "shell": {
       "signedInAs": "Sessão iniciada como",

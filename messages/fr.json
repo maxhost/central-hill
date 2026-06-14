@@ -42,6 +42,161 @@
       "placeholder": "Votre adresse e-mail",
       "button": "S'abonner",
       "success": "Merci — vous êtes inscrit."
+    },
+    "admin": {
+      "status": {
+        "draft": "Brouillon",
+        "published": "Publié",
+        "archived": "Archivé"
+      },
+      "cat": {
+        "title": "Catégories du blog",
+        "subtitle": "Regroupements du blog éditorial.",
+        "newCategory": "Nouvelle catégorie",
+        "empty": "Aucune catégorie pour le moment",
+        "emptyHint": "Créez votre première catégorie pour regrouper les articles.",
+        "editTitle": "Modifier la catégorie",
+        "newTitle": "Nouvelle catégorie",
+        "formSubtitle": "Le nom est rédigé en anglais ; les autres langues sont traduites ensuite.",
+        "backToList": "Retour aux catégories",
+        "inUse": "Cette catégorie contient encore des articles et ne peut pas être supprimée.",
+        "columns": {
+          "name": "Nom",
+          "slug": "Slug",
+          "color": "Couleur"
+        },
+        "sections": {
+          "details": "Détails"
+        },
+        "fields": {
+          "name": "Nom",
+          "slug": "Slug",
+          "color": "Couleur",
+          "colorHint": "Hex, p. ex. #8a8178.",
+          "position": "Position",
+          "positionHint": "Les numéros les plus bas apparaissent en premier."
+        }
+      },
+      "author": {
+        "title": "Auteurs",
+        "subtitle": "Signatures du blog éditorial.",
+        "newAuthor": "Nouvel auteur",
+        "empty": "Aucun auteur pour le moment",
+        "emptyHint": "Créez un auteur pour attribuer les articles.",
+        "editTitle": "Modifier l’auteur",
+        "newTitle": "Nouvel auteur",
+        "formSubtitle": "Le nom et la bio sont rédigés en anglais ; les autres langues sont traduites ensuite.",
+        "backToList": "Retour aux auteurs",
+        "inUse": "Cet auteur a encore des articles et ne peut pas être supprimé.",
+        "columns": {
+          "name": "Nom",
+          "slug": "Slug",
+          "status": "Statut"
+        },
+        "sections": {
+          "details": "Détails",
+          "avatar": "Avatar"
+        },
+        "fields": {
+          "name": "Nom",
+          "slug": "Slug",
+          "status": "Statut",
+          "bio": "Biographie",
+          "avatar": "Image d’avatar"
+        }
+      },
+      "post": {
+        "title": "Articles",
+        "subtitle": "Articles du blog éditorial.",
+        "newPost": "Nouvel article",
+        "empty": "Aucun article pour le moment",
+        "emptyHint": "Créez d’abord une catégorie et un auteur, puis rédigez un article.",
+        "editTitle": "Modifier l’article",
+        "newTitle": "Nouvel article",
+        "formSubtitle": "Le texte est rédigé en anglais ; les autres langues sont traduites ensuite.",
+        "backToList": "Retour aux articles",
+        "featured": "À la une",
+        "columns": {
+          "title": "Titre",
+          "status": "Statut",
+          "category": "Catégorie",
+          "featured": "À la une"
+        },
+        "sections": {
+          "status": "Statut",
+          "identity": "Identité",
+          "media": "Médias",
+          "body": "Contenu",
+          "cta": "Appel à l’action",
+          "related": "Articles liés",
+          "seo": "SEO"
+        },
+        "fields": {
+          "status": "Statut",
+          "publishedAt": "Publié le",
+          "publishedAtHint": "Laissez vide pour le garder non publié.",
+          "readingMinutes": "Minutes de lecture",
+          "featured": "À la une",
+          "featuredLabel": "Mettre en avant sur l’accueil du blog",
+          "category": "Catégorie",
+          "author": "Auteur",
+          "choose": "Choisir…",
+          "title": "Titre",
+          "slug": "Slug",
+          "slugHint": "Utilisé dans les URL publiques ; minuscules en kebab-case.",
+          "excerpt": "Extrait",
+          "cover": "Image de couverture",
+          "ogImage": "Image sociale",
+          "ogImageHint": "Remplacement facultatif pour les cartes sociales.",
+          "ctaLabel": "Libellé du CTA",
+          "ctaUrl": "URL du CTA",
+          "metaTitle": "Méta-titre",
+          "metaDescription": "Méta-description"
+        },
+        "errors": {
+          "coverRequired": "Une image de couverture est requise.",
+          "slugConflict": "Ce slug est déjà utilisé."
+        },
+        "related": {
+          "empty": "Aucun autre article à lier pour le moment.",
+          "hint": "Choisissez jusqu’à {max} articles liés."
+        },
+        "body": {
+          "empty": "Aucun bloc de contenu pour le moment.",
+          "addBlock": "Ajouter un bloc :",
+          "addItem": "Ajouter un élément",
+          "dividerNote": "Un séparateur horizontal.",
+          "types": {
+            "heading": "Titre",
+            "paragraph": "Paragraphe",
+            "list": "Liste",
+            "image": "Image",
+            "quote": "Citation",
+            "callout": "Encadré",
+            "divider": "Séparateur",
+            "cta": "CTA"
+          },
+          "variants": {
+            "info": "Info",
+            "tip": "Astuce",
+            "warning": "Avertissement",
+            "note": "Note"
+          },
+          "fields": {
+            "level": "Niveau",
+            "number": "Numéro",
+            "text": "Texte",
+            "ordered": "Liste ordonnée (numérotée)",
+            "image": "Image",
+            "caption": "Légende",
+            "alt": "Texte alternatif",
+            "attribution": "Attribution",
+            "variant": "Variante",
+            "ctaLabel": "Libellé",
+            "ctaUrl": "URL"
+          }
+        }
+      }
     }
   },
   "buildings": {
@@ -607,7 +762,10 @@
       "faq": "FAQ",
       "cities": "Villes",
       "serviceCategories": "Catégories de services",
-      "services": "Services"
+      "services": "Services",
+      "blogCategories": "Catégories du blog",
+      "authors": "Auteurs",
+      "posts": "Articles"
     },
     "shell": {
       "signedInAs": "Connecté en tant que",

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { requireStaff } from "@core/auth";
 import { AdminShell, composeAdminNav } from "@slices/backoffice/contract";
 import { apartmentsAdminScreens } from "@slices/apartments/contract";
+import { blogAdminScreens } from "@slices/blog/contract";
 import { buildingsAdminScreens } from "@slices/buildings/contract";
 import { faqAdminScreens } from "@slices/faq/contract";
 import { geographyAdminScreens } from "@slices/geography/contract";
@@ -28,6 +29,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
       ...faqAdminScreens,
       ...geographyAdminScreens,
       ...servicesAdminScreens,
+      ...blogAdminScreens,
       ...leadsAdminScreens,
     ],
     staff.role,

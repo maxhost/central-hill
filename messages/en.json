@@ -42,6 +42,161 @@
       "placeholder": "Your email address",
       "button": "Subscribe",
       "success": "Thanks — you're on the list."
+    },
+    "admin": {
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "cat": {
+        "title": "Blog categories",
+        "subtitle": "Groupings for the editorial blog.",
+        "newCategory": "New category",
+        "empty": "No categories yet",
+        "emptyHint": "Create your first category to group posts.",
+        "editTitle": "Edit category",
+        "newTitle": "New category",
+        "formSubtitle": "The name is authored in English; other languages are translated later.",
+        "backToList": "Back to categories",
+        "inUse": "This category still has posts and can’t be deleted.",
+        "columns": {
+          "name": "Name",
+          "slug": "Slug",
+          "color": "Color"
+        },
+        "sections": {
+          "details": "Details"
+        },
+        "fields": {
+          "name": "Name",
+          "slug": "Slug",
+          "color": "Color",
+          "colorHint": "Hex, e.g. #8a8178.",
+          "position": "Position",
+          "positionHint": "Lower numbers appear first."
+        }
+      },
+      "author": {
+        "title": "Authors",
+        "subtitle": "Bylines for the editorial blog.",
+        "newAuthor": "New author",
+        "empty": "No authors yet",
+        "emptyHint": "Create an author to attribute posts.",
+        "editTitle": "Edit author",
+        "newTitle": "New author",
+        "formSubtitle": "Name and bio are authored in English; other languages are translated later.",
+        "backToList": "Back to authors",
+        "inUse": "This author still has posts and can’t be deleted.",
+        "columns": {
+          "name": "Name",
+          "slug": "Slug",
+          "status": "Status"
+        },
+        "sections": {
+          "details": "Details",
+          "avatar": "Avatar"
+        },
+        "fields": {
+          "name": "Name",
+          "slug": "Slug",
+          "status": "Status",
+          "bio": "Bio",
+          "avatar": "Avatar image"
+        }
+      },
+      "post": {
+        "title": "Posts",
+        "subtitle": "Editorial blog articles.",
+        "newPost": "New post",
+        "empty": "No posts yet",
+        "emptyHint": "Create a category and author first, then write a post.",
+        "editTitle": "Edit post",
+        "newTitle": "New post",
+        "formSubtitle": "Text is authored in English; other languages are translated later.",
+        "backToList": "Back to posts",
+        "featured": "Featured",
+        "columns": {
+          "title": "Title",
+          "status": "Status",
+          "category": "Category",
+          "featured": "Featured"
+        },
+        "sections": {
+          "status": "Status",
+          "identity": "Identity",
+          "media": "Media",
+          "body": "Body",
+          "cta": "Call to action",
+          "related": "Related posts",
+          "seo": "SEO"
+        },
+        "fields": {
+          "status": "Status",
+          "publishedAt": "Published at",
+          "publishedAtHint": "Leave blank to keep unpublished.",
+          "readingMinutes": "Reading minutes",
+          "featured": "Featured",
+          "featuredLabel": "Feature on the blog home",
+          "category": "Category",
+          "author": "Author",
+          "choose": "Choose…",
+          "title": "Title",
+          "slug": "Slug",
+          "slugHint": "Used in public URLs; lowercase kebab-case.",
+          "excerpt": "Excerpt",
+          "cover": "Cover image",
+          "ogImage": "Social image",
+          "ogImageHint": "Optional override for social cards.",
+          "ctaLabel": "CTA label",
+          "ctaUrl": "CTA URL",
+          "metaTitle": "Meta title",
+          "metaDescription": "Meta description"
+        },
+        "errors": {
+          "coverRequired": "A cover image is required.",
+          "slugConflict": "That slug is already in use."
+        },
+        "related": {
+          "empty": "No other posts to relate yet.",
+          "hint": "Choose up to {max} related posts."
+        },
+        "body": {
+          "empty": "No content blocks yet.",
+          "addBlock": "Add block:",
+          "addItem": "Add item",
+          "dividerNote": "A horizontal divider.",
+          "types": {
+            "heading": "Heading",
+            "paragraph": "Paragraph",
+            "list": "List",
+            "image": "Image",
+            "quote": "Quote",
+            "callout": "Callout",
+            "divider": "Divider",
+            "cta": "CTA"
+          },
+          "variants": {
+            "info": "Info",
+            "tip": "Tip",
+            "warning": "Warning",
+            "note": "Note"
+          },
+          "fields": {
+            "level": "Level",
+            "number": "Number",
+            "text": "Text",
+            "ordered": "Ordered (numbered) list",
+            "image": "Image",
+            "caption": "Caption",
+            "alt": "Alt text",
+            "attribution": "Attribution",
+            "variant": "Variant",
+            "ctaLabel": "Label",
+            "ctaUrl": "URL"
+          }
+        }
+      }
     }
   },
   "buildings": {
@@ -607,7 +762,10 @@
       "faq": "FAQ",
       "cities": "Cities",
       "serviceCategories": "Service categories",
-      "services": "Services"
+      "services": "Services",
+      "blogCategories": "Blog categories",
+      "authors": "Authors",
+      "posts": "Posts"
     },
     "shell": {
       "signedInAs": "Signed in as",
