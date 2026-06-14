@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens (color, type scale, spacing, radius, shadow) will be defined in
+ * `core/ui` per ADR and surfaced here as Tailwind theme variables. Placeholder
+ * for the scaffold — no raw component styling lives here.
+ */

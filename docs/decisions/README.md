@@ -18,6 +18,10 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0009 — Auth: Better Auth on Neon](#0009)
 - [0010 — Additive, forward-only migrations; slice-owned tables](#0010)
 - [0011 — Leads: persist in Neon + email notify + backoffice inbox](#0011)
+- [0012 — Editable fixed pages via `page_content`; no generic block builder](#0012)
+- [0013 — Blog post body as a constrained portable-JSON block set](#0013)
+- [0014 — Lead capture shape: `lead` + `lead_field` KV + explicit GDPR consent](#0014)
+- [0015 — Data residency: production Neon project in an EU region](#0015)
 
 ---
 
@@ -91,3 +95,62 @@ Accepted.
 Neon, notify staff by email (`core/email`), and expose a backoffice inbox with status/assignment.
 **Consequences:** Nothing lost, follow-up possible; optional CRM export later behind an interface.
 **Status:** Accepted.
+
+## 0012 — Editable fixed pages via `page_content`; no generic block builder <a id="0012"></a>
+**Context:** Marketing pages (`home`, `owners`, `real-estate`, `about`, `guests`) have **fixed,
+designer-controlled layouts**, but the client must edit their copy/media without a developer. The
+question was whether to build a generic drag-and-drop block/page builder. The client explicitly does
+not want one. **Decision:** Split editable content into **three buckets**: (1) **dynamic entities**
+(buildings, apartments, blog, services, guides…) via list+form CMS in their slices; (2) **editable
+fixed pages** via a single `page_content` table — one row per page `key`, with a **fixed per-page
+schema** stored in `data jsonb` and rendered by a bespoke template (fixed-count arrays where the
+design repeats, e.g. owner steps); (3) **`company_settings`** singleton for global/NAP/Avantio/social
+data. Truly static UI chrome (labels, nav verbs) lives in **next-intl message files**, not the DB.
+Page copy is translated through the generic `translation` table keyed `entity_type='page_content'`,
+`field='block:<dot.path>'`. Publish revalidates the page's ISR tag. **Consequences:** Client edits
+every page via simple forms; layout/structure stays type-safe (Zod-validated per-page schema) and
+designer-owned. Adding a fundamentally new page section is a dev task (extend schema + template) —
+the intended trade-off vs. an unconstrained builder. **Status:** Accepted. *(Supersedes the earlier
+draft's generic `page_block` builder.)*
+
+## 0013 — Blog post body as a constrained portable-JSON block set <a id="0013"></a>
+**Context:** Unlike fixed marketing pages, **blog posts need variable-structure editorial layout**
+(headings, images, quotes, callouts, CTAs in any order). **Decision:** Store the post body as an
+**ordered array of typed blocks in JSON** (portable-text-style), with a **closed, versioned block
+set**: `heading · paragraph · list · image · quote · callout · divider · cta`. Each block type has a
+Zod schema; the editor exposes only these types; the renderer is a typed switch over known types (no
+arbitrary HTML). Translatable text within blocks flows through the `translation` table per block
+path. **Consequences:** Rich but bounded authoring; safe, consistent styling and SEO; new block
+types are an additive, reviewed change. This is the **opposite trade-off from 0012 on purpose** —
+blog earns blocks because its content is genuinely variable-structure; marketing pages do not.
+**Status:** Accepted.
+
+## 0014 — Lead capture shape: `lead` + `lead_field` KV + explicit GDPR consent <a id="0014"></a>
+**Context:** Refines **0011**. Several forms (earnings estimate, owner/deal enquiry, contact,
+newsletter) share one pipeline but carry **different fields**, and EU/Portugal operation requires
+**auditable GDPR consent**. **Decision:** One **`lead`** table (`kind`, `status`, `locale`,
+source page, contact basics, assignment) plus a **`lead_field`** key/value child table for
+kind-specific fields (documented keys per `kind`) — avoiding both a wide sparse table and per-form
+tables. **Consent is first-class on `lead`**: `marketing_consent`, `consent_text` (verbatim snapshot
+of the wording shown), `consent_at`, plus `ip_address` + `user_agent` as proof. **Consequences:** A
+single backoffice inbox/pipeline for all forms; a new form = a new `kind` + documented keys, **no
+migration per form**; consent is provable and the displayed text is preserved even if form copy later
+changes. **Status:** Accepted.
+
+## 0015 — Data residency: production Neon project in an EU region <a id="0015"></a>
+**Context:** The site operates from Portugal and captures **personal data with auditable consent**
+(leads: name/email/phone, `ip_address`, `user_agent`, consent snapshot — ADR 0014). Under GDPR,
+keeping EU personal data in the EU is the low-risk default. The scaffold's Neon project was created
+in **`aws-us-east-1`** because the create-project tooling (Neon MCP) does not expose a region
+parameter. **Decision:** **Production** data lives in a Neon project in the **client's own account**,
+provisioned in an **EU region (Frankfurt, `aws-eu-central-1`)**. We keep our `us-east-1` project as a
+**throwaway dev sandbox** (no real personal data). Neon regions are fixed at project creation, so prod
+is a **new** project created in the client's account (console or `neonctl --region-id aws-eu-central-1`);
+the schema is reproduced by **running the `drizzle/` migrations as the portable SQL artifact**
+(`0000…` + `0001…`, append-only). **RLS / row-level policies are a separate, still-open decision** (own
+ADR): the access path is server-only (Drizzle via the DB-owner role; no untrusted client→DB), so RLS is
+defense-in-depth rather than load-bearing — to be settled when the client DB is provisioned (esp. if Neon
+Auth / a data API is ever exposed). **Consequences:** GDPR residency satisfied and data sits with the
+client; clean dev/prod split; prod creation is a one-time manual step outside the MCP. R2 buckets and the
+email/LLM processors should likewise prefer EU. **Status:** Accepted. *(Dev sandbox
+`weathered-cake-89640915` in `us-east-1`; prod = client account, EU, from the `drizzle/` SQL.)*
