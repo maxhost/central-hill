@@ -66,7 +66,80 @@
     "faq": "Questions fréquentes",
     "bookTitle": "Réservez un appartement dans cet immeuble",
     "bookIntro": "Choisissez la configuration idéale pour votre séjour et réservez en temps réel — disponibilités et tarifs en direct via notre moteur de réservation.",
-    "bookCta": "Vérifier les disponibilités"
+    "bookCta": "Vérifier les disponibilités",
+    "admin": {
+      "title": "Immeubles",
+      "subtitle": "Gérez le portfolio d'immeubles.",
+      "newBuilding": "Nouvel immeuble",
+      "newTitle": "Nouvel immeuble",
+      "editTitle": "Modifier l'immeuble",
+      "formSubtitle": "Le contenu source est rédigé en anglais ; les autres langues sont traduites dans le pipeline.",
+      "backToList": "Retour aux immeubles",
+      "empty": "Aucun immeuble pour l'instant",
+      "emptyHint": "Créez votre premier immeuble pour démarrer le portfolio.",
+      "new": "Nouveau",
+      "featured": "Mis en avant",
+      "noAmenities": "Aucun équipement n'a encore été configuré.",
+      "addFaq": "Ajouter une FAQ",
+      "columns": {
+        "name": "Nom",
+        "status": "Statut",
+        "city": "Ville",
+        "apartments": "Appartements",
+        "flags": "Étiquettes"
+      },
+      "status": {
+        "draft": "Brouillon",
+        "published": "Publié",
+        "archived": "Archivé"
+      },
+      "sections": {
+        "status": "Statut et visibilité",
+        "identity": "Identité",
+        "location": "Emplacement",
+        "media": "Médias",
+        "descriptions": "Descriptions",
+        "amenities": "Équipements",
+        "faq": "FAQ",
+        "booking": "Réservation",
+        "seo": "SEO"
+      },
+      "fields": {
+        "status": "Statut",
+        "position": "Ordre",
+        "positionHint": "Les numéros les plus bas apparaissent en premier.",
+        "isFeatured": "Mis en avant dans le portfolio",
+        "isNew": "Afficher le badge “Nouveau”",
+        "name": "Nom",
+        "slug": "Slug",
+        "slugHint": "Minuscules, mots séparés par des traits d'union.",
+        "headline": "Titre",
+        "teaser": "Accroche",
+        "city": "Ville",
+        "neighbourhood": "Quartier",
+        "choose": "Choisir…",
+        "none": "Aucun",
+        "streetAddress": "Adresse",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "cover": "Image de couverture",
+        "ogImage": "Image de partage social",
+        "ogImageHint": "Facultatif ; utilise la couverture par défaut.",
+        "gallery": "Galerie",
+        "descriptionIntro": "L'immeuble",
+        "descriptionNeighbourhood": "Le quartier",
+        "question": "Question",
+        "answer": "Réponse",
+        "avantioId": "ID Avantio",
+        "avantioUrl": "URL Avantio",
+        "metaTitle": "Méta-titre",
+        "metaDescription": "Méta-description"
+      },
+      "errors": {
+        "coverRequired": "Une image de couverture est requise.",
+        "slugConflict": "Ce slug est déjà utilisé."
+      }
+    }
   },
   "services": {
     "metaTitle": "Services aux Voyageurs — Central Hill",

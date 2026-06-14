@@ -66,7 +66,80 @@
     "faq": "Perguntas frequentes",
     "bookTitle": "Reserve um apartamento neste edifício",
     "bookIntro": "Escolha a tipologia ideal para a sua estadia e reserve em tempo real — disponibilidade e preços ao vivo através do nosso motor de reservas.",
-    "bookCta": "Ver disponibilidade"
+    "bookCta": "Ver disponibilidade",
+    "admin": {
+      "title": "Edifícios",
+      "subtitle": "Faça a gestão do portfólio de edifícios.",
+      "newBuilding": "Novo edifício",
+      "newTitle": "Novo edifício",
+      "editTitle": "Editar edifício",
+      "formSubtitle": "O conteúdo de origem é escrito em inglês; os outros idiomas são traduzidos no pipeline.",
+      "backToList": "Voltar aos edifícios",
+      "empty": "Ainda sem edifícios",
+      "emptyHint": "Crie o seu primeiro edifício para iniciar o portfólio.",
+      "new": "Novo",
+      "featured": "Destaque",
+      "noAmenities": "Ainda não foram configuradas comodidades.",
+      "addFaq": "Adicionar FAQ",
+      "columns": {
+        "name": "Nome",
+        "status": "Estado",
+        "city": "Cidade",
+        "apartments": "Apartamentos",
+        "flags": "Etiquetas"
+      },
+      "status": {
+        "draft": "Rascunho",
+        "published": "Publicado",
+        "archived": "Arquivado"
+      },
+      "sections": {
+        "status": "Estado e visibilidade",
+        "identity": "Identidade",
+        "location": "Localização",
+        "media": "Multimédia",
+        "descriptions": "Descrições",
+        "amenities": "Comodidades",
+        "faq": "FAQ",
+        "booking": "Reservas",
+        "seo": "SEO"
+      },
+      "fields": {
+        "status": "Estado",
+        "position": "Ordem",
+        "positionHint": "Números menores aparecem primeiro.",
+        "isFeatured": "Em destaque no portfólio",
+        "isNew": "Mostrar etiqueta “Novo”",
+        "name": "Nome",
+        "slug": "Slug",
+        "slugHint": "Minúsculas, palavras separadas por hífens.",
+        "headline": "Título",
+        "teaser": "Resumo",
+        "city": "Cidade",
+        "neighbourhood": "Bairro",
+        "choose": "Escolher…",
+        "none": "Nenhum",
+        "streetAddress": "Morada",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "cover": "Imagem de capa",
+        "ogImage": "Imagem de partilha social",
+        "ogImageHint": "Opcional; usa a capa por omissão.",
+        "gallery": "Galeria",
+        "descriptionIntro": "O edifício",
+        "descriptionNeighbourhood": "O bairro",
+        "question": "Pergunta",
+        "answer": "Resposta",
+        "avantioId": "ID Avantio",
+        "avantioUrl": "URL Avantio",
+        "metaTitle": "Meta título",
+        "metaDescription": "Meta descrição"
+      },
+      "errors": {
+        "coverRequired": "É obrigatória uma imagem de capa.",
+        "slugConflict": "Esse slug já está em uso."
+      }
+    }
   },
   "services": {
     "metaTitle": "Serviços para Hóspedes — Central Hill",

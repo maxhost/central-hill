@@ -66,7 +66,80 @@
     "faq": "Frequently asked questions",
     "bookTitle": "Book an apartment in this building",
     "bookIntro": "Choose the layout that suits your stay and book in real time — availability and pricing are live through our booking engine.",
-    "bookCta": "Check availability"
+    "bookCta": "Check availability",
+    "admin": {
+      "title": "Buildings",
+      "subtitle": "Manage the building portfolio.",
+      "newBuilding": "New building",
+      "newTitle": "New building",
+      "editTitle": "Edit building",
+      "formSubtitle": "Source content is authored in English; other languages are translated in the pipeline.",
+      "backToList": "Back to buildings",
+      "empty": "No buildings yet",
+      "emptyHint": "Create your first building to start the portfolio.",
+      "new": "New",
+      "featured": "Featured",
+      "noAmenities": "No amenities have been set up yet.",
+      "addFaq": "Add FAQ",
+      "columns": {
+        "name": "Name",
+        "status": "Status",
+        "city": "City",
+        "apartments": "Apartments",
+        "flags": "Flags"
+      },
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "sections": {
+        "status": "Status & visibility",
+        "identity": "Identity",
+        "location": "Location",
+        "media": "Media",
+        "descriptions": "Descriptions",
+        "amenities": "Amenities",
+        "faq": "FAQ",
+        "booking": "Booking",
+        "seo": "SEO"
+      },
+      "fields": {
+        "status": "Status",
+        "position": "Order",
+        "positionHint": "Lower numbers show first.",
+        "isFeatured": "Featured in portfolio",
+        "isNew": "Show “New” badge",
+        "name": "Name",
+        "slug": "Slug",
+        "slugHint": "Lowercase, words separated by hyphens.",
+        "headline": "Headline",
+        "teaser": "Teaser",
+        "city": "City",
+        "neighbourhood": "Neighbourhood",
+        "choose": "Choose…",
+        "none": "None",
+        "streetAddress": "Street address",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "cover": "Cover image",
+        "ogImage": "Social share image",
+        "ogImageHint": "Optional; falls back to the cover.",
+        "gallery": "Gallery",
+        "descriptionIntro": "The building",
+        "descriptionNeighbourhood": "The neighbourhood",
+        "question": "Question",
+        "answer": "Answer",
+        "avantioId": "Avantio ID",
+        "avantioUrl": "Avantio URL",
+        "metaTitle": "Meta title",
+        "metaDescription": "Meta description"
+      },
+      "errors": {
+        "coverRequired": "A cover image is required.",
+        "slugConflict": "That slug is already in use."
+      }
+    }
   },
   "services": {
     "metaTitle": "Guest Services — Central Hill",

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { requireStaff } from "@core/auth";
 import { AdminShell, composeAdminNav } from "@slices/backoffice/contract";
+import { buildingsAdminScreens } from "@slices/buildings/contract";
 import { leadsAdminScreens } from "@slices/leads/contract";
 
 /**
@@ -12,7 +13,7 @@ import { leadsAdminScreens } from "@slices/leads/contract";
  */
 export default async function PanelLayout({ children }: { children: ReactNode }) {
   const staff = await requireStaff();
-  const nav = composeAdminNav([...leadsAdminScreens], staff.role);
+  const nav = composeAdminNav([...buildingsAdminScreens, ...leadsAdminScreens], staff.role);
   return (
     <AdminShell staff={staff} nav={nav}>
       {children}

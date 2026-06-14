@@ -70,12 +70,36 @@ change** → see Deferred.
 that busts building ISR caches + localized paths on publish. Called by the building admin
 actions (S12) and by the apartments slice (S3) when it recomputes a building's stats.
 
+## Backoffice (`admin/`) — buildings CRUD (S12)
+
+Plugs into the backoffice shell. The slice contributes one `content`-group screen
+(`admin/screens.ts` → `buildingsAdminScreens`, re-exported from `contract.ts`) and mounts
+list/create/edit routes under `app/(admin)/admin/(panel)/buildings/…`.
+
+- `admin/queries.ts` (server-only, not cache-wrapped — admin is dynamic): `listBuildingsAdmin`
+  (all statuses), `getBuildingForEdit` (full **source-locale** record + resolved media previews),
+  `listAmenitiesAdmin` (taxonomy for the multi-select), `listLocationOptions` (city/neighbourhood).
+- `admin/validation.ts` — `buildingSaveInput`: the editor's post shape (nullable optionals,
+  `min(1)` on required [T] text, gallery/amenities/FAQ relations). All coercion in one place.
+- `admin/actions.ts` (`"use server"`, `requireStaff`-gated) — `saveBuilding` (create/update) and
+  `deleteBuilding`. Source [T] content + per-locale slugs persist through the **`core/i18n` write
+  seam** (ADR 0019); the building-owned relations (gallery / amenities / FAQ) are written here.
+  Slugs are written across all four locales for reachability (localized slugs are a later
+  refinement). FAQ rows are upserted **by id** so approved translations survive an edit; removed
+  rows have their polymorphic translation rows cleaned up. On success `revalidateBuilding` busts
+  the ISR caches.
+- `admin/ui/` — `list.tsx` (server) + `building-form.tsx` (one client island for new + edit),
+  using the backoffice form + media picker primitives (`MediaField` / `MediaGalleryField`).
+
+`contract.ts` also exports `setBuildingStats(buildingId, stats)` — the write fn the **apartments**
+admin calls to persist recomputed `apartments_count / total_capacity / beds_count` (buildings
+can't read the apartment table — golden rule 2).
+
 ## Deferred (not in this slice's first cut)
 
-- **Admin CRUD** (`admin/`): plugs into the backoffice shell **S12** — building/amenity/FAQ
-  forms, gallery ordering, translation review. Not buildable before S12.
 - **Stat recomputation**: `apartments_count / total_capacity / beds_count` are recomputed
-  on **apartment publish** — owned by **S3 apartments**, which calls `revalidateBuilding`.
+  on **apartment publish** — owned by **S3 apartments**, which computes the aggregate over its own
+  table and calls the buildings-contract `setBuildingStats` + `revalidateBuilding`.
 - **Richer JSON-LD** (`LodgingBusiness` / `Apartment` / `Place` with geo): needs a new
   kernel `core/seo` builder → **ADR required** (golden rule 3). Escalated, not hand-written.
 - **Sitemap entries**: **S13** enumerates building URLs from `listBuildingParams()`.
@@ -84,4 +108,6 @@ actions (S12) and by the apartments slice (S3) when it recomputes a building's s
 ## Tests
 
 `tests/buildings.test.ts` — building/amenity/FAQ input validation + the translatable-path
-contract. Run: `npx tsx --test src/slices/buildings/tests/buildings.test.ts`.
+contract. `tests/buildings-admin.test.ts` — the `buildingSaveInput` admin schema (required [T],
+kebab slug, cover required, FAQ row rules). Run:
+`npx tsx --test src/slices/buildings/tests/buildings.test.ts src/slices/buildings/tests/buildings-admin.test.ts`.

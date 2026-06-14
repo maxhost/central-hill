@@ -108,3 +108,17 @@ export {
   getFeaturedBuildings,
   listBuildingParams,
 } from "./server/queries";
+
+/**
+ * Stats write seam (data-model.md). Buildings can't read the apartment table
+ * (golden rule 2), so the apartments admin computes the aggregate over its own
+ * table and calls this to persist the denormalized columns on apartment publish.
+ */
+export { setBuildingStats } from "./server/stats";
+
+/**
+ * Backoffice contribution (S12). `buildingsAdminScreens` is spread into
+ * `composeAdminNav` by the admin panel layout; the list/create/edit screens mount
+ * under `app/(admin)/admin/(panel)/buildings/…`. Pure data — safe to import anywhere.
+ */
+export { buildingsAdminScreens } from "./admin/screens";
