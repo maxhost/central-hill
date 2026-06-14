@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Locale } from "@core/db/columns";
 import { ButtonLink, Container } from "@core/ui";
+import { EarningsEstimateForm } from "@slices/leads/contract";
 import { getOwnersPage } from "../contract";
 import type { OwnersContent } from "../contract";
 import { Band, FeatureGrid, SectionHeading, Steps } from "./components/blocks";
@@ -114,8 +115,8 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
         eyebrow={t("owners.estimateEyebrow")}
         headline={earnings_form.headline}
         subheadline={earnings_form.subheadline}
-        ctaLabel={earnings_form.cta_label}
         note={earnings_form.note}
+        form={<EarningsEstimateForm source="owners" />}
       />
 
       <FaqSection

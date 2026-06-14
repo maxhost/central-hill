@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
 import { ButtonLink, Container, Eyebrow } from "@core/ui";
+import { DealEnquiryForm } from "@slices/leads/contract";
 import { getRealEstatePage } from "../contract";
 import type { RealEstateContent } from "../contract";
 import { Band, FeatureGrid, Prose, SectionHeading, Steps } from "./components/blocks";
@@ -125,8 +126,8 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
             {enquiry.headline}
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-ink-soft">{enquiry.intro}</p>
-          <div className="mt-8">
-            <ButtonLink href={`mailto:${enquiry.contact_email}`}>{t("realEstate.enquiryCta")}</ButtonLink>
+          <div className="mx-auto mt-8 max-w-xl text-left">
+            <DealEnquiryForm source="real-estate" />
           </div>
           <p className="mt-6 text-sm text-ink-soft">
             {enquiry.contact_email} · {enquiry.contact_phone} ·{" "}

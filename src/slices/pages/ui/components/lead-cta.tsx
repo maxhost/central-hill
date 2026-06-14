@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import type { ReactNode } from "react";
 import type { Locale } from "@core/db/columns";
 import { ButtonLink, Container, Eyebrow } from "@core/ui";
 import { getGlobals } from "@slices/settings/contract";
@@ -6,13 +7,9 @@ import { getGlobals } from "@slices/settings/contract";
 /**
  * Lead capture block (Owners earnings estimate · Real-Estate deal enquiry · About
  * contact). The page schema stores only the section copy (headline/subheadline/cta_label/
- * note); the *form fields* are fixed in code and belong to the **leads slice (S10)**.
- *
- * INTEGRATION HANDOFF (S10): replace the contact-link button below with the leads slice's
- * interactive widget once it exports one on its contract, e.g.
- *   `<LeadForm kind="earnings_estimate" />` (kind ∈ earnings_estimate | deal_enquiry |
- *   contact). Until then this renders the section copy with a direct contact CTA so the
- *   page is complete and never ships a non-functional form.
+ * note); the interactive form is the **leads slice (S10)** widget, embedded by the page
+ * through `form` (e.g. `<EarningsEstimateForm source="owners" />`). When no `form` is
+ * provided it falls back to a direct contact CTA so the block is never empty.
  */
 export async function LeadCta({
   locale,
@@ -22,14 +19,16 @@ export async function LeadCta({
   ctaLabel,
   note,
   id,
+  form,
 }: {
   locale: Locale;
   eyebrow?: string;
   headline: string;
   subheadline?: string;
-  ctaLabel: string;
+  ctaLabel?: string;
   note?: string;
   id?: string;
+  form?: ReactNode;
 }) {
   const globals = await getGlobals(locale);
   const t = await getTranslations("pages");
@@ -47,10 +46,19 @@ export async function LeadCta({
               {subheadline}
             </p>
           ) : null}
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <ButtonLink href={href}>{ctaLabel}</ButtonLink>
-            {note ? <span className="text-sm text-ink-soft">{note}</span> : null}
-          </div>
+          {form ? (
+            <div className="mx-auto mt-8 max-w-xl text-left">
+              {form}
+              {note ? (
+                <p className="mt-4 text-center text-sm text-ink-soft">{note}</p>
+              ) : null}
+            </div>
+          ) : (
+            <div className="mt-8 flex flex-col items-center gap-3">
+              {ctaLabel ? <ButtonLink href={href}>{ctaLabel}</ButtonLink> : null}
+              {note ? <span className="text-sm text-ink-soft">{note}</span> : null}
+            </div>
+          )}
           {globals ? (
             <p className="mt-6 text-sm text-ink-soft">
               {[globals.phone, globals.email, globals.whatsapp].filter(Boolean).join(" · ")}

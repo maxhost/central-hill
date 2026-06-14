@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
 import { MediaImage } from "@core/media";
 import { ButtonLink, Container, Eyebrow } from "@core/ui";
+import { ContactForm } from "@slices/leads/contract";
 import { getGlobals } from "@slices/settings/contract";
 import { getAboutPage } from "../contract";
 import { Band, FeatureGrid, SectionHeading } from "./components/blocks";
@@ -120,22 +121,27 @@ export async function AboutPage({ locale }: { locale: Locale }) {
               </ButtonLink>
             </div>
 
-            <div className="mt-12 rounded-3xl border border-line bg-surface p-8 md:p-12">
-              <h3 className="font-serif text-2xl text-ink">{contact.form.headline}</h3>
+            <div className="mt-12 rounded-3xl border border-line bg-surface p-8 text-left md:p-12">
+              <h3 className="text-center font-serif text-2xl text-ink">{contact.form.headline}</h3>
               {contact.form.subheadline ? (
-                <p className="mx-auto mt-3 max-w-xl text-ink-soft">{contact.form.subheadline}</p>
+                <p className="mx-auto mt-3 max-w-xl text-center text-ink-soft">
+                  {contact.form.subheadline}
+                </p>
               ) : null}
+              <div className="mx-auto mt-8 max-w-xl">
+                <ContactForm source="about" />
+              </div>
               {globals ? (
-                <p className="mt-6 text-sm text-ink-soft">
+                <p className="mt-8 text-center text-sm text-ink-soft">
                   {[globals.phone, globals.email, globals.whatsapp].filter(Boolean).join(" · ")}
                 </p>
               ) : null}
               {globals?.officeAddress ? (
-                <p className="mt-2 text-sm text-ink-soft">
+                <p className="mt-2 text-center text-sm text-ink-soft">
                   {[globals.officeHoursLabel, globals.officeAddress].filter(Boolean).join(" — ")}
                 </p>
               ) : null}
-              <p className="mt-4 text-xs uppercase tracking-[0.14em] text-ink-soft">
+              <p className="mt-4 text-center text-xs uppercase tracking-[0.14em] text-ink-soft">
                 {t("about.contactNote")}
               </p>
             </div>
