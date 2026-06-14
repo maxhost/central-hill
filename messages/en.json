@@ -170,7 +170,97 @@
     "ctaTitle": "Find your apartment, then we'll handle the rest",
     "ctaIntro": "Choose from our handpicked addresses across Lisbon's most storied neighbourhoods — and layer on any of the services above to make the stay your own.",
     "ctaButton": "Browse Our Apartments",
-    "ctaNote": "All services are arranged through our 24/7 guest team."
+    "ctaNote": "All services are arranged through our 24/7 guest team.",
+    "admin": {
+      "title": "Services",
+      "subtitle": "Guest services & experiences catalog.",
+      "newService": "New service",
+      "empty": "No services yet",
+      "emptyHint": "Create a category first, then add your services.",
+      "editTitle": "Edit service",
+      "newTitle": "New service",
+      "formSubtitle": "Text is authored in English; other languages are translated later.",
+      "backToList": "Back to services",
+      "columns": {
+        "name": "Name",
+        "status": "Status",
+        "category": "Category"
+      },
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "sections": {
+        "status": "Status",
+        "identity": "Identity",
+        "media": "Media",
+        "body": "Body",
+        "booking": "Booking",
+        "seo": "SEO"
+      },
+      "fields": {
+        "status": "Status",
+        "position": "Position",
+        "positionHint": "Lower numbers appear first.",
+        "category": "Category",
+        "choose": "Choose…",
+        "name": "Name",
+        "slug": "Slug",
+        "slugHint": "Used in public URLs; lowercase kebab-case.",
+        "excerpt": "Excerpt",
+        "cover": "Cover image",
+        "ogImage": "Social image",
+        "ogImageHint": "Optional override for social cards.",
+        "gallery": "Gallery",
+        "body": "Body",
+        "priceFrom": "Price from (cents)",
+        "priceFromHint": "Integer cents, e.g. 4500 = €45.00. Leave blank if unpriced.",
+        "durationLabel": "Duration label",
+        "bookingType": "Booking type",
+        "ctaLabel": "CTA label",
+        "ctaUrl": "CTA URL",
+        "metaTitle": "Meta title",
+        "metaDescription": "Meta description"
+      },
+      "bookingType": {
+        "none": "Display only",
+        "enquiry": "Enquiry",
+        "external": "External link"
+      },
+      "errors": {
+        "coverRequired": "A cover image is required.",
+        "slugConflict": "That slug is already in use."
+      },
+      "cat": {
+        "title": "Service categories",
+        "subtitle": "Groupings for the services catalog.",
+        "newCategory": "New category",
+        "empty": "No categories yet",
+        "emptyHint": "Create your first category to group services.",
+        "editTitle": "Edit category",
+        "newTitle": "New category",
+        "formSubtitle": "The name is authored in English; other languages are translated later.",
+        "backToList": "Back to categories",
+        "inUse": "This category still has services and can’t be deleted.",
+        "columns": {
+          "name": "Name",
+          "slug": "Slug",
+          "icon": "Icon"
+        },
+        "sections": {
+          "details": "Details"
+        },
+        "fields": {
+          "name": "Name",
+          "slug": "Slug",
+          "icon": "Icon",
+          "iconHint": "Iconoir key (kebab-case), e.g. car.",
+          "position": "Position",
+          "positionHint": "Lower numbers appear first."
+        }
+      }
+    }
   },
   "settings": {
     "skip": "Skip to content",
@@ -515,7 +605,9 @@
       "apartments": "Apartments",
       "testimonials": "Testimonials",
       "faq": "FAQ",
-      "cities": "Cities"
+      "cities": "Cities",
+      "serviceCategories": "Service categories",
+      "services": "Services"
     },
     "shell": {
       "signedInAs": "Signed in as",

@@ -170,7 +170,97 @@
     "ctaTitle": "Encuentra tu apartamento y nosotros nos encargamos del resto",
     "ctaIntro": "Elige entre nuestras direcciones seleccionadas en los barrios más emblemáticos de Lisboa — y añade cualquiera de los servicios anteriores para hacer tuya la estancia.",
     "ctaButton": "Ver Nuestros Apartamentos",
-    "ctaNote": "Todos los servicios se organizan a través de nuestro equipo de huéspedes 24/7."
+    "ctaNote": "Todos los servicios se organizan a través de nuestro equipo de huéspedes 24/7.",
+    "admin": {
+      "title": "Servicios",
+      "subtitle": "Catálogo de servicios y experiencias para huéspedes.",
+      "newService": "Nuevo servicio",
+      "empty": "Aún no hay servicios",
+      "emptyHint": "Crea primero una categoría y luego añade los servicios.",
+      "editTitle": "Editar servicio",
+      "newTitle": "Nuevo servicio",
+      "formSubtitle": "El texto se redacta en inglés; los demás idiomas se traducen después.",
+      "backToList": "Volver a los servicios",
+      "columns": {
+        "name": "Nombre",
+        "status": "Estado",
+        "category": "Categoría"
+      },
+      "status": {
+        "draft": "Borrador",
+        "published": "Publicado",
+        "archived": "Archivado"
+      },
+      "sections": {
+        "status": "Estado",
+        "identity": "Identidad",
+        "media": "Multimedia",
+        "body": "Contenido",
+        "booking": "Reserva",
+        "seo": "SEO"
+      },
+      "fields": {
+        "status": "Estado",
+        "position": "Posición",
+        "positionHint": "Los números más bajos aparecen primero.",
+        "category": "Categoría",
+        "choose": "Elegir…",
+        "name": "Nombre",
+        "slug": "Slug",
+        "slugHint": "Se usa en las URL públicas; minúsculas en kebab-case.",
+        "excerpt": "Extracto",
+        "cover": "Imagen de portada",
+        "ogImage": "Imagen social",
+        "ogImageHint": "Sustitución opcional para tarjetas sociales.",
+        "gallery": "Galería",
+        "body": "Contenido",
+        "priceFrom": "Precio desde (céntimos)",
+        "priceFromHint": "Céntimos enteros, p. ej. 4500 = 45,00 €. Déjalo vacío si no tiene precio.",
+        "durationLabel": "Etiqueta de duración",
+        "bookingType": "Tipo de reserva",
+        "ctaLabel": "Texto del CTA",
+        "ctaUrl": "URL del CTA",
+        "metaTitle": "Meta título",
+        "metaDescription": "Meta descripción"
+      },
+      "bookingType": {
+        "none": "Solo visualización",
+        "enquiry": "Consulta",
+        "external": "Enlace externo"
+      },
+      "errors": {
+        "coverRequired": "Se requiere una imagen de portada.",
+        "slugConflict": "Ese slug ya está en uso."
+      },
+      "cat": {
+        "title": "Categorías de servicios",
+        "subtitle": "Agrupaciones del catálogo de servicios.",
+        "newCategory": "Nueva categoría",
+        "empty": "Aún no hay categorías",
+        "emptyHint": "Crea tu primera categoría para agrupar servicios.",
+        "editTitle": "Editar categoría",
+        "newTitle": "Nueva categoría",
+        "formSubtitle": "El nombre se redacta en inglés; los demás idiomas se traducen después.",
+        "backToList": "Volver a las categorías",
+        "inUse": "Esta categoría todavía tiene servicios y no se puede eliminar.",
+        "columns": {
+          "name": "Nombre",
+          "slug": "Slug",
+          "icon": "Icono"
+        },
+        "sections": {
+          "details": "Detalles"
+        },
+        "fields": {
+          "name": "Nombre",
+          "slug": "Slug",
+          "icon": "Icono",
+          "iconHint": "Clave Iconoir (kebab-case), p. ej. car.",
+          "position": "Posición",
+          "positionHint": "Los números más bajos aparecen primero."
+        }
+      }
+    }
   },
   "settings": {
     "skip": "Saltar al contenido",
@@ -515,7 +605,9 @@
       "apartments": "Apartamentos",
       "testimonials": "Testimonios",
       "faq": "FAQ",
-      "cities": "Ciudades"
+      "cities": "Ciudades",
+      "serviceCategories": "Categorías de servicios",
+      "services": "Servicios"
     },
     "shell": {
       "signedInAs": "Sesión iniciada como",

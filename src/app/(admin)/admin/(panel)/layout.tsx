@@ -7,6 +7,7 @@ import { faqAdminScreens } from "@slices/faq/contract";
 import { geographyAdminScreens } from "@slices/geography/contract";
 import { leadsAdminScreens } from "@slices/leads/contract";
 import { pagesAdminScreens } from "@slices/pages/contract";
+import { servicesAdminScreens } from "@slices/services/contract";
 import { testimonialsAdminScreens } from "@slices/testimonials/contract";
 
 /**
@@ -26,6 +27,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
       ...testimonialsAdminScreens,
       ...faqAdminScreens,
       ...geographyAdminScreens,
+      ...servicesAdminScreens,
       ...leadsAdminScreens,
     ],
     staff.role,

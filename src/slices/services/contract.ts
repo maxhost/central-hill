@@ -63,3 +63,11 @@ export {
   listServiceCategories,
   listServiceParams,
 } from "./server/queries";
+
+/**
+ * Backoffice contribution (S12). `servicesAdminScreens` is spread into
+ * `composeAdminNav` by the admin panel layout; the category manager + service list +
+ * editors mount under `app/(admin)/admin/(panel)/{service-categories,services}/…`.
+ * Pure data — safe to import anywhere.
+ */
+export { servicesAdminScreens } from "./admin/screens";

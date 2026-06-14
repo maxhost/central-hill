@@ -57,10 +57,30 @@ grid headings, filter "all", how-it-works, CTA band, price label, breadcrumb. DB
 detail, categories and any S9 teaser subscribe to it). Called by the services admin actions
 (S12).
 
-## Deferred (not in this slice's first cut)
+## Backoffice (`admin/`) — category manager + service CRUD (S12)
 
-- **Admin CRUD** (`admin/`): plugs into the backoffice shell **S12** — service form,
-  category manager, gallery ordering, translation review.
+Plugs into the backoffice shell. Contributes two `content`-group screens
+(`admin/screens.ts` → `servicesAdminScreens`): "Service categories" (order 60) and
+"Services" (order 65). Lists + editors mount under
+`app/(admin)/admin/(panel)/{service-categories,services}/…`.
+
+- `admin/validation.ts` — `serviceCategorySaveInput` (slug/icon/position + [T] name) and
+  `serviceSaveInput` (the editor's post shape: `id?`, nullable optionals, `min(1)` on
+  required [T] name/excerpt/body, `price_from` integer cents, gallery riding along).
+- `admin/queries.ts` (server-only) — `listServiceCategoriesAdmin` / `getServiceCategoryForEdit`
+  / `listServiceCategoryOptions` (for the service selector) and `listServicesAdmin` /
+  `getServiceForEdit` (source values + media previews). Not cache-wrapped.
+- `admin/actions.ts` (`"use server"`, `requireStaff`-gated) — `saveServiceCategory`
+  (plain-column slug; [T] name via the seam) / `deleteServiceCategory` (refuses while a
+  service still references it — RESTRICT FK), and `saveService` (service slug via the
+  `core/i18n` write seam, ADR 0019; source [T] name/excerpt/body/duration/cta/meta through
+  the same seam; gallery replaced) / `deleteService` (cascades `service_media`, cleans
+  translations + slugs). All bust `service-list` via `revalidateServices`.
+- `admin/ui/` — `category-list`/`category-form` and `list`/`service-form` (client islands;
+  the service form gates the CTA fields on `booking_type` and uses the media pickers).
+
+## Deferred
+
 - **Category icons**: `service_category.icon` holds iconoir keys but the icon font is not
   yet loaded in the app shell; the UI shows category name chips. Render the glyphs once the
   icon set is wired (kernel/app-shell change → ADR).
@@ -70,4 +90,5 @@ detail, categories and any S9 teaser subscribe to it). Called by the services ad
 ## Tests
 
 `tests/services.test.ts` — service / category / media input validation + the
-translatable-path contract. Run: `npx tsx --test src/slices/services/tests/services.test.ts`.
+translatable-path contract. `tests/services-admin.test.ts` — the admin save schemas. Run:
+`npx tsx --test src/slices/services/tests/services.test.ts src/slices/services/tests/services-admin.test.ts`.

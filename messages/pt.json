@@ -170,7 +170,97 @@
     "ctaTitle": "Encontre o seu apartamento e tratamos do resto",
     "ctaIntro": "Escolha entre os nossos endereços selecionados nos bairros mais históricos de Lisboa — e acrescente qualquer um dos serviços acima para tornar a estadia sua.",
     "ctaButton": "Ver os Nossos Apartamentos",
-    "ctaNote": "Todos os serviços são organizados através da nossa equipa de hóspedes 24/7."
+    "ctaNote": "Todos os serviços são organizados através da nossa equipa de hóspedes 24/7.",
+    "admin": {
+      "title": "Serviços",
+      "subtitle": "Catálogo de serviços e experiências para hóspedes.",
+      "newService": "Novo serviço",
+      "empty": "Ainda sem serviços",
+      "emptyHint": "Crie primeiro uma categoria e depois adicione os serviços.",
+      "editTitle": "Editar serviço",
+      "newTitle": "Novo serviço",
+      "formSubtitle": "O texto é redigido em inglês; os outros idiomas são traduzidos depois.",
+      "backToList": "Voltar aos serviços",
+      "columns": {
+        "name": "Nome",
+        "status": "Estado",
+        "category": "Categoria"
+      },
+      "status": {
+        "draft": "Rascunho",
+        "published": "Publicado",
+        "archived": "Arquivado"
+      },
+      "sections": {
+        "status": "Estado",
+        "identity": "Identidade",
+        "media": "Multimédia",
+        "body": "Conteúdo",
+        "booking": "Reserva",
+        "seo": "SEO"
+      },
+      "fields": {
+        "status": "Estado",
+        "position": "Posição",
+        "positionHint": "Números menores aparecem primeiro.",
+        "category": "Categoria",
+        "choose": "Escolher…",
+        "name": "Nome",
+        "slug": "Slug",
+        "slugHint": "Usado nos URLs públicos; minúsculas em kebab-case.",
+        "excerpt": "Resumo",
+        "cover": "Imagem de capa",
+        "ogImage": "Imagem social",
+        "ogImageHint": "Substituição opcional para cartões sociais.",
+        "gallery": "Galeria",
+        "body": "Conteúdo",
+        "priceFrom": "Preço desde (cêntimos)",
+        "priceFromHint": "Cêntimos inteiros, ex.: 4500 = 45,00 €. Deixe em branco se sem preço.",
+        "durationLabel": "Etiqueta de duração",
+        "bookingType": "Tipo de reserva",
+        "ctaLabel": "Texto do CTA",
+        "ctaUrl": "URL do CTA",
+        "metaTitle": "Meta título",
+        "metaDescription": "Meta descrição"
+      },
+      "bookingType": {
+        "none": "Apenas exibição",
+        "enquiry": "Pedido",
+        "external": "Link externo"
+      },
+      "errors": {
+        "coverRequired": "É obrigatória uma imagem de capa.",
+        "slugConflict": "Esse slug já está em uso."
+      },
+      "cat": {
+        "title": "Categorias de serviços",
+        "subtitle": "Agrupamentos do catálogo de serviços.",
+        "newCategory": "Nova categoria",
+        "empty": "Ainda sem categorias",
+        "emptyHint": "Crie a sua primeira categoria para agrupar serviços.",
+        "editTitle": "Editar categoria",
+        "newTitle": "Nova categoria",
+        "formSubtitle": "O nome é redigido em inglês; os outros idiomas são traduzidos depois.",
+        "backToList": "Voltar às categorias",
+        "inUse": "Esta categoria ainda tem serviços e não pode ser eliminada.",
+        "columns": {
+          "name": "Nome",
+          "slug": "Slug",
+          "icon": "Ícone"
+        },
+        "sections": {
+          "details": "Detalhes"
+        },
+        "fields": {
+          "name": "Nome",
+          "slug": "Slug",
+          "icon": "Ícone",
+          "iconHint": "Chave Iconoir (kebab-case), ex.: car.",
+          "position": "Posição",
+          "positionHint": "Números menores aparecem primeiro."
+        }
+      }
+    }
   },
   "settings": {
     "skip": "Saltar para o conteúdo",
@@ -515,7 +605,9 @@
       "apartments": "Apartamentos",
       "testimonials": "Testemunhos",
       "faq": "FAQ",
-      "cities": "Cidades"
+      "cities": "Cidades",
+      "serviceCategories": "Categorias de serviços",
+      "services": "Serviços"
     },
     "shell": {
       "signedInAs": "Sessão iniciada como",
