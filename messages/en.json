@@ -217,7 +217,70 @@
     "guests": "Up to {count, plural, one {# Guest} other {# Guests}}",
     "beds": "{count, plural, one {# Bed} other {# Beds}}",
     "checkAvailability": "Check availability",
-    "poweredBy": "Booking powered by Avantio — real-time availability and instant confirmation."
+    "poweredBy": "Booking powered by Avantio — real-time availability and instant confirmation.",
+    "admin": {
+      "title": "Apartments",
+      "subtitle": "Manage the bookable units.",
+      "newApartment": "New apartment",
+      "newTitle": "New apartment",
+      "editTitle": "Edit apartment",
+      "formSubtitle": "Source content is authored in English; other languages are translated in the pipeline.",
+      "backToList": "Back to apartments",
+      "empty": "No apartments yet",
+      "emptyHint": "Create your first unit under a building.",
+      "columns": {
+        "name": "Name",
+        "building": "Building",
+        "status": "Status",
+        "bedrooms": "Bedrooms",
+        "guests": "Guests"
+      },
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "sections": {
+        "status": "Status & visibility",
+        "identity": "Identity",
+        "specs": "Specifications",
+        "media": "Media",
+        "description": "Description",
+        "booking": "Booking",
+        "seo": "SEO"
+      },
+      "fields": {
+        "status": "Status",
+        "position": "Order",
+        "positionHint": "Lower numbers show first.",
+        "building": "Building",
+        "choose": "Choose…",
+        "name": "Name",
+        "slug": "Slug",
+        "slugHint": "Lowercase, words separated by hyphens.",
+        "badge": "Badge",
+        "badgeHint": "Optional marketing label, e.g. “Penthouse”.",
+        "bedrooms": "Bedrooms",
+        "bathrooms": "Bathrooms",
+        "maxGuests": "Max guests",
+        "bedsCount": "Beds",
+        "sizeM2": "Size (m²)",
+        "floor": "Floor",
+        "cover": "Cover image",
+        "ogImage": "Social share image",
+        "ogImageHint": "Optional; falls back to the cover.",
+        "gallery": "Gallery",
+        "description": "Description",
+        "avantioId": "Avantio ID",
+        "avantioUrl": "Avantio URL",
+        "metaTitle": "Meta title",
+        "metaDescription": "Meta description"
+      },
+      "errors": {
+        "coverRequired": "A cover image is required.",
+        "slugConflict": "That slug is already in use."
+      }
+    }
   },
   "pages": {
     "faqEyebrow": "FAQ",

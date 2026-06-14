@@ -67,18 +67,35 @@ on publish. Busts `apartment:<id>` + `apartment-list`, and the parent building's
 `building:<id>` + `building-list` (its denormalized stats change with the unit set), using the
 tag constants the buildings slice exports on its **contract**.
 
+## Backoffice (`admin/`) — apartments CRUD (S12)
+
+Plugs into the backoffice shell. Contributes one `content`-group screen
+(`admin/screens.ts` → `apartmentsAdminScreens`, re-exported from `contract.ts`); list/create/edit
+mount under `app/(admin)/admin/(panel)/apartments/…`.
+
+- `admin/queries.ts` (server-only) — `listApartmentsAdmin` (all statuses; building names via the
+  **buildings contract**, never its table), `getApartmentForEdit` (source-locale record + media
+  previews).
+- `admin/validation.ts` — `apartmentSaveInput` (editor post shape; Avantio handles required, like
+  the public input).
+- `admin/actions.ts` (`"use server"`, `requireStaff`-gated) — `saveApartment` / `deleteApartment`.
+  Source [T] content (incl. `badge`) + slugs via the `core/i18n` write seam (ADR 0019); gallery
+  written here. After any change to the published set, **building stats are recomputed** (and the
+  old building's too on a reassignment) and caches busted via `revalidateApartment`.
+- `admin/ui/` — `list.tsx` (server) + `apartment-form.tsx` (one client island for new + edit).
+
+**Stat recompute (escalation resolved):** `server/stats.ts` `recomputeBuildingStats(buildingId)`
+aggregates the published units over **our** table and persists via the buildings-contract
+`setBuildingStats` — buildings can't read the apartment table (golden rule 2). This closes the
+escalation previously noted above / in `server/publish.ts`.
+
 ## Deferred / escalations
 
-- **Stat recompute**: `building.apartments_count / total_capacity / beds_count` are recomputed
-  on apartment publish (data-model.md). The UPDATE writes a **buildings-owned** table, so it
-  cannot live in this slice (golden rules 1 & 4). It needs a buildings-contract write function
-  invoked by the **S12** admin publish action; until that contract change lands,
-  `revalidateApartment` only invalidates caches.
-- **Admin CRUD** (`admin/`): plugs into the backoffice shell **S12**.
 - **Richer JSON-LD** (`Apartment` / `LodgingBusiness`): belongs in `core/seo` (**S13**, ADR —
   golden rule 3), not hand-written here.
 
 ## Tests
 
 `tests/apartments.test.ts` — apartment / media input validation + the translatable-path
-contract. Run: `npx tsx --test src/slices/apartments/tests/apartments.test.ts`.
+contract. `tests/apartments-admin.test.ts` — the `apartmentSaveInput` admin schema. Run:
+`npx tsx --test src/slices/apartments/tests/apartments.test.ts src/slices/apartments/tests/apartments-admin.test.ts`.

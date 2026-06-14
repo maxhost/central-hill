@@ -206,6 +206,24 @@ export async function listAmenitiesAdmin(): Promise<AmenityOption[]> {
   }));
 }
 
+/**
+ * Lean `{ id, name }` options of **all** buildings (every status), source names —
+ * for the apartments admin building selector (exported on the buildings contract so
+ * S3 doesn't read the building table directly).
+ */
+export async function listBuildingOptions(): Promise<{ id: string; name: string }[]> {
+  const rows = await db
+    .select({ id: building.id, slug: building.slug })
+    .from(building)
+    .orderBy(asc(building.position));
+  if (rows.length === 0) return [];
+  const content = await loadContent(
+    rows.map((r) => ({ type: BUILDING, id: r.id })),
+    SOURCE,
+  );
+  return rows.map((r) => ({ id: r.id, name: content.get(BUILDING, r.id, "name") ?? r.slug }));
+}
+
 export interface LocationOptions {
   cities: { id: string; name: string }[];
   neighbourhoods: { id: string; name: string; cityId: string }[];

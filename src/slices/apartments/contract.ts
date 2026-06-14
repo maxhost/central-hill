@@ -61,3 +61,10 @@ export interface ApartmentDetail extends ApartmentSummary {
 }
 
 export { listByBuilding, getApartmentBySlug } from "./server/queries";
+
+/**
+ * Backoffice contribution (S12). `apartmentsAdminScreens` is spread into
+ * `composeAdminNav` by the admin panel layout; list/create/edit mount under
+ * `app/(admin)/admin/(panel)/apartments/…`. Pure data — safe to import anywhere.
+ */
+export { apartmentsAdminScreens } from "./admin/screens";

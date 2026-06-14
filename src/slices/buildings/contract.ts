@@ -117,6 +117,12 @@ export {
 export { setBuildingStats } from "./server/stats";
 
 /**
+ * Admin selector source (S12): `{ id, name }` for every building, any status. The
+ * apartments admin uses it to pick a parent building without reading our table.
+ */
+export { listBuildingOptions } from "./admin/queries";
+
+/**
  * Backoffice contribution (S12). `buildingsAdminScreens` is spread into
  * `composeAdminNav` by the admin panel layout; the list/create/edit screens mount
  * under `app/(admin)/admin/(panel)/buildings/…`. Pure data — safe to import anywhere.

@@ -217,7 +217,70 @@
     "guests": "Até {count, plural, one {# hóspede} other {# hóspedes}}",
     "beds": "{count, plural, one {# cama} other {# camas}}",
     "checkAvailability": "Ver disponibilidade",
-    "poweredBy": "Reservas com tecnologia Avantio — disponibilidade em tempo real e confirmação imediata."
+    "poweredBy": "Reservas com tecnologia Avantio — disponibilidade em tempo real e confirmação imediata.",
+    "admin": {
+      "title": "Apartamentos",
+      "subtitle": "Faça a gestão das unidades reserváveis.",
+      "newApartment": "Novo apartamento",
+      "newTitle": "Novo apartamento",
+      "editTitle": "Editar apartamento",
+      "formSubtitle": "O conteúdo de origem é escrito em inglês; os outros idiomas são traduzidos no pipeline.",
+      "backToList": "Voltar aos apartamentos",
+      "empty": "Ainda sem apartamentos",
+      "emptyHint": "Crie a sua primeira unidade num edifício.",
+      "columns": {
+        "name": "Nome",
+        "building": "Edifício",
+        "status": "Estado",
+        "bedrooms": "Quartos",
+        "guests": "Hóspedes"
+      },
+      "status": {
+        "draft": "Rascunho",
+        "published": "Publicado",
+        "archived": "Arquivado"
+      },
+      "sections": {
+        "status": "Estado e visibilidade",
+        "identity": "Identidade",
+        "specs": "Especificações",
+        "media": "Multimédia",
+        "description": "Descrição",
+        "booking": "Reservas",
+        "seo": "SEO"
+      },
+      "fields": {
+        "status": "Estado",
+        "position": "Ordem",
+        "positionHint": "Números menores aparecem primeiro.",
+        "building": "Edifício",
+        "choose": "Escolher…",
+        "name": "Nome",
+        "slug": "Slug",
+        "slugHint": "Minúsculas, palavras separadas por hífens.",
+        "badge": "Etiqueta",
+        "badgeHint": "Rótulo de marketing opcional, ex. “Penthouse”.",
+        "bedrooms": "Quartos",
+        "bathrooms": "Casas de banho",
+        "maxGuests": "Hóspedes máx.",
+        "bedsCount": "Camas",
+        "sizeM2": "Área (m²)",
+        "floor": "Piso",
+        "cover": "Imagem de capa",
+        "ogImage": "Imagem de partilha social",
+        "ogImageHint": "Opcional; usa a capa por omissão.",
+        "gallery": "Galeria",
+        "description": "Descrição",
+        "avantioId": "ID Avantio",
+        "avantioUrl": "URL Avantio",
+        "metaTitle": "Meta título",
+        "metaDescription": "Meta descrição"
+      },
+      "errors": {
+        "coverRequired": "É obrigatória uma imagem de capa.",
+        "slugConflict": "Esse slug já está em uso."
+      }
+    }
   },
   "pages": {
     "faqEyebrow": "FAQ",

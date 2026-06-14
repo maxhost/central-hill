@@ -217,7 +217,70 @@
     "guests": "Jusqu'à {count, plural, one {# voyageur} other {# voyageurs}}",
     "beds": "{count, plural, one {# Lit} other {# Lits}}",
     "checkAvailability": "Voir les disponibilités",
-    "poweredBy": "Réservation propulsée par Avantio — disponibilités en temps réel et confirmation immédiate."
+    "poweredBy": "Réservation propulsée par Avantio — disponibilités en temps réel et confirmation immédiate.",
+    "admin": {
+      "title": "Appartements",
+      "subtitle": "Gérez les logements réservables.",
+      "newApartment": "Nouvel appartement",
+      "newTitle": "Nouvel appartement",
+      "editTitle": "Modifier l'appartement",
+      "formSubtitle": "Le contenu source est rédigé en anglais ; les autres langues sont traduites dans le pipeline.",
+      "backToList": "Retour aux appartements",
+      "empty": "Aucun appartement pour l'instant",
+      "emptyHint": "Créez votre premier logement dans un immeuble.",
+      "columns": {
+        "name": "Nom",
+        "building": "Immeuble",
+        "status": "Statut",
+        "bedrooms": "Chambres",
+        "guests": "Voyageurs"
+      },
+      "status": {
+        "draft": "Brouillon",
+        "published": "Publié",
+        "archived": "Archivé"
+      },
+      "sections": {
+        "status": "Statut et visibilité",
+        "identity": "Identité",
+        "specs": "Caractéristiques",
+        "media": "Médias",
+        "description": "Description",
+        "booking": "Réservation",
+        "seo": "SEO"
+      },
+      "fields": {
+        "status": "Statut",
+        "position": "Ordre",
+        "positionHint": "Les numéros les plus bas apparaissent en premier.",
+        "building": "Immeuble",
+        "choose": "Choisir…",
+        "name": "Nom",
+        "slug": "Slug",
+        "slugHint": "Minuscules, mots séparés par des traits d'union.",
+        "badge": "Badge",
+        "badgeHint": "Étiquette marketing facultative, ex. “Penthouse”.",
+        "bedrooms": "Chambres",
+        "bathrooms": "Salles de bain",
+        "maxGuests": "Voyageurs max.",
+        "bedsCount": "Lits",
+        "sizeM2": "Surface (m²)",
+        "floor": "Étage",
+        "cover": "Image de couverture",
+        "ogImage": "Image de partage social",
+        "ogImageHint": "Facultatif ; utilise la couverture par défaut.",
+        "gallery": "Galerie",
+        "description": "Description",
+        "avantioId": "ID Avantio",
+        "avantioUrl": "URL Avantio",
+        "metaTitle": "Méta-titre",
+        "metaDescription": "Méta-description"
+      },
+      "errors": {
+        "coverRequired": "Une image de couverture est requise.",
+        "slugConflict": "Ce slug est déjà utilisé."
+      }
+    }
   },
   "pages": {
     "faqEyebrow": "FAQ",
