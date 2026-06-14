@@ -47,5 +47,42 @@
     "bookTitle": "Book an apartment in this building",
     "bookIntro": "Choose the layout that suits your stay and book in real time — availability and pricing are live through our booking engine.",
     "bookCta": "Check availability"
+  },
+  "settings": {
+    "skip": "Skip to content",
+    "home": "Central Hill — home",
+    "menu": "Open menu",
+    "close": "Close menu",
+    "ctaBook": "Book Now",
+    "ctaList": "List Your Property",
+    "language": "Language",
+    "nav": {
+      "owners": "Owners",
+      "buildings": "Buildings",
+      "realEstate": "Real Estate",
+      "guests": "Guests",
+      "about": "About Us",
+      "blog": "Blog"
+    },
+    "footer": {
+      "toggle": "Are you a guest or an owner?",
+      "owner": "Owner",
+      "guest": "Guest",
+      "call": "Call",
+      "whatsapp": "WhatsApp",
+      "ownersTitle": "For Owners",
+      "companyTitle": "Guests & Company",
+      "earningsEstimate": "Earnings Estimate",
+      "ownerServices": "Owner Services",
+      "pricing": "Pricing & Plans",
+      "listProperty": "List Your Property",
+      "ownerTestimonials": "Owner Testimonials",
+      "browseApartments": "Browse Apartments",
+      "buildings": "Buildings",
+      "about": "About Us",
+      "blog": "Blog",
+      "contact": "Contact",
+      "rights": "© {year} Central Hill Apartments · Lisbon, Portugal"
+    }
   }
 }

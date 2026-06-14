@@ -3,6 +3,9 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { SiteFooter } from "@slices/settings/ui/site-footer";
+import { SiteHeader } from "@slices/settings/ui/site-header";
+import type { Locale } from "@core/db/columns";
 import "../globals.css";
 
 /** Statically generate every locale segment (no DB at request time). */
@@ -26,7 +29,11 @@ export default async function LocaleLayout({
   return (
     <html lang={locale}>
       <body>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <SiteHeader locale={locale as Locale} />
+          <div id="main">{children}</div>
+          <SiteFooter locale={locale as Locale} />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

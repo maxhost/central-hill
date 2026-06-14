@@ -47,5 +47,42 @@
     "bookTitle": "Reserve um apartamento neste edifício",
     "bookIntro": "Escolha a tipologia ideal para a sua estadia e reserve em tempo real — disponibilidade e preços ao vivo através do nosso motor de reservas.",
     "bookCta": "Ver disponibilidade"
+  },
+  "settings": {
+    "skip": "Saltar para o conteúdo",
+    "home": "Central Hill — início",
+    "menu": "Abrir menu",
+    "close": "Fechar menu",
+    "ctaBook": "Reservar",
+    "ctaList": "Anuncie o seu imóvel",
+    "language": "Idioma",
+    "nav": {
+      "owners": "Proprietários",
+      "buildings": "Edifícios",
+      "realEstate": "Imobiliário",
+      "guests": "Hóspedes",
+      "about": "Sobre nós",
+      "blog": "Blog"
+    },
+    "footer": {
+      "toggle": "É hóspede ou proprietário?",
+      "owner": "Proprietário",
+      "guest": "Hóspede",
+      "call": "Ligar",
+      "whatsapp": "WhatsApp",
+      "ownersTitle": "Para proprietários",
+      "companyTitle": "Hóspedes e empresa",
+      "earningsEstimate": "Estimativa de receitas",
+      "ownerServices": "Serviços para proprietários",
+      "pricing": "Preços e planos",
+      "listProperty": "Anuncie o seu imóvel",
+      "ownerTestimonials": "Testemunhos de proprietários",
+      "browseApartments": "Ver apartamentos",
+      "buildings": "Edifícios",
+      "about": "Sobre nós",
+      "blog": "Blog",
+      "contact": "Contacto",
+      "rights": "© {year} Central Hill Apartments · Lisboa, Portugal"
+    }
   }
 }
