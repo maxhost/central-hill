@@ -23,6 +23,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0014 — Lead capture shape: `lead` + `lead_field` KV + explicit GDPR consent](#0014)
 - [0015 — Data residency: production Neon project in an EU region](#0015)
 - [0016 — `core/email`: provider-interface seam, vendor deferred](#0016)
+- [0017 — Backoffice routing: interim path `/admin`; host split deferred](#0017)
 
 ---
 
@@ -171,3 +172,20 @@ A staff recipient is read from a new optional env var `LEAD_NOTIFY_TO`; sender f
 Wiring a real transactional vendor (Resend/Postmark/SES, **EU region** per ADR 0015) is a later
 additive step — add the dep + an `EmailProvider` impl + select it when `EMAIL_API_KEY`/`EMAIL_FROM`
 are set — with **no call-site changes**. **Status:** Accepted.
+
+## 0017 — Backoffice routing: interim path `/admin`; host split deferred <a id="0017"></a>
+**Context:** Implements **0004** (host-split `backoffice.*` vs public) and **0009** (Better Auth +
+RBAC) for the S12 shell. A subdomain split needs `backoffice.localhost`/hosts fiddling locally, and
+introducing host-splitting middleware now would also sit in front of the working public ISR routes —
+risk for no near-term gain. **Decision:** Ship the backoffice at the **path `/admin`** via a new
+`(admin)` Next route group with **its own root layout** (`<html>`), coexisting with the public
+`[locale]/layout.tsx` (two root layouts, no shared `app/layout.tsx`). **No middleware** is added:
+the public surface is untouched, and the gate is enforced server-side in the `(panel)` layout via
+`requireStaff()`. Admin is **not locale-prefixed** and renders in English for now (pinned with
+`setRequestLocale`), though i18n keys exist for all four locales. RBAC helpers
+(`getSession`/`getStaff`/`requireStaff`) live in `core/auth` as **0009** mandates ("RBAC centralized
+in core/auth"); no new kernel ADR is needed for them. **Consequences:** Zero-risk to public ISR;
+works on localhost with no setup. The eventual `backoffice.*` host split (0004) becomes a thin,
+additive middleware rewrite of `backoffice.*` → `/admin/*` with **no change to these routes**. The
+backoffice owns no tables (auth tables belong to `core/auth`), so there is no migration.
+**Status:** Accepted.

@@ -241,5 +241,47 @@
       "submit": "Submit enquiry",
       "success": "Thanks — our investment team will review your enquiry and respond shortly."
     }
+  },
+  "backoffice": {
+    "login": {
+      "title": "Central Hill — Backoffice",
+      "subtitle": "Sign in to manage the catalog.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "error": "Invalid email or password."
+    },
+    "nav": {
+      "dashboard": "Dashboard",
+      "groups": {
+        "overview": "Overview",
+        "content": "Content",
+        "crm": "Leads & CRM",
+        "translation": "Translations",
+        "system": "System"
+      }
+    },
+    "shell": {
+      "signedInAs": "Signed in as",
+      "signOut": "Sign out",
+      "roles": {
+        "admin": "Administrator",
+        "editor": "Editor",
+        "translator": "Translator"
+      }
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Welcome back, {name}.",
+      "modules": "Modules",
+      "empty": "No modules yet",
+      "emptyHint": "Slice admin screens will appear here as they are registered."
+    },
+    "forbidden": {
+      "title": "No access",
+      "message": "Your account doesn’t have permission to view this area.",
+      "back": "Back to dashboard"
+    }
   }
 }

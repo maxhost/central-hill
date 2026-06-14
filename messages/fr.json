@@ -241,5 +241,47 @@
       "submit": "Envoyer la demande",
       "success": "Merci — notre équipe d'investissement examinera votre demande et répondra sous peu."
     }
+  },
+  "backoffice": {
+    "login": {
+      "title": "Central Hill — Backoffice",
+      "subtitle": "Connectez-vous pour gérer le catalogue.",
+      "email": "E-mail",
+      "password": "Mot de passe",
+      "submit": "Se connecter",
+      "submitting": "Connexion…",
+      "error": "E-mail ou mot de passe invalide."
+    },
+    "nav": {
+      "dashboard": "Tableau de bord",
+      "groups": {
+        "overview": "Aperçu",
+        "content": "Contenu",
+        "crm": "Leads et CRM",
+        "translation": "Traductions",
+        "system": "Système"
+      }
+    },
+    "shell": {
+      "signedInAs": "Connecté en tant que",
+      "signOut": "Se déconnecter",
+      "roles": {
+        "admin": "Administrateur",
+        "editor": "Éditeur",
+        "translator": "Traducteur"
+      }
+    },
+    "dashboard": {
+      "title": "Tableau de bord",
+      "welcome": "Bon retour, {name}.",
+      "modules": "Modules",
+      "empty": "Aucun module pour l’instant",
+      "emptyHint": "Les écrans d’administration de chaque slice apparaîtront ici à mesure qu’ils sont enregistrés."
+    },
+    "forbidden": {
+      "title": "Accès refusé",
+      "message": "Votre compte n’a pas l’autorisation de voir cette zone.",
+      "back": "Retour au tableau de bord"
+    }
   }
 }

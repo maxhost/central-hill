@@ -241,5 +241,47 @@
       "submit": "Enviar consulta",
       "success": "Gracias — nuestro equipo de inversión revisará tu consulta y responderá pronto."
     }
+  },
+  "backoffice": {
+    "login": {
+      "title": "Central Hill — Backoffice",
+      "subtitle": "Inicia sesión para gestionar el catálogo.",
+      "email": "Correo",
+      "password": "Contraseña",
+      "submit": "Iniciar sesión",
+      "submitting": "Iniciando sesión…",
+      "error": "Correo o contraseña no válidos."
+    },
+    "nav": {
+      "dashboard": "Panel",
+      "groups": {
+        "overview": "Resumen",
+        "content": "Contenido",
+        "crm": "Leads y CRM",
+        "translation": "Traducciones",
+        "system": "Sistema"
+      }
+    },
+    "shell": {
+      "signedInAs": "Sesión iniciada como",
+      "signOut": "Cerrar sesión",
+      "roles": {
+        "admin": "Administrador",
+        "editor": "Editor",
+        "translator": "Traductor"
+      }
+    },
+    "dashboard": {
+      "title": "Panel",
+      "welcome": "Bienvenido de nuevo, {name}.",
+      "modules": "Módulos",
+      "empty": "Aún no hay módulos",
+      "emptyHint": "Las pantallas de administración de cada slice aparecerán aquí a medida que se registren."
+    },
+    "forbidden": {
+      "title": "Sin acceso",
+      "message": "Tu cuenta no tiene permiso para ver esta área.",
+      "back": "Volver al panel"
+    }
   }
 }
