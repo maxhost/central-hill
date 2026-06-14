@@ -31,3 +31,10 @@ export interface FaqGroup {
 }
 
 export { getFaqGroup } from "./server/queries";
+
+/**
+ * Backoffice contribution (S12). `faqAdminScreens` is spread into `composeAdminNav`
+ * by the admin panel layout; the group list + editor (with inline items) mount under
+ * `app/(admin)/admin/(panel)/faq/…`. Pure data — safe to import anywhere.
+ */
+export { faqAdminScreens } from "./admin/screens";

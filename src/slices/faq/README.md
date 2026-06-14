@@ -34,17 +34,33 @@ page owns its section heading).
 actions (S12). Since FAQ groups render only inside S9 pages (which subscribe to the same
 tag), this one bust cascades everywhere they appear.
 
-## Deferred (not in this slice's first cut)
+## Backoffice (`admin/`) — group editor with inline items (S12)
 
-- **Admin CRUD** (`admin/`): plugs into the backoffice shell **S12** — group manager, item
-  form, ordering, translation review. Not buildable before S12.
-- **Rendering**: the FAQ section/accordion UI lives with the consuming **S9 pages** (same
-  pattern as `building_faq`'s inline `<dl>` in `buildings`); this slice ships only the read
-  model, shaped (`{question, answer}`) so a future `FAQPage` JSON-LD builder can consume it.
-- **`FAQPage` JSON-LD**: belongs in `core/seo` (**S13**, ADR — golden rule 3), not
-  hand-written here. `getFaqGroup` already returns the plain Q/A pairs it will need.
+Plugs into the backoffice shell. Contributes one `content`-group screen
+(`admin/screens.ts` → `faqAdminScreens`, order 40); the group list + editor mount
+under `app/(admin)/admin/(panel)/faq/…`. A group and its items are edited together on
+one screen (mirroring the per-building FAQ editor).
+
+- `admin/validation.ts` — `faqGroupSaveInput` (group `key`/`position` + an `items`
+  array; each item `id?`, `status`, `min(1)` question/answer).
+- `admin/queries.ts` (server-only) — `listFaqGroupsAdmin` (groups + item counts) and
+  `getFaqGroupForEdit` (group + its items' source values). Not cache-wrapped.
+- `admin/actions.ts` (`"use server"`, `requireStaff`-gated) — `saveFaqGroup` (group
+  `key`/`position` are plain columns; items upserted **by id** so approved
+  translations survive an edit, removed items + their translations cleaned via the
+  `core/i18n` write seam; `revalidateFaq`) and `deleteFaqGroup` (cascades items via
+  FK, cleans their polymorphic translations).
+- `admin/ui/` — `list.tsx` (server) and `group-form.tsx` (client island; items
+  added/removed/reordered inline).
+
+## Rendering / JSON-LD (deferred to the consumer)
+
+The FAQ section/accordion UI lives with the consuming **S9 pages** (same pattern as
+`building_faq`'s inline `<dl>` in `buildings`). `FAQPage` JSON-LD belongs in `core/seo`
+(**S13**, ADR — golden rule 3); `getFaqGroup` already returns the plain Q/A pairs it needs.
 
 ## Tests
 
-`tests/faq.test.ts` — group / item input validation + the translatable-path contract. Run:
-`npx tsx --test src/slices/faq/tests/faq.test.ts`.
+`tests/faq.test.ts` — group / item input validation + the translatable-path contract.
+`tests/faq-admin.test.ts` — the admin `faqGroupSaveInput` schema. Run:
+`npx tsx --test src/slices/faq/tests/faq.test.ts src/slices/faq/tests/faq-admin.test.ts`.

@@ -513,7 +513,8 @@
       "pages": "Pages",
       "buildings": "Immeubles",
       "apartments": "Appartements",
-      "testimonials": "Témoignages"
+      "testimonials": "Témoignages",
+      "faq": "FAQ"
     },
     "shell": {
       "signedInAs": "Connecté en tant que",
@@ -606,6 +607,45 @@
         "propertyLocationHint": "Facultatif, p. ex. « Príncipe Real, Lisbonne ».",
         "quote": "Citation"
       }
+    }
+  },
+  "faq": {
+    "admin": {
+      "title": "FAQ",
+      "subtitle": "Groupes de questions fréquentes intégrés dans les pages marketing.",
+      "newGroup": "Nouveau groupe",
+      "empty": "Aucun groupe de FAQ pour le moment",
+      "emptyHint": "Créez un groupe et liez-le à une page par sa clé (p. ex. owners).",
+      "newTitle": "Nouveau groupe de FAQ",
+      "editTitle": "Modifier le groupe de FAQ",
+      "formSubtitle": "Les questions et réponses sont rédigées en anglais ; les autres langues sont traduites ensuite.",
+      "backToList": "Retour aux groupes de FAQ",
+      "columns": {
+        "key": "Clé",
+        "items": "Éléments",
+        "position": "Position"
+      },
+      "sections": {
+        "group": "Groupe",
+        "items": "Éléments"
+      },
+      "fields": {
+        "key": "Clé",
+        "keyHint": "Lie le groupe à une page : owners, real-estate, guest…",
+        "position": "Position",
+        "positionHint": "Les numéros les plus bas apparaissent en premier.",
+        "itemStatus": "Statut",
+        "question": "Question",
+        "answer": "Réponse"
+      },
+      "status": {
+        "draft": "Brouillon",
+        "published": "Publié",
+        "archived": "Archivé"
+      },
+      "addItem": "Ajouter une question",
+      "noItems": "Aucune question pour le moment.",
+      "itemLabel": "Question {n}"
     }
   }
 }

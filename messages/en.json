@@ -513,7 +513,8 @@
       "pages": "Pages",
       "buildings": "Buildings",
       "apartments": "Apartments",
-      "testimonials": "Testimonials"
+      "testimonials": "Testimonials",
+      "faq": "FAQ"
     },
     "shell": {
       "signedInAs": "Signed in as",
@@ -606,6 +607,45 @@
         "propertyLocationHint": "Optional, e.g. \"Príncipe Real, Lisbon\".",
         "quote": "Quote"
       }
+    }
+  },
+  "faq": {
+    "admin": {
+      "title": "FAQ",
+      "subtitle": "Frequently-asked-question groups embedded on the marketing pages.",
+      "newGroup": "New group",
+      "empty": "No FAQ groups yet",
+      "emptyHint": "Create a group and bind it to a page by key (e.g. owners).",
+      "newTitle": "New FAQ group",
+      "editTitle": "Edit FAQ group",
+      "formSubtitle": "Questions and answers are authored in English; other languages are translated later.",
+      "backToList": "Back to FAQ groups",
+      "columns": {
+        "key": "Key",
+        "items": "Items",
+        "position": "Position"
+      },
+      "sections": {
+        "group": "Group",
+        "items": "Items"
+      },
+      "fields": {
+        "key": "Key",
+        "keyHint": "Binds the group to a page: owners, real-estate, guest…",
+        "position": "Position",
+        "positionHint": "Lower numbers appear first.",
+        "itemStatus": "Status",
+        "question": "Question",
+        "answer": "Answer"
+      },
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "addItem": "Add question",
+      "noItems": "No questions yet.",
+      "itemLabel": "Question {n}"
     }
   }
 }
