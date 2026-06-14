@@ -260,6 +260,67 @@
     "deal": {
       "submit": "Enviar pedido",
       "success": "Obrigado — a nossa equipa de investimento vai analisar o seu pedido e responder em breve."
+    },
+    "admin": {
+      "title": "Caixa de leads",
+      "subtitle": "Submissões dos formulários do site público.",
+      "empty": "Ainda não há leads",
+      "emptyHint": "As submissões dos formulários do site aparecerão aqui.",
+      "truncated": "A mostrar as {limit} leads mais recentes.",
+      "consentYes": "Sim",
+      "consentNo": "Não",
+      "filters": {
+        "all": "Todas",
+        "new": "Novas",
+        "in_progress": "Em curso",
+        "closed": "Fechadas",
+        "allKinds": "Todos os tipos"
+      },
+      "kind": {
+        "deal_enquiry": "Pedido de negócio",
+        "contact": "Contacto",
+        "earnings_estimate": "Estimativa de receita",
+        "newsletter": "Newsletter"
+      },
+      "status": {
+        "new": "Nova",
+        "in_progress": "Em curso",
+        "closed": "Fechada"
+      },
+      "columns": {
+        "contact": "Contacto",
+        "kind": "Tipo",
+        "email": "Email",
+        "source": "Origem",
+        "locale": "Idioma",
+        "consent": "Consentimento",
+        "status": "Estado",
+        "created": "Recebida"
+      },
+      "detail": {
+        "back": "Voltar à caixa",
+        "submission": "Submissão",
+        "fields": "Campos recolhidos",
+        "audit": "Consentimento e auditoria",
+        "noFields": "Sem campos recolhidos",
+        "status": "Estado",
+        "statusLabel": "Estado",
+        "assignment": "Atribuição",
+        "assignedToYou": "Atribuída a si",
+        "assignedTo": "Atribuída a {id}",
+        "unassigned": "Sem atribuição",
+        "assignToMe": "Atribuir a mim",
+        "unassign": "Remover atribuição",
+        "sourcePage": "Página de origem",
+        "locale": "Idioma",
+        "createdAt": "Recebida",
+        "updatedAt": "Última atualização",
+        "marketingConsent": "Consentimento de marketing",
+        "consentText": "Aviso de consentimento mostrado",
+        "consentAt": "Data do consentimento",
+        "ipAddress": "Endereço IP",
+        "userAgent": "Agente de utilizador"
+      }
     }
   },
   "backoffice": {
@@ -280,7 +341,8 @@
         "crm": "Leads e CRM",
         "translation": "Traduções",
         "system": "Sistema"
-      }
+      },
+      "leads": "Leads"
     },
     "shell": {
       "signedInAs": "Sessão iniciada como",

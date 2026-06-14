@@ -73,13 +73,41 @@ UI-chrome strings live in the root `messages/<locale>.json` under the `leads` na
 consent notices. The consent notice the user sees is sent back as `consent_text` and stored
 verbatim, so the proof survives later copy changes (ADR 0014).
 
+## Backoffice (`admin/`) — leads inbox (S12)
+
+Plugs into the backoffice shell (S12 plug-in framework). The slice contributes one
+sidebar screen and mounts its own routes; the shell owns only the gate + chrome.
+
+- `admin/screens.ts` — `leadsAdminScreens: AdminScreen[]` (one screen, `crm` group,
+  label key `nav.leads` in the **backoffice** namespace). Re-exported from `contract.ts`;
+  the app panel layout spreads it into `composeAdminNav`.
+- `admin/queries.ts` (server-only) — `listLeads(filters)` (status/kind filter, newest
+  first, capped at `LEAD_LIST_LIMIT`, single grouped `lead_field` fetch — no N+1),
+  `getLead(id)` (full record + fields for the audit view), `leadStatusCounts(kind?)`.
+- `admin/actions.ts` (`"use server"`) — `setLeadStatus`, `assignLeadToMe`, `unassignLead`.
+  Each **re-gates with `requireStaff()`** (defence in depth — not relying on the layout
+  gate), re-validates input, and `revalidatePath`s the affected admin routes.
+- `admin/derive.ts` (pure, unit-tested) — `deriveLeadTitle`, `groupFields`, `statusTone`,
+  `formatAdminDate` (Lisbon, locale-independent), `LEAD_KINDS`.
+- `admin/ui/` — `inbox.tsx` (list + URL-driven filter chips), `lead-detail.tsx`
+  (fields + GDPR consent audit trail verbatim), and the `status-control` / `assign-control`
+  client islands.
+
+Routes (app composition, sanctioned integration): `app/(admin)/admin/(panel)/leads/page.tsx`
+and `…/leads/[id]/page.tsx`. Backoffice routes are **dynamic** (auth) — no ISR / cache tags;
+mutations refresh via `revalidatePath`. Admin strings live under the `leads.admin.*` keys
+(en/pt/es/fr), the sidebar label under `backoffice.nav.leads`.
+
+Assignment is a pragmatic claim/release (assign-to-me / unassign) keyed on `assigned_to →
+user.id` — no staff directory lookup (that would cross into `core/auth` user data).
+
 ## Integration handoffs (other slices)
 
 - **S9 pages** — ✅ done: `lead-cta.tsx` embeds `EarningsEstimateForm` (Owners), and the
   Real Estate / About blocks embed `DealEnquiryForm` / `ContactForm` via this contract.
 - **S5 blog** — ✅ done: `newsletter-signup.tsx` wraps `NewsletterForm` (`theme="dark"`).
-- **S12 backoffice** — ⏳ pending: leads inbox — list/filter by `kind`/`status`, assignment,
-  and the consent audit trail. Reads `lead` + `lead_field` directly in its admin slice.
+- **S12 backoffice** — ✅ done: leads inbox (`admin/`) — list/filter by `kind`/`status`,
+  claim/release assignment, and the consent audit trail. Reads `lead` + `lead_field` directly.
 
 ## Tests
 

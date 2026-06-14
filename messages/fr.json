@@ -260,6 +260,67 @@
     "deal": {
       "submit": "Envoyer la demande",
       "success": "Merci — notre équipe d'investissement examinera votre demande et répondra sous peu."
+    },
+    "admin": {
+      "title": "Boîte de réception des leads",
+      "subtitle": "Soumissions des formulaires du site public.",
+      "empty": "Pas encore de leads",
+      "emptyHint": "Les soumissions des formulaires du site apparaîtront ici.",
+      "truncated": "Affichage des {limit} leads les plus récents.",
+      "consentYes": "Oui",
+      "consentNo": "Non",
+      "filters": {
+        "all": "Tous",
+        "new": "Nouveaux",
+        "in_progress": "En cours",
+        "closed": "Clôturés",
+        "allKinds": "Tous les types"
+      },
+      "kind": {
+        "deal_enquiry": "Demande commerciale",
+        "contact": "Contact",
+        "earnings_estimate": "Estimation de revenus",
+        "newsletter": "Newsletter"
+      },
+      "status": {
+        "new": "Nouveau",
+        "in_progress": "En cours",
+        "closed": "Clôturé"
+      },
+      "columns": {
+        "contact": "Contact",
+        "kind": "Type",
+        "email": "E-mail",
+        "source": "Source",
+        "locale": "Langue",
+        "consent": "Consentement",
+        "status": "Statut",
+        "created": "Reçu"
+      },
+      "detail": {
+        "back": "Retour à la boîte",
+        "submission": "Soumission",
+        "fields": "Champs recueillis",
+        "audit": "Consentement et audit",
+        "noFields": "Aucun champ recueilli",
+        "status": "Statut",
+        "statusLabel": "Statut",
+        "assignment": "Attribution",
+        "assignedToYou": "Attribué à vous",
+        "assignedTo": "Attribué à {id}",
+        "unassigned": "Non attribué",
+        "assignToMe": "M’attribuer",
+        "unassign": "Retirer l’attribution",
+        "sourcePage": "Page d’origine",
+        "locale": "Langue",
+        "createdAt": "Reçu",
+        "updatedAt": "Dernière mise à jour",
+        "marketingConsent": "Consentement marketing",
+        "consentText": "Avis de consentement affiché",
+        "consentAt": "Date du consentement",
+        "ipAddress": "Adresse IP",
+        "userAgent": "Agent utilisateur"
+      }
     }
   },
   "backoffice": {
@@ -280,7 +341,8 @@
         "crm": "Leads et CRM",
         "translation": "Traductions",
         "system": "Système"
-      }
+      },
+      "leads": "Leads"
     },
     "shell": {
       "signedInAs": "Connecté en tant que",

@@ -30,3 +30,11 @@ export { DealEnquiryForm } from "./ui/deal-enquiry-form";
 export { ContactForm } from "./ui/contact-form";
 export { NewsletterForm } from "./ui/newsletter-form";
 export type { LeadFormProps } from "./ui/types";
+
+/**
+ * Backoffice contribution (S12). `leadsAdminScreens` is spread into
+ * `composeAdminNav` by the admin panel layout to add the leads inbox to the
+ * sidebar; the inbox/detail screens are mounted under `app/(admin)/admin/(panel)/
+ * leads/…`. Pure data (no server/client runtime) — safe to import anywhere.
+ */
+export { leadsAdminScreens } from "./admin/screens";

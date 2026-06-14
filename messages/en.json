@@ -260,6 +260,67 @@
     "deal": {
       "submit": "Submit enquiry",
       "success": "Thanks — our investment team will review your enquiry and respond shortly."
+    },
+    "admin": {
+      "title": "Leads inbox",
+      "subtitle": "Form captures from the public site.",
+      "empty": "No leads yet",
+      "emptyHint": "Submissions from the site’s forms will appear here.",
+      "truncated": "Showing the {limit} most recent leads.",
+      "consentYes": "Yes",
+      "consentNo": "No",
+      "filters": {
+        "all": "All",
+        "new": "New",
+        "in_progress": "In progress",
+        "closed": "Closed",
+        "allKinds": "All kinds"
+      },
+      "kind": {
+        "deal_enquiry": "Deal enquiry",
+        "contact": "Contact",
+        "earnings_estimate": "Earnings estimate",
+        "newsletter": "Newsletter"
+      },
+      "status": {
+        "new": "New",
+        "in_progress": "In progress",
+        "closed": "Closed"
+      },
+      "columns": {
+        "contact": "Contact",
+        "kind": "Kind",
+        "email": "Email",
+        "source": "Source",
+        "locale": "Locale",
+        "consent": "Consent",
+        "status": "Status",
+        "created": "Received"
+      },
+      "detail": {
+        "back": "Back to inbox",
+        "submission": "Submission",
+        "fields": "Captured fields",
+        "audit": "Consent & audit trail",
+        "noFields": "No fields captured",
+        "status": "Status",
+        "statusLabel": "Status",
+        "assignment": "Assignment",
+        "assignedToYou": "Assigned to you",
+        "assignedTo": "Assigned to {id}",
+        "unassigned": "Unassigned",
+        "assignToMe": "Assign to me",
+        "unassign": "Unassign",
+        "sourcePage": "Source page",
+        "locale": "Locale",
+        "createdAt": "Received",
+        "updatedAt": "Last updated",
+        "marketingConsent": "Marketing consent",
+        "consentText": "Consent notice shown",
+        "consentAt": "Consent timestamp",
+        "ipAddress": "IP address",
+        "userAgent": "User agent"
+      }
     }
   },
   "backoffice": {
@@ -280,7 +341,8 @@
         "crm": "Leads & CRM",
         "translation": "Translations",
         "system": "System"
-      }
+      },
+      "leads": "Leads"
     },
     "shell": {
       "signedInAs": "Signed in as",
