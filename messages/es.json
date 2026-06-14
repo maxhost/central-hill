@@ -512,7 +512,8 @@
       "leads": "Leads",
       "pages": "Páginas",
       "buildings": "Edificios",
-      "apartments": "Apartamentos"
+      "apartments": "Apartamentos",
+      "testimonials": "Testimonios"
     },
     "shell": {
       "signedInAs": "Sesión iniciada como",
@@ -559,6 +560,52 @@
       "back": "Volver",
       "saved": "Guardado.",
       "saveError": "No se pudo guardar. Revisa los campos e inténtalo de nuevo."
+    }
+  },
+  "testimonials": {
+    "admin": {
+      "title": "Testimonios",
+      "subtitle": "Reseñas de huéspedes y propietarios mostradas en las páginas de marketing.",
+      "newTestimonial": "Nuevo testimonio",
+      "empty": "Aún no hay testimonios",
+      "emptyHint": "Crea tu primer testimonio para destacarlo en el sitio.",
+      "newTitle": "Nuevo testimonio",
+      "editTitle": "Editar testimonio",
+      "formSubtitle": "Las citas se redactan en inglés; los demás idiomas se traducen después.",
+      "backToList": "Volver a los testimonios",
+      "columns": {
+        "author": "Autor",
+        "audience": "Público",
+        "rating": "Valoración",
+        "country": "País",
+        "status": "Estado"
+      },
+      "audience": {
+        "owner": "Propietarios",
+        "guest": "Huéspedes"
+      },
+      "status": {
+        "draft": "Borrador",
+        "published": "Publicado",
+        "archived": "Archivado"
+      },
+      "sections": {
+        "classification": "Clasificación",
+        "author": "Autor",
+        "quote": "Cita"
+      },
+      "fields": {
+        "audience": "Público",
+        "rating": "Valoración",
+        "status": "Estado",
+        "position": "Posición",
+        "positionHint": "Los números más bajos aparecen primero.",
+        "authorName": "Nombre del autor",
+        "authorCountry": "País",
+        "propertyLocation": "Ubicación del inmueble",
+        "propertyLocationHint": "Opcional, p. ej. \"Príncipe Real, Lisboa\".",
+        "quote": "Cita"
+      }
     }
   }
 }

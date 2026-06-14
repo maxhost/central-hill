@@ -37,14 +37,29 @@ section copy).
 by the testimonials admin actions (S12). Since testimonials render only inside S9 pages
 (which subscribe to the same tag), this one bust cascades everywhere they appear.
 
-## Deferred (not in this slice's first cut)
+## Backoffice (`admin/`) — testimonial CRUD (S12)
 
-- **Admin CRUD** (`admin/`): plugs into the backoffice shell **S12** — testimonial form,
-  audience/rating/order, translation review. Not buildable before S12.
-- **Rendering**: the testimonial section/card UI lives with the consuming **S9 pages**;
-  this slice ships only the read model.
+Plugs into the backoffice shell. Contributes one `content`-group screen
+(`admin/screens.ts` → `testimonialsAdminScreens`, order 30); the list + create/edit
+form mount under `app/(admin)/admin/(panel)/testimonials/…`.
+
+- `admin/validation.ts` — `testimonialSaveInput` (the editor's post shape: `id?`,
+  nullable `property_location`, `min(1)` on the required [T] `quote`).
+- `admin/queries.ts` (server-only) — `listTestimonialsAdmin` (every status, source
+  `quote`) and `getTestimonialForEdit` (one record's source values). Not cache-wrapped
+  (admin is dynamic).
+- `admin/actions.ts` (`"use server"`, `requireStaff`-gated) — `saveTestimonial`
+  (scalar columns written directly; the [T] `quote` via the `core/i18n` write seam,
+  ADR 0019; `revalidateTestimonials`) and `deleteTestimonial` (row + its translations).
+- `admin/ui/` — `list.tsx` (server) and `testimonial-form.tsx` (client island).
+
+## Rendering (deferred to the consumer)
+
+The testimonial section/card UI lives with the consuming **S9 pages**; this slice ships
+only the read model + admin.
 
 ## Tests
 
-`tests/testimonials.test.ts` — input validation + the translatable-path contract. Run:
-`npx tsx --test src/slices/testimonials/tests/testimonials.test.ts`.
+`tests/testimonials.test.ts` — input validation + the translatable-path contract.
+`tests/testimonials-admin.test.ts` — the admin `testimonialSaveInput` schema. Run:
+`npx tsx --test src/slices/testimonials/tests/testimonials.test.ts src/slices/testimonials/tests/testimonials-admin.test.ts`.

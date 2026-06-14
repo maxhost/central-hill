@@ -30,3 +30,10 @@ export interface Testimonial {
 }
 
 export { listTestimonials } from "./server/queries";
+
+/**
+ * Backoffice contribution (S12). `testimonialsAdminScreens` is spread into
+ * `composeAdminNav` by the admin panel layout; the list + create/edit form mount
+ * under `app/(admin)/admin/(panel)/testimonials/…`. Pure data — safe to import anywhere.
+ */
+export { testimonialsAdminScreens } from "./admin/screens";

@@ -512,7 +512,8 @@
       "leads": "Leads",
       "pages": "Pages",
       "buildings": "Immeubles",
-      "apartments": "Appartements"
+      "apartments": "Appartements",
+      "testimonials": "Témoignages"
     },
     "shell": {
       "signedInAs": "Connecté en tant que",
@@ -559,6 +560,52 @@
       "back": "Retour",
       "saved": "Enregistré.",
       "saveError": "Impossible d’enregistrer. Vérifiez les champs et réessayez."
+    }
+  },
+  "testimonials": {
+    "admin": {
+      "title": "Témoignages",
+      "subtitle": "Avis de voyageurs et de propriétaires affichés sur les pages marketing.",
+      "newTestimonial": "Nouveau témoignage",
+      "empty": "Aucun témoignage pour le moment",
+      "emptyHint": "Créez votre premier témoignage pour le mettre en avant sur le site.",
+      "newTitle": "Nouveau témoignage",
+      "editTitle": "Modifier le témoignage",
+      "formSubtitle": "Les citations sont rédigées en anglais ; les autres langues sont traduites ensuite.",
+      "backToList": "Retour aux témoignages",
+      "columns": {
+        "author": "Auteur",
+        "audience": "Public",
+        "rating": "Note",
+        "country": "Pays",
+        "status": "Statut"
+      },
+      "audience": {
+        "owner": "Propriétaires",
+        "guest": "Voyageurs"
+      },
+      "status": {
+        "draft": "Brouillon",
+        "published": "Publié",
+        "archived": "Archivé"
+      },
+      "sections": {
+        "classification": "Classification",
+        "author": "Auteur",
+        "quote": "Citation"
+      },
+      "fields": {
+        "audience": "Public",
+        "rating": "Note",
+        "status": "Statut",
+        "position": "Position",
+        "positionHint": "Les numéros les plus bas apparaissent en premier.",
+        "authorName": "Nom de l’auteur",
+        "authorCountry": "Pays",
+        "propertyLocation": "Emplacement du bien",
+        "propertyLocationHint": "Facultatif, p. ex. « Príncipe Real, Lisbonne ».",
+        "quote": "Citation"
+      }
     }
   }
 }

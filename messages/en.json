@@ -512,7 +512,8 @@
       "leads": "Leads",
       "pages": "Pages",
       "buildings": "Buildings",
-      "apartments": "Apartments"
+      "apartments": "Apartments",
+      "testimonials": "Testimonials"
     },
     "shell": {
       "signedInAs": "Signed in as",
@@ -559,6 +560,52 @@
       "back": "Back",
       "saved": "Saved.",
       "saveError": "Couldn’t save. Please check the fields and try again."
+    }
+  },
+  "testimonials": {
+    "admin": {
+      "title": "Testimonials",
+      "subtitle": "Guest and owner reviews shown across the marketing pages.",
+      "newTestimonial": "New testimonial",
+      "empty": "No testimonials yet",
+      "emptyHint": "Create your first testimonial to feature it on the site.",
+      "newTitle": "New testimonial",
+      "editTitle": "Edit testimonial",
+      "formSubtitle": "Quotes are authored in English; other languages are translated later.",
+      "backToList": "Back to testimonials",
+      "columns": {
+        "author": "Author",
+        "audience": "Audience",
+        "rating": "Rating",
+        "country": "Country",
+        "status": "Status"
+      },
+      "audience": {
+        "owner": "Owners",
+        "guest": "Guests"
+      },
+      "status": {
+        "draft": "Draft",
+        "published": "Published",
+        "archived": "Archived"
+      },
+      "sections": {
+        "classification": "Classification",
+        "author": "Author",
+        "quote": "Quote"
+      },
+      "fields": {
+        "audience": "Audience",
+        "rating": "Rating",
+        "status": "Status",
+        "position": "Position",
+        "positionHint": "Lower numbers appear first.",
+        "authorName": "Author name",
+        "authorCountry": "Country",
+        "propertyLocation": "Property location",
+        "propertyLocationHint": "Optional, e.g. \"Príncipe Real, Lisbon\".",
+        "quote": "Quote"
+      }
     }
   }
 }
