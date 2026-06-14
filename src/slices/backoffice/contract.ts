@@ -33,3 +33,32 @@ export {
   TranslationFieldRow,
 } from "./ui/primitives";
 export type { Column } from "./ui/primitives";
+
+/**
+ * Shared admin **form** primitives (S12) — presentational controls slices compose
+ * inside their own client form islands. See `ui/form.tsx`.
+ */
+export {
+  Field,
+  TextInput,
+  TextArea,
+  Select,
+  Checkbox,
+  AdminButton,
+  FieldGrid,
+  FormActions,
+  controlClass,
+} from "./ui/form";
+
+/**
+ * Media picker islands + their gated upload actions (S12 + ADR 0018). The media
+ * admin UI lives here per ADR 0018; consuming slices import the fields and pass
+ * resolved previews via {@link resolveMediaPreviews} from their server screens.
+ */
+export { MediaField, MediaGalleryField } from "./ui/media-field";
+export {
+  presignAdminUpload,
+  finalizeAdminUpload,
+  resolveMediaPreviews,
+} from "./server/media-actions";
+export type { AdminMediaPreview } from "./server/media-actions";

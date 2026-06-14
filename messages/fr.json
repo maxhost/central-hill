@@ -342,7 +342,10 @@
         "translation": "Traductions",
         "system": "Système"
       },
-      "leads": "Leads"
+      "leads": "Leads",
+      "pages": "Pages",
+      "buildings": "Immeubles",
+      "apartments": "Appartements"
     },
     "shell": {
       "signedInAs": "Connecté en tant que",
@@ -364,6 +367,31 @@
       "title": "Accès refusé",
       "message": "Votre compte n’a pas l’autorisation de voir cette zone.",
       "back": "Retour au tableau de bord"
+    },
+    "media": {
+      "upload": "Téléverser",
+      "replace": "Remplacer",
+      "remove": "Retirer",
+      "uploading": "Téléversement…",
+      "addImages": "Ajouter des images",
+      "galleryEmpty": "Aucune image pour l’instant",
+      "video": "Vidéo",
+      "empty": "Aucune image",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "uploadError": "Échec du téléversement. Réessayez."
+    },
+    "actions": {
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "cancel": "Annuler",
+      "create": "Créer",
+      "delete": "Supprimer",
+      "deleting": "Suppression…",
+      "confirmDelete": "Supprimer cet élément ? Action irréversible.",
+      "back": "Retour",
+      "saved": "Enregistré.",
+      "saveError": "Impossible d’enregistrer. Vérifiez les champs et réessayez."
     }
   }
 }

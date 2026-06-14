@@ -342,7 +342,10 @@
         "translation": "Traduções",
         "system": "Sistema"
       },
-      "leads": "Leads"
+      "leads": "Leads",
+      "pages": "Páginas",
+      "buildings": "Edifícios",
+      "apartments": "Apartamentos"
     },
     "shell": {
       "signedInAs": "Sessão iniciada como",
@@ -364,6 +367,31 @@
       "title": "Sem acesso",
       "message": "A sua conta não tem permissão para ver esta área.",
       "back": "Voltar ao painel"
+    },
+    "media": {
+      "upload": "Carregar",
+      "replace": "Substituir",
+      "remove": "Remover",
+      "uploading": "A carregar…",
+      "addImages": "Adicionar imagens",
+      "galleryEmpty": "Ainda sem imagens",
+      "video": "Vídeo",
+      "empty": "Sem imagem",
+      "moveUp": "Mover para cima",
+      "moveDown": "Mover para baixo",
+      "uploadError": "Falha no carregamento. Tente novamente."
+    },
+    "actions": {
+      "save": "Guardar",
+      "saving": "A guardar…",
+      "cancel": "Cancelar",
+      "create": "Criar",
+      "delete": "Eliminar",
+      "deleting": "A eliminar…",
+      "confirmDelete": "Eliminar este item? Não pode ser anulado.",
+      "back": "Voltar",
+      "saved": "Guardado.",
+      "saveError": "Não foi possível guardar. Verifique os campos e tente novamente."
     }
   }
 }

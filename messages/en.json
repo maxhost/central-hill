@@ -342,7 +342,10 @@
         "translation": "Translations",
         "system": "System"
       },
-      "leads": "Leads"
+      "leads": "Leads",
+      "pages": "Pages",
+      "buildings": "Buildings",
+      "apartments": "Apartments"
     },
     "shell": {
       "signedInAs": "Signed in as",
@@ -364,6 +367,31 @@
       "title": "No access",
       "message": "Your account doesn’t have permission to view this area.",
       "back": "Back to dashboard"
+    },
+    "media": {
+      "upload": "Upload",
+      "replace": "Replace",
+      "remove": "Remove",
+      "uploading": "Uploading…",
+      "addImages": "Add images",
+      "galleryEmpty": "No images yet",
+      "video": "Video",
+      "empty": "No image",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "uploadError": "Upload failed. Please try again."
+    },
+    "actions": {
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "create": "Create",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "confirmDelete": "Delete this item? This can’t be undone.",
+      "back": "Back",
+      "saved": "Saved.",
+      "saveError": "Couldn’t save. Please check the fields and try again."
     }
   }
 }

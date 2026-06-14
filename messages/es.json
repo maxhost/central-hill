@@ -342,7 +342,10 @@
         "translation": "Traducciones",
         "system": "Sistema"
       },
-      "leads": "Leads"
+      "leads": "Leads",
+      "pages": "Páginas",
+      "buildings": "Edificios",
+      "apartments": "Apartamentos"
     },
     "shell": {
       "signedInAs": "Sesión iniciada como",
@@ -364,6 +367,31 @@
       "title": "Sin acceso",
       "message": "Tu cuenta no tiene permiso para ver esta área.",
       "back": "Volver al panel"
+    },
+    "media": {
+      "upload": "Subir",
+      "replace": "Reemplazar",
+      "remove": "Quitar",
+      "uploading": "Subiendo…",
+      "addImages": "Añadir imágenes",
+      "galleryEmpty": "Aún no hay imágenes",
+      "video": "Vídeo",
+      "empty": "Sin imagen",
+      "moveUp": "Mover arriba",
+      "moveDown": "Mover abajo",
+      "uploadError": "Error al subir. Inténtalo de nuevo."
+    },
+    "actions": {
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "cancel": "Cancelar",
+      "create": "Crear",
+      "delete": "Eliminar",
+      "deleting": "Eliminando…",
+      "confirmDelete": "¿Eliminar este elemento? No se puede deshacer.",
+      "back": "Volver",
+      "saved": "Guardado.",
+      "saveError": "No se pudo guardar. Revisa los campos e inténtalo de nuevo."
     }
   }
 }

@@ -55,6 +55,19 @@ row is treated as not-staff.
 - **Primitives** — `AdminPageHeader`, `AdminCard`, `EmptyState`, `StateBadge`,
   `DataTable` (+ `Column`), `TranslationFieldRow` (translation-review scaffold).
   Pure/presentational so slice **server** components compose them directly.
+- **Form primitives** (`ui/form.tsx`) — `Field`, `TextInput`, `TextArea`,
+  `Select`, `Checkbox`, `AdminButton`, `FieldGrid`, `FormActions`, `controlClass`.
+  Presentational controls slice **client** form islands compose (the island owns
+  state + the server-action submit). The leads inbox predates these; the CRUD
+  screens (pages/buildings/apartments) build on them so inputs stay consistent.
+- **Media picker** (`ui/media-field.tsx`, `server/media-actions.ts`, ADR 0018) —
+  `MediaField` (single cover/og asset) + `MediaGalleryField` (ordered gallery),
+  controlled islands that run the two-phase upload: `presignAdminUpload` →
+  direct browser **PUT** to R2 → `finalizeAdminUpload`. `resolveMediaPreviews(ids)`
+  resolves previews for already-persisted assets on edit screens; `AdminMediaPreview`
+  is the render-ready view. **ADR 0018 places the media admin UI here**; consuming
+  slices import the fields via this contract and never touch `core/media` ingest
+  directly (those kernel functions are `server-only` + ungated by design).
 
 Backoffice routes are **dynamic** (auth) — no ISR, no cache tags.
 
