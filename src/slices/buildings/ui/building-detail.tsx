@@ -5,6 +5,7 @@ import type { Locale } from "@core/db/columns";
 import { MediaImage } from "@core/media";
 import { JsonLd, breadcrumbLd } from "@core/seo";
 import { ButtonLink, Container, Eyebrow, Section } from "@core/ui";
+import { BuildingApartments } from "@slices/apartments/ui/building-apartments";
 import { getBuildingBySlug } from "../contract";
 import type { BuildingDetail as BuildingDetailModel } from "../contract";
 
@@ -73,6 +74,11 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
       </Section>
 
       <Gallery building={b} />
+
+      {/* "Apartments in this Building" grid — composed from the apartments slice
+          (S3) via its ready-to-embed UI; renders nothing when the building has no
+          published units. */}
+      <BuildingApartments locale={locale} slug={b.slug} />
 
       <Section className="pt-0">
         <Container>
