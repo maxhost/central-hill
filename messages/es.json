@@ -831,7 +831,8 @@
       "authors": "Autores",
       "posts": "Entradas",
       "settings": "Ajustes",
-      "navigation": "Navegación"
+      "navigation": "Navegación",
+      "translations": "Traducciones"
     },
     "shell": {
       "signedInAs": "Sesión iniciada como",
@@ -1013,6 +1014,64 @@
       "noNeighbourhoods": "Aún no hay barrios.",
       "addNeighbourhood": "Añadir barrio",
       "neighbourhoodLabel": "Barrio {n}"
+    }
+  },
+  "translation": {
+    "title": "Traducciones",
+    "subtitle": "Revisa y aprueba las traducciones generadas automáticamente en todos los contenidos.",
+    "views": {
+      "all": "Todas",
+      "attention": "Requiere atención",
+      "done": "Al día"
+    },
+    "allTypes": "Todos los tipos",
+    "status": {
+      "missing": "Faltan",
+      "stale": "Obsoleta",
+      "needsReview": "Por revisar",
+      "approved": "Aprobada"
+    },
+    "columns": {
+      "entity": "Contenido",
+      "type": "Tipo",
+      "fields": "Campos",
+      "progress": "Progreso",
+      "updated": "Actualizado"
+    },
+    "empty": "Aún no hay nada que traducir",
+    "emptyHint": "El contenido traducible aparece aquí cuando se redacta el texto de origen.",
+    "backToInbox": "← Volver a la bandeja",
+    "noFields": "Sin campos traducibles",
+    "noFieldsHint": "Esta entidad no tiene texto de origen para traducir.",
+    "entityTypes": {
+      "building": "Edificio",
+      "apartment": "Apartamento",
+      "blog_post": "Artículo",
+      "service": "Servicio",
+      "guide_page": "Guía",
+      "testimonial": "Testimonio",
+      "faq_group": "Grupo de FAQ",
+      "faq_item": "FAQ",
+      "page_content": "Página",
+      "city": "Ciudad",
+      "neighbourhood": "Barrio",
+      "service_category": "Categoría de servicio",
+      "blog_category": "Categoría del blog",
+      "author": "Autor",
+      "building_faq": "FAQ del edificio"
+    },
+    "actions": {
+      "approve": "Aprobar",
+      "reset": "Restablecer",
+      "edit": "Editar",
+      "add": "Añadir",
+      "clear": "Borrar",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "generate": "Generar",
+      "generateAll": "Generar (todo)",
+      "approveAll": "Aprobar todo",
+      "editLabel": "Editar {field}"
     }
   }
 }

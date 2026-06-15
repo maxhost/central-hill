@@ -3,6 +3,8 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
 import type { Locale } from "@core/db/columns";
 import { slug as slugTable, translation } from "./schema";
+import { hashSource } from "./translate";
+import type { TranslationState } from "./content";
 
 /**
  * Content + slug **write** seam (kernel — `core/i18n`, ADR 0019). The single
@@ -164,6 +166,111 @@ export async function setSlugs(
   for (const [loc, value] of Object.entries(slugByLocale)) {
     if (value) await setSlug(type, id, loc as Locale, value);
   }
+}
+
+/**
+ * Target-locale write seam (ADR 0021 — the part ADR 0019 deferred to S14). The
+ * LLM draft → `needs_review` → `approved` workflow mutates **non-source** locales
+ * only through these three functions; the source locale stays
+ * {@link setSourceContent}'s job. Same constraints as the source seam:
+ * `requireStaff`-gated at the slice action, sequential statements (Neon HTTP has
+ * no interactive tx), and the `translation_key` unique backstops concurrency.
+ */
+
+/** Reject any attempt to write the source locale through the target seam. */
+function assertTarget(locale: Locale): void {
+  if (locale === SOURCE_LOCALE) {
+    throw new Error(`setTargetTranslation: '${SOURCE_LOCALE}' is the source locale (use setSourceContent).`);
+  }
+}
+
+/**
+ * Upsert one **target-locale** field value, stamping `source_hash` from the
+ * `sourceValue` it was translated from (so the row goes stale when the source later
+ * changes). Defaults to `state='needs_review'` — the draft a reviewer approves.
+ */
+export async function setTargetTranslation(
+  type: string,
+  id: string,
+  field: string,
+  locale: Locale,
+  value: string,
+  opts: { sourceValue: string; state?: TranslationState; updatedBy?: string },
+): Promise<void> {
+  assertTarget(locale);
+  const row = {
+    entity_type: type,
+    entity_id: id,
+    field,
+    locale,
+    value: value.trim(),
+    state: opts.state ?? ("needs_review" as TranslationState),
+    source_hash: hashSource(opts.sourceValue),
+    updated_by: opts.updatedBy ?? null,
+  };
+  await db
+    .insert(translation)
+    .values(row)
+    .onConflictDoUpdate({
+      target: [
+        translation.entity_type,
+        translation.entity_id,
+        translation.field,
+        translation.locale,
+      ],
+      set: {
+        value: sql`excluded.value`,
+        state: sql`excluded.state`,
+        source_hash: sql`excluded.source_hash`,
+        updated_by: sql`excluded.updated_by`,
+        updated_at: sql`now()`,
+      },
+    });
+}
+
+/**
+ * Value-preserving state transition of one target row (approve, or reset to
+ * `needs_review`). No-op if the row does not exist.
+ */
+export async function setTranslationState(
+  type: string,
+  id: string,
+  field: string,
+  locale: Locale,
+  state: TranslationState,
+): Promise<void> {
+  assertTarget(locale);
+  await db
+    .update(translation)
+    .set({ state, updated_at: new Date() })
+    .where(
+      and(
+        eq(translation.entity_type, type),
+        eq(translation.entity_id, id),
+        eq(translation.field, field),
+        eq(translation.locale, locale),
+      ),
+    );
+}
+
+/** Remove one target-locale field row (a reviewer clearing a translation). */
+export async function deleteTranslation(
+  type: string,
+  id: string,
+  field: string,
+  locale: Locale,
+): Promise<void> {
+  assertTarget(locale);
+  await db
+    .delete(translation)
+    .where(
+      and(
+        eq(translation.entity_type, type),
+        eq(translation.entity_id, id),
+        eq(translation.field, field),
+        eq(translation.locale, locale),
+      ),
+    );
 }
 
 /** Remove every translation row for an entity (used on entity delete). */

@@ -4,8 +4,21 @@
  * submodules directly (`@core/i18n/content`, `@core/i18n/schema`); new code may
  * use this barrel. The `translation` / `slug` tables live in `./schema`.
  */
-export type { ContentRef, ContentResolver } from "./content";
-export { loadContent, resolveSlug, loadSlugs, loadAlternateSlugs, loadAllSlugs } from "./content";
+export type {
+  ContentRef,
+  ContentResolver,
+  TranslationRow,
+  TranslationFilter,
+  TranslationState,
+} from "./content";
+export {
+  loadContent,
+  resolveSlug,
+  loadSlugs,
+  loadAlternateSlugs,
+  loadAllSlugs,
+  loadTranslationRows,
+} from "./content";
 
 export type { SourceFields } from "./content-write";
 export {
@@ -15,4 +28,15 @@ export {
   setSlugs,
   deleteContent,
   deleteSlugs,
+  setTargetTranslation,
+  setTranslationState,
+  deleteTranslation,
 } from "./content-write";
+
+export type {
+  TranslateProvider,
+  TranslateRequest,
+  TranslateResult,
+  TranslateUnit,
+} from "./translate";
+export { getTranslateProvider, hashSource } from "./translate";

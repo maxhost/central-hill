@@ -27,6 +27,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0018 — Media R2 upload: presigned direct PUT + serve-time resizing](#0018)
 - [0019 — `core/i18n` content + slug write seam (admin write path)](#0019)
 - [0020 — S13 seo-geo: sitemaps/robots/llms.txt as root routes + kernel JSON-LD/slug additions](#0020)
+- [0021 — S14 translation-pipeline: kernel target-write/read seam + provider interface + review inbox](#0021)
 
 ---
 
@@ -339,3 +340,64 @@ revalidate keeps it correct within a day. Apartments and cities have **no standa
 today (apartments render inside building detail; cities inside the guides index), so they are
 intentionally absent from the sitemap; adding their routes later is an additive section. **Status:**
 Accepted.
+
+## 0021 — S14 translation-pipeline: kernel target-write/read seam + provider interface + review inbox <a id="0021"></a>
+**Context:** S14 implements the workflow ADR 0007 promised: on source save an LLM drafts each target
+locale → backoffice **review** (`needs_review`) → **`approved`** → publish revalidates; source edits
+mark targets stale. The substrate already exists — the `translation` table (`state` ∈
+`draft|needs_review|approved`, `source_hash` for staleness; `core/i18n/schema.ts`), the read render
+policy (`loadContent`: approved target else source fallback; `core/i18n/content.ts`), and the
+**source-locale** write seam (`setSourceContent`/`setSlug…`; ADR 0019, which explicitly deferred
+*target-locale* writes to S14 "through this same seam later"). CLAUDE.md also reserves the LLM
+**provider behind an interface in `src/core/i18n/translate`**, which S0 never created. Golden rule 4
+forbids a slice touching the kernel `translation` table directly, so S14's data access **must** live
+in `core/i18n` (kernel) → this ADR. The shell already reserves the `translation` nav group, the
+`translator` `StaffRole`, and a `TranslationFieldRow` primitive for exactly this slice.
+
+**Decision:** Orchestrator-level decision (golden rule 6) authorizing:
+1. **New slice `src/slices/translation/`** (S14). Owns **no tables / no migration** — it operates on
+   the existing kernel `translation` table **generically by `entity_type`** (it never imports another
+   content slice's internals; the translatable universe *is* the set of source-locale rows). Holds the
+   pipeline orchestration, the backoffice **review inbox + per-entity review screen**, and pure derive
+   helpers. Backoffice-only; not on the public ISR path.
+2. **Additive kernel additions to `core/i18n`** (golden rule 3 → this ADR; read API for existing
+   callers unchanged):
+   - **`translate.ts`** (new) — the LLM **provider interface** `TranslateProvider` +
+     `getTranslateProvider()` resolver + `hashSource(value)` (stable content hash for `source_hash`).
+     Default provider is a **pass-through identity** stub (returns the source verbatim as a
+     `needs_review` draft for the reviewer to refine) when no real provider is configured; a concrete
+     LLM client is a pluggable follow-up (`TRANSLATE_API_KEY` already in `.env.example`). This is the
+     "provider behind an interface" CLAUDE.md/ADR 0007 require — never called from public pages.
+   - **`content.ts`** — one generic reader `loadTranslationRows(filter?)` → the raw `translation`
+     rows (`{entity_type, entity_id, field, locale, value, state, source_hash, updated_at}`) optionally
+     filtered by `{type,id,locale,state}`. S14 derives the whole inbox (source vs targets, staleness,
+     per-state counts) in memory from this — the dataset is the boutique CMS's content, small, and read
+     in the dynamic admin (not ISR). Mirrors the existing read family; read-only; **no migration**.
+   - **`content-write.ts`** — **target-locale** writes (the part ADR 0019 deferred):
+     `setTargetTranslation(type, id, field, locale, value, {sourceValue, state?, updatedBy?})` (upsert a
+     non-`en` row, stamping `source_hash = hashSource(sourceValue)`, default `state='needs_review'`);
+     `setTranslationState(type, id, field, locale, state)` (value-preserving transition — approve /
+     reset-to-review); `deleteTranslation(type, id, field, locale)`. Same constraints as ADR 0019:
+     `requireStaff`-gated at the slice action, sequential statements (Neon HTTP — no interactive tx),
+     `translation_key` unique backstops races; `locale='en'` is rejected (source is ADR-0019's job).
+   - Barrel re-exports in `core/i18n/index.ts`.
+3. **Brand-new admin app routes** under the gated `(panel)` group: `/admin/translations` (inbox) and
+   `/admin/translations/[type]/[id]` (per-entity review). New files (golden rule 1).
+4. **Backoffice registration** — `translationAdminScreens` (the reserved `translation` nav group),
+   spread into `composeAdminNav` in `app/(admin)/admin/(panel)/layout.tsx` (the app shell's existing
+   composition job, like every other slice). Visible to any staff (incl. the `translator` role).
+5. **i18n keys** — a new root `translation` message namespace + `backoffice.nav.translations` label,
+   authored for **en/pt/es/fr** (the established additive per-slice convention; messages are
+   consolidated in root `messages/<locale>.json`).
+
+**Publish/revalidation:** approving (or resetting) a target is a Server Action that, after the kernel
+write, busts the affected entity's public ISR cache best-effort via `updateTag(cacheTags.entity(type,
+id))` + `updateTag(cacheTags.list(type))` (covers both the per-entity and list-tag conventions slices
+use) so the now-approved locale appears; the daily ISR fallback backstops any slice using a different
+tag. **Consequences:** the multilingual workflow is end-to-end (author source → draft → review →
+approve → live), reusing one kernel seam for all content; the kernel grows by pure additive
+read/write/provider functions with no behaviour change to existing callers; **no migration** (table
+exists). Trade-offs: the default translate provider is an identity stub (a real LLM client is a
+follow-up behind the same interface); staleness is surfaced (source_hash mismatch) and re-draftable but
+not auto-re-translated; cross-slice cache busting on approve is best-effort + daily fallback (mirrors
+S13). **Status:** Accepted.

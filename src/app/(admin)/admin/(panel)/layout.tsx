@@ -11,6 +11,7 @@ import { pagesAdminScreens } from "@slices/pages/contract";
 import { servicesAdminScreens } from "@slices/services/contract";
 import { settingsAdminScreens } from "@slices/settings/contract";
 import { testimonialsAdminScreens } from "@slices/testimonials/contract";
+import { translationAdminScreens } from "@slices/translation/contract";
 
 /**
  * Gated backoffice shell. `requireStaff()` redirects to `/admin/login` when
@@ -32,6 +33,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
       ...servicesAdminScreens,
       ...blogAdminScreens,
       ...leadsAdminScreens,
+      ...translationAdminScreens,
       ...settingsAdminScreens,
     ],
     staff.role,

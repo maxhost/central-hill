@@ -831,7 +831,8 @@
       "authors": "Authors",
       "posts": "Posts",
       "settings": "Settings",
-      "navigation": "Navigation"
+      "navigation": "Navigation",
+      "translations": "Translations"
     },
     "shell": {
       "signedInAs": "Signed in as",
@@ -1013,6 +1014,64 @@
       "noNeighbourhoods": "No neighbourhoods yet.",
       "addNeighbourhood": "Add neighbourhood",
       "neighbourhoodLabel": "Neighbourhood {n}"
+    }
+  },
+  "translation": {
+    "title": "Translations",
+    "subtitle": "Review and approve machine-drafted translations across all content.",
+    "views": {
+      "all": "All",
+      "attention": "Needs attention",
+      "done": "Up to date"
+    },
+    "allTypes": "All types",
+    "status": {
+      "missing": "Missing",
+      "stale": "Stale",
+      "needsReview": "Needs review",
+      "approved": "Approved"
+    },
+    "columns": {
+      "entity": "Content",
+      "type": "Type",
+      "fields": "Fields",
+      "progress": "Progress",
+      "updated": "Updated"
+    },
+    "empty": "Nothing to translate yet",
+    "emptyHint": "Translatable content appears here once source text is authored.",
+    "backToInbox": "← Back to inbox",
+    "noFields": "No translatable fields",
+    "noFieldsHint": "This entity has no source text to translate.",
+    "entityTypes": {
+      "building": "Building",
+      "apartment": "Apartment",
+      "blog_post": "Blog post",
+      "service": "Service",
+      "guide_page": "Guide",
+      "testimonial": "Testimonial",
+      "faq_group": "FAQ group",
+      "faq_item": "FAQ item",
+      "page_content": "Page",
+      "city": "City",
+      "neighbourhood": "Neighbourhood",
+      "service_category": "Service category",
+      "blog_category": "Blog category",
+      "author": "Author",
+      "building_faq": "Building FAQ"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reset": "Reset",
+      "edit": "Edit",
+      "add": "Add",
+      "clear": "Clear",
+      "save": "Save",
+      "cancel": "Cancel",
+      "generate": "Generate",
+      "generateAll": "Generate (all)",
+      "approveAll": "Approve all",
+      "editLabel": "Edit {field}"
     }
   }
 }
