@@ -65,6 +65,20 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
   };
 }
 
-export type { BlogPostingInput, BreadcrumbItem } from "./jsonld";
-export { blogPostingLd, breadcrumbLd } from "./jsonld";
+export type {
+  BlogPostingInput,
+  BreadcrumbItem,
+  OrganizationInput,
+  LocalBusinessInput,
+  FaqLdItem,
+  LodgingBusinessInput,
+} from "./jsonld";
+export {
+  blogPostingLd,
+  breadcrumbLd,
+  organizationLd,
+  localBusinessLd,
+  faqPageLd,
+  lodgingBusinessLd,
+} from "./jsonld";
 export { JsonLd } from "./json-ld";

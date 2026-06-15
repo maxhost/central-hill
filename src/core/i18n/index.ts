@@ -5,7 +5,7 @@
  * use this barrel. The `translation` / `slug` tables live in `./schema`.
  */
 export type { ContentRef, ContentResolver } from "./content";
-export { loadContent, resolveSlug, loadSlugs, loadAlternateSlugs } from "./content";
+export { loadContent, resolveSlug, loadSlugs, loadAlternateSlugs, loadAllSlugs } from "./content";
 
 export type { SourceFields } from "./content-write";
 export {

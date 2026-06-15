@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Locale } from "@core/db/columns";
 import { MediaImage } from "@core/media";
-import { JsonLd, breadcrumbLd } from "@core/seo";
+import { JsonLd, breadcrumbLd, lodgingBusinessLd } from "@core/seo";
 import { ButtonLink, Container, Eyebrow, Section } from "@core/ui";
 import { BuildingApartments } from "@slices/apartments/ui/building-apartments";
 import { getBuildingBySlug } from "../contract";
@@ -13,11 +13,8 @@ import type { BuildingDetail as BuildingDetailModel } from "../contract";
  * Building detail (content-briefs.md → 2 · Buildings, LovelyStay-style): hero
  * (name + address + NEW badge) · stats (apartments · capacity · beds) · gallery ·
  * "The Building" + "The Neighbourhood" prose · amenities · FAQ · "Book an apartment"
- * CTA (Avantio). Emits BreadcrumbList JSON-LD.
- *
- * NOTE (escalation): a richer `LodgingBusiness`/`Apartment` JSON-LD builder belongs
- * in the kernel `core/seo` (ADR required, golden rule 3) — not hand-written here.
- * Until then we emit the available BreadcrumbList only. Tracked in README → Deferred.
+ * CTA (Avantio). Emits BreadcrumbList + LodgingBusiness JSON-LD (the latter via the
+ * kernel `core/seo` builder added in ADR 0020, resolving the prior escalation note).
  */
 export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: string }) {
   setRequestLocale(locale);
@@ -32,6 +29,18 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
       { name: t("breadcrumb"), url: `/${locale}/buildings` },
       { name: b.name, url },
     ]),
+    lodgingBusinessLd({
+      name: b.name,
+      url,
+      description: b.descriptionIntro || undefined,
+      image: b.gallery.map((g) => g.url),
+      address: b.streetAddress ?? undefined,
+      containedInPlace: b.neighbourhood?.name ?? b.city.name,
+      latitude: b.latitude,
+      longitude: b.longitude,
+      occupancy: b.stats.capacity,
+      amenities: b.amenities.map((a) => a.label),
+    }),
   ];
 
   return (

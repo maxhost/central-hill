@@ -1,4 +1,5 @@
 import type { Locale } from "@core/db/columns";
+import { JsonLd, faqPageLd } from "@core/seo";
 import { Container } from "@core/ui";
 import { getFaqGroup } from "@slices/faq/contract";
 import { SectionHeading } from "./blocks";
@@ -7,9 +8,8 @@ import { SectionHeading } from "./blocks";
  * Marketing FAQ section (Owners/Guests/Real-Estate). Reads a group by its language-neutral
  * key from the faq slice; renders nothing when the group is empty. Subscribes transitively
  * to `faq-list`. (Distinct from per-building FAQ, which lives on the building detail.)
- *
- * NOTE (escalation): `FAQPage` JSON-LD belongs in the kernel `core/seo` (S13, ADR — golden
- * rule 3); not hand-written here.
+ * Emits `FAQPage` JSON-LD via the kernel `core/seo` builder (ADR 0020, resolving the
+ * prior escalation note).
  */
 export async function FaqSection({
   locale,
@@ -29,6 +29,9 @@ export async function FaqSection({
 
   return (
     <section className="py-[clamp(64px,10vw,160px)]">
+      <JsonLd
+        data={faqPageLd(group.items.map((item) => ({ question: item.question, answer: item.answer })))}
+      />
       <Container>
         <div className="mx-auto max-w-3xl">
           <SectionHeading eyebrow={eyebrow} title={title} intro={intro} />

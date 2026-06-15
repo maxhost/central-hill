@@ -26,6 +26,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0017 — Backoffice routing: interim path `/admin`; host split deferred](#0017)
 - [0018 — Media R2 upload: presigned direct PUT + serve-time resizing](#0018)
 - [0019 — `core/i18n` content + slug write seam (admin write path)](#0019)
+- [0020 — S13 seo-geo: sitemaps/robots/llms.txt as root routes + kernel JSON-LD/slug additions](#0020)
 
 ---
 
@@ -283,3 +284,58 @@ S14; the kernel surface grows by one small server-only module (read API unchange
 entity/locale — re-slugging overwrites; a redirect table is a future additive ADR); admin sets the
 source slug and may copy it across locales (localized slugs are an editor refinement, not required for
 reachability). **Status:** Accepted.
+
+## 0020 — S13 seo-geo: sitemaps/robots/llms.txt as root routes + kernel JSON-LD/slug additions <a id="0020"></a>
+**Context:** S13 (`seo-geo`, `docs/seo-i18n.md`) is the last cross-cutting slice. The page-level
+foundation already exists — every public page builds canonical + hreflang via `core/seo`
+`buildMetadata`, and blog/building/guide/service pages emit `BlogPosting`/`BreadcrumbList`
+JSON-LD. What is still missing and genuinely cross-slice: (a) **sitemaps** (index + per-entity,
+per-locale, with `<xhtml:link>` alternates), **`robots.txt`**, and **`llms.txt`/`llms-full.txt`**;
+(b) **site-wide `Organization` + `LocalBusiness` JSON-LD**; (c) the **richer JSON-LD builders**
+two earlier slices explicitly deferred to S13 via escalation notes (`buildings/ui/building-detail.tsx`
+→ `LodgingBusiness`; `pages/ui/components/faq-section.tsx` → `FAQPage`) — golden rule 3 says these
+builders belong in the kernel `core/seo`, not hand-written in components. Enumerating per-locale
+alternates for the sitemap also needs to group an entity's slugs across locales, which the existing
+`list*Params()` (flat `{locale,slug}`) cannot do alone.
+
+**Decision:** This is an orchestrator-level cross-cutting decision (golden rule 6) authorizing:
+1. **New slice `src/slices/seo/`** (S13). Owns **no tables / no migration**. Enumerates public URLs by
+   calling each public slice's **contract** (`listBuildingParams`, `listPostParams`,
+   `listServiceParams`, `listGuideParams` + the fixed marketing/index routes) and builds the sitemap
+   index, per-section urlsets, `robots.txt`, and `llms.txt`/`llms-full.txt` from the slice catalog.
+   Reads are wrapped in `unstable_cache` tagged `cacheTags.sitemap` (already defined in
+   `core/revalidate`) with a daily time-based fallback, so the hot path stays DB-free (ADR 0002).
+2. **Brand-new root (non-locale-prefixed) app routes** (route handlers in dot-named folders for full
+   control of content-type + caching): `/sitemap.xml`, `/sitemaps/[section]`, `/robots.txt`,
+   `/llms.txt`, `/llms-full.txt`. These are new files (golden rule 1 allows brand-new files).
+3. **Additive kernel additions** (golden rule 3 → this ADR):
+   - `core/seo` JSON-LD builders: `organizationLd`, `localBusinessLd`, `faqPageLd`, `lodgingBusinessLd`
+     (pure functions, same shape as the existing `blogPostingLd`/`breadcrumbLd`; re-exported from
+     `core/seo`). Read API otherwise unchanged.
+   - `core/i18n` read helper `loadAllSlugs(type)` → `{entity_id, locale, slug}[]` (joins the existing
+     `slug` table only; lets S13 group an entity's slugs across locales for `<xhtml:link>` alternates).
+     Mirrors the existing `loadAlternateSlugs`/`loadSlugs` family; read-only; **no migration**.
+4. **Site-wide `Organization` + `LocalBusiness` JSON-LD** composed into the public root layout
+   `src/app/[locale]/layout.tsx` (the app shell's explicit composition job, CLAUDE.md → repo shape;
+   analogous to S11 composing the header/footer there). Data from `settings.getGlobals` (the org name
+   is the constant "Central Hill" — `SiteGlobals` carries no name field). Component lives in the seo
+   slice; only a `<SiteJsonLd/>` line is added to the layout.
+5. **Resolution of the two pre-existing S13 escalation notes** (a documented handoff per
+   `docs/multi-agent-workflow.md`): append `lodgingBusinessLd(...)` to the existing `ld` array in
+   `buildings/ui/building-detail.tsx` and add a `faqPageLd(...)` `<JsonLd/>` to
+   `pages/ui/components/faq-section.tsx`. Both are **append-only** (no existing line changed/removed),
+   using the now-available kernel builders — exactly what those notes requested.
+
+A new env var **`SITE_URL`** (fallback `NEXT_PUBLIC_SITE_URL`, default `https://centralhill.pt`)
+supplies the absolute origin sitemaps/robots/JSON-LD require; added to `.env.example`.
+
+**Consequences:** classic SEO (sitemaps/robots/canonical/hreflang) and GEO (`llms.txt`, full
+server-rendered structured data incl. Organization/LocalBusiness/LodgingBusiness/FAQPage) are
+complete and host-agnostic (ADR 0003). The kernel grows by pure additive read/builder functions
+(no behaviour change to existing callers). Sitemap freshness rides the existing `sitemap` cache tag
+plus a daily fallback; wiring each slice's `publish()` to also bust `cacheTags.sitemap` on
+create/delete is a small future per-slice follow-up (noted in the seo README) — until then the daily
+revalidate keeps it correct within a day. Apartments and cities have **no standalone public route**
+today (apartments render inside building detail; cities inside the guides index), so they are
+intentionally absent from the sitemap; adding their routes later is an additive section. **Status:**
+Accepted.

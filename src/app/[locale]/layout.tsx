@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { SiteFooter } from "@slices/settings/ui/site-footer";
 import { SiteHeader } from "@slices/settings/ui/site-header";
+import { SiteJsonLd } from "@slices/seo/contract";
 import type { Locale } from "@core/db/columns";
 import "../globals.css";
 
@@ -30,6 +31,7 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body>
         <NextIntlClientProvider>
+          <SiteJsonLd locale={locale as Locale} />
           <SiteHeader locale={locale as Locale} />
           <div id="main">{children}</div>
           <SiteFooter locale={locale as Locale} />
