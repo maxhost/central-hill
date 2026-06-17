@@ -608,7 +608,9 @@
     "reviews": {
       "title": "Nous Prenons Soin de Nos\nPartenaires et de Nos Voyageurs",
       "owner": "Propriétaire",
-      "guest": "Voyageur"
+      "guest": "Voyageur",
+      "prev": "Avis précédents",
+      "next": "Avis suivants"
     },
     "portfolio": {
       "title": "Découvrez Notre Portfolio",

@@ -6,6 +6,7 @@ import { DealEnquiryForm } from "@slices/leads/contract";
 import { getRealEstatePage } from "../contract";
 import type { RealEstateContent } from "../contract";
 import { Band, FeatureGrid, Prose, SectionHeading, Steps } from "./components/blocks";
+import { CountUp } from "./components/count-up";
 import { FaqSection } from "./components/faq-section";
 import { PageHero } from "./components/hero";
 
@@ -105,7 +106,9 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
           <dl className="mt-12 grid grid-cols-2 gap-x-8 gap-y-10 text-center lg:grid-cols-3">
             {track_record.metrics.map((m, i) => (
               <div key={i}>
-                <dt className="font-serif text-4xl md:text-5xl">{m.value}</dt>
+                <dt className="font-serif text-4xl md:text-5xl">
+                  <CountUp value={m.value} />
+                </dt>
                 <dd className="mt-2 text-sm text-surface/85">{m.label}</dd>
                 {m.caption ? <dd className="mt-1 text-xs text-surface/60">{m.caption}</dd> : null}
               </div>

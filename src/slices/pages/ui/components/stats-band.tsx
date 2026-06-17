@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { Container } from "@core/ui";
 import { type StatKey, getGlobals } from "@slices/settings/contract";
+import { CountUp } from "./count-up";
 
 /**
  * Company stats band (Home/Owners/About). Reads the figures from the settings singleton
@@ -35,7 +36,9 @@ export async function StatsBand({
         <dl className="mt-12 grid grid-cols-2 gap-x-8 gap-y-10 text-center lg:grid-cols-4">
           {cells.map((s) => (
             <div key={s.label}>
-              <dt className="font-serif text-4xl text-ink md:text-5xl">{s.value}</dt>
+              <dt className="font-serif text-4xl text-ink md:text-5xl">
+                <CountUp value={s.value} />
+              </dt>
               <dd className="mt-2 text-xs uppercase tracking-[0.14em] text-ink-soft">{s.label}</dd>
             </div>
           ))}

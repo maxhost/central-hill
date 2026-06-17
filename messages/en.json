@@ -608,7 +608,9 @@
     "reviews": {
       "title": "We Care About Our\nPartners & Guests",
       "owner": "Owner",
-      "guest": "Guest"
+      "guest": "Guest",
+      "prev": "Previous reviews",
+      "next": "Next reviews"
     },
     "portfolio": {
       "title": "Explore Our Portfolio",

@@ -2,11 +2,15 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { Container } from "@core/ui";
 import { type TestimonialAudience, listTestimonials } from "@slices/testimonials/contract";
+import { countryFlag } from "./country-flag";
+import { TestimonialsCarousel, type CarouselItem } from "./testimonials-carousel";
 
 /**
  * Testimonials section (Home mixes audiences; Owners/Guests filter to one). Reads the
  * audience-tagged read model from the testimonials slice; renders nothing when none are
- * published. Subscribes transitively to `testimonial-list`.
+ * published. Subscribes transitively to `testimonial-list`. Presentation is a rotating
+ * carousel with larger stars + country flags (client feedback B4) — data is resolved
+ * here, motion happens in the `TestimonialsCarousel` island.
  */
 export async function TestimonialsRow({
   locale,
@@ -20,6 +24,17 @@ export async function TestimonialsRow({
 
   const t = await getTranslations("pages");
 
+  const items: CarouselItem[] = testimonials.map((tm) => ({
+    id: tm.id,
+    roleLabel: t(tm.audience === "owner" ? "reviews.owner" : "reviews.guest"),
+    rating: tm.rating,
+    quote: tm.quote,
+    authorName: tm.authorName,
+    authorCountry: tm.authorCountry,
+    flag: countryFlag(tm.authorCountry),
+    propertyLocation: tm.propertyLocation,
+  }));
+
   return (
     <section className="bg-feature py-[clamp(64px,10vw,160px)] text-surface">
       <Container>
@@ -28,34 +43,11 @@ export async function TestimonialsRow({
             {t("reviews.title")}
           </h2>
         </div>
-        <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {testimonials.map((tm) => (
-            <figure
-              key={tm.id}
-              className="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-7"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-xs uppercase tracking-[0.14em] text-surface/70">
-                  {t(tm.audience === "owner" ? "reviews.owner" : "reviews.guest")}
-                </span>
-                <span className="text-accent" aria-label={`${tm.rating} / 5`}>
-                  {"★".repeat(tm.rating)}
-                </span>
-              </div>
-              <blockquote className="mt-4 grow leading-relaxed text-surface/90">
-                “{tm.quote}”
-              </blockquote>
-              <figcaption className="mt-5 text-sm text-surface/80">
-                <span className="font-medium text-surface">{tm.authorName}</span>
-                {" · "}
-                {tm.authorCountry}
-                {tm.propertyLocation ? (
-                  <span className="block text-surface/60">{tm.propertyLocation}</span>
-                ) : null}
-              </figcaption>
-            </figure>
-          ))}
-        </div>
+        <TestimonialsCarousel
+          items={items}
+          prevLabel={t("reviews.prev")}
+          nextLabel={t("reviews.next")}
+        />
       </Container>
     </section>
   );

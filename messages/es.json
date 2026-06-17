@@ -608,7 +608,9 @@
     "reviews": {
       "title": "Cuidamos de Nuestros\nSocios y Huéspedes",
       "owner": "Propietario",
-      "guest": "Huésped"
+      "guest": "Huésped",
+      "prev": "Reseñas anteriores",
+      "next": "Reseñas siguientes"
     },
     "portfolio": {
       "title": "Explora Nuestro Portfolio",
