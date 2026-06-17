@@ -742,7 +742,9 @@
     },
     "deal": {
       "submit": "Enviar consulta",
-      "success": "Gracias — nuestro equipo de inversión revisará tu consulta y responderá pronto."
+      "success": "Gracias — nuestro equipo de inversión revisará tu consulta y responderá pronto.",
+      "assetDetails": "Detalles del activo (opcional)",
+      "additionalInfo": "Información adicional (opcional)"
     },
     "admin": {
       "title": "Bandeja de leads",

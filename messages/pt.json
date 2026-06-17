@@ -742,7 +742,9 @@
     },
     "deal": {
       "submit": "Enviar pedido",
-      "success": "Obrigado — a nossa equipa de investimento vai analisar o seu pedido e responder em breve."
+      "success": "Obrigado — a nossa equipa de investimento vai analisar o seu pedido e responder em breve.",
+      "assetDetails": "Detalhes do ativo (opcional)",
+      "additionalInfo": "Informação adicional (opcional)"
     },
     "admin": {
       "title": "Caixa de leads",

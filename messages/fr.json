@@ -742,7 +742,9 @@
     },
     "deal": {
       "submit": "Envoyer la demande",
-      "success": "Merci — notre équipe d'investissement examinera votre demande et répondra sous peu."
+      "success": "Merci — notre équipe d'investissement examinera votre demande et répondra sous peu.",
+      "assetDetails": "Détails de l'actif (optionnel)",
+      "additionalInfo": "Informations complémentaires (optionnel)"
     },
     "admin": {
       "title": "Boîte de réception des leads",

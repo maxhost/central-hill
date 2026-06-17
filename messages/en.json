@@ -742,7 +742,9 @@
     },
     "deal": {
       "submit": "Submit enquiry",
-      "success": "Thanks — our investment team will review your enquiry and respond shortly."
+      "success": "Thanks — our investment team will review your enquiry and respond shortly.",
+      "assetDetails": "Asset details (optional)",
+      "additionalInfo": "Additional information (optional)"
     },
     "admin": {
       "title": "Leads inbox",

@@ -24,13 +24,15 @@ const earningsFields = z.object({
 });
 
 const dealEnquiryFields = z.object({
-  company_name: z.string().min(1).max(200),
+  // Main contact (always shown, the only required fields — client feedback B7).
   contact_name: z.string().min(1).max(160),
-  contact_title: z.string().max(120).optional(),
   email,
   phone: z.string().min(3).max(40).optional(),
-  country: z.string().min(1).max(80),
-  asset_type: z.string().min(1).max(120),
+  // Asset details + additional info are collapsed and optional in the form.
+  company_name: z.string().max(200).optional(),
+  contact_title: z.string().max(120).optional(),
+  country: z.string().max(80).optional(),
+  asset_type: z.string().max(120).optional(),
   units_count: z.number().int().positive().max(100000).optional(),
   locations: z.string().max(400).optional(),
   current_status: z.string().max(400).optional(),
