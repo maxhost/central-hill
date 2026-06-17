@@ -1,0 +1,594 @@
+/**
+ * Demo content seed (NOT a migration; one-off, idempotent-guarded).
+ *
+ * The database ships empty, so every public page `notFound()`s. This script writes a
+ * coherent demo dataset — company settings, header navigation with sub-tabs, the five
+ * fixed marketing pages, a Lisbon catalog (city + neighbourhoods + featured buildings)
+ * and mixed testimonials — so the site renders and the client-feedback features are
+ * visible. Source-locale (`en`) only; other locales fall back to it until translated.
+ *
+ * Page `data` is validated against each page's real Zod schema before insert, so the
+ * shape can never drift from what the pages read. [T] fields (building/city names,
+ * testimonial quotes, nav labels) are written through the `core/i18n` source seam;
+ * slugs through the slug seam. Run:  pnpm tsx scripts/seed-demo.ts
+ */
+import "dotenv/config";
+import { randomUUID } from "node:crypto";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
+import { sql } from "drizzle-orm";
+import { translation, slug as slugTable } from "@core/i18n/schema";
+import { company_settings, nav_item } from "@slices/settings/schema";
+import { city, neighbourhood } from "@slices/geography/schema";
+import { building } from "@slices/buildings/schema";
+import { testimonial } from "@slices/testimonials/schema";
+import { page_content } from "@slices/pages/schema";
+import { homeSchema } from "@slices/pages/schemas/home";
+import { guestSchema } from "@slices/pages/schemas/guest";
+import { ownersSchema } from "@slices/pages/schemas/owners";
+import { realEstateSchema } from "@slices/pages/schemas/real-estate";
+import { aboutSchema } from "@slices/pages/schemas/about";
+
+const SITE = "https://www.centralhill.pt";
+const BOOK = `${SITE}/en/rentals/holidays-rentals-rentals-d0/`;
+const uid = () => randomUUID();
+
+/** iconCard helper — `icon_key` is decorative (not rendered), any kebab key is fine. */
+const ic = (title: string, description: string, icon_key = "spark") => ({ icon_key, title, description });
+const ti = (title: string, description: string) => ({ title, description });
+
+// Inline Drizzle client + write helpers. We deliberately do NOT import @core/db/client
+// or @core/i18n/content-write here: those carry `import "server-only"`, which Node/tsx
+// cannot resolve outside the Next bundler. The pure table schemas import fine, so we
+// reconstruct the (source-locale) translation + slug upserts the seam would do.
+const db = drizzle(neon(process.env.DATABASE_URL ?? ""));
+
+type SourceFields = Record<string, string | null | undefined>;
+
+/** Upsert source-locale ([en]) [T] field values for an entity. */
+async function setSourceContent(type: string, id: string, fields: SourceFields): Promise<void> {
+  const rows = Object.entries(fields)
+    .map(([field, raw]) => ({ field, value: (typeof raw === "string" ? raw : "").trim() }))
+    .filter((r) => r.value)
+    .map((r) => ({
+      entity_type: type,
+      entity_id: id,
+      field: r.field,
+      locale: "en" as const,
+      value: r.value,
+      state: "draft" as const,
+    }));
+  if (rows.length === 0) return;
+  await db
+    .insert(translation)
+    .values(rows)
+    .onConflictDoUpdate({
+      target: [translation.entity_type, translation.entity_id, translation.field, translation.locale],
+      set: { value: sql`excluded.value`, updated_at: sql`now()` },
+    });
+}
+
+/** Upsert per-locale slugs for an entity (skips empties; no-ops on conflict). */
+async function setSlugs(type: string, id: string, byLocale: Record<string, string>): Promise<void> {
+  for (const [locale, value] of Object.entries(byLocale)) {
+    if (!value) continue;
+    await db
+      .insert(slugTable)
+      .values({ entity_type: type, entity_id: id, locale: locale as "en" | "pt" | "es" | "fr", slug: value })
+      .onConflictDoNothing();
+  }
+}
+
+async function main() {
+  if (process.env.DRY) {
+    for (const p of [homeData(), ownersData(), guestData(), realEstateData(), aboutData()]) void p;
+    homeSchema.parse(homeData());
+    ownersSchema.parse(ownersData());
+    guestSchema.parse(guestData());
+    realEstateSchema.parse(realEstateData());
+    aboutSchema.parse(aboutData());
+    console.log("✓ DRY: imports resolved + all 5 page schemas valid (no DB writes)");
+    return;
+  }
+
+  const [existing] = await db.select({ id: company_settings.id }).from(company_settings).limit(1);
+  if (existing) {
+    console.log("⚠️  company_settings already has a row — DB looks seeded. Aborting to avoid duplicates.");
+    return;
+  }
+
+  // Validate every page against its real schema BEFORE writing anything, so a shape
+  // mismatch aborts cleanly with an empty DB (never a partial seed).
+  const pages: { key: "home" | "owners" | "guest" | "real_estate" | "about"; schema: { parse: (d: unknown) => unknown }; data: unknown }[] = [
+    { key: "home", schema: homeSchema, data: homeData() },
+    { key: "owners", schema: ownersSchema, data: ownersData() },
+    { key: "guest", schema: guestSchema, data: guestData() },
+    { key: "real_estate", schema: realEstateSchema, data: realEstateData() },
+    { key: "about", schema: aboutSchema, data: aboutData() },
+  ];
+  for (const p of pages) p.schema.parse(p.data);
+  console.log("✓ all 5 page schemas validated");
+
+  // ── Company settings (singleton) ───────────────────────────────────────────
+  await db.insert(company_settings).values({
+    email: "info@centralhill.pt",
+    phone: "+351 910 075 725",
+    whatsapp: "+351 910 075 725",
+    social: { instagram: "https://instagram.com/centralhill", linkedin: "https://linkedin.com/company/centralhill" },
+    stats: {
+      bookings: { value: "60,000+", label: "Bookings Completed" },
+      years: { value: "12+", label: "Years of Experience" },
+      guests: { value: "700,000+", label: "Guests Hosted" },
+      revenue: { value: "€55M+", label: "Revenue Generated" },
+      buildings: { value: "14", label: "Buildings" },
+      apartments: { value: "180", label: "Apartments" },
+    },
+    office_address: "Rua Garrett 12, 1200-203 Lisbon, Portugal",
+    currency: "EUR",
+    avantio_account_id: "centralhill",
+    avantio_widget_config: {},
+    show_building_location: false,
+    show_building_count: false,
+  });
+  console.log("✓ company_settings");
+
+  // ── Header navigation (with hover sub-tabs) ─────────────────────────────────
+  type NavSeed = { url: string; label: string; children?: { url: string; label: string }[] };
+  const header: NavSeed[] = [
+    { url: "/owners", label: "Owners", children: [
+      { url: "/owners#plans", label: "Management Plans" },
+      { url: "/owners#estimate", label: "Profitability Study" },
+    ] },
+    { url: "/buildings", label: "Buildings" },
+    { url: "/real-estate", label: "Real Estate" },
+    { url: "/guests", label: "Guests", children: [
+      { url: "/services", label: "Services" },
+      { url: "/guides", label: "What to Do" },
+    ] },
+    { url: "/about", label: "About Us" },
+    { url: "/blog", label: "Blog" },
+  ];
+  let pos = 0;
+  for (const item of header) {
+    const [row] = await db.insert(nav_item).values({ location: "header", position: pos++, url: item.url }).returning({ id: nav_item.id });
+    await setSourceContent("nav_item", row!.id, { label: item.label });
+    let cpos = 0;
+    for (const child of item.children ?? []) {
+      const [crow] = await db.insert(nav_item).values({ location: "header", parent_id: row!.id, position: cpos++, url: child.url }).returning({ id: nav_item.id });
+      await setSourceContent("nav_item", crow!.id, { label: child.label });
+    }
+  }
+  console.log("✓ header navigation (+ sub-tabs)");
+
+  // ── Geography: Lisbon + neighbourhoods ──────────────────────────────────────
+  const [lisbon] = await db.insert(city).values({ slug: "lisbon", status: "published", country: "PT", position: 0 }).returning({ id: city.id });
+  await setSourceContent("city", lisbon!.id, { name: "Lisbon", intro: "Portugal's capital — historic, sunlit and endlessly walkable." });
+  await setSlugs("city", lisbon!.id, { en: "lisbon", pt: "lisboa", es: "lisboa", fr: "lisbonne" });
+
+  const nbhoods: Record<string, string> = {};
+  for (const [i, n] of [["Chiado", "chiado"], ["Bairro Alto", "bairro-alto"], ["Baixa", "baixa"]].entries()) {
+    const [row] = await db.insert(neighbourhood).values({ city_id: lisbon!.id, slug: n[1]!, position: i }).returning({ id: neighbourhood.id });
+    await setSourceContent("neighbourhood", row!.id, { name: n[0]! });
+    await setSlugs("neighbourhood", row!.id, { en: n[1]!, pt: n[1]!, es: n[1]!, fr: n[1]! });
+    nbhoods[n[1]!] = row!.id;
+  }
+  console.log("✓ geography (Lisbon + 3 neighbourhoods)");
+
+  // ── Buildings (the 6 featured properties from the brief) ────────────────────
+  const buildings: { name: string; slug: string; nb: string; street: string; aps: number; cap: number; beds: number; avantio: string }[] = [
+    { name: "Bairro Alto View 4E", slug: "bairro-alto-view-4e", nb: "bairro-alto", street: "Rua da Atalaia 4", aps: 6, cap: 25, beds: 12, avantio: `${SITE}/en/rentals/apartment-lisbon-new-bairro-alto-view-4e-up-to-25guests-by-central-hill-242910.html` },
+    { name: "Big Chiado Terrace", slug: "big-chiado-terrace", nb: "chiado", street: "Rua Garrett 22", aps: 5, cap: 22, beds: 11, avantio: `${SITE}/en/rentals/apartment-lisbon-big-chiado-terrace-up-to-22-guests-by-central-hill-245142.html` },
+    { name: "Big Bairro Alto 2D", slug: "big-bairro-alto-2d", nb: "bairro-alto", street: "Rua do Norte 2", aps: 6, cap: 25, beds: 12, avantio: `${SITE}/en/rentals/apartment-lisbon-big-bairro-alto-2d-up-to-25-guests-by-central-hill-244056.html` },
+    { name: "Large Central with View 3E", slug: "large-central-with-view-3e", nb: "baixa", street: "Rua Augusta 3", aps: 5, cap: 20, beds: 10, avantio: `${SITE}/en/rentals/apartment-lisbon-large-central-with-view-3e-by-central-hill-244171.html` },
+    { name: "Bairro Alto View 3E", slug: "bairro-alto-view-3e", nb: "bairro-alto", street: "Rua da Atalaia 3", aps: 5, cap: 21, beds: 10, avantio: `${SITE}/en/rentals/apartment-lisbon-new-bairro-alto-view-3e-up-to-21guests-by-central-hill-244190.html` },
+    { name: "Big Bairro Alto 2E", slug: "big-bairro-alto-2e", nb: "bairro-alto", street: "Rua do Norte 2E", aps: 7, cap: 27, beds: 13, avantio: `${SITE}/en/rentals/apartment-lisbon-big-bairro-alto-2e-up-to-27-guests-by-central-hill-244061.html` },
+  ];
+  for (const [i, b] of buildings.entries()) {
+    const [row] = await db.insert(building).values({
+      slug: b.slug, status: "published", position: i, is_new: i < 2, is_featured: true,
+      city_id: lisbon!.id, neighbourhood_id: nbhoods[b.nb]!, street_address: b.street,
+      apartments_count: b.aps, total_capacity: b.cap, beds_count: b.beds,
+      avantio_url: b.avantio,
+    }).returning({ id: building.id });
+    await setSourceContent("building", row!.id, {
+      name: b.name,
+      headline: `${b.name} — up to ${b.cap} guests in central Lisbon`,
+      teaser: `A spacious, design-led group apartment in ${b.nb.replace(/-/g, " ")}, sleeping up to ${b.cap} guests across ${b.aps} units — fully managed by Central Hill.`,
+      description_intro: `${b.name} sits in the heart of Lisbon, steps from the city's best dining, nightlife and views. Professionally managed end-to-end by Central Hill.`,
+    });
+    await setSlugs("building", row!.id, { en: b.slug, pt: b.slug, es: b.slug, fr: b.slug });
+  }
+  console.log(`✓ ${buildings.length} featured buildings`);
+
+  // ── Testimonials (mixed, with countries for the flag carousel) ──────────────
+  const tms: { audience: "owner" | "guest"; rating: number; name: string; country: string; loc: string; quote: string }[] = [
+    { audience: "guest", rating: 5, name: "Sophie M.", country: "France", loc: "Chiado, Lisbon", quote: "Flawless stay — the apartment was exactly as pictured and the team answered within minutes. We'll be back." },
+    { audience: "owner", rating: 5, name: "João P.", country: "Portugal", loc: "Bairro Alto, Lisbon", quote: "Central Hill turned my apartment into a genuinely passive, high-performing asset. Transparent reporting every month." },
+    { audience: "guest", rating: 5, name: "Mark T.", country: "United Kingdom", loc: "Baixa, Lisbon", quote: "Best group trip we've done. Huge, immaculate space and a location you couldn't beat." },
+    { audience: "owner", rating: 5, name: "Andrea R.", country: "Italy", loc: "Chiado, Lisbon", quote: "Revenue up over 30% versus my previous manager, with zero hassle on my side. Highly recommend." },
+    { audience: "guest", rating: 4, name: "Lena S.", country: "Germany", loc: "Bairro Alto, Lisbon", quote: "Beautiful design, spotless, and check-in was effortless. A real home from home in Lisbon." },
+    { audience: "guest", rating: 5, name: "Carlos D.", country: "Spain", loc: "Baixa, Lisbon", quote: "Impecable. La ubicación es perfecta y el equipo súper atento. Repetiremos sin duda." },
+    { audience: "owner", rating: 5, name: "Patricia L.", country: "Brazil", loc: "Bairro Alto, Lisbon", quote: "Profissionalismo do início ao fim. Acompanho tudo pelo dashboard e os resultados falam por si." },
+    { audience: "guest", rating: 5, name: "Emily K.", country: "United States", loc: "Chiado, Lisbon", quote: "Stunning apartment with an incredible terrace. The whole experience felt premium yet personal." },
+  ];
+  for (const [i, t] of tms.entries()) {
+    const [row] = await db.insert(testimonial).values({
+      audience: t.audience, rating: t.rating, author_name: t.name, author_country: t.country,
+      property_location: t.loc, position: i, status: "published",
+    }).returning({ id: testimonial.id });
+    await setSourceContent("testimonial", row!.id, { quote: t.quote });
+  }
+  console.log(`✓ ${tms.length} testimonials`);
+
+  // ── Page content (5 fixed pages) — already validated above ──────────────────
+  for (const p of pages) {
+    await db.insert(page_content).values({ key: p.key, status: "published", data: p.data as Record<string, unknown> });
+    console.log(`✓ page_content: ${p.key}`);
+  }
+
+  console.log("\n✅ Demo seed complete. Run `pnpm dev` (live DB reads) or rebuild to see it.");
+}
+
+// ── Page data builders ─────────────────────────────────────────────────────────
+function homeData() {
+  return {
+    hero: {
+      video_media_id: uid(),
+      headline: "Premium furnished apartments across Portugal",
+      subtitle: "Design-led, professionally managed homes in Lisbon's most sought-after streets — for unforgettable stays and effortless ownership.",
+      cta_primary: { label: "Book Now", url: BOOK },
+      cta_secondary: { label: "I'm a property owner", url: `${SITE}/en/owners` },
+    },
+    owners_pitch: {
+      headline: "Own a property in Portugal? Earn more, do nothing.",
+      subheadline: "Full-service management that maximises your returns with AI-driven pricing and unmatched local expertise.",
+      benefits: [
+        ic("Maximised revenue", "Dynamic, AI-driven pricing keeps your calendar full at the best nightly rate."),
+        ic("Fully managed", "Guests, cleaning, maintenance and compliance — all handled end to end."),
+        ic("Total transparency", "Track bookings, payouts and performance in real time from any device."),
+        ic("Five-star care", "Hotel-grade hospitality protects your asset and your reviews."),
+        ic("Local expertise", "A Lisbon team on the ground, available around the clock."),
+        ic("No lock-in", "Flexible plans that grow with you — cancel anytime."),
+      ],
+      cta_primary: { label: "Get your profitability study", url: `${SITE}/en/owners`, note: "Free, no obligation — reply within 48h." },
+      cta_secondary: { label: "See our plans", url: `${SITE}/en/owners` },
+    },
+    guests_pitch: {
+      headline: "Planning a stay? Find your perfect apartment.",
+      subheadline: "Spacious, beautifully designed homes for couples, families and groups — in the heart of the city.",
+      benefits: [
+        ic("Prime locations", "Steps from Lisbon's best dining, nightlife and landmarks."),
+        ic("Space for everyone", "From studios to apartments sleeping 25+ for big groups."),
+        ic("Design-led interiors", "Every home styled for comfort and that wow factor."),
+        ic("Seamless check-in", "Effortless arrival and a local team a message away."),
+        ic("Spotless & safe", "Professional cleaning and quality checks before every stay."),
+        ic("Book direct, save", "Best rates and perks when you book with us directly."),
+      ],
+      cta: { label: "Book Now", url: BOOK, note: "Best-rate guarantee when you book direct." },
+    },
+    story: {
+      headline: "Portugal's trusted hospitality management company",
+      copy: "Since 2012, Central Hill has grown into one of Lisbon's leading furnished-rental operators — hosting hundreds of thousands of guests and managing homes for owners who expect more.\n\nWe pair hotel-grade hospitality with technology and a hands-on local team, so guests feel at home and owners earn more without lifting a finger.",
+      image_media_id: uid(),
+      cta: { label: "About Central Hill", url: `${SITE}/en/about` },
+    },
+  };
+}
+
+function ownersData() {
+  const tier = (name: string, commission: string, tag: string, features: string[], is_popular = false) => ({ name, tag, commission, is_popular, features });
+  return {
+    hero: {
+      image_media_id: uid(),
+      badge: "For property owners",
+      headline: "Your property, our expertise, maximum returns",
+      copy: "Central Hill turns your property into a high-performing asset — fully managed, transparent, and optimised for maximum profit using AI-driven pricing and unmatched local expertise.",
+    },
+    earnings_form: {
+      headline: "Get your free profitability study",
+      subheadline: "Find out what your property could earn. Our team responds within 48 hours.",
+      cta_label: "Request my study",
+      note: "Free and with no obligation.",
+    },
+    why: {
+      headline: "Why owners choose us",
+      benefits: [
+        ic("Earn up to 25% more", "AI-driven pricing and occupancy optimisation beat the market."),
+        ic("Truly hands-off", "We handle everything from guest messaging to maintenance."),
+        ic("Real-time dashboard", "Full visibility of bookings, revenue and payouts, anywhere."),
+        ic("Protect your asset", "Rigorous vetting, quality checks and insurance-backed care."),
+        ic("Local, always on", "A Lisbon team on the ground, 24/7."),
+        ic("Flexible & fair", "Transparent commissions and no long lock-ins."),
+      ],
+    },
+    services: {
+      headline: "Everything done for you",
+      subheadline: "A complete operation behind every booking.",
+      items: [
+        ic("Listing & marketing", "Professional photography, copy and multi-channel distribution."),
+        ic("Dynamic pricing", "Revenue management that adapts daily to demand."),
+        ic("Guest communication", "24/7 multilingual support before, during and after stays."),
+        ic("Check-in & check-out", "Smooth arrivals and departures, every time."),
+        ic("Housekeeping", "Hotel-standard cleaning and linen between stays."),
+        ic("Maintenance", "Proactive upkeep and a trusted contractor network."),
+        ic("Compliance", "Licensing, taxes and regulations handled for you."),
+        ic("Reviews & quality", "We protect your rating with five-star service."),
+        ic("Owner reporting", "Clear monthly statements and a live dashboard."),
+      ],
+    },
+    plans: {
+      headline: "A management plan built around your goals",
+      subheadline: "Cumulative plans — each tier adds to the one before it. Names are ours; the structure mirrors the best in the market.",
+      tiers: [
+        tier("Core", "15%", "The essentials, done brilliantly", ["Listing creation & optimisation", "Multi-channel distribution", "Dynamic pricing", "Guest communication", "Secure payment handling"]),
+        tier("Prime", "18%", "Everything automated", ["Professional photography", "Premium listing placement", "Review management", "Smart check-in support"], true),
+        tier("Manage", "22%", "Full operations", ["Housekeeping & linen", "Maintenance coordination", "Restocking of essentials", "On-the-ground support"]),
+        tier("Complete", "25%", "White-glove, end to end", ["Dedicated account manager", "Interior styling advice", "Licensing & compliance", "Priority everything"]),
+      ],
+      helpers: [
+        { title: "Not sure which plan fits?", copy: "Tell us about your property and goals — we'll recommend the right tier and show projected returns.", cta: { label: "Get your profitability study", url: `${SITE}/en/owners` } },
+        { title: "Already managing elsewhere?", copy: "Switching is simple. We handle the migration and you keep your bookings and reviews.", cta: { label: "Talk to us", url: `${SITE}/en/owners` } },
+      ],
+    },
+    journey: {
+      headline: "Your growth path",
+      subheadline: "From first call to full performance in five steps.",
+      steps: [
+        ti("Profitability study", "We assess your property and project its earning potential — free."),
+        ti("Onboarding", "Photography, listing and pricing set up across all channels."),
+        ti("Go live", "Your home goes to market and starts taking bookings."),
+        ti("Operate", "We run day-to-day hosting end to end."),
+        ti("Optimise", "We refine pricing and service to keep growing your returns."),
+      ],
+    },
+    dashboard: {
+      headline: "Full visibility from anywhere",
+      subheadline: "Your performance, always at your fingertips.",
+      features: [
+        ic("Live bookings", "See every reservation and your calendar in real time."),
+        ic("Revenue & payouts", "Track income and upcoming payouts to the cent."),
+        ic("Occupancy", "Monitor occupancy and nightly rates at a glance."),
+        ic("Statements", "Download clear monthly statements anytime."),
+        ic("Reviews", "Keep an eye on guest ratings and feedback."),
+        ic("Notifications", "Stay informed with alerts that matter."),
+      ],
+    },
+  };
+}
+
+function guestData() {
+  return {
+    hero: {
+      video_media_id: uid(),
+      eyebrow: "For guests",
+      headline: "Your home in the heart of Lisbon",
+      subheadline: "Spacious, design-led apartments for couples, families and groups — book direct for the best rate.",
+      cta: { label: "Book Now", url: BOOK },
+    },
+    welcome: {
+      headline: "Stay like a local, hosted like a guest",
+      lede: "Beautifully designed apartments in Lisbon's best neighbourhoods, with the comfort of a home and the care of a hotel.",
+      copy: "Every Central Hill apartment is styled for comfort, professionally cleaned and backed by a local team available around the clock.\n\nFrom intimate studios to homes that sleep large groups, we have the perfect base for your trip.",
+      guarantee_label: "Best-rate guarantee when you book direct",
+      image_media_id: uid(),
+    },
+    why: {
+      headline: "Why book directly with us",
+      intro: "More space, better rates and a team that actually answers.",
+      benefits: [
+        ic("Best rates", "Book direct and skip the platform mark-ups."),
+        ic("Prime locations", "Steps from the sights, dining and nightlife."),
+        ic("Real support", "A local team a message away, 24/7."),
+        ic("Spotless homes", "Professionally cleaned and checked before every stay."),
+      ],
+      cta: { label: "Browse apartments", url: BOOK, note: "Secure checkout via our booking engine." },
+    },
+    services_teaser: {
+      headline: "Make your stay effortless",
+      intro: "Add the extras that turn a trip into an experience.",
+      items: [
+        ic("Airport transfers", "Private, door-to-door arrivals and departures."),
+        ic("Private chef", "A chef-prepared meal in your apartment."),
+        ic("Guided tours", "Sintra, Fátima and the best of the region."),
+        ic("Boat trips", "See Lisbon from the Tagus."),
+        ic("Surf experiences", "Lessons on the coast's best breaks."),
+        ic("Luggage storage", "Hands-free before check-in and after check-out."),
+      ],
+      cta: { label: "Explore services", url: `${SITE}/en/services`, note: "" },
+    },
+    activities_teaser: {
+      headline: "The best of Lisbon",
+      intro: "Curated guides to help you make the most of the city.",
+      items: [
+        ic("Things to do", "Landmarks, viewpoints and hidden corners."),
+        ic("Where to eat", "From tascas to fine dining."),
+        ic("Beaches near Lisbon", "Sand and surf within easy reach."),
+        ic("Events & festivals", "What's on while you're in town."),
+        ic("Secrets of Lisbon", "Local favourites off the tourist trail."),
+        ic("For families", "Kid-friendly plans for every age."),
+      ],
+      cta: { label: "Read the guides", url: `${SITE}/en/guides` },
+    },
+  };
+}
+
+function realEstateData() {
+  const model = (name: string, tag: string, features: string[], is_featured = false) => ({ name, tag, is_featured, features });
+  return {
+    hero: {
+      image_media_id: uid(),
+      headline: "Real estate, managed for performance",
+      subheadline: "Investment-grade hospitality management for owners and institutional partners.",
+      positioning: "Central Hill manages and operates furnished-rental portfolios across Portugal's most in-demand locations — combining hotel-grade operations with data-driven revenue management.",
+      cta_primary: { label: "Partner with us", url: `${SITE}/en/real-estate` },
+      cta_secondary: { label: "Book a stay", url: BOOK },
+    },
+    partners: {
+      headline: "Who we work with",
+      intro: "From private owners to funds and developers.",
+      types: [
+        ic("Private owners", "Single apartments and small portfolios."),
+        ic("Investors", "Yield-focused buyers seeking managed returns."),
+        ic("Developers", "New schemes needing a turnkey operator."),
+        ic("Funds", "Institutional portfolios at scale."),
+      ],
+    },
+    capabilities: {
+      headline: "What we do",
+      intro: "End-to-end operation and revenue management.",
+      items: [
+        ic("Operations", "Full hospitality operations across every unit."),
+        ic("Revenue management", "Data-driven pricing and distribution."),
+        ic("Asset care", "Maintenance, capex planning and compliance."),
+      ],
+    },
+    asset_classes: {
+      headline: "Asset classes we operate",
+      intro: "Flexible across formats and locations.",
+      items: [
+        ic("Furnished apartments", "Short and mid-term city rentals."),
+        ic("Aparthotels", "Branded, serviced stays at scale."),
+        ic("Group homes", "Large-capacity apartments for groups."),
+        ic("Boutique buildings", "Whole-building operations."),
+        ic("Mixed-use", "Residential blended with hospitality."),
+        ic("New developments", "Turnkey launch and operation."),
+      ],
+    },
+    models: {
+      headline: "Investment models",
+      intro: "Choose the structure that fits your goals.",
+      items: [
+        model("Management", "Most flexible", ["Full operations", "Revenue management", "Transparent reporting", "Owner keeps ownership", "Performance-based fee", "No long lock-in", "Monthly payouts"]),
+        model("Guaranteed rent", "Most predictable", ["Fixed monthly income", "We take occupancy risk", "Full operations included", "Maintenance handled", "Long-term agreement", "Hands-off for owner", "Stable cashflow"], true),
+        model("Joint venture", "Most upside", ["Shared investment", "Shared returns", "Aligned incentives", "Full operations", "Growth-focused", "Bespoke terms", "Strategic partnership"]),
+      ],
+      footer_note: "Every partnership is tailored — we'll model the right structure with you.",
+    },
+    market: {
+      headline: "Market insight",
+      intro: "Why Portugal, and why now.",
+      blocks: [
+        { title: "Demand fundamentals", copy: "Lisbon and Porto continue to attract record visitor numbers, underpinning resilient occupancy and nightly rates across the furnished-rental segment." },
+        { title: "Supply & regulation", bullets: ["Licensing-aware operation", "Compliance handled end to end", "Quality bar keeps demand high"] },
+        { title: "Yield drivers", bullets: ["Dynamic pricing", "Direct-booking mix", "Operational efficiency", "Length-of-stay optimisation"] },
+        { title: "Outlook", copy: "Professionalised management is widening the gap between top-performing assets and the rest — scale, data and service win." },
+      ],
+    },
+    track_record: {
+      headline: "Performance you can measure",
+      intro: "A decade of results across Portugal's most in-demand locations.",
+      metrics: [
+        { value: "60,000+", label: "Bookings completed" },
+        { value: "700,000+", label: "Guests hosted" },
+        { value: "€55M+", label: "Revenue generated" },
+        { value: "12+", label: "Years operating" },
+        { value: "180+", label: "Apartments managed" },
+        { value: "4.8/5", label: "Average guest rating" },
+      ],
+    },
+    process: {
+      headline: "How we start",
+      intro: "A clear path from first conversation to live operation.",
+      steps: [
+        ti("Discovery", "We learn your assets, goals and constraints."),
+        ti("Modelling", "We project returns and recommend a structure."),
+        ti("Agreement", "Clear terms, aligned incentives."),
+        ti("Onboarding", "We set up operations and go to market."),
+        ti("Operate & grow", "We run and optimise for the long term."),
+      ],
+    },
+    enquiry: {
+      headline: "Let's talk partnership",
+      intro: "Tell us about your portfolio — our investment team will respond shortly.",
+      contact_email: "partners@centralhill.pt",
+      contact_phone: "+351 910 075 725",
+      contact_linkedin: "https://linkedin.com/company/centralhill",
+    },
+  };
+}
+
+function aboutData() {
+  const dep = (name: string, description: string) => ({ icon_key: "spark", name, description });
+  const cert = (title: string, issuer: string, description: string) => ({ icon_key: "spark", title, issuer, description });
+  return {
+    hero: {
+      image_media_id: uid(),
+      eyebrow: "About us",
+      headline: "Portugal's trusted hospitality management company",
+      mission: "We help owners earn more and guests feel at home — pairing hotel-grade hospitality with technology and a hands-on local team.",
+    },
+    story: {
+      eyebrow: "Our story",
+      headline: "Twelve years of Lisbon hospitality",
+      narrative: [
+        "Central Hill began in 2012 with a single apartment and a simple belief: furnished rentals could be run to a hotel standard.",
+        "Today we host hundreds of thousands of guests and manage homes for owners across Portugal's most sought-after locations.",
+        "Our edge is the blend of people and technology — a local team that cares, backed by data that drives results.",
+      ],
+    },
+    serve: {
+      headline: "Who we serve",
+      intro: "Two audiences, one standard of care.",
+      audiences: [
+        ic("Guests", "Memorable, design-led stays with real local support."),
+        ic("Owners", "Hands-off management that maximises returns."),
+        ic("Partners", "Investment-grade operations at scale."),
+      ],
+    },
+    values: {
+      headline: "What we stand for",
+      intro: "The principles behind every decision.",
+      items: [
+        ti("Hospitality first", "We treat every guest like a guest in our own home."),
+        ti("Transparency", "Clear reporting and honest communication, always."),
+        ti("Excellence", "Hotel-grade standards in everything we do."),
+        ti("Partnership", "We win when our owners and partners win."),
+      ],
+    },
+    organisation: {
+      eyebrow: "Our team",
+      headline: "The people behind Central Hill",
+      intro: "Specialist teams working as one.",
+      departments: [
+        dep("Guest experience", "24/7 multilingual support across the journey."),
+        dep("Revenue management", "Pricing and distribution that maximise yield."),
+        dep("Operations", "Housekeeping, maintenance and quality."),
+        dep("Owner relations", "Reporting, advice and partnership."),
+        dep("Marketing", "Photography, content and direct demand."),
+        dep("Compliance", "Licensing, tax and regulation."),
+      ],
+    },
+    certifications: {
+      headline: "Independently verified",
+      intro: "Recognised by the bodies that set the standard.",
+      items: [
+        cert("Registered operator", "Turismo de Portugal", "Licensed and compliant short-stay operation."),
+        cert("ALEP member", "ALEP", "Member of Portugal's local-accommodation association."),
+        cert("Quality assured", "Central Hill", "Rigorous internal quality and safety checks."),
+      ],
+    },
+    community: {
+      eyebrow: "Our community",
+      headline: "Rooted in Lisbon",
+      copy: [
+        "We work with local makers, guides and suppliers to give guests an authentic taste of the city.",
+        "Being a good neighbour matters — we operate responsibly and invest in the communities we host in.",
+      ],
+      image_media_id: uid(),
+    },
+    contact: {
+      headline: "Get in touch",
+      cta_guests: { label: "Book a stay", url: BOOK },
+      cta_owners: { label: "I'm a property owner", url: `${SITE}/en/owners` },
+      cta_partners: { label: "Partner with us", url: `${SITE}/en/real-estate` },
+      form: { headline: "Send us a message", subheadline: "We'll get back to you shortly." },
+    },
+  };
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((e) => {
+    console.error("Seed failed:", e);
+    process.exit(1);
+  });
