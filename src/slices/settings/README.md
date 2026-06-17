@@ -31,6 +31,25 @@ them. **Consumers that embed globals/nav in their own cached reads (e.g. S9 page
 stats, default OG image) should add `SETTINGS_TAGS.globals` to those reads' tags** so a
 settings publish cascades.
 
+**Booking links (client feedback B2)** — `avantioBookingUrl(locale)`, `AVANTIO_LOCALES`,
+`AVANTIO_OWNERS_LOGIN_URL` (pure, from `booking.ts`; safe in server + client). Every
+"search / book" CTA points at the Avantio rentals engine for the active locale, falling
+back to English for locales Avantio does not support (pt/en/es/fr only). Consumers:
+header "Book Now", home/guest `dualCta.guestCta`, featured-portfolio "View All".
+
+## Header chrome — top-right cluster + sub-tabs + WhatsApp (client feedback B1)
+
+`ui/site-header.tsx` renders, in the top-right cluster: a **Contact** trigger
+(`ui/components/contact-dialog.tsx` — a client modal embedding the leads
+`ContactForm`, `kind="contact"`; staff email goes to `LEAD_NOTIFY_TO`), an **owner-login**
+icon → `AVANTIO_OWNERS_LOGIN_URL`, and the **flag language selector**
+(`ui/components/locale-switcher.tsx`, now with flag emoji + a `tone` for the dark footer).
+Top-level nav items with `children` reveal their **sub-tabs on hover/focus** (pure CSS
+`group-hover`/`group-focus-within`, no JS); the fallback menu ships Guests → Services /
+What to Do so the mechanism is visible before the back office seeds nav. A floating
+**WhatsApp** button (`ui/components/whatsapp-fab.tsx`, `wa.me` deep link to
+`globals.whatsapp`) hangs over every page. The mobile drawer mirrors all of the above.
+
 ## App-shell chrome (cross-cut)
 
 This slice ships the header/footer as slice-owned server components

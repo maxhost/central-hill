@@ -82,6 +82,14 @@ export interface NavLink {
 export { getGlobals, getNav } from "./server/queries";
 
 /**
+ * Avantio booking-engine deep links (client feedback B2). Pure helpers — usable from
+ * server components and client islands — so every "search / book" CTA can point at
+ * the Avantio engine in the active locale (defaulting to English for locales Avantio
+ * does not support). See `./booking`.
+ */
+export { avantioBookingUrl, AVANTIO_LOCALES, AVANTIO_OWNERS_LOGIN_URL } from "./booking";
+
+/**
  * Backoffice contribution (S12). `settingsAdminScreens` is spread into
  * `composeAdminNav` by the admin panel layout; the globals + navigation editors mount
  * under `app/(admin)/admin/(panel)/{settings,navigation}/…` (admin-only). Pure data —

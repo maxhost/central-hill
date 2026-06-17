@@ -424,13 +424,22 @@
     "ctaBook": "Reservar",
     "ctaList": "Anuncie o seu imóvel",
     "language": "Idioma",
+    "contact": "Contacto",
+    "ownerLogin": "Área de proprietários",
+    "whatsappCta": "Fale connosco no WhatsApp",
+    "contactDialog": {
+      "title": "Fale connosco",
+      "intro": "Envie-nos uma mensagem e a nossa equipa responder-lhe-á em breve."
+    },
     "nav": {
       "owners": "Proprietários",
       "buildings": "Edifícios",
       "realEstate": "Imobiliário",
       "guests": "Hóspedes",
       "about": "Sobre nós",
-      "blog": "Blog"
+      "blog": "Blog",
+      "services": "Serviços",
+      "guides": "O Que Fazer"
     },
     "footer": {
       "toggle": "É hóspede ou proprietário?",
@@ -618,7 +627,7 @@
       "guestEyebrow": "Hóspedes",
       "guestTitle": "A planear uma estadia? Encontre o apartamento perfeito.",
       "guestBody": "Explore o nosso portfólio completo de apartamentos geridos profissionalmente nas localizações mais procuradas de Portugal — de estúdios a T8, para todo o tipo de estadia.",
-      "guestCta": "Ver os Nossos Apartamentos"
+      "guestCta": "Reservar Agora"
     },
     "home": {
       "metaTitle": "Central Hill — Apartamentos Mobilados Premium em Portugal",

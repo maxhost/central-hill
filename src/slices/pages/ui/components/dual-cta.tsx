@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { ButtonLink, Container, Eyebrow } from "@core/ui";
-import { getGlobals } from "@slices/settings/contract";
+import { avantioBookingUrl, getGlobals } from "@slices/settings/contract";
 
 /**
  * Owner/Guest dual call-to-action band (Home/Guest). The two-column copy is UI chrome
@@ -39,7 +39,7 @@ export async function DualCta({ locale }: { locale: Locale }) {
             </h3>
             <p className="mt-3 leading-relaxed text-ink-soft">{t("dualCta.guestBody")}</p>
             <div className="mt-6">
-              <ButtonLink href={`/${locale}/buildings`} variant="outline">
+              <ButtonLink href={avantioBookingUrl(locale)} variant="outline">
                 {t("dualCta.guestCta")}
               </ButtonLink>
             </div>

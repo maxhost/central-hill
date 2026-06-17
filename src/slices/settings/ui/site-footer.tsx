@@ -141,7 +141,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
 
         <div className="mt-12 flex flex-col gap-3 border-t border-bg/15 pt-6 text-xs text-bg/60 sm:flex-row sm:items-center sm:justify-between">
           <span>{t("footer.rights", { year })}</span>
-          <LocaleSwitcher current={locale} label={t("language")} />
+          <LocaleSwitcher current={locale} label={t("language")} tone="bg" />
         </div>
       </Container>
     </footer>

@@ -4,6 +4,7 @@ import type { Locale } from "@core/db/columns";
 import { MediaImage } from "@core/media";
 import { ButtonLink, Container } from "@core/ui";
 import { type BuildingSummary, getFeaturedBuildings } from "@slices/buildings/contract";
+import { avantioBookingUrl } from "@slices/settings/contract";
 import { SectionHeading } from "./blocks";
 
 /**
@@ -28,7 +29,7 @@ export async function FeaturedPortfolio({ locale }: { locale: Locale }) {
           ))}
         </div>
         <div className="mt-12 text-center">
-          <ButtonLink href={`/${locale}/buildings`} variant="outline">
+          <ButtonLink href={avantioBookingUrl(locale)} variant="outline">
             {t("portfolio.viewAll")}
           </ButtonLink>
         </div>

@@ -424,13 +424,22 @@
     "ctaBook": "Book Now",
     "ctaList": "List Your Property",
     "language": "Language",
+    "contact": "Contact",
+    "ownerLogin": "Owner login",
+    "whatsappCta": "Chat with us on WhatsApp",
+    "contactDialog": {
+      "title": "Contact us",
+      "intro": "Send us a message and our team will get back to you shortly."
+    },
     "nav": {
       "owners": "Owners",
       "buildings": "Buildings",
       "realEstate": "Real Estate",
       "guests": "Guests",
       "about": "About Us",
-      "blog": "Blog"
+      "blog": "Blog",
+      "services": "Services",
+      "guides": "What to Do"
     },
     "footer": {
       "toggle": "Are you a guest or an owner?",
@@ -618,7 +627,7 @@
       "guestEyebrow": "Guests",
       "guestTitle": "Planning a stay? Find your perfect apartment.",
       "guestBody": "Browse our full portfolio of professionally managed apartments across Portugal's most sought-after locations — studios to 8-bedrooms, for every type of stay.",
-      "guestCta": "Browse Our Apartments"
+      "guestCta": "Book Now"
     },
     "home": {
       "metaTitle": "Central Hill — Premium Furnished Apartments in Portugal",

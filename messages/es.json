@@ -424,13 +424,22 @@
     "ctaBook": "Reservar",
     "ctaList": "Publica tu propiedad",
     "language": "Idioma",
+    "contact": "Contacto",
+    "ownerLogin": "Acceso propietarios",
+    "whatsappCta": "Chatea con nosotros por WhatsApp",
+    "contactDialog": {
+      "title": "Contáctanos",
+      "intro": "Envíanos un mensaje y nuestro equipo te responderá en breve."
+    },
     "nav": {
       "owners": "Propietarios",
       "buildings": "Edificios",
       "realEstate": "Inmobiliaria",
       "guests": "Huéspedes",
       "about": "Sobre nosotros",
-      "blog": "Blog"
+      "blog": "Blog",
+      "services": "Servicios",
+      "guides": "Qué Hacer"
     },
     "footer": {
       "toggle": "¿Eres huésped o propietario?",
@@ -618,7 +627,7 @@
       "guestEyebrow": "Huéspedes",
       "guestTitle": "¿Planeas una estancia? Encuentra tu apartamento perfecto.",
       "guestBody": "Explora nuestro portfolio completo de apartamentos gestionados profesionalmente en las ubicaciones más solicitadas de Portugal — de estudios a apartamentos de 8 habitaciones, para cada tipo de estancia.",
-      "guestCta": "Ver Nuestros Apartamentos"
+      "guestCta": "Reservar Ahora"
     },
     "home": {
       "metaTitle": "Central Hill — Apartamentos Amueblados Premium en Portugal",
