@@ -12,12 +12,19 @@ import { z } from "zod";
 import { tStr, tStrOpt } from "@core/validation/primitives";
 import { between, fixed, iconCard, step } from "./_shared";
 
-/** A pricing tier card. `features` is 6–8 bullets (varies per tier). */
+/**
+ * A management-plan column. `commission` is the headline percentage shown in a circle
+ * above the card (client feedback B8); `features` is the cumulative bullet list (each
+ * plan adds to the previous one). Both the number of plans and the rows per plan are
+ * freely editable in the back office.
+ */
 const tier = z.object({
   name: tStr({ max: 80 }),
   tag: tStrOpt({ max: 80 }),
+  /** Headline commission, e.g. "15%". Shown in the circle above the column. */
+  commission: tStrOpt({ max: 20 }),
   is_popular: z.boolean(),
-  features: between(tStr({ max: 200 }), 6, 8),
+  features: between(tStr({ max: 200 }), 1, 20),
 });
 
 /** A helper block beside the plans (e.g. "not sure which plan?"). */
@@ -54,7 +61,7 @@ export const ownersSchema = z.object({
   plans: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
-    tiers: fixed(tier, 3),
+    tiers: between(tier, 1, 6),
     helpers: fixed(planHelper, 2),
   }),
   journey: z.object({

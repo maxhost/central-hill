@@ -93,6 +93,9 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
             </div>
           ))}
         </div>
+        <div className="mt-12 text-center">
+          <ButtonLink href="#estimate">{t("owners.plansCta")}</ButtonLink>
+        </div>
       </Band>
 
       <Band id="journey" className="bg-surface">
@@ -129,6 +132,12 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
   );
 }
 
+/**
+ * Management plans (client feedback B8). Cumulative columns (each plan adds to the
+ * previous one), each with an optional commission percentage in a circle above the
+ * card. The number of plans and the rows per plan are editable in the back office;
+ * the grid adapts to however many tiers are authored (up to 4 across on desktop).
+ */
 function Plans({
   tiers,
   t,
@@ -136,25 +145,42 @@ function Plans({
   tiers: OwnersContent["plans"]["tiers"];
   t: Awaited<ReturnType<typeof getTranslations>>;
 }) {
+  const cols =
+    tiers.length >= 4
+      ? "lg:grid-cols-4"
+      : tiers.length === 3
+        ? "lg:grid-cols-3"
+        : "sm:grid-cols-2";
+
   return (
-    <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div className={`mt-16 grid grid-cols-1 gap-6 ${cols}`}>
       {tiers.map((tier, i) => (
         <div
           key={i}
           className={
             tier.is_popular
-              ? "relative rounded-2xl border-2 border-accent bg-surface p-8"
-              : "rounded-2xl border border-line bg-surface p-8"
+              ? "relative rounded-2xl border-2 border-accent bg-surface p-8 pt-10"
+              : "relative rounded-2xl border border-line bg-surface p-8 pt-10"
           }
         >
+          {tier.commission ? (
+            <div className="absolute -top-7 left-1/2 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full border border-accent bg-bg text-sm font-semibold text-accent shadow-sm">
+              {tier.commission}
+            </div>
+          ) : null}
           {tier.is_popular ? (
-            <span className="absolute -top-3 left-8 rounded-full bg-accent px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-surface">
+            <span className="absolute -top-3 right-6 rounded-full bg-accent px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-surface">
               {t("owners.popular")}
             </span>
           ) : null}
           <h3 className="font-serif text-2xl text-ink">{tier.name}</h3>
           {tier.tag ? <p className="mt-1 text-sm text-ink-soft">{tier.tag}</p> : null}
-          <ul className="mt-6 space-y-3">
+          {i > 0 ? (
+            <p className="mt-4 text-xs font-medium uppercase tracking-[0.1em] text-accent">
+              {t("owners.plansCumulative", { prev: tiers[i - 1]!.name })}
+            </p>
+          ) : null}
+          <ul className="mt-4 space-y-3">
             {tier.features.map((f, j) => (
               <li key={j} className="flex gap-2 leading-relaxed text-ink-soft">
                 <span className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />

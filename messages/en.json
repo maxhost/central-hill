@@ -645,6 +645,8 @@
       "navEstimate": "Earnings Estimate",
       "servicesEyebrow": "Owner Services",
       "popular": "Most Popular",
+      "plansCta": "Get Your Profitability Study",
+      "plansCumulative": "Everything in {prev}, plus:",
       "estimateEyebrow": "Free Earnings Estimate",
       "faqTitle": "Owner Questions, Answered"
     },

@@ -37,23 +37,26 @@ test("media + string leaves are detected", () => {
 });
 
 test("fixed-count arrays carry min === max", () => {
-  const plans = field(root, "plans");
-  const tiers = field(plans, "tiers");
-  assert.equal(tiers.kind, "array");
-  if (tiers.kind === "array") {
-    assert.equal(tiers.min, 3);
-    assert.equal(tiers.max, 3);
+  const benefits = field(field(root, "why"), "benefits");
+  assert.equal(benefits.kind, "array");
+  if (benefits.kind === "array") {
+    assert.equal(benefits.min, 6);
+    assert.equal(benefits.max, 6);
   }
 });
 
-test("range arrays carry distinct min/max (tier features 6–8)", () => {
+test("range arrays carry distinct min/max (plans tiers + tier features, client feedback B8)", () => {
   const tiers = field(field(root, "plans"), "tiers");
+  assert.equal(tiers.kind, "array");
   if (tiers.kind !== "array") throw new Error("tiers not array");
+  // Plans are freely addable/removable in the back office (1–6 columns).
+  assert.equal(tiers.min, 1);
+  assert.equal(tiers.max, 6);
   const features = field(tiers.element, "features");
   assert.equal(features.kind, "array");
   if (features.kind === "array") {
-    assert.equal(features.min, 6);
-    assert.equal(features.max, 8);
+    assert.equal(features.min, 1);
+    assert.equal(features.max, 20);
   }
 });
 
@@ -63,27 +66,35 @@ test("booleans are detected (tier.is_popular)", () => {
   assert.equal(field(tiers.element, "is_popular").kind, "boolean");
 });
 
-test("emptyValue scaffolds fixed arrays to their length", () => {
+test("emptyValue scaffolds arrays to their min length", () => {
   const empty = emptyValue(root) as {
     hero: { image_media_id: string };
+    why: { benefits: unknown[] };
     plans: { tiers: { features: unknown[]; is_popular: boolean }[] };
   };
-  assert.equal(empty.plans.tiers.length, 3);
-  assert.equal(empty.plans.tiers[0]!.features.length, 6);
+  assert.equal(empty.why.benefits.length, 6); // fixed-count → exactly 6
+  assert.equal(empty.plans.tiers.length, 1); // range (1–6) → scaffolds to min
+  assert.equal(empty.plans.tiers[0]!.features.length, 1);
   assert.equal(empty.hero.image_media_id, "");
   assert.equal(empty.plans.tiers[0]!.is_popular, false);
 });
 
 test("applyDefaults preserves stored values and pads missing slots", () => {
-  const partial = { hero: { headline: "Earn more" }, plans: { tiers: [{ name: "Solo" }] } };
+  const partial = {
+    hero: { headline: "Earn more" },
+    why: { benefits: [] as unknown[] },
+    plans: { tiers: [{ name: "Core" }, { name: "Prime" }] },
+  };
   const filled = applyDefaults(root, partial) as {
     hero: { headline: string };
+    why: { benefits: unknown[] };
     plans: { tiers: { name: string }[] };
   };
   assert.equal(filled.hero.headline, "Earn more");
-  assert.equal(filled.plans.tiers.length, 3); // padded to fixed length
-  assert.equal(filled.plans.tiers[0]!.name, "Solo"); // kept
-  assert.equal(filled.plans.tiers[1]!.name, ""); // padded empty
+  assert.equal(filled.why.benefits.length, 6); // fixed array padded to its length
+  assert.equal(filled.plans.tiers.length, 2); // kept as stored (range min 1)
+  assert.equal(filled.plans.tiers[0]!.name, "Core"); // kept
+  assert.equal(filled.plans.tiers[1]!.name, "Prime"); // kept
 });
 
 test("humanizeKey makes editor labels", () => {

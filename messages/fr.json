@@ -645,6 +645,8 @@
       "navEstimate": "Estimation de Revenus",
       "servicesEyebrow": "Services aux Propriétaires",
       "popular": "Le Plus Populaire",
+      "plansCta": "Obtenez Votre Étude de Rentabilité",
+      "plansCumulative": "Tout le {prev}, plus :",
       "estimateEyebrow": "Estimation de Revenus Gratuite",
       "faqTitle": "Questions des Propriétaires, Répondues"
     },
