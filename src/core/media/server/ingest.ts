@@ -3,7 +3,6 @@ import { HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { encode } from "blurhash";
 import { eq } from "drizzle-orm";
-import sharp from "sharp";
 import { db } from "@core/db/client";
 import type { MediaAsset } from "../queries";
 import { media_asset } from "../schema";
@@ -28,6 +27,18 @@ const VIDEO_MIME = new Set(["video/mp4", "video/webm"]);
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024; // 15 MB — premium hero JPEGs sit well under this.
 const MAX_VIDEO_BYTES = 200 * 1024 * 1024; // 200 MB — hero loops, not feature films.
 const PRESIGN_TTL_SECONDS = 600; // 10 min to start the PUT.
+
+/**
+ * Lazy-load the native `sharp` binary only when an image is actually processed. A
+ * top-level `import sharp` triggers sharp's native dlopen at module-load time — which
+ * fails on the Netlify linux-x64 serverless runtime (ERR_DLOPEN_FAILED: libvips) — and
+ * since this module is reachable from the admin shell's contract imports, that crashed
+ * the whole backoffice (500). Deferring the import keeps the admin renderable; sharp
+ * only loads on the upload-finalize path (which staff trigger, not page render).
+ */
+async function loadSharp() {
+  return (await import("sharp")).default;
+}
 
 type MediaKind = "image" | "video";
 
@@ -102,6 +113,7 @@ export interface FinalizeInput {
 /** Downscale to a tiny raster and encode a 4×4-component blurhash (LCP placeholder). */
 async function encodeBlurhash(bytes: Buffer): Promise<string | null> {
   try {
+    const sharp = await loadSharp();
     const { data, info } = await sharp(bytes)
       .raw()
       .ensureAlpha()
@@ -131,6 +143,7 @@ export async function finalizeUpload(input: FinalizeInput): Promise<MediaAsset> 
   let height: number | null = null;
   let blurhash: string | null = null;
   if (kind === "image") {
+    const sharp = await loadSharp();
     const bytes = await r2GetBytes(input.r2Key);
     const meta = await sharp(bytes).metadata();
     width = meta.width ?? null;
