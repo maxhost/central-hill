@@ -9,6 +9,7 @@ import { Band, FeatureGrid, Prose, SectionHeading, Steps } from "./components/bl
 import { CountUp } from "./components/count-up";
 import { FaqSection } from "./components/faq-section";
 import { PageHero } from "./components/hero";
+import { TestimonialsRow } from "./components/testimonials-row";
 
 /**
  * Real Estate page (content-briefs.md → 3 · Real Estate). Investor-facing: hero · partners
@@ -121,6 +122,8 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         <SectionHeading title={process.headline} intro={process.intro} />
         <Steps steps={process.steps} />
       </Band>
+
+      <TestimonialsRow locale={locale} audience="owner" />
 
       <Band className="bg-surface">
         <div className="mx-auto max-w-3xl rounded-3xl border border-line bg-bg p-8 text-center md:p-14">

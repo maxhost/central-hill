@@ -23,7 +23,7 @@ export function PageHero({
   actions?: ReactNode;
 }) {
   return (
-    <section className="relative isolate flex min-h-[72vh] items-end overflow-hidden bg-feature">
+    <section className="relative isolate flex min-h-[78vh] items-center overflow-hidden bg-feature">
       {videoUrl ? (
         <video
           className="absolute inset-0 -z-10 h-full w-full object-cover"
@@ -52,7 +52,7 @@ export function PageHero({
         aria-hidden
       />
 
-      <Container className="pb-[clamp(48px,7vw,112px)] pt-40">
+      <Container className="py-[clamp(64px,10vh,128px)] pt-28">
         <div className="max-w-3xl text-surface">
           {eyebrow ? <Eyebrow className="text-surface/80">{eyebrow}</Eyebrow> : null}
           <h1 className="mt-4 font-serif text-4xl leading-[1.05] md:text-6xl">{headline}</h1>
@@ -62,6 +62,16 @@ export function PageHero({
           {actions ? <div className="mt-8 flex flex-wrap items-center gap-4">{actions}</div> : null}
         </div>
       </Container>
+
+      {/* Scroll affordance — signals there's more content just below the fold. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-5 flex justify-center text-surface/70"
+      >
+        <svg viewBox="0 0 24 24" className="h-7 w-7 animate-bounce fill-none stroke-current" strokeWidth={2}>
+          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
     </section>
   );
 }
