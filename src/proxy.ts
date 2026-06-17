@@ -9,6 +9,9 @@ import { routing } from "./i18n/routing";
 export default createMiddleware(routing);
 
 export const config = {
-  // Skip API, Next internals, and anything with a file extension (static assets).
-  matcher: "/((?!api|_next|_vercel|.*\\..*).*)",
+  // Localize only public pages. Skip the non-localized surfaces — `/admin` (backoffice),
+  // `/api` (incl. Better Auth), `/sitemaps/*` (SEO) — plus Next internals and any path
+  // with a file extension (static assets, robots.txt, sitemap.xml, llms.txt). Without
+  // the `admin` exclusion the middleware rewrites `/admin/login` → `/en/admin/login` (404).
+  matcher: "/((?!api|admin|sitemaps|_next|_vercel|.*\\..*).*)",
 };
