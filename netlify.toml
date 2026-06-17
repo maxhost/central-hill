@@ -1,69 +1,15 @@
-# Netlify config — static preview phase (multi-page mock).
-# Publish the mock/ folder as the site root so the design preview is self-contained and
-# docs/ + CLAUDE.md are NOT exposed on the public domain (they remain in the GitHub repo).
-#
-# Pages: /home.html (root) · /buildings.html · /building-detail.html  (+ clean aliases below)
-#
-# NOTE: once the real Next.js app (S0 · platform-foundation) lands, replace this with the
-# proper build config:
-#   [build] command = "pnpm build"  publish = ".next"   (+ @netlify/plugin-nextjs)
+# Netlify config — Next.js (App Router, RSC + ISR) runtime.
+# The @netlify/plugin-nextjs runtime turns `next build` output into static assets +
+# serverless/edge functions for SSR, ISR, on-demand revalidation and middleware
+# (next-intl locale routing). Env vars (DATABASE_URL, BETTER_AUTH_SECRET/URL, …) are
+# set in the Netlify UI, not here.
 
 [build]
-  publish = "mock"
+  command = "pnpm build"
+  publish = ".next"
 
-# Bare URL serves the Home
-[[redirects]]
-  from = "/"
-  to = "/home.html"
-  status = 200
+[build.environment]
+  NODE_VERSION = "20"
 
-# Clean aliases
-[[redirects]]
-  from = "/home"
-  to = "/home.html"
-  status = 200
-
-[[redirects]]
-  from = "/buildings"
-  to = "/buildings.html"
-  status = 200
-
-[[redirects]]
-  from = "/building"
-  to = "/building-detail.html"
-  status = 200
-
-[[redirects]]
-  from = "/owners"
-  to = "/owners.html"
-  status = 200
-
-[[redirects]]
-  from = "/real-estate"
-  to = "/real-estate.html"
-  status = 200
-
-[[redirects]]
-  from = "/guest"
-  to = "/guest.html"
-  status = 200
-
-[[redirects]]
-  from = "/services"
-  to = "/services.html"
-  status = 200
-
-[[redirects]]
-  from = "/what-to-do"
-  to = "/what-to-do.html"
-  status = 200
-
-[[redirects]]
-  from = "/about"
-  to = "/about.html"
-  status = 200
-
-[[redirects]]
-  from = "/blog"
-  to = "/blog.html"
-  status = 200
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
