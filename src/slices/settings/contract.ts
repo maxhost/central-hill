@@ -66,6 +66,13 @@ export interface SiteGlobals {
   /** Fallback social image when an entity sets none; null when unset. */
   defaultOgImage: MediaImageData | null;
   avantio: { accountId: string; widgetConfig: Record<string, unknown> };
+  /**
+   * Buildings-listing display toggles (client feedback B6). When `false` the listing
+   * hides the city/region location bar / the total-buildings count respectively —
+   * both default off while the portfolio is Lisbon-only.
+   */
+  showBuildingLocation: boolean;
+  showBuildingCount: boolean;
 }
 
 export type NavLocation = "header" | "footer";

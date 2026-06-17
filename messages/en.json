@@ -474,7 +474,8 @@
           "stats": "Headline stats",
           "office": "Office",
           "brand": "Brand",
-          "avantio": "Avantio"
+          "avantio": "Avantio",
+          "buildings": "Buildings listing"
         },
         "fields": {
           "email": "Email",
@@ -489,7 +490,9 @@
           "ogImageHint": "Fallback image when an entity sets none.",
           "avantioAccount": "Avantio account ID",
           "avantioConfig": "Avantio widget config",
-          "avantioConfigHint": "JSON object passed to the booking widget."
+          "avantioConfigHint": "JSON object passed to the booking widget.",
+          "showBuildingLocation": "Show location bar (city / region)",
+          "showBuildingCount": "Show total buildings count"
         },
         "social": {
           "instagram": "Instagram",

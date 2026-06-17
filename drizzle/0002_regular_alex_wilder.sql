@@ -1,0 +1,2 @@
+ALTER TABLE "company_settings" ADD COLUMN "show_building_location" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "company_settings" ADD COLUMN "show_building_count" boolean DEFAULT false NOT NULL;

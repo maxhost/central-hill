@@ -474,7 +474,8 @@
           "stats": "Statistiques clés",
           "office": "Bureau",
           "brand": "Marque",
-          "avantio": "Avantio"
+          "avantio": "Avantio",
+          "buildings": "Liste des immeubles"
         },
         "fields": {
           "email": "E-mail",
@@ -489,7 +490,9 @@
           "ogImageHint": "Image de repli quand une entité n’en définit aucune.",
           "avantioAccount": "ID de compte Avantio",
           "avantioConfig": "Config. du widget Avantio",
-          "avantioConfigHint": "Objet JSON transmis au widget de réservation."
+          "avantioConfigHint": "Objet JSON transmis au widget de réservation.",
+          "showBuildingLocation": "Afficher la barre de localisation (ville / région)",
+          "showBuildingCount": "Afficher le nombre total d'immeubles"
         },
         "social": {
           "instagram": "Instagram",

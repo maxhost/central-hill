@@ -91,6 +91,8 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
     currency: row.currency,
     defaultOgImage: og,
     avantio: { accountId: row.avantio_account_id, widgetConfig: row.avantio_widget_config },
+    showBuildingLocation: row.show_building_location,
+    showBuildingCount: row.show_building_count,
   };
 }
 

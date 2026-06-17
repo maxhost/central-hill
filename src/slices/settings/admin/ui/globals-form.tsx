@@ -7,6 +7,7 @@ import {
   AdminButton,
   AdminCard,
   AdminPageHeader,
+  Checkbox,
   Field,
   FieldGrid,
   FormActions,
@@ -84,6 +85,8 @@ export function GlobalsForm({
       default_og_image_media_id: state.default_og_image_media_id || null,
       avantio_account_id: state.avantio_account_id.trim(),
       avantio_widget_config: widgetConfig,
+      show_building_location: state.show_building_location,
+      show_building_count: state.show_building_count,
     };
 
     start(async () => {
@@ -205,6 +208,21 @@ export function GlobalsForm({
               onChange={(e) => set("avantio_widget_config", e.target.value)}
             />
           </Field>
+        </div>
+      </AdminCard>
+
+      <AdminCard title={t("admin.globals.sections.buildings")}>
+        <div className="space-y-3">
+          <Checkbox
+            label={t("admin.globals.fields.showBuildingLocation")}
+            checked={state.show_building_location}
+            onChange={(e) => set("show_building_location", e.target.checked)}
+          />
+          <Checkbox
+            label={t("admin.globals.fields.showBuildingCount")}
+            checked={state.show_building_count}
+            onChange={(e) => set("show_building_count", e.target.checked)}
+          />
         </div>
       </AdminCard>
 

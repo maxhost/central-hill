@@ -13,14 +13,21 @@ export async function BuildingCard({
   building,
   locale,
   priority,
+  showLocation = true,
 }: {
   building: BuildingSummary;
   locale: string;
   priority?: boolean;
+  /** When false (Lisbon-only mode, client feedback B6) show only the street, no city. */
+  showLocation?: boolean;
 }) {
   const t = await getTranslations("buildings");
 
-  const place = [building.streetAddress, building.city.name, building.neighbourhood?.name]
+  const place = (
+    showLocation
+      ? [building.streetAddress, building.city.name, building.neighbourhood?.name]
+      : [building.streetAddress]
+  )
     .filter(Boolean)
     .join(" · ");
 

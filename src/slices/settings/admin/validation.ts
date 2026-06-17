@@ -41,6 +41,8 @@ export const companySettingsSaveInput = z.object({
   default_og_image_media_id: z.uuid().nullable(),
   avantio_account_id: z.string().min(1).max(120),
   avantio_widget_config: z.record(z.string(), z.unknown()),
+  show_building_location: z.boolean(),
+  show_building_count: z.boolean(),
 });
 export type CompanySettingsSaveInput = z.infer<typeof companySettingsSaveInput>;
 

@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { Container, Section } from "@core/ui";
+import { getGlobals } from "@slices/settings/contract";
 import { listBuildings } from "../contract";
 import { BuildingCard } from "./components/building-card";
 import { BuildingFilter } from "./components/building-filter";
@@ -13,6 +14,13 @@ import { BuildingFilter } from "./components/building-filter";
 export async function BuildingsListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
   const t = await getTranslations("buildings");
+
+  // Display toggles (client feedback B6): while the portfolio is Lisbon-only the
+  // city/region filter and the total-buildings count are hidden by default; the back
+  // office can re-enable both via `company_settings`.
+  const globals = await getGlobals(locale);
+  const showLocation = globals?.showBuildingLocation ?? false;
+  const showCount = globals?.showBuildingCount ?? false;
 
   const buildings = await listBuildings(locale);
 
@@ -37,7 +45,7 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
     id: b.id,
     cityId: b.city.id,
     neighbourhoodId: b.neighbourhood?.id ?? null,
-    node: <BuildingCard building={b} locale={locale} priority={i < 3} />,
+    node: <BuildingCard building={b} locale={locale} priority={i < 3} showLocation={showLocation} />,
   }));
 
   return (
@@ -55,10 +63,11 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
         <Container>
           {items.length ? (
             <BuildingFilter
-              cities={[...cities.values()]}
-              neighbourhoods={[...neighbourhoods.values()]}
+              cities={showLocation ? [...cities.values()] : []}
+              neighbourhoods={showLocation ? [...neighbourhoods.values()] : []}
               items={items}
               allLabel={t("all")}
+              countLabel={showCount ? (n) => t("count", { count: n }) : undefined}
             />
           ) : (
             <p className="text-ink-soft">{t("empty")}</p>

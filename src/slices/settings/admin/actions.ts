@@ -70,6 +70,8 @@ export async function saveGlobals(raw: unknown): Promise<SettingsSaveResult> {
     default_og_image_media_id: input.default_og_image_media_id,
     avantio_account_id: input.avantio_account_id,
     avantio_widget_config: input.avantio_widget_config,
+    show_building_location: input.show_building_location,
+    show_building_count: input.show_building_count,
   };
 
   try {

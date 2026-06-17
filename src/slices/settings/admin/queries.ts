@@ -38,6 +38,8 @@ export interface GlobalsEditData {
   avantio_account_id: string;
   /** Pretty-printed JSON for the textarea editor. */
   avantio_widget_config: string;
+  show_building_location: boolean;
+  show_building_count: boolean;
 }
 
 export interface GlobalsEditBundle {
@@ -67,6 +69,8 @@ function scaffold(): GlobalsEditBundle {
       default_og_image_media_id: "",
       avantio_account_id: DEFAULT_GLOBALS.avantio.accountId,
       avantio_widget_config: "{}",
+      show_building_location: DEFAULT_GLOBALS.showBuildingLocation,
+      show_building_count: DEFAULT_GLOBALS.showBuildingCount,
     },
     previews: {},
   };
@@ -110,6 +114,8 @@ export async function getGlobalsForEdit(): Promise<GlobalsEditBundle> {
     default_og_image_media_id: row.default_og_image_media_id ?? "",
     avantio_account_id: row.avantio_account_id,
     avantio_widget_config: JSON.stringify(row.avantio_widget_config ?? {}, null, 2),
+    show_building_location: row.show_building_location,
+    show_building_count: row.show_building_count,
   };
 
   const previews = await resolvePreviews([row.default_og_image_media_id]);

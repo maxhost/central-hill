@@ -31,4 +31,6 @@ export const DEFAULT_GLOBALS: SiteGlobals = {
   currency: "EUR",
   defaultOgImage: null,
   avantio: { accountId: "", widgetConfig: {} },
+  showBuildingLocation: false,
+  showBuildingCount: false,
 };

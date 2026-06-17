@@ -1,4 +1,4 @@
-import { integer, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { boolean, integer, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { pkUuid, timestamps } from "@core/db/columns";
 
 /**
@@ -21,6 +21,14 @@ export const company_settings = pgTable("company_settings", {
   default_og_image_media_id: uuid(), // → media_asset.id (core/media)
   avantio_account_id: text().notNull(),
   avantio_widget_config: jsonb().$type<Record<string, unknown>>().notNull().default({}),
+  /**
+   * Buildings-listing display toggles (client feedback B6). The portfolio is currently
+   * Lisbon-only, so the city/region location bar and the total-buildings count are
+   * hidden by default; flip these on in the back office once there are properties in
+   * other regions.
+   */
+  show_building_location: boolean().notNull().default(false),
+  show_building_count: boolean().notNull().default(false),
   ...timestamps,
 });
 

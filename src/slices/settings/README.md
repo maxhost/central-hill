@@ -11,8 +11,10 @@ footer) on every public page. See `docs/vertical-slices.md` → S11,
 **Tables** (`schema.ts`, migration `0000`):
 - `company_settings` — singleton. Scalars/jsonb stored inline: `email, phone, whatsapp,
   social{}, stats{key:{value,label}}, office_address, office_hours, currency,
-  default_og_image_media_id, avantio_account_id, avantio_widget_config{}`. [T]: each
-  `stats.<key>.label` and `office_hours_label`.
+  default_og_image_media_id, avantio_account_id, avantio_widget_config{},
+  show_building_location, show_building_count` (the last two are the Lisbon-only Buildings
+  display toggles, client feedback B6, migration `0002`). [T]: each `stats.<key>.label`
+  and `office_hours_label`.
 - `nav_item` — `location ('header'|'footer'), parent_id (self-ref → sub-nav / footer
   columns), position, url`. [T]: `label`.
 

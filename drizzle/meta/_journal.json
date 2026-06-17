@@ -15,6 +15,13 @@
       "when": 1781399513160,
       "tag": "0001_sleepy_spyke",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781657855263,
+      "tag": "0002_regular_alex_wilder",
+      "breakpoints": true
     }
   ]
 }
