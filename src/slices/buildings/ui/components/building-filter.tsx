@@ -37,8 +37,8 @@ export function BuildingFilter({
   neighbourhoods: FilterNeighbourhood[];
   items: FilterItem[];
   allLabel: string;
-  /** `(n) => "14 Buildings"` — localized count line. */
-  countLabel: (n: number) => string;
+  /** `(n) => "14 Buildings"` — localized count line. Omit to hide the count entirely. */
+  countLabel?: (n: number) => string;
 }) {
   const [city, setCity] = useState<string>(ALL);
   const [neighbourhood, setNeighbourhood] = useState<string>(ALL);
@@ -96,9 +96,11 @@ export function BuildingFilter({
         </div>
       ) : null}
 
-      <p className="mt-8 border-b border-line pb-4 text-sm text-ink-soft">
-        {countLabel(shown.length)}
-      </p>
+      {countLabel ? (
+        <p className="mt-8 border-b border-line pb-4 text-sm text-ink-soft">
+          {countLabel(shown.length)}
+        </p>
+      ) : null}
 
       <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((i) => (

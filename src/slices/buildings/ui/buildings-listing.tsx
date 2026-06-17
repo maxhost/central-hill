@@ -1,6 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { Container, Eyebrow, Section } from "@core/ui";
+import { Container, Section } from "@core/ui";
 import { listBuildings } from "../contract";
 import { BuildingCard } from "./components/building-card";
 import { BuildingFilter } from "./components/building-filter";
@@ -44,8 +44,7 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
     <main>
       <Section as="header" className="pb-0">
         <Container>
-          <Eyebrow accent>{t("eyebrow")}</Eyebrow>
-          <h1 className="mt-4 max-w-3xl font-serif text-4xl leading-tight text-ink md:text-6xl">
+          <h1 className="max-w-3xl font-serif text-4xl leading-tight text-ink md:text-6xl">
             {t("title")}
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-soft">{t("intro")}</p>
@@ -60,7 +59,6 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
               neighbourhoods={[...neighbourhoods.values()]}
               items={items}
               allLabel={t("all")}
-              countLabel={(n) => t("count", { count: n })}
             />
           ) : (
             <p className="text-ink-soft">{t("empty")}</p>

@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { Container, Eyebrow } from "@core/ui";
+import { Container } from "@core/ui";
 import { type StatKey, getGlobals } from "@slices/settings/contract";
 
 /**
@@ -28,8 +28,7 @@ export async function StatsBand({
     <section className="border-y border-line bg-surface py-[clamp(48px,7vw,96px)]">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
-          <Eyebrow accent>{t("stats.eyebrow")}</Eyebrow>
-          <h2 className="mt-3 font-serif text-3xl leading-tight text-ink md:text-4xl">
+          <h2 className="font-serif text-3xl leading-tight text-ink md:text-4xl">
             {t("stats.title")}
           </h2>
         </div>

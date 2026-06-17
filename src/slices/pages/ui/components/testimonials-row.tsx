@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { Container, Eyebrow } from "@core/ui";
+import { Container } from "@core/ui";
 import { type TestimonialAudience, listTestimonials } from "@slices/testimonials/contract";
 
 /**
@@ -24,8 +24,9 @@ export async function TestimonialsRow({
     <section className="bg-feature py-[clamp(64px,10vw,160px)] text-surface">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
-          <Eyebrow className="text-surface/80">{t("reviews.eyebrow")}</Eyebrow>
-          <h2 className="mt-3 font-serif text-3xl leading-tight md:text-4xl">{t("reviews.title")}</h2>
+          <h2 className="whitespace-pre-line font-serif text-3xl leading-tight md:text-4xl">
+            {t("reviews.title")}
+          </h2>
         </div>
         <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((tm) => (

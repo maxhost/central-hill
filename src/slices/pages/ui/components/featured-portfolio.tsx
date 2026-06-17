@@ -21,12 +21,7 @@ export async function FeaturedPortfolio({ locale }: { locale: Locale }) {
   return (
     <section className="py-[clamp(64px,10vw,160px)]">
       <Container>
-        <SectionHeading
-          center
-          eyebrow={t("portfolio.eyebrow")}
-          title={t("portfolio.title")}
-          intro={t("portfolio.intro")}
-        />
+        <SectionHeading center title={t("portfolio.title")} intro={t("portfolio.intro")} />
         <div className="mt-12 grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-3">
           {buildings.map((b, i) => (
             <PortfolioCard key={b.id} locale={locale} building={b} priority={i < 3} t={t} />

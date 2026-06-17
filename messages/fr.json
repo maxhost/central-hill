@@ -202,7 +202,6 @@
   "buildings": {
     "metaTitle": "Immeubles — Central Hill",
     "metaDescription": "Découvrez le portfolio sélectionné d'immeubles meublés premium de Central Hill dans les quartiers les plus emblématiques de Lisbonne.",
-    "eyebrow": "Lisbonne · Portugal",
     "title": "Des propriétés stratégiques dans des emplacements de choix",
     "intro": "Découvrez notre portfolio soigneusement sélectionné d'immeubles d'exception, chacun choisi pour son emplacement, son caractère et l'expérience offerte aux voyageurs.",
     "all": "Tous",
@@ -595,17 +594,14 @@
     "faqEyebrow": "FAQ",
     "leadNote": "Gratuit, instantané, sans engagement.",
     "stats": {
-      "eyebrow": "En Chiffres",
       "title": "Une Entreprise de Confiance et Leader du Marché"
     },
     "reviews": {
-      "eyebrow": "Avis",
-      "title": "Nous Prenons Soin de Nos Partenaires et de Nos Voyageurs",
+      "title": "Nous Prenons Soin de Nos\nPartenaires et de Nos Voyageurs",
       "owner": "Propriétaire",
       "guest": "Voyageur"
     },
     "portfolio": {
-      "eyebrow": "Le Portfolio",
       "title": "Découvrez Notre Portfolio",
       "intro": "Des biens soigneusement sélectionnés dans les lieux les plus emblématiques du Portugal — chacun choisi pour son caractère et une expérience d'exception.",
       "viewAll": "Voir Tous les Biens",
@@ -618,7 +614,7 @@
       "ownerEyebrow": "Propriétaires",
       "ownerTitle": "Vous possédez un bien ? Gagnez plus — gratuitement, sans engagement.",
       "ownerBody": "Découvrez ce que votre bien pourrait rapporter grâce à une analyse de rentabilité gratuite et sans engagement. Notre équipe évalue votre bien et vous répond sous 48 heures.",
-      "ownerCta": "Obtenez Votre Estimation de Revenus Gratuite",
+      "ownerCta": "Je suis propriétaire",
       "guestEyebrow": "Voyageurs",
       "guestTitle": "Vous préparez un séjour ? Trouvez l'appartement idéal.",
       "guestBody": "Parcourez notre portfolio complet d'appartements gérés par des professionnels dans les lieux les plus prisés du Portugal — du studio au 8 chambres, pour chaque type de séjour.",
@@ -626,10 +622,7 @@
     },
     "home": {
       "metaTitle": "Central Hill — Appartements Meublés Premium au Portugal",
-      "metaDescription": "Des appartements meublés, gérés par des professionnels et au design soigné, dans les lieux les plus prisés du Portugal — et une gestion complète pour les propriétaires.",
-      "ownersEyebrow": "Pour les Propriétaires",
-      "guestsEyebrow": "Pour les Voyageurs",
-      "storyEyebrow": "Notre Histoire"
+      "metaDescription": "Des appartements meublés, gérés par des professionnels et au design soigné, dans les lieux les plus prisés du Portugal — et une gestion complète pour les propriétaires."
     },
     "owners": {
       "metaTitle": "Pour les Propriétaires — Central Hill",

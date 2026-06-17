@@ -202,7 +202,6 @@
   "buildings": {
     "metaTitle": "Buildings — Central Hill",
     "metaDescription": "Explore Central Hill's curated portfolio of premium furnished buildings across Lisbon's most iconic neighbourhoods.",
-    "eyebrow": "Lisbon · Portugal",
     "title": "Strategic properties in prime locations",
     "intro": "Explore our carefully curated portfolio of exceptional buildings, each handpicked for its location, character and guest experience.",
     "all": "All",
@@ -595,17 +594,14 @@
     "faqEyebrow": "FAQ",
     "leadNote": "Free, instant, no obligation.",
     "stats": {
-      "eyebrow": "By the Numbers",
       "title": "A Trusted and Leading Company"
     },
     "reviews": {
-      "eyebrow": "Reviews",
-      "title": "We Care About Our Partners & Guests",
+      "title": "We Care About Our\nPartners & Guests",
       "owner": "Owner",
       "guest": "Guest"
     },
     "portfolio": {
-      "eyebrow": "The Portfolio",
       "title": "Explore Our Portfolio",
       "intro": "Carefully selected properties across Portugal's most iconic locations — each chosen for its character and exceptional guest experience.",
       "viewAll": "View All Properties",
@@ -618,7 +614,7 @@
       "ownerEyebrow": "Owners",
       "ownerTitle": "Own a property? Start earning more — free, no obligation.",
       "ownerBody": "Find out what your property could earn with a free, no-obligation profitability analysis. Our team will assess your property and come back within 48 hours.",
-      "ownerCta": "Get Your Free Earnings Estimate",
+      "ownerCta": "I'm a property owner",
       "guestEyebrow": "Guests",
       "guestTitle": "Planning a stay? Find your perfect apartment.",
       "guestBody": "Browse our full portfolio of professionally managed apartments across Portugal's most sought-after locations — studios to 8-bedrooms, for every type of stay.",
@@ -626,10 +622,7 @@
     },
     "home": {
       "metaTitle": "Central Hill — Premium Furnished Apartments in Portugal",
-      "metaDescription": "Professionally managed, design-led furnished apartments across Portugal's most sought-after locations — and full management for property owners.",
-      "ownersEyebrow": "For Property Owners",
-      "guestsEyebrow": "For Guests",
-      "storyEyebrow": "Our Story"
+      "metaDescription": "Professionally managed, design-led furnished apartments across Portugal's most sought-after locations — and full management for property owners."
     },
     "owners": {
       "metaTitle": "For Owners — Central Hill",
