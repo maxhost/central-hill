@@ -36,6 +36,13 @@
       "when": 1783003807329,
       "tag": "0004_slim_owners_page",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783004807329,
+      "tag": "0005_owners_why_editorial",
+      "breakpoints": true
     }
   ]
 }

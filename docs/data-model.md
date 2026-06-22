@@ -106,9 +106,11 @@ page_content
   testimonials = **testimonials** entity (mixed audience); dual-CTA = **company_settings** contact.
 - **owners**: `hero{image_media_id, headline, copy}`; `earnings_form{badge, headline, subheadline, cta_label, note}`
   (the form *fields* are fixed in code → `lead.kind='earnings_estimate'`; the `badge` — "★ Earn +25%" —
-  is highlighted inside the form card). Owner direction (drizzle/0004): a focused conversion landing —
-  the marketing sections `why / services / plans / journey / dashboard` were **removed** from the page,
-  the schema, and the stored row.
+  is highlighted inside the form card); `why{headline, subheadline?, benefits[×6]{icon_key,title,description},
+  cta_primary{label,url,note}, cta_secondary{label,url,note}}` (Editorial-Split layout mirroring the home
+  owners-pitch). Owner direction (drizzle/0004 + 0005): a focused conversion landing — `services / plans /
+  journey / dashboard` were **removed** from the page, schema, and stored row; `why` was kept but
+  redesigned (0004 dropped it, 0005 re-added it restyled).
   → Stats ("numbers" band) = **company_settings**.
 - **real_estate**: `hero{image_media_id, headline, subheadline, positioning, capability_statement_media_id, cta_primary{label,url}, cta_secondary{label,url}}`;
   `partners{headline, intro, types[×4]{icon_key,title,description}}`; `capabilities{headline, intro, items[×3]{...}}`;

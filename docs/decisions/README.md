@@ -549,3 +549,13 @@ earnings-form card (highlighted) → authored under `earnings_form.badge`; `0004
 never-rendered `hero.badge` and sets `earnings_form.badge` to the shown value ("Earn +25%"). The numbers count up on scroll (`owner-stats-counter.tsx`, honours
 `prefers-reduced-motion`). `0004` is data-only and backward-compatible (extra keys are ignored /
 stripped on next save), so deploy order is not load-bearing here. Slice `pages` only.
+
+**Update 2 (owners "why" kept but redesigned, migration `0005`).** Follow-up owner direction: the
+`why` grid removed by `0004` should instead **stay, restyled** to the home's Editorial-Split layout
+(sticky headline + CTAs beside a hairline benefit list), and be **editable in the back office**.
+The owners page is a static `.mk` embed and `mock.css` styles bare `.mk h2/h3/a/section`, so the
+home's Tailwind `OwnersSection` component would leak styles if dropped inside it — the layout is
+instead **reproduced as scoped `.mk` HTML/CSS** using the same design tokens (identical look, no
+leak). `ownersSchema` regains a `why{headline, subheadline?, benefits[×6], cta_primary, cta_secondary}`
+section so the editor is ready for when the page is wired to the DB; `0005` (data-only, additive)
+re-adds the `why` content to the stored row. The page itself stays static for now. Slice `pages` only.

@@ -298,6 +298,20 @@ function ownersData() {
       cta_label: "Request my study",
       note: "Free and with no obligation.",
     },
+    why: {
+      headline: "Why property owners trust Central Hill Apartments",
+      subheadline: "We turn your property into a high-performing asset — fully managed, transparent, and optimised for maximum returns.",
+      benefits: [
+        ic("AI-powered pricing", "Our dynamic pricing engine analyses market data in real time, adjusting your rates daily for maximum occupancy at the best possible price.", "chart"),
+        ic("Profit-first management", "Every decision is guided by one goal: maximising your returns — from listing optimisation to upsell strategies, we leave no revenue on the table.", "trophy"),
+        ic("24/7 owner dashboard", "Monitor your property's performance in real time — bookings, revenue, occupancy and guest reviews — from anywhere in the world.", "bell"),
+        ic("Dedicated account manager", "A named point of contact who knows your property personally. No call centres, no uncertainty — just reliable, expert support.", "user"),
+        ic("Deep local expertise", "We operate on the ground in Portugal, with an unmatched understanding of seasonal trends, regulations and the best channels for your property.", "map-pin"),
+        ic("Full transparency", "Detailed monthly reports, real-time dashboards and complete financial visibility. You stay in control, even when we handle everything.", "search"),
+      ],
+      cta_primary: { label: "Get your free estimate", url: `${SITE}/en/owners`, note: "Free, no obligation — reply within 48h." },
+      cta_secondary: { label: "Talk to us", url: `${SITE}/en/owners` },
+    },
   };
 }
 
