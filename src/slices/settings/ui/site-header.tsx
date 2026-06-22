@@ -39,20 +39,15 @@ const DEFAULT_HEADER: Array<{ key: string; href: string; children?: Array<{ key:
 ];
 
 /**
- * The "Owners" menu reveals the owners-page sections directly (verbatim from the
- * `mock/owners.html` owner-subnav), hardcoded rather than read from the DB nav sub-tabs
- * (owner-directed). Hrefs map to the section anchors on the owners page.
+ * The "Owners" menu reveals the owners-page sections directly, hardcoded rather than read
+ * from the DB nav sub-tabs (owner-directed). Hrefs map to the section anchors that exist on
+ * the owners page — kept in sync with `slices/pages/ui/owners-page.tsx` (the page was slimmed
+ * to a focused landing; see ADR 0023 updates / drizzle 0004+0005).
  */
 const OWNERS_SECTIONS: Array<{ label: string; href: string }> = [
-  { label: "What's My Property Worth?", href: "/owners#estimate" },
+  { label: "What's My Property Worth?", href: "/owners#worth" },
   { label: "Numbers That Speak for Themselves", href: "/owners#numbers" },
   { label: "Why Owners Choose Us", href: "/owners#why" },
-  { label: "Everything Done for You", href: "/owners#services" },
-  { label: "Find Your Perfect Plan", href: "/owners#plans" },
-  { label: "Your Growth Path", href: "/owners#journey" },
-  { label: "Full Visibility from Anywhere", href: "/owners#technology" },
-  { label: "What Our Owners Say", href: "/owners#testimonials" },
-  { label: "Got Questions? We Have Answers.", href: "/owners#faq" },
   { label: "Start Earning More Today", href: "/owners#start" },
 ];
 
