@@ -61,6 +61,11 @@ function cardHtml(b: BuildingSummary, locale: Locale, labels: CardLabels): strin
 }
 
 const PAGE_STYLE = `
+/* Hero: strengthen the dark overlay over the background photo so the white headline/
+   eyebrow/intro stay legible (the bright Lisbon rooftops washed out the base gradient).
+   Scoped to this page only — overrides the kernel \`.mk .hero::after\` for Buildings. */
+.mk[data-page="buildings"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.46) 0%,rgba(18,16,13,.34) 45%,rgba(18,16,13,.88) 100%)}
+
 /* Page-only: filter / IA bar (decorative, kernel-variable based) */
 .mk .filterbar{border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--line) 26%,var(--bg))}
 .mk .filterbar .wrap{padding-top:26px;padding-bottom:26px;display:flex;flex-wrap:wrap;align-items:center;gap:18px}
