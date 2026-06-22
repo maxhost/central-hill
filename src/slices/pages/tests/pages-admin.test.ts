@@ -1,15 +1,35 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ownersSchema } from "../schemas/owners";
+import { z } from "zod";
+import { mediaId, tStr } from "@core/validation/primitives";
+import { between, fixed, iconCard } from "../schemas/_shared";
 import { type FieldNode, applyDefaults, describe, emptyValue, humanizeKey } from "../admin/form-model";
 
 /**
  * Slice `pages` backoffice (S12, ADR 0012) — the schema → form model. Pure (walks a
- * real page schema, no DB / React). Run:
- * `npx tsx --test src/slices/pages/tests/pages-admin.test.ts`.
+ * representative page schema, no DB / React). The schema is defined inline so this
+ * machinery test stays independent of any single page's evolving content; it exercises
+ * every FieldNode kind: media / string / multiline / fixed-count array / range array /
+ * boolean. Run: `npx tsx --test src/slices/pages/tests/pages-admin.test.ts`.
  */
 
-const root = describe(ownersSchema);
+const tier = z.object({
+  name: tStr({ max: 80 }),
+  is_popular: z.boolean(),
+  features: between(tStr({ max: 200 }), 1, 20),
+});
+
+const sampleSchema = z.object({
+  hero: z.object({
+    image_media_id: mediaId,
+    headline: tStr({ max: 80 }),
+    copy: tStr({ max: 600 }),
+  }),
+  why: z.object({ benefits: fixed(iconCard, 6) }),
+  plans: z.object({ tiers: between(tier, 1, 6) }),
+});
+
+const root = describe(sampleSchema);
 
 function field(node: FieldNode, key: string): FieldNode {
   assert.equal(node.kind, "object");
@@ -19,7 +39,7 @@ function field(node: FieldNode, key: string): FieldNode {
   return found.node;
 }
 
-test("describe maps the owners schema to an object of sections", () => {
+test("describe maps a page schema to an object of sections", () => {
   assert.equal(root.kind, "object");
   if (root.kind !== "object") return;
   const keys = root.fields.map((f) => f.key);

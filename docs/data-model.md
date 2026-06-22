@@ -104,13 +104,12 @@ page_content
   `story{headline, copy, image_media_id, cta{label,url}}`.
   → Stats band = **company_settings**; featured portfolio = **buildings** (`is_featured`, top 3 by position);
   testimonials = **testimonials** entity (mixed audience); dual-CTA = **company_settings** contact.
-- **owners**: `hero{image_media_id, badge, headline, copy}`; `earnings_form{headline, subheadline, cta_label, note}`
-  (the form *fields* are fixed in code → `lead.kind='earnings_estimate'`); `why{headline, benefits[×6]{icon_key,title,description}}`;
-  `services{headline, subheadline, items[×9]{icon_key,title,description}}`;
-  `plans{headline, subheadline, tiers[×3]{name, tag, is_popular, features[6..8]}, helpers[×2]{title,copy,cta?}}`;
-  `journey{headline, subheadline, steps[×5]{title,description}}`;
-  `dashboard{headline, subheadline, features[×6]{icon_key,title,description}}`.
-  → Stats = **company_settings**; testimonials (audience=owner) & FAQ (group `owners`) referenced.
+- **owners**: `hero{image_media_id, headline, copy}`; `earnings_form{badge, headline, subheadline, cta_label, note}`
+  (the form *fields* are fixed in code → `lead.kind='earnings_estimate'`; the `badge` — "★ Earn +25%" —
+  is highlighted inside the form card). Owner direction (drizzle/0004): a focused conversion landing —
+  the marketing sections `why / services / plans / journey / dashboard` were **removed** from the page,
+  the schema, and the stored row.
+  → Stats ("numbers" band) = **company_settings**.
 - **real_estate**: `hero{image_media_id, headline, subheadline, positioning, capability_statement_media_id, cta_primary{label,url}, cta_secondary{label,url}}`;
   `partners{headline, intro, types[×4]{icon_key,title,description}}`; `capabilities{headline, intro, items[×3]{...}}`;
   `asset_classes{headline, intro, items[×6]{...}}`; `models{headline, intro, items[×3]{name, tag, is_featured, features[×7]}, footer_note}`;

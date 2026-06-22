@@ -539,3 +539,13 @@ this one is destructive, hence this ADR. New render code is backward-compatible 
 rows (status ignored, `dual_cta`/image absent → chrome + mock fallbacks), so it is safe to deploy
 the code before running `0003`; running `0003` against the **old** code would break it (status
 filter), so **deploy first, migrate second**. Slice `pages` only. **Status:** Accepted.
+
+**Update (owners page slimmed, migration `0004`).** Same owner direction, applied to `/owners`:
+the page is now a focused conversion landing — **hero + earnings form + animated "numbers" band +
+closing CTA**. The marketing sections `why / services / plans / journey / dashboard` were removed
+from the public page, the `owners` schema, and the stored row (data-only migration `0004` drops
+those keys "without leaving traces"). The "★ Earn +25%" badge moved from the hero into the
+earnings-form card (highlighted) → authored under `earnings_form.badge`; `0004` relocates the
+existing `hero.badge`. The numbers count up on scroll (`owner-stats-counter.tsx`, honours
+`prefers-reduced-motion`). `0004` is data-only and backward-compatible (extra keys are ignored /
+stripped on next save), so deploy order is not load-bearing here. Slice `pages` only.

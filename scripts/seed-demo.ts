@@ -285,82 +285,18 @@ function homeData() {
 }
 
 function ownersData() {
-  const tier = (name: string, commission: string, tag: string, features: string[], is_popular = false) => ({ name, tag, commission, is_popular, features });
   return {
     hero: {
       image_media_id: uid(),
-      badge: "Earn +25%",
       headline: "Your property, our expertise, maximum returns",
       copy: "Central Hill turns your property into a high-performing asset — fully managed, transparent, and optimised for maximum profit using AI-driven pricing and unmatched local expertise.",
     },
     earnings_form: {
+      badge: "Earn +25%",
       headline: "Get your free profitability study",
       subheadline: "Find out what your property could earn. Our team responds within 48 hours.",
       cta_label: "Request my study",
       note: "Free and with no obligation.",
-    },
-    why: {
-      headline: "Why owners choose us",
-      benefits: [
-        ic("Earn up to 25% more", "AI-driven pricing and occupancy optimisation beat the market."),
-        ic("Truly hands-off", "We handle everything from guest messaging to maintenance."),
-        ic("Real-time dashboard", "Full visibility of bookings, revenue and payouts, anywhere."),
-        ic("Protect your asset", "Rigorous vetting, quality checks and insurance-backed care."),
-        ic("Local, always on", "A Lisbon team on the ground, 24/7."),
-        ic("Flexible & fair", "Transparent commissions and no long lock-ins."),
-      ],
-    },
-    services: {
-      headline: "Everything done for you",
-      subheadline: "A complete operation behind every booking.",
-      items: [
-        ic("Listing & marketing", "Professional photography, copy and multi-channel distribution."),
-        ic("Dynamic pricing", "Revenue management that adapts daily to demand."),
-        ic("Guest communication", "24/7 multilingual support before, during and after stays."),
-        ic("Check-in & check-out", "Smooth arrivals and departures, every time."),
-        ic("Housekeeping", "Hotel-standard cleaning and linen between stays."),
-        ic("Maintenance", "Proactive upkeep and a trusted contractor network."),
-        ic("Compliance", "Licensing, taxes and regulations handled for you."),
-        ic("Reviews & quality", "We protect your rating with five-star service."),
-        ic("Owner reporting", "Clear monthly statements and a live dashboard."),
-      ],
-    },
-    plans: {
-      headline: "A management plan built around your goals",
-      subheadline: "Cumulative plans — each tier adds to the one before it. Names are ours; the structure mirrors the best in the market.",
-      tiers: [
-        tier("Core", "15%", "The essentials, done brilliantly", ["Listing creation & optimisation", "Multi-channel distribution", "Dynamic pricing", "Guest communication", "Secure payment handling"]),
-        tier("Prime", "18%", "Everything automated", ["Professional photography", "Premium listing placement", "Review management", "Smart check-in support"], true),
-        tier("Manage", "22%", "Full operations", ["Housekeeping & linen", "Maintenance coordination", "Restocking of essentials", "On-the-ground support"]),
-        tier("Complete", "25%", "White-glove, end to end", ["Dedicated account manager", "Interior styling advice", "Licensing & compliance", "Priority everything"]),
-      ],
-      helpers: [
-        { title: "Not sure which plan fits?", copy: "Tell us about your property and goals — we'll recommend the right tier and show projected returns.", cta: { label: "Get your profitability study", url: `${SITE}/en/owners` } },
-        { title: "Already managing elsewhere?", copy: "Switching is simple. We handle the migration and you keep your bookings and reviews.", cta: { label: "Talk to us", url: `${SITE}/en/owners` } },
-      ],
-    },
-    journey: {
-      headline: "Your growth path",
-      subheadline: "From first call to full performance in five steps.",
-      steps: [
-        ti("Profitability study", "We assess your property and project its earning potential — free."),
-        ti("Onboarding", "Photography, listing and pricing set up across all channels."),
-        ti("Go live", "Your home goes to market and starts taking bookings."),
-        ti("Operate", "We run day-to-day hosting end to end."),
-        ti("Optimise", "We refine pricing and service to keep growing your returns."),
-      ],
-    },
-    dashboard: {
-      headline: "Full visibility from anywhere",
-      subheadline: "Your performance, always at your fingertips.",
-      features: [
-        ic("Live bookings", "See every reservation and your calendar in real time."),
-        ic("Revenue & payouts", "Track income and upcoming payouts to the cent."),
-        ic("Occupancy", "Monitor occupancy and nightly rates at a glance."),
-        ic("Statements", "Download clear monthly statements anytime."),
-        ic("Reviews", "Keep an eye on guest ratings and feedback."),
-        ic("Notifications", "Stay informed with alerts that matter."),
-      ],
     },
   };
 }
