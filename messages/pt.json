@@ -613,7 +613,8 @@
       "owner": "Proprietário",
       "guest": "Hóspede",
       "prev": "Avaliações anteriores",
-      "next": "Avaliações seguintes"
+      "next": "Avaliações seguintes",
+      "eyebrow": "Avaliações"
     },
     "portfolio": {
       "title": "Explore o Nosso Portfólio",
@@ -622,7 +623,10 @@
       "featured": "Destaque",
       "view": "Ver →",
       "apartments": "{count, plural, =0 {Sem apartamentos} one {# Apartamento} other {# Apartamentos}}",
-      "guests": "Até {count, plural, one {# hóspede} other {# hóspedes}}"
+      "guests": "Até {count, plural, one {# hóspede} other {# hóspedes}}",
+      "eyebrow": "O Portfólio",
+      "prev": "Imóveis anteriores",
+      "next": "Mais imóveis"
     },
     "dualCta": {
       "ownerEyebrow": "Proprietários",
@@ -636,19 +640,30 @@
     },
     "home": {
       "metaTitle": "Central Hill — Apartamentos Mobilados Premium em Portugal",
-      "metaDescription": "Apartamentos mobilados, geridos profissionalmente e com design cuidado, nas localizações mais procuradas de Portugal — e gestão completa para proprietários."
+      "metaDescription": "Apartamentos mobilados, geridos profissionalmente e com design cuidado, nas localizações mais procuradas de Portugal — e gestão completa para proprietários.",
+      "heroEyebrow": "Portugal – gestão imobiliária"
     },
     "owners": {
       "metaTitle": "Para Proprietários — Central Hill",
       "metaDescription": "Transforme o seu imóvel em Portugal num ativo de elevado desempenho — totalmente gerido, transparente e com retornos consistentemente acima do mercado.",
       "heroCta": "Obtenha a Sua Estimativa de Rendimento Gratuita",
       "navEstimate": "Estimativa de Rendimento",
-      "servicesEyebrow": "Serviços ao Proprietário",
+      "servicesEyebrow": "Tudo Tratado por Si",
       "popular": "Mais Popular",
       "plansCta": "Obtenha o Seu Estudo de Rentabilidade",
       "plansCumulative": "Tudo do {prev}, mais:",
       "estimateEyebrow": "Estimativa de Rendimento Gratuita",
-      "faqTitle": "Questões de Proprietários, Respondidas"
+      "faqTitle": "Questões de Proprietários, Respondidas",
+      "heroBadge": "Ganhe +25%",
+      "whyEyebrow": "Porque os Proprietários nos Escolhem",
+      "plansEyebrow": "Encontre o Seu Plano Ideal",
+      "journeyEyebrow": "O Seu Caminho de Crescimento",
+      "dashboardEyebrow": "Visibilidade Total a Partir de Qualquer Lugar",
+      "choosePlan": "Escolher {name}",
+      "finalEyebrow": "Comece a Ganhar Mais Hoje",
+      "finalTitle": "Pronto para Pôr o Seu Imóvel a Trabalhar para Si?",
+      "finalCopy": "Junte-se ao número crescente de proprietários em Portugal que confiam na Central Hill para entregar resultados excecionais. Comece com uma análise de rentabilidade gratuita e sem compromisso.",
+      "finalCta": "Obtenha a Sua Estimativa de Rendimento Gratuita"
     },
     "guests": {
       "metaTitle": "Para Hóspedes — Central Hill",

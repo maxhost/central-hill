@@ -1,23 +1,34 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
 import { ButtonLink } from "@core/ui";
 import { getHomePage } from "../contract";
-import { Band, CtaRow, FeatureGrid, SectionHeading } from "./components/blocks";
 import { DualCta } from "./components/dual-cta";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
+import { GuestsSection } from "./components/guests-section";
 import { PageHero } from "./components/hero";
+import { OwnersSection } from "./components/owners-section";
 import { StatsBand } from "./components/stats-band";
 import { TestimonialsRow } from "./components/testimonials-row";
 
+// TEMP: external hotlinks (the `mock/home.html` clip + poster) used only until a real hero
+// video is uploaded to R2 and set on the home page in the backoffice — then the resolved
+// media URL below takes over automatically and these are no longer hit.
+const HERO_FALLBACK_VIDEO =
+  "https://videos.pexels.com/video-files/16592055/16592055-hd_1920_1080_60fps.mp4";
+const HERO_FALLBACK_POSTER =
+  "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=2000&q=72";
+
 /**
- * Home page (content-briefs.md → 0 · Home). Composes: video hero · company stats
- * (settings) · owners pitch · guests pitch · featured portfolio (buildings) · mixed
- * testimonials · owner/guest dual CTA (settings). Static (ISR).
+ * Home page (content-briefs.md → 0 · Home) — restored to the approved `mock/home.html`
+ * (Warm Editorial). Composes, in order: video hero · company stats (settings, dark band) ·
+ * owners pitch (Editorial Split) · guests pitch (Image Showcase) · featured portfolio (buildings) ·
+ * mixed testimonials (infinite marquee) · owner/guest dual CTA (settings). Static (ISR).
+ * (The "our story" band was removed per owner direction.)
  */
 export async function HomePage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const page = await getHomePage(locale);
+  const [page, t] = await Promise.all([getHomePage(locale), getTranslations("pages")]);
   if (!page) notFound();
 
   const { content, media } = page;
@@ -27,13 +38,15 @@ export async function HomePage({ locale }: { locale: Locale }) {
     <main>
       <PageHero
         image={null}
-        videoUrl={media[hero.video_media_id]?.url ?? null}
+        videoUrl={media[hero.video_media_id]?.url ?? HERO_FALLBACK_VIDEO}
+        posterUrl={HERO_FALLBACK_POSTER}
+        eyebrow={t("home.heroEyebrow")}
         headline={hero.headline}
         subtitle={hero.subtitle}
         actions={
           <>
             <ButtonLink href={hero.cta_primary.url}>{hero.cta_primary.label}</ButtonLink>
-            <ButtonLink href={hero.cta_secondary.url} variant="outline">
+            <ButtonLink href={hero.cta_secondary.url} variant="light">
               {hero.cta_secondary.label}
             </ButtonLink>
           </>
@@ -42,25 +55,13 @@ export async function HomePage({ locale }: { locale: Locale }) {
 
       <StatsBand locale={locale} keys={["bookings", "years", "guests", "revenue"]} />
 
-      <Band id="owners">
-        <SectionHeading title={owners_pitch.headline} intro={owners_pitch.subheadline} />
-        <FeatureGrid className="mt-12" items={owners_pitch.benefits} />
-        <CtaRow
-          className="mt-12"
-          primary={owners_pitch.cta_primary}
-          secondary={owners_pitch.cta_secondary}
-        />
-      </Band>
+      <OwnersSection content={owners_pitch} />
 
-      <Band id="guests" className="bg-surface">
-        <SectionHeading title={guests_pitch.headline} intro={guests_pitch.subheadline} />
-        <FeatureGrid className="mt-12" items={guests_pitch.benefits} />
-        <CtaRow className="mt-12" primary={guests_pitch.cta} />
-      </Band>
+      <GuestsSection content={guests_pitch} />
 
-      <FeaturedPortfolio locale={locale} />
+      <FeaturedPortfolio locale={locale} showEyebrow={false} />
 
-      <TestimonialsRow locale={locale} />
+      <TestimonialsRow locale={locale} showEyebrow={false} />
 
       <DualCta locale={locale} />
     </main>

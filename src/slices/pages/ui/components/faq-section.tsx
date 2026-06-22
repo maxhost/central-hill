@@ -34,15 +34,29 @@ export async function FaqSection({
       />
       <Container>
         <div className="mx-auto max-w-3xl">
-          <SectionHeading eyebrow={eyebrow} title={title} intro={intro} />
-          <dl className="mt-10 divide-y divide-line border-t border-line">
+          <SectionHeading center eyebrow={eyebrow} title={title} intro={intro} />
+          {/*
+           * Expand/collapse accordion (mirrors `mock/owners.html` `.faq`): native
+           * <details>/<summary> so it stays a server component with zero JS, is keyboard-
+           * accessible, and degrades gracefully. The "+" marker rotates to "×" via the
+           * Tailwind `open:` group variant; the default disclosure triangle is hidden.
+           */}
+          <div className="mt-10 border-t border-line">
             {group.items.map((item) => (
-              <div key={item.id} className="py-6">
-                <dt className="font-medium text-ink">{item.question}</dt>
-                <dd className="mt-2 leading-relaxed text-ink-soft">{item.answer}</dd>
-              </div>
+              <details key={item.id} className="group border-b border-line">
+                <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-6 font-serif text-lg text-ink transition-colors hover:text-accent-deep [&::-webkit-details-marker]:hidden">
+                  {item.question}
+                  <span
+                    aria-hidden
+                    className="mt-1 shrink-0 text-2xl leading-none text-accent transition-transform duration-200 group-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="max-w-[70ch] pb-6 leading-relaxed text-ink-soft">{item.answer}</p>
+              </details>
             ))}
-          </dl>
+          </div>
         </div>
       </Container>
     </section>

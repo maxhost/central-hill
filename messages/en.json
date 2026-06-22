@@ -613,7 +613,8 @@
       "owner": "Owner",
       "guest": "Guest",
       "prev": "Previous reviews",
-      "next": "Next reviews"
+      "next": "Next reviews",
+      "eyebrow": "Reviews"
     },
     "portfolio": {
       "title": "Explore Our Portfolio",
@@ -622,7 +623,10 @@
       "featured": "Featured",
       "view": "View →",
       "apartments": "{count, plural, =0 {No apartments} one {# Apartment} other {# Apartments}}",
-      "guests": "Up to {count, plural, one {# Guest} other {# Guests}}"
+      "guests": "Up to {count, plural, one {# Guest} other {# Guests}}",
+      "eyebrow": "The Portfolio",
+      "prev": "Previous properties",
+      "next": "More properties"
     },
     "dualCta": {
       "ownerEyebrow": "Owners",
@@ -636,19 +640,30 @@
     },
     "home": {
       "metaTitle": "Central Hill — Premium Furnished Apartments in Portugal",
-      "metaDescription": "Professionally managed, design-led furnished apartments across Portugal's most sought-after locations — and full management for property owners."
+      "metaDescription": "Professionally managed, design-led furnished apartments across Portugal's most sought-after locations — and full management for property owners.",
+      "heroEyebrow": "Portugal – managing real estate"
     },
     "owners": {
       "metaTitle": "For Owners — Central Hill",
       "metaDescription": "Turn your Portugal property into a high-performing asset — fully managed, fully transparent, with consistently above-market returns.",
       "heroCta": "Get Your Free Earnings Estimate",
       "navEstimate": "Earnings Estimate",
-      "servicesEyebrow": "Owner Services",
+      "servicesEyebrow": "Everything Done for You",
       "popular": "Most Popular",
       "plansCta": "Get Your Profitability Study",
       "plansCumulative": "Everything in {prev}, plus:",
       "estimateEyebrow": "Free Earnings Estimate",
-      "faqTitle": "Owner Questions, Answered"
+      "faqTitle": "Owner Questions, Answered",
+      "heroBadge": "Earn +25%",
+      "whyEyebrow": "Why Owners Choose Us",
+      "plansEyebrow": "Find Your Perfect Plan",
+      "journeyEyebrow": "Your Growth Path",
+      "dashboardEyebrow": "Full Visibility from Anywhere",
+      "choosePlan": "Choose {name}",
+      "finalEyebrow": "Start Earning More Today",
+      "finalTitle": "Ready to Make Your Property Work for You?",
+      "finalCopy": "Join the growing number of property owners across Portugal who trust Central Hill to deliver exceptional results. Start with a free, no-obligation profitability analysis.",
+      "finalCta": "Get Your Free Earnings Estimate"
     },
     "guests": {
       "metaTitle": "For Guests — Central Hill",

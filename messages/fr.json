@@ -613,7 +613,8 @@
       "owner": "Propriétaire",
       "guest": "Voyageur",
       "prev": "Avis précédents",
-      "next": "Avis suivants"
+      "next": "Avis suivants",
+      "eyebrow": "Avis"
     },
     "portfolio": {
       "title": "Découvrez Notre Portfolio",
@@ -622,7 +623,10 @@
       "featured": "À la une",
       "view": "Voir →",
       "apartments": "{count, plural, =0 {Aucun appartement} one {# Appartement} other {# Appartements}}",
-      "guests": "Jusqu'à {count, plural, one {# voyageur} other {# voyageurs}}"
+      "guests": "Jusqu'à {count, plural, one {# voyageur} other {# voyageurs}}",
+      "eyebrow": "Le Portfolio",
+      "prev": "Biens précédents",
+      "next": "Plus de biens"
     },
     "dualCta": {
       "ownerEyebrow": "Propriétaires",
@@ -636,19 +640,30 @@
     },
     "home": {
       "metaTitle": "Central Hill — Appartements Meublés Premium au Portugal",
-      "metaDescription": "Des appartements meublés, gérés par des professionnels et au design soigné, dans les lieux les plus prisés du Portugal — et une gestion complète pour les propriétaires."
+      "metaDescription": "Des appartements meublés, gérés par des professionnels et au design soigné, dans les lieux les plus prisés du Portugal — et une gestion complète pour les propriétaires.",
+      "heroEyebrow": "Portugal – gestion immobilière"
     },
     "owners": {
       "metaTitle": "Pour les Propriétaires — Central Hill",
       "metaDescription": "Transformez votre bien au Portugal en un actif performant — entièrement géré, transparent et avec des rendements régulièrement supérieurs au marché.",
       "heroCta": "Obtenez Votre Estimation de Revenus Gratuite",
       "navEstimate": "Estimation de Revenus",
-      "servicesEyebrow": "Services aux Propriétaires",
+      "servicesEyebrow": "Tout Pris en Charge pour Vous",
       "popular": "Le Plus Populaire",
       "plansCta": "Obtenez Votre Étude de Rentabilité",
       "plansCumulative": "Tout le {prev}, plus :",
       "estimateEyebrow": "Estimation de Revenus Gratuite",
-      "faqTitle": "Questions des Propriétaires, Répondues"
+      "faqTitle": "Questions des Propriétaires, Répondues",
+      "heroBadge": "Gagnez +25%",
+      "whyEyebrow": "Pourquoi les Propriétaires Nous Choisissent",
+      "plansEyebrow": "Trouvez Votre Formule Idéale",
+      "journeyEyebrow": "Votre Parcours de Croissance",
+      "dashboardEyebrow": "Une Visibilité Totale où que Vous Soyez",
+      "choosePlan": "Choisir {name}",
+      "finalEyebrow": "Commencez à Gagner Plus Dès Aujourd'hui",
+      "finalTitle": "Prêt à Faire Travailler Votre Bien pour Vous ?",
+      "finalCopy": "Rejoignez le nombre croissant de propriétaires au Portugal qui font confiance à Central Hill pour des résultats exceptionnels. Commencez par une analyse de rentabilité gratuite et sans engagement.",
+      "finalCta": "Obtenez Votre Estimation de Revenus Gratuite"
     },
     "guests": {
       "metaTitle": "Pour les Voyageurs — Central Hill",

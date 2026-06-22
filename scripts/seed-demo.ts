@@ -132,7 +132,7 @@ async function main() {
   });
   console.log("✓ company_settings");
 
-  // ── Header navigation (with hover sub-tabs) ─────────────────────────────────
+  // ── Header navigation (with hover sub-tabs, LovelyStay-style — client feedback B1) ──
   type NavSeed = { url: string; label: string; children?: { url: string; label: string }[] };
   const header: NavSeed[] = [
     { url: "/owners", label: "Owners", children: [
@@ -243,26 +243,26 @@ function homeData() {
       headline: "Own a property in Portugal? Earn more, do nothing.",
       subheadline: "Full-service management that maximises your returns with AI-driven pricing and unmatched local expertise.",
       benefits: [
-        ic("Maximised revenue", "Dynamic, AI-driven pricing keeps your calendar full at the best nightly rate."),
-        ic("Fully managed", "Guests, cleaning, maintenance and compliance — all handled end to end."),
-        ic("Total transparency", "Track bookings, payouts and performance in real time from any device."),
-        ic("Five-star care", "Hotel-grade hospitality protects your asset and your reviews."),
-        ic("Local expertise", "A Lisbon team on the ground, available around the clock."),
-        ic("No lock-in", "Flexible plans that grow with you — cancel anytime."),
+        ic("Maximised revenue", "Dynamic, AI-driven pricing keeps your calendar full at the best nightly rate.", "chart"),
+        ic("Fully managed", "Guests, cleaning, maintenance and compliance — all handled end to end.", "check"),
+        ic("Total transparency", "Track bookings, payouts and performance in real time from any device.", "search"),
+        ic("Five-star care", "Hotel-grade hospitality protects your asset and your reviews.", "trophy"),
+        ic("Local expertise", "A Lisbon team on the ground, available around the clock.", "map-pin"),
+        ic("No lock-in", "Flexible plans that grow with you — cancel anytime.", "tag"),
       ],
-      cta_primary: { label: "Get your profitability study", url: `${SITE}/en/owners`, note: "Free, no obligation — reply within 48h." },
+      cta_primary: { label: "I'm a property owner", url: `${SITE}/en/owners`, note: "Free, no obligation — reply within 48h." },
       cta_secondary: { label: "See our plans", url: `${SITE}/en/owners` },
     },
     guests_pitch: {
       headline: "Planning a stay? Find your perfect apartment.",
       subheadline: "Spacious, beautifully designed homes for couples, families and groups — in the heart of the city.",
       benefits: [
-        ic("Prime locations", "Steps from Lisbon's best dining, nightlife and landmarks."),
-        ic("Space for everyone", "From studios to apartments sleeping 25+ for big groups."),
-        ic("Design-led interiors", "Every home styled for comfort and that wow factor."),
-        ic("Seamless check-in", "Effortless arrival and a local team a message away."),
-        ic("Spotless & safe", "Professional cleaning and quality checks before every stay."),
-        ic("Book direct, save", "Best rates and perks when you book with us directly."),
+        ic("Prime locations", "Steps from Lisbon's best dining, nightlife and landmarks.", "map-pin"),
+        ic("Space for everyone", "From studios to apartments sleeping 25+ for big groups.", "home"),
+        ic("Design-led interiors", "Every home styled for comfort and that wow factor.", "spark"),
+        ic("Seamless check-in", "Effortless arrival and a local team a message away.", "key"),
+        ic("Spotless & safe", "Professional cleaning and quality checks before every stay.", "check"),
+        ic("Book direct, save", "Best rates and perks when you book with us directly.", "coin"),
       ],
       cta: { label: "Book Now", url: BOOK, note: "Best-rate guarantee when you book direct." },
     },
@@ -280,7 +280,7 @@ function ownersData() {
   return {
     hero: {
       image_media_id: uid(),
-      badge: "For property owners",
+      badge: "Earn +25%",
       headline: "Your property, our expertise, maximum returns",
       copy: "Central Hill turns your property into a high-performing asset — fully managed, transparent, and optimised for maximum profit using AI-driven pricing and unmatched local expertise.",
     },

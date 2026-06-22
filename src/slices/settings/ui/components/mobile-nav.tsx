@@ -2,8 +2,14 @@
 
 import { useState } from "react";
 import { Link } from "@/i18n/navigation";
-import { cn } from "@core/ui";
 import { ContactDialog } from "./contact-dialog";
+
+export interface NavCta {
+  href: string;
+  label: string;
+  /** External booking engine link (opens in a new tab). */
+  external?: boolean;
+}
 
 export interface NavEntry {
   label: string;
@@ -21,29 +27,22 @@ export interface NavEntry {
  */
 export function MobileNav({
   links,
-  bookHref,
-  bookLabel,
-  listHref,
-  listLabel,
   loginHref,
   loginLabel,
   contactLabel,
   contactTitle,
   contactIntro,
+  book,
   openLabel,
   closeLabel,
 }: {
   links: NavEntry[];
-  /** External Avantio booking URL (B2) — rendered as a plain anchor. */
-  bookHref: string;
-  bookLabel: string;
-  listHref: string;
-  listLabel: string;
   loginHref: string;
   loginLabel: string;
   contactLabel: string;
   contactTitle: string;
   contactIntro: string;
+  book: NavCta;
   openLabel: string;
   closeLabel: string;
 }) {
@@ -64,7 +63,10 @@ export function MobileNav({
       </button>
 
       {open ? (
-        <div className="fixed inset-x-0 top-16 z-40 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-line bg-bg shadow-sm">
+        <div
+          data-chrome-keep
+          className="fixed inset-x-0 top-16 z-40 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-line bg-bg shadow-sm"
+        >
           <nav className="flex flex-col px-6 py-4">
             {links.map((l) => (
               <div key={l.href + l.label} className="border-b border-line/60">
@@ -102,31 +104,21 @@ export function MobileNav({
             </a>
 
             <div className="mt-4 flex flex-col gap-3">
+              <a
+                href={book.href}
+                target={book.external ? "_blank" : undefined}
+                rel={book.external ? "noopener noreferrer" : undefined}
+                onClick={() => setOpen(false)}
+                className="inline-flex items-center justify-center rounded-[3px] border border-ink px-5 py-3 text-sm font-medium text-ink transition-colors hover:bg-ink hover:text-bg"
+              >
+                {book.label}
+              </a>
               <ContactDialog
                 variant="button"
                 label={contactLabel}
                 title={contactTitle}
                 intro={contactIntro}
               />
-              <a
-                href={bookHref}
-                className={cn(
-                  "inline-flex items-center justify-center rounded-md border border-line px-7 py-3",
-                  "text-sm font-medium text-ink transition-colors hover:border-ink",
-                )}
-              >
-                {bookLabel}
-              </a>
-              <Link
-                href={listHref}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "inline-flex items-center justify-center rounded-md bg-accent px-7 py-3",
-                  "text-sm font-medium text-surface transition-colors hover:bg-accent-deep",
-                )}
-              >
-                {listLabel} →
-              </Link>
             </div>
           </nav>
         </div>

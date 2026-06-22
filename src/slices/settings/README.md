@@ -37,20 +37,25 @@ settings publish cascades.
 `AVANTIO_OWNERS_LOGIN_URL` (pure, from `booking.ts`; safe in server + client). Every
 "search / book" CTA points at the Avantio rentals engine for the active locale, falling
 back to English for locales Avantio does not support (pt/en/es/fr only). Consumers:
-header "Book Now", home/guest `dualCta.guestCta`, featured-portfolio "View All".
+home/guest `dualCta.guestCta` and the header **Book Now** CTA.
 
-## Header chrome — top-right cluster + sub-tabs + WhatsApp (client feedback B1)
+## Header chrome — top-right cluster + sub-tabs (client feedback B1)
 
-`ui/site-header.tsx` renders, in the top-right cluster: a **Contact** trigger
-(`ui/components/contact-dialog.tsx` — a client modal embedding the leads
-`ContactForm`, `kind="contact"`; staff email goes to `LEAD_NOTIFY_TO`), an **owner-login**
-icon → `AVANTIO_OWNERS_LOGIN_URL`, and the **flag language selector**
-(`ui/components/locale-switcher.tsx`, now with flag emoji + a `tone` for the dark footer).
-Top-level nav items with `children` reveal their **sub-tabs on hover/focus** (pure CSS
-`group-hover`/`group-focus-within`, no JS); the fallback menu ships Guests → Services /
-What to Do so the mechanism is visible before the back office seeds nav. A floating
-**WhatsApp** button (`ui/components/whatsapp-fab.tsx`, `wa.me` deep link to
-`globals.whatsapp`) hangs over every page. The mobile drawer mirrors all of the above.
+`ui/site-header.tsx` is laid out in **three sections**: (1) the brand logo; (2) the **menu** —
+the primary nav links plus a ghost **Book Now** CTA (→ `avantioBookingUrl`) set off at the end;
+(3) a top-right **utilities** cluster — an **owner-login / account** icon
+(→ `AVANTIO_OWNERS_LOGIN_URL`), a **contact** icon (`ui/components/contact-dialog.tsx`,
+`variant="icon"` — a client modal embedding the leads `ContactForm`, `kind="contact"`; staff
+email goes to `LEAD_NOTIFY_TO`), and the **language dropdown** (`ui/components/locale-switcher.tsx`
+— globe + current locale + chevron; opens a menu of the four locales, selected + hover highlighted
+with the hero accent; a `tone` adapts it to the dark footer). Over a page hero the ghost CTA shows
+a white hairline that fills white on hover (chrome rule in `globals.css`, keyed by
+`data-cta="ghost"`); scrolled / no-hero pages keep the dark default. Top-level nav items with
+`children` reveal their **sub-tabs on hover/focus** as a
+**full-width frosted bar directly under the header** (pure CSS `group-hover`/`group-focus-within`,
+no JS; mirrors the `mock/` owner sub-nav); the bar is `data-chrome-keep` so its ink links stay
+readable over a hero. The fallback menu ships Guests → Services / What to Do so the mechanism is
+visible before the back office seeds nav. The mobile drawer mirrors all of the above.
 
 ## App-shell chrome (cross-cut)
 

@@ -15,15 +15,21 @@
   (the single highest-leverage "editorial luxury" tell).
 - **Perf:** variable fonts, `font-display:swap`, self-host + preload the LCP display weight, Latin subset.
 
-## Color — 6 palette directions (WCAG AA verified)
-Token set per palette: `ink, ink-soft, bg, surface, line, accent, accent-deep, feature, feature-accent`.
+## Color — Warm Editorial is the LOCKED production palette (ADR 0022)
+**Production ships only Warm Editorial.** The other five directions below are design-exploration
+only (kept for the record / the mock preview); there is **no runtime palette switching**, and
+changing the production palette requires a new ADR. Live tokens are in `app/globals.css @theme`.
+Token set per palette: `ink, ink-soft, bg, surface, line, accent, accent-deep, feature,
+feature-accent`, plus the on-dark text tokens `on-feature` / `on-feature-soft` (text on the
+`feature` band; added with `feature-accent` in ADR 0022). Note: `surface` ships as `#fffdf8`
+(warm white, never pure `#fff`).
 **Rules:** ≤5 colors; 60-30-10 (neutral/neutral/accent); **accent = actions only** (CTAs, links, active);
 **never pure #000/#fff** — warm-tint both; one metallic max (only Deep Green uses gold, on the dark band
 with dark text).
 
 | # | Name | bg | ink | accent | feature | Best for |
 |---|---|---|---|---|---|---|
-| 1 | **Warm Editorial** ⭐ | `#FBF8F3` | `#2B2622` | `#B5562D` | `#2E2A26` | Default — closest to ukio; all audiences |
+| 1 | **Warm Editorial** ⭐ 🔒 | `#FBF8F3` | `#2B2622` | `#B5562D` | `#2E2A26` | **LOCKED production palette (ADR 0022)** — closest to ukio; all audiences |
 | 2 | **Deep Luxe Green** | `#F5F3EC` | `#14201B` | `#1F5C45` | `#0E3326` (+gold `#C49A4A`) | Heritage/trust; owners & partners |
 | 3 | **Coastal Portugal** | `#F7F9FA` | `#16242E` | `#2C6E8F` | `#14323F` | Place/Lisbon identity; travellers |
 | 4 | **Monochrome Boutique** | `#FAFAF8` | `#111111` | `#111111` | `#0A0A0A` | Photo-led, gallery; best a11y |
@@ -32,7 +38,9 @@ with dark text).
 
 ¹ Terracotta accent tuned to the AA-safe deep tone for white button text (bright `#C0653A` fails AA at
 small sizes — use it only for large text/UI). Full token sets live in `mock/home.html` `:root` blocks.
-**Recommendation:** Warm Editorial as primary, Deep Luxe Green as the heritage alternative.
+**Decision (ADR 0022):** Warm Editorial is locked as the production palette; the home and all
+marketing pages render it via the `core` tokens. (Deep Luxe Green is retained only as the
+documented heritage alternative should the client ever revisit — that would be a new ADR.)
 
 ## Layout & whitespace
 - 12-col grid; content max-width **~1200–1280px**; full-bleed only for hero/imagery.

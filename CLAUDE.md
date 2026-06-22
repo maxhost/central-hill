@@ -58,7 +58,9 @@ features, and never make unilateral cross-cutting decisions. **Follow them exact
 - **i18n:** **next-intl**, 4 locales `en | pt | es | fr`, all path-prefixed.
 - **Storage/media:** Cloudflare **R2** (S3-compatible) + responsive image pipeline.
 - **Styling:** Tailwind CSS + a small in-repo design system (`src/core/ui`). Premium/boutique
-  feel (refs: ukio.com look, lovelystay.com information architecture).
+  feel (refs: ukio.com look, lovelystay.com information architecture). **Production palette is
+  locked to "Warm Editorial"** (tokens in `src/app/globals.css @theme`; ADR 0022) — do not
+  introduce other palettes or raw hex; the approved visual baseline is `mock/home.html`.
 - **LLM:** translation pipeline (provider behind an interface in `src/core/i18n/translate`).
 - **Email:** transactional provider behind `src/core/email` (lead notifications).
 

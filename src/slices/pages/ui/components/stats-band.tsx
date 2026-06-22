@@ -9,13 +9,19 @@ import { CountUp } from "./count-up";
  * (`getGlobals`) — NOT from page `data` (data-model.md → stats = company_settings). The
  * eyebrow/title are UI chrome (`pages` namespace). Renders nothing when settings are
  * unset. Subscribes to the `globals` cache tag transitively via `getGlobals`.
+ *
+ * Layout: a single full-bleed **dark feature (cacao) band** holding a centred title in
+ * cream, then the figures in warm cream (`feature-accent`) below it.
  */
 export async function StatsBand({
   locale,
   keys,
+  showTitle = true,
 }: {
   locale: Locale;
   keys: StatKey[];
+  /** Hide the centred heading for a bare proof band (Owners, mirroring the mock). */
+  showTitle?: boolean;
 }) {
   const globals = await getGlobals(locale);
   if (!globals) return null;
@@ -26,20 +32,26 @@ export async function StatsBand({
   const t = await getTranslations("pages");
 
   return (
-    <section className="border-y border-line bg-surface py-[clamp(48px,7vw,96px)]">
+    <section className="bg-feature py-[clamp(56px,8vw,104px)]">
       <Container>
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-serif text-3xl leading-tight text-ink md:text-4xl">
+        {showTitle ? (
+          <h2 className="mx-auto max-w-2xl text-center font-serif text-3xl leading-tight text-on-feature md:text-4xl">
             {t("stats.title")}
           </h2>
-        </div>
-        <dl className="mt-12 grid grid-cols-2 gap-x-8 gap-y-10 text-center lg:grid-cols-4">
+        ) : null}
+        <dl
+          className={`grid grid-cols-2 gap-x-8 gap-y-10 text-center lg:grid-cols-4 ${
+            showTitle ? "mt-[clamp(40px,6vw,72px)]" : ""
+          }`}
+        >
           {cells.map((s) => (
             <div key={s.label}>
-              <dt className="font-serif text-4xl text-ink md:text-5xl">
+              <dt className="font-serif text-4xl text-feature-accent md:text-5xl">
                 <CountUp value={s.value} />
               </dt>
-              <dd className="mt-2 text-xs uppercase tracking-[0.14em] text-ink-soft">{s.label}</dd>
+              <dd className="mt-3 text-xs uppercase tracking-[0.14em] text-on-feature-soft">
+                {s.label}
+              </dd>
             </div>
           ))}
         </dl>

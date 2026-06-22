@@ -69,33 +69,39 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="border-t border-line bg-feature text-bg">
-      <Container className="py-16">
-        <div className="mb-10 text-sm text-bg/70">
+    <footer className="bg-feature text-on-feature">
+      <Container className="pb-9 pt-[74px]">
+        <div className="mb-[38px] border-b border-white/[0.12] pb-[26px] text-[13px] tracking-[0.02em] text-on-feature-soft">
           {t("footer.toggle")}{" "}
-          <Link href="/owners" className="text-bg underline-offset-4 hover:underline">
+          <Link
+            href="/owners"
+            className="border-b border-white/40 pb-px text-on-feature transition-colors hover:border-white"
+          >
             {t("footer.owner")}
           </Link>{" "}
           ·{" "}
-          <Link href="/guests" className="text-bg underline-offset-4 hover:underline">
+          <Link
+            href="/guests"
+            className="border-b border-white/40 pb-px text-on-feature transition-colors hover:border-white"
+          >
             {t("footer.guest")}
           </Link>
         </div>
 
-        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
+        <div className="grid gap-12 md:grid-cols-[1.6fr_1fr_1fr]">
           <div>
-            <div className="font-serif text-2xl font-semibold">
-              Central<span className="text-accent">Hill</span>
+            <div className="font-serif text-[27px] font-semibold">
+              Central<span className="text-feature-accent">Hill</span>
             </div>
-            <div className="mt-4 space-y-1 text-sm text-bg/70">
+            <div className="mt-[18px] text-sm leading-[1.9] text-on-feature-soft">
               <div>
                 {t("footer.call")}{" "}
-                <a href={`tel:${g.phone.replace(/\s+/g, "")}`} className="hover:text-bg">
+                <a href={`tel:${g.phone.replace(/\s+/g, "")}`} className="hover:text-on-feature">
                   {g.phone}
                 </a>
               </div>
               <div>
-                <a href={`mailto:${g.email}`} className="hover:text-bg">
+                <a href={`mailto:${g.email}`} className="hover:text-on-feature">
                   {g.email}
                 </a>
               </div>
@@ -106,13 +112,13 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
               ) : null}
             </div>
             {social.length ? (
-              <div className="mt-4 flex gap-3 text-sm">
+              <div className="mt-5 flex gap-[14px]">
                 {social.map(([key, url]) => (
                   <a
                     key={key}
                     href={url}
                     aria-label={key}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-bg/30 text-bg/80 transition-colors hover:border-bg hover:text-bg"
+                    className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-full border border-white/20 text-[13px] text-on-feature transition-colors hover:border-white"
                   >
                     {SOCIAL_LABELS[key] ?? key.slice(0, 2)}
                   </a>
@@ -123,13 +129,13 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
 
           {groups.map((grp) => (
             <div key={grp.title}>
-              <h4 className="text-xs font-medium uppercase tracking-[0.14em] text-bg/60">
+              <h4 className="mb-[18px] text-xs font-semibold uppercase tracking-[0.16em] text-on-feature-soft opacity-80">
                 {grp.title}
               </h4>
-              <ul className="mt-4 space-y-2 text-sm">
+              <ul className="space-y-[11px] text-sm">
                 {grp.links.map((l) => (
                   <li key={l.href + l.label}>
-                    <Link href={l.href} className="text-bg/75 transition-colors hover:text-bg">
+                    <Link href={l.href} className="text-on-feature-soft transition-colors hover:text-on-feature">
                       {l.label}
                     </Link>
                   </li>
@@ -139,7 +145,7 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col gap-3 border-t border-bg/15 pt-6 text-xs text-bg/60 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-[52px] flex flex-col gap-3 border-t border-white/[0.12] pt-6 text-xs text-on-feature-soft opacity-80 sm:flex-row sm:items-center sm:justify-between">
           <span>{t("footer.rights", { year })}</span>
           <LocaleSwitcher current={locale} label={t("language")} tone="bg" />
         </div>

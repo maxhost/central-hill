@@ -1,195 +1,477 @@
-import { getTranslations, setRequestLocale } from "next-intl/server";
-import { notFound } from "next/navigation";
-import Link from "next/link";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { ButtonLink, Container } from "@core/ui";
-import { EarningsEstimateForm } from "@slices/leads/contract";
-import { getOwnersPage } from "../contract";
-import type { OwnersContent } from "../contract";
-import { Band, FeatureGrid, SectionHeading, Steps } from "./components/blocks";
-import { FaqSection } from "./components/faq-section";
-import { PageHero } from "./components/hero";
-import { LeadCta } from "./components/lead-cta";
-import { StatsBand } from "./components/stats-band";
-import { TestimonialsRow } from "./components/testimonials-row";
+import { OwnerSubnavReveal } from "./components/owner-subnav-reveal";
 
 /**
- * Owners page (content-briefs.md → 1 · Owners). Hero · anchor sub-nav · earnings-estimate
- * CTA (leads, S10) · why · services · plans · journey · dashboard · owner testimonials ·
- * owners FAQ. Stats from settings; the sub-nav anchors are derived from the fixed sections
- * in code (data-model.md). Static (ISR).
+ * Owners page — the approved `mock/owners.html` embedded 1:1 inside the live app shell.
+ * The mock's body markup is rendered verbatim; its page styles are scoped under `.mk`
+ * (see `src/app/mock.css` for the shared design system) so nothing leaks to Home/admin.
+ * No database is read here — content is static, matching the mock exactly. The real
+ * header/footer + i18n come from the app layout. (The earnings form is the mock's static
+ * markup for now; wiring it to the leads action is a follow-up.)
  */
+
+const OWNERS_STYLE = `
+.mk .owner-subnav{position:fixed;top:64px;left:0;right:0;z-index:40;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);opacity:0;visibility:hidden;transform:translateY(-12px);pointer-events:none;transition:opacity .35s var(--ease),transform .35s var(--ease),visibility .35s var(--ease)}
+.mk .owner-subnav.in{opacity:1;visibility:visible;transform:none;pointer-events:auto}
+.mk .owner-subnav .wrap{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0}
+.mk .owner-subnav .wrap::-webkit-scrollbar{display:none}
+.mk .owner-subnav a{flex:0 0 auto;white-space:nowrap;font-size:13px;font-weight:500;color:var(--ink-soft);padding:14px 14px;border-bottom:2px solid transparent;transition:.2s var(--ease)}
+.mk .owner-subnav a:hover{color:var(--accent-deep);border-bottom-color:var(--accent)}
+.mk [id]{scroll-margin-top:130px}
+.mk .owner-hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:end}
+.mk .owner-hero .hero-copy{max-width:34ch}
+.mk .earn-badge{display:inline-flex;align-items:center;gap:.5em;background:var(--accent);color:#fff;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:8px 16px;border-radius:30px;margin-bottom:18px}
+.mk .est-card{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:34px 32px 30px;box-shadow:0 30px 60px -30px rgba(0,0,0,.5)}
+.mk .est-card h3{font-size:26px;margin-bottom:8px}
+.mk .est-card .est-sub{font-size:14px;color:var(--ink-soft);margin-bottom:22px}
+.mk .est-field{margin-bottom:16px}
+.mk .est-field label{display:block;font-size:12px;letter-spacing:.04em;font-weight:600;color:var(--ink);margin-bottom:7px}
+.mk .est-field input,.mk .est-field select{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:13px 14px;transition:.2s var(--ease)}
+.mk .est-field input:focus,.mk .est-field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.mk .est-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mk .est-card .btn{width:100%;justify-content:center;margin-top:6px}
+.mk .est-note{text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:14px}
+.mk .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;align-items:start}
+.mk .plan{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:38px 32px;display:flex;flex-direction:column;position:relative;transition:.3s var(--ease)}
+.mk .plan:hover{transform:translateY(-4px);box-shadow:0 24px 50px -30px rgba(0,0,0,.42)}
+.mk .plan.popular{border-color:var(--accent);box-shadow:0 24px 54px -28px color-mix(in srgb,var(--accent) 55%,transparent)}
+.mk .plan .pop-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;padding:6px 16px;border-radius:30px}
+.mk .plan .pname{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);font-weight:600}
+.mk .plan .ptag{font-family:var(--serif);font-size:25px;color:var(--ink);margin:10px 0 22px;line-height:1.2}
+.mk .plan ul{list-style:none;margin:0 0 28px;flex:1}
+.mk .plan li{font-size:14.5px;color:var(--ink-soft);padding:9px 0 9px 28px;position:relative;border-top:1px solid var(--line)}
+.mk .plan li:first-child{border-top:0}
+.mk .plan li::before{content:"";position:absolute;left:0;top:14px;width:14px;height:8px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg)}
+.mk .plan .btn{width:100%;justify-content:center}
+.mk .plan-helpers{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:44px}
+.mk .plan-helper{background:color-mix(in srgb,var(--line) 38%,var(--bg));border:1px solid var(--line);border-radius:8px;padding:30px 32px}
+.mk .plan-helper h4{font-family:var(--serif);font-size:21px;font-weight:500;color:var(--ink);margin-bottom:8px}
+.mk .plan-helper p{font-size:14.5px;color:var(--ink-soft);margin-bottom:18px}
+.mk .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.mk .step{background:var(--surface);padding:36px 28px}
+.mk .step .snum{font-family:var(--serif);font-size:46px;line-height:1;color:var(--accent);opacity:.85;margin-bottom:16px}
+.mk .step h3{font-size:20px;margin-bottom:9px}
+.mk .step p{font-size:14px;color:var(--ink-soft)}
+.mk .faq{max-width:820px;margin:0 auto;border-top:1px solid var(--line)}
+.mk .faq details{border-bottom:1px solid var(--line)}
+.mk .faq summary{list-style:none;cursor:pointer;padding:24px 44px 24px 4px;position:relative;font-family:var(--serif);font-size:20px;color:var(--ink);transition:color .2s}
+.mk .faq summary::-webkit-details-marker{display:none}
+.mk .faq summary:hover{color:var(--accent-deep)}
+.mk .faq summary::after{content:"+";position:absolute;right:6px;top:22px;font-family:var(--sans);font-size:24px;color:var(--accent);transition:transform .25s var(--ease)}
+.mk .faq details[open] summary::after{transform:rotate(45deg)}
+.mk .faq .faq-a{padding:0 44px 26px 4px;font-size:15.5px;color:var(--ink-soft);max-width:70ch}
+@media(max-width:980px){.mk .owner-hero .wrap{grid-template-columns:1fr;gap:34px}.mk .plans{grid-template-columns:1fr}.mk .plan-helpers{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){.mk .est-two{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
+`;
+
+const OWNERS_BODY = `
+<nav class="owner-subnav" aria-label="Owner page sections">
+  <div class="wrap">
+    <a href="#worth">What's My Property Worth?</a>
+    <a href="#numbers">Numbers That Speak for Themselves</a>
+    <a href="#why">Why Owners Choose Us</a>
+    <a href="#services">Everything Done for You</a>
+    <a href="#plans">Find Your Perfect Plan</a>
+    <a href="#journey">Your Growth Path</a>
+    <a href="#technology">Full Visibility from Anywhere</a>
+    <a href="#testimonials">What Our Owners Say</a>
+    <a href="#faq">Got Questions? We Have Answers.</a>
+    <a href="#start">Start Earning More Today</a>
+  </div>
+</nav>
+
+<section id="worth" class="hero compact owner-hero" style="padding:0">
+  <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1900&q=72" alt="Bright, designer-furnished Lisbon apartment interior">
+  <div class="wrap">
+    <div class="hero-copy">
+      <span class="earn-badge">★ Earn +25%</span>
+      <h1>Your Property. Our Expertise. Maximum Returns.</h1>
+      <p>Central Hill Apartments turns your property into a high-performing asset — fully managed, transparent, and optimized for maximum profit using AI-driven pricing and unmatched local expertise.</p>
+    </div>
+
+    <form class="est-card reveal" onsubmit="return false">
+      <h3>Get Your Free Earnings Estimate</h3>
+      <p class="est-sub">Find out how much your property could earn — free, instant, no obligation.</p>
+      <div class="est-field">
+        <label for="addr">Property Address</label>
+        <input id="addr" type="text" placeholder="Street, neighbourhood, city" autocomplete="off">
+      </div>
+      <div class="est-two">
+        <div class="est-field">
+          <label for="nprop">Nº of Properties</label>
+          <select id="nprop">
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option>
+          </select>
+        </div>
+        <div class="est-field">
+          <label for="nbed">Nº of Bedrooms</label>
+          <select id="nbed">
+            <option>Studio</option><option>1</option><option>2</option><option>3</option><option>4+</option>
+          </select>
+        </div>
+      </div>
+      <a class="btn btn-accent" href="#">Calculate My Earnings →</a>
+      <p class="est-note">Free, instant, no obligation.</p>
+    </form>
+  </div>
+</section>
+
+<div id="numbers" class="stats">
+  <div class="wrap stats-grid">
+    <div class="stat"><div class="num">400,000+</div><div class="lbl">Bookings Completed</div></div>
+    <div class="stat"><div class="num">12+</div><div class="lbl">Years of Experience</div></div>
+    <div class="stat"><div class="num">€55M+</div><div class="lbl">Revenue Generated</div></div>
+    <div class="stat"><div class="num">5M+</div><div class="lbl">Guests Hosted</div></div>
+  </div>
+</div>
+
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">Why Owners Choose Us</span>
+      <h2 class="section-title">Why Property Owners Trust Central Hill Apartments</h2>
+    </div>
+    <div class="grid-3 reveal">
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 3 3 4-6"/></svg>
+        <h3>AI-Powered Pricing</h3>
+        <p>Our dynamic pricing engine analyses market data in real time, adjusting your rates daily to ensure maximum occupancy at the highest possible price.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M6 4h12v5a6 6 0 0 1-12 0V4zM6 6H3v2a3 3 0 0 0 3 3M18 6h3v2a3 3 0 0 1-3 3"/></svg>
+        <h3>Profit-First Management</h3>
+        <p>Every decision we make is guided by one goal: maximizing your returns. From listing optimization to upsell strategies, we leave no revenue on the table.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <h3>24/7 Owner Dashboard</h3>
+        <p>Monitor your property's performance in real time — bookings, revenue, occupancy rates, and guest reviews — from anywhere in the world.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M22 11l-2 2-3-3"/></svg>
+        <h3>Dedicated Account Manager</h3>
+        <p>You will always have a named point of contact who knows your property personally. No call centres, no uncertainty — just reliable, expert support.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-5.5-7-11a7 7 0 0 1 14 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        <h3>Deep Local Expertise</h3>
+        <p>We operate on the ground in Portugal, giving us an unmatched understanding of seasonal trends, local regulations, and the best channels for your property.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <h3>Full Transparency</h3>
+        <p>Detailed monthly reports, real-time dashboards, and complete financial visibility. You are always in control, even when we handle everything.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="services" class="alt">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">Everything Done for You</span>
+      <h2 class="section-title">Everything Handled. Nothing Overlooked.</h2>
+      <p class="lede" style="margin:16px auto 0">From the first listing to each guest's departure, Central Hill Apartments manages every detail so you don't have to.</p>
+    </div>
+    <div class="grid-3 reveal">
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6l1.5-2h5L16 6"/></svg>
+        <h3>Professional Photography</h3>
+        <p>High-quality photography and listing creation that showcases your property at its very best across all major booking platforms.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+        <h3>Reservation Management</h3>
+        <p>All booking enquiries, calendar management, and guest communications across Airbnb, Booking.com, and direct channels — 24/7.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7a4 4 0 1 0-4 4h11"/><path d="M18 8l3 3-3 3"/></svg>
+        <h3>Seamless Check-in &amp; Out</h3>
+        <p>Remote keyless entry or in-person check-in, guest orientation, and smooth departures — every stay begins and ends perfectly.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6l-2 2-4-4 2-2a2.8 2.8 0 0 1 4 4z" transform="translate(-3 0)"/><path d="M3 21l9-9M5 14l5 5"/></svg>
+        <h3>Cleaning &amp; Linen Service</h3>
+        <p>Professional cleaning teams, premium linen, and full restocking between every stay — your property always guest-ready and review-worthy.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg>
+        <h3>Maintenance &amp; Repairs</h3>
+        <p>Proactive inspections and rapid response to maintenance issues. We protect your asset and your guest satisfaction scores.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M21 7v5h-5"/></svg>
+        <h3>Dynamic Revenue Management</h3>
+        <p>AI-powered pricing updated daily, yield strategies, and multi-platform optimization to ensure peak occupancy and revenue year-round.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
+        <h3>Interior Design Advice</h3>
+        <p>Optional staging and design consultation to elevate your property's appeal and achieve consistently higher nightly rates.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8h14M6 8l-3 7a4 4 0 0 0 6 0L6 8zM18 8l-3 7a4 4 0 0 0 6 0l-3-7z"/></svg>
+        <h3>Legal &amp; Fiscal Support</h3>
+        <p>Guidance on Alojamento Local licensing, tax compliance, and regulatory requirements specific to Portugal.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        <h3>Dedicated Account Manager</h3>
+        <p>A single, named contact who knows your property, your goals, and is always reachable when you need them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="plans">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">Find Your Perfect Plan</span>
+      <h2 class="section-title">A Management Plan Built Around Your Goals</h2>
+      <p class="lede" style="margin:16px auto 0">Choose the level of service that suits your property and ambitions. Every plan includes AI-driven pricing and a 24/7 owner dashboard.</p>
+    </div>
+
+    <div class="plans reveal">
+      <div class="plan">
+        <div class="pname">Essential</div>
+        <div class="ptag">Core full management</div>
+        <ul>
+          <li>Listing creation &amp; optimisation</li>
+          <li>Reservation management 24/7</li>
+          <li>AI-powered dynamic pricing</li>
+          <li>Professional cleaning coordination</li>
+          <li>Monthly owner report</li>
+          <li>24/7 owner dashboard access</li>
+        </ul>
+        <a class="btn btn-ghost" href="#">Choose Essential</a>
+      </div>
+
+      <div class="plan popular">
+        <span class="pop-tag">Most Popular</span>
+        <div class="pname">Premium</div>
+        <div class="ptag">Full-service management</div>
+        <ul>
+          <li>Everything in Essential</li>
+          <li>Dedicated account manager</li>
+          <li>Professional photography</li>
+          <li>Interior styling advice</li>
+          <li>Multi-platform distribution</li>
+          <li>Revenue &amp; yield optimisation</li>
+          <li>Priority maintenance response</li>
+          <li>Legal &amp; fiscal guidance</li>
+        </ul>
+        <a class="btn btn-accent" href="#">Choose Premium</a>
+      </div>
+
+      <div class="plan">
+        <div class="pname">Concierge</div>
+        <div class="ptag">Bespoke white-glove service</div>
+        <ul>
+          <li>Everything in Premium</li>
+          <li>Bespoke guest experience design</li>
+          <li>VIP concierge for guests</li>
+          <li>Luxury welcome packs</li>
+          <li>Tailored analytics &amp; reporting</li>
+          <li>Dedicated property consultant</li>
+          <li>Guaranteed income option</li>
+          <li>Multi-property portfolio management</li>
+        </ul>
+        <a class="btn btn-ghost" href="#">Choose Concierge</a>
+      </div>
+    </div>
+
+    <div class="plan-helpers reveal">
+      <div class="plan-helper">
+        <h4>Found a better commission?</h4>
+        <p>We match the best commissions and plans in the market.</p>
+        <a class="btn btn-ghost" href="#">Contact Us for More Information</a>
+      </div>
+      <div class="plan-helper">
+        <h4>Not sure which plan is right for you?</h4>
+        <p>Our team will assess your property and recommend the best plan. Start with a free, no-obligation Profitability Study.</p>
+        <a class="btn btn-accent" href="#">Get Your Free Earnings Estimate →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="journey" class="alt">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">Your Growth Path</span>
+      <h2 class="section-title">Getting Started Is Simple</h2>
+      <p class="lede" style="margin:16px auto 0">From first contact to first booking, we handle everything. Here is what to expect.</p>
+    </div>
+    <div class="steps reveal">
+      <div class="step">
+        <div class="snum">01</div>
+        <h3>Free Property Assessment</h3>
+        <p>We evaluate your property's rental potential, location, and estimated returns — at no cost and with no obligation.</p>
+      </div>
+      <div class="step">
+        <div class="snum">02</div>
+        <h3>Tailored Proposal</h3>
+        <p>You receive a personalized management proposal with projected revenue, recommended plan, and full commission transparency.</p>
+      </div>
+      <div class="step">
+        <div class="snum">03</div>
+        <h3>Onboarding &amp; Setup</h3>
+        <p>Professional photography, listing creation, platform registration, and property preparation — all handled within days.</p>
+      </div>
+      <div class="step">
+        <div class="snum">04</div>
+        <h3>Live Management</h3>
+        <p>Your property goes live across all platforms. We manage bookings, guests, cleaning, and maintenance 24/7.</p>
+      </div>
+      <div class="step">
+        <div class="snum">05</div>
+        <h3>Monthly Reporting &amp; Payouts</h3>
+        <p>You receive a detailed performance report and your earnings every month — clear, transparent, and always on time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="technology">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">Full Visibility from Anywhere</span>
+      <h2 class="section-title">Your Property, Always in Sight</h2>
+      <p class="lede" style="margin:16px auto 0">Our owner dashboard gives you real-time visibility into every aspect of your property's performance — from anywhere in the world.</p>
+    </div>
+    <div class="grid-3 reveal">
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.5a2.5 2 0 0 0-2.5-1.5c-1.4 0-2.5.8-2.5 2s1.1 2 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2a2.5 2 0 0 1-2.5-1.5"/></svg>
+        <h3>Live Revenue Tracking</h3>
+        <p>See your earnings and projected monthly income at a glance, updated in real time.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>
+        <h3>Booking Calendar</h3>
+        <p>Full visibility of reservations, blocked dates, and availability across all platforms.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>
+        <h3>Occupancy &amp; Performance</h3>
+        <p>Track occupancy rates, average nightly rate, and review scores over any period.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V5M9 3h6M9 13h.01M15 13h.01M2 12v3M22 12v3"/></svg>
+        <h3>AI Pricing Insights</h3>
+        <p>Understand why prices are set as they are — our algorithm explains its recommendations in plain language.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>
+        <h3>Instant Notifications</h3>
+        <p>Get alerts for new bookings, check-ins, maintenance requests, and monthly report availability.</p>
+      </div>
+      <div class="bcard">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+        <h3>Monthly Statements</h3>
+        <p>Download detailed financial statements and performance summaries at any time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="testimonials" class="alt">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">What Our Owners Say</span>
+      <h2 class="section-title">Trusted by Property Owners Across Portugal</h2>
+      <p class="lede" style="margin:16px auto 0">Don't just take our word for it. Here is what our owners say.</p>
+    </div>
+    <div class="t-grid reveal">
+      <div class="tcard">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Central Hill took over our Lisbon apartment and within two months our monthly revenue had increased by 35%. We live abroad and having a team we can trust completely has been invaluable."</blockquote>
+        <div class="tauthor"><b>Till Madsen</b> · Denmark<br>Property in Lisbon</div>
+      </div>
+      <div class="tcard">
+        <div class="stars">★★★★★</div>
+        <blockquote>"Switching my properties to Central Hill was a smooth and reassuring process. They took over the full management, improved performance quickly, and I now have steady returns without any day-to-day involvement."</blockquote>
+        <div class="tauthor"><b>Sebastian Harrington</b> · UK<br>Property in Lisbon</div>
+      </div>
+      <div class="tcard">
+        <div class="stars">★★★★★</div>
+        <blockquote>"We decided to rent out our apartment in Lisbon and entrusted Central Hill with the management. They optimized the listing quickly, and occupancy has been consistently high ever since."</blockquote>
+        <div class="tauthor"><b>Madeleine Beaumont</b> · France<br>Property in Lisbon</div>
+      </div>
+      <div class="tcard">
+        <div class="stars">★★★★★</div>
+        <blockquote>"We entrusted Central Hill with a family-inherited property in Porto. They have taken excellent care of it, handling everything with great professionalism. The returns have been strong and consistent, and the property is always well maintained."</blockquote>
+        <div class="tauthor"><b>André Távares</b> · Portugal<br>Property in Porto</div>
+      </div>
+    </div>
+    <p class="lede reveal" style="text-align:center;margin:48px auto 0">
+      <strong style="color:var(--ink)">12+ Years Optimizing Owner Returns in Portugal.</strong>
+      Central Hill Apartments has a proven track record of delivering above-market rental income for all property sizes — from compact city studios to large family apartments accommodating up to 27 guests.
+    </p>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <span class="eyebrow">Got Questions? We Have Answers.</span>
+      <h2 class="section-title">Questions? We Have Answers.</h2>
+    </div>
+    <div class="faq reveal">
+      <details>
+        <summary>What types of properties does Central Hill Apartments manage?</summary>
+        <div class="faq-a">We manage all property types across Portugal, from compact studios to large 8-bedroom apartments accommodating up to 27 guests. Whether you own a single apartment or a growing portfolio, we have the right plan for you.</div>
+      </details>
+      <details>
+        <summary>How does your pricing and commission work?</summary>
+        <div class="faq-a">We operate on a commission model — we earn when you earn. Your personalized proposal includes a full, transparent breakdown of all fees and platform commissions with no hidden costs.</div>
+      </details>
+      <details>
+        <summary>Do I need to be in Portugal to work with Central Hill Apartments?</summary>
+        <div class="faq-a">Not at all. Many of our owners are based overseas. Our fully remote management model means you can monitor your property and receive your earnings from anywhere in the world.</div>
+      </details>
+      <details>
+        <summary>How quickly can my property be listed?</summary>
+        <div class="faq-a">Most properties are live within 5 business days of completing onboarding. This includes professional photography, listing creation, and platform setup.</div>
+      </details>
+      <details>
+        <summary>What happens if there is damage to my property?</summary>
+        <div class="faq-a">We conduct check-out inspections after every stay. All bookings are covered by platform guarantee schemes, and our team handles any damage claims directly on your behalf.</div>
+      </details>
+      <details>
+        <summary>Can I block dates for personal use?</summary>
+        <div class="faq-a">Absolutely. Your property remains yours. You can block any dates through your owner dashboard at any time, with no restrictions or extra charges.</div>
+      </details>
+      <details>
+        <summary>Do you handle legal and tax compliance?</summary>
+        <div class="faq-a">Yes. We provide guidance on Alojamento Local licensing, AIMA registration requirements, and local tax obligations specific to Portugal.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section id="start" class="stats" style="padding:var(--section-y) 0">
+  <div class="wrap" style="text-align:center;max-width:760px">
+    <span class="eyebrow" style="color:var(--feature-accent)">Start Earning More Today</span>
+    <h2 class="section-title" style="color:#fff;margin-top:14px">Ready to Make Your Property Work for You?</h2>
+    <p style="color:var(--on-feature-soft);font-size:18px;margin:18px auto 0;max-width:60ch">Join the growing number of property owners across Portugal who trust Central Hill Apartments to deliver exceptional results. Start with a free, no-obligation profitability analysis.</p>
+    <div style="margin-top:34px">
+      <a class="btn btn-accent" href="#">Get Your Free Earnings Estimate →</a>
+    </div>
+    <p style="color:var(--on-feature-soft);font-size:14px;letter-spacing:.03em;margin-top:26px">
+      Call +351 910 075 725 &nbsp;·&nbsp; info@centralhill.pt &nbsp;·&nbsp; WhatsApp +351 910 075 725
+    </p>
+  </div>
+</section>
+`;
+
 export async function OwnersPage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const page = await getOwnersPage(locale);
-  if (!page) notFound();
-
-  const { content, media } = page;
-  const { hero, earnings_form, why, services, plans, journey, dashboard } = content;
-  const t = await getTranslations("pages");
-
-  const sections = [
-    { id: "why", label: why.headline },
-    { id: "services", label: services.headline },
-    { id: "plans", label: plans.headline },
-    { id: "journey", label: journey.headline },
-    { id: "estimate", label: t("owners.navEstimate") },
-  ];
-
   return (
-    <main>
-      <PageHero
-        image={media[hero.image_media_id] ?? null}
-        eyebrow={hero.badge}
-        headline={hero.headline}
-        subtitle={hero.copy}
-        actions={<ButtonLink href="#estimate">{t("owners.heroCta")}</ButtonLink>}
-      />
-
-      <nav className="sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur supports-[backdrop-filter]:bg-bg/70">
-        <Container className="flex gap-6 overflow-x-auto py-4 text-sm">
-          {sections.map((s) => (
-            <Link
-              key={s.id}
-              href={`#${s.id}`}
-              className="whitespace-nowrap text-ink-soft transition-colors hover:text-ink"
-            >
-              {s.label}
-            </Link>
-          ))}
-        </Container>
-      </nav>
-
-      <Band id="why">
-        <SectionHeading title={why.headline} />
-        <FeatureGrid className="mt-12" items={why.benefits} />
-      </Band>
-
-      <Band id="services" className="bg-surface">
-        <SectionHeading
-          eyebrow={t("owners.servicesEyebrow")}
-          title={services.headline}
-          intro={services.subheadline}
-        />
-        <FeatureGrid className="mt-12" items={services.items} />
-      </Band>
-
-      <Band id="plans">
-        <SectionHeading center title={plans.headline} intro={plans.subheadline} />
-        <Plans tiers={plans.tiers} t={t} />
-        <div className="mx-auto mt-12 grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2">
-          {plans.helpers.map((h, i) => (
-            <div key={i} className="rounded-2xl border border-line bg-surface p-7">
-              <h3 className="font-serif text-xl text-ink">{h.title}</h3>
-              <p className="mt-3 leading-relaxed text-ink-soft">{h.copy}</p>
-              {h.cta ? (
-                <Link
-                  href={h.cta.url}
-                  className="mt-4 inline-block text-sm font-medium text-accent"
-                >
-                  {h.cta.label}
-                </Link>
-              ) : null}
-            </div>
-          ))}
-        </div>
-        <div className="mt-12 text-center">
-          <ButtonLink href="#estimate">{t("owners.plansCta")}</ButtonLink>
-        </div>
-      </Band>
-
-      <Band id="journey" className="bg-surface">
-        <SectionHeading title={journey.headline} intro={journey.subheadline} />
-        <Steps steps={journey.steps} />
-      </Band>
-
-      <Band>
-        <SectionHeading title={dashboard.headline} intro={dashboard.subheadline} />
-        <FeatureGrid className="mt-12" items={dashboard.features} />
-      </Band>
-
-      <StatsBand locale={locale} keys={["years", "buildings", "apartments", "revenue"]} />
-
-      <TestimonialsRow locale={locale} audience="owner" />
-
-      <LeadCta
-        locale={locale}
-        id="estimate"
-        eyebrow={t("owners.estimateEyebrow")}
-        headline={earnings_form.headline}
-        subheadline={earnings_form.subheadline}
-        note={earnings_form.note}
-        form={<EarningsEstimateForm source="owners" />}
-      />
-
-      <FaqSection
-        locale={locale}
-        groupKey="owners"
-        eyebrow={t("faqEyebrow")}
-        title={t("owners.faqTitle")}
-      />
-    </main>
-  );
-}
-
-/**
- * Management plans (client feedback B8). Cumulative columns (each plan adds to the
- * previous one), each with an optional commission percentage in a circle above the
- * card. The number of plans and the rows per plan are editable in the back office;
- * the grid adapts to however many tiers are authored (up to 4 across on desktop).
- */
-function Plans({
-  tiers,
-  t,
-}: {
-  tiers: OwnersContent["plans"]["tiers"];
-  t: Awaited<ReturnType<typeof getTranslations>>;
-}) {
-  const cols =
-    tiers.length >= 4
-      ? "lg:grid-cols-4"
-      : tiers.length === 3
-        ? "lg:grid-cols-3"
-        : "sm:grid-cols-2";
-
-  return (
-    <div className={`mt-16 grid grid-cols-1 gap-6 ${cols}`}>
-      {tiers.map((tier, i) => (
-        <div
-          key={i}
-          className={
-            tier.is_popular
-              ? "relative rounded-2xl border-2 border-accent bg-surface p-8 pt-10"
-              : "relative rounded-2xl border border-line bg-surface p-8 pt-10"
-          }
-        >
-          {tier.commission ? (
-            <div className="absolute -top-7 left-1/2 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full border border-accent bg-bg text-sm font-semibold text-accent shadow-sm">
-              {tier.commission}
-            </div>
-          ) : null}
-          {tier.is_popular ? (
-            <span className="absolute -top-3 right-6 rounded-full bg-accent px-3 py-1 text-xs font-medium uppercase tracking-[0.12em] text-surface">
-              {t("owners.popular")}
-            </span>
-          ) : null}
-          <h3 className="font-serif text-2xl text-ink">{tier.name}</h3>
-          {tier.tag ? <p className="mt-1 text-sm text-ink-soft">{tier.tag}</p> : null}
-          {i > 0 ? (
-            <p className="mt-4 text-xs font-medium uppercase tracking-[0.1em] text-accent">
-              {t("owners.plansCumulative", { prev: tiers[i - 1]!.name })}
-            </p>
-          ) : null}
-          <ul className="mt-4 space-y-3">
-            {tier.features.map((f, j) => (
-              <li key={j} className="flex gap-2 leading-relaxed text-ink-soft">
-                <span className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden />
-                {f}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+    <div className="mk" data-page="owners">
+      <style dangerouslySetInnerHTML={{ __html: OWNERS_STYLE }} />
+      <OwnerSubnavReveal />
+      <div dangerouslySetInnerHTML={{ __html: OWNERS_BODY }} />
     </div>
   );
 }

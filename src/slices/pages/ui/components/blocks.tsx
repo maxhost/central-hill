@@ -1,5 +1,13 @@
 import type { ReactNode } from "react";
 import { ButtonLink, Container, Eyebrow, Section, cn } from "@core/ui";
+import { Icon } from "./icon";
+
+/**
+ * Subtle "alternate" section background — the warm off-paper tint used by the mock's
+ * `.alt` bands (`mock/assets/site.css`: `color-mix(line 38%, bg)`). Shared so the home
+ * guests/testimonials bands stay in sync.
+ */
+export const altBg = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
 
 /**
  * Presentational building blocks shared by the S9 page compositions. No data access —
@@ -35,7 +43,11 @@ export function SectionHeading({
   );
 }
 
-/** A responsive grid of "title + description" cards (benefits, features, audiences…). */
+/**
+ * A responsive grid of "icon + title + description" cards (benefits, features, audiences…).
+ * Bordered hairline-gap grid of surface cards, mirroring the mock's `.grid-3`/`.bcard`.
+ * Cards with an `icon_key` show the line icon; icon-less items keep the accent tick.
+ */
 export function FeatureGrid({
   items,
   columns = 3,
@@ -48,18 +60,25 @@ export function FeatureGrid({
   return (
     <div
       className={cn(
-        "grid grid-cols-1 gap-x-8 gap-y-10",
+        "grid grid-cols-1 gap-px border border-line bg-line",
         columns === 2 ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3",
         className,
       )}
     >
-      {items.map((item, i) => (
-        <div key={i} className="border-t border-line pt-5">
-          <span className="block h-0.5 w-8 -translate-y-[21px] bg-accent" aria-hidden />
-          <h3 className="font-serif text-xl text-ink">{item.title}</h3>
-          <p className="mt-3 leading-relaxed text-ink-soft">{item.description}</p>
-        </div>
-      ))}
+      {items.map((item, i) => {
+        const iconKey = "icon_key" in item ? item.icon_key : undefined;
+        return (
+          <div key={i} className="bg-surface p-8 md:p-10">
+            {iconKey ? (
+              <Icon name={iconKey} className="mb-5 h-8 w-8 text-accent-deep" />
+            ) : (
+              <span className="mb-5 block h-0.5 w-8 bg-accent" aria-hidden />
+            )}
+            <h3 className="font-serif text-xl text-ink">{item.title}</h3>
+            <p className="mt-2.5 leading-relaxed text-ink-soft">{item.description}</p>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -98,7 +117,9 @@ export function CtaRow({
   return (
     <div
       className={cn(
-        "flex flex-col gap-x-8 gap-y-5 sm:flex-row sm:flex-wrap sm:items-center",
+        // `items-start` keeps the buttons top-aligned at the same height even when only
+        // one CTA carries a helper note beneath it.
+        "flex flex-col gap-x-8 gap-y-5 sm:flex-row sm:flex-wrap sm:items-start",
         center && "justify-center",
         className,
       )}

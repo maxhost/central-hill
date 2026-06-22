@@ -28,6 +28,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0019 — `core/i18n` content + slug write seam (admin write path)](#0019)
 - [0020 — S13 seo-geo: sitemaps/robots/llms.txt as root routes + kernel JSON-LD/slug additions](#0020)
 - [0021 — S14 translation-pipeline: kernel target-write/read seam + provider interface + review inbox](#0021)
+- [0022 — Home restored to the approved mockup; Warm Editorial locked as the production palette](#0022)
 
 ---
 
@@ -401,3 +402,106 @@ exists). Trade-offs: the default translate provider is an identity stub (a real 
 follow-up behind the same interface); staleness is surfaced (source_hash mismatch) and re-draftable but
 not auto-re-translated; cross-slice cache busting on approve is best-effort + daily fallback (mirrors
 S13). **Status:** Accepted.
+
+## 0022 — Home restored to the approved mockup; Warm Editorial locked as the production palette <a id="0022"></a>
+**Context:** The live home had drifted from the client-approved design preview
+(`mock/home.html`, theme `warm-editorial`): the stats sat on a light band instead of the dark
+feature band, benefit cards had no icons, testimonials were a dark auto-rotating carousel rather
+than the restrained light grid, the portfolio cards lost their bordered look, the **Our Story**
+section (present in the `home` schema and seed) was never rendered, the owner column of the dual
+CTA was light instead of dark, and the hero's secondary CTA used the `outline` variant (dark ink
+text — near-invisible over the dark hero). `design-system.md` already named Warm Editorial the
+default but as a *recommendation*; nothing **locked** it, and the dark-band tokens it needs
+(`feature-accent`, `on-feature`) were missing from `core`.
+
+**Decision:**
+1. **Warm Editorial is the locked production palette.** No runtime palette switching ships; the
+   other five mock palettes remain design-exploration only. Changing the palette requires a new ADR.
+2. **Kernel additions (this ADR authorizes them):** add `--color-feature-accent`, `--color-on-feature`,
+   `--color-on-feature-soft` to `app/globals.css @theme`, and a `light` variant to
+   `core/ui/button.tsx` (white hairline → solid-on-hover) for CTAs over dark media/bands. Existing
+   token *values* are unchanged; `surface` stays `#fffdf8` (the documented "never pure #fff").
+3. **Re-skin the home in slice `pages`** to match the mockup section-for-section, keeping the
+   architecture intact: content from `page_content`, stats/contact from settings, featured
+   buildings + testimonials via slice contracts, i18n chrome, and ISR (`page:home`). Benefit cards
+   render line icons by `icon_key` (new in-repo icon set); testimonials become the static light
+   grid (the dark carousel island is removed — owner-directed; data stays dynamic, capped at 6);
+   the Story section is now rendered from existing `story` content. (Owner-directed follow-up: the
+   home's per-section terracotta eyebrows — owners/guests/portfolio/reviews/story — were later
+   removed, the hero eyebrow reworded, and the `StatsBand` heading folded into its dark cacao band
+   with the title in cream; `FeaturedPortfolio`/`TestimonialsRow` keep their eyebrows on the other
+   pages via a `showEyebrow` prop. The home owners/guests pitches were then redesigned away from the
+   shared `SectionHeading`+`FeatureGrid` block into bespoke layouts — **owners = "Editorial Split"**
+   (`owners-section.tsx`: sticky text + dual-CTA column beside a hairline-divided benefit list);
+   **guests = "Image Showcase"** (`guests-section.tsx`: lifestyle image + floating reassurance badge,
+   compact benefit highlights, single CTA on the `altBg` band). These were picked by the owner from a
+   temporary in-page variant switcher harness, which has since been removed. The benefit-card line
+   icons were re-sourced from **Iconoir** (MIT, iconoir.com) — official `regular` 24×24/1.5-stroke
+   paths inlined in `pages/ui/components/icon.tsx`, no new dependency; the home's only icon surface is
+   the owners/guests benefit lists, so testimonial stars and CTA arrows stay typographic per the mock.
+   The two showcase images are TEMP external hotlinks until real photos are uploaded to R2. Further
+   owner-directed home tweaks: testimonials became a **full-bleed infinite marquee** (CSS-only,
+   pause-on-hover, `prefers-reduced-motion` safe; `testimonials-marquee.tsx`) with rating stars 3×
+   larger; the **"Portugal's trusted hospitality management company" story band was removed**; all
+   booking CTAs now **open in a new tab** — `ButtonLink` auto-targets absolute http(s) URLs, and the
+   header/mobile booking + account links already carried `target="_blank"`; the header **"Account"
+   icon** now deep-links to the Avantio PMS login (`AVANTIO_OWNERS_LOGIN_URL` in settings `booking.ts`).)
+
+**Consequences:** the public home matches the approved preview and is protected from silent drift
+by a locked palette + this record; the shared `FeatureGrid`/testimonials/`StatsBand` blocks change
+once and keep the sibling marketing pages (owners/guests/about/real-estate) visually consistent
+with the same mock design system. Trade-offs: distinct card icons only appear where content carries
+a real `icon_key` — the seed is updated, but already-seeded/production rows show the fallback icon
+until re-seeded or edited in the backoffice. No migration; no schema change.
+
+**Nav chrome (follow-up under this ADR):** the app-shell header is `fixed` and overlays a page's
+hero. A page opts in by rendering a `[data-hero]` section; pure CSS in `globals.css`
+(`body:has([data-hero]) [data-site-header]:not(.scrolled)`) makes the bar transparent with white
+content over the hero and reserves the nav height on hero-less pages — no layout shift, no JS for
+the initial paint. A minimal client island (`settings/ui/components/header-scroll.tsx`) only toggles
+`.scrolled` to frost the bar past the top (mirrors the mock's `site.js`). The header is laid out in
+three sections — logo / menu (with a ghost **Book Now** CTA) / utilities (account icon, contact
+icon, language dropdown). The Book Now CTA inverts over the hero via the same chrome block keyed by
+`data-cta="ghost"` (white hairline → white fill on hover), reverting to the dark default when
+scrolled or on hero-less pages. Top-level nav items with sub-tabs reveal them as a full-width
+frosted bar under the header on hover/focus (pure CSS, mirrors the mock owner sub-nav). Light
+popovers (dropdown, sub-bar, mobile drawer, contact modal) carry `[data-chrome-keep]` to opt out of
+the white inversion. The hero
+video is, temporarily, an external hotlink fallback (`mock/home.html`'s clip) until a real video is
+uploaded to R2 and set on the home page.
+
+**Chrome follow-ups (owner-directed, under this ADR):** a floating **WhatsApp** button
+(`settings/ui/components/whatsapp-fab.tsx`, mounted in the app-shell layout) is fixed bottom-right
+and deep-links to `wa.me/351910075725` in a new tab; its brand green (`#25d366`) is a scoped,
+intentional exception to the locked palette (third-party brand chip, confined to that one element).
+The featured-portfolio section ("Explore Our Portfolio") is now a **carousel showing three
+properties at a time** (two on tablet, one on mobile) via a thin client island
+(`pages/ui/components/portfolio-carousel.tsx`): cards are server-rendered in `FeaturedPortfolio`
+(now fetching up to 9 featured buildings) and passed in as slides; the island only drives
+scroll-snap + prev/next controls and honors `prefers-reduced-motion`. The final owner/guest
+dual-CTA band (`pages/ui/components/dual-cta.tsx`) is now the **"Immersive Panels"** layout
+(owner-chosen from a temporary 3-way preview switcher, since removed): two full-bleed image panels
+with a dark scrim + white overlaid copy and a gentle hover zoom (CSS only, stays a server
+component) — owner side a warm Lisbon facade, guest side a balcony-stay moment. Both images are
+TEMP external Pexels hotlinks (free license) until final art is uploaded to R2. **Status:** Accepted.
+
+**Owners page rebuilt to `mock/owners.html` (owner-directed, under this ADR):** `pages/ui/owners-page.tsx`
+now follows the mock's order — hero with an **embedded earnings-estimate card** (the leads-slice
+`EarningsEstimateForm` slotted into the hero), a sticky anchor sub-nav, the business-proof
+**stats band moved up** to sit right after the hero, why · services · plans · growth path · owner
+dashboard, owner testimonials, an **accordion FAQ**, and a **dark final CTA** that routes back to the
+hero form. Content still comes from `getOwnersPage` (DB) + settings/testimonials/faq slices; only
+section eyebrows + the final-CTA copy were added as i18n chrome (`pages.owners.*`, all 4 locales).
+Per-section source was confirmed with the owner (mock-vs-DB): **copy stays from the DB** (paraphrased
+but localized 4-up); **stats stay from settings**; **testimonials + FAQ stay from their live slices**;
+the **plan cards use the mock's three tiers verbatim** (Essential/Premium/Concierge, no commission %),
+overriding the DB's four-tier B8 variant — hardcoded English brand terms in `OWNER_PLANS`. The hero
+**badge** renders the mock's "★ Earn +25%" pill (i18n `pages.owners.heroBadge`, localized; seed badge
+aligned). The hero **image** is the mock's approved photo as a TEMP external hotlink via the new
+`PageHero` `imageUrl` escape hatch, because the seeded `image_media_id` is a placeholder that was
+never uploaded to R2 — swap to the R2 asset when uploaded. Three shared pages-slice components gained
+**additive, backward-compatible** options to support this without touching other pages: `PageHero`
+(`aside` form slot, `compact` headline sizing, `imageUrl` fallback, `eyebrowPill`), `StatsBand`
+(`showTitle` for a bare proof band), and `FaqSection` (now a CSS-only `<details>` accordion, reused by
+real-estate too — JSON-LD unchanged). Navbar/footer are the shared chrome, reused unchanged via the
+app layout. **Status:** Accepted.

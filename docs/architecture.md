@@ -9,7 +9,7 @@
 |---|---|
 | Public pages load in < 3s (aspire ~200ms) | Static HTML from CDN, **no DB at request time** |
 | Impeccable SEO + GEO (generative-engine optimization) | SSR/SSG HTML, JSON-LD, hreflang, sitemaps, `llms.txt`, clean semantics |
-| Premium/boutique look & feel | Design-system driven, image-optimized, minimal CLS |
+| Premium/boutique look & feel | Design-system driven, image-optimized, minimal CLS; **palette locked to Warm Editorial** (ADR 0022, `docs/design-system.md`); approved baseline `mock/home.html` |
 | Multilingual EN/PT/ES/FR | Path-prefixed locales, translation pipeline, per-locale slugs |
 | Add features without breaking others | Vertical slices + contracts + additive migrations |
 | Clear, scalable, maintainable DB | Slice-owned tables, FKs only to owned tables, forward-only migrations |

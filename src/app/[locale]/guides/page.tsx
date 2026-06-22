@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
 import { GuidesListing } from "@slices/guides/ui/guides-listing";
+import "../../mock.css";
 
-/** ISR: static per locale; on-demand revalidation via `guide-list` tag. */
+/** Static per locale. Content is the embedded mock (no DB). */
 export const revalidate = 3600;
 
 export function generateStaticParams() {
@@ -22,14 +23,14 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: "guides" });
 
   const languages: Partial<Record<Locale | "x-default", string>> = { "x-default": "/guides" };
   for (const l of routing.locales) languages[l] = `/${l}/guides`;
 
   return buildMetadata({
-    title: t("metaTitle"),
-    description: t("metaDescription"),
+    title: "What to Do in Lisbon — Central Hill",
+    description:
+      "Our curated guide to the best of Lisbon — neighbourhoods, restaurants, beaches, viewpoints, events and family days out, hand-picked by our local team for Central Hill guests.",
     canonicalPath: `/${locale}/guides`,
     languages,
   });

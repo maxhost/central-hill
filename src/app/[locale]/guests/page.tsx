@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
-import { getGuestPage } from "@slices/pages/contract";
 import { GuestPage } from "@slices/pages/ui/guest-page";
+import "../../mock.css";
 
-/** ISR: static per locale; on-demand revalidation via the `page:guest` tag. */
+/** Static per locale. Content is the embedded mock (no DB). */
 export const revalidate = 3600;
 
 export function generateStaticParams() {
@@ -23,20 +23,16 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: "pages" });
-  const page = await getGuestPage(locale);
 
   const languages: Partial<Record<Locale | "x-default", string>> = { "x-default": "/guests" };
   for (const l of routing.locales) languages[l] = `/${l}/guests`;
 
   return buildMetadata({
-    title: t("guests.metaTitle"),
-    description: t("guests.metaDescription"),
+    title: "For Guests — Central Hill",
+    description:
+      "Handpicked, professionally managed apartments in the heart of Portugal's most captivating destinations. Book directly for the best price, guaranteed.",
     canonicalPath: `/${locale}/guests`,
     languages,
-    images: page?.ogImage
-      ? [{ url: page.ogImage.url, width: page.ogImage.width, height: page.ogImage.height, alt: page.ogImage.alt }]
-      : undefined,
   });
 }
 

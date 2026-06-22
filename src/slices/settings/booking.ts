@@ -33,8 +33,9 @@ export function avantioBookingUrl(locale: string): string {
 }
 
 /**
- * Avantio owners-login (extranet) destination for the header user icon. The client
- * will supply the final branded URL; until then this points at the Avantio extranet
- * login. Overridable here (or, later, via `company_settings`).
+ * Avantio owners-login destination for the header "Account" user icon (opens in a new tab).
+ * Client-supplied deep link into the Avantio PMS login. Overridable here (or, later, via
+ * `company_settings`).
  */
-export const AVANTIO_OWNERS_LOGIN_URL = "https://extranet.avantio.com/";
+export const AVANTIO_OWNERS_LOGIN_URL =
+  "https://app.avantio.pro/index.php?url=&module=Usuarios&action=Login&return_module=Home&return_action=index&avs=WjViQVd6NmtXVjdpZUgyQ0duMXpZTmt5TmdhZ08zSVpETGMyMVI2cDFCRzZiS2VoM3dCN0EydDMzdG0zMTV1eW5pUmlURjNDU1REdWRzdEZTODlidSsrYVduZVBQRXg2YlRvbWl3b0dDbmc9";

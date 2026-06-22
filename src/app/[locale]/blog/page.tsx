@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
 import { BlogListing } from "@slices/blog/ui/blog-listing";
+import "../../mock.css";
 
-/** ISR: static per locale; on-demand revalidation via `blog_post-list` tag. */
+/** Static per locale. Content is the embedded mock (no DB). */
 export const revalidate = 3600;
 
 export function generateStaticParams() {
@@ -22,14 +23,14 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: "blog" });
 
   const languages: Partial<Record<Locale | "x-default", string>> = { "x-default": "/blog" };
   for (const l of routing.locales) languages[l] = `/${l}/blog`;
 
   return buildMetadata({
-    title: t("metaTitle"),
-    description: t("metaDescription"),
+    title: "Blog — Central Hill",
+    description:
+      "Expert guides, practical tips, and local knowledge for property owners, investors, and anyone navigating the Portuguese short-term rental market.",
     canonicalPath: `/${locale}/blog`,
     languages,
   });

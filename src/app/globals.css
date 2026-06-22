@@ -16,6 +16,9 @@
   --color-accent: #b5562d; /* actions only: CTAs, links, active */
   --color-accent-deep: #8e421f; /* hover/pressed accent */
   --color-feature: #2e2a26; /* dark feature band */
+  --color-feature-accent: #e9d9bf; /* warm cream — numbers/accents ON the dark band */
+  --color-on-feature: #fbf7f0; /* primary text on the dark band */
+  --color-on-feature-soft: #d8cfc2; /* secondary text on the dark band — AA on feature */
 
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
@@ -28,4 +31,70 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+}
+
+/*
+ * App-shell header chrome (ADR 0022 — nav behavior). The fixed nav reserves its own height
+ * by default; pages that render a hero (`[data-hero]`) let it overlay them. Over a hero,
+ * while unscrolled, the bar is transparent with white content; once the page scrolls (the
+ * header-scroll island toggles `.scrolled`) it returns to the frosted default styled with
+ * Tailwind utilities on the header. The transparent state ALSO turns off while a sub-tab bar
+ * is open (`:not(:has([data-subnav]:hover, :focus-within))`) so the bar and the nav share the
+ * same frosted background instead of the nav staying see-through behind a solid bar. Uses
+ * :has()/:not() (modern evergreen browsers). Light popovers (dropdown, sub-bar, mobile drawer,
+ * contact modal) opt out of the white inversion via `[data-chrome-keep]`.
+ *
+ * NOTE: these rules are intentionally UNLAYERED — unlayered CSS wins over Tailwind's
+ * `@layer utilities`, so the overlay state overrides the header's default utility classes
+ * (`bg-bg/85`, `border-line`, `text-ink`…) regardless of specificity.
+ */
+#main {
+  padding-top: 4rem; /* reserve the fixed nav height (Container h-16) */
+}
+body:has([data-hero], .mk .hero) #main {
+  padding-top: 0; /* hero pages: the nav overlays the hero */
+}
+
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav]:focus-within)) {
+  background-color: transparent;
+  border-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  color: #fff;
+}
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav]:focus-within))
+  :is(.text-ink, .text-ink-soft):not([data-chrome-keep], [data-chrome-keep] *) {
+  color: #fff;
+}
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav]:focus-within))
+  .border-line:not([data-chrome-keep], [data-chrome-keep] *) {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav]:focus-within)) [data-brand] span {
+  color: var(--color-feature-accent);
+}
+
+/*
+ * Header CTA over a hero (unscrolled): the ghost "Book Now" gets a white hairline that
+ * inverts to a white fill on hover (mirrors mock/home.html `.btn-ghost` in the transparent
+ * nav). Scrolled / no-hero pages keep the dark Tailwind defaults set on the element itself.
+ */
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav]:focus-within)) [data-cta="ghost"] {
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #fff;
+}
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav]:focus-within)) [data-cta="ghost"]:hover {
+  background-color: #fff;
+  color: var(--color-ink);
+}
+
+/*
+ * Round utility icons (account, contact) while the bar is transparent over a hero: their
+ * default light `hover:bg-surface` would read wrong on the dark hero, so hovering instead
+ * fills them with the accent terracotta and keeps the glyph white. Frosted / no-hero pages
+ * keep the element's own Tailwind hover (`hover:bg-surface hover:text-ink`).
+ */
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav]:focus-within)) [data-icon-btn]:hover {
+  background-color: var(--color-accent);
+  color: #fff;
 }

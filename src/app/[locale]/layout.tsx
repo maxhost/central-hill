@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { SiteFooter } from "@slices/settings/ui/site-footer";
 import { SiteHeader } from "@slices/settings/ui/site-header";
+import { WhatsAppFab } from "@slices/settings/ui/components/whatsapp-fab";
 import { SiteJsonLd } from "@slices/seo/contract";
 import type { Locale } from "@core/db/columns";
 import "../globals.css";
@@ -35,6 +36,7 @@ export default async function LocaleLayout({
           <SiteHeader locale={locale as Locale} />
           <div id="main">{children}</div>
           <SiteFooter locale={locale as Locale} />
+          <WhatsAppFab />
         </NextIntlClientProvider>
       </body>
     </html>

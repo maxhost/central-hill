@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
-import { getAboutPage } from "@slices/pages/contract";
 import { AboutPage } from "@slices/pages/ui/about-page";
+import "../../mock.css";
 
-/** ISR: static per locale; on-demand revalidation via the `page:about` tag. */
+/** Static per locale. Content is the embedded mock (no DB). */
 export const revalidate = 3600;
 
 export function generateStaticParams() {
@@ -23,20 +23,16 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: "pages" });
-  const page = await getAboutPage(locale);
 
   const languages: Partial<Record<Locale | "x-default", string>> = { "x-default": "/about" };
   for (const l of routing.locales) languages[l] = `/${l}/about`;
 
   return buildMetadata({
-    title: t("about.metaTitle"),
-    description: t("about.metaDescription"),
+    title: "About Us — Central Hill",
+    description:
+      "Since 2012, Central Hill Apartments has turned properties into high-performing hospitality assets across Portugal — combining deep local knowledge, AI-driven technology, and an uncompromising commitment to quality.",
     canonicalPath: `/${locale}/about`,
     languages,
-    images: page?.ogImage
-      ? [{ url: page.ogImage.url, width: page.ogImage.width, height: page.ogImage.height, alt: page.ogImage.alt }]
-      : undefined,
   });
 }
 

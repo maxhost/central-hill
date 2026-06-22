@@ -1,79 +1,308 @@
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { Container, Section } from "@core/ui";
-import { getGlobals } from "@slices/settings/contract";
-import { listBuildings } from "../contract";
-import { BuildingCard } from "./components/building-card";
-import { BuildingFilter } from "./components/building-filter";
 
 /**
- * Buildings listing (content-briefs.md → 2 · Buildings): hero + city/neighbourhood
- * filter + responsive card grid. Fully static (ISR); the filter runs client-side
- * over server-rendered cards.
+ * Buildings listing — the approved `mock/buildings.html` embedded 1:1 inside the live
+ * app shell. The mock's body markup is rendered verbatim; its page styles are scoped
+ * under `.mk` (see `src/app/mock.css` for the shared design system) so nothing leaks to
+ * Home/admin. No database is read here — content is static, matching the mock exactly.
+ * The real header/footer + i18n come from the app layout.
+ *
+ * The filter bar (city <select> + neighbourhood chips) and the earnings calculator form
+ * are the mock's static markup; they are presentational only and do not function (no JS
+ * island wired). All property cards link to `/${locale}/buildings/sample`.
  */
+
+const PAGE_STYLE = `
+/* Page-only: filter / IA bar (decorative, kernel-variable based) */
+.mk .filterbar{border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--line) 26%,var(--bg))}
+.mk .filterbar .wrap{padding-top:26px;padding-bottom:26px;display:flex;flex-wrap:wrap;align-items:center;gap:18px}
+.mk .fb-city{position:relative}
+.mk .fb-city select{appearance:none;-webkit-appearance:none;font-family:var(--sans);font-size:14px;font-weight:500;
+  color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  padding:11px 38px 11px 16px;cursor:pointer}
+.mk .fb-city::after{content:"▾";position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  color:var(--ink-soft);font-size:12px;pointer-events:none}
+.mk .fb-chips{display:flex;flex-wrap:wrap;gap:9px;flex:1;min-width:240px}
+.mk .chip{font-size:13px;font-weight:500;letter-spacing:.01em;color:var(--ink-soft);background:var(--surface);
+  border:1px solid var(--line);border-radius:100px;padding:9px 16px;cursor:pointer;transition:.2s var(--ease)}
+.mk .chip:hover{border-color:var(--ink-soft);color:var(--ink)}
+.mk .chip.is-active{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.mk .fb-count{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;white-space:nowrap}
+@media(max-width:680px){.mk .fb-count{width:100%}}
+
+/* Page-only: earnings calculator (kernel-variable based, matches owners est-card) */
+.mk .calc-band{background:color-mix(in srgb,var(--line) 26%,var(--bg));border-top:1px solid var(--line)}
+.mk .calc-card{max-width:560px;margin:0 auto;background:var(--surface);color:var(--ink);
+  border:1px solid var(--line);border-radius:8px;padding:38px 34px 32px;text-align:center;
+  box-shadow:0 30px 60px -30px rgba(0,0,0,.4)}
+.mk .calc-card .earn-badge{display:inline-flex;align-items:center;gap:.5em;background:var(--feature-accent);color:var(--bg);
+  font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:8px 16px;border-radius:30px;margin-bottom:16px}
+.mk .calc-card h3{font-size:26px;margin-bottom:8px}
+.mk .calc-card .calc-sub{font-size:14px;color:var(--ink-soft);margin-bottom:24px}
+.mk .calc-field{margin-bottom:16px;text-align:left}
+.mk .calc-field label{display:block;font-size:12px;letter-spacing:.04em;font-weight:600;color:var(--ink);margin-bottom:7px}
+.mk .calc-field input{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);
+  background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:13px 14px;transition:.2s var(--ease)}
+.mk .calc-field input:focus{outline:none;border-color:var(--feature-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--feature-accent) 18%,transparent)}
+.mk .calc-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mk .calc-card .btn{width:100%;justify-content:center;margin-top:8px}
+@media(max-width:520px){.mk .calc-two{grid-template-columns:1fr}}
+`;
+
+const BODY = (locale: Locale) => `
+<!-- HERO -->
+<section class="hero compact" style="padding:0">
+  <img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70" alt="Rooftops and the river over Lisbon's historic centre at golden hour">
+  <div class="wrap">
+    <span class="eyebrow">Lisbon · Portugal</span>
+    <h1>Strategic Properties in Prime Locations</h1>
+    <p>Explore our carefully curated portfolio of exceptional buildings, each handpicked for its location, character, and guest experience. From historic neighbourhoods brimming with charm to prime avenues in the heart of the city, every Central Hill property is selected to offer an outstanding stay in some of Portugal's most vibrant and iconic locations.</p>
+  </div>
+</section>
+
+<!-- FILTER / IA BAR (decorative) -->
+<div class="filterbar">
+  <div class="wrap">
+    <label class="fb-city"><select aria-label="Select city">
+      <option>Lisbon</option>
+      <option>Porto</option>
+      <option>Cascais</option>
+    </select></label>
+    <div class="fb-chips">
+      <button class="chip is-active">All</button>
+      <button class="chip">Bairro Alto</button>
+      <button class="chip">Chiado</button>
+      <button class="chip">Baixa</button>
+      <button class="chip">Alfama</button>
+      <button class="chip">Avenida da Liberdade</button>
+      <button class="chip">Príncipe Real</button>
+    </div>
+    <span class="fb-count">14 Buildings</span>
+  </div>
+</div>
+
+<!-- BUILDING GRID -->
+<section>
+  <div class="wrap">
+    <div class="pf-grid reveal">
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><span class="badge">★ New</span><img src="https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&w=900&q=70" alt="Sunlit living room with rooftop views in Bairro Alto"></div>
+        <div class="pbody">
+          <h3>Large Bairro Alto View by Central Hill</h3>
+          <div class="pmeta">Rua da Alegria 61, Lisbon · Bairro Alto · 6 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Spacious, high-quality apartments in an exclusive location between Avenida da Liberdade and Príncipe Real, surrounded by Lisbon's best dining, cafés, shopping and vibrant city life.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1591825729269-caeb344f6df2?auto=format&fit=crop&w=900&q=70" alt="Tiled Alfama façade overlooking the Tagus river"></div>
+        <div class="pbody">
+          <h3>Downtown Alfama River View by Central Hill</h3>
+          <div class="pmeta">Rua do Barão 16, Lisbon · Alfama · 1 Apartment</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">In the heart of historic Alfama, next to the Cathedral. Stunning views over the Tagus River, the 25 de Abril Bridge and Cristo Rei, surrounded by the city's true historic charm.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=70" alt="Elegant Chiado apartment opening onto a private terrace"></div>
+        <div class="pbody">
+          <h3>Big Chiado Terrace by Central Hill</h3>
+          <div class="pmeta">Rua do Loreto 34, Lisbon · Chiado · 1 Apartment</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Historical building next to Praça Luís de Camões, between Chiado and Bairro Alto. Preserves original historic features, creating a charming and authentic atmosphere in the heart of Lisbon.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=70" alt="Refined interior in the heart of Chiado"></div>
+        <div class="pbody">
+          <h3>Central Chiado by Central Hill</h3>
+          <div class="pmeta">Rua das Chagas 17, Lisbon · Chiado · 3 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Prime central location next to Praça Luís de Camões, in the Chiado/Bairro Alto area. Walking distance of Príncipe Real, Rossio, São Jorge Castle, and the historic Alfama district.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=900&q=70" alt="Bright apartment overlooking Rossio square"></div>
+        <div class="pbody">
+          <h3>Central Downtown Rossio by Central Hill</h3>
+          <div class="pmeta">Rua do Jardim do Regedor 19, Lisbon · Rossio · 1 Apartment</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Next to Rossio and Restauradores, in the heart of Lisbon's main tourist area. Exceptional base to explore the city on foot, surrounded by iconic landmarks, vibrant streets, and restaurants.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=900&q=70" alt="Spacious apartment in Lisbon's downtown Baixa grid"></div>
+        <div class="pbody">
+          <h3>Central Downtown by Central Hill</h3>
+          <div class="pmeta">Rua dos Correeiros 14, Lisbon · Baixa · 8 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Historic building in Lisbon's downtown, preserving the famous Pombaline 'gaiola' wooden structure. Unique architectural charm within walking distance of Lisbon's main landmarks.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=900&q=70" alt="Warm apartment interior in lively Bairro Alto"></div>
+        <div class="pbody">
+          <h3>Central Bairro Alto by Central Hill</h3>
+          <div class="pmeta">Rua do Diário de Notícias 102, Lisbon · Bairro Alto · 2 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">In the heart of Bairro Alto, famous for lively nightlife, restaurants, and authentic charm. A perfect base to explore the city, within walking distance of Lisbon's main attractions.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&w=900&q=70" alt="Grand building on tree-lined Avenida da Liberdade"></div>
+        <div class="pbody">
+          <h3>Big Central Avenue by Central Hill</h3>
+          <div class="pmeta">Rua da Glória 95, Lisbon · Avenida da Liberdade · 1 Apartment</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Next to Avenida da Liberdade, one of Lisbon's most premium and exclusive areas. Refined and comfortable, in a prime location within walking distance of the city's main attractions.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=900&q=70" alt="Split-level duplex apartment with city views in Bairro Alto"></div>
+        <div class="pbody">
+          <h3>Bairro Alto Duplex View by Central Hill</h3>
+          <div class="pmeta">Travessa das Mercês 42, Lisbon · Bairro Alto · 1 Apartment</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Set in Bairro Alto, one of Lisbon's most historic and traditional neighborhoods. A true local experience, within walking distance of the city's main attractions and historic areas.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=70" alt="Bright apartment with avenue views near Avenida da Liberdade"></div>
+        <div class="pbody">
+          <h3>Large Central View by Central Hill</h3>
+          <div class="pmeta">Rua do Salitre 185, Lisbon · Avenida da Liberdade · 2 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Spacious historic building on one of Lisbon's most exclusive streets, steps from Avenida da Liberdade and Príncipe Real. Stunning views and prime location near shopping and nightlife.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=900&q=70" alt="Cosy, characterful apartment in downtown Baixa"></div>
+        <div class="pbody">
+          <h3>Cozy Central Downtown by Central Hill</h3>
+          <div class="pmeta">Rua das Portas de Santo Antão 35, Lisbon · Baixa · 4 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">One of the most central and vibrant areas of Lisbon, next to Rossio and Restauradores. Immediate access to main attractions, historic charm, and lively streets filled with cafés and culture.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=900&q=70" alt="Large bright apartment in historic Bairro Alto"></div>
+        <div class="pbody">
+          <h3>Big Bairro Alto by Central Hill</h3>
+          <div class="pmeta">Rua de São Pedro de Alcântara 63, Lisbon · Bairro Alto · 2 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Directly in front of Miradouro de São Pedro de Alcântara, offering breathtaking views. Set between Príncipe Real, Chiado, and Bairro Alto — a truly central and authentic Lisbon experience.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><span class="badge">★ New</span><img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=70" alt="Contemporary apartment on Avenida da Liberdade"></div>
+        <div class="pbody">
+          <h3>Downtown Avenue by Central Hill</h3>
+          <div class="pmeta">Travessa do Enviado de Inglaterra 12, Lisbon · Avenida da Liberdade · 3 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Next to Avenida da Liberdade, Lisbon's most famous and exclusive avenue. A prime central location offering a true local experience, within walking distance of the city's main attractions.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+      <a class="pcard" href="/${locale}/buildings/sample">
+        <div class="ph"><img src="https://images.unsplash.com/photo-1560566753086-00f18fb6b3ea?auto=format&fit=crop&w=900&q=70" alt="Cosy apartment with avenue outlook near Avenida da Liberdade"></div>
+        <div class="pbody">
+          <h3>Cozy Downtown Avenue by Central Hill</h3>
+          <div class="pmeta">Rua do Telhal 8, Lisbon · Avenida da Liberdade · 2 Apartments</div>
+          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">Next to Avenida da Liberdade, in the downtown area. A prime central location within walking distance of Lisbon's main attractions, vibrant streets, and historic neighborhoods.</p>
+          <div class="view">View More →</div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- OWNER CTA BAND -->
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="dual reveal" style="grid-template-columns:1fr">
+      <div class="dcol owner">
+        <span class="eyebrow">For Owners</span>
+        <h3>Looking to add your property to our portfolio?</h3>
+        <p>Join the buildings above. We'll assess your apartment and show you what it could earn — free, no obligation, within 48 hours.</p>
+        <a class="btn btn-accent" href="/${locale}#owners">Get Your Free Earnings Estimate →</a>
+        <div class="contact-line">Call +351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3 · STATS BAND -->
+<section class="stats">
+  <div class="wrap">
+    <h2 style="text-align:center;margin-bottom:42px">Numbers That Speak for Themselves</h2>
+    <div class="stats-grid reveal" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat">
+        <div class="num">400,000+</div>
+        <div class="lbl">Bookings Completed</div>
+        <div class="lbl" style="letter-spacing:.02em;text-transform:none;margin-top:6px">Across all managed properties</div>
+      </div>
+      <div class="stat">
+        <div class="num">12+</div>
+        <div class="lbl">Years of Experience</div>
+        <div class="lbl" style="letter-spacing:.02em;text-transform:none;margin-top:6px">Optimizing owner returns in Portugal</div>
+      </div>
+      <div class="stat">
+        <div class="num">€55M+</div>
+        <div class="lbl">Revenue Generated</div>
+        <div class="lbl" style="letter-spacing:.02em;text-transform:none;margin-top:6px">For our property owners</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4 · EARNINGS CALCULATOR -->
+<section class="calc-band">
+  <div class="wrap">
+    <form class="calc-card reveal">
+      <span class="earn-badge">★ Earn +25%</span>
+      <h3>Discover your property's earning potential</h3>
+      <p class="calc-sub">Find out how much your property could earn — free, instant, no obligation.</p>
+      <div class="calc-field">
+        <label for="calc-addr">Property Address</label>
+        <input id="calc-addr" type="text" placeholder="Street, neighbourhood, city" autocomplete="off">
+      </div>
+      <div class="calc-two">
+        <div class="calc-field">
+          <label for="calc-nprop">Nº of Properties</label>
+          <input id="calc-nprop" type="number" min="1" placeholder="1">
+        </div>
+        <div class="calc-field">
+          <label for="calc-nbed">Nº of Bedrooms</label>
+          <input id="calc-nbed" type="number" min="1" placeholder="2">
+        </div>
+      </div>
+      <a class="btn btn-accent" href="#">Calculate My Earnings →</a>
+    </form>
+  </div>
+</section>
+`;
+
 export async function BuildingsListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const t = await getTranslations("buildings");
-
-  // Display toggles (client feedback B6): while the portfolio is Lisbon-only the
-  // city/region filter and the total-buildings count are hidden by default; the back
-  // office can re-enable both via `company_settings`.
-  const globals = await getGlobals(locale);
-  const showLocation = globals?.showBuildingLocation ?? false;
-  const showCount = globals?.showBuildingCount ?? false;
-
-  const buildings = await listBuildings(locale);
-
-  // Derive the (deduplicated, order-preserving) city + neighbourhood tab sets from
-  // the buildings actually present, so empty taxonomy entries never show.
-  const cities = new Map<string, { id: string; name: string }>();
-  const neighbourhoods = new Map<string, { id: string; name: string; cityId: string }>();
-  for (const b of buildings) {
-    if (b.city.name && !cities.has(b.city.id)) {
-      cities.set(b.city.id, { id: b.city.id, name: b.city.name });
-    }
-    if (b.neighbourhood?.name && !neighbourhoods.has(b.neighbourhood.id)) {
-      neighbourhoods.set(b.neighbourhood.id, {
-        id: b.neighbourhood.id,
-        name: b.neighbourhood.name,
-        cityId: b.city.id,
-      });
-    }
-  }
-
-  const items = buildings.map((b, i) => ({
-    id: b.id,
-    cityId: b.city.id,
-    neighbourhoodId: b.neighbourhood?.id ?? null,
-    node: <BuildingCard building={b} locale={locale} priority={i < 3} showLocation={showLocation} />,
-  }));
-
   return (
-    <main>
-      <Section as="header" className="pb-0">
-        <Container>
-          <h1 className="max-w-3xl font-serif text-4xl leading-tight text-ink md:text-6xl">
-            {t("title")}
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink-soft">{t("intro")}</p>
-        </Container>
-      </Section>
-
-      <Section className="pt-16">
-        <Container>
-          {items.length ? (
-            <BuildingFilter
-              cities={showLocation ? [...cities.values()] : []}
-              neighbourhoods={showLocation ? [...neighbourhoods.values()] : []}
-              items={items}
-              allLabel={t("all")}
-              countLabel={showCount ? (n) => t("count", { count: n }) : undefined}
-            />
-          ) : (
-            <p className="text-ink-soft">{t("empty")}</p>
-          )}
-        </Container>
-      </Section>
-    </main>
+    <div className="mk" data-page="buildings">
+      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+      <div dangerouslySetInnerHTML={{ __html: BODY(locale) }} />
+    </div>
   );
 }
