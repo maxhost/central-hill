@@ -45,12 +45,22 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
 
 ## Routes
 
-- `/{locale}/buildings` — listing: hero + client-side city/neighbourhood filter + card grid.
+- `/{locale}/buildings` — listing (`ui/buildings-listing.tsx`): the approved
+  `mock/buildings.html` design (hero + owner CTA + stats + earnings calculator chrome,
+  static `.mk` markup) with a **DB-driven** card grid generated from `listBuildings(locale)`
+  into the locked `.pcard` markup. Client direction (B6): the city name is omitted from the
+  card meta line (`street · neighbourhood · N apartments`); the city/neighbourhood filter bar
+  is hidden (kept commented out in source for later DB wiring); a building with no R2 cover
+  yet falls back to `public/placeholders/building.svg` so cards never render empty. The
+  Tailwind `BuildingCard`/`BuildingFilter` components are a different look, kept for other
+  consumers. (Detail page is still the static mock — DB wiring deferred.)
 - `/{locale}/buildings/{slug}` — detail: hero + stats + gallery + "The Building" /
   "The Neighbourhood" prose + amenities + FAQ + Avantio "Book an apartment" CTA.
 
 Both are ISR (`revalidate = 3600`); detail uses `generateStaticParams` (known slugs
-prebuilt, `dynamicParams = true`) + `generateMetadata` with hreflang alternates.
+prebuilt, `dynamicParams = true`) + `generateMetadata` with hreflang alternates. A building
+publish busts the listing via `revalidateBuildingList` (tag `building-list` + the localized
+`/buildings` paths).
 
 ## i18n
 
