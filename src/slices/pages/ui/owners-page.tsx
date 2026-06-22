@@ -114,17 +114,70 @@ const OWNERS_STYLE = `
 @media(max-width:680px){.mk .est-two{grid-template-columns:1fr}.mk .owner-showcase .sh-list{grid-template-columns:1fr}.mk .plans{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
 `;
 
+const SERVICES_FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=72";
+const SERVICES_FALLBACK_ALT = "Designer-furnished Lisbon apartment, guest-ready";
+const DASHBOARD_FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=72";
+const DASHBOARD_FALLBACK_ALT = "Owner dashboard showing live revenue and occupancy";
+
+// Bespoke per-benefit icons from the locked design — positional (paired by index with the
+// fixed-count benefit lists). Only the benefit *text* is data-driven; the SVGs never change.
+const WHY_ICONS = [
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H4V4"/><path d="M4 16.5L12 9L15 12L19.5 7.5"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.74534 4H17.3132C17.3132 4 16.4326 17.2571 12.0293 17.2571C9.87826 17.2571 8.56786 14.0935 7.79011 10.8571C6.97574 7.46844 6.74534 4 6.74534 4Z"/><path d="M17.3132 4C17.3132 4 18.2344 3.01733 19 2.99999C20.5 2.96603 20.7773 4 20.7773 4C21.0709 4.60953 21.3057 6.19429 19.8967 7.65715C18.4876 9.12 16.9103 10.4 16.2684 10.8571"/><path d="M6.74527 4.00001C6.74527 4.00001 5.78547 3.00614 4.99995 3.00001C3.49995 2.9883 3.22264 4.00001 3.22264 4.00001C2.92908 4.60953 2.69424 6.19429 4.1033 7.65715C5.51235 9.12001 7.14823 10.4 7.79004 10.8572"/><path d="M8.50662 20C8.50662 18.1714 12.0292 17.2571 12.0292 17.2571C12.0292 17.2571 15.5519 18.1714 15.5519 20H8.50662Z"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8.4C18 6.70261 17.3679 5.07475 16.2426 3.87452C15.1174 2.67428 13.5913 2 12 2C10.4087 2 8.88258 2.67428 7.75736 3.87452C6.63214 5.07475 6 6.70261 6 8.4C6 15.8667 3 18 3 18H21C21 18 18 15.8667 18 8.4Z"/><path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V19C5 15.134 8.13401 12 12 12C15.866 12 19 15.134 19 19V20"/><path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10C20 14.4183 12 22 12 22C12 22 4 14.4183 4 10C4 5.58172 7.58172 2 12 2C16.4183 2 20 5.58172 20 10Z"/><path d="M12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11Z" fill="currentColor"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17L21 21"/><path d="M3 11C3 15.4183 6.58172 19 11 19C13.213 19 15.2161 18.1015 16.6644 16.6493C18.1077 15.2022 19 13.2053 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11Z"/></svg>`,
+];
+const SERVICES_ICONS = [
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6l1.5-2h5L16 6"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6l-2 2-4-4 2-2a2.8 2.8 0 0 1 4 4z" transform="translate(-3 0)"/><path d="M3 21l9-9M5 14l5 5"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M21 7v5h-5"/></svg>`,
+];
+const DASHBOARD_ICONS = [
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.5a2.5 2 0 0 0-2.5-1.5c-1.4 0-2.5.8-2.5 2s1.1 2 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2a2.5 2 0 0 1-2.5-1.5"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>`,
+];
+
+/** Render a benefit list (`<li>` = positional SVG + title/description), pairing each item with
+ * its design icon by index. Used by the `why` / `services` / `dashboard` sections. */
+function benefitList(
+  items: ReadonlyArray<{ title: string; description: string }>,
+  icons: readonly string[],
+): string {
+  return items
+    .map(
+      (b, i) => `
+      <li>
+        ${icons[i] ?? ""}
+        <div><h3>${esc(b.title)}</h3><p>${esc(b.description)}</p></div>
+      </li>`,
+    )
+    .join("");
+}
+
 /**
- * Top body sections (hero → technology). The `#worth` hero + earnings-form card are wired to
- * the DB (`hero`, `earnings_form`); the remaining sections are still authored markup, wired
- * piece by piece. The form *fields* (address / properties / bedrooms) stay fixed in code
- * (they map to `lead.kind='earnings_estimate'`); only labels/copy come from `content`. The
- * decorative "★" badge prefix and the CTA "→" are part of the locked design.
+ * Top body sections (hero → technology), all wired to the owners `page_content` row while
+ * preserving the locked design markup/CSS/SVGs verbatim. The bespoke per-benefit SVGs and the
+ * decorative "★" badge / "→" CTA glyphs are design — only text/images/labels come from
+ * `content`. In-page CTAs keep their design anchors (`#worth` form, `#start` contact); the
+ * schema's CTA `url` isn't used for these. The form *fields* (address / properties / bedrooms)
+ * stay fixed in code (they map to `lead.kind='earnings_estimate'`). Plan `commission` is held
+ * in the schema but intentionally not shown (the locked design has no commission display).
  */
 function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageData>): string {
-  const { hero, earnings_form: form } = content;
+  const { hero, earnings_form: form, why, services, plans, journey, dashboard } = content;
   const heroImg = media[hero.image_media_id]?.url || HERO_FALLBACK_IMG;
   const heroAlt = media[hero.image_media_id]?.alt || HERO_FALLBACK_ALT;
+  const servicesImg = media[services.image_media_id ?? ""]?.url || SERVICES_FALLBACK_IMG;
+  const servicesAlt = media[services.image_media_id ?? ""]?.alt || SERVICES_FALLBACK_ALT;
+  const dashboardImg = media[dashboard.image_media_id ?? ""]?.url || DASHBOARD_FALLBACK_IMG;
+  const dashboardAlt = media[dashboard.image_media_id ?? ""]?.alt || DASHBOARD_FALLBACK_ALT;
 
   return `
 <section id="worth" class="hero compact owner-hero" style="padding:0">
@@ -175,39 +228,15 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 <section id="why" class="owner-pitch">
   <div class="wrap">
     <div class="pitch-text">
-      <h2 class="section-title">Why Property Owners Trust Central Hill Apartments</h2>
-      <p class="pitch-sub">We turn your property into a high-performing asset — fully managed, transparent, and optimised for maximum returns.</p>
+      <h2 class="section-title">${esc(why.headline)}</h2>
+      ${why.subheadline ? `<p class="pitch-sub">${esc(why.subheadline)}</p>` : ""}
       <div class="pitch-cta">
-        <a class="btn btn-accent" href="#worth">Get your free estimate →</a>
-        <a class="btn btn-ghost" href="#start">Talk to us</a>
+        <a class="btn btn-accent" href="#worth">${esc(why.cta_primary.label)} →</a>
+        <a class="btn btn-ghost" href="#start">${esc(why.cta_secondary.label)}</a>
       </div>
-      <p class="pitch-note">Free, no obligation — reply within 48h.</p>
+      ${why.cta_primary.note ? `<p class="pitch-note">${esc(why.cta_primary.note)}</p>` : ""}
     </div>
-    <ul class="pitch-list">
-      <li>
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H4V4"/><path d="M4 16.5L12 9L15 12L19.5 7.5"/></svg>
-        <div><h3>AI-Powered Pricing</h3><p>Our dynamic pricing engine analyses market data in real time, adjusting your rates daily for maximum occupancy at the best possible price.</p></div>
-      </li>
-      <li>
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.74534 4H17.3132C17.3132 4 16.4326 17.2571 12.0293 17.2571C9.87826 17.2571 8.56786 14.0935 7.79011 10.8571C6.97574 7.46844 6.74534 4 6.74534 4Z"/><path d="M17.3132 4C17.3132 4 18.2344 3.01733 19 2.99999C20.5 2.96603 20.7773 4 20.7773 4C21.0709 4.60953 21.3057 6.19429 19.8967 7.65715C18.4876 9.12 16.9103 10.4 16.2684 10.8571"/><path d="M6.74527 4.00001C6.74527 4.00001 5.78547 3.00614 4.99995 3.00001C3.49995 2.9883 3.22264 4.00001 3.22264 4.00001C2.92908 4.60953 2.69424 6.19429 4.1033 7.65715C5.51235 9.12001 7.14823 10.4 7.79004 10.8572"/><path d="M8.50662 20C8.50662 18.1714 12.0292 17.2571 12.0292 17.2571C12.0292 17.2571 15.5519 18.1714 15.5519 20H8.50662Z"/></svg>
-        <div><h3>Profit-First Management</h3><p>Every decision is guided by one goal: maximising your returns — from listing optimisation to upsell strategies, we leave no revenue on the table.</p></div>
-      </li>
-      <li>
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8.4C18 6.70261 17.3679 5.07475 16.2426 3.87452C15.1174 2.67428 13.5913 2 12 2C10.4087 2 8.88258 2.67428 7.75736 3.87452C6.63214 5.07475 6 6.70261 6 8.4C6 15.8667 3 18 3 18H21C21 18 18 15.8667 18 8.4Z"/><path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"/></svg>
-        <div><h3>24/7 Owner Dashboard</h3><p>Monitor your property's performance in real time — bookings, revenue, occupancy and guest reviews — from anywhere in the world.</p></div>
-      </li>
-      <li>
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V19C5 15.134 8.13401 12 12 12C15.866 12 19 15.134 19 19V20"/><path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z"/></svg>
-        <div><h3>Dedicated Account Manager</h3><p>A named point of contact who knows your property personally. No call centres, no uncertainty — just reliable, expert support.</p></div>
-      </li>
-      <li>
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10C20 14.4183 12 22 12 22C12 22 4 14.4183 4 10C4 5.58172 7.58172 2 12 2C16.4183 2 20 5.58172 20 10Z"/><path d="M12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11Z" fill="currentColor"/></svg>
-        <div><h3>Deep Local Expertise</h3><p>We operate on the ground in Portugal, with an unmatched understanding of seasonal trends, regulations and the best channels for your property.</p></div>
-      </li>
-      <li>
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17L21 21"/><path d="M3 11C3 15.4183 6.58172 19 11 19C13.213 19 15.2161 18.1015 16.6644 16.6493C18.1077 15.2022 19 13.2053 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11Z"/></svg>
-        <div><h3>Full Transparency</h3><p>Detailed monthly reports, real-time dashboards and complete financial visibility. You stay in control, even when we handle everything.</p></div>
-      </li>
+    <ul class="pitch-list">${benefitList(why.benefits, WHY_ICONS)}
     </ul>
   </div>
 </section>
@@ -215,31 +244,15 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 <section id="services" class="alt owner-showcase">
   <div class="wrap">
     <div class="sh-text reveal">
-      <h2>Everything Handled. Nothing Overlooked.</h2>
-      <p class="sh-sub">From the first listing to each guest's departure, Central Hill Apartments manages every detail so you don't have to.</p>
-      <ul class="sh-list">
-        <li>
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6l1.5-2h5L16 6"/></svg>
-          <div><h3>Listing &amp; Marketing</h3><p>Professional photography, copy and multi-channel distribution across Airbnb, Booking.com and direct.</p></div>
-        </li>
-        <li>
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
-          <div><h3>Reservations &amp; Guest Care</h3><p>24/7 multilingual communication, calendar and seamless check-in/out — every stay runs smoothly.</p></div>
-        </li>
-        <li>
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6l-2 2-4-4 2-2a2.8 2.8 0 0 1 4 4z" transform="translate(-3 0)"/><path d="M3 21l9-9M5 14l5 5"/></svg>
-          <div><h3>Housekeeping &amp; Maintenance</h3><p>Hotel-standard cleaning, premium linen and proactive upkeep keep your home guest-ready.</p></div>
-        </li>
-        <li>
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M21 7v5h-5"/></svg>
-          <div><h3>Revenue &amp; Compliance</h3><p>AI-driven pricing, monthly reporting and full Alojamento Local licensing &amp; tax support.</p></div>
-        </li>
+      <h2>${esc(services.headline)}</h2>
+      ${services.subheadline ? `<p class="sh-sub">${esc(services.subheadline)}</p>` : ""}
+      <ul class="sh-list">${benefitList(services.benefits, SERVICES_ICONS)}
       </ul>
-      <div class="sh-cta"><a class="btn btn-accent" href="#worth">See how we manage your home →</a></div>
-      <p class="sh-note">Fully managed, end to end — you stay informed, we do the work.</p>
+      <div class="sh-cta"><a class="btn btn-accent" href="#worth">${esc(services.cta.label)} →</a></div>
+      ${services.cta.note ? `<p class="sh-note">${esc(services.cta.note)}</p>` : ""}
     </div>
     <div class="sh-media reveal">
-      <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=72" alt="Designer-furnished Lisbon apartment, guest-ready">
+      <img src="${escAttr(servicesImg)}" alt="${escAttr(servicesAlt)}">
       <div class="sh-badge">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
         <span>Every detail handled — you stay free.</span>
@@ -251,84 +264,35 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 <section id="plans">
   <div class="wrap">
     <div class="sec-head center reveal">
-      <h2 class="section-title">A Management Plan Built Around Your Goals</h2>
-      <p class="lede" style="margin:16px auto 0">Choose the level of service that suits your property and ambitions. Every plan includes AI-driven pricing and a 24/7 owner dashboard.</p>
+      <h2 class="section-title">${esc(plans.headline)}</h2>
+      ${plans.subheadline ? `<p class="lede" style="margin:16px auto 0">${esc(plans.subheadline)}</p>` : ""}
     </div>
 
-    <div class="plans reveal">
-      <div class="plan">
-        <div class="pname">Starter</div>
-        <div class="ptag">Listing &amp; bookings only</div>
-        <ul>
-          <li>Listing creation &amp; optimisation</li>
-          <li>Multi-channel distribution</li>
-          <li>AI-powered dynamic pricing</li>
-          <li>Secure payment handling</li>
-          <li>Monthly owner report</li>
-          <li>24/7 owner dashboard access</li>
+    <div class="plans reveal">${plans.tiers
+      .map(
+        (t) => `
+      <div class="plan${t.is_popular ? " popular" : ""}">
+        ${t.is_popular ? `<span class="pop-tag">Most Popular</span>` : ""}
+        <div class="pname">${esc(t.name)}</div>
+        ${t.tag ? `<div class="ptag">${esc(t.tag)}</div>` : ""}
+        <ul>${t.features.map((f) => `\n          <li>${esc(f)}</li>`).join("")}
         </ul>
-        <a class="btn btn-ghost" href="#">Choose Starter</a>
-      </div>
-
-      <div class="plan">
-        <div class="pname">Essential</div>
-        <div class="ptag">Core full management</div>
-        <ul>
-          <li>Listing creation &amp; optimisation</li>
-          <li>Reservation management 24/7</li>
-          <li>AI-powered dynamic pricing</li>
-          <li>Professional cleaning coordination</li>
-          <li>Monthly owner report</li>
-          <li>24/7 owner dashboard access</li>
-        </ul>
-        <a class="btn btn-ghost" href="#">Choose Essential</a>
-      </div>
-
-      <div class="plan popular">
-        <span class="pop-tag">Most Popular</span>
-        <div class="pname">Premium</div>
-        <div class="ptag">Full-service management</div>
-        <ul>
-          <li>Everything in Essential</li>
-          <li>Dedicated account manager</li>
-          <li>Professional photography</li>
-          <li>Interior styling advice</li>
-          <li>Multi-platform distribution</li>
-          <li>Revenue &amp; yield optimisation</li>
-          <li>Priority maintenance response</li>
-          <li>Legal &amp; fiscal guidance</li>
-        </ul>
-        <a class="btn btn-accent" href="#">Choose Premium</a>
-      </div>
-
-      <div class="plan">
-        <div class="pname">Concierge</div>
-        <div class="ptag">Bespoke white-glove service</div>
-        <ul>
-          <li>Everything in Premium</li>
-          <li>Bespoke guest experience design</li>
-          <li>VIP concierge for guests</li>
-          <li>Luxury welcome packs</li>
-          <li>Tailored analytics &amp; reporting</li>
-          <li>Dedicated property consultant</li>
-          <li>Guaranteed income option</li>
-          <li>Multi-property portfolio management</li>
-        </ul>
-        <a class="btn btn-ghost" href="#">Choose Concierge</a>
-      </div>
+        <a class="btn ${t.is_popular ? "btn-accent" : "btn-ghost"}" href="#">Choose ${esc(t.name)}</a>
+      </div>`,
+      )
+      .join("")}
     </div>
 
-    <div class="plan-helpers reveal">
+    <div class="plan-helpers reveal">${plans.helpers
+      .map(
+        (h, i) => `
       <div class="plan-helper">
-        <h4>Found a better commission?</h4>
-        <p>We match the best commissions and plans in the market.</p>
-        <a class="btn btn-ghost" href="#">Contact Us for More Information</a>
-      </div>
-      <div class="plan-helper">
-        <h4>Not sure which plan is right for you?</h4>
-        <p>Our team will assess your property and recommend the best plan. Start with a free, no-obligation Profitability Study.</p>
-        <a class="btn btn-accent" href="#">Get Your Free Earnings Estimate →</a>
-      </div>
+        <h4>${esc(h.title)}</h4>
+        <p>${esc(h.copy)}</p>
+        ${h.cta ? `<a class="btn ${i === 1 ? "btn-accent" : "btn-ghost"}" href="#">${esc(h.cta.label)}${i === 1 ? " →" : ""}</a>` : ""}
+      </div>`,
+      )
+      .join("")}
     </div>
   </div>
 </section>
@@ -336,35 +300,19 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 <section id="journey" class="alt">
   <div class="wrap">
     <div class="sec-head center reveal">
-      <h2 class="section-title">Getting Started Is Simple</h2>
-      <p class="lede" style="margin:16px auto 0">From first contact to first booking, we handle everything. Here is what to expect.</p>
+      <h2 class="section-title">${esc(journey.headline)}</h2>
+      ${journey.subheadline ? `<p class="lede" style="margin:16px auto 0">${esc(journey.subheadline)}</p>` : ""}
     </div>
-    <div class="steps reveal">
+    <div class="steps reveal">${journey.steps
+      .map(
+        (s, i) => `
       <div class="step">
-        <div class="snum">01</div>
-        <h3>Free Property Assessment</h3>
-        <p>We evaluate your property's rental potential, location, and estimated returns — at no cost and with no obligation.</p>
-      </div>
-      <div class="step">
-        <div class="snum">02</div>
-        <h3>Tailored Proposal</h3>
-        <p>You receive a personalized management proposal with projected revenue, recommended plan, and full commission transparency.</p>
-      </div>
-      <div class="step">
-        <div class="snum">03</div>
-        <h3>Onboarding &amp; Setup</h3>
-        <p>Professional photography, listing creation, platform registration, and property preparation — all handled within days.</p>
-      </div>
-      <div class="step">
-        <div class="snum">04</div>
-        <h3>Live Management</h3>
-        <p>Your property goes live across all platforms. We manage bookings, guests, cleaning, and maintenance 24/7.</p>
-      </div>
-      <div class="step">
-        <div class="snum">05</div>
-        <h3>Monthly Reporting &amp; Payouts</h3>
-        <p>You receive a detailed performance report and your earnings every month — clear, transparent, and always on time.</p>
-      </div>
+        <div class="snum">${String(i + 1).padStart(2, "0")}</div>
+        <h3>${esc(s.title)}</h3>
+        <p>${esc(s.description)}</p>
+      </div>`,
+      )
+      .join("")}
     </div>
   </div>
 </section>
@@ -372,31 +320,15 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 <section id="technology" class="owner-showcase reverse">
   <div class="wrap">
     <div class="sh-text reveal">
-      <h2>Your Property, Always in Sight</h2>
-      <p class="sh-sub">Our owner dashboard gives you real-time visibility into every aspect of your property's performance — from anywhere in the world.</p>
-      <ul class="sh-list">
-        <li>
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.5a2.5 2 0 0 0-2.5-1.5c-1.4 0-2.5.8-2.5 2s1.1 2 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2a2.5 2 0 0 1-2.5-1.5"/></svg>
-          <div><h3>Live Revenue Tracking</h3><p>Your earnings and projected monthly income at a glance, updated in real time.</p></div>
-        </li>
-        <li>
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>
-          <div><h3>Booking Calendar</h3><p>Full visibility of reservations, blocked dates and availability across all platforms.</p></div>
-        </li>
-        <li>
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>
-          <div><h3>Occupancy &amp; Performance</h3><p>Track occupancy rates, average nightly rate and review scores over any period.</p></div>
-        </li>
-        <li>
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>
-          <div><h3>Alerts &amp; Statements</h3><p>Instant alerts for bookings and check-ins, plus downloadable monthly statements anytime.</p></div>
-        </li>
+      <h2>${esc(dashboard.headline)}</h2>
+      ${dashboard.subheadline ? `<p class="sh-sub">${esc(dashboard.subheadline)}</p>` : ""}
+      <ul class="sh-list">${benefitList(dashboard.benefits, DASHBOARD_ICONS)}
       </ul>
-      <div class="sh-cta"><a class="btn btn-accent" href="#worth">Explore the owner dashboard →</a></div>
-      <p class="sh-note">Real-time visibility into your property, 24/7.</p>
+      <div class="sh-cta"><a class="btn btn-accent" href="#worth">${esc(dashboard.cta.label)} →</a></div>
+      ${dashboard.cta.note ? `<p class="sh-note">${esc(dashboard.cta.note)}</p>` : ""}
     </div>
     <div class="sh-media reveal">
-      <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=72" alt="Owner dashboard showing live revenue and occupancy">
+      <img src="${escAttr(dashboardImg)}" alt="${escAttr(dashboardAlt)}">
       <div class="sh-badge">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
         <span>Real-time data, from anywhere.</span>
