@@ -379,7 +379,6 @@ function ownersData() {
       ],
       helpers: [
         { title: "Not sure which plan fits?", copy: "Tell us about your property and goals — we'll recommend the right tier and show projected returns.", cta: { label: "Get your profitability study", url: `${SITE}/en/owners` } },
-        { title: "Already managing elsewhere?", copy: "Switching is simple. We handle the migration and you keep your bookings and reviews.", cta: { label: "Talk to us", url: `${SITE}/en/owners` } },
       ],
     },
     journey: {

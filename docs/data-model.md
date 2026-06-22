@@ -109,8 +109,8 @@ page_content
   is highlighted inside the form card); `why{headline, subheadline?, benefits[×6]{icon_key,title,description},
   cta_primary{label,url,note}, cta_secondary{label,url,note}}` (Editorial-Split layout mirroring the home
   owners-pitch); `services{headline, subheadline?, benefits[×4]{icon_key,title,description}, image_media_id?, cta{label,url,note}}`
-  (Image-Showcase layout, image right); `plans{headline, subheadline?, tiers[1..4]{name, tag?, commission?, is_popular, features[1..20]}, helpers[×2]{title,copy,cta?}}`
-  (up to 4 pricing cards); `journey{headline, subheadline?, steps[×5]{title,description}}`;
+  (Image-Showcase layout, image right); `plans{headline, subheadline?, tiers[1..4]{name, tag?, commission?, is_popular, features[1..20]}, helpers[×1]{title,copy,cta?}}`
+  (up to 4 pricing cards; `helpers` is the single full-width highlighted band below the tiers — drizzle 0010 trimmed 2→1); `journey{headline, subheadline?, steps[×5]{title,description}}`;
   `dashboard{headline, subheadline?, benefits[×4]{icon_key,title,description}, image_media_id?, cta{label,url,note}}`
   (Image-Showcase layout mirrored, image left). The "what owners say" testimonials block is **not** stored
   here — it is the shared testimonials marquee composed at render (testimonials slice, like the home).

@@ -93,10 +93,12 @@ const OWNERS_STYLE = `
 .mk .plan li:first-child{border-top:0}
 .mk .plan li::before{content:"";position:absolute;left:0;top:14px;width:14px;height:8px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg)}
 .mk .plan .btn{width:100%;justify-content:center}
-.mk .plan-helpers{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:80px}
-.mk .plan-helper{background:color-mix(in srgb,var(--line) 38%,var(--bg));border:1px solid var(--line);border-radius:8px;padding:30px 32px}
-.mk .plan-helper h4{font-family:var(--serif);font-size:21px;font-weight:500;color:var(--ink);margin-bottom:8px}
-.mk .plan-helper p{font-size:14.5px;color:var(--ink-soft);margin-bottom:18px}
+.mk .plan-helpers{margin-top:80px}
+.mk .plan-helper{display:flex;align-items:center;justify-content:space-between;gap:40px;background:color-mix(in srgb,var(--accent) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));border-radius:10px;padding:38px 48px;box-shadow:0 26px 56px -34px color-mix(in srgb,var(--accent) 50%,transparent)}
+.mk .plan-helper .ph-text{max-width:62ch}
+.mk .plan-helper h4{font-family:var(--serif);font-size:25px;font-weight:500;color:var(--ink);margin-bottom:9px}
+.mk .plan-helper p{font-size:15px;color:var(--ink-soft);margin:0}
+.mk .plan-helper .btn{flex:0 0 auto}
 .mk .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
 .mk .step{background:var(--surface);padding:36px 28px}
 .mk .step .snum{font-family:var(--serif);font-size:46px;line-height:1;color:var(--accent);opacity:.85;margin-bottom:16px}
@@ -110,7 +112,7 @@ const OWNERS_STYLE = `
 .mk .faq summary::after{content:"+";position:absolute;right:6px;top:22px;font-family:var(--sans);font-size:24px;color:var(--accent);transition:transform .25s var(--ease)}
 .mk .faq details[open] summary::after{transform:rotate(45deg)}
 .mk .faq .faq-a{padding:0 44px 26px 4px;font-size:15.5px;color:var(--ink-soft);max-width:70ch}
-@media(max-width:980px){.mk .owner-hero .wrap{grid-template-columns:1fr;gap:34px}.mk .owner-pitch .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-pitch .pitch-text{position:static}.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helpers{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr 1fr}}
+@media(max-width:980px){.mk .owner-hero .wrap{grid-template-columns:1fr;gap:34px}.mk .owner-pitch .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-pitch .pitch-text{position:static}.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helper{flex-direction:column;align-items:flex-start;gap:22px;padding:32px 30px}.mk .steps{grid-template-columns:1fr 1fr}}
 @media(max-width:680px){.mk .est-two{grid-template-columns:1fr}.mk .owner-showcase .sh-list{grid-template-columns:1fr}.mk .plans{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
 `;
 
@@ -288,11 +290,13 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 
     <div class="plan-helpers reveal">${plans.helpers
       .map(
-        (h, i) => `
+        (h) => `
       <div class="plan-helper">
-        <h4>${esc(h.title)}</h4>
-        <p>${esc(h.copy)}</p>
-        ${h.cta ? `<a class="btn ${i === 1 ? "btn-accent" : "btn-ghost"}" href="#">${esc(h.cta.label)}${i === 1 ? " →" : ""}</a>` : ""}
+        <div class="ph-text">
+          <h4>${esc(h.title)}</h4>
+          <p>${esc(h.copy)}</p>
+        </div>
+        ${h.cta ? `<a class="btn btn-accent" href="#">${esc(h.cta.label)} →</a>` : ""}
       </div>`,
       )
       .join("")}

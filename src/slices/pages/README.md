@@ -74,7 +74,8 @@ as scoped `.mk` CSS since `mock.css` styles bare `.mk` elements and would leak i
 component), `services` and `dashboard` (#technology) — both the home **Image-Showcase** layout
 (4 benefit highlights + CTA beside a 4:5 image with a floating badge; `dashboard` mirrored with the
 image on the left), reproduced as scoped `.mk` CSS for the same reason — `plans` (up to 4 pricing
-tiers, with extra air before the two helper blocks), `journey` — and the closing CTA. Two sections are
+tiers, with extra air before the single full-width highlighted helper band — drizzle 0010 trimmed
+`plans.helpers` 2→1), `journey` — and the closing CTA. Two sections are
 shared React islands rendered **outside** the `.mk` wrapper (so `mock.css` bare-element rules don't
 leak into their Tailwind markup): the `testimonials` infinite marquee (`<TestimonialsRow>`, the same
 component as the home "Partners & Guests" carousel) and the `faq` accordion (`<FaqSection>`). Both

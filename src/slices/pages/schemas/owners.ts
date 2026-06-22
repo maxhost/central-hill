@@ -35,7 +35,7 @@ const tier = z.object({
   features: between(tStr({ max: 200 }), 1, 20),
 });
 
-/** A helper block beside the plans (e.g. "not sure which plan?"). */
+/** The single full-width highlighted helper band below the plans (e.g. "not sure which plan?"). */
 const planHelper = z.object({
   title: tStr({ max: 120 }),
   copy: tStr({ max: 400 }),
@@ -106,7 +106,8 @@ export const ownersSchema = z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
     tiers: between(tier, 1, 4),
-    helpers: fixed(planHelper, 2),
+    // Single full-width highlighted helper band below the plans (drizzle 0010 trimmed 2→1).
+    helpers: fixed(planHelper, 1),
   }),
   journey: z.object({
     headline: tStr({ max: 160 }),
