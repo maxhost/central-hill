@@ -117,7 +117,10 @@ page_content
   Owner direction (drizzle 0004→0007): the per-section *eyebrow* labels were dropped on the page (titles
   stay), the hero badge moved into the form, `why` was restyled (Editorial-Split), and `services`/`dashboard`
   were restyled (Image-Showcase, each with its own editable image) — but all sections are kept and editable.
-  → Stats ("numbers" band) = **company_settings**. → FAQ group `owners` referenced (drizzle 0004→0008).
+  → Stats ("numbers" band) = **per-page** `stats[×4]{to (digit string), prefix?, suffix?, group (bool), label}`
+  — each page may want different figures, so they live in the page row, **not** company_settings; the displayed
+  value is derived as `prefix + (grouped) to + suffix` and the client counter animates up to `to` (drizzle 0009).
+  → FAQ group `owners` referenced (drizzle 0004→0008).
 - **real_estate**: `hero{image_media_id, headline, subheadline, positioning, capability_statement_media_id, cta_primary{label,url}, cta_secondary{label,url}}`;
   `partners{headline, intro, types[×4]{icon_key,title,description}}`; `capabilities{headline, intro, items[×3]{...}}`;
   `asset_classes{headline, intro, items[×6]{...}}`; `models{headline, intro, items[×3]{name, tag, is_featured, features[×7]}, footer_note}`;

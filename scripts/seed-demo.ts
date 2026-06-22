@@ -336,6 +336,12 @@ function ownersData() {
       cta_label: "Request my study",
       note: "Free and with no obligation.",
     },
+    stats: [
+      { to: "400000", suffix: "+", group: true, label: "Bookings Completed" },
+      { to: "12", suffix: "+", group: false, label: "Years of Experience" },
+      { to: "55", prefix: "€", suffix: "M+", group: false, label: "Revenue Generated" },
+      { to: "5", suffix: "M+", group: false, label: "Guests Hosted" },
+    ],
     why: {
       headline: "Why property owners trust Central Hill Apartments",
       subheadline: "We turn your property into a high-performing asset — fully managed, transparent, and optimised for maximum returns.",

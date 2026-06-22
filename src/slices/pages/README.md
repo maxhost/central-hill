@@ -55,14 +55,20 @@ page out from `content` + `media`. Shared pieces in `ui/components/`:
   background images) with the settings contact line; unset fields fall back to the localized
   `pages.dualCta.*` chrome and approved mock photos.
 
-The **Owners** page (`owners-page.tsx`) is a mostly-static landing (mock embedded 1:1; the only DB
-read is the shared testimonials marquee, see below). It no longer renders its own section bar: the
+The **Owners** page (`owners-page.tsx`) is **DB-driven** (mock embedded 1:1, but every section now
+reads its values from the owners `page_content` row): the body is built by `ownersBodyTop(content,
+media)` which interpolates the resolved content into the locked design markup verbatim — the bespoke
+per-benefit SVGs, the "★" badge glyph and CTA "→" stay design, in-page CTAs keep their `#worth`/
+`#start` anchors, and the form *fields* stay fixed in code (`lead.kind='earnings_estimate'`). Optional
+images (`services`/`dashboard`, the hero) fall back to the approved mock photo until an R2 asset is
+set. Admin text is HTML-escaped before interpolation. It no longer renders its own section bar: the
 header's "Owners" mega-menu (settings slice) doubles as the section sub-nav — it opens on hover and
 the settings header pins it open once scrolled past the top (`OWNERS_NAV_CSS`, scoped via
 `body:has([data-page="owners"])`); on mobile those anchors live under "Owners" in the burger drawer.
 Layout: hero +
-earnings form, an animated "numbers" band (`owner-stats-counter.tsx` counts each figure
-up on scroll, honouring `prefers-reduced-motion`), then the full marketing flow — `why` (Editorial-
+earnings form, an animated "numbers" band (per-page `stats[×4]{to,prefix?,suffix?,group,label}`;
+`owner-stats-counter.tsx` counts each figure up on scroll to its `to`, honouring
+`prefers-reduced-motion`), then the full marketing flow — `why` (Editorial-
 Split: title + CTAs beside a hairline `benefits[×6]` list, the home owners-pitch layout reproduced
 as scoped `.mk` CSS since `mock.css` styles bare `.mk` elements and would leak into the Tailwind
 component), `services` and `dashboard` (#technology) — both the home **Image-Showcase** layout
@@ -72,7 +78,7 @@ tiers, with extra air before the two helper blocks), `journey` — and the closi
 shared React islands rendered **outside** the `.mk` wrapper (so `mock.css` bare-element rules don't
 leak into their Tailwind markup): the `testimonials` infinite marquee (`<TestimonialsRow>`, the same
 component as the home "Partners & Guests" carousel) and the `faq` accordion (`<FaqSection>`). Both
-read the DB (testimonials + faq slices, ISR-cached) — the static body is split around them. Per owner
+read the DB (testimonials + faq slices, ISR-cached) — the interpolated body is split around them. Per owner
 direction the per-section **eyebrow** labels were dropped (titles stay), the hero badge moved into the
 form, and `why`/`services`/`dashboard` were restyled; the editable marketing sections (now incl.
 `services.image_media_id` + `dashboard.image_media_id`, plans capped at 4 tiers, and the new

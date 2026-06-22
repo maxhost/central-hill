@@ -64,6 +64,13 @@
       "when": 1783007807329,
       "tag": "0008_faq_groups_and_page_faq_key",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1783008807329,
+      "tag": "0009_owners_stats_band",
+      "breakpoints": true
     }
   ]
 }

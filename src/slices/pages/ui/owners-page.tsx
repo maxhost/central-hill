@@ -171,7 +171,7 @@ function benefitList(
  * in the schema but intentionally not shown (the locked design has no commission display).
  */
 function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageData>): string {
-  const { hero, earnings_form: form, why, services, plans, journey, dashboard } = content;
+  const { hero, earnings_form: form, stats, why, services, plans, journey, dashboard } = content;
   const heroImg = media[hero.image_media_id]?.url || HERO_FALLBACK_IMG;
   const heroAlt = media[hero.image_media_id]?.alt || HERO_FALLBACK_ALT;
   const servicesImg = media[services.image_media_id ?? ""]?.url || SERVICES_FALLBACK_IMG;
@@ -217,11 +217,14 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 </section>
 
 <div id="numbers" class="stats">
-  <div class="wrap stats-grid">
-    <div class="stat"><div class="num" data-count data-to="400000" data-suffix="+" data-group="true">400,000+</div><div class="lbl">Bookings Completed</div></div>
-    <div class="stat"><div class="num" data-count data-to="12" data-suffix="+">12+</div><div class="lbl">Years of Experience</div></div>
-    <div class="stat"><div class="num" data-count data-to="55" data-prefix="€" data-suffix="M+">€55M+</div><div class="lbl">Revenue Generated</div></div>
-    <div class="stat"><div class="num" data-count data-to="5" data-suffix="M+">5M+</div><div class="lbl">Guests Hosted</div></div>
+  <div class="wrap stats-grid">${stats
+    .map((s) => {
+      const num = s.group ? Number(s.to).toLocaleString("en-US") : s.to;
+      const display = `${s.prefix ?? ""}${num}${s.suffix ?? ""}`;
+      return `
+    <div class="stat"><div class="num" data-count data-to="${escAttr(s.to)}"${s.prefix ? ` data-prefix="${escAttr(s.prefix)}"` : ""} data-suffix="${escAttr(s.suffix ?? "")}"${s.group ? ` data-group="true"` : ""}>${esc(display)}</div><div class="lbl">${esc(s.label)}</div></div>`;
+    })
+    .join("")}
   </div>
 </div>
 
