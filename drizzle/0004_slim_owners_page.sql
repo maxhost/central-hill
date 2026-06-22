@@ -2,13 +2,15 @@
 -- + the `owners` schema). The marketing sections "why / services / plans / journey /
 -- dashboard" were removed from the public page AND the back-office schema, so drop their
 -- stored keys to leave no traces. The hero "★ Earn +25%" badge now lives inside the
--- earnings-form card (moved + highlighted), so relocate `hero.badge` → `earnings_form.badge`.
+-- earnings-form card (moved + highlighted), authored as `earnings_form.badge`. The old
+-- `hero.badge` was never rendered (the public page is static) and held stale copy, so we
+-- drop it and set the form badge to the value the page actually shows ("Earn +25%").
 -- Data-only migration: the `page_content.data` jsonb shape is unchanged at the column level.
 UPDATE "page_content"
 SET "data" = jsonb_set(
   ("data" - 'why' - 'services' - 'plans' - 'journey' - 'dashboard') #- '{hero,badge}',
   '{earnings_form,badge}',
-  COALESCE("data" #> '{hero,badge}', '"Earn +25%"'::jsonb),
+  '"Earn +25%"'::jsonb,
   true
 )
 WHERE "key" = 'owners'
