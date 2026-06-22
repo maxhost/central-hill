@@ -22,6 +22,7 @@ import { company_settings, nav_item } from "@slices/settings/schema";
 import { city, neighbourhood } from "@slices/geography/schema";
 import { building } from "@slices/buildings/schema";
 import { testimonial } from "@slices/testimonials/schema";
+import { faq_group, faq_item } from "@slices/faq/schema";
 import { page_content } from "@slices/pages/schema";
 import { homeSchema } from "@slices/pages/schemas/home";
 import { guestSchema } from "@slices/pages/schemas/guest";
@@ -36,6 +37,26 @@ const uid = () => randomUUID();
 /** iconCard helper — `icon_key` is decorative (not rendered), any kebab key is fine. */
 const ic = (title: string, description: string, icon_key = "spark") => ({ icon_key, title, description });
 const ti = (title: string, description: string) => ({ title, description });
+
+/** FAQ group content (question, answer) — bound to the Owners/Real-Estate pages by key. */
+const OWNERS_FAQ: [string, string][] = [
+  ["What types of properties does Central Hill Apartments manage?", "We manage all property types across Portugal, from compact studios to large 8-bedroom apartments accommodating up to 27 guests. Whether you own a single apartment or a growing portfolio, we have the right plan for you."],
+  ["How does your pricing and commission work?", "We operate on a commission model — we earn when you earn. Your personalized proposal includes a full, transparent breakdown of all fees and platform commissions with no hidden costs."],
+  ["Do I need to be in Portugal to work with Central Hill Apartments?", "Not at all. Many of our owners are based overseas. Our fully remote management model means you can monitor your property and receive your earnings from anywhere in the world."],
+  ["How quickly can my property be listed?", "Most properties are live within 5 business days of completing onboarding. This includes professional photography, listing creation, and platform setup."],
+  ["What happens if there is damage to my property?", "We conduct check-out inspections after every stay. All bookings are covered by platform guarantee schemes, and our team handles any damage claims directly on your behalf."],
+  ["Can I block dates for personal use?", "Absolutely. Your property remains yours. You can block any dates through your owner dashboard at any time, with no restrictions or extra charges."],
+  ["Do you handle legal and tax compliance?", "Yes. We provide guidance on Alojamento Local licensing, AIMA registration requirements, and local tax obligations specific to Portugal."],
+];
+const REAL_ESTATE_FAQ: [string, string][] = [
+  ["What minimum scale of asset do you work with?", "We work with individual buildings through to multi-property portfolios. There is no minimum unit count for institutional partnerships, though our management fee structures are most efficient for assets with 5 or more units. We are also able to discuss portfolio-level agreements covering multiple buildings or locations."],
+  ["What contract terms do you offer?", "Contract terms vary by partnership model. Fixed rent agreements typically run for 10–25 years. Management commission agreements are available from 3 years, with renewal options. Hybrid structures typically mirror fixed rent terms. All contracts include clearly defined performance review milestones and exit provisions."],
+  ["How is financial reporting structured for institutional partners?", "We provide monthly financial reports in a format agreed at contract stage — including gross revenue, management fees, net owner proceeds, occupancy rates, average daily rate (ADR), and RevPAR. Partners also have real-time access to their asset's performance dashboard. Bespoke reporting formats for fund administrators and asset managers can be accommodated."],
+  ["How do you handle regulatory compliance?", "Central Hill manages all Alojamento Local licensing, AIMA registration, tourist tax calculation and payment, and local regulatory requirements on behalf of our partners. We monitor regulatory developments proactively and notify partners of any material changes affecting their asset."],
+  ["Can you manage assets we are currently developing or acquiring?", "Yes. We offer pre-opening consultancy services to developers and acquiring funds, including unit mix advice, interior design direction, FF&E specification, licensing pre-registration, platform setup, and full operational launch. Engaging us at the planning stage typically results in faster time-to-revenue and higher initial occupancy rates."],
+  ["What performance guarantees do you offer?", "Under our fixed rent model, income is fully guaranteed regardless of occupancy. Under our management commission and hybrid models, we agree performance KPIs at contract stage and report transparently against them monthly. While market performance is inherently variable, our track record demonstrates consistent above-market outcomes across our managed portfolio."],
+  ["Do you work with international partners and funds?", "Yes. A significant proportion of our institutional partners are based outside Portugal. We provide all reporting in English, accommodate different time zones for review meetings, and our legal and commercial documentation is available in English. We work with advisors and legal counsel in multiple jurisdictions."],
+];
 
 // Inline Drizzle client + write helpers. We deliberately do NOT import @core/db/client
 // or @core/i18n/content-write here: those carry `import "server-only"`, which Node/tsx
@@ -220,6 +241,22 @@ async function main() {
   }
   console.log(`✓ ${tms.length} testimonials`);
 
+  // ── FAQ groups (selectable per page via `faq_group_key`) ────────────────────
+  for (const [pos, [key, items]] of [
+    ["owners", OWNERS_FAQ],
+    ["real_estate", REAL_ESTATE_FAQ],
+  ].entries() as IterableIterator<[number, [string, [string, string][]]]>) {
+    const [grow] = await db.insert(faq_group).values({ key, position: pos }).returning({ id: faq_group.id });
+    for (const [i, [question, answer]] of items.entries()) {
+      const [irow] = await db
+        .insert(faq_item)
+        .values({ group_id: grow!.id, position: i, status: "published" })
+        .returning({ id: faq_item.id });
+      await setSourceContent("faq_item", irow!.id, { question, answer });
+    }
+    console.log(`✓ faq_group: ${key} (${items.length})`);
+  }
+
   // ── Page content (5 fixed pages) — already validated above ──────────────────
   for (const p of pages) {
     await db.insert(page_content).values({ key: p.key, data: p.data as Record<string, unknown> });
@@ -362,6 +399,7 @@ function ownersData() {
       image_media_id: "",
       cta: { label: "Explore the owner dashboard", url: `${SITE}/en/owners`, note: "Real-time visibility into your property, 24/7." },
     },
+    faq_group_key: "owners",
   };
 }
 
@@ -513,6 +551,7 @@ function realEstateData() {
       contact_phone: "+351 910 075 725",
       contact_linkedin: "https://linkedin.com/company/centralhill",
     },
+    faq_group_key: "real_estate",
   };
 }
 

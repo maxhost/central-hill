@@ -1,5 +1,7 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
+import { getOwnersPage } from "../contract";
+import { FaqSection } from "./components/faq-section";
 import { OwnerStatsCounter } from "./components/owner-stats-counter";
 import { TestimonialsRow } from "./components/testimonials-row";
 
@@ -379,48 +381,11 @@ const OWNERS_BODY_TOP = `
 
 `;
 
-// The "What our owners say" section is rendered by the shared <TestimonialsRow> React island
-// (the same infinite marquee as the home "We Care About Our Partners & Guests" section), so the
-// body is split here — top sections above the carousel, faq + closing CTA below it.
+// The "What our owners say" testimonials AND the FAQ are rendered by shared React islands
+// (TestimonialsRow + FaqSection) outside the `.mk` wrapper, so the static body is split here:
+// top sections above the carousel, only the closing CTA below it. The FAQ is now editable —
+// its group is chosen per page via `faq_group_key` (see OwnersPage below).
 const OWNERS_BODY_BOTTOM = `
-<section id="faq">
-  <div class="wrap">
-    <div class="sec-head center reveal">
-      <h2 class="section-title">Questions? We Have Answers.</h2>
-    </div>
-    <div class="faq reveal">
-      <details>
-        <summary>What types of properties does Central Hill Apartments manage?</summary>
-        <div class="faq-a">We manage all property types across Portugal, from compact studios to large 8-bedroom apartments accommodating up to 27 guests. Whether you own a single apartment or a growing portfolio, we have the right plan for you.</div>
-      </details>
-      <details>
-        <summary>How does your pricing and commission work?</summary>
-        <div class="faq-a">We operate on a commission model — we earn when you earn. Your personalized proposal includes a full, transparent breakdown of all fees and platform commissions with no hidden costs.</div>
-      </details>
-      <details>
-        <summary>Do I need to be in Portugal to work with Central Hill Apartments?</summary>
-        <div class="faq-a">Not at all. Many of our owners are based overseas. Our fully remote management model means you can monitor your property and receive your earnings from anywhere in the world.</div>
-      </details>
-      <details>
-        <summary>How quickly can my property be listed?</summary>
-        <div class="faq-a">Most properties are live within 5 business days of completing onboarding. This includes professional photography, listing creation, and platform setup.</div>
-      </details>
-      <details>
-        <summary>What happens if there is damage to my property?</summary>
-        <div class="faq-a">We conduct check-out inspections after every stay. All bookings are covered by platform guarantee schemes, and our team handles any damage claims directly on your behalf.</div>
-      </details>
-      <details>
-        <summary>Can I block dates for personal use?</summary>
-        <div class="faq-a">Absolutely. Your property remains yours. You can block any dates through your owner dashboard at any time, with no restrictions or extra charges.</div>
-      </details>
-      <details>
-        <summary>Do you handle legal and tax compliance?</summary>
-        <div class="faq-a">Yes. We provide guidance on Alojamento Local licensing, AIMA registration requirements, and local tax obligations specific to Portugal.</div>
-      </details>
-    </div>
-  </div>
-</section>
-
 <section id="start" class="stats" style="padding:var(--section-y) 0">
   <div class="wrap" style="text-align:center;max-width:760px">
     <span class="eyebrow" style="color:var(--feature-accent)">Start Earning More Today</span>
@@ -438,6 +403,9 @@ const OWNERS_BODY_BOTTOM = `
 
 export async function OwnersPage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
+  const [page, t] = await Promise.all([getOwnersPage(locale), getTranslations("pages")]);
+  const faqGroupKey = page?.content.faq_group_key ?? "";
+
   return (
     <>
       <div className="mk" data-page="owners">
@@ -446,14 +414,25 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
         <div dangerouslySetInnerHTML={{ __html: OWNERS_BODY_TOP }} />
       </div>
       {/*
-       * Shared testimonials marquee (same component/visual as the home "Partners & Guests"
-       * section). Rendered OUTSIDE the `.mk` wrapper so `mock.css`'s bare-element rules don't
-       * leak into its Tailwind markup. The wrapper carries the `#testimonials` anchor + scroll
-       * offset that the header's Owners section menu links to.
+       * Shared testimonials marquee + FAQ accordion (same components/visuals as the home
+       * "Partners & Guests" carousel and the marketing FAQ). Rendered OUTSIDE the `.mk` wrapper
+       * so `mock.css`'s bare-element rules don't leak into their Tailwind markup. Each wrapper
+       * carries the `#…` anchor + scroll offset the header's Owners section menu links to. The
+       * FAQ group is editable per page (`faq_group_key`); blank/empty → nothing renders.
        */}
       <div id="testimonials" style={{ scrollMarginTop: 130 }}>
         <TestimonialsRow locale={locale} showEyebrow={false} />
       </div>
+      {faqGroupKey ? (
+        <div id="faq" style={{ scrollMarginTop: 130 }}>
+          <FaqSection
+            locale={locale}
+            groupKey={faqGroupKey}
+            eyebrow={t("faqEyebrow")}
+            title={t("owners.faqTitle")}
+          />
+        </div>
+      ) : null}
       <div className="mk" data-page="owners">
         <div dangerouslySetInnerHTML={{ __html: OWNERS_BODY_BOTTOM }} />
       </div>

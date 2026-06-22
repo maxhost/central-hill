@@ -1,10 +1,10 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
 import type { Locale } from "@core/db/columns";
 import { loadContent } from "@core/i18n/content";
-import { FAQ_ITEM, FAQ_TAGS, type FaqGroup, type FaqItem } from "../contract";
+import { type FaqGroupOption, FAQ_ITEM, FAQ_TAGS, type FaqGroup, type FaqItem } from "../contract";
 import { faq_group, faq_item } from "../schema";
 
 /**
@@ -53,6 +53,32 @@ async function _getFaqGroup(locale: Locale, key: string): Promise<FaqGroup | nul
  */
 export function getFaqGroup(locale: Locale, key: string): Promise<FaqGroup | null> {
   return unstable_cache(() => _getFaqGroup(locale, key), ["faq:getFaqGroup", locale, key], {
+    tags: [FAQ_TAGS.list],
+  })();
+}
+
+/**
+ * Lightweight catalogue of every FAQ group (language-neutral `key` + count of published
+ * items), in display order. Powers the page-editor's "include an FAQ" dropdown (S12) so a
+ * new group authored in `/admin/faq` shows up automatically. Cached + tagged `faq-list`
+ * (a publish busts it). `locale` is accepted for parity / future labels; counts are
+ * locale-independent.
+ */
+async function _listFaqGroups(): Promise<FaqGroupOption[]> {
+  const rows = await db
+    .select({
+      key: faq_group.key,
+      publishedCount: sql<number>`count(${faq_item.id}) FILTER (WHERE ${faq_item.status} = 'published')::int`,
+    })
+    .from(faq_group)
+    .leftJoin(faq_item, eq(faq_item.group_id, faq_group.id))
+    .groupBy(faq_group.id, faq_group.key, faq_group.position)
+    .orderBy(asc(faq_group.position));
+  return rows.map((r) => ({ key: r.key, publishedCount: r.publishedCount }));
+}
+
+export function listFaqGroups(locale: Locale): Promise<FaqGroupOption[]> {
+  return unstable_cache(() => _listFaqGroups(), ["faq:listFaqGroups", locale], {
     tags: [FAQ_TAGS.list],
   })();
 }

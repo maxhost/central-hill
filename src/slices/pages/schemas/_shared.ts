@@ -25,6 +25,19 @@ export const titledItem = z.object({
   description: tStr({ max: 400 }),
 });
 
+/**
+ * Optional reference to a `faq` slice group, by its language-neutral `key`. An empty string
+ * (or absent) means "no FAQ on this page". The page editor renders this as a **dropdown** fed
+ * by `faq.listFaqGroups` (the `faq_group_key` field name drives the form-model's select
+ * heuristic, mirroring how `*_media_id` drives the media picker); the page renders the chosen
+ * group through the shared `FaqSection`. Not a [T] field — the key is language-neutral, so the
+ * translation pipeline skips it.
+ */
+export const faqGroupKey = z
+  .union([z.literal(""), z.string().max(120)])
+  .describe("FAQ group shown on this page — pick one authored in /admin/faq, or leave blank for none.")
+  .optional();
+
 /** Fixed-count array helper — the design repeats exactly `n` times. */
 export const fixed = <T extends z.ZodType>(schema: T, n: number) =>
   z.array(schema).length(n);

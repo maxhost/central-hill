@@ -1,5 +1,7 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
+import { getAboutPage } from "../contract";
+import { FaqSection } from "./components/faq-section";
 
 /**
  * About page — the approved `mock/about.html` embedded 1:1 inside the live app shell.
@@ -67,7 +69,10 @@ const PAGE_STYLE = `
 }
 `;
 
-const BODY = (locale: Locale) => `
+// An optional, editable <FaqSection> island is rendered before the contact section (outside
+// `.mk` to avoid mock.css leak), chosen per page via `faq_group_key`. The static body is split
+// here around it.
+const BODY_TOP = `
 <section class="hero compact" aria-label="Who We Are">
   <img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70" alt="Rooftops and historic streets of Lisbon at golden hour">
   <div class="wrap">
@@ -248,6 +253,9 @@ const BODY = (locale: Locale) => `
   </div>
 </section>
 
+`;
+
+const BODY_BOTTOM = (locale: Locale) => `
 <section id="contact">
   <div class="wrap">
     <div class="sec-head reveal">
@@ -334,10 +342,28 @@ const BODY = (locale: Locale) => `
 
 export async function AboutPage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
+  const [page, t] = await Promise.all([getAboutPage(locale), getTranslations("pages")]);
+  const faqGroupKey = page?.content.faq_group_key ?? "";
+
   return (
-    <div className="mk" data-page="about">
-      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-      <div dangerouslySetInnerHTML={{ __html: BODY(locale) }} />
-    </div>
+    <>
+      <div className="mk" data-page="about">
+        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+        <div dangerouslySetInnerHTML={{ __html: BODY_TOP }} />
+      </div>
+      {faqGroupKey ? (
+        <div id="faq" style={{ scrollMarginTop: 130 }}>
+          <FaqSection
+            locale={locale}
+            groupKey={faqGroupKey}
+            eyebrow={t("faqEyebrow")}
+            title={t("faqTitle")}
+          />
+        </div>
+      ) : null}
+      <div className="mk" data-page="about">
+        <div dangerouslySetInnerHTML={{ __html: BODY_BOTTOM(locale) }} />
+      </div>
+    </>
   );
 }

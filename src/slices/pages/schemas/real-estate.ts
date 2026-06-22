@@ -8,7 +8,7 @@
  */
 import { z } from "zod";
 import { mediaId, tStr, tStrOpt } from "@core/validation/primitives";
-import { between, fixed, iconCard, step } from "./_shared";
+import { between, faqGroupKey, fixed, iconCard, step } from "./_shared";
 
 /** An investment model card (e.g. lease / management / JV). */
 const model = z.object({
@@ -89,6 +89,8 @@ export const realEstateSchema = z.object({
     contact_phone: z.string().min(3).max(40),
     contact_linkedin: z.url(),
   }),
+  /** Optional FAQ group to show on the page (blank = none). */
+  faq_group_key: faqGroupKey,
 });
 
 export type RealEstateContent = z.infer<typeof realEstateSchema>;

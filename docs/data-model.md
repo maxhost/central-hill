@@ -117,7 +117,7 @@ page_content
   Owner direction (drizzle 0004→0007): the per-section *eyebrow* labels were dropped on the page (titles
   stay), the hero badge moved into the form, `why` was restyled (Editorial-Split), and `services`/`dashboard`
   were restyled (Image-Showcase, each with its own editable image) — but all sections are kept and editable.
-  → Stats ("numbers" band) = **company_settings**.
+  → Stats ("numbers" band) = **company_settings**. → FAQ group `owners` referenced (drizzle 0004→0008).
 - **real_estate**: `hero{image_media_id, headline, subheadline, positioning, capability_statement_media_id, cta_primary{label,url}, cta_secondary{label,url}}`;
   `partners{headline, intro, types[×4]{icon_key,title,description}}`; `capabilities{headline, intro, items[×3]{...}}`;
   `asset_classes{headline, intro, items[×6]{...}}`; `models{headline, intro, items[×3]{name, tag, is_featured, features[×7]}, footer_note}`;
@@ -138,6 +138,14 @@ page_content
   `services_teaser{headline, intro, items[×6]{icon_key,title,description}, cta{label,url,note}}`;
   `activities_teaser{headline, intro, items[×6]{icon_key,title,description}, cta{label,url}}`.
   → Featured portfolio = **buildings**; testimonials (audience=guest) referenced; dual-CTA = company_settings.
+
+**FAQ (all five pages).** Every page's `data` carries an optional **`faq_group_key`** (blank/absent =
+no FAQ). When set, it holds the language-neutral `key` of a `faq_group` (faq slice); the page renders
+that group through the shared `FaqSection` (accordion + `FAQPage` JSON-LD). The page editor surfaces it
+as a **dropdown** populated from `faq.listFaqGroups` (so any group created in `/admin/faq` is pickable).
+The key is **not** a [T] field. Owners + Real-Estate, whose FAQs were previously hard-coded page markup,
+are seeded in drizzle 0008 (`owners` / `real_estate` groups, from the former static Q&A) and bound by
+default; Home/Guest/About start blank.
 
 > `icon_key` everywhere is an enum referencing a curated icon set (iconoir names) shipped in code; no
 > icon table. The Owners per-section anchor sub-nav is derived from the fixed sections in code.

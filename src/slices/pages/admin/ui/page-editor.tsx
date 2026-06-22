@@ -14,7 +14,7 @@ import {
   MediaField,
 } from "@slices/backoffice/contract";
 import { savePage } from "../actions";
-import { type FieldNode, humanizeKey } from "../form-model";
+import { type FieldNode, type SelectOptions, humanizeKey } from "../form-model";
 import { NodeField, type PathOnChange } from "./schema-fields";
 
 /**
@@ -46,12 +46,14 @@ export function PageEditor({
   initialData,
   initialOgImageMediaId,
   previews,
+  options,
 }: {
   pageKey: string;
   rootNode: FieldNode;
   initialData: Record<string, unknown>;
   initialOgImageMediaId: string | null;
   previews: Record<string, AdminMediaPreview>;
+  options: SelectOptions;
 }) {
   const t = useTranslations("pages");
   const tb = useTranslations("backoffice");
@@ -128,6 +130,7 @@ export function PageEditor({
             onChange={onChange}
             errors={errors}
             previews={previews}
+            options={options}
           />
         </AdminCard>
       ))}

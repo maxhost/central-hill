@@ -30,7 +30,13 @@ export interface FaqGroup {
   items: FaqItem[];
 }
 
-export { getFaqGroup } from "./server/queries";
+/** A pickable FAQ group for the page-editor dropdown: its `key` + how many items are live. */
+export interface FaqGroupOption {
+  key: string;
+  publishedCount: number;
+}
+
+export { getFaqGroup, listFaqGroups } from "./server/queries";
 
 /**
  * Backoffice contribution (S12). `faqAdminScreens` is spread into `composeAdminNav`

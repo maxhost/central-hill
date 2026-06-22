@@ -8,7 +8,7 @@
  */
 import { z } from "zod";
 import { cta, ctaWithNote, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
-import { fixed, iconCard } from "./_shared";
+import { faqGroupKey, fixed, iconCard } from "./_shared";
 
 /** Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). */
 const GUESTS_IMG_HINT =
@@ -59,6 +59,8 @@ export const homeSchema = z.object({
     owner: ctaPanel,
     guest: ctaPanel,
   }),
+  /** Optional FAQ group to show on the page (blank = none). */
+  faq_group_key: faqGroupKey,
 });
 
 export type HomeContent = z.infer<typeof homeSchema>;

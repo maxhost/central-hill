@@ -1,5 +1,7 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
+import { getGuestPage } from "../contract";
+import { FaqSection } from "./components/faq-section";
 
 /**
  * Guests page — the approved `mock/guest.html` embedded 1:1 inside the live app shell.
@@ -24,7 +26,10 @@ const PAGE_STYLE = `
 @media(max-width:640px){.mk .feat-grid{grid-template-columns:1fr}}
 `;
 
-const BODY = (locale: Locale) => `
+// An optional, editable <FaqSection> island is rendered between the page body and the closing
+// dual-CTA (outside `.mk` to avoid mock.css leak), chosen per page via `faq_group_key`. The
+// static body is split here around it.
+const BODY_TOP = (locale: Locale) => `
 <!-- HERO -->
 <section class="hero compact" style="padding:0">
   <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=1900&q=72">
@@ -142,6 +147,9 @@ const BODY = (locale: Locale) => `
   </div>
 </section>
 
+`;
+
+const BODY_BOTTOM = (locale: Locale) => `
 <!-- DUAL CTA -->
 <section>
   <div class="wrap">
@@ -165,10 +173,28 @@ const BODY = (locale: Locale) => `
 
 export async function GuestPage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
+  const [page, t] = await Promise.all([getGuestPage(locale), getTranslations("pages")]);
+  const faqGroupKey = page?.content.faq_group_key ?? "";
+
   return (
-    <div className="mk" data-page="guests">
-      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-      <div dangerouslySetInnerHTML={{ __html: BODY(locale) }} />
-    </div>
+    <>
+      <div className="mk" data-page="guests">
+        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+        <div dangerouslySetInnerHTML={{ __html: BODY_TOP(locale) }} />
+      </div>
+      {faqGroupKey ? (
+        <div id="faq" style={{ scrollMarginTop: 130 }}>
+          <FaqSection
+            locale={locale}
+            groupKey={faqGroupKey}
+            eyebrow={t("faqEyebrow")}
+            title={t("faqTitle")}
+          />
+        </div>
+      ) : null}
+      <div className="mk" data-page="guests">
+        <div dangerouslySetInnerHTML={{ __html: BODY_BOTTOM(locale) }} />
+      </div>
+    </>
   );
 }

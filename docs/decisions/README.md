@@ -587,3 +587,18 @@ id="testimonials">` keeps the sub-nav anchor. This makes the owners page read th
 (testimonials slice, ISR-cached/tagged — the page still prerenders). Also: the `plans` grid now fits
 **up to 4** pricing cards (added a "Starter" tier; `tiers` schema max 6 → 4) and the gap before the two
 plan-helper blocks was widened for breathing room. No migration (stored row already has ≤4 tiers).
+
+**Update 6 (FAQ becomes page-selectable across all five pages, migration `0008`).** Owner direction:
+let FAQs be authored in `/admin/faq` and **chosen per page from a dropdown** (blank = no FAQ, on any
+page). Implemented as: (a) every page schema gains an optional `faq_group_key` (the language-neutral
+`faq_group.key`, not a [T] field); (b) a new **`select`** `FieldNode` in the pages form-model —
+detected by key (`SELECT_SOURCES`, mirroring the `*_media_id` → media-picker heuristic) — whose options
+are filled server-side in `getPageEditModel` and threaded to the renderer like media `previews`;
+(c) an **authorized contract change** to slice `faq`: a new public, cached `listFaqGroups(locale)` read
+(`{key, publishedCount}[]`) feeds the dropdown so a newly-authored group appears automatically — added
+to `faq/contract.ts` per golden rule 2 (cross-slice reads via contracts only); (d) all five pages now
+render the chosen group through the shared `FaqSection` island (outside `.mk`, like the testimonials
+marquee), so Owners/Real-Estate's formerly hard-coded `#faq` markup is removed. Migration `0008` seeds
+the `owners` + `real_estate` groups from that former static Q&A (source `en`, published) and binds each
+page via `data.faq_group_key`; Home/Guest/About default to blank. This makes Guest/Real-Estate/About
+read the DB for the first time (page row, ISR-cached) — they still prerender.

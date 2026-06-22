@@ -1,5 +1,7 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
+import { getRealEstatePage } from "../contract";
+import { FaqSection } from "./components/faq-section";
 
 /**
  * Real Estate page — the approved `mock/real-estate.html` embedded 1:1 inside the live app
@@ -104,7 +106,11 @@ const PAGE_STYLE = `
 }
 `;
 
-const BODY = (_locale: Locale) => `
+// The institutional FAQ (former SECTION 9) is now a shared, editable <FaqSection> island chosen
+// per page via `faq_group_key`, rendered between the process steps and the deal-enquiry form
+// (outside `.mk` so its Tailwind markup doesn't pick up mock.css bare-element rules). The static
+// body is split here around that island.
+const BODY_TOP = `
 <!-- SECTION 1 — HERO -->
 <section class="hero compact" id="top">
   <img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70" alt="Aerial view of Lisbon's historic skyline and tiled rooftops at dusk">
@@ -378,46 +384,9 @@ const BODY = (_locale: Locale) => `
   </div>
 </section>
 
-<!-- SECTION 9 — INSTITUTIONAL FAQ -->
-<section class="alt" id="faq">
-  <div class="wrap">
-    <div class="sec-head center reveal">
-      <div class="eyebrow">Questions &amp; Answers</div>
-      <h2 class="section-title">Questions We Hear from Institutional Partners</h2>
-    </div>
-    <div class="faq reveal">
-      <details>
-        <summary>What minimum scale of asset do you work with?</summary>
-        <div class="faq-a">We work with individual buildings through to multi-property portfolios. There is no minimum unit count for institutional partnerships, though our management fee structures are most efficient for assets with 5 or more units. We are also able to discuss portfolio-level agreements covering multiple buildings or locations.</div>
-      </details>
-      <details>
-        <summary>What contract terms do you offer?</summary>
-        <div class="faq-a">Contract terms vary by partnership model. Fixed rent agreements typically run for 10–25 years. Management commission agreements are available from 3 years, with renewal options. Hybrid structures typically mirror fixed rent terms. All contracts include clearly defined performance review milestones and exit provisions.</div>
-      </details>
-      <details>
-        <summary>How is financial reporting structured for institutional partners?</summary>
-        <div class="faq-a">We provide monthly financial reports in a format agreed at contract stage — including gross revenue, management fees, net owner proceeds, occupancy rates, average daily rate (ADR), and RevPAR. Partners also have real-time access to their asset's performance dashboard. Bespoke reporting formats for fund administrators and asset managers can be accommodated.</div>
-      </details>
-      <details>
-        <summary>How do you handle regulatory compliance?</summary>
-        <div class="faq-a">Central Hill manages all Alojamento Local licensing, AIMA registration, tourist tax calculation and payment, and local regulatory requirements on behalf of our partners. We monitor regulatory developments proactively and notify partners of any material changes affecting their asset.</div>
-      </details>
-      <details>
-        <summary>Can you manage assets we are currently developing or acquiring?</summary>
-        <div class="faq-a">Yes. We offer pre-opening consultancy services to developers and acquiring funds, including unit mix advice, interior design direction, FF&amp;E specification, licensing pre-registration, platform setup, and full operational launch. Engaging us at the planning stage typically results in faster time-to-revenue and higher initial occupancy rates.</div>
-      </details>
-      <details>
-        <summary>What performance guarantees do you offer?</summary>
-        <div class="faq-a">Under our fixed rent model, income is fully guaranteed regardless of occupancy. Under our management commission and hybrid models, we agree performance KPIs at contract stage and report transparently against them monthly. While market performance is inherently variable, our track record demonstrates consistent above-market outcomes across our managed portfolio.</div>
-      </details>
-      <details>
-        <summary>Do you work with international partners and funds?</summary>
-        <div class="faq-a">Yes. A significant proportion of our institutional partners are based outside Portugal. We provide all reporting in English, accommodate different time zones for review meetings, and our legal and commercial documentation is available in English. We work with advisors and legal counsel in multiple jurisdictions.</div>
-      </details>
-    </div>
-  </div>
-</section>
+`;
 
+const BODY_BOTTOM = `
 <!-- SECTION 10 — DEAL ENQUIRY -->
 <section id="deal-enquiry">
   <div class="wrap">
@@ -529,10 +498,28 @@ const BODY = (_locale: Locale) => `
 
 export async function RealEstatePage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
+  const [page, t] = await Promise.all([getRealEstatePage(locale), getTranslations("pages")]);
+  const faqGroupKey = page?.content.faq_group_key ?? "";
+
   return (
-    <div className="mk" data-page="real-estate">
-      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-      <div dangerouslySetInnerHTML={{ __html: BODY(locale) }} />
-    </div>
+    <>
+      <div className="mk" data-page="real-estate">
+        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+        <div dangerouslySetInnerHTML={{ __html: BODY_TOP }} />
+      </div>
+      {faqGroupKey ? (
+        <div id="faq" style={{ scrollMarginTop: 130 }}>
+          <FaqSection
+            locale={locale}
+            groupKey={faqGroupKey}
+            eyebrow={t("faqEyebrow")}
+            title={t("realEstate.faqTitle")}
+          />
+        </div>
+      ) : null}
+      <div className="mk" data-page="real-estate">
+        <div dangerouslySetInnerHTML={{ __html: BODY_BOTTOM }} />
+      </div>
+    </>
   );
 }

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { z } from "zod";
 import { mediaId, tStr } from "@core/validation/primitives";
-import { between, fixed, iconCard } from "../schemas/_shared";
+import { between, faqGroupKey, fixed, iconCard } from "../schemas/_shared";
 import { type FieldNode, applyDefaults, describe, emptyValue, humanizeKey } from "../admin/form-model";
 
 /**
@@ -27,6 +27,7 @@ const sampleSchema = z.object({
   }),
   why: z.object({ benefits: fixed(iconCard, 6) }),
   plans: z.object({ tiers: between(tier, 1, 6) }),
+  faq_group_key: faqGroupKey,
 });
 
 const root = describe(sampleSchema);
@@ -78,6 +79,24 @@ test("range arrays carry distinct min/max (plans tiers + tier features, client f
     assert.equal(features.min, 1);
     assert.equal(features.max, 20);
   }
+});
+
+test("faq_group_key maps to a select leaf sourced from faq_group", () => {
+  const node = field(root, "faq_group_key");
+  assert.equal(node.kind, "select");
+  if (node.kind === "select") {
+    assert.equal(node.source, "faq_group");
+    assert.ok(node.hint && node.hint.length > 0); // .describe() flows through as the picker hint
+  }
+});
+
+test("select leaf scaffolds + defaults to an empty string", () => {
+  const empty = emptyValue(root) as { faq_group_key: unknown };
+  assert.equal(empty.faq_group_key, "");
+  const filled = applyDefaults(root, { faq_group_key: "owners" }) as { faq_group_key: unknown };
+  assert.equal(filled.faq_group_key, "owners"); // stored selection preserved
+  const blank = applyDefaults(root, {}) as { faq_group_key: unknown };
+  assert.equal(blank.faq_group_key, ""); // missing → empty (no FAQ)
 });
 
 test("booleans are detected (tier.is_popular)", () => {

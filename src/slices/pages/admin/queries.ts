@@ -3,9 +3,10 @@ import { eq } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { loadMedia, mediaUrl } from "@core/media";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
+import { listFaqGroups } from "@slices/faq/contract";
 import { page_content } from "../schema";
 import { type PageKey, pageKey, pageSchemas } from "../schemas";
-import { type FieldNode, applyDefaults, describe } from "./form-model";
+import { type FieldNode, type SelectOptions, applyDefaults, describe } from "./form-model";
 
 /**
  * Backoffice reads for slice `pages` (S12, ADR 0012). The five fixed pages each
@@ -71,6 +72,8 @@ export interface PageEditModel extends PageEditBundle {
   /** The schema-derived field tree the editor renders (computed server-side so Zod
    *  stays out of the client bundle). `data` is scaffolded with defaults. */
   rootNode: FieldNode;
+  /** Dropdown catalogues for `select` leaves (e.g. `faq_group` → FAQ groups). */
+  options: SelectOptions;
 }
 
 /** Edit bundle + the page's `FieldNode` tree (data scaffolded), or null on bad key. */
@@ -81,7 +84,25 @@ export async function getPageEditModel(rawKey: string): Promise<PageEditModel | 
   const bundle = await getPageForEdit(key);
   const rootNode = describe(pageSchemas[key]);
   const data = applyDefaults(rootNode, bundle.data) as Record<string, unknown>;
-  return { ...bundle, rootNode, data };
+  const options = await buildSelectOptions();
+  return { ...bundle, rootNode, data, options };
+}
+
+/**
+ * Build the dropdown catalogues for `select` leaves. The FAQ-group list comes from the
+ * `faq` slice contract (golden rule 2 — cross-slice reads via contracts only); the admin
+ * authors source content, so we read the source locale `en`. A group with 0 published
+ * items is still selectable (the page just renders nothing until items go live), flagged
+ * in the label.
+ */
+async function buildSelectOptions(): Promise<SelectOptions> {
+  const groups = await listFaqGroups("en");
+  return {
+    faq_group: groups.map((g) => ({
+      value: g.key,
+      label: g.publishedCount > 0 ? `${g.key} (${g.publishedCount})` : `${g.key} (no live items)`,
+    })),
+  };
 }
 
 async function resolvePreviews(ids: string[]): Promise<Record<string, AdminMediaPreview>> {

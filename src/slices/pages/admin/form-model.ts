@@ -15,8 +15,28 @@ export type FieldNode =
   | { kind: "object"; fields: { key: string; node: FieldNode }[] }
   | { kind: "array"; element: FieldNode; min: number; max: number }
   | { kind: "media"; hint?: string }
+  | { kind: "select"; source: string; hint?: string }
   | { kind: "boolean" }
   | { kind: "string"; multiline: boolean; optional: boolean };
+
+/**
+ * Field-key → option source for the `select` leaf (a dropdown fed at render time from
+ * another slice's contract — see `getPageEditModel`). Mirrors the `*_media_id` → media
+ * picker heuristic: a known key suffix maps to a known catalogue. The only entry today is
+ * `faq_group_key` → the `faq` slice's group list.
+ */
+const SELECT_SOURCES: Record<string, string> = {
+  faq_group_key: "faq_group",
+};
+
+/** One dropdown choice for a `select` leaf (e.g. an FAQ group). */
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
+/** Option catalogues keyed by a leaf's `source` (e.g. `faq_group`), filled server-side. */
+export type SelectOptions = Record<string, SelectOption[]>;
 
 /** Peel optional/nullable/default wrappers; report whether the field is optional. */
 function unwrap(schema: z.ZodType): { base: z.ZodType; optional: boolean } {
@@ -76,6 +96,15 @@ export function describe(schema: z.ZodType, key = ""): FieldNode {
 
   if (base instanceof z.ZodBoolean) return { kind: "boolean" };
 
+  if (key in SELECT_SOURCES) {
+    // A known key maps to a dropdown sourced from another slice's catalogue (e.g. faq
+    // groups). `.describe()` on the field becomes the picker hint. Detected by key, like
+    // media, so the underlying schema can be any string/union shape.
+    const hint = (base as { description?: string }).description;
+    const source = SELECT_SOURCES[key]!;
+    return hint ? { kind: "select", source, hint } : { kind: "select", source };
+  }
+
   if (key.endsWith("_media_id")) {
     // A `.describe()` on the media schema becomes uploader guidance in the editor
     // (recommended size/format). Read from the unwrapped base (describe sets it there).
@@ -103,6 +132,7 @@ export function emptyValue(node: FieldNode): unknown {
     case "boolean":
       return false;
     case "media":
+    case "select":
     case "string":
       return "";
   }
@@ -132,6 +162,7 @@ export function applyDefaults(node: FieldNode, value: unknown): unknown {
     case "boolean":
       return typeof value === "boolean" ? value : false;
     case "media":
+    case "select":
     case "string":
       return typeof value === "string" ? value : "";
   }

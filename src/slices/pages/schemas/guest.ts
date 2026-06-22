@@ -6,7 +6,7 @@
  */
 import { z } from "zod";
 import { cta, ctaWithNote, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
-import { fixed, iconCard } from "./_shared";
+import { faqGroupKey, fixed, iconCard } from "./_shared";
 
 export const guestSchema = z.object({
   hero: z.object({
@@ -41,6 +41,8 @@ export const guestSchema = z.object({
     items: fixed(iconCard, 6),
     cta: cta,
   }),
+  /** Optional FAQ group to show on the page (blank = none). */
+  faq_group_key: faqGroupKey,
 });
 
 export type GuestContent = z.infer<typeof guestSchema>;

@@ -68,15 +68,22 @@ as scoped `.mk` CSS since `mock.css` styles bare `.mk` elements and would leak i
 component), `services` and `dashboard` (#technology) — both the home **Image-Showcase** layout
 (4 benefit highlights + CTA beside a 4:5 image with a floating badge; `dashboard` mirrored with the
 image on the left), reproduced as scoped `.mk` CSS for the same reason — `plans` (up to 4 pricing
-tiers, with extra air before the two helper blocks), `journey`, `faq` — and the closing CTA. The
-`testimonials` section is the shared `<TestimonialsRow>` infinite marquee (the same component as the
-home "Partners & Guests" carousel): the static body is split around it and it renders **outside** the
-`.mk` wrapper so `mock.css` bare-element rules don't leak into its Tailwind markup — it is the one
-piece of the page that reads the DB (testimonials slice, ISR-cached, like the home). Per owner
+tiers, with extra air before the two helper blocks), `journey` — and the closing CTA. Two sections are
+shared React islands rendered **outside** the `.mk` wrapper (so `mock.css` bare-element rules don't
+leak into their Tailwind markup): the `testimonials` infinite marquee (`<TestimonialsRow>`, the same
+component as the home "Partners & Guests" carousel) and the `faq` accordion (`<FaqSection>`). Both
+read the DB (testimonials + faq slices, ISR-cached) — the static body is split around them. Per owner
 direction the per-section **eyebrow** labels were dropped (titles stay), the hero badge moved into the
 form, and `why`/`services`/`dashboard` were restyled; the editable marketing sections (now incl.
-`services.image_media_id` + `dashboard.image_media_id`, and plans capped at 4 tiers) are mirrored in
-the owners schema and stored row, editor-ready (drizzle 0004→0007).
+`services.image_media_id` + `dashboard.image_media_id`, plans capped at 4 tiers, and the new
+`faq_group_key`) are mirrored in the owners schema and stored row, editor-ready (drizzle 0004→0008).
+
+**FAQ is page-selectable (all five pages).** Every page schema carries an optional `faq_group_key`
+(blank = no FAQ). The page editor renders it as a dropdown of the FAQ groups authored in `/admin/faq`
+(via `faq.listFaqGroups`), and the page renders the chosen group through the shared `<FaqSection>`
+(accordion + `FAQPage` JSON-LD). The Owners and Real-Estate pages, whose FAQs used to be hard-coded
+markup, now read their group (`owners` / `real_estate`, seeded in drizzle 0008 from the former static
+Q&A); Home/Guest/About start blank.
 
 The Home `guests_pitch.image_media_id` and `dual_cta.*.image_media_id` are **optional images**
 (`""` allowed): until an R2 asset is uploaded the render falls back to an approved mock photo,
@@ -119,7 +126,11 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
   schema** into a serializable `FieldNode` tree; `emptyValue` / `applyDefaults` scaffold a `data`
   object (fixed-count arrays padded to length); `humanizeKey` makes labels. Leaf mapping:
   `*_media_id` → media picker (a `.describe()` on the media schema becomes the uploader hint:
-  recommended size/format), ZodBoolean → checkbox, ZodString → text (textarea when long).
+  recommended size/format), `faq_group_key` → **select** dropdown (a `SELECT_SOURCES` key →
+  catalogue heuristic, mirroring the media one; `.describe()` becomes the picker hint), ZodBoolean
+  → checkbox, ZodString → text (textarea when long). The `select` options are *not* in the schema:
+  `getPageEditModel` fills them server-side from another slice's contract (today
+  `faq.listFaqGroups`) and threads them to the renderer alongside media `previews`.
 - `admin/queries.ts` (server-only) — `listPagesAdmin` (the five pages + whether each exists),
   `getPageForEdit` (source `data` + og image + media previews), `getPageEditModel` (adds the
   `FieldNode` tree, computed **server-side** so Zod stays out of the client bundle).

@@ -4,6 +4,7 @@ import type { Locale } from "@core/db/columns";
 import { ButtonLink } from "@core/ui";
 import { getHomePage } from "../contract";
 import { DualCta } from "./components/dual-cta";
+import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
 import { GuestsSection } from "./components/guests-section";
 import { PageHero } from "./components/hero";
@@ -33,6 +34,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
 
   const { content, media } = page;
   const { hero, owners_pitch, guests_pitch, dual_cta } = content;
+  const faqGroupKey = content.faq_group_key ?? "";
 
   return (
     <main>
@@ -65,6 +67,15 @@ export async function HomePage({ locale }: { locale: Locale }) {
       <FeaturedPortfolio locale={locale} showEyebrow={false} />
 
       <TestimonialsRow locale={locale} showEyebrow={false} />
+
+      {faqGroupKey ? (
+        <FaqSection
+          locale={locale}
+          groupKey={faqGroupKey}
+          eyebrow={t("faqEyebrow")}
+          title={t("faqTitle")}
+        />
+      ) : null}
 
       <DualCta locale={locale} content={dual_cta} media={media} />
     </main>

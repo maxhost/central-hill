@@ -13,7 +13,7 @@
  */
 import { z } from "zod";
 import { ctaWithNote, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
-import { between, fixed, iconCard, step } from "./_shared";
+import { between, faqGroupKey, fixed, iconCard, step } from "./_shared";
 
 /**
  * An image reference that may be left unset. An empty string means "no asset yet" — the
@@ -93,6 +93,8 @@ export const ownersSchema = z.object({
     image_media_id: optionalImage(DASHBOARD_IMG_HINT),
     cta: ctaWithNote,
   }),
+  /** Optional FAQ group to show on the page (blank = none). */
+  faq_group_key: faqGroupKey,
 });
 
 export type OwnersContent = z.infer<typeof ownersSchema>;

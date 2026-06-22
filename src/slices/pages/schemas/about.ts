@@ -8,7 +8,7 @@
  */
 import { z } from "zod";
 import { cta, iconKey, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
-import { fixed, iconCard, titledItem } from "./_shared";
+import { faqGroupKey, fixed, iconCard, titledItem } from "./_shared";
 
 /** An org department/team unit (uses `name`, not `title`). */
 const department = z.object({
@@ -74,6 +74,8 @@ export const aboutSchema = z.object({
       subheadline: tStrOpt({ max: 280 }),
     }),
   }),
+  /** Optional FAQ group to show on the page (blank = none). */
+  faq_group_key: faqGroupKey,
 });
 
 export type AboutContent = z.infer<typeof aboutSchema>;

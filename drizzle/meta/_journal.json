@@ -57,6 +57,13 @@
       "when": 1783006807329,
       "tag": "0007_owners_showcase_blocks",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1783007807329,
+      "tag": "0008_faq_groups_and_page_faq_key",
+      "breakpoints": true
     }
   ]
 }

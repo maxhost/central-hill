@@ -5,10 +5,16 @@ import {
   Checkbox,
   Field,
   MediaField,
+  Select,
   TextArea,
   TextInput,
 } from "@slices/backoffice/contract";
-import { type FieldNode, emptyValue, humanizeKey } from "../form-model";
+import {
+  type FieldNode,
+  type SelectOptions,
+  emptyValue,
+  humanizeKey,
+} from "../form-model";
 
 /**
  * Recursive, schema-driven field renderer (S12, ADR 0012). Walks a `FieldNode`
@@ -28,10 +34,11 @@ interface RenderProps {
   onChange: PathOnChange;
   errors: Record<string, string>;
   previews: Record<string, AdminMediaPreview>;
+  options: SelectOptions;
 }
 
 export function NodeField(props: RenderProps) {
-  const { node, value, path, label, depth, onChange, errors, previews } = props;
+  const { node, value, path, label, depth, onChange, errors, previews, options } = props;
   const errorKey = path.join(".");
 
   if (node.kind === "object") {
@@ -46,6 +53,7 @@ export function NodeField(props: RenderProps) {
         onChange={onChange}
         errors={errors}
         previews={previews}
+        options={options}
       />
     ));
     if (depth === 0) return <div className="space-y-4">{body}</div>;
@@ -100,6 +108,7 @@ export function NodeField(props: RenderProps) {
               onChange={onChange}
               errors={errors}
               previews={previews}
+              options={options}
             />
           </div>
         ))}
@@ -135,6 +144,26 @@ export function NodeField(props: RenderProps) {
           preview={id ? (previews[id] ?? null) : null}
           onChange={(next) => onChange(path, next ?? "")}
         />
+      </Field>
+    );
+  }
+
+  if (node.kind === "select") {
+    const opts = options[node.source] ?? [];
+    const val = typeof value === "string" ? value : "";
+    return (
+      <Field label={label} hint={node.hint} error={errors[errorKey]}>
+        <Select value={val} onChange={(e) => onChange(path, e.target.value)}>
+          <option value="">— None —</option>
+          {opts.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </Select>
+        {opts.length === 0 ? (
+          <p className="mt-1 text-xs text-ink-soft">No FAQ groups yet — create one in /admin/faq.</p>
+        ) : null}
       </Field>
     );
   }

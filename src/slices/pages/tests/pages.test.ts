@@ -94,6 +94,15 @@ test("home exposes prose leaves as translatable but not media ids or urls", () =
   assert.ok(!paths.includes("guests_pitch.image_media_id"), "media ids are not translatable");
   assert.ok(!paths.includes("dual_cta.owner.image_media_id"), "media ids are not translatable");
   assert.ok(!paths.includes("hero.cta_primary.url"), "urls are not translatable");
+  assert.ok(!paths.includes("faq_group_key"), "the faq group key is language-neutral, not translatable");
+});
+
+test("faq_group_key is optional and accepts blank or a group key", () => {
+  // absent (legacy rows), blank (= no FAQ), and a real key all validate.
+  const data = validHome().data;
+  assert.equal(homeSchema.safeParse(data).success, true);
+  assert.equal(homeSchema.safeParse({ ...data, faq_group_key: "" }).success, true);
+  assert.equal(homeSchema.safeParse({ ...data, faq_group_key: "owners" }).success, true);
 });
 
 test("translatablePathsByPage is derived directly from each page schema", () => {

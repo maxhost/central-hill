@@ -13,13 +13,17 @@ key. Distinct from `building_faq` (per-building, owned by `buildings`). See
 
 ## Contract (`contract.ts`)
 
-Types: `FaqGroup`, `FaqItem`.
-Read: `getFaqGroup(locale, key)` — published items in `position` order; `null` when the
-group doesn't exist, `{ items: [] }` when it has none published. Cache tag: `FAQ_TAGS.list`
-= `faq-list`.
+Types: `FaqGroup`, `FaqItem`, `FaqGroupOption`.
+Reads:
+- `getFaqGroup(locale, key)` — published items in `position` order; `null` when the group
+  doesn't exist, `{ items: [] }` when it has none published.
+- `listFaqGroups(locale)` — every group as `{ key, publishedCount }` in `position` order.
+  Powers the S9 page-editor's "include an FAQ" dropdown (a new group authored in
+  `/admin/faq` shows up automatically). A lightweight catalogue: no [T] resolution, counts
+  only.
 
-The read is `unstable_cache`-wrapped (keyed by locale + key) and tagged so a publish busts
-it. **S9 pages that embed an FAQ section should add `FAQ_TAGS.list` to their own cached
+Both are `unstable_cache`-wrapped and tagged `FAQ_TAGS.list` = `faq-list`, so a publish busts
+them. **S9 pages that embed an FAQ section should add `FAQ_TAGS.list` to their own cached
 reads' tags** so an FAQ publish cascades the page refresh.
 
 ## i18n
