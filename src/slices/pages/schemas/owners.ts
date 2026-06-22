@@ -1,20 +1,35 @@
 /**
  * `owners` page content schema (ADR 0012). Source-locale values only.
- * The page is a focused conversion landing: hero + earnings form, the "numbers" band
- * (composed at render time from company_settings), an editorial "why owners trust us"
- * section, and the closing CTA.
+ * Composed at render time (NOT in `data`): stats band ("numbers") → company_settings.
  * The earnings form *fields* are fixed in code → lead.kind='earnings_estimate'.
  *
- * Owner direction (drizzle/0004 + 0005): the `services / plans / journey / dashboard`
- * marketing sections were removed; the `why` section was kept but redesigned to the home's
- * Editorial-Split layout (headline + CTAs beside a hairline benefit list), so it carries
- * CTAs + a subheadline now. The hero badge lives inside the earnings-form card (moved +
- * highlighted) → authored under `earnings_form.badge`.
+ * Section design notes (owner direction):
+ * - the per-section *eyebrow* labels were dropped on the page (titles stay);
+ * - the hero badge lives inside the earnings-form card (moved + highlighted) → `earnings_form.badge`;
+ * - `why` uses the home's Editorial-Split layout, so it carries a subheadline + two CTAs.
+ * All marketing sections are kept and editable here so the back office is ready for when the
+ * page is wired to the DB (drizzle 0004→0006).
  * See docs/data-model.md → Page content model → owners.
  */
 import { z } from "zod";
 import { ctaWithNote, tStr, tStrOpt } from "@core/validation/primitives";
-import { fixed, iconCard } from "./_shared";
+import { between, fixed, iconCard, step } from "./_shared";
+
+/** A management-plan column (cumulative bullet list; `commission` shown above the card). */
+const tier = z.object({
+  name: tStr({ max: 80 }),
+  tag: tStrOpt({ max: 80 }),
+  commission: tStrOpt({ max: 20 }),
+  is_popular: z.boolean(),
+  features: between(tStr({ max: 200 }), 1, 20),
+});
+
+/** A helper block beside the plans (e.g. "not sure which plan?"). */
+const planHelper = z.object({
+  title: tStr({ max: 120 }),
+  copy: tStr({ max: 400 }),
+  cta: z.object({ label: tStr({ max: 80 }), url: z.url() }).optional(),
+});
 
 export const ownersSchema = z.object({
   hero: z.object({
@@ -30,13 +45,34 @@ export const ownersSchema = z.object({
     cta_label: tStr({ max: 80 }),
     note: tStrOpt({ max: 280 }),
   }),
-  // "Why owners trust us" — Editorial Split (sticky text + CTAs beside a hairline benefit list).
+  // "Why owners trust us" — Editorial Split (sticky title + CTAs beside a hairline benefit list).
   why: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 6),
     cta_primary: ctaWithNote,
     cta_secondary: ctaWithNote,
+  }),
+  services: z.object({
+    headline: tStr({ max: 160 }),
+    subheadline: tStrOpt({ max: 280 }),
+    items: fixed(iconCard, 9),
+  }),
+  plans: z.object({
+    headline: tStr({ max: 160 }),
+    subheadline: tStrOpt({ max: 280 }),
+    tiers: between(tier, 1, 6),
+    helpers: fixed(planHelper, 2),
+  }),
+  journey: z.object({
+    headline: tStr({ max: 160 }),
+    subheadline: tStrOpt({ max: 280 }),
+    steps: fixed(step, 5),
+  }),
+  dashboard: z.object({
+    headline: tStr({ max: 160 }),
+    subheadline: tStrOpt({ max: 280 }),
+    features: fixed(iconCard, 6),
   }),
 });
 

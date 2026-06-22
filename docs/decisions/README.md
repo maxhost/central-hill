@@ -559,3 +559,12 @@ instead **reproduced as scoped `.mk` HTML/CSS** using the same design tokens (id
 leak). `ownersSchema` regains a `why{headline, subheadline?, benefits[×6], cta_primary, cta_secondary}`
 section so the editor is ready for when the page is wired to the DB; `0005` (data-only, additive)
 re-adds the `why` content to the stored row. The page itself stays static for now. Slice `pages` only.
+
+**Update 3 (sections restored, eyebrows dropped, migration `0006`).** Clarification: the original
+"eliminate" request meant the per-section **eyebrow** labels, not the whole sections. So all owners
+sections (`services / plans / journey / dashboard / testimonials / faq`) were **restored** to the page,
+schema, and stored row (`0006`, data-only/additive), keeping the three deltas that stand: the hero
+badge inside the form, the animated numbers, and the `why` Editorial-Split. Only the eyebrow `<span>`s
+were removed (section titles stay). The owners header mega-menu (settings slice) was restored to link
+all sections (anchors kept in sync with the page). Touches slices `pages` + `settings` (owner-authorized
+nav edits).

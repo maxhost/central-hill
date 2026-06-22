@@ -48,6 +48,12 @@ const OWNERS_SECTIONS: Array<{ label: string; href: string }> = [
   { label: "What's My Property Worth?", href: "/owners#worth" },
   { label: "Numbers That Speak for Themselves", href: "/owners#numbers" },
   { label: "Why Owners Choose Us", href: "/owners#why" },
+  { label: "Everything Done for You", href: "/owners#services" },
+  { label: "Find Your Perfect Plan", href: "/owners#plans" },
+  { label: "Your Growth Path", href: "/owners#journey" },
+  { label: "Full Visibility from Anywhere", href: "/owners#technology" },
+  { label: "What Our Owners Say", href: "/owners#testimonials" },
+  { label: "Got Questions? We Have Answers.", href: "/owners#faq" },
   { label: "Start Earning More Today", href: "/owners#start" },
 ];
 

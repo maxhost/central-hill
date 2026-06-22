@@ -43,6 +43,13 @@
       "when": 1783004807329,
       "tag": "0005_owners_why_editorial",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783005807329,
+      "tag": "0006_owners_sections_restored",
+      "breakpoints": true
     }
   ]
 }

@@ -55,14 +55,15 @@ page out from `content` + `media`. Shared pieces in `ui/components/`:
   background images) with the settings contact line; unset fields fall back to the localized
   `pages.dualCta.*` chrome and approved mock photos.
 
-The **Owners** page (`owners-page.tsx`) is a focused static conversion landing (mock embedded
-1:1, no DB read): hero + earnings form, an animated "numbers" band (`owner-stats-counter.tsx`
-counts each figure up on scroll, honouring `prefers-reduced-motion`), an editorial "why owners
-trust us" section, and the closing CTA. Its schema is `hero` + `earnings_form` (the latter carries
-the highlighted `badge`) + `why` (Editorial-Split: headline + CTAs beside a hairline `benefits[×6]`
-list — the home owners-pitch layout reproduced as scoped `.mk` CSS, since `mock.css` styles bare
-`.mk` elements and would leak into the Tailwind component). The `services/plans/journey/dashboard`
-sections were removed (drizzle/0004); `why` was redesigned + kept editor-ready (drizzle/0005).
+The **Owners** page (`owners-page.tsx`) is a static landing (mock embedded 1:1, no DB read):
+hero + earnings form, an animated "numbers" band (`owner-stats-counter.tsx` counts each figure
+up on scroll, honouring `prefers-reduced-motion`), then the full marketing flow — `why` (Editorial-
+Split: title + CTAs beside a hairline `benefits[×6]` list, the home owners-pitch layout reproduced
+as scoped `.mk` CSS since `mock.css` styles bare `.mk` elements and would leak into the Tailwind
+component), `services`, `plans`, `journey`, `technology`, `testimonials`, `faq` — and the closing
+CTA. Per owner direction the per-section **eyebrow** labels were dropped (titles stay), the hero
+badge moved into the form, and `why` was restyled; all sections are mirrored in the owners schema
+and stored row, editor-ready (drizzle 0004→0006).
 
 The Home `guests_pitch.image_media_id` and `dual_cta.*.image_media_id` are **optional images**
 (`""` allowed): until an R2 asset is uploaded the render falls back to an approved mock photo,
