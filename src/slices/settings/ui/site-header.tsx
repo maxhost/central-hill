@@ -39,10 +39,23 @@ const DEFAULT_HEADER: Array<{ key: string; href: string; children?: Array<{ key:
 ];
 
 /**
- * The "Owners" menu reveals the owners-page sections directly, hardcoded rather than read
- * from the DB nav sub-tabs (owner-directed). Hrefs map to the section anchors that exist on
- * the owners page — kept in sync with `slices/pages/ui/owners-page.tsx` (the page was slimmed
- * to a focused landing; see ADR 0023 updates / drizzle 0004+0005).
+ * On the Owners page itself the page already shows its own always-visible section sub-nav
+ * (see `slices/pages/ui/owners-page.tsx` → `.owner-subnav`), so the header's hover mega-menu
+ * for "Owners" would just duplicate it stacked on top. Suppress that one dropdown (caret +
+ * panel) when the owners page is in the DOM — `body:has([data-page="owners"])`. All other
+ * dropdowns (and the Owners dropdown on every other page) are untouched. No JS, no kernel edit.
+ */
+const OWNERS_NAV_CSS = `
+body:has([data-page="owners"]) [data-nav-item="/owners"] [data-subnav-panel]{display:none}
+body:has([data-page="owners"]) [data-nav-item="/owners"] [data-subnav-caret]{display:none}
+`;
+
+/**
+ * The "Owners" menu reveals the owners-page sections directly, hardcoded rather than read from the
+ * DB nav sub-tabs (owner-directed). Hrefs map to the section anchors on the owners page — kept in
+ * sync with `slices/pages/ui/owners-page.tsx` (see ADR 0023 updates / drizzle 0004→0007). On the
+ * owners page these double as the page's own always-visible sub-nav, so this header dropdown is
+ * suppressed there (see `OWNERS_NAV_CSS`); on mobile they appear under "Owners" in the burger drawer.
  */
 const OWNERS_SECTIONS: Array<{ label: string; href: string }> = [
   { label: "What's My Property Worth?", href: "/owners#worth" },
@@ -84,6 +97,7 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
       className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/85 backdrop-blur transition-colors duration-300"
     >
       <HeaderScroll />
+      <style>{OWNERS_NAV_CSS}</style>
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-md focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:text-bg"
@@ -103,7 +117,7 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
         <nav className="hidden items-center gap-7 lg:flex">
           {links.map((l) =>
             l.children?.length ? (
-              <div key={l.href + l.label} data-subnav className="group">
+              <div key={l.href + l.label} data-subnav data-nav-item={l.href} className="group">
                 <Link
                   href={l.href}
                   className="inline-flex items-center gap-1 py-5 text-sm text-ink-soft transition-colors hover:text-ink"
@@ -111,6 +125,7 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
                   {l.label}
                   <span
                     aria-hidden
+                    data-subnav-caret
                     className="text-[0.6rem] opacity-70 transition-transform duration-200 group-hover:rotate-180"
                   >
                     ▾
@@ -125,6 +140,7 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
                  */}
                 <div
                   data-chrome-keep
+                  data-subnav-panel
                   className="invisible absolute inset-x-0 top-full z-40 border-b border-line bg-bg/95 opacity-0 shadow-sm backdrop-blur transition-all duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
                 >
                   <Container className="flex items-center gap-1 overflow-x-auto">

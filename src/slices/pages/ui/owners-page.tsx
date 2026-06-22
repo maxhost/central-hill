@@ -1,6 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { OwnerSubnavReveal } from "./components/owner-subnav-reveal";
 import { OwnerStatsCounter } from "./components/owner-stats-counter";
 import { TestimonialsRow } from "./components/testimonials-row";
 
@@ -27,6 +26,7 @@ import { TestimonialsRow } from "./components/testimonials-row";
 const OWNERS_STYLE = `
 .mk .owner-subnav{position:fixed;top:64px;left:0;right:0;z-index:40;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);opacity:0;visibility:hidden;transform:translateY(-12px);pointer-events:none;transition:opacity .35s var(--ease),transform .35s var(--ease),visibility .35s var(--ease)}
 .mk .owner-subnav.in{opacity:1;visibility:visible;transform:none;pointer-events:auto}
+@media(max-width:1023px){.mk .owner-subnav{display:none}}
 .mk .owner-subnav .wrap{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0}
 .mk .owner-subnav .wrap::-webkit-scrollbar{display:none}
 .mk .owner-subnav a{flex:0 0 auto;white-space:nowrap;font-size:13px;font-weight:500;color:var(--ink-soft);padding:14px 14px;border-bottom:2px solid transparent;transition:.2s var(--ease)}
@@ -106,7 +106,7 @@ const OWNERS_STYLE = `
 `;
 
 const OWNERS_BODY_TOP = `
-<nav class="owner-subnav" aria-label="Owner page sections">
+<nav class="owner-subnav in" aria-label="Owner page sections">
   <div class="wrap">
     <a href="#worth">What's My Property Worth?</a>
     <a href="#numbers">Numbers That Speak for Themselves</a>
@@ -464,7 +464,6 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
     <>
       <div className="mk" data-page="owners">
         <style dangerouslySetInnerHTML={{ __html: OWNERS_STYLE }} />
-        <OwnerSubnavReveal />
         <OwnerStatsCounter />
         <div dangerouslySetInnerHTML={{ __html: OWNERS_BODY_TOP }} />
       </div>

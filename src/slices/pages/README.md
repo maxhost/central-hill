@@ -56,7 +56,11 @@ page out from `content` + `media`. Shared pieces in `ui/components/`:
   `pages.dualCta.*` chrome and approved mock photos.
 
 The **Owners** page (`owners-page.tsx`) is a mostly-static landing (mock embedded 1:1; the only DB
-read is the shared testimonials marquee, see below): hero + earnings form, an animated "numbers" band (`owner-stats-counter.tsx` counts each figure
+read is the shared testimonials marquee, see below). On desktop it carries its own **always-visible**
+section sub-nav (`.owner-subnav`, the 10 anchors) pinned under the header — so the settings header
+suppresses its hover "Owners" mega-menu while on this page (it would duplicate the bar); on mobile the
+bar is hidden and those anchors live under "Owners" in the burger drawer instead. Layout: hero +
+earnings form, an animated "numbers" band (`owner-stats-counter.tsx` counts each figure
 up on scroll, honouring `prefers-reduced-motion`), then the full marketing flow — `why` (Editorial-
 Split: title + CTAs beside a hairline `benefits[×6]` list, the home owners-pitch layout reproduced
 as scoped `.mk` CSS since `mock.css` styles bare `.mk` elements and would leak into the Tailwind
