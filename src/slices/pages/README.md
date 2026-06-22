@@ -55,18 +55,23 @@ page out from `content` + `media`. Shared pieces in `ui/components/`:
   background images) with the settings contact line; unset fields fall back to the localized
   `pages.dualCta.*` chrome and approved mock photos.
 
-The **Owners** page (`owners-page.tsx`) is a static landing (mock embedded 1:1, no DB read):
-hero + earnings form, an animated "numbers" band (`owner-stats-counter.tsx` counts each figure
+The **Owners** page (`owners-page.tsx`) is a mostly-static landing (mock embedded 1:1; the only DB
+read is the shared testimonials marquee, see below): hero + earnings form, an animated "numbers" band (`owner-stats-counter.tsx` counts each figure
 up on scroll, honouring `prefers-reduced-motion`), then the full marketing flow — `why` (Editorial-
 Split: title + CTAs beside a hairline `benefits[×6]` list, the home owners-pitch layout reproduced
 as scoped `.mk` CSS since `mock.css` styles bare `.mk` elements and would leak into the Tailwind
 component), `services` and `dashboard` (#technology) — both the home **Image-Showcase** layout
 (4 benefit highlights + CTA beside a 4:5 image with a floating badge; `dashboard` mirrored with the
-image on the left), reproduced as scoped `.mk` CSS for the same reason — `plans`, `journey`,
-`testimonials`, `faq` — and the closing CTA. Per owner direction the per-section **eyebrow** labels
-were dropped (titles stay), the hero badge moved into the form, and `why`/`services`/`dashboard` were
-restyled; all sections (now incl. editable `services.image_media_id` + `dashboard.image_media_id`)
-are mirrored in the owners schema and stored row, editor-ready (drizzle 0004→0007).
+image on the left), reproduced as scoped `.mk` CSS for the same reason — `plans` (up to 4 pricing
+tiers, with extra air before the two helper blocks), `journey`, `faq` — and the closing CTA. The
+`testimonials` section is the shared `<TestimonialsRow>` infinite marquee (the same component as the
+home "Partners & Guests" carousel): the static body is split around it and it renders **outside** the
+`.mk` wrapper so `mock.css` bare-element rules don't leak into its Tailwind markup — it is the one
+piece of the page that reads the DB (testimonials slice, ISR-cached, like the home). Per owner
+direction the per-section **eyebrow** labels were dropped (titles stay), the hero badge moved into the
+form, and `why`/`services`/`dashboard` were restyled; the editable marketing sections (now incl.
+`services.image_media_id` + `dashboard.image_media_id`, and plans capped at 4 tiers) are mirrored in
+the owners schema and stored row, editor-ready (drizzle 0004→0007).
 
 The Home `guests_pitch.image_media_id` and `dual_cta.*.image_media_id` are **optional images**
 (`""` allowed): until an R2 asset is uploaded the render falls back to an approved mock photo,

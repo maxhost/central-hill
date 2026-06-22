@@ -2,24 +2,26 @@ import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { OwnerSubnavReveal } from "./components/owner-subnav-reveal";
 import { OwnerStatsCounter } from "./components/owner-stats-counter";
+import { TestimonialsRow } from "./components/testimonials-row";
 
 /**
  * Owners page — a focused conversion landing embedded 1:1 inside the live app shell.
  * The mock's body markup is rendered verbatim; its page styles are scoped under `.mk`
  * (see `src/app/mock.css` for the shared design system) so nothing leaks to Home/admin.
- * No database is read here — content is static. The real header/footer + i18n come from
- * the app layout.
+ * The static body is split around one shared React island — the testimonials marquee — which
+ * is the only piece that reads the DB (via the testimonials contract, like the home).
  *
  * Sections (owner direction): hero + earnings form, the animated "numbers" band, then the
- * full marketing flow — why / services / plans / journey / technology / testimonials / faq —
- * and the closing CTA. Per owner request the per-section *eyebrow* labels were dropped (the
- * big section titles stay); the "★ Earn +25%" badge sits inside the form card (highlighted);
- * the `why` section uses the home's Editorial-Split layout (sticky title + CTAs beside a
- * hairline benefit list); `services` ("Everything Handled") and `dashboard` ("Always in Sight")
- * use the home's Image-Showcase layout (4 benefit highlights + CTA beside a 4:5 image with a
- * floating badge) — `dashboard` mirrored with the image on the left. All sections are mirrored
- * in the owners schema (editor-ready, drizzle 0005→0007). (The page content is static markup for
- * now; wiring it to the DB + leads action is a follow-up.)
+ * full marketing flow — why / services / plans (up to 4 tiers) / journey / technology /
+ * testimonials / faq — and the closing CTA. Per owner request the per-section *eyebrow* labels
+ * were dropped (the big section titles stay); the "★ Earn +25%" badge sits inside the form card
+ * (highlighted); the `why` section uses the home's Editorial-Split layout; `services`
+ * ("Everything Handled") and `dashboard` ("Always in Sight") use the home's Image-Showcase layout
+ * (4 benefit highlights + CTA beside a 4:5 image with a floating badge) — `dashboard` mirrored
+ * with the image on the left; the `testimonials` section is the shared <TestimonialsRow> marquee
+ * (the home "Partners & Guests" carousel), rendered outside `.mk` to avoid style leak. Marketing
+ * sections are mirrored in the owners schema (editor-ready, drizzle 0005→0007). (The static body
+ * content is still markup for now; wiring it to the DB + leads action is a follow-up.)
  */
 
 const OWNERS_STYLE = `
@@ -70,8 +72,8 @@ const OWNERS_STYLE = `
 .mk .owner-showcase .sh-badge span{font-size:14px;line-height:1.4;color:var(--ink)}
 .mk .owner-showcase.reverse .sh-media{order:-1}
 .mk .owner-showcase.reverse .sh-badge{left:auto;right:-16px}
-.mk .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;align-items:start}
-.mk .plan{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:38px 32px;display:flex;flex-direction:column;position:relative;transition:.3s var(--ease)}
+.mk .plans{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;align-items:start}
+.mk .plan{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:34px 26px;display:flex;flex-direction:column;position:relative;transition:.3s var(--ease)}
 .mk .plan:hover{transform:translateY(-4px);box-shadow:0 24px 50px -30px rgba(0,0,0,.42)}
 .mk .plan.popular{border-color:var(--accent);box-shadow:0 24px 54px -28px color-mix(in srgb,var(--accent) 55%,transparent)}
 .mk .plan .pop-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;padding:6px 16px;border-radius:30px}
@@ -82,7 +84,7 @@ const OWNERS_STYLE = `
 .mk .plan li:first-child{border-top:0}
 .mk .plan li::before{content:"";position:absolute;left:0;top:14px;width:14px;height:8px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg)}
 .mk .plan .btn{width:100%;justify-content:center}
-.mk .plan-helpers{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:44px}
+.mk .plan-helpers{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin-top:80px}
 .mk .plan-helper{background:color-mix(in srgb,var(--line) 38%,var(--bg));border:1px solid var(--line);border-radius:8px;padding:30px 32px}
 .mk .plan-helper h4{font-family:var(--serif);font-size:21px;font-weight:500;color:var(--ink);margin-bottom:8px}
 .mk .plan-helper p{font-size:14.5px;color:var(--ink-soft);margin-bottom:18px}
@@ -99,11 +101,11 @@ const OWNERS_STYLE = `
 .mk .faq summary::after{content:"+";position:absolute;right:6px;top:22px;font-family:var(--sans);font-size:24px;color:var(--accent);transition:transform .25s var(--ease)}
 .mk .faq details[open] summary::after{transform:rotate(45deg)}
 .mk .faq .faq-a{padding:0 44px 26px 4px;font-size:15.5px;color:var(--ink-soft);max-width:70ch}
-@media(max-width:980px){.mk .owner-hero .wrap{grid-template-columns:1fr;gap:34px}.mk .owner-pitch .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-pitch .pitch-text{position:static}.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:1fr}.mk .plan-helpers{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr 1fr}}
-@media(max-width:680px){.mk .est-two{grid-template-columns:1fr}.mk .owner-showcase .sh-list{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
+@media(max-width:980px){.mk .owner-hero .wrap{grid-template-columns:1fr;gap:34px}.mk .owner-pitch .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-pitch .pitch-text{position:static}.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helpers{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){.mk .est-two{grid-template-columns:1fr}.mk .owner-showcase .sh-list{grid-template-columns:1fr}.mk .plans{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
 `;
 
-const OWNERS_BODY = `
+const OWNERS_BODY_TOP = `
 <nav class="owner-subnav" aria-label="Owner page sections">
   <div class="wrap">
     <a href="#worth">What's My Property Worth?</a>
@@ -249,6 +251,20 @@ const OWNERS_BODY = `
 
     <div class="plans reveal">
       <div class="plan">
+        <div class="pname">Starter</div>
+        <div class="ptag">Listing &amp; bookings only</div>
+        <ul>
+          <li>Listing creation &amp; optimisation</li>
+          <li>Multi-channel distribution</li>
+          <li>AI-powered dynamic pricing</li>
+          <li>Secure payment handling</li>
+          <li>Monthly owner report</li>
+          <li>24/7 owner dashboard access</li>
+        </ul>
+        <a class="btn btn-ghost" href="#">Choose Starter</a>
+      </div>
+
+      <div class="plan">
         <div class="pname">Essential</div>
         <div class="ptag">Core full management</div>
         <ul>
@@ -383,41 +399,12 @@ const OWNERS_BODY = `
   </div>
 </section>
 
-<section id="testimonials" class="alt">
-  <div class="wrap">
-    <div class="sec-head center reveal">
-      <h2 class="section-title">Trusted by Property Owners Across Portugal</h2>
-      <p class="lede" style="margin:16px auto 0">Don't just take our word for it. Here is what our owners say.</p>
-    </div>
-    <div class="t-grid reveal">
-      <div class="tcard">
-        <div class="stars">★★★★★</div>
-        <blockquote>"Central Hill took over our Lisbon apartment and within two months our monthly revenue had increased by 35%. We live abroad and having a team we can trust completely has been invaluable."</blockquote>
-        <div class="tauthor"><b>Till Madsen</b> · Denmark<br>Property in Lisbon</div>
-      </div>
-      <div class="tcard">
-        <div class="stars">★★★★★</div>
-        <blockquote>"Switching my properties to Central Hill was a smooth and reassuring process. They took over the full management, improved performance quickly, and I now have steady returns without any day-to-day involvement."</blockquote>
-        <div class="tauthor"><b>Sebastian Harrington</b> · UK<br>Property in Lisbon</div>
-      </div>
-      <div class="tcard">
-        <div class="stars">★★★★★</div>
-        <blockquote>"We decided to rent out our apartment in Lisbon and entrusted Central Hill with the management. They optimized the listing quickly, and occupancy has been consistently high ever since."</blockquote>
-        <div class="tauthor"><b>Madeleine Beaumont</b> · France<br>Property in Lisbon</div>
-      </div>
-      <div class="tcard">
-        <div class="stars">★★★★★</div>
-        <blockquote>"We entrusted Central Hill with a family-inherited property in Porto. They have taken excellent care of it, handling everything with great professionalism. The returns have been strong and consistent, and the property is always well maintained."</blockquote>
-        <div class="tauthor"><b>André Távares</b> · Portugal<br>Property in Porto</div>
-      </div>
-    </div>
-    <p class="lede reveal" style="text-align:center;margin:48px auto 0">
-      <strong style="color:var(--ink)">12+ Years Optimizing Owner Returns in Portugal.</strong>
-      Central Hill Apartments has a proven track record of delivering above-market rental income for all property sizes — from compact city studios to large family apartments accommodating up to 27 guests.
-    </p>
-  </div>
-</section>
+`;
 
+// The "What our owners say" section is rendered by the shared <TestimonialsRow> React island
+// (the same infinite marquee as the home "We Care About Our Partners & Guests" section), so the
+// body is split here — top sections above the carousel, faq + closing CTA below it.
+const OWNERS_BODY_BOTTOM = `
 <section id="faq">
   <div class="wrap">
     <div class="sec-head center reveal">
@@ -474,11 +461,25 @@ const OWNERS_BODY = `
 export async function OwnersPage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
   return (
-    <div className="mk" data-page="owners">
-      <style dangerouslySetInnerHTML={{ __html: OWNERS_STYLE }} />
-      <OwnerSubnavReveal />
-      <OwnerStatsCounter />
-      <div dangerouslySetInnerHTML={{ __html: OWNERS_BODY }} />
-    </div>
+    <>
+      <div className="mk" data-page="owners">
+        <style dangerouslySetInnerHTML={{ __html: OWNERS_STYLE }} />
+        <OwnerSubnavReveal />
+        <OwnerStatsCounter />
+        <div dangerouslySetInnerHTML={{ __html: OWNERS_BODY_TOP }} />
+      </div>
+      {/*
+       * Shared testimonials marquee (same component/visual as the home "Partners & Guests"
+       * section). Rendered OUTSIDE the `.mk` wrapper so `mock.css`'s bare-element rules don't
+       * leak into its Tailwind markup. The wrapper carries the `#testimonials` anchor + scroll
+       * offset that the owner sub-nav links to.
+       */}
+      <div id="testimonials" style={{ scrollMarginTop: 130 }}>
+        <TestimonialsRow locale={locale} showEyebrow={false} />
+      </div>
+      <div className="mk" data-page="owners">
+        <div dangerouslySetInnerHTML={{ __html: OWNERS_BODY_BOTTOM }} />
+      </div>
+    </>
   );
 }

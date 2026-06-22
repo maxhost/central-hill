@@ -109,10 +109,11 @@ page_content
   is highlighted inside the form card); `why{headline, subheadline?, benefits[×6]{icon_key,title,description},
   cta_primary{label,url,note}, cta_secondary{label,url,note}}` (Editorial-Split layout mirroring the home
   owners-pitch); `services{headline, subheadline?, benefits[×4]{icon_key,title,description}, image_media_id?, cta{label,url,note}}`
-  (Image-Showcase layout, image right); `plans{headline, subheadline?, tiers[1..6]{name, tag?, commission?, is_popular, features[1..20]}, helpers[×2]{title,copy,cta?}}`;
-  `journey{headline, subheadline?, steps[×5]{title,description}}`;
+  (Image-Showcase layout, image right); `plans{headline, subheadline?, tiers[1..4]{name, tag?, commission?, is_popular, features[1..20]}, helpers[×2]{title,copy,cta?}}`
+  (up to 4 pricing cards); `journey{headline, subheadline?, steps[×5]{title,description}}`;
   `dashboard{headline, subheadline?, benefits[×4]{icon_key,title,description}, image_media_id?, cta{label,url,note}}`
-  (Image-Showcase layout mirrored, image left).
+  (Image-Showcase layout mirrored, image left). The "what owners say" testimonials block is **not** stored
+  here — it is the shared testimonials marquee composed at render (testimonials slice, like the home).
   Owner direction (drizzle 0004→0007): the per-section *eyebrow* labels were dropped on the page (titles
   stay), the hero badge moved into the form, `why` was restyled (Editorial-Split), and `services`/`dashboard`
   were restyled (Image-Showcase, each with its own editable image) — but all sections are kept and editable.

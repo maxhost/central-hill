@@ -577,3 +577,13 @@ on the left). Reproduced as scoped `.mk` CSS (`.owner-showcase` / `.owner-showca
 leak-avoidance rationale as `why`. Both schema blocks were reshaped (`benefits[×4]` + editable
 `image_media_id` + `cta`, dropping the old `items[×9]`/`features[×6]` grids) so the editor can manage
 each block with its own image; the stored row was migrated to match (`0007`, data-only/idempotent).
+
+**Update 5 (owners testimonials → shared marquee; plans capped at 4).** Owner direction: replace the
+owners static "Trusted by Property Owners Across Portugal" grid with the **same** infinite carousel as
+the home "We Care About Our Partners & Guests" section. Done by rendering the shared `<TestimonialsRow>`
+island in `OwnersPage` — the static body is split around it and the marquee renders **outside** the
+`.mk` wrapper (so `mock.css` bare-element rules don't leak into its Tailwind markup); a wrapper `<div
+id="testimonials">` keeps the sub-nav anchor. This makes the owners page read the DB for the first time
+(testimonials slice, ISR-cached/tagged — the page still prerenders). Also: the `plans` grid now fits
+**up to 4** pricing cards (added a "Starter" tier; `tiers` schema max 6 → 4) and the gap before the two
+plan-helper blocks was widened for breathing room. No migration (stored row already has ≤4 tiers).

@@ -76,7 +76,7 @@ export const ownersSchema = z.object({
   plans: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
-    tiers: between(tier, 1, 6),
+    tiers: between(tier, 1, 4),
     helpers: fixed(planHelper, 2),
   }),
   journey: z.object({
