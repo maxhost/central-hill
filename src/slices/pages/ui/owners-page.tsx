@@ -1,9 +1,23 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
+import type { MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { getOwnersPage } from "../contract";
+import { getOwnersPage, type OwnersContent } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { OwnerStatsCounter } from "./components/owner-stats-counter";
 import { TestimonialsRow } from "./components/testimonials-row";
+
+// Image fallbacks = the approved mock photos, used 1:1 until a real R2 asset is set in the
+// backoffice (the seeded `*_media_id`s have no uploaded asset yet → resolved media is absent).
+const HERO_FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1900&q=72";
+const HERO_FALLBACK_ALT = "Bright, designer-furnished Lisbon apartment interior";
+
+// Escape admin-authored content before it is interpolated into the static body HTML string.
+// `esc` is for text nodes; `escAttr` also neutralises the attribute quote.
+const esc = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const escAttr = (s: string) => esc(s).replace(/"/g, "&quot;");
 
 /**
  * Owners page — a focused conversion landing embedded 1:1 inside the live app shell.
@@ -100,19 +114,31 @@ const OWNERS_STYLE = `
 @media(max-width:680px){.mk .est-two{grid-template-columns:1fr}.mk .owner-showcase .sh-list{grid-template-columns:1fr}.mk .plans{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
 `;
 
-const OWNERS_BODY_TOP = `
+/**
+ * Top body sections (hero → technology). The `#worth` hero + earnings-form card are wired to
+ * the DB (`hero`, `earnings_form`); the remaining sections are still authored markup, wired
+ * piece by piece. The form *fields* (address / properties / bedrooms) stay fixed in code
+ * (they map to `lead.kind='earnings_estimate'`); only labels/copy come from `content`. The
+ * decorative "★" badge prefix and the CTA "→" are part of the locked design.
+ */
+function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageData>): string {
+  const { hero, earnings_form: form } = content;
+  const heroImg = media[hero.image_media_id]?.url || HERO_FALLBACK_IMG;
+  const heroAlt = media[hero.image_media_id]?.alt || HERO_FALLBACK_ALT;
+
+  return `
 <section id="worth" class="hero compact owner-hero" style="padding:0">
-  <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1900&q=72" alt="Bright, designer-furnished Lisbon apartment interior">
+  <img src="${escAttr(heroImg)}" alt="${escAttr(heroAlt)}">
   <div class="wrap">
     <div class="hero-copy">
-      <h1>Your Property. Our Expertise. Maximum Returns.</h1>
-      <p>Central Hill Apartments turns your property into a high-performing asset — fully managed, transparent, and optimized for maximum profit using AI-driven pricing and unmatched local expertise.</p>
+      <h1>${esc(hero.headline)}</h1>
+      <p>${esc(hero.copy)}</p>
     </div>
 
     <form class="est-card reveal" onsubmit="return false">
-      <span class="earn-badge">★ Earn +25%</span>
-      <h3>Get Your Free Earnings Estimate</h3>
-      <p class="est-sub">Find out how much your property could earn — free, instant, no obligation.</p>
+      ${form.badge ? `<span class="earn-badge">★ ${esc(form.badge)}</span>` : ""}
+      <h3>${esc(form.headline)}</h3>
+      ${form.subheadline ? `<p class="est-sub">${esc(form.subheadline)}</p>` : ""}
       <div class="est-field">
         <label for="addr">Property Address</label>
         <input id="addr" type="text" placeholder="Street, neighbourhood, city" autocomplete="off">
@@ -131,8 +157,8 @@ const OWNERS_BODY_TOP = `
           </select>
         </div>
       </div>
-      <a class="btn btn-accent" href="#">Calculate My Earnings →</a>
-      <p class="est-note">Free, instant, no obligation.</p>
+      <a class="btn btn-accent" href="#">${esc(form.cta_label)} →</a>
+      ${form.note ? `<p class="est-note">${esc(form.note)}</p>` : ""}
     </form>
   </div>
 </section>
@@ -380,6 +406,7 @@ const OWNERS_BODY_TOP = `
 </section>
 
 `;
+}
 
 // The "What our owners say" testimonials AND the FAQ are rendered by shared React islands
 // (TestimonialsRow + FaqSection) outside the `.mk` wrapper, so the static body is split here:
@@ -404,14 +431,17 @@ const OWNERS_BODY_BOTTOM = `
 export async function OwnersPage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
   const [page, t] = await Promise.all([getOwnersPage(locale), getTranslations("pages")]);
-  const faqGroupKey = page?.content.faq_group_key ?? "";
+  if (!page) notFound();
+
+  const { content, media } = page;
+  const faqGroupKey = content.faq_group_key ?? "";
 
   return (
     <>
       <div className="mk" data-page="owners">
         <style dangerouslySetInnerHTML={{ __html: OWNERS_STYLE }} />
         <OwnerStatsCounter />
-        <div dangerouslySetInnerHTML={{ __html: OWNERS_BODY_TOP }} />
+        <div dangerouslySetInnerHTML={{ __html: ownersBodyTop(content, media) }} />
       </div>
       {/*
        * Shared testimonials marquee + FAQ accordion (same components/visuals as the home
