@@ -20,9 +20,16 @@ const benefit = (n: number) => ({
   description: `Why benefit ${n} matters for you and your stay.`,
 });
 
+const panel = (side: string) => ({
+  image_media_id: UUID,
+  eyebrow: side,
+  title: `${side} title`,
+  body: `Why ${side.toLowerCase()}s should act now.`,
+  cta_label: `${side} CTA`,
+});
+
 const validHome = () => ({
   key: "home" as const,
-  status: "published" as const,
   data: {
     hero: {
       video_media_id: UUID,
@@ -41,14 +48,13 @@ const validHome = () => ({
     guests_pitch: {
       headline: "Why book with us",
       subheadline: "Professionally managed apartments.",
-      benefits: [1, 2, 3, 4, 5, 6].map(benefit),
+      benefits: [1, 2, 3, 4].map(benefit),
+      image_media_id: UUID,
       cta: { label: "Browse", url: "https://centralhill.pt/buildings" },
     },
-    story: {
-      headline: "Portugal's trusted hospitality company",
-      copy: "Founded in 2012 with a clear conviction.",
-      image_media_id: UUID,
-      cta: { label: "Read more", url: "https://centralhill.pt/about" },
+    dual_cta: {
+      owner: panel("Owner"),
+      guest: panel("Guest"),
     },
   },
 });
@@ -79,11 +85,14 @@ test("home exposes prose leaves as translatable but not media ids or urls", () =
     "owners_pitch.benefits[].description",
     "owners_pitch.cta_primary.note",
     "guests_pitch.cta.label",
-    "story.copy",
+    "dual_cta.owner.title",
+    "dual_cta.guest.cta_label",
   ]) {
     assert.ok(paths.includes(p), `expected translatable path ${p}`);
   }
   assert.ok(!paths.includes("hero.video_media_id"), "media ids are not translatable");
+  assert.ok(!paths.includes("guests_pitch.image_media_id"), "media ids are not translatable");
+  assert.ok(!paths.includes("dual_cta.owner.image_media_id"), "media ids are not translatable");
   assert.ok(!paths.includes("hero.cta_primary.url"), "urls are not translatable");
 });
 
@@ -127,7 +136,7 @@ test("overlayTranslations replaces approved leaves and falls back to source", ()
 test("collectMediaIds gathers every *_media_id across nesting", () => {
   const ids: string[] = [];
   collectMediaIds(validHome().data, ids);
-  // hero.video_media_id + story.image_media_id
-  assert.equal(ids.length, 2);
+  // hero.video + guests_pitch.image + dual_cta.owner.image + dual_cta.guest.image
+  assert.equal(ids.length, 4);
   assert.ok(ids.every((id) => id === UUID));
 });

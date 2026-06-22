@@ -14,7 +14,7 @@ import { z } from "zod";
 export type FieldNode =
   | { kind: "object"; fields: { key: string; node: FieldNode }[] }
   | { kind: "array"; element: FieldNode; min: number; max: number }
-  | { kind: "media" }
+  | { kind: "media"; hint?: string }
   | { kind: "boolean" }
   | { kind: "string"; multiline: boolean; optional: boolean };
 
@@ -76,7 +76,12 @@ export function describe(schema: z.ZodType, key = ""): FieldNode {
 
   if (base instanceof z.ZodBoolean) return { kind: "boolean" };
 
-  if (key.endsWith("_media_id")) return { kind: "media" };
+  if (key.endsWith("_media_id")) {
+    // A `.describe()` on the media schema becomes uploader guidance in the editor
+    // (recommended size/format). Read from the unwrapped base (describe sets it there).
+    const hint = (base as { description?: string }).description;
+    return hint ? { kind: "media", hint } : { kind: "media" };
+  }
 
   const maxLength = (base as { maxLength?: number | null }).maxLength ?? null;
   const multiline = typeof maxLength === "number" && maxLength > MULTILINE_OVER;

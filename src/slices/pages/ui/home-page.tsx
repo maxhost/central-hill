@@ -32,7 +32,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
-  const { hero, owners_pitch, guests_pitch } = content;
+  const { hero, owners_pitch, guests_pitch, dual_cta } = content;
 
   return (
     <main>
@@ -57,13 +57,16 @@ export async function HomePage({ locale }: { locale: Locale }) {
 
       <OwnersSection content={owners_pitch} />
 
-      <GuestsSection content={guests_pitch} />
+      <GuestsSection
+        content={guests_pitch}
+        imageUrl={media[guests_pitch.image_media_id ?? ""]?.url ?? null}
+      />
 
       <FeaturedPortfolio locale={locale} showEyebrow={false} />
 
       <TestimonialsRow locale={locale} showEyebrow={false} />
 
-      <DualCta locale={locale} />
+      <DualCta locale={locale} content={dual_cta} media={media} />
     </main>
   );
 }

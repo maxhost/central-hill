@@ -9,9 +9,10 @@ foreign tables**. See `docs/vertical-slices.md` → S9.
 
 ## Owns
 
-**Table** (`schema.ts`, migration `0000`):
-- `page_content` — `key (unique: home|owners|real_estate|about|guest), status (draft|
-  published), data jsonb (SOURCE-locale values, validated per `key`), og_image_media_id?`.
+**Table** (`schema.ts`, migrations `0000`, `0003`):
+- `page_content` — `key (unique: home|owners|real_estate|about|guest), data jsonb
+  (SOURCE-locale values, validated per `key`), og_image_media_id?`. Pages have **no
+  draft/published state** (owner direction, `0003`): a row that exists is live.
   Target-locale [T] values live in the cross-cutting `translation` table with
   `entity_type='page_content'`, `field='block:<dot.path>'` (e.g. `block:owners.benefits.0.title`).
 
@@ -23,7 +24,7 @@ groups are **fixed-count arrays** (e.g. exactly 6 benefits) — the admin form s
 
 ## Contract (`contract.ts`)
 
-Reads (all return `null` when the page is not published):
+Reads (all return `null` when the page row has not been authored):
 - `getHomePage(locale)`, `getOwnersPage(locale)`, `getGuestPage(locale)`,
   `getRealEstatePage(locale)`, `getAboutPage(locale)`.
 
@@ -44,13 +45,19 @@ those tags.
 ## UI
 
 Page compositions (`ui/*-page.tsx`): `HomePage`, `OwnersPage`, `GuestPage`, `RealEstatePage`,
-`AboutPage` — each fetches its `getXPage`, `notFound()`s when unpublished, and lays the page
-out from `content` + `media`. Shared pieces in `ui/components/`:
+`AboutPage` — each fetches its `getXPage`, `notFound()`s when the row is missing, and lays the
+page out from `content` + `media`. Shared pieces in `ui/components/`:
 - presentational (`blocks.tsx`: `SectionHeading`, `FeatureGrid`, `Steps`, `CtaRow`, `Prose`,
   `Band`; `hero.tsx`: `PageHero` image/video);
 - data-composing (`stats-band.tsx` → settings, `testimonials-row.tsx` → testimonials,
-  `featured-portfolio.tsx` → buildings, `faq-section.tsx` → faq, `dual-cta.tsx` → settings,
-  `lead-cta.tsx` → settings contact).
+  `featured-portfolio.tsx` → buildings, `faq-section.tsx` → faq, `lead-cta.tsx` → settings
+  contact). `dual-cta.tsx` renders the editable Home `dual_cta` block (owner/guest panel copy +
+  background images) with the settings contact line; unset fields fall back to the localized
+  `pages.dualCta.*` chrome and approved mock photos.
+
+The Home `guests_pitch.image_media_id` and `dual_cta.*.image_media_id` are **optional images**
+(`""` allowed): until an R2 asset is uploaded the render falls back to an approved mock photo,
+so the section never renders empty.
 
 All cross-slice data is read **through contracts only** (golden rule 2) — e.g. the featured
 portfolio builds its own card from `BuildingSummary` rather than importing buildings' UI.
@@ -88,15 +95,17 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
 - `admin/form-model.ts` (pure, unit-tested) — `describe(schema)` walks a page's **fixed Zod
   schema** into a serializable `FieldNode` tree; `emptyValue` / `applyDefaults` scaffold a `data`
   object (fixed-count arrays padded to length); `humanizeKey` makes labels. Leaf mapping:
-  `*_media_id` → media picker, ZodBoolean → checkbox, ZodString → text (textarea when long).
-- `admin/queries.ts` (server-only) — `listPagesAdmin` (the five pages + status), `getPageForEdit`
-  (source `data` + og image + media previews), `getPageEditModel` (adds the `FieldNode` tree,
-  computed **server-side** so Zod stays out of the client bundle).
+  `*_media_id` → media picker (a `.describe()` on the media schema becomes the uploader hint:
+  recommended size/format), ZodBoolean → checkbox, ZodString → text (textarea when long).
+- `admin/queries.ts` (server-only) — `listPagesAdmin` (the five pages + whether each exists),
+  `getPageForEdit` (source `data` + og image + media previews), `getPageEditModel` (adds the
+  `FieldNode` tree, computed **server-side** so Zod stays out of the client bundle).
 - `admin/actions.ts` (`"use server"`, `requireStaff`-gated) — `savePage`: validates `data` against
   `pageSchemas[key]` (single source of truth for shape), upserts `page_content`, `revalidatePage`.
   **No translation-table writes** — source lives in `data`; target locales are S14's job.
-- `admin/ui/` — `list.tsx` (server), `page-editor.tsx` (client island; status + og image + nested
-  `data` edited immutably by path), `schema-fields.tsx` (recursive `FieldNode` renderer).
+- `admin/ui/` — `list.tsx` (server; no status column — pages are always live), `page-editor.tsx`
+  (client island; the social-share image + nested `data` edited immutably by path),
+  `schema-fields.tsx` (recursive `FieldNode` renderer, surfaces media `hint`s).
 
 Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton from the schema.
 

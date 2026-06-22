@@ -29,6 +29,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0020 — S13 seo-geo: sitemaps/robots/llms.txt as root routes + kernel JSON-LD/slug additions](#0020)
 - [0021 — S14 translation-pipeline: kernel target-write/read seam + provider interface + review inbox](#0021)
 - [0022 — Home restored to the approved mockup; Warm Editorial locked as the production palette](#0022)
+- [0023 — Pages drop draft/published state; Home editor gains the dual-CTA block + optional images](#0023)
 
 ---
 
@@ -505,3 +506,36 @@ never uploaded to R2 — swap to the R2 asset when uploaded. Three shared pages-
 (`showTitle` for a bare proof band), and `FaqSection` (now a CSS-only `<details>` accordion, reused by
 real-estate too — JSON-LD unchanged). Navbar/footer are the shared chrome, reused unchanged via the
 app layout. **Status:** Accepted.
+
+## 0023 — Pages drop draft/published state; Home editor gains the dual-CTA block + optional images <a id="0023"></a>
+
+**Context.** Owner direction while hardening the page backoffice (`/admin/pages`): the five fixed
+pages have no real editorial workflow — a page either exists and is live or it doesn't — so the
+draft/published toggle was noise. The Home editor was also missing two things the live Home renders:
+the Guests-pitch section image, and the closing owner/guest dual-CTA band (background images +
+per-panel copy + CTA labels). Owner asked to remove anything no longer used "without leaving traces"
+(code **and** DB). This narrows ADR 0012 and is a deliberate, owner-approved exception to ADR 0010
+(additive, forward-only migrations).
+
+**Decision.**
+- **Drop `page_content.status`** (migration `0003`, a destructive `DROP COLUMN` — exception to ADR
+  0010, owner-approved). `getXPage` returns a row whenever it exists; the admin list/editor lose the
+  status column/selector; `savePage` no longer takes a status.
+- **Remove the Home `story` block** from `home` schema + seed; `0003` strips the stale `story` key
+  and trims `guests_pitch.benefits` from 6 → **4** in the existing row.
+- **Home schema additions** (`schemas/home.ts`): `guests_pitch.image_media_id` and a new
+  `dual_cta: { owner, guest }` block (each panel = `image_media_id` + eyebrow/title/body/cta_label).
+  Image fields are an **optional image** type (`z.union([z.literal(""), mediaId])`) — `""` means "no
+  asset yet" and the render falls back to an approved mock photo, so the section never renders empty
+  (R2 upload not wired yet). `dual-cta.tsx` reads the editable block, falling back to the localized
+  `pages.dualCta.*` chrome for unset fields / legacy rows (so non-EN locales keep their copy until
+  the owner edits). The owner CTA still routes to `/owners`, the guest CTA to the Avantio engine.
+- **Media uploader hints**: a `.describe()` on a page-schema media field becomes recommended
+  size/format guidance in the editor (`form-model` reads it, `schema-fields` renders it); the
+  social-share (OG) image hint now states the recommended dimensions/format too.
+
+**Consequences.** Forward-only is preserved (new numbered migration; no past migration edited) but
+this one is destructive, hence this ADR. New render code is backward-compatible with un-migrated
+rows (status ignored, `dual_cta`/image absent → chrome + mock fallbacks), so it is safe to deploy
+the code before running `0003`; running `0003` against the **old** code would break it (status
+filter), so **deploy first, migrate second**. Slice `pages` only. **Status:** Accepted.

@@ -1,6 +1,6 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@core/db/client";
 import type { Locale } from "@core/db/columns";
 import {
@@ -19,8 +19,8 @@ import { resolveData, resolveMedia } from "./resolve";
 /**
  * Public read model for the five editable fixed pages (slice `pages`, S9). Each read
  * returns the page's fixed-schema `content` with [T] blocks resolved for `locale`, the
- * resolved media map, and the optional OG override — or `null` when the page is not
- * published. Reads are `unstable_cache`-wrapped and tagged `page:<key>`; the embedded
+ * resolved media map, and the optional OG override — or `null` when the page has not
+ * been authored. Reads are `unstable_cache`-wrapped and tagged `page:<key>`; the embedded
  * slice data (buildings/testimonials/faq/settings) is fetched by the page-section
  * components through those slices' own cached+tagged queries.
  */
@@ -29,7 +29,7 @@ async function _loadPage<T>(locale: Locale, key: PageKey): Promise<PageResult<T>
   const [row] = await db
     .select()
     .from(page_content)
-    .where(and(eq(page_content.key, key), eq(page_content.status, "published")))
+    .where(eq(page_content.key, key))
     .limit(1);
   if (!row) return null;
 

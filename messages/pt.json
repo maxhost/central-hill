@@ -710,12 +710,13 @@
         "guest": "Página de hóspedes"
       },
       "sections": {
-        "publish": "Publicação"
+        "publish": "Publicação",
+        "social": "Partilha social"
       },
       "fields": {
         "status": "Estado",
         "ogImage": "Imagem de partilha social",
-        "ogImageHint": "Opcional; usada quando a página é partilhada nas redes sociais."
+        "ogImageHint": "Usada quando a página é partilhada nas redes sociais. Recomendado: 1200×630px, JPG/PNG/WebP, até 1 MB."
       }
     }
   },

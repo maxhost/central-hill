@@ -9,8 +9,9 @@ import { Icon } from "./icon";
  * content is resolved upstream in `home-page.tsx`. Stays inside the S9 `pages` slice.
  */
 
-// TEMP: external hotlink (lifestyle apartment interior) — placeholder until a real guest photo is
-// uploaded to R2 and wired through page `media`.
+// Fallback lifestyle image used when the editable `guests_pitch.image_media_id` has no
+// resolved R2 URL yet (the section image is set in the Home editor; until an asset is
+// uploaded this approved mock photo keeps the section from rendering empty).
 const SHOWCASE_IMG =
   "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=72";
 
@@ -18,10 +19,19 @@ type GuestsContent = {
   headline: string;
   subheadline?: string;
   benefits: IconCard[];
+  image_media_id?: string;
   cta: CtaNote;
 };
 
-export function GuestsSection({ content }: { content: GuestsContent }) {
+export function GuestsSection({
+  content,
+  imageUrl,
+}: {
+  content: GuestsContent;
+  /** Resolved R2 URL for `image_media_id`; falls back to the approved mock photo. */
+  imageUrl?: string | null;
+}) {
+  const showcase = imageUrl || SHOWCASE_IMG;
   return (
     <Band id="guests" className={altBg}>
       <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -50,9 +60,9 @@ export function GuestsSection({ content }: { content: GuestsContent }) {
         </div>
 
         <div className="relative order-first lg:order-last">
-          {/* eslint-disable-next-line @next/next/no-img-element -- TEMP external preview image */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- external/R2 preview image */}
           <img
-            src={SHOWCASE_IMG}
+            src={showcase}
             alt=""
             loading="lazy"
             className="aspect-[4/5] w-full rounded-sm object-cover"

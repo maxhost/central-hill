@@ -16,7 +16,6 @@ export default async function EditPageRoute({ params }: { params: Promise<{ key:
       pageKey={model.key}
       rootNode={model.rootNode}
       initialData={model.data}
-      initialStatus={model.status}
       initialOgImageMediaId={model.ogImageMediaId}
       previews={model.previews}
     />

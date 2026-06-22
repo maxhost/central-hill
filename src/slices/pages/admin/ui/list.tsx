@@ -1,23 +1,13 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import {
-  AdminPageHeader,
-  type Column,
-  DataTable,
-  StateBadge,
-} from "@slices/backoffice/contract";
+import { AdminPageHeader, type Column, DataTable } from "@slices/backoffice/contract";
 import { type PageAdminListItem, listPagesAdmin } from "../queries";
 
 /**
- * Pages backoffice list (S12) at `/admin/pages` — the five fixed marketing pages
- * with their status, each linking to its schema-driven editor.
+ * Pages backoffice list (S12) at `/admin/pages` — the five fixed marketing pages,
+ * each linking to its schema-driven editor. Pages have no draft/published state
+ * (owner direction): a page is always live.
  */
-
-const STATUS_TONE: Record<PageAdminListItem["status"], "approved" | "draft" | "neutral"> = {
-  published: "approved",
-  draft: "draft",
-  none: "neutral",
-};
 
 export async function PagesAdminList() {
   const t = await getTranslations("pages");
@@ -33,12 +23,6 @@ export async function PagesAdminList() {
         >
           {t.has(`admin.pages.${row.key}`) ? t(`admin.pages.${row.key}`) : row.key}
         </Link>
-      ),
-    },
-    {
-      header: t("admin.columns.status"),
-      cell: (row) => (
-        <StateBadge label={t(`admin.status.${row.status}`)} tone={STATUS_TONE[row.status]} />
       ),
     },
   ];

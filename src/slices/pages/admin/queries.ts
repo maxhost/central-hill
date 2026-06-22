@@ -16,25 +16,21 @@ import { type FieldNode, applyDefaults, describe } from "./form-model";
 
 export const PAGE_KEYS = pageKey.options as readonly PageKey[];
 
-type PageStatus = "draft" | "published";
-
 export interface PageAdminListItem {
   key: PageKey;
-  status: PageStatus | "none";
+  /** Whether the page row has been created (authored) yet. */
+  exists: boolean;
 }
 
-/** The five fixed pages with their current status (or `none` if unauthored). */
+/** The five fixed pages (pages are always live — no draft/published state). */
 export async function listPagesAdmin(): Promise<PageAdminListItem[]> {
-  const rows = await db
-    .select({ key: page_content.key, status: page_content.status })
-    .from(page_content);
-  const byKey = new Map(rows.map((r) => [r.key, r.status]));
-  return PAGE_KEYS.map((key) => ({ key, status: byKey.get(key) ?? "none" }));
+  const rows = await db.select({ key: page_content.key }).from(page_content);
+  const present = new Set(rows.map((r) => r.key));
+  return PAGE_KEYS.map((key) => ({ key, exists: present.has(key) }));
 }
 
 export interface PageEditBundle {
   key: PageKey;
-  status: PageStatus;
   data: Record<string, unknown>;
   ogImageMediaId: string | null;
   previews: Record<string, AdminMediaPreview>;
@@ -52,7 +48,6 @@ export async function getPageForEdit(key: PageKey): Promise<PageEditBundle> {
 
   return {
     key,
-    status: row?.status ?? "draft",
     data,
     ogImageMediaId,
     previews,

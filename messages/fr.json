@@ -710,12 +710,13 @@
         "guest": "Page voyageurs"
       },
       "sections": {
-        "publish": "Publication"
+        "publish": "Publication",
+        "social": "Partage social"
       },
       "fields": {
         "status": "Statut",
         "ogImage": "Image de partage social",
-        "ogImageHint": "Facultatif ; utilisée lors du partage de la page sur les réseaux sociaux."
+        "ogImageHint": "Utilisée lors du partage de la page sur les réseaux sociaux. Recommandé : 1200×630px, JPG/PNG/WebP, moins de 1 Mo."
       }
     }
   },

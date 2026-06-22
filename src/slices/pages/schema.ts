@@ -5,6 +5,9 @@ import { pkUuid, timestamps } from "@core/db/columns";
  * Slice `pages` — the 5 editable fixed marketing pages (ADR 0012). `data` holds the
  * SOURCE-locale values, validated against the page's fixed Zod schema (see
  * `validation.ts`). Target locales live in `translation` with field='block:<dot.path>'.
+ *
+ * Pages have **no draft/published state** (owner direction): a row that exists is live.
+ * (The former `status` column was dropped — see drizzle/0003.)
  */
 export const page_content = pgTable("page_content", {
   id: pkUuid(),
@@ -12,7 +15,6 @@ export const page_content = pgTable("page_content", {
     .$type<"home" | "owners" | "real_estate" | "about" | "guest">()
     .notNull()
     .unique(),
-  status: text().$type<"draft" | "published">().notNull().default("draft"),
   data: jsonb().$type<Record<string, unknown>>().notNull().default({}),
   og_image_media_id: uuid(), // → media_asset.id (core/media)
   ...timestamps,

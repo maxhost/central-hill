@@ -2,7 +2,6 @@
 
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
-import { pageStatus } from "@core/validation/primitives";
 import { page_content } from "../schema";
 import { pageKey, pageSchemas } from "../schemas";
 import { revalidatePage } from "../server/publish";
@@ -34,18 +33,13 @@ function fieldErrorsFrom(
 
 export async function savePage(
   rawKey: string,
-  payload: { status: string; data: unknown; og_image_media_id: string | null },
+  payload: { data: unknown; og_image_media_id: string | null },
 ): Promise<PageSaveResult> {
   await requireStaff();
 
   const keyParsed = pageKey.safeParse(rawKey);
   if (!keyParsed.success) return { ok: false, error: "bad_key" };
   const key = keyParsed.data;
-
-  const statusParsed = pageStatus.safeParse(payload.status);
-  if (!statusParsed.success) {
-    return { ok: false, error: "validation", fieldErrors: { status: "invalid" } };
-  }
 
   const dataParsed = pageSchemas[key].safeParse(payload.data);
   if (!dataParsed.success) {
@@ -58,10 +52,10 @@ export async function savePage(
   try {
     await db
       .insert(page_content)
-      .values({ key, status: statusParsed.data, data, og_image_media_id: ogImage })
+      .values({ key, data, og_image_media_id: ogImage })
       .onConflictDoUpdate({
         target: page_content.key,
-        set: { status: statusParsed.data, data, og_image_media_id: ogImage, updated_at: new Date() },
+        set: { data, og_image_media_id: ogImage, updated_at: new Date() },
       });
     revalidatePage(key);
     return { ok: true };

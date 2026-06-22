@@ -7,7 +7,7 @@
  * field='block:<dot.path>'.
  */
 import { z } from "zod";
-import { mediaId, pageStatus, uuid } from "@core/validation/primitives";
+import { mediaId, uuid } from "@core/validation/primitives";
 import {
   aboutSchema,
   guestSchema,
@@ -20,7 +20,6 @@ const row = <K extends string, D extends z.ZodType>(key: K, data: D) =>
   z.object({
     id: uuid.optional(),
     key: z.literal(key),
-    status: pageStatus,
     og_image_media_id: mediaId.optional(),
     data,
   });

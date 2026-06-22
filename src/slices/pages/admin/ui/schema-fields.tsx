@@ -129,7 +129,7 @@ export function NodeField(props: RenderProps) {
   if (node.kind === "media") {
     const id = typeof value === "string" && value ? value : null;
     return (
-      <Field label={label} error={errors[errorKey]}>
+      <Field label={label} hint={node.hint} error={errors[errorKey]}>
         <MediaField
           value={id}
           preview={id ? (previews[id] ?? null) : null}

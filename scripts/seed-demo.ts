@@ -222,7 +222,7 @@ async function main() {
 
   // ── Page content (5 fixed pages) — already validated above ──────────────────
   for (const p of pages) {
-    await db.insert(page_content).values({ key: p.key, status: "published", data: p.data as Record<string, unknown> });
+    await db.insert(page_content).values({ key: p.key, data: p.data as Record<string, unknown> });
     console.log(`✓ page_content: ${p.key}`);
   }
 
@@ -261,16 +261,25 @@ function homeData() {
         ic("Space for everyone", "From studios to apartments sleeping 25+ for big groups.", "home"),
         ic("Design-led interiors", "Every home styled for comfort and that wow factor.", "spark"),
         ic("Seamless check-in", "Effortless arrival and a local team a message away.", "key"),
-        ic("Spotless & safe", "Professional cleaning and quality checks before every stay.", "check"),
-        ic("Book direct, save", "Best rates and perks when you book with us directly.", "coin"),
       ],
+      image_media_id: "",
       cta: { label: "Book Now", url: BOOK, note: "Best-rate guarantee when you book direct." },
     },
-    story: {
-      headline: "Portugal's trusted hospitality management company",
-      copy: "Since 2012, Central Hill has grown into one of Lisbon's leading furnished-rental operators — hosting hundreds of thousands of guests and managing homes for owners who expect more.\n\nWe pair hotel-grade hospitality with technology and a hands-on local team, so guests feel at home and owners earn more without lifting a finger.",
-      image_media_id: uid(),
-      cta: { label: "About Central Hill", url: `${SITE}/en/about` },
+    dual_cta: {
+      owner: {
+        image_media_id: "",
+        eyebrow: "Owners",
+        title: "Own a property? Start earning more — free, no obligation.",
+        body: "Find out what your property could earn with a free, no-obligation profitability analysis. Our team will assess your property and come back within 48 hours.",
+        cta_label: "I'm a property owner",
+      },
+      guest: {
+        image_media_id: "",
+        eyebrow: "Guests",
+        title: "Planning a stay? Find your perfect apartment.",
+        body: "Browse our full portfolio of professionally managed apartments across Portugal's most sought-after locations — studios to 8-bedrooms, for every type of stay.",
+        cta_label: "Book Now",
+      },
     },
   };
 }

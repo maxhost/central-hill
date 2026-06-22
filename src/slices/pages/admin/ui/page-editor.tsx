@@ -12,7 +12,6 @@ import {
   FormActions,
   type AdminMediaPreview,
   MediaField,
-  Select,
 } from "@slices/backoffice/contract";
 import { savePage } from "../actions";
 import { type FieldNode, humanizeKey } from "../form-model";
@@ -22,11 +21,10 @@ import { NodeField, type PathOnChange } from "./schema-fields";
  * Page content editor (S12, ADR 0012). One client island per fixed page
  * (`/admin/pages/[key]`). The `FieldNode` tree + scaffolded `data` are computed on
  * the server (Zod stays out of the client bundle) and edited here against a nested
- * `data` object updated immutably by path. Status + the social-share image sit
- * outside `data` (own columns). Saves post through `savePage`.
+ * `data` object updated immutably by path. Pages have no draft/published state — a
+ * saved page is live; only the social-share image sits outside `data` (own column).
+ * Saves post through `savePage`.
  */
-
-type Status = "draft" | "published";
 
 /** Immutable nested set by path (string keys = object, number = array index). */
 function setIn(target: unknown, path: (string | number)[], value: unknown): unknown {
@@ -46,14 +44,12 @@ export function PageEditor({
   pageKey,
   rootNode,
   initialData,
-  initialStatus,
   initialOgImageMediaId,
   previews,
 }: {
   pageKey: string;
   rootNode: FieldNode;
   initialData: Record<string, unknown>;
-  initialStatus: Status;
   initialOgImageMediaId: string | null;
   previews: Record<string, AdminMediaPreview>;
 }) {
@@ -62,7 +58,6 @@ export function PageEditor({
   const router = useRouter();
   const [pending, start] = useTransition();
   const [data, setData] = useState<Record<string, unknown>>(initialData);
-  const [status, setStatus] = useState<Status>(initialStatus);
   const [ogImage, setOgImage] = useState<string>(initialOgImageMediaId ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(null);
@@ -79,7 +74,6 @@ export function PageEditor({
     setErrors({});
     start(async () => {
       const result = await savePage(pageKey, {
-        status,
         data,
         og_image_media_id: ogImage || null,
       });
@@ -113,22 +107,14 @@ export function PageEditor({
         <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
       ) : null}
 
-      <AdminCard title={t("admin.sections.publish")}>
-        <div className="space-y-4">
-          <Field label={t("admin.fields.status")} error={errors.status}>
-            <Select value={status} onChange={(e) => setStatus(e.target.value as Status)}>
-              <option value="draft">{t("admin.status.draft")}</option>
-              <option value="published">{t("admin.status.published")}</option>
-            </Select>
-          </Field>
-          <Field label={t("admin.fields.ogImage")} hint={t("admin.fields.ogImageHint")}>
-            <MediaField
-              value={ogImage || null}
-              preview={ogImage ? (previews[ogImage] ?? null) : null}
-              onChange={(id) => setOgImage(id ?? "")}
-            />
-          </Field>
-        </div>
+      <AdminCard title={t("admin.sections.social")}>
+        <Field label={t("admin.fields.ogImage")} hint={t("admin.fields.ogImageHint")}>
+          <MediaField
+            value={ogImage || null}
+            preview={ogImage ? (previews[ogImage] ?? null) : null}
+            onChange={(id) => setOgImage(id ?? "")}
+          />
+        </Field>
       </AdminCard>
 
       {topFields.map((f) => (
