@@ -568,3 +568,12 @@ badge inside the form, the animated numbers, and the `why` Editorial-Split. Only
 were removed (section titles stay). The owners header mega-menu (settings slice) was restored to link
 all sections (anchors kept in sync with the page). Touches slices `pages` + `settings` (owner-authorized
 nav edits).
+
+**Update 4 (services/dashboard → Image-Showcase, migration `0007`).** Owner direction: restyle the
+owners `services` ("Everything Handled. Nothing Overlooked.") and `dashboard`/#technology ("Your
+Property, Always in Sight") blocks to the home guests-pitch **Image-Showcase** layout — 4 benefit
+highlights + CTA beside a 4:5 image with a floating reassurance badge — `dashboard` **mirrored** (image
+on the left). Reproduced as scoped `.mk` CSS (`.owner-showcase` / `.owner-showcase.reverse`), same
+leak-avoidance rationale as `why`. Both schema blocks were reshaped (`benefits[×4]` + editable
+`image_media_id` + `cta`, dropping the old `items[×9]`/`features[×6]` grids) so the editor can manage
+each block with its own image; the stored row was migrated to match (`0007`, data-only/idempotent).

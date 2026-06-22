@@ -314,19 +314,16 @@ function ownersData() {
       cta_secondary: { label: "Talk to us", url: `${SITE}/en/owners` },
     },
     services: {
-      headline: "Everything done for you",
-      subheadline: "A complete operation behind every booking.",
-      items: [
-        ic("Listing & marketing", "Professional photography, copy and multi-channel distribution."),
-        ic("Dynamic pricing", "Revenue management that adapts daily to demand."),
-        ic("Guest communication", "24/7 multilingual support before, during and after stays."),
-        ic("Check-in & check-out", "Smooth arrivals and departures, every time."),
-        ic("Housekeeping", "Hotel-standard cleaning and linen between stays."),
-        ic("Maintenance", "Proactive upkeep and a trusted contractor network."),
-        ic("Compliance", "Licensing, taxes and regulations handled for you."),
-        ic("Reviews & quality", "We protect your rating with five-star service."),
-        ic("Owner reporting", "Clear monthly statements and a live dashboard."),
+      headline: "Everything handled. Nothing overlooked.",
+      subheadline: "From the first listing to each guest's departure, we manage every detail so you don't have to.",
+      benefits: [
+        ic("Listing & marketing", "Professional photography, copy and multi-channel distribution across Airbnb, Booking.com and direct.", "search"),
+        ic("Reservations & guest care", "24/7 multilingual communication, calendar and seamless check-in/out — every stay runs smoothly.", "bell"),
+        ic("Housekeeping & maintenance", "Hotel-standard cleaning, premium linen and proactive upkeep keep your home guest-ready.", "spark"),
+        ic("Revenue & compliance", "AI-driven pricing, monthly reporting and full Alojamento Local licensing & tax support.", "chart"),
       ],
+      image_media_id: "",
+      cta: { label: "See how we manage your home", url: `${SITE}/en/owners`, note: "Fully managed, end to end — you stay informed, we do the work." },
     },
     plans: {
       headline: "A management plan built around your goals",
@@ -354,16 +351,16 @@ function ownersData() {
       ],
     },
     dashboard: {
-      headline: "Full visibility from anywhere",
-      subheadline: "Your performance, always at your fingertips.",
-      features: [
-        ic("Live bookings", "See every reservation and your calendar in real time."),
-        ic("Revenue & payouts", "Track income and upcoming payouts to the cent."),
-        ic("Occupancy", "Monitor occupancy and nightly rates at a glance."),
-        ic("Statements", "Download clear monthly statements anytime."),
-        ic("Reviews", "Keep an eye on guest ratings and feedback."),
-        ic("Notifications", "Stay informed with alerts that matter."),
+      headline: "Your property, always in sight",
+      subheadline: "Our owner dashboard gives you real-time visibility into every aspect of your property's performance — from anywhere in the world.",
+      benefits: [
+        ic("Live revenue tracking", "Your earnings and projected monthly income at a glance, updated in real time.", "chart"),
+        ic("Booking calendar", "Full visibility of reservations, blocked dates and availability across all platforms.", "bell"),
+        ic("Occupancy & performance", "Track occupancy rates, average nightly rate and review scores over any period.", "search"),
+        ic("Alerts & statements", "Instant alerts for bookings and check-ins, plus downloadable monthly statements anytime.", "key"),
       ],
+      image_media_id: "",
+      cta: { label: "Explore the owner dashboard", url: `${SITE}/en/owners`, note: "Real-time visibility into your property, 24/7." },
     },
   };
 }

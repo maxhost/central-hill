@@ -12,8 +12,19 @@
  * See docs/data-model.md → Page content model → owners.
  */
 import { z } from "zod";
-import { ctaWithNote, tStr, tStrOpt } from "@core/validation/primitives";
+import { ctaWithNote, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
 import { between, fixed, iconCard, step } from "./_shared";
+
+/**
+ * An image reference that may be left unset. An empty string means "no asset yet" — the
+ * public render falls back to the approved mock photo (R2 isn't wired yet). Accepts a
+ * `media_asset.id` once uploaded. `.describe()` becomes the admin uploader hint.
+ */
+const optionalImage = (hint: string) => z.union([z.literal(""), mediaId]).describe(hint);
+const SERVICES_IMG_HINT =
+  "Lifestyle photo for the Services showcase. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
+const DASHBOARD_IMG_HINT =
+  "Image for the owner-dashboard showcase (e.g. an interface/laptop shot). Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
 
 /** A management-plan column (cumulative bullet list; `commission` shown above the card). */
 const tier = z.object({
@@ -53,10 +64,14 @@ export const ownersSchema = z.object({
     cta_primary: ctaWithNote,
     cta_secondary: ctaWithNote,
   }),
+  // "Everything we handle" — Image Showcase (the home guests-pitch layout): headline + benefit
+  // highlights + CTA beside a 4:5 lifestyle image with a floating reassurance badge.
   services: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
-    items: fixed(iconCard, 9),
+    benefits: fixed(iconCard, 4),
+    image_media_id: optionalImage(SERVICES_IMG_HINT),
+    cta: ctaWithNote,
   }),
   plans: z.object({
     headline: tStr({ max: 160 }),
@@ -69,10 +84,14 @@ export const ownersSchema = z.object({
     subheadline: tStrOpt({ max: 280 }),
     steps: fixed(step, 5),
   }),
+  // "Your property, always in sight" — Image Showcase mirrored (image on the left): the owner
+  // dashboard pitch as benefit highlights + CTA beside a 4:5 image with a floating badge.
   dashboard: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
-    features: fixed(iconCard, 6),
+    benefits: fixed(iconCard, 4),
+    image_media_id: optionalImage(DASHBOARD_IMG_HINT),
+    cta: ctaWithNote,
   }),
 });
 

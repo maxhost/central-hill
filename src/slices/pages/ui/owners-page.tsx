@@ -15,9 +15,11 @@ import { OwnerStatsCounter } from "./components/owner-stats-counter";
  * and the closing CTA. Per owner request the per-section *eyebrow* labels were dropped (the
  * big section titles stay); the "★ Earn +25%" badge sits inside the form card (highlighted);
  * the `why` section uses the home's Editorial-Split layout (sticky title + CTAs beside a
- * hairline benefit list). All sections are mirrored in the owners schema (editor-ready,
- * drizzle 0005+0006). (The page content is static markup for now; wiring it to the DB +
- * leads action is a follow-up.)
+ * hairline benefit list); `services` ("Everything Handled") and `dashboard` ("Always in Sight")
+ * use the home's Image-Showcase layout (4 benefit highlights + CTA beside a 4:5 image with a
+ * floating badge) — `dashboard` mirrored with the image on the left. All sections are mirrored
+ * in the owners schema (editor-ready, drizzle 0005→0007). (The page content is static markup for
+ * now; wiring it to the DB + leads action is a follow-up.)
  */
 
 const OWNERS_STYLE = `
@@ -51,6 +53,23 @@ const OWNERS_STYLE = `
 .mk .owner-pitch .pitch-list .ic{width:28px;height:28px;flex:0 0 auto;margin-top:2px;color:var(--accent-deep)}
 .mk .owner-pitch .pitch-list h3{font-size:19px;margin:0 0 6px}
 .mk .owner-pitch .pitch-list p{font-size:15px;line-height:1.6;color:var(--ink-soft);margin:0}
+.mk .owner-showcase .wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.mk .owner-showcase .sh-text h2{font-size:clamp(28px,3.4vw,44px);line-height:1.12;margin:0;color:var(--ink)}
+.mk .owner-showcase .sh-sub{margin-top:18px;font-size:18px;line-height:1.6;color:var(--ink-soft)}
+.mk .owner-showcase .sh-list{list-style:none;margin:32px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:22px 32px}
+.mk .owner-showcase .sh-list li{display:flex;gap:14px}
+.mk .owner-showcase .sh-list .ic{width:26px;height:26px;flex:0 0 auto;margin-top:2px;color:var(--accent-deep)}
+.mk .owner-showcase .sh-list h3{font-size:17px;margin:0 0 5px;color:var(--ink)}
+.mk .owner-showcase .sh-list p{font-size:14px;line-height:1.55;color:var(--ink-soft);margin:0}
+.mk .owner-showcase .sh-cta{margin-top:36px}
+.mk .owner-showcase .sh-note{margin-top:14px;font-size:14px;color:var(--ink-soft)}
+.mk .owner-showcase .sh-media{position:relative}
+.mk .owner-showcase .sh-media img{aspect-ratio:4/5;width:100%;object-fit:cover;border-radius:3px;display:block}
+.mk .owner-showcase .sh-badge{position:absolute;bottom:-20px;left:-16px;display:flex;align-items:flex-start;gap:10px;max-width:15rem;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 20px;box-shadow:0 24px 50px -20px rgba(0,0,0,.4)}
+.mk .owner-showcase .sh-badge .ic{width:20px;height:20px;flex:0 0 auto;margin-top:1px;color:var(--accent-deep)}
+.mk .owner-showcase .sh-badge span{font-size:14px;line-height:1.4;color:var(--ink)}
+.mk .owner-showcase.reverse .sh-media{order:-1}
+.mk .owner-showcase.reverse .sh-badge{left:auto;right:-16px}
 .mk .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;align-items:start}
 .mk .plan{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:38px 32px;display:flex;flex-direction:column;position:relative;transition:.3s var(--ease)}
 .mk .plan:hover{transform:translateY(-4px);box-shadow:0 24px 50px -30px rgba(0,0,0,.42)}
@@ -80,8 +99,8 @@ const OWNERS_STYLE = `
 .mk .faq summary::after{content:"+";position:absolute;right:6px;top:22px;font-family:var(--sans);font-size:24px;color:var(--accent);transition:transform .25s var(--ease)}
 .mk .faq details[open] summary::after{transform:rotate(45deg)}
 .mk .faq .faq-a{padding:0 44px 26px 4px;font-size:15.5px;color:var(--ink-soft);max-width:70ch}
-@media(max-width:980px){.mk .owner-hero .wrap{grid-template-columns:1fr;gap:34px}.mk .owner-pitch .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-pitch .pitch-text{position:static}.mk .plans{grid-template-columns:1fr}.mk .plan-helpers{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr 1fr}}
-@media(max-width:680px){.mk .est-two{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
+@media(max-width:980px){.mk .owner-hero .wrap{grid-template-columns:1fr;gap:34px}.mk .owner-pitch .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-pitch .pitch-text{position:static}.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:1fr}.mk .plan-helpers{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){.mk .est-two{grid-template-columns:1fr}.mk .owner-showcase .sh-list{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
 `;
 
 const OWNERS_BODY = `
@@ -185,57 +204,37 @@ const OWNERS_BODY = `
   </div>
 </section>
 
-<section id="services" class="alt">
+<section id="services" class="alt owner-showcase">
   <div class="wrap">
-    <div class="sec-head center reveal">
-      <h2 class="section-title">Everything Handled. Nothing Overlooked.</h2>
-      <p class="lede" style="margin:16px auto 0">From the first listing to each guest's departure, Central Hill Apartments manages every detail so you don't have to.</p>
+    <div class="sh-text reveal">
+      <h2>Everything Handled. Nothing Overlooked.</h2>
+      <p class="sh-sub">From the first listing to each guest's departure, Central Hill Apartments manages every detail so you don't have to.</p>
+      <ul class="sh-list">
+        <li>
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6l1.5-2h5L16 6"/></svg>
+          <div><h3>Listing &amp; Marketing</h3><p>Professional photography, copy and multi-channel distribution across Airbnb, Booking.com and direct.</p></div>
+        </li>
+        <li>
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+          <div><h3>Reservations &amp; Guest Care</h3><p>24/7 multilingual communication, calendar and seamless check-in/out — every stay runs smoothly.</p></div>
+        </li>
+        <li>
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6l-2 2-4-4 2-2a2.8 2.8 0 0 1 4 4z" transform="translate(-3 0)"/><path d="M3 21l9-9M5 14l5 5"/></svg>
+          <div><h3>Housekeeping &amp; Maintenance</h3><p>Hotel-standard cleaning, premium linen and proactive upkeep keep your home guest-ready.</p></div>
+        </li>
+        <li>
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M21 7v5h-5"/></svg>
+          <div><h3>Revenue &amp; Compliance</h3><p>AI-driven pricing, monthly reporting and full Alojamento Local licensing &amp; tax support.</p></div>
+        </li>
+      </ul>
+      <div class="sh-cta"><a class="btn btn-accent" href="#worth">See how we manage your home →</a></div>
+      <p class="sh-note">Fully managed, end to end — you stay informed, we do the work.</p>
     </div>
-    <div class="grid-3 reveal">
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6l1.5-2h5L16 6"/></svg>
-        <h3>Professional Photography</h3>
-        <p>High-quality photography and listing creation that showcases your property at its very best across all major booking platforms.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
-        <h3>Reservation Management</h3>
-        <p>All booking enquiries, calendar management, and guest communications across Airbnb, Booking.com, and direct channels — 24/7.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7a4 4 0 1 0-4 4h11"/><path d="M18 8l3 3-3 3"/></svg>
-        <h3>Seamless Check-in &amp; Out</h3>
-        <p>Remote keyless entry or in-person check-in, guest orientation, and smooth departures — every stay begins and ends perfectly.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6l-2 2-4-4 2-2a2.8 2.8 0 0 1 4 4z" transform="translate(-3 0)"/><path d="M3 21l9-9M5 14l5 5"/></svg>
-        <h3>Cleaning &amp; Linen Service</h3>
-        <p>Professional cleaning teams, premium linen, and full restocking between every stay — your property always guest-ready and review-worthy.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2-2 2.6-2.6z"/></svg>
-        <h3>Maintenance &amp; Repairs</h3>
-        <p>Proactive inspections and rapid response to maintenance issues. We protect your asset and your guest satisfaction scores.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M21 7v5h-5"/></svg>
-        <h3>Dynamic Revenue Management</h3>
-        <p>AI-powered pricing updated daily, yield strategies, and multi-platform optimization to ensure peak occupancy and revenue year-round.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg>
-        <h3>Interior Design Advice</h3>
-        <p>Optional staging and design consultation to elevate your property's appeal and achieve consistently higher nightly rates.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8h14M6 8l-3 7a4 4 0 0 0 6 0L6 8zM18 8l-3 7a4 4 0 0 0 6 0l-3-7z"/></svg>
-        <h3>Legal &amp; Fiscal Support</h3>
-        <p>Guidance on Alojamento Local licensing, tax compliance, and regulatory requirements specific to Portugal.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-        <h3>Dedicated Account Manager</h3>
-        <p>A single, named contact who knows your property, your goals, and is always reachable when you need them.</p>
+    <div class="sh-media reveal">
+      <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=72" alt="Designer-furnished Lisbon apartment, guest-ready">
+      <div class="sh-badge">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <span>Every detail handled — you stay free.</span>
       </div>
     </div>
   </div>
@@ -348,42 +347,37 @@ const OWNERS_BODY = `
   </div>
 </section>
 
-<section id="technology">
+<section id="technology" class="owner-showcase reverse">
   <div class="wrap">
-    <div class="sec-head center reveal">
-      <h2 class="section-title">Your Property, Always in Sight</h2>
-      <p class="lede" style="margin:16px auto 0">Our owner dashboard gives you real-time visibility into every aspect of your property's performance — from anywhere in the world.</p>
+    <div class="sh-text reveal">
+      <h2>Your Property, Always in Sight</h2>
+      <p class="sh-sub">Our owner dashboard gives you real-time visibility into every aspect of your property's performance — from anywhere in the world.</p>
+      <ul class="sh-list">
+        <li>
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.5a2.5 2 0 0 0-2.5-1.5c-1.4 0-2.5.8-2.5 2s1.1 2 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2a2.5 2 0 0 1-2.5-1.5"/></svg>
+          <div><h3>Live Revenue Tracking</h3><p>Your earnings and projected monthly income at a glance, updated in real time.</p></div>
+        </li>
+        <li>
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>
+          <div><h3>Booking Calendar</h3><p>Full visibility of reservations, blocked dates and availability across all platforms.</p></div>
+        </li>
+        <li>
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>
+          <div><h3>Occupancy &amp; Performance</h3><p>Track occupancy rates, average nightly rate and review scores over any period.</p></div>
+        </li>
+        <li>
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>
+          <div><h3>Alerts &amp; Statements</h3><p>Instant alerts for bookings and check-ins, plus downloadable monthly statements anytime.</p></div>
+        </li>
+      </ul>
+      <div class="sh-cta"><a class="btn btn-accent" href="#worth">Explore the owner dashboard →</a></div>
+      <p class="sh-note">Real-time visibility into your property, 24/7.</p>
     </div>
-    <div class="grid-3 reveal">
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.5a2.5 2 0 0 0-2.5-1.5c-1.4 0-2.5.8-2.5 2s1.1 2 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2a2.5 2 0 0 1-2.5-1.5"/></svg>
-        <h3>Live Revenue Tracking</h3>
-        <p>See your earnings and projected monthly income at a glance, updated in real time.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>
-        <h3>Booking Calendar</h3>
-        <p>Full visibility of reservations, blocked dates, and availability across all platforms.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>
-        <h3>Occupancy &amp; Performance</h3>
-        <p>Track occupancy rates, average nightly rate, and review scores over any period.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2"/><path d="M12 8V5M9 3h6M9 13h.01M15 13h.01M2 12v3M22 12v3"/></svg>
-        <h3>AI Pricing Insights</h3>
-        <p>Understand why prices are set as they are — our algorithm explains its recommendations in plain language.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>
-        <h3>Instant Notifications</h3>
-        <p>Get alerts for new bookings, check-ins, maintenance requests, and monthly report availability.</p>
-      </div>
-      <div class="bcard">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
-        <h3>Monthly Statements</h3>
-        <p>Download detailed financial statements and performance summaries at any time.</p>
+    <div class="sh-media reveal">
+      <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=72" alt="Owner dashboard showing live revenue and occupancy">
+      <div class="sh-badge">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <span>Real-time data, from anywhere.</span>
       </div>
     </div>
   </div>
