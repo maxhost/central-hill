@@ -53,7 +53,12 @@ export function expand(segments: string[], node: unknown, prefix: string[]): str
   return expand(rest, getAt(node, [seg!]), [...prefix, seg!]);
 }
 
-/** Recursively collect every `*_media_id` string value referenced in `data`. */
+/**
+ * Recursively collect every `*_media_id` string value referenced in `data`. Empty strings
+ * are skipped: optional image fields store `""` when unset (e.g. owners
+ * `services`/`dashboard` images), and `""` is not a valid `media_asset` uuid — passing it to
+ * the media/alt-text query throws `invalid input syntax for type uuid`.
+ */
 export function collectMediaIds(node: unknown, acc: string[]): void {
   if (Array.isArray(node)) {
     for (const item of node) collectMediaIds(item, acc);
@@ -61,8 +66,9 @@ export function collectMediaIds(node: unknown, acc: string[]): void {
   }
   if (node != null && typeof node === "object") {
     for (const [key, value] of Object.entries(node)) {
-      if (key.endsWith("_media_id") && typeof value === "string") acc.push(value);
-      else collectMediaIds(value, acc);
+      if (key.endsWith("_media_id") && typeof value === "string") {
+        if (value) acc.push(value);
+      } else collectMediaIds(value, acc);
     }
   }
 }
