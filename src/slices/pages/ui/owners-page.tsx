@@ -24,13 +24,6 @@ import { TestimonialsRow } from "./components/testimonials-row";
  */
 
 const OWNERS_STYLE = `
-.mk .owner-subnav{position:fixed;top:64px;left:0;right:0;z-index:40;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);opacity:0;visibility:hidden;transform:translateY(-12px);pointer-events:none;transition:opacity .35s var(--ease),transform .35s var(--ease),visibility .35s var(--ease)}
-.mk .owner-subnav.in{opacity:1;visibility:visible;transform:none;pointer-events:auto}
-@media(max-width:1023px){.mk .owner-subnav{display:none}}
-.mk .owner-subnav .wrap{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0}
-.mk .owner-subnav .wrap::-webkit-scrollbar{display:none}
-.mk .owner-subnav a{flex:0 0 auto;white-space:nowrap;font-size:13px;font-weight:500;color:var(--ink-soft);padding:14px 14px;border-bottom:2px solid transparent;transition:.2s var(--ease)}
-.mk .owner-subnav a:hover{color:var(--accent-deep);border-bottom-color:var(--accent)}
 .mk [id]{scroll-margin-top:130px}
 .mk .owner-hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:end}
 .mk .owner-hero .hero-copy{max-width:34ch}
@@ -106,21 +99,6 @@ const OWNERS_STYLE = `
 `;
 
 const OWNERS_BODY_TOP = `
-<nav class="owner-subnav in" aria-label="Owner page sections">
-  <div class="wrap">
-    <a href="#worth">What's My Property Worth?</a>
-    <a href="#numbers">Numbers That Speak for Themselves</a>
-    <a href="#why">Why Owners Choose Us</a>
-    <a href="#services">Everything Done for You</a>
-    <a href="#plans">Find Your Perfect Plan</a>
-    <a href="#journey">Your Growth Path</a>
-    <a href="#technology">Full Visibility from Anywhere</a>
-    <a href="#testimonials">What Our Owners Say</a>
-    <a href="#faq">Got Questions? We Have Answers.</a>
-    <a href="#start">Start Earning More Today</a>
-  </div>
-</nav>
-
 <section id="worth" class="hero compact owner-hero" style="padding:0">
   <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1900&q=72" alt="Bright, designer-furnished Lisbon apartment interior">
   <div class="wrap">
@@ -471,7 +449,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
        * Shared testimonials marquee (same component/visual as the home "Partners & Guests"
        * section). Rendered OUTSIDE the `.mk` wrapper so `mock.css`'s bare-element rules don't
        * leak into its Tailwind markup. The wrapper carries the `#testimonials` anchor + scroll
-       * offset that the owner sub-nav links to.
+       * offset that the header's Owners section menu links to.
        */}
       <div id="testimonials" style={{ scrollMarginTop: 130 }}>
         <TestimonialsRow locale={locale} showEyebrow={false} />

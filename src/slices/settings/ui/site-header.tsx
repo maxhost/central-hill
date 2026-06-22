@@ -39,23 +39,25 @@ const DEFAULT_HEADER: Array<{ key: string; href: string; children?: Array<{ key:
 ];
 
 /**
- * On the Owners page itself the page already shows its own always-visible section sub-nav
- * (see `slices/pages/ui/owners-page.tsx` → `.owner-subnav`), so the header's hover mega-menu
- * for "Owners" would just duplicate it stacked on top. Suppress that one dropdown (caret +
- * panel) when the owners page is in the DOM — `body:has([data-page="owners"])`. All other
- * dropdowns (and the Owners dropdown on every other page) are untouched. No JS, no kernel edit.
+ * On the Owners page the "Owners" mega-menu IS the page's section sub-nav (the page no longer
+ * renders its own bar). Two reveal triggers, both also giving the header its frosted background
+ * (handled by the hero-chrome rules in `globals.css`): (1) hover — the normal `group-hover`
+ * dropdown; (2) scroll — once `[data-site-header]` gains `.scrolled` (past the top) we pin the
+ * Owners panel open so it behaves like a sticky section bar. Scoped to the owners page via
+ * `body:has([data-page="owners"])`; every other page/menu is untouched. No JS, no kernel edit.
  */
 const OWNERS_NAV_CSS = `
-body:has([data-page="owners"]) [data-nav-item="/owners"] [data-subnav-panel]{display:none}
-body:has([data-page="owners"]) [data-nav-item="/owners"] [data-subnav-caret]{display:none}
+body:has([data-page="owners"]) [data-site-header].scrolled [data-nav-item="/owners"] [data-subnav-panel]{
+  visibility:visible;opacity:1;
+}
 `;
 
 /**
  * The "Owners" menu reveals the owners-page sections directly, hardcoded rather than read from the
  * DB nav sub-tabs (owner-directed). Hrefs map to the section anchors on the owners page — kept in
  * sync with `slices/pages/ui/owners-page.tsx` (see ADR 0023 updates / drizzle 0004→0007). On the
- * owners page these double as the page's own always-visible sub-nav, so this header dropdown is
- * suppressed there (see `OWNERS_NAV_CSS`); on mobile they appear under "Owners" in the burger drawer.
+ * owners page this dropdown doubles as the page's section sub-nav — opened on hover and pinned open
+ * on scroll (see `OWNERS_NAV_CSS`); on mobile they appear under "Owners" in the burger drawer.
  */
 const OWNERS_SECTIONS: Array<{ label: string; href: string }> = [
   { label: "What's My Property Worth?", href: "/owners#worth" },
@@ -125,7 +127,6 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
                   {l.label}
                   <span
                     aria-hidden
-                    data-subnav-caret
                     className="text-[0.6rem] opacity-70 transition-transform duration-200 group-hover:rotate-180"
                   >
                     ▾
