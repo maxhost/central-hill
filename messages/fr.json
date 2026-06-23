@@ -290,7 +290,8 @@
         "metaDescription": "Méta-description",
         "bookingEnabled": "Activer la réservation",
         "bookingEnabledHint": "Si activé, le bouton « Voir plus » de la carte ouvre l’URL Avantio ci-dessous dans un nouvel onglet, au lieu de la page de détail.",
-        "avantioUrlHint": "Lien de réservation externe vers lequel la carte redirige quand la réservation est activée."
+        "avantioUrlHint": "Lien de réservation externe vers lequel la carte redirige quand la réservation est activée.",
+        "coverHint": "Optionnel — un visuel par défaut s’affiche en attendant."
       },
       "errors": {
         "coverRequired": "Une image de couverture est requise.",

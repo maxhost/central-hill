@@ -290,7 +290,8 @@
         "metaDescription": "Meta description",
         "bookingEnabled": "Enable booking",
         "bookingEnabledHint": "When on, the card’s “View more” opens the Avantio URL below in a new tab instead of the detail page.",
-        "avantioUrlHint": "External booking link the card redirects to when booking is enabled."
+        "avantioUrlHint": "External booking link the card redirects to when booking is enabled.",
+        "coverHint": "Optional — a placeholder is shown until you upload one."
       },
       "errors": {
         "coverRequired": "A cover image is required.",

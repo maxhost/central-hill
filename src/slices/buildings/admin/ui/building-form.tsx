@@ -211,11 +211,6 @@ export function BuildingForm({
 
   function onSubmit() {
     setBanner(null);
-    // Client guard for the one field with an unfriendly server message.
-    if (!state.cover_media_id) {
-      setErrors({ cover_media_id: t("admin.errors.coverRequired") });
-      return;
-    }
     setErrors({});
     start(async () => {
       const result = await saveBuilding(buildPayload(state, initial?.id));
@@ -377,7 +372,7 @@ export function BuildingForm({
 
       <AdminCard title={t("admin.sections.media")}>
         <div className="space-y-5">
-          <Field label={t("admin.fields.cover")} required error={err("cover_media_id")}>
+          <Field label={t("admin.fields.cover")} hint={t("admin.fields.coverHint")} error={err("cover_media_id")}>
             <MediaField
               value={state.cover_media_id || null}
               preview={previews[state.cover_media_id] ?? null}

@@ -35,7 +35,7 @@ export const buildingSaveInput = z.object({
   street_address: z.string().min(1).max(240),
   latitude: latitude.nullable(),
   longitude: longitude.nullable(),
-  cover_media_id: z.uuid(),
+  cover_media_id: z.uuid().nullable(),
   og_image_media_id: z.uuid().nullable(),
   avantio_id: z.string().max(120).nullable(),
   avantio_url: z.url().nullable(),

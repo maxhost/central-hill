@@ -290,7 +290,8 @@
         "metaDescription": "Meta descrição",
         "bookingEnabled": "Ativar reservas",
         "bookingEnabledHint": "Quando ativo, o “Ver mais” do cartão abre o URL Avantio abaixo num novo separador, em vez da página de detalhe.",
-        "avantioUrlHint": "Link de reserva externo para onde o cartão redireciona quando as reservas estão ativas."
+        "avantioUrlHint": "Link de reserva externo para onde o cartão redireciona quando as reservas estão ativas.",
+        "coverHint": "Opcional — mostra-se um marcador até carregar uma imagem."
       },
       "errors": {
         "coverRequired": "É obrigatória uma imagem de capa.",

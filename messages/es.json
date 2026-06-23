@@ -290,7 +290,8 @@
         "metaDescription": "Meta descripción",
         "bookingEnabled": "Activar Booking",
         "bookingEnabledHint": "Si está activo, el botón “Ver más” de la card abre el Avantio URL de abajo en una pestaña nueva, en vez de la página de detalle.",
-        "avantioUrlHint": "Enlace de reserva externo al que redirige la card cuando Booking está activo."
+        "avantioUrlHint": "Enlace de reserva externo al que redirige la card cuando Booking está activo.",
+        "coverHint": "Opcional — se muestra un marcador hasta que subas una."
       },
       "errors": {
         "coverRequired": "Se requiere una imagen de portada.",
