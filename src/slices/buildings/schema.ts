@@ -29,6 +29,9 @@ export const building = pgTable("building", {
   og_image_media_id: uuid(), // → media_asset.id (core/media)
   avantio_id: text(),
   avantio_url: text(),
+  // When on (and an avantio_url is set) the listing card links out to that external
+  // booking URL instead of the internal detail page.
+  booking_enabled: boolean().notNull().default(false),
   // Denormalized stats — recomputed by this slice on apartment publish.
   apartments_count: integer().notNull().default(0),
   total_capacity: integer().notNull().default(0),

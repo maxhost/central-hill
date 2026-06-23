@@ -287,7 +287,10 @@
         "avantioId": "Avantio ID",
         "avantioUrl": "Avantio URL",
         "metaTitle": "Meta title",
-        "metaDescription": "Meta description"
+        "metaDescription": "Meta description",
+        "bookingEnabled": "Enable booking",
+        "bookingEnabledHint": "When on, the card’s “View more” opens the Avantio URL below in a new tab instead of the detail page.",
+        "avantioUrlHint": "External booking link the card redirects to when booking is enabled."
       },
       "errors": {
         "coverRequired": "A cover image is required.",

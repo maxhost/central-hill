@@ -85,6 +85,7 @@ export interface BuildingEditData {
   og_image_media_id: string | null;
   avantio_id: string | null;
   avantio_url: string | null;
+  booking_enabled: boolean;
   name: string;
   headline: string;
   teaser: string;
@@ -145,6 +146,7 @@ export async function getBuildingForEdit(id: string): Promise<BuildingEditBundle
     og_image_media_id: row.og_image_media_id,
     avantio_id: row.avantio_id,
     avantio_url: row.avantio_url,
+    booking_enabled: row.booking_enabled,
     name: content.get(BUILDING, id, "name") ?? "",
     headline: content.get(BUILDING, id, "headline") ?? "",
     teaser: content.get(BUILDING, id, "teaser") ?? "",

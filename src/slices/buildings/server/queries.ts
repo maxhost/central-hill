@@ -58,6 +58,8 @@ interface BuildingRow {
   cover_media_id: string | null;
   is_new: boolean;
   is_featured: boolean;
+  booking_enabled: boolean;
+  avantio_url: string | null;
   apartments_count: number;
   total_capacity: number;
   beds_count: number;
@@ -72,6 +74,8 @@ const summarySelect = {
   cover_media_id: building.cover_media_id,
   is_new: building.is_new,
   is_featured: building.is_featured,
+  booking_enabled: building.booking_enabled,
+  avantio_url: building.avantio_url,
   apartments_count: building.apartments_count,
   total_capacity: building.total_capacity,
   beds_count: building.beds_count,
@@ -174,6 +178,7 @@ function mapSummary(row: BuildingRow, ctx: SummaryCtx): BuildingSummary {
     cover,
     isNew: row.is_new,
     isFeatured: row.is_featured,
+    booking: { enabled: row.booking_enabled, url: row.avantio_url },
     stats: {
       apartments: row.apartments_count,
       capacity: row.total_capacity,
@@ -250,12 +255,11 @@ async function _getBuildingBySlug(locale: Locale, slugValue: string): Promise<Bu
 
   const detailRows = await db
     .select({
-      ...summarySelect,
+      ...summarySelect, // includes avantio_url + booking_enabled
       latitude: building.latitude,
       longitude: building.longitude,
       og_image_media_id: building.og_image_media_id,
       avantio_id: building.avantio_id,
-      avantio_url: building.avantio_url,
     })
     .from(building)
     .where(and(eq(building.id, id), eq(building.status, "published")))

@@ -11,7 +11,9 @@ page (ISR). See `docs/vertical-slices.md` → S2, `docs/data-model.md` → Slice
 **Tables** (`schema.ts`, migration `0000`):
 - `building` — `slug, status, position, is_new, is_featured, city_id, neighbourhood_id,
   street_address, latitude?, longitude?, cover_media_id, og_image_media_id?, avantio_id?,
-  avantio_url?` + denormalized stats `apartments_count, total_capacity, beds_count`
+  avantio_url?, booking_enabled` (migration `0011`: when on + an `avantio_url` is set, the
+  listing card links out to that external URL in a new tab instead of the detail page)
+  + denormalized stats `apartments_count, total_capacity, beds_count`
   (recomputed by this slice on **apartment publish**, S3). [T]: `name, headline, teaser`
   (~180 chars), `description_intro`, `description_neighbourhood`, `meta_title`, `meta_description`.
 - `building_media` — ordered gallery (`building_id, media_id, position`).
@@ -53,7 +55,9 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   is hidden (kept commented out in source for later DB wiring); a building with no R2 cover
   yet falls back to `public/placeholders/building.svg` so cards never render empty. The
   Tailwind `BuildingCard`/`BuildingFilter` components are a different look, kept for other
-  consumers.
+  consumers. A building with **booking enabled** (admin toggle + an `avantio_url`) makes its
+  whole card link out to that external booking URL in a new tab (`target="_blank"`) instead of
+  the internal detail page; `BuildingSummary.booking = { enabled, url }` carries this.
 - `/{locale}/buildings/{slug}` — detail (`ui/building-detail.tsx`): the approved
   `mock/building-detail.html` design, now **DB-driven** from `getBuildingBySlug(locale, slug)`
   (`notFound()` when unknown/unpublished): hero (placeholder cover when no R2 image), gallery,

@@ -39,6 +39,7 @@ export const buildingSaveInput = z.object({
   og_image_media_id: z.uuid().nullable(),
   avantio_id: z.string().max(120).nullable(),
   avantio_url: z.url().nullable(),
+  booking_enabled: z.boolean(),
   // [T] source values (en):
   name: tStr({ min: 1, max: 160 }),
   headline: tStr({ min: 1, max: 160 }),

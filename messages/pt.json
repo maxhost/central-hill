@@ -287,7 +287,10 @@
         "avantioId": "ID Avantio",
         "avantioUrl": "URL Avantio",
         "metaTitle": "Meta título",
-        "metaDescription": "Meta descrição"
+        "metaDescription": "Meta descrição",
+        "bookingEnabled": "Ativar reservas",
+        "bookingEnabledHint": "Quando ativo, o “Ver mais” do cartão abre o URL Avantio abaixo num novo separador, em vez da página de detalhe.",
+        "avantioUrlHint": "Link de reserva externo para onde o cartão redireciona quando as reservas estão ativas."
       },
       "errors": {
         "coverRequired": "É obrigatória uma imagem de capa.",

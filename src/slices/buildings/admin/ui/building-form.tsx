@@ -47,6 +47,7 @@ interface FormState {
   og_image_media_id: string;
   avantio_id: string;
   avantio_url: string;
+  booking_enabled: boolean;
   name: string;
   headline: string;
   teaser: string;
@@ -77,6 +78,7 @@ function initialState(data: BuildingEditData | null): FormState {
     og_image_media_id: data?.og_image_media_id ?? "",
     avantio_id: data?.avantio_id ?? "",
     avantio_url: data?.avantio_url ?? "",
+    booking_enabled: data?.booking_enabled ?? false,
     name: data?.name ?? "",
     headline: data?.headline ?? "",
     teaser: data?.teaser ?? "",
@@ -109,6 +111,7 @@ function buildPayload(s: FormState, id: string | undefined) {
     og_image_media_id: orNull(s.og_image_media_id),
     avantio_id: orNull(s.avantio_id),
     avantio_url: orNull(s.avantio_url),
+    booking_enabled: s.booking_enabled,
     name: s.name.trim(),
     headline: s.headline.trim(),
     teaser: s.teaser.trim(),
@@ -489,11 +492,23 @@ export function BuildingForm({
       </AdminCard>
 
       <AdminCard title={t("admin.sections.booking")}>
+        <div className="mb-4">
+          <Checkbox
+            label={t("admin.fields.bookingEnabled")}
+            checked={state.booking_enabled}
+            onChange={(e) => set("booking_enabled", e.target.checked)}
+          />
+          <p className="mt-1 text-xs text-ink-soft">{t("admin.fields.bookingEnabledHint")}</p>
+        </div>
         <FieldGrid>
           <Field label={t("admin.fields.avantioId")} error={err("avantio_id")}>
             <TextInput value={state.avantio_id} onChange={(e) => set("avantio_id", e.target.value)} />
           </Field>
-          <Field label={t("admin.fields.avantioUrl")} error={err("avantio_url")}>
+          <Field
+            label={t("admin.fields.avantioUrl")}
+            hint={t("admin.fields.avantioUrlHint")}
+            error={err("avantio_url")}
+          >
             <TextInput
               value={state.avantio_url}
               onChange={(e) => set("avantio_url", e.target.value)}

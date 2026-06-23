@@ -74,6 +74,7 @@ export async function saveBuilding(raw: unknown): Promise<BuildingSaveResult> {
     og_image_media_id: input.og_image_media_id,
     avantio_id: input.avantio_id,
     avantio_url: input.avantio_url,
+    booking_enabled: input.booking_enabled,
   };
 
   try {

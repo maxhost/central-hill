@@ -1,0 +1,1 @@
+ALTER TABLE "building" ADD COLUMN "booking_enabled" boolean DEFAULT false NOT NULL;

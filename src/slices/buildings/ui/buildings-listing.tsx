@@ -39,15 +39,20 @@ interface CardLabels {
   apartments: (count: number) => string;
 }
 
-/** One `.pcard` built from a published building row (city omitted per client direction B6). */
+/** One `.pcard` built from a published building row (city omitted per client direction B6).
+ *  When the building has booking enabled + an external URL, the whole card links out to it
+ *  (new tab) instead of the internal detail page. */
 function cardHtml(b: BuildingSummary, locale: Locale, labels: CardLabels): string {
   const cover = b.cover?.url ?? PLACEHOLDER_COVER;
   const alt = b.cover?.alt ?? b.name;
   const meta = [b.streetAddress, b.neighbourhood?.name, labels.apartments(b.stats.apartments)]
     .filter(Boolean)
     .join(" · ");
+  const bookOut = b.booking.enabled && Boolean(b.booking.url);
+  const href = bookOut ? b.booking.url! : `/${locale}/buildings/${b.slug}`;
+  const targetAttr = bookOut ? ' target="_blank" rel="noopener noreferrer"' : "";
   return `
-      <a class="pcard" href="/${locale}/buildings/${esc(b.slug)}">
+      <a class="pcard" href="${esc(href)}"${targetAttr}>
         <div class="ph">${
           b.isNew ? `<span class="badge">★ ${esc(labels.isNew)}</span>` : ""
         }<img src="${esc(cover)}" alt="${esc(alt)}" loading="lazy"></div>
