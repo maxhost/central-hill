@@ -88,15 +88,19 @@ const PAGE_STYLE = `
 .mk .calc-card{max-width:560px;margin:0 auto;background:var(--surface);color:var(--ink);
   border:1px solid var(--line);border-radius:8px;padding:38px 34px 32px;text-align:center;
   box-shadow:0 30px 60px -30px rgba(0,0,0,.4)}
-.mk .calc-card .earn-badge{display:inline-flex;align-items:center;gap:.5em;background:var(--feature-accent);color:var(--bg);
-  font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:8px 16px;border-radius:30px;margin-bottom:16px}
+/* Badge + inputs mirror the Owners earnings form (.est-card) for a uniform look: solid
+   accent badge with white text (the old feature-accent-on-bg was cream-on-paper = invisible),
+   and selects/inputs in ink so the chosen values read dark like Owners. */
+.mk .calc-card .earn-badge{display:inline-flex;align-items:center;gap:.5em;background:var(--accent);color:#fff;
+  font-size:13px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:9px 18px;border-radius:30px;margin-bottom:16px;
+  box-shadow:0 10px 24px -10px color-mix(in srgb,var(--accent) 75%,transparent)}
 .mk .calc-card h3{font-size:26px;margin-bottom:8px}
 .mk .calc-card .calc-sub{font-size:14px;color:var(--ink-soft);margin-bottom:24px}
 .mk .calc-field{margin-bottom:16px;text-align:left}
 .mk .calc-field label{display:block;font-size:12px;letter-spacing:.04em;font-weight:600;color:var(--ink);margin-bottom:7px}
-.mk .calc-field input{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);
+.mk .calc-field input,.mk .calc-field select{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);
   background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:13px 14px;transition:.2s var(--ease)}
-.mk .calc-field input:focus{outline:none;border-color:var(--feature-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--feature-accent) 18%,transparent)}
+.mk .calc-field input:focus,.mk .calc-field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
 .mk .calc-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .mk .calc-card .btn{width:100%;justify-content:center;margin-top:8px}
 @media(max-width:520px){.mk .calc-two{grid-template-columns:1fr}}
@@ -197,11 +201,15 @@ const BODY = (locale: Locale, cardsHtml: string) => `
       <div class="calc-two">
         <div class="calc-field">
           <label for="calc-nprop">Nº of Properties</label>
-          <input id="calc-nprop" type="number" min="1" placeholder="1">
+          <select id="calc-nprop">
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option>
+          </select>
         </div>
         <div class="calc-field">
           <label for="calc-nbed">Nº of Bedrooms</label>
-          <input id="calc-nbed" type="number" min="1" placeholder="2">
+          <select id="calc-nbed">
+            <option>Studio</option><option>1</option><option>2</option><option>3</option><option>4+</option>
+          </select>
         </div>
       </div>
       <a class="btn btn-accent" href="#">Calculate My Earnings →</a>

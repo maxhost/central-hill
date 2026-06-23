@@ -53,7 +53,7 @@ const OWNERS_STYLE = `
 .mk .est-field input:focus,.mk .est-field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
 .mk .est-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .mk .est-card .btn{width:100%;justify-content:center;margin-top:6px}
-.mk .est-note{text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:14px}
+.mk .est-note{text-align:center;font-size:12.5px;color:var(--ink);font-weight:500;margin-top:14px}
 .mk .owner-pitch .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:start}
 .mk .owner-pitch .pitch-text{position:sticky;top:120px}
 .mk .owner-pitch .pitch-sub{margin-top:18px;font-size:18px;line-height:1.6;color:var(--ink-soft)}
