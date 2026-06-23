@@ -26,6 +26,9 @@ import { FaqSection } from "./components/faq-section";
 const HERO_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70";
 const HERO_FALLBACK_ALT = "Aerial view of Lisbon's historic skyline and tiled rooftops at dusk";
+const ASSET_FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=72";
+const ASSET_FALLBACK_ALT = "Designer-furnished managed apartment in a Lisbon building";
 
 // Escape admin-authored content before it is interpolated into the static body HTML string.
 const esc = (s: string) =>
@@ -40,6 +43,15 @@ const PARTNER_ICONS = [
   `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l3-9 8 8-9 3-2-2z"/><path d="M14 12l6-6"/><path d="M18 2l4 4-3 3-4-4 3-3z"/></svg>`,
   `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M4 21V7l8-4v18"/><path d="M12 21V9l8 3v9"/><path d="M7 9h2M7 13h2M16 14h1"/></svg>`,
   `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 13.5L21 3"/><path d="M21 3l-6 18-3.5-7.5L4 10l17-7z"/></svg>`,
+];
+
+// Positional per-asset-type icons (residential / hotels / corporate / portfolio), paired by
+// index with the fixed four-item asset showcase list. Only the text is data-driven.
+const ASSET_ICONS = [
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16"/><path d="M15 9h2a2 2 0 0 1 2 2v10"/><path d="M8 7h2M8 11h2M8 15h2"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M3 20v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1"/><path d="M16 5.5a3 3 0 0 1 0 5.5"/><path d="M19 20v-1a5 5 0 0 0-3-4.5"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>`,
 ];
 
 /** Render the partners benefit list (`<li>` = positional SVG + title/description), pairing
@@ -84,6 +96,24 @@ const PAGE_STYLE = `
 .mk .partner-pitch .pitch-list .ic{width:28px;height:28px;flex:0 0 auto;margin-top:2px;color:var(--accent-deep)}
 .mk .partner-pitch .pitch-list h3{font-size:19px;margin:0 0 6px}
 .mk .partner-pitch .pitch-list p{font-size:15px;line-height:1.6;color:var(--ink-soft);margin:0}
+
+/* asset types — Image Showcase (4:5 image + 4 benefit highlights + CTA badge),
+   mirroring the home guests-pitch / owners services layout. */
+.mk .asset-showcase .wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.mk .asset-showcase .sh-text h2{font-size:clamp(28px,3.4vw,44px);line-height:1.12;margin:0;color:var(--ink)}
+.mk .asset-showcase .sh-sub{margin-top:18px;font-size:18px;line-height:1.6;color:var(--ink-soft)}
+.mk .asset-showcase .sh-list{list-style:none;margin:32px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:22px 32px}
+.mk .asset-showcase .sh-list li{display:flex;gap:14px}
+.mk .asset-showcase .sh-list .ic{width:26px;height:26px;flex:0 0 auto;margin-top:2px;color:var(--accent-deep)}
+.mk .asset-showcase .sh-list h3{font-size:17px;margin:0 0 5px;color:var(--ink)}
+.mk .asset-showcase .sh-list p{font-size:14px;line-height:1.55;color:var(--ink-soft);margin:0}
+.mk .asset-showcase .sh-cta{margin-top:36px}
+.mk .asset-showcase .sh-note{margin-top:14px;font-size:14px;color:var(--ink-soft)}
+.mk .asset-showcase .sh-media{position:relative}
+.mk .asset-showcase .sh-media img{aspect-ratio:4/5;width:100%;object-fit:cover;border-radius:3px;display:block}
+.mk .asset-showcase .sh-badge{position:absolute;bottom:-20px;left:-16px;display:flex;align-items:flex-start;gap:10px;max-width:15rem;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 20px;box-shadow:0 24px 50px -20px rgba(0,0,0,.4)}
+.mk .asset-showcase .sh-badge .ic{width:20px;height:20px;flex:0 0 auto;margin-top:1px;color:var(--accent-deep)}
+.mk .asset-showcase .sh-badge span{font-size:14px;line-height:1.4;color:var(--ink)}
 
 /* partnership-model cards */
 .mk .models{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;align-items:start}
@@ -156,6 +186,8 @@ const PAGE_STYLE = `
 @media(max-width:980px){
   .mk .partner-pitch .wrap{grid-template-columns:1fr;gap:36px}
   .mk .partner-pitch .pitch-text{position:static}
+  .mk .asset-showcase .wrap{grid-template-columns:1fr;gap:36px}
+  .mk .asset-showcase .sh-media{order:-1}
   .mk .models{grid-template-columns:1fr}
   .mk .why-grid{grid-template-columns:1fr}
   .mk .tiles{grid-template-columns:1fr 1fr}
@@ -163,6 +195,7 @@ const PAGE_STYLE = `
   .mk .enquiry{grid-template-columns:1fr;gap:34px}
 }
 @media(max-width:680px){
+  .mk .asset-showcase .sh-list{grid-template-columns:1fr}
   .mk .tiles,.mk .steps,.mk .ftwo{grid-template-columns:1fr}
 }
 `;
@@ -172,12 +205,14 @@ const PAGE_STYLE = `
 // (outside `.mk` so its Tailwind markup doesn't pick up mock.css bare-element rules). The static
 // body is split here around that island.
 function bodyTop(content: RealEstateContent, media: Record<string, MediaImageData>): string {
-  const { hero, partners } = content;
+  const { hero, partners, asset_management: assets } = content;
   const heroImg = media[hero.image_media_id]?.url || HERO_FALLBACK_IMG;
   const heroAlt = media[hero.image_media_id]?.alt || HERO_FALLBACK_ALT;
   // Optional capability-statement asset behind the hero's secondary CTA (e.g. a PDF). If
   // no asset is set, the button keeps the design's in-page anchor.
   const capStmtUrl = media[hero.capability_statement_media_id ?? ""]?.url || "#deal-enquiry";
+  const assetImg = media[assets.image_media_id ?? ""]?.url || ASSET_FALLBACK_IMG;
+  const assetAlt = media[assets.image_media_id ?? ""]?.alt || ASSET_FALLBACK_ALT;
 
   return `
 <!-- SECTION 1 — HERO -->
@@ -245,44 +280,27 @@ function bodyTop(content: RealEstateContent, media: Record<string, MediaImageDat
   </div>
 </section>
 
-<!-- SECTION 4 — ASSET CLASSES -->
-<section id="manage">
+<!-- SECTION 4 — ASSET TYPES (Image Showcase, DB-driven) -->
+<section id="manage" class="asset-showcase">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <h2 class="section-title">A Management Partner for Every Asset Type</h2>
-      <p class="lede" style="margin-top:16px">From individual apartments to full buildings, boutique hotels, and corporate housing programmes — our operational model adapts to the asset, not the other way around.</p>
+    <div class="sh-text reveal">
+      <h2>${esc(assets.headline)}</h2>
+      ${assets.subheadline ? `<p class="sh-sub">${esc(assets.subheadline)}</p>` : ""}
+      <ul class="sh-list">${benefitList(assets.benefits, ASSET_ICONS)}
+      </ul>
+      <div class="sh-cta"><a class="btn btn-accent" href="#deal-enquiry">${esc(assets.cta.label)} →</a></div>
+      ${assets.cta.note ? `<p class="sh-note">${esc(assets.cta.note)}</p>` : ""}
     </div>
-    <div class="grid-3 reveal">
-      <div class="bcard">
-        <i class="iconoir-home ico" aria-hidden="true"></i>
-        <h3>Residential Apartments</h3>
-        <p>Individual units and full residential buildings managed as short-term, mid-term, or long-term rental assets. Studios through to 8-bedroom apartments accommodating up to 27 guests, across Portugal's most in-demand urban locations.</p>
-      </div>
-      <div class="bcard">
-        <i class="iconoir-building ico" aria-hidden="true"></i>
-        <h3>Hotels &amp; Boutique Hotels</h3>
-        <p>Full operational management of hotel assets, including front-of-house, guest experience design, revenue management, and distribution strategy. We bring the rigour of institutional hospitality management to properties of any scale, from boutique independents to larger branded opportunities.</p>
-      </div>
-      <div class="bcard">
-        <i class="iconoir-city ico" aria-hidden="true"></i>
-        <h3>Apart-Hotels &amp; Mixed-Use</h3>
-        <p>Managed accommodation assets that combine hotel services with apartment-style living — ideal for developers and funds seeking flexible, high-yield hospitality products positioned between traditional residential and hotel categories.</p>
-      </div>
-      <div class="bcard">
-        <i class="iconoir-community ico" aria-hidden="true"></i>
-        <h3>Corporate Housing</h3>
-        <p>Professionally managed, fully serviced apartments for corporate clients, relocating executives, and international organisations. Consistent standards, flexible lease terms from 30 days, direct invoicing, and dedicated account management for HR and travel managers.</p>
-      </div>
-      <div class="bcard">
-        <i class="iconoir-design-pencil ico" aria-hidden="true"></i>
-        <h3>Development Consultancy</h3>
-        <p>Pre-opening management services for developers bringing new assets to market. Unit mix optimisation, interior design direction, FF&amp;E specification, licensing and regulatory compliance, platform registration, and full operational launch.</p>
-      </div>
-      <div class="bcard">
-        <i class="iconoir-reports ico" aria-hidden="true"></i>
-        <h3>Portfolio Management</h3>
-        <p>Multi-building and multi-city portfolio management for investment funds and large operators. Consolidated reporting, standardised operating procedures, and economies of scale — managed through a single operational partner with full transparency.</p>
-      </div>
+    <div class="sh-media reveal">
+      <img src="${escAttr(assetImg)}" alt="${escAttr(assetAlt)}">
+      ${
+        assets.cta.note
+          ? `<div class="sh-badge">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <span>${esc(assets.cta.note)}</span>
+      </div>`
+          : ""
+      }
     </div>
   </div>
 </section>

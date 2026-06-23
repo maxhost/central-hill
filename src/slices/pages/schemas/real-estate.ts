@@ -13,6 +13,15 @@ import { z } from "zod";
 import { ctaWithNote, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
 import { faqGroupKey, fixed, iconCard } from "./_shared";
 
+/**
+ * An image reference that may be left unset. An empty string means "no asset yet" — the
+ * public render falls back to the approved mock photo (R2 isn't wired yet). Accepts a
+ * `media_asset.id` once uploaded. `.describe()` becomes the admin uploader hint.
+ */
+const optionalImage = (hint: string) => z.union([z.literal(""), mediaId]).describe(hint);
+const ASSET_IMG_HINT =
+  "Lifestyle photo for the Asset Types showcase. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
+
 export const realEstateSchema = z.object({
   hero: z.object({
     image_media_id: mediaId,
@@ -33,6 +42,17 @@ export const realEstateSchema = z.object({
     benefits: fixed(iconCard, 4),
     cta_primary: ctaWithNote,
     cta_secondary: ctaWithNote,
+  }),
+  // "A Management Partner for Every Asset Type" — Image Showcase (the home guests-pitch /
+  // owners services layout): headline + subheadline + four benefit highlights + CTA beside a
+  // 4:5 lifestyle image with a floating reassurance badge (the CTA note). Benefit icons are
+  // positional in the renderer; `icon_key` is stored but not rendered.
+  asset_management: z.object({
+    headline: tStr({ max: 160 }),
+    subheadline: tStrOpt({ max: 280 }),
+    benefits: fixed(iconCard, 4),
+    image_media_id: optionalImage(ASSET_IMG_HINT),
+    cta: ctaWithNote,
   }),
   /** Optional FAQ group to show on the page (blank = none). */
   faq_group_key: faqGroupKey,

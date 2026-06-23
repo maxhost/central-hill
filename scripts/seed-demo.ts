@@ -509,6 +509,39 @@ function realEstateData() {
       },
       cta_secondary: { label: "Explore deal structures", url: `${SITE}/en/real-estate` },
     },
+    asset_management: {
+      headline: "A Management Partner for Every Asset Type",
+      subheadline:
+        "From individual apartments to full buildings, boutique hotels, and corporate housing programmes — our operational model adapts to the asset, not the other way around.",
+      benefits: [
+        ic(
+          "Residential Apartments",
+          "Individual units and full buildings managed as short, mid, or long-term rental assets — studios to 8-bedrooms, across Portugal's most in-demand urban locations.",
+          "home",
+        ),
+        ic(
+          "Hotels & Apart-Hotels",
+          "Full operational management of hotels, boutique hotels, and mixed-use apart-hotels — front-of-house, guest experience, revenue management, and distribution at any scale.",
+          "building",
+        ),
+        ic(
+          "Corporate Housing",
+          "Fully serviced apartments for corporate clients and relocating executives. Consistent standards, flexible terms from 30 days, direct invoicing, and dedicated account management.",
+          "community",
+        ),
+        ic(
+          "Portfolio & Development",
+          "Multi-building portfolio management plus pre-opening consultancy for developers — consolidated reporting, standardised operations, and economies of scale under one partner.",
+          "reports",
+        ),
+      ],
+      image_media_id: uid(),
+      cta: {
+        label: "Discuss your asset",
+        url: `${SITE}/en/real-estate`,
+        note: "Our model adapts to the asset — not the other way around.",
+      },
+    },
     faq_group_key: "real_estate",
   };
 }
