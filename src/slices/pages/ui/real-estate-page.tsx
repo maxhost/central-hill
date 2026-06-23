@@ -4,6 +4,7 @@ import type { MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import { getRealEstatePage, type RealEstateContent } from "../contract";
 import { FaqSection } from "./components/faq-section";
+import { OwnerStatsCounter } from "./components/owner-stats-counter";
 
 /**
  * Real Estate page — the approved `mock/real-estate.html` embedded 1:1 inside the live app
@@ -15,10 +16,17 @@ import { FaqSection } from "./components/faq-section";
  * header/footer + i18n come from the app layout. The Iconoir CDN stylesheet (used by the
  * mock's `<i class="iconoir-… ico">` glyphs) is imported inside this page's scoped `<style>`.
  *
+ * The "Performance You Can Measure" tiles count up on scroll-in via the shared
+ * `OwnerStatsCounter` island (it animates any `.mk [data-count]` figure). The "How it works"
+ * section ("A Structured Path…") uses the same Editorial-Split layout as the partners section
+ * (`partner-pitch`), with the step numbers as the hairline-list markers.
+ *
  * Follow-up: the "Submit Partnership Enquiry" form is the mock's static markup (onsubmit
  * disabled, no action wired). Wiring it to the leads slice's deal-enquiry action is a
- * separate task. The mock's reveal-on-scroll JS isn't loaded, so `.reveal` is neutralised in
- * mock.css and all content renders immediately.
+ * separate task. Organisation-detail fields are `required`; the Asset Details and Additional
+ * Information sections are optional and collapsed into `<details>` accordions to shorten the
+ * form. The mock's reveal-on-scroll JS isn't loaded, so `.reveal` is neutralised in mock.css
+ * and all content renders immediately.
  */
 
 // Image fallbacks = the approved mock photo, used 1:1 until a real R2 asset is set in the
@@ -140,6 +148,8 @@ const PAGE_STYLE = `
 .mk .partner-pitch .pitch-list .ic{width:28px;height:28px;flex:0 0 auto;margin-top:2px;color:var(--accent-deep)}
 .mk .partner-pitch .pitch-list h3{font-size:19px;margin:0 0 6px}
 .mk .partner-pitch .pitch-list p{font-size:15px;line-height:1.6;color:var(--ink-soft);margin:0}
+/* "How it works" reuses the Editorial-Split shell; the step number is the list marker. */
+.mk .process-split .pitch-list .snum{flex:0 0 auto;width:44px;font-family:var(--serif);font-size:30px;line-height:1;color:var(--accent);opacity:.9;margin-top:-2px}
 
 /* asset types — Image Showcase (4:5 image + 4 benefit highlights + CTA badge),
    mirroring the home guests-pitch / owners services layout. */
@@ -238,6 +248,18 @@ const PAGE_STYLE = `
 .mk .ftwo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .mk .form-card .btn{width:100%;justify-content:center;margin-top:6px}
 .mk .form-note{text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:14px}
+/* required-field marker + the "Required" tag on the Organisation Details group */
+.mk .ffield label .req{color:var(--accent);margin-left:1px}
+.mk .fgroup-tag{margin-left:8px;font-size:10px;letter-spacing:.1em;color:var(--accent-deep);background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:30px;padding:3px 9px;vertical-align:middle}
+/* collapsible optional sections (Asset Details / Additional Information) */
+.mk .facc{margin-bottom:16px;border:1px solid var(--line);border-radius:6px;background:var(--bg);overflow:hidden}
+.mk .facc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:16px 18px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent-deep)}
+.mk .facc>summary::-webkit-details-marker{display:none}
+.mk .facc>summary .facc-hint{margin-left:auto;font-size:11px;letter-spacing:.04em;text-transform:none;color:var(--ink-soft);font-weight:500}
+.mk .facc>summary::after{content:"+";font-family:var(--sans);font-size:20px;line-height:1;color:var(--accent);transition:transform .25s var(--ease)}
+.mk .facc[open]>summary::after{transform:rotate(45deg)}
+.mk .facc[open]>summary{border-bottom:1px solid var(--line)}
+.mk .facc .facc-body{padding:22px 18px 8px}
 
 @media(max-width:980px){
   .mk .partner-pitch .wrap{grid-template-columns:1fr;gap:36px}
@@ -425,50 +447,48 @@ ${marketSection(market)}
       <p class="lede" style="margin-top:16px">Our track record is built on consistent, data-driven results across a growing portfolio of managed assets. We report transparently, benchmark rigorously, and continuously optimise performance for every asset under management.</p>
     </div>
     <div class="tiles reveal">
-      <div class="tile"><div class="tval">85%+</div><div class="tlbl">Average Occupancy</div><div class="tcap">Across all managed properties year-round</div></div>
-      <div class="tile"><div class="tval">+25%</div><div class="tlbl">Revenue Premium</div><div class="tcap">Vs. traditional residential letting</div></div>
-      <div class="tile"><div class="tval">24/7</div><div class="tlbl">Operational Coverage</div><div class="tcap">Guest support, reporting, and management</div></div>
-      <div class="tile"><div class="tval">10+</div><div class="tlbl">Years of Experience</div><div class="tcap">Managing assets in Portugal's prime markets</div></div>
-      <div class="tile"><div class="tval">14+</div><div class="tlbl">Buildings Managed</div><div class="tcap">Across Lisbon's most in-demand locations</div></div>
-      <div class="tile"><div class="tval">100%</div><div class="tlbl">Transparent Reporting</div><div class="tcap">Real-time dashboard access for all partners</div></div>
+      <div class="tile"><div class="tval" data-count data-to="85" data-suffix="%+">85%+</div><div class="tlbl">Average Occupancy</div><div class="tcap">Across all managed properties year-round</div></div>
+      <div class="tile"><div class="tval" data-count data-to="25" data-prefix="+" data-suffix="%">+25%</div><div class="tlbl">Revenue Premium</div><div class="tcap">Vs. traditional residential letting</div></div>
+      <div class="tile"><div class="tval" data-count data-to="24" data-suffix="/7">24/7</div><div class="tlbl">Operational Coverage</div><div class="tcap">Guest support, reporting, and management</div></div>
+      <div class="tile"><div class="tval" data-count data-to="10" data-suffix="+">10+</div><div class="tlbl">Years of Experience</div><div class="tcap">Managing assets in Portugal's prime markets</div></div>
+      <div class="tile"><div class="tval" data-count data-to="14" data-suffix="+">14+</div><div class="tlbl">Buildings Managed</div><div class="tcap">Across Lisbon's most in-demand locations</div></div>
+      <div class="tile"><div class="tval" data-count data-to="100" data-suffix="%">100%</div><div class="tlbl">Transparent Reporting</div><div class="tcap">Real-time dashboard access for all partners</div></div>
     </div>
   </div>
 </section>
 
-<!-- SECTION 8 — HOW IT WORKS -->
-<section id="process">
+<!-- SECTION 8 — HOW IT WORKS (Editorial Split, mirrors "Built for Institutional Partners") -->
+<section id="process" class="partner-pitch process-split">
   <div class="wrap">
-    <div class="sec-head reveal">
+    <div class="pitch-text reveal">
       <h2 class="section-title">A Structured Path from First Conversation to Full Performance</h2>
-      <p class="lede" style="margin-top:16px">Our onboarding process is designed for institutional partners. Every step is documented, timeline-driven, and managed by a dedicated account team.</p>
-    </div>
-    <div class="steps reveal">
-      <div class="step">
-        <div class="snum">01</div>
-        <h3>Asset Assessment &amp; Commercial Proposal</h3>
-        <p>We conduct a detailed assessment of your asset — location, unit mix, current performance, and market positioning — and present a tailored commercial proposal including projected yield, recommended partnership model, and contract terms.</p>
-      </div>
-      <div class="step">
-        <div class="snum">02</div>
-        <h3>Due Diligence &amp; Contract Negotiation</h3>
-        <p>Our legal and commercial team works with your advisors to structure and finalise the management agreement. All performance KPIs, reporting cadence, revenue share triggers, and exit terms are agreed and documented.</p>
-      </div>
-      <div class="step">
-        <div class="snum">03</div>
-        <h3>Operational Onboarding</h3>
-        <p>We handle all elements of the operational setup: professional photography, platform registration and listing creation, pricing strategy implementation, staff assignment, and property preparation — typically completed within 10–15 business days.</p>
-      </div>
-      <div class="step">
-        <div class="snum">04</div>
-        <h3>Asset Goes Live</h3>
-        <p>Your property launches across all distribution channels simultaneously. AI-powered pricing begins optimising daily rates from day one. Your account manager is active and reporting from the first booking.</p>
-      </div>
-      <div class="step">
-        <div class="snum">05</div>
-        <h3>Ongoing Management &amp; Reporting</h3>
-        <p>Monthly performance reports delivered to your agreed format. Quarterly review meetings with your account manager. Continuous yield optimisation and strategic recommendations as market conditions evolve.</p>
+      <p class="pitch-sub">Our onboarding process is designed for institutional partners. Every step is documented, timeline-driven, and managed by a dedicated account team.</p>
+      <div class="pitch-cta">
+        <a class="btn btn-accent" href="#deal-enquiry">Start the Conversation →</a>
       </div>
     </div>
+    <ul class="pitch-list reveal">
+      <li>
+        <span class="snum">01</span>
+        <div><h3>Asset Assessment &amp; Commercial Proposal</h3><p>We conduct a detailed assessment of your asset — location, unit mix, current performance, and market positioning — and present a tailored commercial proposal including projected yield, recommended partnership model, and contract terms.</p></div>
+      </li>
+      <li>
+        <span class="snum">02</span>
+        <div><h3>Due Diligence &amp; Contract Negotiation</h3><p>Our legal and commercial team works with your advisors to structure and finalise the management agreement. All performance KPIs, reporting cadence, revenue share triggers, and exit terms are agreed and documented.</p></div>
+      </li>
+      <li>
+        <span class="snum">03</span>
+        <div><h3>Operational Onboarding</h3><p>We handle all elements of the operational setup: professional photography, platform registration and listing creation, pricing strategy implementation, staff assignment, and property preparation — typically completed within 10–15 business days.</p></div>
+      </li>
+      <li>
+        <span class="snum">04</span>
+        <div><h3>Asset Goes Live</h3><p>Your property launches across all distribution channels simultaneously. AI-powered pricing begins optimising daily rates from day one. Your account manager is active and reporting from the first booking.</p></div>
+      </li>
+      <li>
+        <span class="snum">05</span>
+        <div><h3>Ongoing Management &amp; Reporting</h3><p>Monthly performance reports delivered to your agreed format. Quarterly review meetings with your account manager. Continuous yield optimisation and strategic recommendations as market conditions evolve.</p></div>
+      </li>
+    </ul>
   </div>
 </section>
 
@@ -493,88 +513,92 @@ const BODY_BOTTOM = `
 
       <form class="form-card reveal" onsubmit="return false">
         <div class="fgroup">
-          <div class="fgroup-title">Organisation Details</div>
+          <div class="fgroup-title">Organisation Details <span class="fgroup-tag">Required</span></div>
           <div class="ffield">
-            <label for="company">Company / Fund Name</label>
-            <input id="company" name="company" type="text" placeholder="Your organisation">
+            <label for="company">Company / Fund Name <span class="req" aria-hidden="true">*</span></label>
+            <input id="company" name="company" type="text" placeholder="Your organisation" required>
           </div>
           <div class="ffield">
-            <label for="contact">Contact Name &amp; Title</label>
-            <input id="contact" name="contact" type="text" placeholder="Name, role">
+            <label for="contact">Contact Name &amp; Title <span class="req" aria-hidden="true">*</span></label>
+            <input id="contact" name="contact" type="text" placeholder="Name, role" required>
           </div>
           <div class="ftwo">
             <div class="ffield">
-              <label for="email">Email Address</label>
-              <input id="email" name="email" type="email" placeholder="name@company.com">
+              <label for="email">Email Address <span class="req" aria-hidden="true">*</span></label>
+              <input id="email" name="email" type="email" placeholder="name@company.com" required>
             </div>
             <div class="ffield">
-              <label for="phone">Phone Number</label>
-              <input id="phone" name="phone" type="tel" placeholder="+351 …">
+              <label for="phone">Phone Number <span class="req" aria-hidden="true">*</span></label>
+              <input id="phone" name="phone" type="tel" placeholder="+351 …" required>
             </div>
           </div>
           <div class="ffield">
-            <label for="country">Country / Jurisdiction</label>
-            <input id="country" name="country" type="text" placeholder="e.g. Portugal, United Kingdom">
+            <label for="country">Country / Jurisdiction <span class="req" aria-hidden="true">*</span></label>
+            <input id="country" name="country" type="text" placeholder="e.g. Portugal, United Kingdom" required>
           </div>
         </div>
 
-        <div class="fgroup">
-          <div class="fgroup-title">Asset Details</div>
-          <div class="ffield">
-            <label for="asset-type">Type of Asset</label>
-            <select id="asset-type" name="asset-type">
-              <option value="" selected disabled>Select asset type…</option>
-              <option>Apartments</option>
-              <option>Apart-hotel</option>
-              <option>Hotel</option>
-              <option>Mixed</option>
-              <option>Corporate housing</option>
-            </select>
-          </div>
-          <div class="ftwo">
+        <details class="facc">
+          <summary class="facc-summary">Asset Details <span class="facc-hint">Optional</span></summary>
+          <div class="facc-body">
             <div class="ffield">
-              <label for="units">Number of Units or Keys</label>
-              <input id="units" name="units" type="text" placeholder="e.g. 24">
-            </div>
-            <div class="ffield">
-              <label for="locations">Location(s) in Portugal</label>
-              <input id="locations" name="locations" type="text" placeholder="e.g. Lisbon, Porto">
-            </div>
-          </div>
-          <div class="ffield">
-            <label for="status">Current Status</label>
-            <select id="status" name="status">
-              <option value="" selected disabled>Select current status…</option>
-              <option>Operating</option>
-              <option>In development</option>
-              <option>Acquisition phase</option>
-            </select>
-          </div>
-          <div class="ftwo">
-            <div class="ffield">
-              <label for="model">Target Partnership Model</label>
-              <select id="model" name="model">
-                <option value="" selected disabled>Select model…</option>
-                <option>Fixed rent</option>
-                <option>Management commission</option>
-                <option>Hybrid</option>
-                <option>Open to discussion</option>
+              <label for="asset-type">Type of Asset</label>
+              <select id="asset-type" name="asset-type">
+                <option value="" selected disabled>Select asset type…</option>
+                <option>Apartments</option>
+                <option>Apart-hotel</option>
+                <option>Hotel</option>
+                <option>Mixed</option>
+                <option>Corporate housing</option>
               </select>
             </div>
+            <div class="ftwo">
+              <div class="ffield">
+                <label for="units">Number of Units or Keys</label>
+                <input id="units" name="units" type="text" placeholder="e.g. 24">
+              </div>
+              <div class="ffield">
+                <label for="locations">Location(s) in Portugal</label>
+                <input id="locations" name="locations" type="text" placeholder="e.g. Lisbon, Porto">
+              </div>
+            </div>
             <div class="ffield">
-              <label for="timeline">Anticipated Start Date / Timeline</label>
-              <input id="timeline" name="timeline" type="text" placeholder="e.g. Q3 2026">
+              <label for="status">Current Status</label>
+              <select id="status" name="status">
+                <option value="" selected disabled>Select current status…</option>
+                <option>Operating</option>
+                <option>In development</option>
+                <option>Acquisition phase</option>
+              </select>
+            </div>
+            <div class="ftwo">
+              <div class="ffield">
+                <label for="model">Target Partnership Model</label>
+                <select id="model" name="model">
+                  <option value="" selected disabled>Select model…</option>
+                  <option>Fixed rent</option>
+                  <option>Management commission</option>
+                  <option>Hybrid</option>
+                  <option>Open to discussion</option>
+                </select>
+              </div>
+              <div class="ffield">
+                <label for="timeline">Anticipated Start Date / Timeline</label>
+                <input id="timeline" name="timeline" type="text" placeholder="e.g. Q3 2026">
+              </div>
             </div>
           </div>
-        </div>
+        </details>
 
-        <div class="fgroup">
-          <div class="fgroup-title">Additional Information</div>
-          <div class="ffield">
-            <label for="notes">Tell us more about your asset and what you are looking to achieve</label>
-            <textarea id="notes" name="notes" placeholder="Your goals, asset details, any specific requirements…"></textarea>
+        <details class="facc">
+          <summary class="facc-summary">Additional Information <span class="facc-hint">Optional</span></summary>
+          <div class="facc-body">
+            <div class="ffield">
+              <label for="notes">Tell us more about your asset and what you are looking to achieve</label>
+              <textarea id="notes" name="notes" placeholder="Your goals, asset details, any specific requirements…"></textarea>
+            </div>
           </div>
-        </div>
+        </details>
 
         <button class="btn btn-accent" type="submit">Submit Partnership Enquiry →</button>
         <p class="form-note">A senior member of our institutional team will respond within 24 hours.</p>
@@ -611,6 +635,8 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
       <div className="mk" data-page="real-estate">
         <div dangerouslySetInnerHTML={{ __html: BODY_BOTTOM }} />
       </div>
+      {/* Counts up the "Performance You Can Measure" tiles ([data-count]) on scroll-in. */}
+      <OwnerStatsCounter />
     </>
   );
 }
