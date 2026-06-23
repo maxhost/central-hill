@@ -916,7 +916,9 @@
       "confirmDelete": "Supprimer cet élément ? Action irréversible.",
       "back": "Retour",
       "saved": "Enregistré.",
-      "saveError": "Impossible d’enregistrer. Vérifiez les champs et réessayez."
+      "saveError": "Impossible d’enregistrer. Vérifiez les champs et réessayez.",
+      "deleted": "Supprimé.",
+      "deleteError": "Suppression impossible. Veuillez réessayer."
     }
   },
   "testimonials": {

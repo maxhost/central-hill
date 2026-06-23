@@ -15,6 +15,7 @@ import {
   MediaField,
   Select,
   TextInput,
+  useToast,
 } from "@slices/backoffice/contract";
 import { deleteApartment, saveApartment } from "../actions";
 import type { ApartmentEditData } from "../queries";
@@ -99,36 +100,35 @@ export function ApartmentForm({
   const t = useTranslations("apartments");
   const tb = useTranslations("backoffice");
   const router = useRouter();
+  const toast = useToast();
   const [pending, start] = useTransition();
   const [state, setState] = useState<FormState>(() =>
     initialState(initial, buildings[0]?.id ?? ""),
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [banner, setBanner] = useState<string | null>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setState((prev) => ({ ...prev, [key]: value }));
   const err = (key: string) => errors[key];
 
   function onSubmit() {
-    setBanner(null);
     setErrors({});
     start(async () => {
       const result = await saveApartment(buildPayload(state, initial?.id));
       if (result.ok) {
+        toast.success(tb("actions.saved"));
         if (!initial) {
           router.push(`/admin/apartments/${result.id}`);
           return;
         }
-        setBanner(tb("actions.saved"));
         router.refresh();
         return;
       }
       if (result.error === "validation") {
         setErrors(result.fieldErrors);
-        setBanner(tb("actions.saveError"));
+        toast.error(tb("actions.saveError"));
       } else {
-        setBanner(tb("actions.saveError"));
+        toast.error(tb("actions.saveError"));
       }
     });
   }
@@ -138,8 +138,12 @@ export function ApartmentForm({
     if (!window.confirm(tb("actions.confirmDelete"))) return;
     start(async () => {
       const result = await deleteApartment(initial.id);
-      if (result.ok) router.push("/admin/apartments");
-      else setBanner(tb("actions.saveError"));
+      if (result.ok) {
+        toast.success(tb("actions.deleted"));
+        router.push("/admin/apartments");
+      } else {
+        toast.error(tb("actions.deleteError"));
+      }
     });
   }
 
@@ -154,10 +158,6 @@ export function ApartmentForm({
           </Link>
         }
       />
-
-      {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
-      ) : null}
 
       <AdminCard title={t("admin.sections.status")}>
         <FieldGrid>

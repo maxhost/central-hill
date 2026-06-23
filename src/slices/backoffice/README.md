@@ -60,6 +60,16 @@ row is treated as not-staff.
   Presentational controls slice **client** form islands compose (the island owns
   state + the server-action submit). The leads inbox predates these; the CRUD
   screens (pages/buildings/apartments) build on them so inputs stay consistent.
+- **Toasts** (`ui/toast.tsx`) — an **agnostic** notification system: `ToastProvider`
+  is mounted once in the `(admin)` root layout; any admin **client** component calls
+  `useToast()` to fire any message with any variant — `toast.success(msg)`,
+  `toast.error(msg, { description, duration })`, `toast.info`/`toast.warning`, plus
+  `toast.show(msg, opts)` and `toast.dismiss(id)`. Not coupled to CRUD (any message),
+  but the pages/buildings/apartments forms use it to report save/delete outcomes (it
+  replaced the old inline `banner`). In-repo (no dependency — stack locked), auto-dismiss,
+  dismissible, stacked bottom-right, `aria-live`. `useToast()` is safe outside a provider
+  (returns a no-op API). Messages are passed in by the caller, so it carries no i18n of its
+  own (callers use their own keys, e.g. `backoffice.actions.saved`/`deleted`/`*Error`).
 - **Media picker** (`ui/media-field.tsx`, `server/media-actions.ts`, ADR 0018) —
   `MediaField` (single cover/og asset) + `MediaGalleryField` (ordered gallery),
   controlled islands that run the two-phase upload: `presignAdminUpload` →

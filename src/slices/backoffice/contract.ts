@@ -62,3 +62,11 @@ export {
   resolveMediaPreviews,
 } from "./server/media-actions";
 export type { AdminMediaPreview } from "./server/media-actions";
+
+/**
+ * Agnostic toast system (S12). Mount `ToastProvider` once in the admin root layout;
+ * any admin client component calls `useToast()` to fire any message with any variant
+ * (success / error / info / warning). Not coupled to CRUD — see `ui/toast.tsx`.
+ */
+export { ToastProvider, useToast } from "./ui/toast";
+export type { ToastApi, ToastVariant, ToastOptions } from "./ui/toast";

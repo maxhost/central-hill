@@ -916,7 +916,9 @@
       "confirmDelete": "Delete this item? This can’t be undone.",
       "back": "Back",
       "saved": "Saved.",
-      "saveError": "Couldn’t save. Please check the fields and try again."
+      "saveError": "Couldn’t save. Please check the fields and try again.",
+      "deleted": "Deleted.",
+      "deleteError": "Couldn’t delete. Please try again."
     }
   },
   "testimonials": {

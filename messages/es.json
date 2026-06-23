@@ -916,7 +916,9 @@
       "confirmDelete": "¿Eliminar este elemento? No se puede deshacer.",
       "back": "Volver",
       "saved": "Guardado.",
-      "saveError": "No se pudo guardar. Revisa los campos e inténtalo de nuevo."
+      "saveError": "No se pudo guardar. Revisa los campos e inténtalo de nuevo.",
+      "deleted": "Eliminado.",
+      "deleteError": "No se pudo eliminar. Inténtalo de nuevo."
     }
   },
   "testimonials": {

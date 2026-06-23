@@ -18,6 +18,7 @@ import {
   Select,
   TextArea,
   TextInput,
+  useToast,
 } from "@slices/backoffice/contract";
 import { deleteBuilding, saveBuilding } from "../actions";
 import type { AmenityOption, BuildingEditData, LocationOptions } from "../queries";
@@ -139,10 +140,10 @@ export function BuildingForm({
   const t = useTranslations("buildings");
   const tb = useTranslations("backoffice");
   const router = useRouter();
+  const toast = useToast();
   const [pending, start] = useTransition();
   const [state, setState] = useState<FormState>(() => initialState(initial));
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [banner, setBanner] = useState<string | null>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setState((prev) => ({ ...prev, [key]: value }));
@@ -210,26 +211,26 @@ export function BuildingForm({
   }
 
   function onSubmit() {
-    setBanner(null);
     setErrors({});
     start(async () => {
       const result = await saveBuilding(buildPayload(state, initial?.id));
       if (result.ok) {
+        toast.success(tb("actions.saved"));
         if (!initial) {
           router.push(`/admin/buildings/${result.id}`);
           return;
         }
-        setBanner(tb("actions.saved"));
         router.refresh();
         return;
       }
       if (result.error === "validation") {
         setErrors(result.fieldErrors);
-        setBanner(tb("actions.saveError"));
+        toast.error(tb("actions.saveError"));
       } else if (result.error === "slug_conflict") {
         setErrors({ slug: t("admin.errors.slugConflict") });
+        toast.error(t("admin.errors.slugConflict"));
       } else {
-        setBanner(tb("actions.saveError"));
+        toast.error(tb("actions.saveError"));
       }
     });
   }
@@ -239,8 +240,12 @@ export function BuildingForm({
     if (!window.confirm(tb("actions.confirmDelete"))) return;
     start(async () => {
       const result = await deleteBuilding(initial.id);
-      if (result.ok) router.push("/admin/buildings");
-      else setBanner(tb("actions.saveError"));
+      if (result.ok) {
+        toast.success(tb("actions.deleted"));
+        router.push("/admin/buildings");
+      } else {
+        toast.error(tb("actions.deleteError"));
+      }
     });
   }
 
@@ -255,10 +260,6 @@ export function BuildingForm({
           </Link>
         }
       />
-
-      {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
-      ) : null}
 
       <AdminCard title={t("admin.sections.status")}>
         <FieldGrid>

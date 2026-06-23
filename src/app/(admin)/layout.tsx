@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
+import { ToastProvider } from "@slices/backoffice/contract";
 import "../globals.css";
 
 /**
@@ -17,7 +18,9 @@ export default function AdminRootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="bg-bg text-ink antialiased">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

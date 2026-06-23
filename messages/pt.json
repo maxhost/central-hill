@@ -916,7 +916,9 @@
       "confirmDelete": "Eliminar este item? Não pode ser anulado.",
       "back": "Voltar",
       "saved": "Guardado.",
-      "saveError": "Não foi possível guardar. Verifique os campos e tente novamente."
+      "saveError": "Não foi possível guardar. Verifique os campos e tente novamente.",
+      "deleted": "Eliminado.",
+      "deleteError": "Não foi possível eliminar. Tente novamente."
     }
   },
   "testimonials": {
