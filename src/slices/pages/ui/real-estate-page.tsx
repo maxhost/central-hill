@@ -20,6 +20,14 @@ import { FaqSection } from "./components/faq-section";
 const PAGE_STYLE = `
 @import url("https://cdn.jsdelivr.net/npm/iconoir/css/iconoir.css");
 
+/* Hero: vertically centre the text/CTAs (the base mock anchors them to the bottom,
+   which read too low here) and strengthen the dark overlay over the photo so the
+   white copy stays legible — matching the Buildings index treatment. Scoped to this
+   page only via the [data-page] hook. */
+.mk[data-page="real-estate"] .hero{align-items:center}
+.mk[data-page="real-estate"] .hero .wrap{padding-top:40px;padding-bottom:40px}
+.mk[data-page="real-estate"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.5) 0%,rgba(18,16,13,.4) 45%,rgba(18,16,13,.82) 100%)}
+
 /* 4-up grid (partner types) reusing grid-3 seam look */
 .mk .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
 .mk .grid-4 .bcard{padding:38px 30px}
@@ -136,7 +144,6 @@ const BODY_TOP = `
 <section id="partners">
   <div class="wrap">
     <div class="sec-head reveal">
-      <div class="eyebrow">Our Partners</div>
       <h2 class="section-title">Built for Institutional Partners</h2>
       <p class="lede" style="margin-top:16px">Central Hill Apartments works with organisations that think at scale. Whether you represent a real estate investment fund, a development company, a large property operator, or a corporate seeking managed accommodation solutions, we have the operational depth, deal flexibility, and market knowledge to meet your requirements.</p>
     </div>
@@ -169,7 +176,6 @@ const BODY_TOP = `
 <section class="alt" id="capabilities">
   <div class="wrap">
     <div class="sec-head reveal">
-      <div class="eyebrow">Our Capabilities</div>
       <h2 class="section-title">Institutional-Grade Management, End to End</h2>
       <p class="lede" style="margin-top:16px">We operate at the intersection of hospitality excellence and real estate performance. Our capabilities cover every dimension of asset management — from technology and distribution to operations and strategic partnership.</p>
     </div>
@@ -197,7 +203,6 @@ const BODY_TOP = `
 <section id="manage">
   <div class="wrap">
     <div class="sec-head reveal">
-      <div class="eyebrow">What We Manage</div>
       <h2 class="section-title">A Management Partner for Every Asset Type</h2>
       <p class="lede" style="margin-top:16px">From individual apartments to full buildings, boutique hotels, and corporate housing programmes — our operational model adapts to the asset, not the other way around.</p>
     </div>
@@ -240,7 +245,6 @@ const BODY_TOP = `
 <section class="alt" id="deal-structures">
   <div class="wrap">
     <div class="sec-head center reveal">
-      <div class="eyebrow">Deal Structures</div>
       <h2 class="section-title">Deal Structures Built Around Your Risk Profile</h2>
       <p class="lede" style="margin:16px auto 0">We offer three core partnership models designed to align with different investment strategies, risk appetites, and return expectations. All models include full management, technology access, and institutional reporting.</p>
     </div>
@@ -294,7 +298,6 @@ const BODY_TOP = `
 <section id="market">
   <div class="wrap">
     <div class="sec-head reveal">
-      <div class="eyebrow">Portugal — Market Opportunity</div>
       <h2 class="section-title">Portugal: One of Europe's Strongest Hospitality Markets</h2>
       <p class="lede" style="margin-top:16px">Portugal consistently ranks among Europe's top-performing short-term rental markets, combining exceptional tourism growth, favourable regulation, strong international demand, and some of the continent's highest yields on residential real estate.</p>
     </div>
@@ -331,7 +334,6 @@ const BODY_TOP = `
 <section class="alt" id="track-record">
   <div class="wrap">
     <div class="sec-head reveal">
-      <div class="eyebrow">Proven Performance</div>
       <h2 class="section-title">Performance You Can Measure</h2>
       <p class="lede" style="margin-top:16px">Our track record is built on consistent, data-driven results across a growing portfolio of managed assets. We report transparently, benchmark rigorously, and continuously optimise performance for every asset under management.</p>
     </div>
@@ -350,7 +352,6 @@ const BODY_TOP = `
 <section id="process">
   <div class="wrap">
     <div class="sec-head reveal">
-      <div class="eyebrow">The Process</div>
       <h2 class="section-title">A Structured Path from First Conversation to Full Performance</h2>
       <p class="lede" style="margin-top:16px">Our onboarding process is designed for institutional partners. Every step is documented, timeline-driven, and managed by a dedicated account team.</p>
     </div>
@@ -392,7 +393,6 @@ const BODY_BOTTOM = `
   <div class="wrap">
     <div class="enquiry">
       <div class="enquiry-intro reveal">
-        <div class="eyebrow">Start a Conversation</div>
         <h2>Ready to Explore a Partnership?</h2>
         <p class="lede">Whether you represent an investment fund, a development company, a large property operator, or a corporate seeking managed accommodation — we want to hear from you. Complete the enquiry form below and one of our senior team will respond within 24 hours.</p>
         <div class="contact-direct">

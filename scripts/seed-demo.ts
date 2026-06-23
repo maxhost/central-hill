@@ -465,7 +465,7 @@ function guestData() {
 }
 
 function realEstateData() {
-  const model = (name: string, tag: string, features: string[], is_featured = false) => ({ name, tag, is_featured, features });
+  // Real Estate is a static marketing page; only the hero + FAQ group are schema-driven.
   return {
     hero: {
       image_media_id: uid(),
@@ -474,87 +474,6 @@ function realEstateData() {
       positioning: "Central Hill manages and operates furnished-rental portfolios across Portugal's most in-demand locations — combining hotel-grade operations with data-driven revenue management.",
       cta_primary: { label: "Partner with us", url: `${SITE}/en/real-estate` },
       cta_secondary: { label: "Book a stay", url: BOOK },
-    },
-    partners: {
-      headline: "Who we work with",
-      intro: "From private owners to funds and developers.",
-      types: [
-        ic("Private owners", "Single apartments and small portfolios."),
-        ic("Investors", "Yield-focused buyers seeking managed returns."),
-        ic("Developers", "New schemes needing a turnkey operator."),
-        ic("Funds", "Institutional portfolios at scale."),
-      ],
-    },
-    capabilities: {
-      headline: "What we do",
-      intro: "End-to-end operation and revenue management.",
-      items: [
-        ic("Operations", "Full hospitality operations across every unit."),
-        ic("Revenue management", "Data-driven pricing and distribution."),
-        ic("Asset care", "Maintenance, capex planning and compliance."),
-      ],
-    },
-    asset_classes: {
-      headline: "Asset classes we operate",
-      intro: "Flexible across formats and locations.",
-      items: [
-        ic("Furnished apartments", "Short and mid-term city rentals."),
-        ic("Aparthotels", "Branded, serviced stays at scale."),
-        ic("Group homes", "Large-capacity apartments for groups."),
-        ic("Boutique buildings", "Whole-building operations."),
-        ic("Mixed-use", "Residential blended with hospitality."),
-        ic("New developments", "Turnkey launch and operation."),
-      ],
-    },
-    models: {
-      headline: "Investment models",
-      intro: "Choose the structure that fits your goals.",
-      items: [
-        model("Management", "Most flexible", ["Full operations", "Revenue management", "Transparent reporting", "Owner keeps ownership", "Performance-based fee", "No long lock-in", "Monthly payouts"]),
-        model("Guaranteed rent", "Most predictable", ["Fixed monthly income", "We take occupancy risk", "Full operations included", "Maintenance handled", "Long-term agreement", "Hands-off for owner", "Stable cashflow"], true),
-        model("Joint venture", "Most upside", ["Shared investment", "Shared returns", "Aligned incentives", "Full operations", "Growth-focused", "Bespoke terms", "Strategic partnership"]),
-      ],
-      footer_note: "Every partnership is tailored — we'll model the right structure with you.",
-    },
-    market: {
-      headline: "Market insight",
-      intro: "Why Portugal, and why now.",
-      blocks: [
-        { title: "Demand fundamentals", copy: "Lisbon and Porto continue to attract record visitor numbers, underpinning resilient occupancy and nightly rates across the furnished-rental segment." },
-        { title: "Supply & regulation", bullets: ["Licensing-aware operation", "Compliance handled end to end", "Quality bar keeps demand high"] },
-        { title: "Yield drivers", bullets: ["Dynamic pricing", "Direct-booking mix", "Operational efficiency", "Length-of-stay optimisation"] },
-        { title: "Outlook", copy: "Professionalised management is widening the gap between top-performing assets and the rest — scale, data and service win." },
-      ],
-    },
-    track_record: {
-      headline: "Performance you can measure",
-      intro: "A decade of results across Portugal's most in-demand locations.",
-      metrics: [
-        { value: "60,000+", label: "Bookings completed" },
-        { value: "700,000+", label: "Guests hosted" },
-        { value: "€55M+", label: "Revenue generated" },
-        { value: "12+", label: "Years operating" },
-        { value: "180+", label: "Apartments managed" },
-        { value: "4.8/5", label: "Average guest rating" },
-      ],
-    },
-    process: {
-      headline: "How we start",
-      intro: "A clear path from first conversation to live operation.",
-      steps: [
-        ti("Discovery", "We learn your assets, goals and constraints."),
-        ti("Modelling", "We project returns and recommend a structure."),
-        ti("Agreement", "Clear terms, aligned incentives."),
-        ti("Onboarding", "We set up operations and go to market."),
-        ti("Operate & grow", "We run and optimise for the long term."),
-      ],
-    },
-    enquiry: {
-      headline: "Let's talk partnership",
-      intro: "Tell us about your portfolio — our investment team will respond shortly.",
-      contact_email: "partners@centralhill.pt",
-      contact_phone: "+351 910 075 725",
-      contact_linkedin: "https://linkedin.com/company/centralhill",
     },
     faq_group_key: "real_estate",
   };
