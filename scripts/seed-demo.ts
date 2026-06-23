@@ -466,7 +466,8 @@ function guestData() {
 
 function realEstateData() {
   // Real Estate is mostly a static marketing page; the hero, the "partners" section
-  // ("Built for Institutional Partners" — Editorial Split), and the FAQ group are schema-driven.
+  // ("Built for Institutional Partners" — Editorial Split), the "market" Why-Portugal bento,
+  // and the FAQ group are schema-driven.
   return {
     hero: {
       image_media_id: uid(),
@@ -550,6 +551,38 @@ function realEstateData() {
         label: "Discuss your asset",
         url: `${SITE}/en/real-estate`,
         note: "Our model adapts to the asset — not the other way around.",
+      },
+    },
+    market: {
+      headline: "Portugal: One of Europe's Strongest Hospitality Markets",
+      subheadline:
+        "Portugal consistently ranks among Europe's top-performing short-term rental markets, combining exceptional tourism growth, favourable regulation, strong international demand, and some of the continent's highest yields on residential real estate.",
+      stats: [
+        { value: "30M+", label: "Tourists welcomed in 2024" },
+        { value: "20–40%", label: "Yield premium vs. long-term letting" },
+        { value: "75%+", label: "Occupancy in managed properties" },
+      ],
+      fundamentals: {
+        title: "Market Fundamentals",
+        body: [
+          "Lisbon and Porto rank among the most visited cities in Southern Europe, with international arrivals growing year-on-year — driven by leisure, remote working, and corporate relocation demand.",
+          "Short-term rental yields in prime locations consistently outperform traditional residential letting, sustaining some of the highest returns on residential real estate in Western Europe.",
+        ],
+      },
+      regulatory: {
+        title: "Regulatory Environment",
+        body: "Portugal's Alojamento Local framework provides a clear, stable regulatory structure for short-term rental operations. Central Hill's compliance team manages all licensing, tax registration, and reporting obligations on behalf of our partners.",
+      },
+      thesis: {
+        title: "Investment Thesis",
+        points: [
+          "Strong, year-round tourism demand",
+          "Rising corporate relocation and mid-term demand",
+          "Prime yields 20–40% above long-term letting",
+          "Stable regulatory framework with a clear compliance path",
+          "Undersupply of institutional-grade managed stock",
+          "Lisbon positioned as a tier-1 European destination",
+        ],
       },
     },
     faq_group_key: "real_estate",

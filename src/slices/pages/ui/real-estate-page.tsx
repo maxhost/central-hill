@@ -57,6 +57,47 @@ const ASSET_ICONS = [
   `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>`,
 ];
 
+/** Render the Why-Portugal bento (SECTION 6) from the DB-driven `market` content: a tall
+ * feature card with a three-stat strip + two paragraphs, beside a regulatory cell and an
+ * investment-thesis bullet list. All values are admin-authored and escaped. */
+function marketSection(market: RealEstateContent["market"]): string {
+  const stats = market.stats
+    .map(
+      (s) =>
+        `<div class="stat"><div class="sv">${esc(s.value)}</div><span class="sl">${esc(s.label)}</span></div>`,
+    )
+    .join("");
+  const fundamentals = market.fundamentals.body.map((p) => `<p>${esc(p)}</p>`).join("");
+  const thesis = market.thesis.points.map((p) => `<li>${esc(p)}</li>`).join("");
+
+  return `
+<!-- SECTION 6 — WHY PORTUGAL (dynamic bento, DB-driven) -->
+<section id="market">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <h2 class="section-title">${esc(market.headline)}</h2>
+      ${market.subheadline ? `<p class="lede" style="margin-top:16px">${esc(market.subheadline)}</p>` : ""}
+    </div>
+    <div class="market-bento reveal">
+      <div class="mcell feature">
+        <h3>${esc(market.fundamentals.title)}</h3>
+        <div class="stat-row">${stats}</div>
+        ${fundamentals}
+      </div>
+      <div class="mcell">
+        <h3>${esc(market.regulatory.title)}</h3>
+        <p>${esc(market.regulatory.body)}</p>
+      </div>
+      <div class="mcell">
+        <h3>${esc(market.thesis.title)}</h3>
+        <ul class="thesis">${thesis}</ul>
+      </div>
+    </div>
+  </div>
+</section>
+`;
+}
+
 /** Render the partners benefit list (`<li>` = positional SVG + title/description), pairing
  * each item with its design icon by index. */
 function benefitList(
@@ -222,7 +263,7 @@ const PAGE_STYLE = `
 // (outside `.mk` so its Tailwind markup doesn't pick up mock.css bare-element rules). The static
 // body is split here around that island.
 function bodyTop(content: RealEstateContent, media: Record<string, MediaImageData>): string {
-  const { hero, partners, asset_management: assets } = content;
+  const { hero, partners, asset_management: assets, market } = content;
   const heroImg = media[hero.image_media_id]?.url || HERO_FALLBACK_IMG;
   const heroAlt = media[hero.image_media_id]?.alt || HERO_FALLBACK_ALT;
   // Optional capability-statement asset behind the hero's secondary CTA (e.g. a PDF). If
@@ -375,43 +416,7 @@ function bodyTop(content: RealEstateContent, media: Record<string, MediaImageDat
   </div>
 </section>
 
-<!-- SECTION 6 — WHY PORTUGAL (dynamic bento) -->
-<section id="market">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <h2 class="section-title">Portugal: One of Europe's Strongest Hospitality Markets</h2>
-      <p class="lede" style="margin-top:16px">Portugal consistently ranks among Europe's top-performing short-term rental markets, combining exceptional tourism growth, favourable regulation, strong international demand, and some of the continent's highest yields on residential real estate.</p>
-    </div>
-    <div class="market-bento reveal">
-      <div class="mcell feature">
-        <h3>Market Fundamentals</h3>
-        <div class="stat-row">
-          <div class="stat"><div class="sv">30M+</div><span class="sl">Tourists welcomed in 2024</span></div>
-          <div class="stat"><div class="sv">20–40%</div><span class="sl">Yield premium vs. long-term letting</span></div>
-          <div class="stat"><div class="sv">75%+</div><span class="sl">Occupancy in managed properties</span></div>
-        </div>
-        <p>Lisbon and Porto rank among the most visited cities in Southern Europe, with international arrivals growing year-on-year — driven by leisure, remote working, and corporate relocation demand.</p>
-        <p>Short-term rental yields in prime locations consistently outperform traditional residential letting, sustaining some of the highest returns on residential real estate in Western Europe.</p>
-      </div>
-      <div class="mcell">
-        <h3>Regulatory Environment</h3>
-        <p>Portugal's <span class="fig">Alojamento Local</span> framework provides a clear, stable regulatory structure for short-term rental operations. Central Hill's compliance team manages all licensing, tax registration, and reporting obligations on behalf of our partners.</p>
-      </div>
-      <div class="mcell">
-        <h3>Investment Thesis</h3>
-        <ul class="thesis">
-          <li>Strong, year-round tourism demand</li>
-          <li>Rising corporate relocation and mid-term demand</li>
-          <li>Prime yields 20–40% above long-term letting</li>
-          <li>Stable regulatory framework with a clear compliance path</li>
-          <li>Undersupply of institutional-grade managed stock</li>
-          <li>Lisbon positioned as a tier-1 European destination</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
+${marketSection(market)}
 <!-- SECTION 7 — TRACK RECORD -->
 <section class="alt" id="track-record">
   <div class="wrap">
