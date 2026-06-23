@@ -516,22 +516,32 @@ function realEstateData() {
       benefits: [
         ic(
           "Residential Apartments",
-          "Individual units and full buildings managed as short, mid, or long-term rental assets — studios to 8-bedrooms, across Portugal's most in-demand urban locations.",
+          "Individual units and full buildings as short, mid, or long-term rentals — studios to 8-bedrooms across Portugal's prime locations.",
           "home",
         ),
         ic(
-          "Hotels & Apart-Hotels",
-          "Full operational management of hotels, boutique hotels, and mixed-use apart-hotels — front-of-house, guest experience, revenue management, and distribution at any scale.",
+          "Hotels & Boutique Hotels",
+          "Full operational management of hotel assets — front-of-house, guest experience, revenue management, and distribution at any scale.",
           "building",
         ),
         ic(
+          "Apart-Hotels & Mixed-Use",
+          "Hotel services blended with apartment-style living — flexible, high-yield products between residential and hotel categories.",
+          "city",
+        ),
+        ic(
           "Corporate Housing",
-          "Fully serviced apartments for corporate clients and relocating executives. Consistent standards, flexible terms from 30 days, direct invoicing, and dedicated account management.",
+          "Fully serviced apartments for corporate clients and relocating executives, with flexible terms from 30 days and direct invoicing.",
           "community",
         ),
         ic(
-          "Portfolio & Development",
-          "Multi-building portfolio management plus pre-opening consultancy for developers — consolidated reporting, standardised operations, and economies of scale under one partner.",
+          "Development Consultancy",
+          "Pre-opening services for developers — unit mix, interior direction, FF&E, licensing, platform registration, and operational launch.",
+          "design-pencil",
+        ),
+        ic(
+          "Portfolio Management",
+          "Multi-building, multi-city portfolio management — consolidated reporting, standard operating procedures, and economies of scale.",
           "reports",
         ),
       ],

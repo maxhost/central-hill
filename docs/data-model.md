@@ -125,8 +125,8 @@ page_content
   `partners{headline, subheadline, benefits[4]{icon_key, title, description}, cta_primary{label,url,note}, cta_secondary{label,url,note}}`
   ("Built for Institutional Partners" — Editorial Split, modelled on owners `why`; benefit icons are
   positional in the renderer, `icon_key` stored but not rendered);
-  `asset_management{headline, subheadline, benefits[4]{icon_key, title, description}, image_media_id, cta{label,url,note}}`
-  ("A Management Partner for Every Asset Type" — Image Showcase: 4:5 image + four benefit highlights +
+  `asset_management{headline, subheadline, benefits[6]{icon_key, title, description}, image_media_id, cta{label,url,note}}`
+  ("A Management Partner for Every Asset Type" — Image Showcase: 4:5 image + six benefit highlights (2-col grid) +
   CTA badge, modelled on the home guests-pitch / owners services; `image_media_id` may be blank →
   fallback photo); `faq_group_key` → FAQ group `real_estate` referenced. The rest of the page
   (capabilities, deal structures, market, track record, process, enquiry form) is **static marketing copy in the renderer**, not

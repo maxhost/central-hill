@@ -44,13 +44,13 @@ export const realEstateSchema = z.object({
     cta_secondary: ctaWithNote,
   }),
   // "A Management Partner for Every Asset Type" — Image Showcase (the home guests-pitch /
-  // owners services layout): headline + subheadline + four benefit highlights + CTA beside a
-  // 4:5 lifestyle image with a floating reassurance badge (the CTA note). Benefit icons are
-  // positional in the renderer; `icon_key` is stored but not rendered.
+  // owners services layout): headline + subheadline + six benefit highlights (2-col grid) +
+  // CTA beside a 4:5 lifestyle image with a floating reassurance badge (the CTA note). Benefit
+  // icons are positional in the renderer; `icon_key` is stored but not rendered.
   asset_management: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
-    benefits: fixed(iconCard, 4),
+    benefits: fixed(iconCard, 6),
     image_media_id: optionalImage(ASSET_IMG_HINT),
     cta: ctaWithNote,
   }),
