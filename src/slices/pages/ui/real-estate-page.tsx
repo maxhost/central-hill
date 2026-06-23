@@ -132,16 +132,28 @@ const PAGE_STYLE = `
 .mk .model li::before{content:"";position:absolute;left:0;top:16px;width:14px;height:8px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg)}
 .mk .model-note{margin-top:34px;font-size:13.5px;color:var(--ink-soft);text-align:center;max-width:80ch;margin-left:auto;margin-right:auto}
 
-/* why portugal blocks */
-.mk .why-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
-.mk .why-block{background:var(--surface);padding:40px 36px}
-.mk .why-block h3{font-size:22px;margin-bottom:12px}
-.mk .why-block p{font-size:15px;color:var(--ink-soft);margin-bottom:14px}
-.mk .why-block p:last-child{margin-bottom:0}
-.mk .thesis{list-style:none;margin:0}
-.mk .thesis li{font-size:14.5px;color:var(--ink-soft);padding:10px 0 10px 28px;position:relative;border-top:1px solid var(--line)}
-.mk .thesis li:first-child{border-top:0}
-.mk .thesis li::before{content:"";position:absolute;left:0;top:15px;width:14px;height:8px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg)}
+/* why portugal — dynamic asymmetric bento (tall feature stat card + two supporting
+   cells), all hover-reactive. Replaces the former flat 2x2 why-grid. */
+.mk #market .market-bento{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-top:8px}
+.mk #market .mcell{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:38px 36px;transition:transform .38s var(--ease),box-shadow .38s var(--ease),border-color .38s var(--ease)}
+.mk #market .mcell::before{content:"";position:absolute;top:0;left:0;height:3px;width:0;background:var(--accent);transition:width .45s var(--ease)}
+.mk #market .mcell:hover{transform:translateY(-5px);box-shadow:0 28px 56px -32px rgba(0,0,0,.42);border-color:color-mix(in srgb,var(--accent) 38%,var(--line))}
+.mk #market .mcell:hover::before{width:100%}
+.mk #market .mcell h3{font-size:22px;margin-bottom:14px}
+.mk #market .mcell p{font-size:15px;color:var(--ink-soft);line-height:1.7;margin-bottom:14px}
+.mk #market .mcell p:last-child{margin-bottom:0}
+.mk #market .feature{grid-row:span 2;display:flex;flex-direction:column}
+.mk #market .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:30px}
+.mk #market .stat{background:var(--surface);padding:22px 16px;text-align:center;transition:background .3s var(--ease)}
+.mk #market .stat:hover{background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
+.mk #market .stat .sv{font-family:var(--serif);font-size:clamp(28px,3.2vw,38px);line-height:1;color:var(--accent);font-weight:500}
+.mk #market .stat .sl{display:block;margin-top:9px;font-size:12.5px;color:var(--ink-soft);line-height:1.4}
+.mk #market .fig{color:var(--accent-deep);font-weight:600}
+.mk #market .thesis{list-style:none;margin:0}
+.mk #market .thesis li{font-size:14.5px;color:var(--ink-soft);padding:10px 0 10px 28px;position:relative;border-top:1px solid var(--line);transition:color .25s var(--ease),padding-left .25s var(--ease)}
+.mk #market .thesis li:first-child{border-top:0}
+.mk #market .thesis li:hover{color:var(--ink);padding-left:32px}
+.mk #market .thesis li::before{content:"";position:absolute;left:0;top:15px;width:14px;height:8px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg)}
 
 /* track-record stat tiles */
 .mk .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
@@ -192,13 +204,15 @@ const PAGE_STYLE = `
   .mk .asset-showcase .wrap{grid-template-columns:1fr;gap:36px}
   .mk .asset-showcase .sh-media{order:-1}
   .mk .models{grid-template-columns:1fr}
-  .mk .why-grid{grid-template-columns:1fr}
+  .mk #market .market-bento{grid-template-columns:1fr}
+  .mk #market .feature{grid-row:auto}
   .mk .tiles{grid-template-columns:1fr 1fr}
   .mk .steps{grid-template-columns:1fr 1fr}
   .mk .enquiry{grid-template-columns:1fr;gap:34px}
 }
 @media(max-width:680px){
   .mk .asset-showcase .sh-list{grid-template-columns:1fr}
+  .mk #market .stat-row{grid-template-columns:1fr}
   .mk .tiles,.mk .steps,.mk .ftwo{grid-template-columns:1fr}
 }
 `;
@@ -361,35 +375,36 @@ function bodyTop(content: RealEstateContent, media: Record<string, MediaImageDat
   </div>
 </section>
 
-<!-- SECTION 6 — WHY PORTUGAL -->
+<!-- SECTION 6 — WHY PORTUGAL (dynamic bento) -->
 <section id="market">
   <div class="wrap">
     <div class="sec-head reveal">
       <h2 class="section-title">Portugal: One of Europe's Strongest Hospitality Markets</h2>
       <p class="lede" style="margin-top:16px">Portugal consistently ranks among Europe's top-performing short-term rental markets, combining exceptional tourism growth, favourable regulation, strong international demand, and some of the continent's highest yields on residential real estate.</p>
     </div>
-    <div class="why-grid reveal">
-      <div class="why-block">
+    <div class="market-bento reveal">
+      <div class="mcell feature">
         <h3>Market Fundamentals</h3>
-        <p>Portugal welcomed over <strong>30 million tourists</strong> in 2024, with Lisbon and Porto ranking among the most visited cities in Southern Europe. International arrivals continue to grow year-on-year, driven by leisure, remote working, and corporate relocation demand.</p>
-        <p>Short-term rental yields in Lisbon's prime locations consistently outperform traditional residential letting by <strong>20–40%</strong>, with average occupancy rates above <strong>75%</strong> in managed, professionally operated properties.</p>
+        <div class="stat-row">
+          <div class="stat"><div class="sv">30M+</div><span class="sl">Tourists welcomed in 2024</span></div>
+          <div class="stat"><div class="sv">20–40%</div><span class="sl">Yield premium vs. long-term letting</span></div>
+          <div class="stat"><div class="sv">75%+</div><span class="sl">Occupancy in managed properties</span></div>
+        </div>
+        <p>Lisbon and Porto rank among the most visited cities in Southern Europe, with international arrivals growing year-on-year — driven by leisure, remote working, and corporate relocation demand.</p>
+        <p>Short-term rental yields in prime locations consistently outperform traditional residential letting, sustaining some of the highest returns on residential real estate in Western Europe.</p>
       </div>
-      <div class="why-block">
+      <div class="mcell">
         <h3>Regulatory Environment</h3>
-        <p>Portugal's Alojamento Local framework provides a clear, stable regulatory structure for short-term rental operations. Central Hill's regulatory compliance team manages all licensing, tax registration, and reporting obligations on behalf of our partners.</p>
+        <p>Portugal's <span class="fig">Alojamento Local</span> framework provides a clear, stable regulatory structure for short-term rental operations. Central Hill's compliance team manages all licensing, tax registration, and reporting obligations on behalf of our partners.</p>
       </div>
-      <div class="why-block">
-        <h3>Why Lisbon Specifically</h3>
-        <p>Lisbon is one of Europe's fastest-growing luxury travel destinations and a leading hub for corporate relocation, technology companies, and international organisations establishing European bases. The city's combination of climate, culture, infrastructure, and relative affordability continues to attract high-value, long-stay demand.</p>
-      </div>
-      <div class="why-block">
+      <div class="mcell">
         <h3>Investment Thesis</h3>
         <ul class="thesis">
-          <li>Strong and growing tourism demand year-round</li>
-          <li>Corporate relocation and mid-term rental demand rising</li>
-          <li>Prime residential yields 20–40% above long-term letting</li>
-          <li>Stable regulatory framework with clear compliance path</li>
-          <li>Undersupply of professionally managed, institutional-grade stock</li>
+          <li>Strong, year-round tourism demand</li>
+          <li>Rising corporate relocation and mid-term demand</li>
+          <li>Prime yields 20–40% above long-term letting</li>
+          <li>Stable regulatory framework with a clear compliance path</li>
+          <li>Undersupply of institutional-grade managed stock</li>
           <li>Lisbon positioned as a tier-1 European destination</li>
         </ul>
       </div>
