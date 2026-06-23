@@ -465,15 +465,49 @@ function guestData() {
 }
 
 function realEstateData() {
-  // Real Estate is a static marketing page; only the hero + FAQ group are schema-driven.
+  // Real Estate is mostly a static marketing page; the hero, the "partners" section
+  // ("Built for Institutional Partners" — Editorial Split), and the FAQ group are schema-driven.
   return {
     hero: {
       image_media_id: uid(),
       headline: "Real estate, managed for performance",
-      subheadline: "Investment-grade hospitality management for owners and institutional partners.",
+      subheadline: "Real Estate Partnerships",
       positioning: "Central Hill manages and operates furnished-rental portfolios across Portugal's most in-demand locations — combining hotel-grade operations with data-driven revenue management.",
-      cta_primary: { label: "Partner with us", url: `${SITE}/en/real-estate` },
-      cta_secondary: { label: "Book a stay", url: BOOK },
+      cta_primary: { label: "Discuss a Partnership", url: `${SITE}/en/real-estate` },
+      cta_secondary: { label: "Download Our Capability Statement", url: `${SITE}/en/real-estate` },
+    },
+    partners: {
+      headline: "Built for Institutional Partners",
+      subheadline:
+        "Central Hill Apartments works with organisations that think at scale — investment funds, developers, large operators, and corporates seeking managed accommodation. We bring the operational depth, deal flexibility, and market knowledge to meet your requirements.",
+      benefits: [
+        ic(
+          "Investment Funds & Asset Managers",
+          "Reliable, data-driven hospitality management for residential and mixed-use assets. Reporting infrastructure, performance dashboards, and flexible deal structures built for institutional governance.",
+          "bank",
+        ),
+        ic(
+          "Real Estate Developers",
+          "From pre-opening strategy to full operational management. We advise on unit mix, yield optimisation, and guest experience from the planning stage through to stabilised operation.",
+          "ruler-combine",
+        ),
+        ic(
+          "Large-Scale Property Operators",
+          "Consolidate multiple properties under a single high-performance partner. Our technology and operating model scale across any portfolio size with no loss of quality or control.",
+          "city",
+        ),
+        ic(
+          "Corporate & Relocation Clients",
+          "Managed accommodation for relocating employees and international organisations. Consistent standards, direct billing, and dedicated account management for a seamless experience.",
+          "airplane",
+        ),
+      ],
+      cta_primary: {
+        label: "Discuss a Partnership",
+        url: `${SITE}/en/real-estate`,
+        note: "A senior member of our institutional team responds within 24 hours.",
+      },
+      cta_secondary: { label: "Explore deal structures", url: `${SITE}/en/real-estate` },
     },
     faq_group_key: "real_estate",
   };

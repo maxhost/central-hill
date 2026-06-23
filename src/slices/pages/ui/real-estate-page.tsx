@@ -1,13 +1,17 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
+import type { MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { getRealEstatePage } from "../contract";
+import { getRealEstatePage, type RealEstateContent } from "../contract";
 import { FaqSection } from "./components/faq-section";
 
 /**
  * Real Estate page — the approved `mock/real-estate.html` embedded 1:1 inside the live app
  * shell. The mock's body markup is rendered verbatim; its page styles are scoped under `.mk`
  * (see `src/app/mock.css` for the shared design system) so nothing leaks to Home/admin.
- * No database is read here — content is static, matching the mock exactly. The real
+ * The **hero** and the **partners** section ("Built for Institutional Partners") are wired to
+ * the `real_estate` `page_content` row (text/images/CTA labels come from the DB, resolved for
+ * the locale); the remaining sections are still the static mock layout. The real
  * header/footer + i18n come from the app layout. The Iconoir CDN stylesheet (used by the
  * mock's `<i class="iconoir-… ico">` glyphs) is imported inside this page's scoped `<style>`.
  *
@@ -16,6 +20,44 @@ import { FaqSection } from "./components/faq-section";
  * separate task. The mock's reveal-on-scroll JS isn't loaded, so `.reveal` is neutralised in
  * mock.css and all content renders immediately.
  */
+
+// Image fallbacks = the approved mock photo, used 1:1 until a real R2 asset is set in the
+// backoffice (the seeded `*_media_id` has no uploaded asset yet → resolved media is absent).
+const HERO_FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70";
+const HERO_FALLBACK_ALT = "Aerial view of Lisbon's historic skyline and tiled rooftops at dusk";
+
+// Escape admin-authored content before it is interpolated into the static body HTML string.
+const esc = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const escAttr = (s: string) => esc(s).replace(/"/g, "&quot;");
+
+// Positional per-partner icons from the locked design — paired by index with the fixed
+// four-item benefit list (funds / developers / operators / corporate). Only the benefit
+// *text* is data-driven; the SVGs never change (mirrors the Owners `why` section).
+const PARTNER_ICONS = [
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V10M19 21V10M9 21V10M15 21V10"/><path d="M3 10l9-6 9 6"/><path d="M3 10h18"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l3-9 8 8-9 3-2-2z"/><path d="M14 12l6-6"/><path d="M18 2l4 4-3 3-4-4 3-3z"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M4 21V7l8-4v18"/><path d="M12 21V9l8 3v9"/><path d="M7 9h2M7 13h2M16 14h1"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 13.5L21 3"/><path d="M21 3l-6 18-3.5-7.5L4 10l17-7z"/></svg>`,
+];
+
+/** Render the partners benefit list (`<li>` = positional SVG + title/description), pairing
+ * each item with its design icon by index. */
+function benefitList(
+  items: ReadonlyArray<{ title: string; description: string }>,
+  icons: readonly string[],
+): string {
+  return items
+    .map(
+      (b, i) => `
+      <li>
+        ${icons[i] ?? ""}
+        <div><h3>${esc(b.title)}</h3><p>${esc(b.description)}</p></div>
+      </li>`,
+    )
+    .join("");
+}
 
 const PAGE_STYLE = `
 @import url("https://cdn.jsdelivr.net/npm/iconoir/css/iconoir.css");
@@ -28,10 +70,20 @@ const PAGE_STYLE = `
 .mk[data-page="real-estate"] .hero .wrap{padding-top:40px;padding-bottom:40px}
 .mk[data-page="real-estate"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.5) 0%,rgba(18,16,13,.4) 45%,rgba(18,16,13,.82) 100%)}
 
-/* 4-up grid (partner types) reusing grid-3 seam look */
-.mk .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
-.mk .grid-4 .bcard{padding:38px 30px}
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
+
+/* partners — Editorial Split (sticky title + CTAs beside a hairline benefit list),
+   mirroring the Owners "why" section. */
+.mk .partner-pitch .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:start}
+.mk .partner-pitch .pitch-text{position:sticky;top:120px}
+.mk .partner-pitch .pitch-sub{margin-top:18px;font-size:18px;line-height:1.6;color:var(--ink-soft)}
+.mk .partner-pitch .pitch-cta{margin-top:28px;display:flex;flex-wrap:wrap;gap:14px}
+.mk .partner-pitch .pitch-note{margin-top:14px;font-size:14px;color:var(--ink-soft)}
+.mk .partner-pitch .pitch-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.mk .partner-pitch .pitch-list li{display:flex;gap:20px;padding:24px 0;border-bottom:1px solid var(--line)}
+.mk .partner-pitch .pitch-list .ic{width:28px;height:28px;flex:0 0 auto;margin-top:2px;color:var(--accent-deep)}
+.mk .partner-pitch .pitch-list h3{font-size:19px;margin:0 0 6px}
+.mk .partner-pitch .pitch-list p{font-size:15px;line-height:1.6;color:var(--ink-soft);margin:0}
 
 /* partnership-model cards */
 .mk .models{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;align-items:start}
@@ -102,7 +154,8 @@ const PAGE_STYLE = `
 .mk .form-note{text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:14px}
 
 @media(max-width:980px){
-  .mk .grid-4{grid-template-columns:1fr 1fr}
+  .mk .partner-pitch .wrap{grid-template-columns:1fr;gap:36px}
+  .mk .partner-pitch .pitch-text{position:static}
   .mk .models{grid-template-columns:1fr}
   .mk .why-grid{grid-template-columns:1fr}
   .mk .tiles{grid-template-columns:1fr 1fr}
@@ -110,7 +163,7 @@ const PAGE_STYLE = `
   .mk .enquiry{grid-template-columns:1fr;gap:34px}
 }
 @media(max-width:680px){
-  .mk .grid-4,.mk .tiles,.mk .steps,.mk .ftwo{grid-template-columns:1fr}
+  .mk .tiles,.mk .steps,.mk .ftwo{grid-template-columns:1fr}
 }
 `;
 
@@ -118,17 +171,25 @@ const PAGE_STYLE = `
 // per page via `faq_group_key`, rendered between the process steps and the deal-enquiry form
 // (outside `.mk` so its Tailwind markup doesn't pick up mock.css bare-element rules). The static
 // body is split here around that island.
-const BODY_TOP = `
+function bodyTop(content: RealEstateContent, media: Record<string, MediaImageData>): string {
+  const { hero, partners } = content;
+  const heroImg = media[hero.image_media_id]?.url || HERO_FALLBACK_IMG;
+  const heroAlt = media[hero.image_media_id]?.alt || HERO_FALLBACK_ALT;
+  // Optional capability-statement asset behind the hero's secondary CTA (e.g. a PDF). If
+  // no asset is set, the button keeps the design's in-page anchor.
+  const capStmtUrl = media[hero.capability_statement_media_id ?? ""]?.url || "#deal-enquiry";
+
+  return `
 <!-- SECTION 1 — HERO -->
 <section class="hero compact" id="top">
-  <img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70" alt="Aerial view of Lisbon's historic skyline and tiled rooftops at dusk">
+  <img src="${escAttr(heroImg)}" alt="${escAttr(heroAlt)}">
   <div class="wrap">
-    <div class="eyebrow">Real Estate Partnerships</div>
-    <h1>Your Asset. Our Expertise. Institutional Returns.</h1>
-    <p>Central Hill Apartments is the hospitality management partner for investment funds, real estate developers, large-scale operators, and corporate clients seeking to unlock the full revenue potential of their assets in Portugal.</p>
+    ${hero.subheadline ? `<div class="eyebrow">${esc(hero.subheadline)}</div>` : ""}
+    <h1>${esc(hero.headline)}</h1>
+    <p>${esc(hero.positioning)}</p>
     <div class="hero-cta">
-      <a class="btn btn-accent" href="#deal-enquiry">Discuss a Partnership →</a>
-      <a class="btn btn-light" href="#">Download Our Capability Statement →</a>
+      <a class="btn btn-accent" href="#deal-enquiry">${esc(hero.cta_primary.label)} →</a>
+      <a class="btn btn-light" href="${escAttr(capStmtUrl)}">${esc(hero.cta_secondary.label)} →</a>
     </div>
   </div>
 </section>
@@ -140,35 +201,20 @@ const BODY_TOP = `
   </div>
 </section>
 
-<!-- SECTION 2 — WHO WE WORK WITH -->
-<section id="partners">
+<!-- SECTION 2 — WHO WE WORK WITH (Editorial Split, DB-driven) -->
+<section id="partners" class="partner-pitch">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <h2 class="section-title">Built for Institutional Partners</h2>
-      <p class="lede" style="margin-top:16px">Central Hill Apartments works with organisations that think at scale. Whether you represent a real estate investment fund, a development company, a large property operator, or a corporate seeking managed accommodation solutions, we have the operational depth, deal flexibility, and market knowledge to meet your requirements.</p>
+    <div class="pitch-text reveal">
+      <h2 class="section-title">${esc(partners.headline)}</h2>
+      ${partners.subheadline ? `<p class="pitch-sub">${esc(partners.subheadline)}</p>` : ""}
+      <div class="pitch-cta">
+        <a class="btn btn-accent" href="#deal-enquiry">${esc(partners.cta_primary.label)} →</a>
+        <a class="btn btn-ghost" href="#deal-structures">${esc(partners.cta_secondary.label)}</a>
+      </div>
+      ${partners.cta_primary.note ? `<p class="pitch-note">${esc(partners.cta_primary.note)}</p>` : ""}
     </div>
-    <div class="grid-4 reveal">
-      <div class="bcard">
-        <i class="iconoir-bank ico" aria-hidden="true"></i>
-        <h3>Investment Funds &amp; Asset Managers</h3>
-        <p>We partner with real estate funds and institutional asset managers seeking reliable, data-driven hospitality management for residential and mixed-use assets. Our reporting infrastructure, performance dashboards, and flexible deal structures are designed to meet institutional governance requirements.</p>
-      </div>
-      <div class="bcard">
-        <i class="iconoir-ruler-combine ico" aria-hidden="true"></i>
-        <h3>Real Estate Developers</h3>
-        <p>From pre-opening strategy to full operational management, we work with developers bringing new residential, apart-hotel, or hospitality assets to market. We advise on unit mix, yield optimisation, and guest experience design from the planning stage through to stabilised operation.</p>
-      </div>
-      <div class="bcard">
-        <i class="iconoir-city ico" aria-hidden="true"></i>
-        <h3>Large-Scale Property Operators</h3>
-        <p>We support operators managing multiple properties or buildings who want to consolidate under a single, high-performance management partner. Our technology stack and operational model scale efficiently across any size of portfolio, with no loss of quality or control.</p>
-      </div>
-      <div class="bcard">
-        <i class="iconoir-airplane ico" aria-hidden="true"></i>
-        <h3>Corporate &amp; Relocation Clients</h3>
-        <p>Companies relocating employees, international organisations seeking managed accommodation in Portugal, and corporate travel managers benefit from our professionally managed portfolio. Consistent standards, direct billing, and dedicated account management ensure a seamless experience for both the organisation and its people.</p>
-      </div>
-    </div>
+    <ul class="pitch-list reveal">${benefitList(partners.benefits, PARTNER_ICONS)}
+    </ul>
   </div>
 </section>
 
@@ -386,6 +432,7 @@ const BODY_TOP = `
 </section>
 
 `;
+}
 
 const BODY_BOTTOM = `
 <!-- SECTION 10 — DEAL ENQUIRY -->
@@ -499,13 +546,16 @@ const BODY_BOTTOM = `
 export async function RealEstatePage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
   const [page, t] = await Promise.all([getRealEstatePage(locale), getTranslations("pages")]);
-  const faqGroupKey = page?.content.faq_group_key ?? "";
+  if (!page) notFound();
+
+  const { content, media } = page;
+  const faqGroupKey = content.faq_group_key ?? "";
 
   return (
     <>
       <div className="mk" data-page="real-estate">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-        <div dangerouslySetInnerHTML={{ __html: BODY_TOP }} />
+        <div dangerouslySetInnerHTML={{ __html: bodyTop(content, media) }} />
       </div>
       {faqGroupKey ? (
         <div id="faq" style={{ scrollMarginTop: 130 }}>

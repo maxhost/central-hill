@@ -122,10 +122,13 @@ page_content
   value is derived as `prefix + (grouped) to + suffix` and the client counter animates up to `to` (drizzle 0009).
   → FAQ group `owners` referenced (drizzle 0004→0008).
 - **real_estate**: `hero{image_media_id, headline, subheadline, positioning, capability_statement_media_id, cta_primary{label,url}, cta_secondary{label,url}}`;
-  `faq_group_key` → FAQ group `real_estate` referenced. The rest of the page (partners,
-  capabilities, asset classes, deal structures, market, track record, process, enquiry form) is
-  **static marketing copy in the renderer**, not schema-driven (client direction — those sections
-  were removed from the editable schema; re-add here if one becomes DB-driven). Enquiry form fields
+  `partners{headline, subheadline, benefits[4]{icon_key, title, description}, cta_primary{label,url,note}, cta_secondary{label,url,note}}`
+  ("Built for Institutional Partners" — Editorial Split, modelled on owners `why`; benefit icons are
+  positional in the renderer, `icon_key` stored but not rendered); `faq_group_key` → FAQ group
+  `real_estate` referenced. The rest of the page (capabilities, asset classes, deal structures,
+  market, track record, process, enquiry form) is **static marketing copy in the renderer**, not
+  schema-driven (client direction — those sections were removed from the editable schema; re-add here
+  if one becomes DB-driven). Enquiry form fields
   are fixed in code → `lead.kind='deal_enquiry'`.
 - **about**: `hero{image_media_id, eyebrow, headline, mission}`; `story{eyebrow, headline, narrative[×3]}`;
   `serve{headline, intro, audiences[×3]{icon_key,title,description}}`; `values{headline, intro, items[×4]{title,description}}`;
