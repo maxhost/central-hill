@@ -40,17 +40,16 @@ Cache tags: `APARTMENT_TAGS.list` = `apartment-list`, `APARTMENT_TAGS.apartment(
   "Bedrooms · Up to Guests · Beds" spec line; links to the unit's own Avantio deep-link, else
   the building booking section.
 
-### Integration handoff (S2 / S9)
+### Integration note (S2)
 
-This slice ships `BuildingApartments` **ready to compose** but does **not** edit the
-buildings-owned detail component or its app route (golden rule 1). To render the grid, the
-building-detail composition should add, after the gallery:
-
-```tsx
-import { BuildingApartments } from "@slices/apartments/ui/building-apartments";
-// …
-<BuildingApartments locale={locale} slug={slug} />
-```
+`BuildingApartments`/`ApartmentCard` (above) are the **Tailwind** rendering of the grid, kept
+for any consumer that wants the design-system look. The live building-detail page
+(`buildings/ui/building-detail.tsx`) instead renders the units inline in the locked **`.mk`
+mock** `.pcard` markup — the rest of that page is the approved `mock/building-detail.html`
+design, so a Tailwind island would clash and (unlike the mock card) shows no placeholder. The
+buildings slice consumes only this slice's **contract** (`listByBuilding` + `ApartmentSummary`),
+never its internals — same pattern as the listing keeping the mock card over the Tailwind
+`BuildingCard`.
 
 ## i18n
 
@@ -76,12 +75,18 @@ mount under `app/(admin)/admin/(panel)/apartments/…`.
 - `admin/queries.ts` (server-only) — `listApartmentsAdmin` (all statuses; building names via the
   **buildings contract**, never its table), `getApartmentForEdit` (source-locale record + media
   previews).
-- `admin/validation.ts` — `apartmentSaveInput` (editor post shape; Avantio handles required, like
-  the public input).
+- `admin/validation.ts` — `apartmentSaveInput`, **simplified to the building-card fields** (client
+  direction: units surface only inside their building's grid, no standalone unit page): building,
+  `name` [T], `badge` [T], bedrooms / max_guests / beds_count, an optional cover (placeholder when
+  absent) and optional Avantio handles. The slug, bathrooms, size, floor, gallery, long
+  description, OG image and SEO meta are no longer authored — their DB columns stay nullable
+  (dropping them would be a destructive migration → ADR).
 - `admin/actions.ts` (`"use server"`, `requireStaff`-gated) — `saveApartment` / `deleteApartment`.
-  Source [T] content (incl. `badge`) + slugs via the `core/i18n` write seam (ADR 0019); gallery
-  written here. After any change to the published set, **building stats are recomputed** (and the
-  old building's too on a reassignment) and caches busted via `revalidateApartment`.
+  The per-locale slug is **auto-generated from the name** (a unit has no public URL — the slug is an
+  internal identity key only; on collision it is suffixed with the new id's short hash, and on edit
+  it stays put). Source [T] content (`name`, `badge`) + slugs via the `core/i18n` write seam
+  (ADR 0019). After any change to the published set, **building stats are recomputed** (and the old
+  building's too on a reassignment) and caches busted via `revalidateApartment`.
 - `admin/ui/` — `list.tsx` (server) + `apartment-form.tsx` (one client island for new + edit).
 
 **Stat recompute (escalation resolved):** `server/stats.ts` `recomputeBuildingStats(buildingId)`

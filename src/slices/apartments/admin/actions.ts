@@ -12,17 +12,23 @@ import {
   setSourceContent,
 } from "@core/i18n/content-write";
 import { APARTMENT } from "../contract";
-import { apartment, apartment_media } from "../schema";
+import { apartment } from "../schema";
 import { revalidateApartment } from "../server/publish";
 import { recomputeBuildingStats } from "../server/stats";
-import { type ApartmentSaveInput, apartmentSaveInput } from "./validation";
+import { apartmentSaveInput } from "./validation";
 
 /**
  * Backoffice write actions for slice `apartments` (S12). `requireStaff`-gated +
- * re-validated. Source [T] content + slugs via the `core/i18n` write seam (ADR 0019);
- * the gallery is written here. After any change to the published set the parent
- * building's denormalized stats are recomputed (and the old building's too, on a
- * reassignment) and the ISR caches busted via `revalidateApartment`.
+ * re-validated. Source [T] content (name, badge) + slugs via the `core/i18n` write
+ * seam (ADR 0019). After any change to the published set the parent building's
+ * denormalized stats are recomputed (and the old building's too, on a reassignment)
+ * and the ISR caches busted via `revalidateApartment`.
+ *
+ * The per-locale slug is **auto-generated** from the name (the editor no longer asks
+ * for one — a unit has no standalone public URL, so the slug is an internal identity
+ * key only). On create we suffix it with the new id's short hash if the base form is
+ * already taken, which makes a collision effectively impossible; on edit the existing
+ * slug is left untouched so it stays stable.
  */
 
 export type ApartmentSaveResult =
@@ -45,6 +51,19 @@ function fieldErrorsFrom(
 
 const sameSlugAllLocales = (slug: string) => ({ en: slug, pt: slug, es: slug, fr: slug });
 
+/** Kebab-case, url-safe slug derived from a name (matches the `slug` primitive). */
+function slugify(input: string): string {
+  const base = input
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "") // strip combining diacritics (á → a)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 100)
+    .replace(/-+$/g, "");
+  return base || "apartment";
+}
+
 export async function saveApartment(raw: unknown): Promise<ApartmentSaveResult> {
   const staff = await requireStaff();
 
@@ -54,25 +73,21 @@ export async function saveApartment(raw: unknown): Promise<ApartmentSaveResult> 
   }
   const input = parsed.data;
 
+  // Card-only columns. Dropped fields (bathrooms / size_m2 / floor / og_image) keep
+  // their DB defaults (0) or stay null — they are no longer authored in the editor.
   const coreValues = {
-    slug: input.slug,
     status: input.status,
     position: input.position,
     building_id: input.building_id,
     bedrooms: input.bedrooms,
-    bathrooms: input.bathrooms,
     max_guests: input.max_guests,
     beds_count: input.beds_count,
-    size_m2: input.size_m2,
-    floor: input.floor,
     cover_media_id: input.cover_media_id,
-    og_image_media_id: input.og_image_media_id,
     avantio_id: input.avantio_id,
     avantio_url: input.avantio_url,
   };
 
   try {
-    const isCreate = !input.id;
     let id = input.id ?? "";
     let previousBuildingId: string | null = null;
 
@@ -84,27 +99,33 @@ export async function saveApartment(raw: unknown): Promise<ApartmentSaveResult> 
         .limit(1);
       if (!existing) return { ok: false, error: "not_found" };
       previousBuildingId = existing.building_id;
+      // Slug is immutable post-create (internal identity only) — leave it as-is.
       await db
         .update(apartment)
         .set({ ...coreValues, updated_at: new Date() })
         .where(eq(apartment.id, input.id));
     } else {
-      const [ins] = await db.insert(apartment).values(coreValues).returning({ id: apartment.id });
+      const base = slugify(input.name);
+      const [ins] = await db
+        .insert(apartment)
+        .values({ ...coreValues, slug: base })
+        .returning({ id: apartment.id });
       if (!ins) return { ok: false, error: "server" };
       id = ins.id;
-    }
 
-    try {
-      await setSlugs(APARTMENT, id, sameSlugAllLocales(input.slug));
-    } catch (err) {
-      if (err instanceof SlugConflictError) {
-        if (isCreate) {
-          await db.delete(apartment).where(eq(apartment.id, id));
-          await deleteSlugs(APARTMENT, id);
+      // Register the slug for all locales; on collision, suffix with the id's short
+      // hash (now known) so the retry is guaranteed unique.
+      try {
+        await setSlugs(APARTMENT, id, sameSlugAllLocales(base));
+      } catch (err) {
+        if (err instanceof SlugConflictError) {
+          const unique = `${base}-${id.slice(0, 8)}`;
+          await db.update(apartment).set({ slug: unique }).where(eq(apartment.id, id));
+          await setSlugs(APARTMENT, id, sameSlugAllLocales(unique));
+        } else {
+          throw err;
         }
-        return { ok: false, error: "slug_conflict" };
       }
-      throw err;
     }
 
     await setSourceContent(
@@ -113,14 +134,9 @@ export async function saveApartment(raw: unknown): Promise<ApartmentSaveResult> 
       {
         name: input.name,
         badge: input.badge,
-        description: input.description,
-        meta_title: input.meta_title,
-        meta_description: input.meta_description,
       },
       { updatedBy: staff.userId },
     );
-
-    await persistGallery(id, input.gallery);
 
     // Recompute stats for the (possibly changed) building set.
     await recomputeBuildingStats(input.building_id);
@@ -159,15 +175,5 @@ export async function deleteApartment(id: string): Promise<{ ok: boolean }> {
     return { ok: true };
   } catch {
     return { ok: false };
-  }
-}
-
-/** Replace the gallery rows with the submitted, ordered media ids. */
-async function persistGallery(id: string, gallery: ApartmentSaveInput["gallery"]): Promise<void> {
-  await db.delete(apartment_media).where(eq(apartment_media.apartment_id, id));
-  if (gallery.length > 0) {
-    await db
-      .insert(apartment_media)
-      .values(gallery.map((mediaId, i) => ({ apartment_id: id, media_id: mediaId, position: i })));
   }
 }

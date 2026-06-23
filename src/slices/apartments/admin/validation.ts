@@ -1,37 +1,37 @@
 /**
- * Admin **save** schema for slice `apartments` (S12). Same shape conventions as the
- * buildings editor: nullable optionals (the client posts `null` for empty controls),
- * `min(1)` on required [T] text, gallery riding along. Avantio handles are required —
- * a unit's purpose is to be bookable (mirrors the public `apartmentInput`).
+ * Admin **save** schema for slice `apartments` (S12) — simplified to the fields a
+ * building's apartment CARD needs (client direction: apartments surface only inside
+ * their building's "Apartments in this Building" grid; there is no standalone unit
+ * page). Authored here: building, name [T], badge [T], bedrooms / max_guests /
+ * beds_count, an optional cover (a Warm-Editorial placeholder renders when absent),
+ * and the Avantio booking handles (optional — the card's "Check availability" falls
+ * back to the building's booking band when a unit has none).
+ *
+ * Dropped from the editor but KEPT in the DB (nullable, no longer authored): the
+ * per-locale slug (auto-generated from the name in the action — it never appears in
+ * a public URL), bathrooms, size_m2, floor, the gallery, the long description, the OG
+ * image and the SEO meta. Removing the columns would be a destructive migration (ADR);
+ * leaving them nullable is additive and reversible.
  */
 import { z } from "zod";
-import { contentStatus, position, slug, tStr } from "@core/validation/primitives";
+import { contentStatus, position, tStr } from "@core/validation/primitives";
 
 const count = z.number().int().nonnegative();
 
 export const apartmentSaveInput = z.object({
   id: z.uuid().optional(),
-  slug,
   status: contentStatus,
   position,
   building_id: z.uuid(),
   badge: tStr({ max: 60 }).nullable(),
   bedrooms: count,
-  bathrooms: count,
   max_guests: z.number().int().positive(),
   beds_count: count,
-  size_m2: z.number().int().positive().nullable(),
-  floor: z.number().int().nullable(),
-  cover_media_id: z.uuid(),
-  og_image_media_id: z.uuid().nullable(),
-  avantio_id: z.string().min(1).max(120),
-  avantio_url: z.url(),
-  // [T] source values (en):
+  cover_media_id: z.uuid().nullable(),
+  avantio_id: z.string().min(1).max(120).nullable(),
+  avantio_url: z.url().nullable(),
+  // [T] source value (en):
   name: tStr({ min: 1, max: 160 }),
-  description: tStr({ min: 1, max: 2000 }),
-  meta_title: tStr({ max: 70 }).nullable(),
-  meta_description: tStr({ max: 200 }).nullable(),
-  gallery: z.array(z.uuid()),
 });
 
 export type ApartmentSaveInput = z.infer<typeof apartmentSaveInput>;

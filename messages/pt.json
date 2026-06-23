@@ -293,7 +293,11 @@
         "coverRequired": "É obrigatória uma imagem de capa.",
         "slugConflict": "Esse slug já está em uso."
       }
-    }
+    },
+    "home": "Início",
+    "statNeighbourhood": "Bairro",
+    "bookEyebrow": "Reserve a sua estadia",
+    "bookNote": "Disponibilidade e preços em tempo real via Avantio."
   },
   "services": {
     "metaTitle": "Serviços para Hóspedes — Central Hill",
@@ -594,7 +598,9 @@
         "avantioId": "ID Avantio",
         "avantioUrl": "URL Avantio",
         "metaTitle": "Meta título",
-        "metaDescription": "Meta descrição"
+        "metaDescription": "Meta descrição",
+        "coverHint": "Opcional — mostra-se um marcador até carregar uma imagem.",
+        "avantioUrlHint": "Link de reserva do botão “Ver disponibilidade” do cartão."
       },
       "errors": {
         "coverRequired": "É obrigatória uma imagem de capa.",

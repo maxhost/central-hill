@@ -53,9 +53,18 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   is hidden (kept commented out in source for later DB wiring); a building with no R2 cover
   yet falls back to `public/placeholders/building.svg` so cards never render empty. The
   Tailwind `BuildingCard`/`BuildingFilter` components are a different look, kept for other
-  consumers. (Detail page is still the static mock — DB wiring deferred.)
-- `/{locale}/buildings/{slug}` — detail: hero + stats + gallery + "The Building" /
-  "The Neighbourhood" prose + amenities + FAQ + Avantio "Book an apartment" CTA.
+  consumers.
+- `/{locale}/buildings/{slug}` — detail (`ui/building-detail.tsx`): the approved
+  `mock/building-detail.html` design, now **DB-driven** from `getBuildingBySlug(locale, slug)`
+  (`notFound()` when unknown/unpublished): hero (placeholder cover when no R2 image), gallery,
+  the apartments-count/capacity/beds spec strip, "The Building" / "The Neighbourhood" prose,
+  the "Apartments in this Building" grid, building amenities, FAQ, and the Avantio
+  "Book an apartment" CTA. Sparse-content resilient: empty gallery / amenities / FAQ and an
+  empty unit set each omit their section (never an empty shell). The unit grid is rendered as
+  the locked `.mk .pcard` markup from `listByBuilding` (apartments contract — golden rule 2),
+  with `public/placeholders/apartment.svg` when a unit has no cover; the apartments slice's
+  Tailwind `BuildingApartments`/`ApartmentCard` are a different look, kept for other consumers
+  (same rationale as `BuildingCard` on the listing).
 
 Both are ISR (`revalidate = 3600`); detail uses `generateStaticParams` (known slugs
 prebuilt, `dynamicParams = true`) + `generateMetadata` with hreflang alternates. A building

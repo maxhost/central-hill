@@ -293,7 +293,11 @@
         "coverRequired": "A cover image is required.",
         "slugConflict": "That slug is already in use."
       }
-    }
+    },
+    "home": "Home",
+    "statNeighbourhood": "Neighbourhood",
+    "bookEyebrow": "Reserve your stay",
+    "bookNote": "Real-time availability & pricing via Avantio."
   },
   "services": {
     "metaTitle": "Guest Services — Central Hill",
@@ -594,7 +598,9 @@
         "avantioId": "Avantio ID",
         "avantioUrl": "Avantio URL",
         "metaTitle": "Meta title",
-        "metaDescription": "Meta description"
+        "metaDescription": "Meta description",
+        "coverHint": "Optional — a placeholder is shown until you upload one.",
+        "avantioUrlHint": "Booking link for the card’s “Check availability”."
       },
       "errors": {
         "coverRequired": "A cover image is required.",

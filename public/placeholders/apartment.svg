@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Central Hill — photo coming soon">
+  <!-- Warm Editorial placeholder shown on apartment cards until an R2 cover image is uploaded. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffdf8"/>
+      <stop offset="1" stop-color="#f4eee3"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <g fill="none" stroke="#d8cfc2" stroke-width="3">
+    <!-- A single room: a tall window with a sill, framed -->
+    <rect x="330" y="190" width="140" height="180"/>
+    <g stroke="#e7e0d6" stroke-width="2">
+      <line x1="400" y1="190" x2="400" y2="370"/>
+      <line x1="330" y1="280" x2="470" y2="280"/>
+    </g>
+    <!-- sill -->
+    <line x1="314" y1="370" x2="486" y2="370" stroke="#d8cfc2" stroke-width="3"/>
+  </g>
+  <line x1="252" y1="392" x2="548" y2="392" stroke="#cfc5b5" stroke-width="3"/>
+  <text x="400" y="446" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="30" fill="#5c544c">Central Hill</text>
+  <text x="400" y="478" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="13" letter-spacing="3" fill="#8a8175">PHOTO COMING SOON</text>
+</svg>

@@ -5,15 +5,16 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
+import { getBuildingBySlug, listBuildingParams } from "@slices/buildings/contract";
 import { BuildingDetail } from "@slices/buildings/ui/building-detail";
 import "../../../mock.css";
 
-/** Static per locale. Content is the embedded mock (no DB) — the single example
- *  building is rendered for any slug. */
+/** ISR per building, per locale. Content is DB-driven (`getBuildingBySlug`); the
+ *  published slugs are prerendered, unknown slugs render on-demand → notFound. */
 export const revalidate = 3600;
 
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale, slug: "sample" }));
+export async function generateStaticParams() {
+  return listBuildingParams();
 }
 
 export async function generateMetadata({
@@ -25,17 +26,28 @@ export async function generateMetadata({
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
 
+  const detail = await getBuildingBySlug(locale, slug);
+  if (!detail) return {};
+
+  // hreflang: each locale's own slug (falls back to this one if a translation's
+  // slug is missing) + x-default on the source path.
   const languages: Partial<Record<Locale | "x-default", string>> = {
     "x-default": `/buildings/${slug}`,
   };
-  for (const l of routing.locales) languages[l] = `/${l}/buildings/${slug}`;
+  for (const l of routing.locales) {
+    languages[l] = `/${l}/buildings/${detail.alternateSlugs[l] ?? slug}`;
+  }
+
+  const ogImage = detail.ogImage ?? detail.cover;
 
   return buildMetadata({
-    title: "Large Bairro Alto View — Central Hill",
-    description:
-      "Large Bairro Alto View by Central Hill — six designer apartments on Rua da Alegria in the heart of Lisbon, between Príncipe Real and Bairro Alto. Real-time booking via Avantio.",
+    title: detail.metaTitle ?? `${detail.name} — Central Hill`,
+    description: detail.metaDescription ?? detail.teaser,
     canonicalPath: `/${locale}/buildings/${slug}`,
     languages,
+    images: ogImage
+      ? [{ url: ogImage.url, width: ogImage.width, height: ogImage.height, alt: ogImage.alt }]
+      : undefined,
   });
 }
 
