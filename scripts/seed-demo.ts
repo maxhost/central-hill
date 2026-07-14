@@ -510,6 +510,34 @@ function realEstateData() {
       },
       cta_secondary: { label: "Explore deal structures", url: `${SITE}/en/real-estate` },
     },
+    capabilities: {
+      headline: "Institutional-Grade Management, End to End",
+      subheadline:
+        "We operate at the intersection of hospitality excellence and real estate performance. Our capabilities cover every dimension of asset management — from technology and distribution to operations and strategic partnership.",
+      benefits: [
+        ic(
+          "Digital Excellence",
+          "Multi-platform distribution across Airbnb, Booking.com, and direct channels. AI-powered dynamic pricing updated daily. Automated financial reporting, occupancy analytics, and a real-time performance dashboard accessible by asset managers and fund controllers.",
+          "stats-up-square",
+        ),
+        ic(
+          "Operational Mastery",
+          "Professional housekeeping and linen services. 24/7 guest concierge. Premium amenities and quality assurance protocols. Regular property inspections. Rapid-response maintenance with preventive asset protection built into every management contract.",
+          "settings",
+        ),
+        ic(
+          "Strategic Partnership",
+          "Project design consultancy at the planning stage. Dedicated account management throughout the contract term. Performance benchmarking against market comparables. Proactive recommendations for yield improvement and capital expenditure prioritisation.",
+          "peace-hand",
+        ),
+      ],
+      image_media_id: uid(),
+      cta: {
+        label: "Discuss a Partnership",
+        url: `${SITE}/en/real-estate`,
+        note: "End-to-end management — technology, operations, and partnership under one roof.",
+      },
+    },
     asset_management: {
       headline: "A Management Partner for Every Asset Type",
       subheadline:
@@ -553,6 +581,59 @@ function realEstateData() {
         note: "Our model adapts to the asset — not the other way around.",
       },
     },
+    deal_structures: {
+      headline: "Deal Structures Built Around Your Risk Profile",
+      subheadline:
+        "We offer three core partnership models designed to align with different investment strategies, risk appetites, and return expectations. All models include full management, technology access, and institutional reporting.",
+      models: [
+        {
+          name: "Fixed Rent",
+          tagline: "Guaranteed income, maximum certainty",
+          featured: false,
+          feature_label: "",
+          points: [
+            "Guaranteed monthly rent regardless of occupancy",
+            "Contract terms: 10–25 years",
+            "Zero revenue variability — full income certainty",
+            "Ideal for funds requiring predictable cash flows",
+            "Asset maintenance obligations shared",
+            "Annual rent review mechanism",
+            "Full operational management by Central Hill",
+          ],
+        },
+        {
+          name: "Management Commission",
+          tagline: "Maximum upside, pure performance",
+          featured: true,
+          feature_label: "Most Flexible",
+          points: [
+            "Revenue-based model: total receipts minus management fee",
+            "Contract terms: 3–25 years",
+            "Owner captures full revenue upside",
+            "Transparent monthly reporting and payouts",
+            "Ideal for operators seeking market-rate returns",
+            "Performance KPIs agreed at contract stage",
+            "Full operational management by Central Hill",
+          ],
+        },
+        {
+          name: "Hybrid Model",
+          tagline: "Balanced risk and reward",
+          featured: false,
+          feature_label: "",
+          points: [
+            "Guaranteed base rent plus revenue share above threshold",
+            "Contract terms: 10–25 years",
+            "Downside protection with upside participation",
+            "Ideal for funds seeking blended return profiles",
+            "Revenue share trigger agreed at contract stage",
+            "Regular performance review meetings",
+            "Full operational management by Central Hill",
+          ],
+        },
+      ],
+      note: "All partnership models are subject to individual asset assessment and negotiation. Contract structures, commission rates, and performance targets are agreed on a case-by-case basis.",
+    },
     market: {
       headline: "Portugal: One of Europe's Strongest Hospitality Markets",
       subheadline:
@@ -584,6 +665,52 @@ function realEstateData() {
           "Lisbon positioned as a tier-1 European destination",
         ],
       },
+    },
+    track_record: {
+      headline: "Performance You Can Measure",
+      subheadline:
+        "Our track record is built on consistent, data-driven results across a growing portfolio of managed assets. We report transparently, benchmark rigorously, and continuously optimise performance for every asset under management.",
+      tiles: [
+        { value: "85%+", label: "Average Occupancy", caption: "Across all managed properties year-round" },
+        { value: "+25%", label: "Revenue Premium", caption: "Vs. traditional residential letting" },
+        { value: "24/7", label: "Operational Coverage", caption: "Guest support, reporting, and management" },
+        { value: "10+", label: "Years of Experience", caption: "Managing assets in Portugal's prime markets" },
+        { value: "14+", label: "Buildings Managed", caption: "Across Lisbon's most in-demand locations" },
+        { value: "100%", label: "Transparent Reporting", caption: "Real-time dashboard access for all partners" },
+      ],
+    },
+    process: {
+      headline: "A Structured Path from First Conversation to Full Performance",
+      subheadline:
+        "Our onboarding process is designed for institutional partners. Every step is documented, timeline-driven, and managed by a dedicated account team.",
+      cta: { label: "Start the Conversation" },
+      steps: [
+        {
+          title: "Asset Assessment & Commercial Proposal",
+          description:
+            "We conduct a detailed assessment of your asset — location, unit mix, current performance, and market positioning — and present a tailored commercial proposal including projected yield, recommended partnership model, and contract terms.",
+        },
+        {
+          title: "Due Diligence & Contract Negotiation",
+          description:
+            "Our legal and commercial team works with your advisors to structure and finalise the management agreement. All performance KPIs, reporting cadence, revenue share triggers, and exit terms are agreed and documented.",
+        },
+        {
+          title: "Operational Onboarding",
+          description:
+            "We handle all elements of the operational setup: professional photography, platform registration and listing creation, pricing strategy implementation, staff assignment, and property preparation — typically completed within 10–15 business days.",
+        },
+        {
+          title: "Asset Goes Live",
+          description:
+            "Your property launches across all distribution channels simultaneously. AI-powered pricing begins optimising daily rates from day one. Your account manager is active and reporting from the first booking.",
+        },
+        {
+          title: "Ongoing Management & Reporting",
+          description:
+            "Monthly performance reports delivered to your agreed format. Quarterly review meetings with your account manager. Continuous yield optimisation and strategic recommendations as market conditions evolve.",
+        },
+      ],
     },
     faq_group_key: "real_estate",
   };

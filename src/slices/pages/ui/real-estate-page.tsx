@@ -3,6 +3,12 @@ import { notFound } from "next/navigation";
 import type { MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import { getRealEstatePage, type RealEstateContent } from "../contract";
+import {
+  defaultCapabilities,
+  defaultDealStructures,
+  defaultProcess,
+  defaultTrackRecord,
+} from "../schemas/real-estate";
 import { FaqSection } from "./components/faq-section";
 import { OwnerStatsCounter } from "./components/owner-stats-counter";
 
@@ -37,6 +43,9 @@ const HERO_FALLBACK_ALT = "Aerial view of Lisbon's historic skyline and tiled ro
 const ASSET_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=72";
 const ASSET_FALLBACK_ALT = "Designer-furnished managed apartment in a Lisbon building";
+const CAP_FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=72";
+const CAP_FALLBACK_ALT = "Central Hill's management team reviewing portfolio performance dashboards";
 
 // Escape admin-authored content before it is interpolated into the static body HTML string.
 const esc = (s: string) =>
@@ -51,6 +60,15 @@ const PARTNER_ICONS = [
   `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l3-9 8 8-9 3-2-2z"/><path d="M14 12l6-6"/><path d="M18 2l4 4-3 3-4-4 3-3z"/></svg>`,
   `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M4 21V7l8-4v18"/><path d="M12 21V9l8 3v9"/><path d="M7 9h2M7 13h2M16 14h1"/></svg>`,
   `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 13.5L21 3"/><path d="M21 3l-6 18-3.5-7.5L4 10l17-7z"/></svg>`,
+];
+
+// Positional per-capability icons (digital excellence / operational mastery / strategic
+// partnership), paired by index with the fixed three-item capabilities showcase list.
+// Only the text is data-driven.
+const CAPABILITY_ICONS = [
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l3-4 3 2 4-6"/><path d="M17 7h2v2"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 14l2 2 4-4"/><path d="M20.5 8.5L13 1 4 5v6c0 5 3.5 8.5 9 11 5.5-2.5 9-6 9-11"/></svg>`,
 ];
 
 // Positional per-asset-type icons (residential / hotels / apart-hotels / corporate /
@@ -106,6 +124,125 @@ function marketSection(market: RealEstateContent["market"]): string {
 `;
 }
 
+/** Render the "Deal Structures" partnership-model cards (SECTION 5) from the DB-driven
+ * `deal_structures` content: a centered section head, a three-card grid (each card = name +
+ * tagline + bullet list, optionally highlighted with a `feature_label` badge), and an
+ * optional disclaimer note. All values are admin-authored and escaped. */
+function dealStructuresSection(d: RealEstateContent["deal_structures"]): string {
+  const cards = d.models
+    .map((m) => {
+      const points = m.points.map((p) => `<li>${esc(p)}</li>`).join("");
+      const badge =
+        m.featured && m.feature_label ? `<span class="feat-tag">${esc(m.feature_label)}</span>` : "";
+      return `
+      <div class="model${m.featured ? " featured" : ""}">
+        ${badge}
+        <h3>${esc(m.name)}</h3>
+        <div class="mtag">${esc(m.tagline)}</div>
+        <ul>${points}</ul>
+      </div>`;
+    })
+    .join("");
+
+  return `
+<!-- SECTION 5 — PARTNERSHIP MODELS (DB-driven) -->
+<section class="alt" id="deal-structures">
+  <div class="wrap">
+    <div class="sec-head center reveal">
+      <h2 class="section-title">${esc(d.headline)}</h2>
+      ${d.subheadline ? `<p class="lede" style="margin:16px auto 0">${esc(d.subheadline)}</p>` : ""}
+    </div>
+    <div class="models reveal">${cards}
+    </div>
+    ${d.note ? `<p class="model-note">${esc(d.note)}</p>` : ""}
+  </div>
+</section>
+`;
+}
+
+/** Build the count-up animation attributes for a track-record figure from its displayed
+ * string: the numeric core becomes `data-to`, any leading non-digits become `data-prefix`,
+ * the trailing remainder becomes `data-suffix`, and a thousands comma sets `data-group`.
+ * "85%+" → `data-to="85" data-suffix="%+"`; "+25%" → `data-to="25" data-prefix="+"
+ * data-suffix="%"`. Returns "" when there is no number (the figure then renders static).
+ * The `OwnerStatsCounter` island reads these and snaps to the exact text when it settles. */
+function countAttrs(value: string): string {
+  const m = value.match(/^(\D*)([\d.,]+)(.*)$/);
+  const num = m?.[2];
+  if (!num) return "";
+  const prefix = m?.[1] ?? "";
+  const suffix = m?.[3] ?? "";
+  const to = num.replace(/[.,]/g, "");
+  if (!to) return "";
+  return [
+    `data-count data-to="${escAttr(to)}"`,
+    prefix ? ` data-prefix="${escAttr(prefix)}"` : "",
+    suffix ? ` data-suffix="${escAttr(suffix)}"` : "",
+    num.includes(",") ? ` data-group="true"` : "",
+  ].join("");
+}
+
+/** Render the "Performance You Can Measure" track-record tiles (SECTION 7) from the DB-driven
+ * `track_record` content. Each tile counts up on scroll-in via the shared `OwnerStatsCounter`
+ * island. All values are admin-authored and escaped. */
+function trackRecordSection(t: RealEstateContent["track_record"]): string {
+  const tiles = t.tiles
+    .map((tile) => {
+      const attrs = countAttrs(tile.value);
+      return `      <div class="tile"><div class="tval"${attrs ? ` ${attrs}` : ""}>${esc(tile.value)}</div><div class="tlbl">${esc(tile.label)}</div>${tile.caption ? `<div class="tcap">${esc(tile.caption)}</div>` : ""}</div>`;
+    })
+    .join("\n");
+
+  return `
+<!-- SECTION 7 — TRACK RECORD (DB-driven) -->
+<section class="alt" id="track-record">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <h2 class="section-title">${esc(t.headline)}</h2>
+      ${t.subheadline ? `<p class="lede" style="margin-top:16px">${esc(t.subheadline)}</p>` : ""}
+    </div>
+    <div class="tiles reveal">
+${tiles}
+    </div>
+  </div>
+</section>
+`;
+}
+
+/** Render the "How it works" onboarding steps (SECTION 8) from the DB-driven `process`
+ * content. Reuses the partners Editorial-Split shell (`partner-pitch process-split`); each
+ * step's number (01, 02, …) is positional — derived from order, not stored — so only the
+ * title/description are data-driven. The single accent CTA anchors to the enquiry form. All
+ * values are admin-authored and escaped. */
+function processSection(p: RealEstateContent["process"]): string {
+  const steps = p.steps
+    .map(
+      (s, i) => `
+      <li>
+        <span class="snum">${String(i + 1).padStart(2, "0")}</span>
+        <div><h3>${esc(s.title)}</h3><p>${esc(s.description)}</p></div>
+      </li>`,
+    )
+    .join("");
+
+  return `
+<!-- SECTION 8 — HOW IT WORKS (Editorial Split, mirrors "Built for Institutional Partners", DB-driven) -->
+<section id="process" class="partner-pitch process-split">
+  <div class="wrap">
+    <div class="pitch-text reveal">
+      <h2 class="section-title">${esc(p.headline)}</h2>
+      ${p.subheadline ? `<p class="pitch-sub">${esc(p.subheadline)}</p>` : ""}
+      <div class="pitch-cta">
+        <a class="btn btn-accent" href="#deal-enquiry">${esc(p.cta.label)} →</a>
+      </div>
+    </div>
+    <ul class="pitch-list reveal">${steps}
+    </ul>
+  </div>
+</section>
+`;
+}
+
 /** Render the partners benefit list (`<li>` = positional SVG + title/description), pairing
  * each item with its design icon by index. */
 function benefitList(
@@ -121,6 +258,56 @@ function benefitList(
       </li>`,
     )
     .join("");
+}
+
+/**
+ * Render an Image Showcase section (4:5 photo + headline/subheadline + benefit highlights +
+ * CTA). Shared by "Asset Types" (image right, default) and the mirrored "Institutional-Grade
+ * Management" (`reverse` → image left). The CTA renders only when it has a label; the floating
+ * badge renders only when the CTA carries a note. `classes` lets the caller add layout
+ * modifiers (`alt`, `reverse`, `cap-showcase`). All values are admin-authored and escaped.
+ */
+function showcase(opts: {
+  id: string;
+  classes: string;
+  data: {
+    headline: string;
+    subheadline?: string;
+    benefits: ReadonlyArray<{ title: string; description: string }>;
+    cta: { label: string; url: string; note?: string };
+  };
+  icons: readonly string[];
+  img: string;
+  imgAlt: string;
+}): string {
+  const { data } = opts;
+  const cta = data.cta.label
+    ? `<div class="sh-cta"><a class="btn btn-accent" href="#deal-enquiry">${esc(data.cta.label)} →</a></div>
+      ${data.cta.note ? `<p class="sh-note">${esc(data.cta.note)}</p>` : ""}`
+    : "";
+  const badge = data.cta.note
+    ? `<div class="sh-badge">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        <span>${esc(data.cta.note)}</span>
+      </div>`
+    : "";
+  return `
+<section id="${opts.id}" class="${opts.classes}">
+  <div class="wrap">
+    <div class="sh-text reveal">
+      <h2>${esc(data.headline)}</h2>
+      ${data.subheadline ? `<p class="sh-sub">${esc(data.subheadline)}</p>` : ""}
+      <ul class="sh-list">${benefitList(data.benefits, opts.icons)}
+      </ul>
+      ${cta}
+    </div>
+    <div class="sh-media reveal">
+      <img src="${escAttr(opts.img)}" alt="${escAttr(opts.imgAlt)}">
+      ${badge}
+    </div>
+  </div>
+</section>
+`;
 }
 
 const PAGE_STYLE = `
@@ -168,6 +355,15 @@ const PAGE_STYLE = `
 .mk .asset-showcase .sh-badge{position:absolute;bottom:-20px;left:-16px;display:flex;align-items:flex-start;gap:10px;max-width:15rem;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 20px;box-shadow:0 24px 50px -20px rgba(0,0,0,.4)}
 .mk .asset-showcase .sh-badge .ic{width:20px;height:20px;flex:0 0 auto;margin-top:1px;color:var(--accent-deep)}
 .mk .asset-showcase .sh-badge span{font-size:14px;line-height:1.4;color:var(--ink)}
+/* mirrored showcase — image on the LEFT (used by "Institutional-Grade Management"). The
+   media column is reordered to the front on desktop; the floating badge mirrors to the
+   right edge so it still overhangs into the text gap. On mobile the base rule already
+   stacks the media on top, so reverse changes nothing there. */
+.mk .asset-showcase.reverse .sh-media{order:-1}
+.mk .asset-showcase.reverse .sh-badge{left:auto;right:-16px}
+/* capabilities: three longer highlights read better as a single column. */
+.mk .cap-showcase .sh-list{grid-template-columns:1fr;gap:18px 0}
+.mk .cap-showcase .sh-list p{font-size:14.5px}
 
 /* partnership-model cards */
 .mk .models{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;align-items:start}
@@ -286,6 +482,12 @@ const PAGE_STYLE = `
 // body is split here around that island.
 function bodyTop(content: RealEstateContent, media: Record<string, MediaImageData>): string {
   const { hero, partners, asset_management: assets, market } = content;
+  // `capabilities` is newer than the original seed — fall back to the approved default copy
+  // so a `real_estate` row authored before this section existed still renders correctly.
+  const capabilities = content.capabilities ?? defaultCapabilities;
+  const dealStructures = content.deal_structures ?? defaultDealStructures;
+  const trackRecord = content.track_record ?? defaultTrackRecord;
+  const process = content.process ?? defaultProcess;
   const heroImg = media[hero.image_media_id]?.url || HERO_FALLBACK_IMG;
   const heroAlt = media[hero.image_media_id]?.alt || HERO_FALLBACK_ALT;
   // Optional capability-statement asset behind the hero's secondary CTA (e.g. a PDF). If
@@ -293,6 +495,8 @@ function bodyTop(content: RealEstateContent, media: Record<string, MediaImageDat
   const capStmtUrl = media[hero.capability_statement_media_id ?? ""]?.url || "#deal-enquiry";
   const assetImg = media[assets.image_media_id ?? ""]?.url || ASSET_FALLBACK_IMG;
   const assetAlt = media[assets.image_media_id ?? ""]?.alt || ASSET_FALLBACK_ALT;
+  const capImg = media[capabilities.image_media_id ?? ""]?.url || CAP_FALLBACK_IMG;
+  const capAlt = media[capabilities.image_media_id ?? ""]?.alt || CAP_FALLBACK_ALT;
 
   return `
 <!-- SECTION 1 — HERO -->
@@ -333,165 +537,29 @@ function bodyTop(content: RealEstateContent, media: Record<string, MediaImageDat
   </div>
 </section>
 
-<!-- SECTION 3 — WHAT WE OFFER -->
-<section class="alt" id="capabilities">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <h2 class="section-title">Institutional-Grade Management, End to End</h2>
-      <p class="lede" style="margin-top:16px">We operate at the intersection of hospitality excellence and real estate performance. Our capabilities cover every dimension of asset management — from technology and distribution to operations and strategic partnership.</p>
-    </div>
-    <div class="grid-3 reveal">
-      <div class="bcard">
-        <i class="iconoir-stats-up-square ico" aria-hidden="true"></i>
-        <h3>Digital Excellence</h3>
-        <p>Multi-platform distribution across Airbnb, Booking.com, and direct channels. AI-powered dynamic pricing updated daily. Automated financial reporting, occupancy analytics, and a real-time performance dashboard accessible by asset managers and fund controllers.</p>
-      </div>
-      <div class="bcard">
-        <i class="iconoir-settings ico" aria-hidden="true"></i>
-        <h3>Operational Mastery</h3>
-        <p>Professional housekeeping and linen services. 24/7 guest concierge. Premium amenities and quality assurance protocols. Regular property inspections. Rapid-response maintenance with preventive asset protection built into every management contract.</p>
-      </div>
-      <div class="bcard">
-        <i class="iconoir-peace-hand ico" aria-hidden="true"></i>
-        <h3>Strategic Partnership</h3>
-        <p>Project design consultancy at the planning stage. Dedicated account management throughout the contract term. Performance benchmarking against market comparables. Proactive recommendations for yield improvement and capital expenditure prioritisation.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
+<!-- SECTION 3 — INSTITUTIONAL-GRADE MANAGEMENT (Image Showcase, MIRRORED, DB-driven) -->
+${showcase({
+  id: "capabilities",
+  classes: "alt asset-showcase reverse cap-showcase",
+  data: capabilities,
+  icons: CAPABILITY_ICONS,
+  img: capImg,
+  imgAlt: capAlt,
+})}
 <!-- SECTION 4 — ASSET TYPES (Image Showcase, DB-driven) -->
-<section id="manage" class="asset-showcase">
-  <div class="wrap">
-    <div class="sh-text reveal">
-      <h2>${esc(assets.headline)}</h2>
-      ${assets.subheadline ? `<p class="sh-sub">${esc(assets.subheadline)}</p>` : ""}
-      <ul class="sh-list">${benefitList(assets.benefits, ASSET_ICONS)}
-      </ul>
-      <div class="sh-cta"><a class="btn btn-accent" href="#deal-enquiry">${esc(assets.cta.label)} →</a></div>
-      ${assets.cta.note ? `<p class="sh-note">${esc(assets.cta.note)}</p>` : ""}
-    </div>
-    <div class="sh-media reveal">
-      <img src="${escAttr(assetImg)}" alt="${escAttr(assetAlt)}">
-      ${
-        assets.cta.note
-          ? `<div class="sh-badge">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-        <span>${esc(assets.cta.note)}</span>
-      </div>`
-          : ""
-      }
-    </div>
-  </div>
-</section>
+${showcase({
+  id: "manage",
+  classes: "asset-showcase",
+  data: assets,
+  icons: ASSET_ICONS,
+  img: assetImg,
+  imgAlt: assetAlt,
+})}
 
-<!-- SECTION 5 — PARTNERSHIP MODELS -->
-<section class="alt" id="deal-structures">
-  <div class="wrap">
-    <div class="sec-head center reveal">
-      <h2 class="section-title">Deal Structures Built Around Your Risk Profile</h2>
-      <p class="lede" style="margin:16px auto 0">We offer three core partnership models designed to align with different investment strategies, risk appetites, and return expectations. All models include full management, technology access, and institutional reporting.</p>
-    </div>
-    <div class="models reveal">
-      <div class="model">
-        <h3>Fixed Rent</h3>
-        <div class="mtag">Guaranteed income, maximum certainty</div>
-        <ul>
-          <li>Guaranteed monthly rent regardless of occupancy</li>
-          <li>Contract terms: 10–25 years</li>
-          <li>Zero revenue variability — full income certainty</li>
-          <li>Ideal for funds requiring predictable cash flows</li>
-          <li>Asset maintenance obligations shared</li>
-          <li>Annual rent review mechanism</li>
-          <li>Full operational management by Central Hill</li>
-        </ul>
-      </div>
-      <div class="model featured">
-        <span class="feat-tag">Most Flexible</span>
-        <h3>Management Commission</h3>
-        <div class="mtag">Maximum upside, pure performance</div>
-        <ul>
-          <li>Revenue-based model: total receipts minus management fee</li>
-          <li>Contract terms: 3–25 years</li>
-          <li>Owner captures full revenue upside</li>
-          <li>Transparent monthly reporting and payouts</li>
-          <li>Ideal for operators seeking market-rate returns</li>
-          <li>Performance KPIs agreed at contract stage</li>
-          <li>Full operational management by Central Hill</li>
-        </ul>
-      </div>
-      <div class="model">
-        <h3>Hybrid Model</h3>
-        <div class="mtag">Balanced risk and reward</div>
-        <ul>
-          <li>Guaranteed base rent plus revenue share above threshold</li>
-          <li>Contract terms: 10–25 years</li>
-          <li>Downside protection with upside participation</li>
-          <li>Ideal for funds seeking blended return profiles</li>
-          <li>Revenue share trigger agreed at contract stage</li>
-          <li>Regular performance review meetings</li>
-          <li>Full operational management by Central Hill</li>
-        </ul>
-      </div>
-    </div>
-    <p class="model-note">All partnership models are subject to individual asset assessment and negotiation. Contract structures, commission rates, and performance targets are agreed on a case-by-case basis.</p>
-  </div>
-</section>
-
+${dealStructuresSection(dealStructures)}
 ${marketSection(market)}
-<!-- SECTION 7 — TRACK RECORD -->
-<section class="alt" id="track-record">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <h2 class="section-title">Performance You Can Measure</h2>
-      <p class="lede" style="margin-top:16px">Our track record is built on consistent, data-driven results across a growing portfolio of managed assets. We report transparently, benchmark rigorously, and continuously optimise performance for every asset under management.</p>
-    </div>
-    <div class="tiles reveal">
-      <div class="tile"><div class="tval" data-count data-to="85" data-suffix="%+">85%+</div><div class="tlbl">Average Occupancy</div><div class="tcap">Across all managed properties year-round</div></div>
-      <div class="tile"><div class="tval" data-count data-to="25" data-prefix="+" data-suffix="%">+25%</div><div class="tlbl">Revenue Premium</div><div class="tcap">Vs. traditional residential letting</div></div>
-      <div class="tile"><div class="tval" data-count data-to="24" data-suffix="/7">24/7</div><div class="tlbl">Operational Coverage</div><div class="tcap">Guest support, reporting, and management</div></div>
-      <div class="tile"><div class="tval" data-count data-to="10" data-suffix="+">10+</div><div class="tlbl">Years of Experience</div><div class="tcap">Managing assets in Portugal's prime markets</div></div>
-      <div class="tile"><div class="tval" data-count data-to="14" data-suffix="+">14+</div><div class="tlbl">Buildings Managed</div><div class="tcap">Across Lisbon's most in-demand locations</div></div>
-      <div class="tile"><div class="tval" data-count data-to="100" data-suffix="%">100%</div><div class="tlbl">Transparent Reporting</div><div class="tcap">Real-time dashboard access for all partners</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- SECTION 8 — HOW IT WORKS (Editorial Split, mirrors "Built for Institutional Partners") -->
-<section id="process" class="partner-pitch process-split">
-  <div class="wrap">
-    <div class="pitch-text reveal">
-      <h2 class="section-title">A Structured Path from First Conversation to Full Performance</h2>
-      <p class="pitch-sub">Our onboarding process is designed for institutional partners. Every step is documented, timeline-driven, and managed by a dedicated account team.</p>
-      <div class="pitch-cta">
-        <a class="btn btn-accent" href="#deal-enquiry">Start the Conversation →</a>
-      </div>
-    </div>
-    <ul class="pitch-list reveal">
-      <li>
-        <span class="snum">01</span>
-        <div><h3>Asset Assessment &amp; Commercial Proposal</h3><p>We conduct a detailed assessment of your asset — location, unit mix, current performance, and market positioning — and present a tailored commercial proposal including projected yield, recommended partnership model, and contract terms.</p></div>
-      </li>
-      <li>
-        <span class="snum">02</span>
-        <div><h3>Due Diligence &amp; Contract Negotiation</h3><p>Our legal and commercial team works with your advisors to structure and finalise the management agreement. All performance KPIs, reporting cadence, revenue share triggers, and exit terms are agreed and documented.</p></div>
-      </li>
-      <li>
-        <span class="snum">03</span>
-        <div><h3>Operational Onboarding</h3><p>We handle all elements of the operational setup: professional photography, platform registration and listing creation, pricing strategy implementation, staff assignment, and property preparation — typically completed within 10–15 business days.</p></div>
-      </li>
-      <li>
-        <span class="snum">04</span>
-        <div><h3>Asset Goes Live</h3><p>Your property launches across all distribution channels simultaneously. AI-powered pricing begins optimising daily rates from day one. Your account manager is active and reporting from the first booking.</p></div>
-      </li>
-      <li>
-        <span class="snum">05</span>
-        <div><h3>Ongoing Management &amp; Reporting</h3><p>Monthly performance reports delivered to your agreed format. Quarterly review meetings with your account manager. Continuous yield optimisation and strategic recommendations as market conditions evolve.</p></div>
-      </li>
-    </ul>
-  </div>
-</section>
-
+${trackRecordSection(trackRecord)}
+${processSection(process)}
 `;
 }
 
