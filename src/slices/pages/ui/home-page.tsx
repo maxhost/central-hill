@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
 import { ButtonLink } from "@core/ui";
+import { AvantioSearchBar } from "@slices/settings/contract";
 import { getHomePage } from "../contract";
 import { DualCta } from "./components/dual-cta";
 import { FaqSection } from "./components/faq-section";
@@ -22,7 +23,8 @@ const HERO_FALLBACK_POSTER =
 
 /**
  * Home page (content-briefs.md → 0 · Home) — restored to the approved `mock/home.html`
- * (Warm Editorial). Composes, in order: video hero · company stats (settings, dark band) ·
+ * (Warm Editorial). Composes, in order: video hero · Avantio availability search (settings) ·
+ * company stats (settings, dark band) ·
  * owners pitch (Editorial Split) · guests pitch (Image Showcase) · featured portfolio (buildings) ·
  * mixed testimonials (infinite marquee) · owner/guest dual CTA (settings). Static (ISR).
  * (The "our story" band was removed per owner direction.)
@@ -54,6 +56,9 @@ export async function HomePage({ locale }: { locale: Locale }) {
           </>
         }
       />
+
+      {/* Avantio availability search, directly under the hero (client request). */}
+      <AvantioSearchBar locale={locale} />
 
       <StatsBand locale={locale} keys={["bookings", "years", "guests", "revenue"]} />
 

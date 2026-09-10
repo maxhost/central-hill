@@ -39,6 +39,29 @@ settings publish cascades.
 back to English for locales Avantio does not support (pt/en/es/fr only). Consumers:
 home/guest `dualCta.guestCta` and the header **Book Now** CTA.
 
+**Avantio search bar** — `AvantioSearchBar({ locale })`, a server component that renders the
+vendor's external "barra de pesquisa" widget (doc: `docs/Widget Externo Avantio.pdf`, account
+`bk_centralhill`). Consumer: S9 Home, directly below the hero.
+
+`server/avantio-widget.ts` fetches the localized form and `includeJs.php` on the server
+(`revalidate: 86400`, so the public page never blocks on Avantio) and normalises them for a
+Next app on a different origin: the root-relative form `action` is absolutised (the root path
+404s — only Avantio's language segment resolves: `es→alquiler`, `en→rentals`, `fr→location`,
+`pt→aluguer`), every `<script>` is extracted so the island can replay it (markup assigned via
+`innerHTML` leaves scripts inert), and the vendor's `document.write` branches plus an `alert()`
+debug timer are dropped. Returns `null` when Avantio is unreachable, so an outage degrades to a
+missing section instead of a failed build.
+
+`ui/components/avantio-search-bar.tsx` renders the `avantio-integration` meta and the two vendor
+stylesheets — React 19 hoists them into `<head>`, so the app layout stays untouched.
+`avantio-search-bar-client.tsx` owns the load order: `CRS_DOMAIN` → markup → jQuery 3.4.1 →
+fetched scripts in document order → optional framework bundle.
+
+The vendor's `its--scripts.js` is **deliberately off** (`LOAD_FRAMEWORK_BUNDLE = false`): it
+throws `jQuery.cookie is not a function`, and supplying that plugin makes it write a 360-day
+`acepta_cookie` consent cookie with no prompt. The search bar does not need it. Full rationale
+and the browser-verified checks: `docs/specs/avantio-search-widget.md`.
+
 ## Header chrome — top-right cluster + sub-tabs (client feedback B1)
 
 `ui/site-header.tsx` is laid out in **three sections**: (1) the brand logo; (2) the **menu** —

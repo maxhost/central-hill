@@ -97,6 +97,14 @@ export { getGlobals, getNav } from "./server/queries";
 export { avantioBookingUrl, AVANTIO_LOCALES, AVANTIO_OWNERS_LOGIN_URL } from "./booking";
 
 /**
+ * Avantio availability search bar (external widget, vendor doc `docs/Widget Externo
+ * Avantio.pdf`). Server component — fetches the localized form through an ISR-cached reader,
+ * hoists the vendor stylesheets into `<head>`, and mounts a client island that replays the
+ * widget's scripts. Renders `null` when Avantio is unreachable. Used by S9 pages (Home).
+ */
+export { AvantioSearchBar } from "./ui/components/avantio-search-bar";
+
+/**
  * Backoffice contribution (S12). `settingsAdminScreens` is spread into
  * `composeAdminNav` by the admin panel layout; the globals + navigation editors mount
  * under `app/(admin)/admin/(panel)/{settings,navigation}/…` (admin-only). Pure data —
