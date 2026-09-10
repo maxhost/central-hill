@@ -77,6 +77,9 @@ seam. Spec: `docs/specs/avantio-search-widget-restyle.md`.
 - **Some selectors are unscoped on purpose.** `#ui-datepicker-div`, `.ui-autocomplete` and
   `.bloque_edadesNinyos` are appended to the body root by the vendor's jQuery, so they cannot be
   nested under `#miniformulario_slider`. The `<style>` only exists on pages rendering the widget.
+- **Under 550px the button is put back in normal flow.** The vendor makes that cell
+  `position: sticky; bottom: 0`, which pins it to the viewport rather than the card, so it rides
+  up over the fields until the card's bottom scrolls into view. Overridden to `static`.
 - **The seam offset lives here too**, next to the measured card height it is derived from: one
   `--avantio-overlap` custom property drives equal negative margins top and bottom above 880px,
   so the section takes no net space in the flow; below 880px the fields stack and it reverts to a

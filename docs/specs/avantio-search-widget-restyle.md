@@ -204,6 +204,14 @@ left to load order.
 positioned absolutely and hangs below the bar, so clipping the card would clip the popover. With
 the dividers and the button cell's grey background gone, nothing needs clipping anyway.
 
+**The mobile search button had to be un-stuck.** Not in the spec, found in client review: the
+vendor sets `#sombrap #contenido_buscar { position: sticky; bottom: 0 }` under 550px, which pins
+the button to the *viewport* bottom rather than the card's — it rides up over the fields (the
+sticky also gives it its own stacking context) and only drops into place once the card's bottom
+scrolls into view. That behaviour suits a full-height booking drawer, not a card sitting in the
+page flow. Returned to `position: static` at the foot of the form, and its `::before` fade — which
+exists only to blur content scrolling under a sticky button — set to `content: none`.
+
 **§7 (the "N nights" pill) was not built**, per its own instruction to drop rather than debug it.
 
 **Measured card height is 89px**, so `--avantio-overlap` is 44.5px. The value is derived in
@@ -221,6 +229,7 @@ the dividers and the button cell's grey background gone, nothing needs clipping 
 | Dividers | ✅ all three inter-field borders `0px` |
 | Datepicker | ✅ opened and screenshotted; **0 elements** left carrying `#dc3776`, `#1b5d63`, `#3BDC8D` or `#C8F5DF`; hovered day `rgb(181,86,45)` |
 | Seam | ✅ 1440px: margins `-44.5px` top and bottom, card straddles. 390px: margins `0`, normal band |
+| Mobile button | ✅ 390px, sampled at six scroll positions: `position: static`, constant 320px from the card top, 1px above its bottom edge |
 | Build | ✅ `pnpm typecheck`, `pnpm lint` (0 errors), `pnpm build` all green |
 
 Screenshots taken during verification (desktop seam, calendar open, mobile band) were reviewed

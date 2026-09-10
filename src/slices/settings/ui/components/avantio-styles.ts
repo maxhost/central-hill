@@ -140,8 +140,19 @@ export const AVANTIO_STYLE = `
   #miniformulario_slider #sombrap #tabla_form > * {
     padding: 14px 18px;
   }
-  #sombrap #contenido_buscar:before {
-    background-image: linear-gradient(0deg, var(--color-surface) 20%, transparent);
+  /* The vendor makes the button cell 'position: sticky; bottom: 0' here, which pins it to the
+     *viewport* bottom: it rides up inside the card and only drops to its real place once the
+     card's bottom scrolls into view — and the sticky's stacking context paints it over the
+     fields on the way. Wrong for a card in the page flow rather than a full-height drawer, so
+     put it back in normal flow at the foot of the form. */
+  #miniformulario_slider #sombrap #contenido_buscar {
+    position: static;
+    margin-top: 4px;
+  }
+  /* That cell's ::before is a fade for content scrolling under the sticky button. With the
+     button static it has nothing to fade and just paints a band above it. */
+  #miniformulario_slider #sombrap #contenido_buscar:before {
+    content: none;
   }
 }
 
