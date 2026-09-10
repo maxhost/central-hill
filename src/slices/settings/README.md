@@ -48,14 +48,42 @@ vendor's external "barra de pesquisa" widget (doc: `docs/Widget Externo Avantio.
 Next app on a different origin: the root-relative form `action` is absolutised (the root path
 404s — only Avantio's language segment resolves: `es→alquiler`, `en→rentals`, `fr→location`,
 `pt→aluguer`), every `<script>` is extracted so the island can replay it (markup assigned via
-`innerHTML` leaves scripts inert), and the vendor's `document.write` branches plus an `alert()`
-debug timer are dropped. Returns `null` when Avantio is unreachable, so an outage degrades to a
-missing section instead of a failed build.
+`innerHTML` leaves scripts inert), the vendor's `document.write` branches plus an `alert()` debug
+timer are dropped, and the `<link rel="stylesheet">` riding inside the fragment is stripped and
+returned as data (`widget.stylesheets`) instead of being injected at mount. Returns `null` when
+Avantio is unreachable, so an outage degrades to a missing section instead of a failed build.
 
-`ui/components/avantio-search-bar.tsx` renders the `avantio-integration` meta and the two vendor
-stylesheets — React 19 hoists them into `<head>`, so the app layout stays untouched.
+`ui/components/avantio-search-bar.tsx` renders the `avantio-integration` meta, then all three
+vendor stylesheets in a fixed order (`flexible-search` → `formulario-style` → `fontlibrary`),
+then `AVANTIO_STYLE`. React 19 hoists the `<link>`s into `<head>` while a plain `<style>` stays
+in the body, so the app layout stays untouched and our overrides are last in document order.
 `avantio-search-bar-client.tsx` owns the load order: `CRS_DOMAIN` → markup → jQuery 3.4.1 →
 fetched scripts in document order → optional framework bundle.
+
+### The override layer (`ui/components/avantio-styles.ts`)
+
+`AVANTIO_STYLE` restyles the widget to Warm Editorial and floats it on the hero / stats-band
+seam. Spec: `docs/specs/avantio-search-widget-restyle.md`.
+
+- **It wins on document order, not on `!important`.** Its selectors deliberately mirror Avantio's
+  chained ids (`#miniformulario_slider #sombrap #tabla_form …`) rather than being written shorter:
+  matching the vendor's specificity is enough once the `<style>` ships after the `<link>`s. The
+  only `!important` declarations answer `!important` in the vendor sheets (the range datepicker's
+  green pill and its `Open Sans` pin).
+- **Three vendor brand colours, not one.** `#1b5d63` (button, children-ages confirm, focus ring)
+  and `#dc3776` (single-month datepicker, autocomplete) both live in `formulario-style.css`;
+  `#3BDC8D` with its `#C8F5DF` wash lives in `flexible-search.css` and paints the **two-month
+  range** datepicker this account actually opens. Missing the third leaves a green calendar.
+- **Some selectors are unscoped on purpose.** `#ui-datepicker-div`, `.ui-autocomplete` and
+  `.bloque_edadesNinyos` are appended to the body root by the vendor's jQuery, so they cannot be
+  nested under `#miniformulario_slider`. The `<style>` only exists on pages rendering the widget.
+- **The seam offset lives here too**, next to the measured card height it is derived from: one
+  `--avantio-overlap` custom property drives equal negative margins top and bottom above 880px,
+  so the section takes no net space in the flow; below 880px the fields stack and it reverts to a
+  normal band.
+
+Changing the *set* of fields (Dates / Zone / Adults / Children) is **not possible from our side** —
+see the open Avantio request in §11 of the restyle spec.
 
 The vendor's `its--scripts.js` is **deliberately off** (`LOAD_FRAMEWORK_BUNDLE = false`): it
 throws `jQuery.cookie is not a function`, and supplying that plugin makes it write a 360-day

@@ -25,6 +25,10 @@ import { AVANTIO_LOCALES } from "../booking";
  *    explicitly instead.
  * 4. **An `alert()` debug timer** ships inside the fragment — it pops a native dialog on the
  *    marketing homepage if xajax is slow. Dropped.
+ * 5. **The fragment carries its own `<link rel="stylesheet">`**, which the island would inject at
+ *    mount — landing after every other sheet on the page, and so after our own overrides. It is
+ *    stripped here and returned as data so the caller can render all three vendor sheets in a
+ *    fixed order with its override `<style>` last. See `ui/components/avantio-styles.ts`.
  *
  * Cross-origin is fine: both endpoints answer `Access-Control-Allow-Origin: *`, so the widget's
  * xajax calls work from the Vercel domain as well as from production.
@@ -82,10 +86,16 @@ export interface AvantioScript {
 }
 
 export interface AvantioWidget {
-  /** Form markup with the action absolutised and every `<script>` stripped out. */
+  /** Form markup with the action absolutised and every `<script>`/`<link>` stripped out. */
   html: string;
   /** Scripts to replay, in the order they must execute. */
   scripts: AvantioScript[];
+  /**
+   * Every vendor stylesheet the widget needs, in the order they must appear in the document:
+   * the fragment's own sheet first, then the two from `AVANTIO_WIDGET_STYLESHEETS`. The caller
+   * renders these and then its overrides, so the cascade is settled by document order.
+   */
+  stylesheets: string[];
 }
 
 /** Map any app locale onto an Avantio language, falling back to English like `booking.ts`. */
@@ -130,6 +140,26 @@ function extractScripts(markup: string): { html: string; scripts: AvantioScript[
   return { html, scripts };
 }
 
+const LINK_RE = /<link\b[^>]*>/gi;
+const HREF_RE = /\bhref\s*=\s*["\']([^"\']+)["\']/i;
+
+/**
+ * Pull every `<link rel="stylesheet">` out of `markup`, returning the link-free markup and the
+ * absolutised hrefs in document order. Left in place, the island injects these at mount and they
+ * win the cascade over anything we write; owned by the caller, they load with the page and sit
+ * exactly where we put them.
+ */
+function extractStylesheets(markup: string): { html: string; hrefs: string[] } {
+  const hrefs: string[] = [];
+  const html = markup.replace(LINK_RE, (tag: string) => {
+    if (!/\brel\s*=\s*["\']?stylesheet\b/i.test(tag)) return tag;
+    const href = HREF_RE.exec(tag)?.[1];
+    if (href) hrefs.push(new URL(href, BASE).toString());
+    return "";
+  });
+  return { html, hrefs };
+}
+
 /**
  * The localized search bar, or `null` when Avantio is unreachable — the caller then renders
  * nothing rather than failing the build or shipping a broken widget.
@@ -148,7 +178,8 @@ export async function getAvantioSearchBar(locale: string): Promise<AvantioWidget
   ]);
   if (!rawForm) return null;
 
-  const { html, scripts } = extractScripts(rawForm);
+  const { html: linkless, hrefs } = extractStylesheets(rawForm);
+  const { html, scripts } = extractScripts(linkless);
 
   // `includeJs.php` contributes the widget's runtime helpers. Only its real `<script src>` tags
   // survive extraction — the jQuery and autosuggest branches live inside `document.write`
@@ -164,5 +195,8 @@ export async function getAvantioSearchBar(locale: string): Promise<AvantioWidget
     // Fragment scripts first (they define `xajaxRequestUri` and the xajax bridge), then the
     // helpers that bind behaviour to the form that is now in the DOM.
     scripts: [...scripts, ...runtime],
+    // Fragment sheet first, then the two the vendor asks for in `<head>`; de-duplicated in case
+    // Avantio ever starts serving one of those from inside the fragment as well.
+    stylesheets: [...new Set([...hrefs, ...AVANTIO_WIDGET_STYLESHEETS])],
   };
 }
