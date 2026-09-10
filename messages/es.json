@@ -621,6 +621,7 @@
     },
     "reviews": {
       "title": "Cuidamos de Nuestros\nSocios y Huéspedes",
+      "titleGuests": "Cuidamos de Nuestros Huéspedes",
       "owner": "Propietario",
       "guest": "Huésped",
       "prev": "Reseñas anteriores",

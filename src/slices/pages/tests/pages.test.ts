@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 import { translatablePaths } from "@core/validation/primitives";
 import { pageContentSchema } from "../validation";
-import { homeSchema, translatablePathsByPage } from "../schemas";
+import { guestSchema, homeSchema, translatablePathsByPage } from "../schemas";
 import { collectMediaIds, expand, overlayTranslations } from "../server/overlay";
 
 /**
@@ -107,6 +109,86 @@ test("faq_group_key is optional and accepts blank or a group key", () => {
 
 test("translatablePathsByPage is derived directly from each page schema", () => {
   assert.deepEqual(translatablePathsByPage.home, translatablePaths(homeSchema));
+  assert.deepEqual(translatablePathsByPage.guest, translatablePaths(guestSchema));
+});
+
+// ── guest page (docs/specs/guest-page-db-wiring.md) ──────────────────────────────
+/**
+ * The 0012 migration is what actually fills the live `guest` row, so its payload must
+ * satisfy the schema the admin form and the renderer share. Parsing the real SQL keeps the
+ * two from drifting: change one without the other and this test fails. Run from the repo root.
+ */
+function migration0012Payload(): unknown {
+  const sql = readFileSync(
+    path.resolve(process.cwd(), "drizzle/0012_guest_page_db_wiring.sql"),
+    "utf8",
+  );
+  const match = /\$guest\$([\s\S]*?)\$guest\$/.exec(sql);
+  assert.ok(match, "migration 0012 must carry a $guest$-quoted JSON payload");
+  return JSON.parse(match[1]!);
+}
+
+test("the 0012 migration payload validates against guestSchema", () => {
+  const parsed = guestSchema.safeParse(migration0012Payload());
+  assert.ok(
+    parsed.success,
+    `migration payload rejected: ${JSON.stringify(parsed.error?.issues, null, 2)}`,
+  );
+});
+
+test("guest exposes prose leaves as translatable but not media ids, urls or the faq key", () => {
+  const paths = translatablePathsByPage.guest;
+  for (const p of [
+    "hero.headline",
+    "hero.eyebrow",
+    "hero.cta.label",
+    "welcome.copy",
+    "welcome.guarantee_label",
+    "why.benefits[].title",
+    "why.benefits[].description",
+    "why.cta.note",
+    "portfolio.headline",
+    "portfolio.cta.label",
+    "services_teaser.items[].description",
+    "activities_teaser.eyebrow",
+    "dual_cta.guest.title",
+    "dual_cta.owner.cta.label",
+  ]) {
+    assert.ok(paths.includes(p), `expected translatable path ${p}`);
+  }
+  assert.ok(!paths.includes("hero.video_media_id"), "media ids are not translatable");
+  assert.ok(!paths.includes("welcome.image_media_id"), "media ids are not translatable");
+  assert.ok(!paths.includes("hero.cta.url"), "urls are not translatable");
+  assert.ok(!paths.includes("portfolio.cta.url"), "urls are not translatable");
+  assert.ok(!paths.includes("faq_group_key"), "the faq group key is language-neutral");
+  assert.ok(
+    !paths.some((p) => p.startsWith("testimonials")),
+    "reviews live in the testimonials slice, not in the page schema",
+  );
+});
+
+test("guest media references accept a blank value (fall back to the approved asset)", () => {
+  const data = migration0012Payload() as {
+    hero: { video_media_id: string };
+    welcome: { image_media_id: string };
+  };
+  assert.equal(data.hero.video_media_id, "");
+  assert.equal(data.welcome.image_media_id, "");
+  assert.equal(guestSchema.safeParse(data).success, true);
+  assert.equal(
+    guestSchema.safeParse({
+      ...data,
+      hero: { ...data.hero, video_media_id: UUID },
+      welcome: { ...data.welcome, image_media_id: UUID },
+    }).success,
+    true,
+  );
+});
+
+test("guest rejects a blank CTA url (the migration must backfill real links)", () => {
+  const data = migration0012Payload() as { hero: { cta: { label: string; url: string } } };
+  const broken = { ...data, hero: { ...data.hero, cta: { ...data.hero.cta, url: "" } } };
+  assert.equal(guestSchema.safeParse(broken).success, false);
 });
 
 // ── pure overlay logic ──────────────────────────────────────────────────────────

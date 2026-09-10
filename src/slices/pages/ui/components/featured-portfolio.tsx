@@ -11,7 +11,10 @@ import { PortfolioCarousel } from "./portfolio-carousel";
 const CAROUSEL_LIMIT = 9;
 
 /**
- * Featured portfolio (Home/Guest). Reads the featured buildings via the buildings
+ * Featured portfolio (Home/Guest). The heading, intro and button copy default to the shared
+ * `pages.portfolio.*` messages; the Guests page overrides them with its own admin-authored
+ * `guest.portfolio` block (Home passes nothing and renders unchanged).
+ * Reads the featured buildings via the buildings
  * contract (`getFeaturedBuildings`, by position) and renders them in a carousel that
  * shows **three properties at a time** (two on tablet, one on mobile) with prev/next
  * controls. Builds its own card from `BuildingSummary` (no cross-slice UI import, golden
@@ -21,9 +24,27 @@ const CAROUSEL_LIMIT = 9;
 export async function FeaturedPortfolio({
   locale,
   showEyebrow = true,
+  eyebrow,
+  title,
+  intro,
+  ctaLabel,
+  ctaNote,
+  ctaHref,
 }: {
   locale: Locale;
   showEyebrow?: boolean;
+  /** Overrides `portfolio.eyebrow` (and forces the eyebrow to show). */
+  eyebrow?: string;
+  /** Overrides `portfolio.title`. */
+  title?: string;
+  /** Overrides `portfolio.intro`. */
+  intro?: string;
+  /** Overrides `portfolio.viewAll`. */
+  ctaLabel?: string;
+  /** Small helper line under the button. No default — omitted unless provided. */
+  ctaNote?: string;
+  /** Overrides the `/{locale}/buildings` button target. */
+  ctaHref?: string;
 }) {
   const buildings = await getFeaturedBuildings(locale, CAROUSEL_LIMIT);
   if (buildings.length === 0) return null;
@@ -39,9 +60,9 @@ export async function FeaturedPortfolio({
       <Container>
         <SectionHeading
           center
-          eyebrow={showEyebrow ? t("portfolio.eyebrow") : undefined}
-          title={t("portfolio.title")}
-          intro={t("portfolio.intro")}
+          eyebrow={eyebrow ?? (showEyebrow ? t("portfolio.eyebrow") : undefined)}
+          title={title ?? t("portfolio.title")}
+          intro={intro ?? t("portfolio.intro")}
         />
         <div className="mt-12">
           <PortfolioCarousel
@@ -51,9 +72,10 @@ export async function FeaturedPortfolio({
           />
         </div>
         <div className="mt-12 text-center">
-          <ButtonLink href={`/${locale}/buildings`} variant="outline">
-            {t("portfolio.viewAll")}
+          <ButtonLink href={ctaHref ?? `/${locale}/buildings`} variant="outline">
+            {ctaLabel ?? t("portfolio.viewAll")}
           </ButtonLink>
+          {ctaNote ? <p className="mt-4 text-sm text-ink-soft">{ctaNote}</p> : null}
         </div>
       </Container>
     </section>

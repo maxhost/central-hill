@@ -55,6 +55,12 @@ page out from `content` + `media`. Shared pieces in `ui/components/`:
   background images) with the settings contact line; unset fields fall back to the localized
   `pages.dualCta.*` chrome and approved mock photos.
 
+`featured-portfolio.tsx` and `testimonials-row.tsx` take **optional** heading/CTA overrides
+(`eyebrow`, `title`, `intro`, `ctaLabel`, `ctaNote`, `ctaHref`). Home and Owners pass none and
+keep the shared `pages.portfolio.*` / `pages.reviews.*` copy; the Guests page passes its
+admin-authored `guest.portfolio` block and `pages.reviews.titleGuests`. Both render `null` when
+the underlying slice has nothing published, so the section disappears rather than showing empty.
+
 The **Owners** page (`owners-page.tsx`) is **DB-driven** (mock embedded 1:1, but every section now
 reads its values from the owners `page_content` row): the body is built by `ownersBodyTop(content,
 media)` which interpolates the resolved content into the locked design markup verbatim — the bespoke
@@ -92,6 +98,22 @@ form, and `why`/`services`/`dashboard` were restyled; the editable marketing sec
 markup, now read their group (`owners` / `real_estate`, seeded in drizzle 0008 from the former static
 Q&A); Home/Guest/About start blank.
 
+The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
+`docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyMid` / `bodyBottom` interpolate the
+resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`. Its nine sections
+split as follows — hero, welcome, why, services teaser and activities teaser come from
+`page_content`; the featured portfolio comes from **buildings**, the reviews from
+**testimonials** (`audience='guest'`, managed in `/admin/testimonials` — the page schema owns no
+testimonials block), the optional FAQ from **faq**, and the dual-CTA contact line from
+**company_settings**. `icon_key` renders directly as an Iconoir glyph (`iconoir-<key>`; the font
+is loaded globally by `mock.css`), with `iconoir-sparks` as the fallback for unknown keys.
+`localizeUrl` rewrites the stored absolute `/en/…` CTA links to the active locale, because
+`cta.url` is `z.url()` and relative paths cannot be stored.
+
+**Deploy order matters for this page:** migration 0012 must run before the code ships, otherwise
+prerendering `/[locale]/guests` throws on the missing `portfolio` / `dual_cta` blocks. A stale
+`.next/cache` from a pre-migration build causes the same failure locally — clear it and rebuild.
+
 The Home `guests_pitch.image_media_id` and `dual_cta.*.image_media_id` are **optional images**
 (`""` allowed): until an R2 asset is uploaded the render falls back to an approved mock photo,
 so the section never renders empty.
@@ -110,7 +132,8 @@ image override comes from the page row.
 
 UI-chrome strings live in the root `messages/<locale>.json` under the `pages` namespace
 (authored for en/pt/es/fr): per-page meta, section connective labels (stats/reviews/portfolio
-eyebrows), the dual-CTA copy, and plural helpers (`portfolio.apartments`, `portfolio.guests`).
+eyebrows), `reviews.titleGuests` (the Guests-only reviews heading), the dual-CTA copy, and
+plural helpers (`portfolio.apartments`, `portfolio.guests`).
 All page *content* prose are [T] DB fields resolved through `core/i18n`.
 
 ## Resolution internals (`server/`)

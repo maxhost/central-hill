@@ -4,7 +4,7 @@
  * arrays (the admin form shows N slots, never "add block") per ADR 0012.
  */
 import { z } from "zod";
-import { iconKey, tStr } from "@core/validation/primitives";
+import { iconKey, mediaId, tStr } from "@core/validation/primitives";
 
 /** The ubiquitous "icon + title + description" card (benefits, features…). */
 export const iconCard = z.object({
@@ -37,6 +37,15 @@ export const faqGroupKey = z
   .union([z.literal(""), z.string().max(120)])
   .describe("FAQ group shown on this page — pick one authored in /admin/faq, or leave blank for none.")
   .optional();
+
+/**
+ * An image (or video) reference that may be left unset. An empty string means "no asset yet" —
+ * the public render then falls back to the approved mock photo. Accepts a `media_asset.id` once
+ * something is uploaded. The `hint` becomes the uploader guidance shown in the admin picker
+ * (the form-model reads `.describe()`).
+ */
+export const optionalImage = (hint: string) =>
+  z.union([z.literal(""), mediaId]).describe(hint);
 
 /** Fixed-count array helper — the design repeats exactly `n` times. */
 export const fixed = <T extends z.ZodType>(schema: T, n: number) =>

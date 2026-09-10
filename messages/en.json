@@ -621,6 +621,7 @@
     },
     "reviews": {
       "title": "We Care About Our\nPartners & Guests",
+      "titleGuests": "We Care About Our Guests",
       "owner": "Owner",
       "guest": "Guest",
       "prev": "Previous reviews",

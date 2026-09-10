@@ -141,12 +141,18 @@ page_content
   `contact{headline, cta_guests{label,url}, cta_owners{label,url}, cta_partners{label,url}, form{headline,subheadline}}`
   (form → `lead.kind='contact'`). → Stats band & office block = **company_settings**.
   Team/departments, partners, certifications, "founded 2012" are **static copy here** — no entities.
-- **guest**: `hero{video_media_id, eyebrow, headline, subheadline, cta{label,url}}`;
-  `welcome{headline, lede, copy, guarantee_label, image_media_id}`;
-  `why{headline, intro, benefits[×4]{icon_key,title,description}, cta{label,url,note}}`;
-  `services_teaser{headline, intro, items[×6]{icon_key,title,description}, cta{label,url,note}}`;
-  `activities_teaser{headline, intro, items[×6]{icon_key,title,description}, cta{label,url}}`.
-  → Featured portfolio = **buildings**; testimonials (audience=guest) referenced; dual-CTA = company_settings.
+- **guest**: `hero{video_media_id?, eyebrow, headline, subheadline, cta{label,url}}`;
+  `welcome{headline, lede, copy, guarantee_label, image_media_id?}`;
+  `why{eyebrow, headline, intro, benefits[×4]{icon_key,title,description}, cta{label,url,note}}`;
+  `portfolio{eyebrow, headline, intro, cta{label,url,note}}` (headings/CTA only — the cards come
+  from buildings); `services_teaser{eyebrow, headline, intro, items[×6]{icon_key,title,description}, cta{label,url,note}}`;
+  `activities_teaser{eyebrow, headline, intro, items[×6]{icon_key,title,description}, cta{label,url,note}}`;
+  `dual_cta{guest,owner}{eyebrow, title, body, cta{label,url}}` (panel copy only — the contact
+  line is company_settings). Wired to the front in drizzle 0012 (`docs/specs/guest-page-db-wiring.md`).
+  → Featured portfolio = **buildings**; reviews = **testimonials** (audience=guest, managed in
+  `/admin/testimonials`; the page stores **no** testimonials block — its heading is i18n chrome,
+  `pages.reviews.titleGuests`); dual-CTA contact = **company_settings**; FAQ = **faq** via
+  `faq_group_key`. The two `*_media_id` are optional (`""` = fall back to the approved mock asset).
 
 **FAQ (all five pages).** Every page's `data` carries an optional **`faq_group_key`** (blank/absent =
 no FAQ). When set, it holds the language-neutral `key` of a `faq_group` (faq slice); the page renders

@@ -8,20 +8,13 @@
  */
 import { z } from "zod";
 import { cta, ctaWithNote, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
-import { faqGroupKey, fixed, iconCard } from "./_shared";
+import { faqGroupKey, fixed, iconCard, optionalImage } from "./_shared";
 
 /** Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). */
 const GUESTS_IMG_HINT =
   "Lifestyle photo for the Guests section. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
 const PANEL_IMG_HINT =
   "Panel background photo. Landscape — recommended 1600×1200px, JPG or WebP, under 600 KB.";
-
-/**
- * An image reference that may be left unset. An empty string means "no asset yet" — the
- * public render then falls back to the approved mock photo (R2 isn't wired yet). Accepts a
- * `media_asset.id` once an image is uploaded. `.describe()` becomes the uploader hint.
- */
-const optionalImage = (hint: string) => z.union([z.literal(""), mediaId]).describe(hint);
 
 /** One side of the closing owner/guest dual-CTA band (editable copy + background). */
 const ctaPanel = z.object({

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
@@ -8,7 +8,11 @@ import { buildMetadata } from "@core/seo";
 import { GuestPage } from "@slices/pages/ui/guest-page";
 import "../../mock.css";
 
-/** Static per locale. Content is the embedded mock (no DB). */
+/**
+ * Static per locale (ISR). Content is the `guest` page_content row plus the buildings,
+ * testimonials, faq and settings slices — see `src/slices/pages/ui/guest-page.tsx`.
+ * `savePage("guest", …)` revalidates this path for all four locales.
+ */
 export const revalidate = 3600;
 
 export function generateStaticParams() {
@@ -27,10 +31,11 @@ export async function generateMetadata({
   const languages: Partial<Record<Locale | "x-default", string>> = { "x-default": "/guests" };
   for (const l of routing.locales) languages[l] = `/${l}/guests`;
 
+  const t = await getTranslations({ locale, namespace: "pages" });
+
   return buildMetadata({
-    title: "For Guests — Central Hill",
-    description:
-      "Handpicked, professionally managed apartments in the heart of Portugal's most captivating destinations. Book directly for the best price, guaranteed.",
+    title: t("guests.metaTitle"),
+    description: t("guests.metaDescription"),
     canonicalPath: `/${locale}/guests`,
     languages,
   });

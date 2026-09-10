@@ -1,16 +1,110 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
-import { getGuestPage } from "../contract";
+import type { MediaImageData } from "@core/media";
+import { getGlobals } from "@slices/settings/contract";
+import { getGuestPage, type GuestContent } from "../contract";
 import { FaqSection } from "./components/faq-section";
+import { FeaturedPortfolio } from "./components/featured-portfolio";
+import { TestimonialsRow } from "./components/testimonials-row";
 
 /**
- * Guests page — the approved `mock/guest.html` embedded 1:1 inside the live app shell.
- * The mock's body markup is rendered verbatim; its page-only styles are scoped under `.mk`
- * (the shared design system lives in `src/app/mock.css`) so nothing leaks to Home/admin.
- * No database is read here — content is static, matching the mock exactly. The real
- * header/footer + i18n come from the app layout. The hero <video> is the mock's static
- * markup (autoplay/muted/loop); no client JS is wired.
+ * Guests page — the approved `mock/guest.html` layout inside the live app shell, now fully
+ * DB-driven (docs/specs/guest-page-db-wiring.md). The mock's body markup is rendered as a
+ * scoped HTML string (page-only styles under `.mk`; the shared design system lives in
+ * `src/app/mock.css`) with every text/image value interpolated from the `guest`
+ * `page_content` row, resolved for the locale. Nothing on this page is hard-coded copy.
+ *
+ * Composed from other slices at render time, so publishing there refreshes this page:
+ *   - featured portfolio cards → buildings (`FeaturedPortfolio`)
+ *   - guest reviews → testimonials, `audience='guest'` (`TestimonialsRow`, /admin/testimonials)
+ *   - optional FAQ accordion → faq, chosen per page via `faq_group_key`
+ *   - dual-CTA contact line (phone / email / WhatsApp) → company_settings (`getGlobals`)
+ * Those three React islands render OUTSIDE the `.mk` wrapper so `mock.css`'s bare-element
+ * rules don't leak into their Tailwind markup; the static body is split around them.
+ *
+ * The hero <video> is the mock's markup (autoplay/muted/loop); no client JS is wired, so
+ * `.reveal` is neutralised in mock.css and all content renders immediately.
  */
+
+// Media fallbacks = the approved mock assets, used 1:1 until a real R2 asset is set in the
+// backoffice (`*_media_id` may be blank, or seeded to an id with no uploaded asset yet).
+const HERO_FALLBACK_VIDEO =
+  "https://videos.pexels.com/video-files/16592055/16592055-hd_1920_1080_60fps.mp4";
+const HERO_FALLBACK_POSTER =
+  "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=1900&q=72";
+const WELCOME_FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70";
+const WELCOME_FALLBACK_ALT = "Bright, design-led Central Hill apartment interior";
+
+// Escape admin-authored content before it is interpolated into the static body HTML string.
+const esc = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const escAttr = (s: string) => esc(s).replace(/"/g, "&quot;");
+
+/**
+ * Iconoir glyph class for a card's `icon_key`. The font is loaded globally by `mock.css`, so
+ * a valid key renders directly. Unknown/legacy keys (e.g. the demo seed's `"spark"`) fall
+ * back to the decorative `sparks` glyph rather than rendering an empty box.
+ */
+const ICON_FALLBACK = "iconoir-sparks";
+const iconClass = (key: string): string =>
+  key.length > 0 && key.length <= 64 && /^[a-z0-9-]+$/.test(key)
+    ? `iconoir-${key}`
+    : ICON_FALLBACK;
+
+/**
+ * Rewrite an own-site `/en/…` CTA link to the active locale. Stored CTA urls must be absolute
+ * (`cta.url` is `z.url()`, so a relative path cannot be saved) and are authored in English, so
+ * without this a Portuguese visitor would be sent to the English route. External links and
+ * anything unparseable pass through untouched.
+ */
+function localizeUrl(raw: string, locale: Locale): string {
+  try {
+    const u = new URL(raw);
+    if (!/(^|\.)centralhill\.pt$/.test(u.hostname)) return raw;
+    u.pathname = u.pathname.replace(/^\/(en|pt|es|fr)(?=\/|$)/, `/${locale}`);
+    return u.toString();
+  } catch {
+    return raw;
+  }
+}
+
+/** Split an admin-authored multi-paragraph field into escaped `<p>` blocks. */
+const paragraphs = (copy: string, attrs = ""): string =>
+  copy
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block) => `<p${attrs}>${esc(block)}</p>`)
+    .join("");
+
+type IconCard = { icon_key: string; title: string; description: string };
+type Cta = { label: string; url: string; note?: string };
+
+/** The mock's icon card, in either of its two wrappers (`.bcard` for Why, `.feat` for teasers). */
+const iconCards = (items: IconCard[], wrapper: "bcard" | "feat"): string =>
+  items
+    .map(
+      (c) =>
+        `<div class="${wrapper}"><i class="ico ${iconClass(c.icon_key)}" aria-hidden="true"></i>` +
+        `<h3>${esc(c.title)}</h3><p>${esc(c.description)}</p></div>`,
+    )
+    .join("");
+
+/** The mock's centred section header (eyebrow + title + lede); optional parts are omitted. */
+const secHead = (opts: { eyebrow?: string; headline: string; intro?: string }): string =>
+  `<div class="sec-head center reveal">
+      ${opts.eyebrow ? `<span class="eyebrow">${esc(opts.eyebrow)}</span>` : ""}
+      <h2 class="section-title">${esc(opts.headline)}</h2>
+      ${opts.intro ? `<p class="lede" style="margin:16px auto 0">${esc(opts.intro)}</p>` : ""}
+    </div>`;
+
+/** The mock's centred CTA row (button + optional helper note). */
+const ctaRow = (cta: Cta, locale: Locale, variant: "accent" | "ghost"): string =>
+  `<div class="cta-row reveal" style="justify-content:center">` +
+  `<a class="btn btn-${variant}" href="${escAttr(localizeUrl(cta.url, locale))}">${esc(cta.label)} →</a>` +
+  `${cta.note ? `<span class="cta-note">${esc(cta.note)}</span>` : ""}</div>`;
 
 const PAGE_STYLE = `
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
@@ -26,21 +120,30 @@ const PAGE_STYLE = `
 @media(max-width:640px){.mk .feat-grid{grid-template-columns:1fr}}
 `;
 
-// An optional, editable <FaqSection> island is rendered between the page body and the closing
-// dual-CTA (outside `.mk` to avoid mock.css leak), chosen per page via `faq_group_key`. The
-// static body is split here around it.
-const BODY_TOP = (locale: Locale) => `
+/** Hero · Welcome · Why book directly — above the featured-portfolio island. */
+function bodyTop(
+  content: GuestContent,
+  media: Record<string, MediaImageData>,
+  locale: Locale,
+): string {
+  const { hero, welcome, why } = content;
+  const heroVideo = media[hero.video_media_id ?? ""]?.url ?? HERO_FALLBACK_VIDEO;
+  const welcomeAsset = media[welcome.image_media_id ?? ""];
+  const welcomeImg = welcomeAsset?.url ?? WELCOME_FALLBACK_IMG;
+  const welcomeAlt = welcomeAsset?.alt || WELCOME_FALLBACK_ALT;
+
+  return `
 <!-- HERO -->
 <section class="hero compact" style="padding:0">
-  <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=1900&q=72">
-    <source src="https://videos.pexels.com/video-files/16592055/16592055-hd_1920_1080_60fps.mp4" type="video/mp4">
+  <video autoplay muted loop playsinline poster="${escAttr(HERO_FALLBACK_POSTER)}">
+    <source src="${escAttr(heroVideo)}" type="video/mp4">
   </video>
   <div class="wrap">
-    <span class="eyebrow">For Guests · Portugal</span>
-    <h1>Where Every Stay Becomes a Story</h1>
-    <p>Handpicked, professionally managed apartments in the heart of Portugal's most captivating destinations.</p>
+    ${hero.eyebrow ? `<span class="eyebrow">${esc(hero.eyebrow)}</span>` : ""}
+    <h1>${esc(hero.headline)}</h1>
+    ${hero.subheadline ? `<p>${esc(hero.subheadline)}</p>` : ""}
     <div class="hero-cta">
-      <a class="btn btn-accent" href="/${locale}/buildings">Browse Our Apartments →</a>
+      <a class="btn btn-accent" href="${escAttr(localizeUrl(hero.cta.url, locale))}">${esc(hero.cta.label)} →</a>
     </div>
   </div>
 </section>
@@ -50,12 +153,16 @@ const BODY_TOP = (locale: Locale) => `
   <div class="wrap">
     <div class="welcome reveal">
       <div>
-        <h2 class="section-title">Welcome to Central Hill</h2>
-        <p class="lede" style="margin-top:18px">Every city has a soul — and we'll help you find it.</p>
-        <p style="margin-top:14px;color:var(--ink-soft)">At Central Hill, we handpick properties in the heart of Portugal's most captivating destinations, so you wake up where the culture, the food, and the people are. Our team is with you from the first message to the last goodbye.</p>
-        <span class="guarantee"><i class="iconoir-percentage-circle" aria-hidden="true"></i> Book directly with us for the best price, guaranteed</span>
+        <h2 class="section-title">${esc(welcome.headline)}</h2>
+        <p class="lede" style="margin-top:18px">${esc(welcome.lede)}</p>
+        ${paragraphs(welcome.copy, ' style="margin-top:14px;color:var(--ink-soft)"')}
+        ${
+          welcome.guarantee_label
+            ? `<span class="guarantee"><i class="iconoir-percentage-circle" aria-hidden="true"></i> ${esc(welcome.guarantee_label)}</span>`
+            : ""
+        }
       </div>
-      <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70" alt="Bright, design-led Central Hill apartment interior">
+      <img src="${escAttr(welcomeImg)}" alt="${escAttr(welcomeAlt)}">
     </div>
   </div>
 </section>
@@ -63,125 +170,131 @@ const BODY_TOP = (locale: Locale) => `
 <!-- WHY BOOK DIRECTLY -->
 <section class="alt">
   <div class="wrap">
-    <div class="sec-head center reveal">
-      <span class="eyebrow">Best Price, Guaranteed</span>
-      <h2 class="section-title">Why Book Directly With Us?</h2>
-      <p class="lede" style="margin:16px auto 0">Book direct and unlock perks you won't get on the big platforms — better prices, more flexibility, and personal care.</p>
-    </div>
+    ${secHead({ eyebrow: why.eyebrow, headline: why.headline, intro: why.intro })}
     <div class="grid-3 reveal" style="grid-template-columns:repeat(4,1fr)">
-      <div class="bcard"><i class="ico iconoir-percentage-circle" aria-hidden="true"></i><h3>Get the Best Prices</h3><p>You won't find our apartments cheaper anywhere else — enjoy an average saving of €213 per reservation versus Airbnb, Booking and other platforms.</p></div>
-      <div class="bcard"><i class="ico iconoir-key" aria-hidden="true"></i><h3>Early Check-In</h3><p>Enter the apartment sooner than everyone else and start your trip the moment you arrive. (Pending availability.)</p></div>
-      <div class="bcard"><i class="ico iconoir-suitcase" aria-hidden="true"></i><h3>Early Luggage Drop</h3><p>Arriving before check-in time? We can let you drop your luggage at the apartment early, hands-free.</p></div>
-      <div class="bcard"><i class="ico iconoir-gift" aria-hidden="true"></i><h3>Special Discounts</h3><p>Enjoy exclusive discounts on services and activities booked with us during your stay.</p></div>
+      ${iconCards(why.benefits, "bcard")}
     </div>
-    <div class="cta-row reveal" style="justify-content:center"><a class="btn btn-accent" href="/${locale}/buildings">Browse Our Apartments →</a><span class="cta-note">View the full portfolio of available apartments across Portugal.</span></div>
+    ${ctaRow(why.cta, locale, "accent")}
   </div>
 </section>
+`;
+}
 
-<!-- PORTFOLIO -->
-<section>
-  <div class="wrap">
-    <div class="sec-head center reveal">
-      <span class="eyebrow">The Portfolio</span>
-      <h2 class="section-title">Explore Our Portfolio</h2>
-      <p class="lede" style="margin:16px auto 0">Carefully selected properties across Portugal's most iconic locations — each chosen for its character and exceptional guest experience.</p>
-    </div>
-    <div class="pf-grid reveal">
-      <a class="pcard" href="/${locale}/buildings/sample"><div class="ph"><span class="badge">★ Featured</span><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=900&q=70" alt="Big Bairro Alto living space"></div><div class="pbody"><h3>Big Bairro Alto by Central Hill</h3><div class="pmeta">8 Bedrooms · Up to 27 Guests</div><div class="view">View →</div></div></a>
-      <a class="pcard" href="/${locale}/buildings/sample"><div class="ph"><img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=70" alt="Central Downtown apartment interior"></div><div class="pbody"><h3>Central Downtown by Central Hill</h3><div class="pmeta">2 Bedrooms · Up to 6 Guests</div><div class="view">View →</div></div></a>
-      <a class="pcard" href="/${locale}/buildings/sample"><div class="ph"><img src="https://images.unsplash.com/photo-1560185007-cde436f6a4d0?auto=format&fit=crop&w=900&q=70" alt="Large Bairro Alto View apartment with city outlook"></div><div class="pbody"><h3>Large Bairro Alto View by Central Hill</h3><div class="pmeta">4 Bedrooms · Up to 10 Guests</div><div class="view">View →</div></div></a>
-    </div>
-    <div class="cta-row reveal" style="justify-content:center"><a class="btn btn-ghost" href="/${locale}/buildings">View All Properties →</a><span class="cta-note">Browse our full portfolio across Portugal.</span></div>
-  </div>
-</section>
+/** Services teaser · What-to-do teaser — between the portfolio and testimonials islands. */
+function bodyMid(content: GuestContent, locale: Locale): string {
+  const { services_teaser: services, activities_teaser: activities } = content;
 
+  return `
 <!-- SERVICES TEASER -->
 <section class="alt">
   <div class="wrap">
-    <div class="sec-head center reveal">
-      <span class="eyebrow">Services</span>
-      <h2 class="section-title">Make the Most of Your Stay</h2>
-      <p class="lede" style="margin:16px auto 0">We go beyond accommodation. From the moment you land to every adventure in between, our team is here to make your Portugal experience unforgettable.</p>
-    </div>
+    ${secHead({ eyebrow: services.eyebrow, headline: services.headline, intro: services.intro })}
     <div class="feat-grid reveal">
-      <div class="feat"><i class="ico iconoir-car" aria-hidden="true"></i><h3>Private Transfers</h3><p>Seamless airport and city transfers, ready the moment you land.</p></div>
-      <div class="feat"><i class="ico iconoir-binocular" aria-hidden="true"></i><h3>Day Tours</h3><p>Guided escapes to Portugal's most iconic sights and hidden corners.</p></div>
-      <div class="feat"><i class="ico iconoir-sea-waves" aria-hidden="true"></i><h3>Boat Trips</h3><p>See the coastline and the Tagus from the water on a private cruise.</p></div>
-      <div class="feat"><i class="ico iconoir-swimming" aria-hidden="true"></i><h3>Surf Experience</h3><p>Catch your first wave with expert local instructors on Atlantic beaches.</p></div>
-      <div class="feat"><i class="ico iconoir-pizza-slice" aria-hidden="true"></i><h3>Chef at Home</h3><p>A private chef cooks Portuguese flavours right in your apartment.</p></div>
-      <div class="feat"><i class="ico iconoir-suitcase" aria-hidden="true"></i><h3>Luggage Storage</h3><p>Drop your bags and explore freely before check-in or after checkout.</p></div>
+      ${iconCards(services.items, "feat")}
     </div>
-    <div class="cta-row reveal" style="justify-content:center"><a class="btn btn-accent" href="/${locale}/services">Explore All Services →</a><span class="cta-note">See details, pricing, and availability.</span></div>
+    ${ctaRow(services.cta, locale, "accent")}
   </div>
 </section>
 
 <!-- WHAT TO DO TEASER -->
 <section>
   <div class="wrap">
-    <div class="sec-head center reveal">
-      <span class="eyebrow">What to Do</span>
-      <h2 class="section-title">The Best of Portugal</h2>
-      <p class="lede" style="margin:16px auto 0">Whether you're exploring a vibrant city, a medieval village, or a stunning coastline — Portugal never runs out of extraordinary things to discover.</p>
-    </div>
+    ${secHead({ eyebrow: activities.eyebrow, headline: activities.headline, intro: activities.intro })}
     <div class="feat-grid reveal">
-      <div class="feat"><i class="ico iconoir-bank" aria-hidden="true"></i><h3>Explore Historic Districts</h3><p>Wander cobblestone streets and timeless neighbourhoods full of character.</p></div>
-      <div class="feat"><i class="ico iconoir-medal" aria-hidden="true"></i><h3>Visit UNESCO World Heritage Sites</h3><p>From Sintra's palaces to centuries-old monuments and town centres.</p></div>
-      <div class="feat"><i class="ico iconoir-pizza-slice" aria-hidden="true"></i><h3>Taste Portuguese Food &amp; Wine</h3><p>Pastéis de nata, fresh seafood, and world-class wine regions await.</p></div>
-      <div class="feat"><i class="ico iconoir-sea-waves" aria-hidden="true"></i><h3>Relax on Stunning Beaches</h3><p>Golden sands and dramatic Atlantic coastline, never far away.</p></div>
-      <div class="feat"><i class="ico iconoir-music-double-note" aria-hidden="true"></i><h3>Experience Music &amp; Festivals</h3><p>Fado nights, summer festivals, and a year-round cultural calendar.</p></div>
-      <div class="feat"><i class="ico iconoir-map" aria-hidden="true"></i><h3>Day Trips &amp; Hidden Gems</h3><p>Medieval villages and lesser-known spots just beyond the city.</p></div>
+      ${iconCards(activities.items, "feat")}
     </div>
-    <div class="cta-row reveal" style="justify-content:center"><a class="btn btn-ghost" href="/${locale}/guides">Discover More →</a></div>
+    ${ctaRow(activities.cta, locale, "ghost")}
   </div>
 </section>
-
-<!-- TESTIMONIALS -->
-<section class="alt">
-  <div class="wrap">
-    <div class="sec-head center reveal"><span class="eyebrow">Reviews</span><h2 class="section-title">We Care About Our Guests</h2></div>
-    <div class="t-grid reveal">
-      <div class="tcard"><div class="ttype">Guest</div><div class="stars">★★★★★</div><blockquote>“The apartment was spotless, beautifully presented, and in the perfect location. Check-in was completely seamless. Easily the best apartment we've ever rented in Europe.”</blockquote><div class="tauthor"><b>Emma &amp; James</b> · United Kingdom</div></div>
-      <div class="tcard"><div class="ttype">Guest</div><div class="stars">★★★★★</div><blockquote>“We have stayed at multiple Central Hill properties over the years and the standard is consistently excellent. We always know exactly what to expect — and it always exceeds it.”</blockquote><div class="tauthor"><b>Lars Andersen</b> · Denmark</div></div>
-      <div class="tcard"><div class="ttype">Guest</div><div class="stars">★★★★★</div><blockquote>“Perfect stay for our family of six. The apartment was immaculate, the neighbourhood was extraordinary, and the support team resolved a small issue within 20 minutes.”</blockquote><div class="tauthor"><b>Sophie Martin</b> · France</div></div>
-    </div>
-  </div>
-</section>
-
 `;
+}
 
-const BODY_BOTTOM = (locale: Locale) => `
+/**
+ * Closing owner/guest dual CTA. Panel copy is admin-authored; the contact line is built from
+ * the company_settings singleton (data-model.md → dual-CTA = company_settings), so the phone,
+ * email and WhatsApp are edited once in /admin/settings and never duplicated per page.
+ */
+function bodyBottom(
+  content: GuestContent,
+  globals: Awaited<ReturnType<typeof getGlobals>>,
+  locale: Locale,
+): string {
+  const { guest, owner } = content.dual_cta;
+  const guestContact = globals ? [globals.phone, globals.email].filter(Boolean).join(" · ") : "";
+  const ownerContact = globals
+    ? [globals.phone, globals.email, globals.whatsapp ? `WhatsApp ${globals.whatsapp}` : null]
+        .filter(Boolean)
+        .join(" · ")
+    : "";
+
+  const panel = (
+    p: typeof guest,
+    modifier: string,
+    variant: "solid" | "accent",
+    contact: string,
+  ): string =>
+    `<div class="dcol${modifier}">
+        ${p.eyebrow ? `<span class="eyebrow">${esc(p.eyebrow)}</span>` : ""}<h3>${esc(p.title)}</h3>
+        <p>${esc(p.body)}</p>
+        <a class="btn btn-${variant}" href="${escAttr(localizeUrl(p.cta.url, locale))}">${esc(p.cta.label)} →</a>
+        ${contact ? `<div class="contact-line">${esc(contact)}</div>` : ""}
+      </div>`;
+
+  return `
 <!-- DUAL CTA -->
 <section>
   <div class="wrap">
     <div class="dual reveal">
-      <div class="dcol">
-        <span class="eyebrow">Guests</span><h3>Planning a Stay? Find your perfect apartment.</h3>
-        <p>Browse our full portfolio of professionally managed apartments across Portugal's most sought-after locations — studios to 8-bedrooms, for every type of stay.</p>
-        <a class="btn btn-solid" href="/${locale}/buildings">Browse Our Apartments →</a>
-        <div class="contact-line">Bookings +351 910 075 725 · info@centralhill.pt</div>
-      </div>
-      <div class="dcol owner">
-        <span class="eyebrow">Owners</span><h3>Own a Property? Start earning more.</h3>
-        <p>Find out what your property could earn with a free, no-obligation profitability analysis. Our team will assess your property and come back within 48 hours.</p>
-        <a class="btn btn-accent" href="/${locale}/owners">Get Your Free Earnings Estimate →</a>
-        <div class="contact-line">Call +351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725</div>
-      </div>
+      ${panel(guest, "", "solid", guestContact)}
+      ${panel(owner, " owner", "accent", ownerContact)}
     </div>
   </div>
 </section>
 `;
+}
 
 export async function GuestPage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const [page, t] = await Promise.all([getGuestPage(locale), getTranslations("pages")]);
-  const faqGroupKey = page?.content.faq_group_key ?? "";
+  const [page, globals, t] = await Promise.all([
+    getGuestPage(locale),
+    getGlobals(locale),
+    getTranslations("pages"),
+  ]);
+  if (!page) notFound();
+
+  const { content, media } = page;
+  const { portfolio } = content;
+  const faqGroupKey = content.faq_group_key ?? "";
 
   return (
     <>
       <div className="mk" data-page="guests">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-        <div dangerouslySetInnerHTML={{ __html: BODY_TOP(locale) }} />
+        <div dangerouslySetInnerHTML={{ __html: bodyTop(content, media, locale) }} />
       </div>
+
+      {/* Featured properties — cards from the buildings slice, headings from `guest.portfolio`. */}
+      <div id="portfolio" style={{ scrollMarginTop: 130 }}>
+        <FeaturedPortfolio
+          locale={locale}
+          eyebrow={portfolio.eyebrow}
+          title={portfolio.headline}
+          intro={portfolio.intro}
+          ctaLabel={portfolio.cta.label}
+          ctaNote={portfolio.cta.note}
+          ctaHref={localizeUrl(portfolio.cta.url, locale)}
+        />
+      </div>
+
+      <div className="mk" data-page="guests">
+        <div dangerouslySetInnerHTML={{ __html: bodyMid(content, locale) }} />
+      </div>
+
+      {/* Guest reviews — the same shared marquee as Home/Owners, filtered to `audience='guest'`. */}
+      <div id="testimonials" style={{ scrollMarginTop: 130 }}>
+        <TestimonialsRow locale={locale} audience="guest" title={t("reviews.titleGuests")} />
+      </div>
+
       {faqGroupKey ? (
         <div id="faq" style={{ scrollMarginTop: 130 }}>
           <FaqSection
@@ -192,8 +305,9 @@ export async function GuestPage({ locale }: { locale: Locale }) {
           />
         </div>
       ) : null}
+
       <div className="mk" data-page="guests">
-        <div dangerouslySetInnerHTML={{ __html: BODY_BOTTOM(locale) }} />
+        <div dangerouslySetInnerHTML={{ __html: bodyBottom(content, globals, locale) }} />
       </div>
     </>
   );
