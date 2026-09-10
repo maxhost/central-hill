@@ -15,6 +15,7 @@
     "test": "echo \"(no test runner wired yet)\" && exit 0",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:check": "tsx --tsconfig scripts/tsconfig.json scripts/check-migration-order.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "boundary:check": "echo \"(boundary lint rule TODO)\" && exit 0"
