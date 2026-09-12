@@ -51,3 +51,4 @@ cliente-docs/
 
 # GlaDOS Studio image context
 glados-images/
+.vercel

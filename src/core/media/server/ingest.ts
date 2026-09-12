@@ -29,6 +29,29 @@ const MAX_VIDEO_BYTES = 200 * 1024 * 1024; // 200 MB — hero loops, not feature
 const PRESIGN_TTL_SECONDS = 600; // 10 min to start the PUT.
 
 /**
+ * Upload-time normalisation budget (ADR 0025, amends 0018's "only the original lands
+ * in R2"). A photographer's 6000×4000 12 MB export is re-read *in full* by the
+ * optimizer for every single (width, format) it serves, so the master is capped once
+ * at upload instead. 3000px is comfortably above the largest width we ever request.
+ */
+const NORMALISE_MAX_EDGE = 3000;
+
+/**
+ * Re-encoders for a master that had to be resized, keyed by mime. The format is
+ * **preserved** — the r2 key's extension and the row's `mime` must keep describing the
+ * bytes. Quality is deliberately higher than delivery quality: this is the source the
+ * optimizer re-encodes from, so its artefacts would compound.
+ */
+type SharpPipeline = ReturnType<Awaited<ReturnType<typeof loadSharp>>>;
+
+const MASTER_ENCODERS: Record<string, (t: SharpPipeline) => SharpPipeline> = {
+  "image/jpeg": (t) => t.jpeg({ quality: 82, mozjpeg: true }),
+  "image/png": (t) => t.png({ compressionLevel: 9 }),
+  "image/webp": (t) => t.webp({ quality: 82 }),
+  "image/avif": (t) => t.avif({ quality: 70, effort: 3 }),
+};
+
+/**
  * Cache directive signed into every upload (ADR 0024). `r2_key` is `${uuid}/${filename}`,
  * so a key is **immutable by construction** — replacing a photo mints a new uuid and
  * therefore a new key. A one-year immutable cache is not a bet, it is a fact about the
@@ -149,6 +172,9 @@ async function encodeBlurhash(bytes: Buffer): Promise<string | null> {
   try {
     const sharp = await loadSharp();
     const { data, info } = await sharp(bytes)
+      // `.rotate()` applies any EXIF orientation first. Without it a phone-shot
+      // portrait yields a sideways placeholder that visibly snaps upright on load.
+      .rotate()
       .raw()
       .ensureAlpha()
       .resize(32, 32, { fit: "inside" })
@@ -157,6 +183,85 @@ async function encodeBlurhash(bytes: Buffer): Promise<string | null> {
   } catch {
     return null; // A missing placeholder must never block a successful upload.
   }
+}
+
+/** What we ended up storing for an image, after the normalisation pass. */
+interface ImageMaster {
+  /** Visual dimensions — i.e. after EXIF orientation, not the raw pixel buffer's. */
+  width: number | null;
+  height: number | null;
+  /** Size of the object now in R2. */
+  bytes: number;
+  /** The bytes now stored, for blurhash encoding. */
+  buffer: Buffer;
+}
+
+/**
+ * Normalise an uploaded image in place (ADR 0025): cap the longest edge at
+ * `NORMALISE_MAX_EDGE`, bake in EXIF orientation and drop the EXIF block, keep the
+ * colour profile, and re-encode in the same format. The result replaces the object at
+ * the same key.
+ *
+ * Two things are deliberately *not* done:
+ * - **An image already within budget is left byte-for-byte alone**, so a hand-tuned
+ *   export is never recompressed. Its orientation-corrected dimensions are still
+ *   recorded, because `next/image` rotates at optimize time and storing the raw
+ *   pre-rotation `width`/`height` would hand the browser a transposed aspect ratio —
+ *   layout shift on exactly the portrait photos the correction is for.
+ * - **A re-encode that comes out larger than the original is discarded.** Normalising
+ *   must never make a file worse.
+ *
+ * Overwriting a key looks like it fights ADR 0024's immutable cache directive. It does
+ * not: this runs inside finalize, and the asset's public URL is only ever constructed
+ * *from a finalized row*, so no cache anywhere can hold the pre-normalisation bytes.
+ */
+async function normaliseImageMaster(
+  r2Key: string,
+  original: Buffer,
+  mime: string,
+): Promise<ImageMaster> {
+  const sharp = await loadSharp();
+  const meta = await sharp(original).metadata();
+
+  // EXIF orientations 5–8 transpose the image, so the visual axes are swapped.
+  const transposed = (meta.orientation ?? 1) >= 5;
+  const visualWidth = (transposed ? meta.height : meta.width) ?? null;
+  const visualHeight = (transposed ? meta.width : meta.height) ?? null;
+  const asStored: ImageMaster = {
+    width: visualWidth,
+    height: visualHeight,
+    bytes: original.length,
+    buffer: original,
+  };
+
+  const encode = MASTER_ENCODERS[mime];
+  const longestEdge = Math.max(visualWidth ?? 0, visualHeight ?? 0);
+  if (!encode || longestEdge <= NORMALISE_MAX_EDGE) return asStored;
+
+  const { data, info } = await encode(
+    sharp(original)
+      .rotate() // apply EXIF orientation, then let sharp drop the metadata block
+      .resize({
+        width: NORMALISE_MAX_EDGE,
+        height: NORMALISE_MAX_EDGE,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .keepIccProfile(), // colours must survive; the orientation tag must not
+  ).toBuffer({ resolveWithObject: true });
+
+  if (data.length >= original.length) return asStored;
+
+  await r2Client().send(
+    new PutObjectCommand({
+      Bucket: r2Bucket(),
+      Key: r2Key, // same key: normalisation replaces the master, it does not add one
+      Body: data,
+      ContentType: mime,
+      CacheControl: UPLOAD_CACHE_CONTROL,
+    }),
+  );
+  return { width: info.width, height: info.height, bytes: data.length, buffer: data };
 }
 
 export async function finalizeUpload(input: FinalizeInput): Promise<MediaAsset> {
@@ -172,23 +277,34 @@ export async function finalizeUpload(input: FinalizeInput): Promise<MediaAsset> 
     throw new Error(`Uploaded ${kind} exceeds the size limit (${size} bytes).`);
   }
 
-  // 2. Compute correctness-critical metadata server-side (never trust the client).
+  // 2. Normalise the master, then compute correctness-critical metadata server-side
+  //    (never trust the client) from the bytes we actually ended up storing.
   let width: number | null = null;
   let height: number | null = null;
   let blurhash: string | null = null;
+  let bytes = size;
   if (kind === "image") {
-    const sharp = await loadSharp();
-    const bytes = await r2GetBytes(input.r2Key);
-    const meta = await sharp(bytes).metadata();
-    width = meta.width ?? null;
-    height = meta.height ?? null;
-    blurhash = await encodeBlurhash(bytes);
+    const master = await normaliseImageMaster(input.r2Key, await r2GetBytes(input.r2Key), mime);
+    width = master.width;
+    height = master.height;
+    bytes = master.bytes;
+    blurhash = await encodeBlurhash(master.buffer);
   }
 
   // 3. Insert the row (idempotent: a retried finalize returns the existing asset).
   const inserted = await db
     .insert(media_asset)
-    .values({ id: input.id, r2_key: input.r2Key, mime, width, height, blurhash, credit: input.credit ?? null })
+    .values({
+      id: input.id,
+      storage: "r2",
+      r2_key: input.r2Key,
+      mime,
+      width,
+      height,
+      bytes,
+      blurhash,
+      credit: input.credit ?? null,
+    })
     .onConflictDoNothing({ target: media_asset.id })
     .returning(ASSET_COLUMNS);
 
@@ -198,7 +314,9 @@ export async function finalizeUpload(input: FinalizeInput): Promise<MediaAsset> 
       await db.select(ASSET_COLUMNS).from(media_asset).where(eq(media_asset.id, input.id)).limit(1)
     )[0];
   if (!row) throw new Error(`finalizeUpload: could not persist media_asset ${input.id}.`);
-  return row;
+  // `r2_key` is column-nullable for Stream assets (ADR 0026); this path only ever
+  // writes an R2 row, so narrowing it back here is a fact, not an assumption.
+  return { ...row, r2_key: input.r2Key };
 }
 
 /**
@@ -213,6 +331,8 @@ export async function deleteMedia(id: string): Promise<void> {
     .where(eq(media_asset.id, id))
     .limit(1);
   if (!row) return;
-  await r2Delete(row.r2_key);
+  // Null for a Stream-backed asset (ADR 0026), which owns no object of ours. Deleting
+  // the remote Stream video is that vendor path's job, once it exists.
+  if (row.r2_key) await r2Delete(row.r2_key);
   await db.delete(media_asset).where(eq(media_asset.id, id));
 }

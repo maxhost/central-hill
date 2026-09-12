@@ -35,6 +35,10 @@ export async function loadMedia(ids: string[]): Promise<Map<string, MediaAsset>>
     .from(media_asset)
     .where(inArray(media_asset.id, unique));
 
-  for (const r of rows) out.set(r.id, r);
+  // A Stream-backed asset (ADR 0026) has no `r2_key` and cannot be rendered by the
+  // image path at all — it is `MediaVideo`'s to resolve. Dropping it here keeps
+  // `MediaAsset.r2_key` non-null, so none of the 18 call sites across the slices has
+  // to null-check a case that could never produce an `<img>`.
+  for (const r of rows) if (r.r2_key) out.set(r.id, { ...r, r2_key: r.r2_key });
   return out;
 }

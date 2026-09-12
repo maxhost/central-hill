@@ -32,6 +32,8 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0023 — Pages drop draft/published state; Home editor gains the dual-CTA block + optional images](#0023)
 - [0024 — R2 provisioning: EU bucket, endpoint from env, immutable signed cache policy](#0024)
 - [0027 — Optimised delivery: blurhash placeholders + `mediaImgTag()` for HTML-string builders](#0027)
+- [0025 — Upload-time normalisation: cap the master at 3000px, bake in orientation](#0025)
+- [0026 — `media_asset` becomes two-backend (R2 | Stream); Stream vendor still unratified](#0026)
 
 ---
 
@@ -727,3 +729,89 @@ and size server-side (ADR 0018), which remains the real gate.
 
 **Status:** Accepted (2026-09-12). Bucket live and the full round trip — presign → PUT → finalize →
 public GET → delete — verified end to end against it. Runbook: `docs/specs/r2-runbook.md`.
+
+
+---
+
+## 0025 — Upload-time normalisation: cap the master at 3000px, bake in orientation <a id="0025"></a>
+**Context:** ADR 0018 decided that **only the original lands in R2** and that all resizing is
+delegated to `next/image` at request time. That is right for a 2 MB export and wrong for what a
+hospitality photographer actually sends. The optimizer re-reads the **whole** original for every
+single `(width, format)` it has never served before, so one 5000×3324 4 MB JPEG is decoded from
+scratch for each of ~4 widths × 2 formats. Two related defects came out of looking at the same
+code: `width`/`height` were recorded straight from `sharp.metadata()`, which reports the *raw*
+buffer, and the blurhash was encoded without `.rotate()`. EXIF orientations 5–8 transpose an image,
+so any phone-shot portrait was stored with **transposed dimensions** — handing the browser a wrong
+aspect ratio, i.e. layout shift on exactly the images the placeholder exists to stabilise — and a
+**sideways blurhash** that visibly snaps upright on load.
+
+**Decision:** `finalizeUpload` normalises images in place before inserting the row.
+1. **Cap the longest edge at 3000px**, comfortably above the largest width we ever request, and
+   re-encode **in the same format** so the key's extension and the row's `mime` keep describing the
+   bytes. Master quality is deliberately above delivery quality (JPEG q82 mozjpeg, WebP q82, AVIF
+   q70, PNG level 9) — the optimizer re-encodes *from* this, so its artefacts would compound.
+2. **Apply EXIF orientation and drop the EXIF block; keep the ICC profile** (`.rotate()` +
+   `keepIccProfile()`). Colours must survive; the orientation tag must not, or it would be applied
+   twice.
+3. **An image already within budget is left byte-for-byte alone** — a hand-tuned export is never
+   recompressed — and **a re-encode that comes out larger than the original is discarded**.
+   Normalisation must never make a file worse.
+4. `width`/`height` are recorded as the **visual** dimensions in both branches, and `bytes` records
+   what is actually stored.
+
+**Consequences:** One extra GET + PUT per oversized image, at staff volume. Measured on a real
+5000×3324 interior photo: **4.0 MB → 979 KB, 76% smaller**, and the optimizer's source shrinks with
+it. Overwriting a live key looks like it contradicts ADR 0024's `immutable` directive; it does not,
+because this runs *inside* finalize and an asset's public URL is only ever constructed from a
+finalized row — no cache anywhere can be holding the pre-normalisation bytes. The admin preview is
+served from that same post-finalize URL, so it sees the normalised master too.
+
+⚠️ **Finalize is now a heavy request: 3.5 s locally for an 11.5 MB upload** (download, decode,
+resize, re-encode, upload, blurhash). Locally that is a fast machine close to the bucket; on a
+Vercel function in `iad1` talking to an EU bucket it will be slower, and the image ceiling is 15 MB.
+No `maxDuration` is configured in `vercel.json`, so this runs on the platform default. **If staff
+report failed uploads of very large photos, that is the first thing to check** — the fix is either
+a raised `maxDuration` or moving the functions to an EU region (which also matches ADR 0015 but
+would move them away from the current us-east-1 Neon, so it is not a free change).
+
+**Status:** Accepted (2026-09-12). Implemented in `core/media/server/ingest.ts` and verified against
+the live bucket: an oversized export is capped at 3000px and shrinks 76%; an in-budget file comes
+back byte-for-byte identical; a 4000×2500 buffer tagged orientation=6 is stored upright, with the
+EXIF stripped, and recorded as portrait. Amends ADR 0018.
+
+---
+
+## 0026 — `media_asset` becomes two-backend (R2 | Stream); Stream vendor still unratified <a id="0026"></a>
+**Context:** `media_asset` assumed one backend: `r2_key NOT NULL`. Video on Cloudflare Stream stores
+no object of ours at all — only a `stream_uid` — so the table cannot describe it. The schema change
+is needed now (migrations are append-only and additive, and `bytes` is wanted immediately by ADR
+0025 and by the media library), while the Stream vendor decision itself still depends on a spike
+that has not run.
+
+**Decision:** One additive migration, `0013_media_asset_two_backends`:
+`storage text NOT NULL DEFAULT 'r2'`, `stream_uid`, `bytes`, `duration_seconds`, `poster_media_id`;
+`r2_key` **widened to nullable**; plus a CHECK that exactly one locator matches the declared
+backend — `(storage='r2' AND r2_key IS NOT NULL) OR (storage='stream' AND stream_uid IS NOT NULL)`.
+Widening a column is not additive, which is why golden rule 4 requires this ADR; no data is lost and
+every existing row is `'r2'`, which the default preserves.
+
+`poster_media_id` is a **bare uuid with no FK**, matching all 18 `*_media_id` references across the
+slices. Referential safety for all of them is enforced in one place — the reference-safe delete in
+the media library (runbook D4) — rather than by one inconsistent FK here.
+
+Nullability is **not** propagated to the render path: `loadMedia` drops rows without an `r2_key`, so
+`MediaAsset.r2_key` stays non-null. A Stream asset can never produce an `<img>`, so pushing a null
+check into 18 slice call sites would buy nothing. `deleteMedia` skips the R2 delete for such rows.
+
+**What this ADR does NOT decide:** that Cloudflare Stream is the vendor, how a Stream asset is
+rendered as a muted autoplay background loop, or the async `processing` UX. Those wait on the spike
+(spec §7.1). This ADR only makes the schema able to *express* a second backend.
+
+**Consequences:** The CHECK makes a row pointing at nothing unrepresentable, at the cost of every
+future writer having to set `storage` coherently — `finalizeUpload` now sets `storage: 'r2'`
+explicitly rather than leaning on the default. Five columns sit unused until the Stream track
+starts; that is the deliberate price of not editing a migration later.
+
+**Status:** Accepted (2026-09-12). Migration applied and verified against the database: columns and
+default present, `r2_key` nullable, and the constraint proven in both directions — it rejects
+`storage='stream'` with no uid and accepts a valid Stream row.

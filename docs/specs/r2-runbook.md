@@ -30,7 +30,8 @@ npx tsx --tsconfig scripts/tsconfig.json scripts/probe-r2.ts            # produc
 npx tsx --tsconfig scripts/tsconfig.json scripts/probe-r2.ts http://localhost:3000
 ```
 
-It writes no DB row and deletes the object it uploads. Remaining work is **STEP D** alone.
+It writes no DB row and deletes the object it uploads. Remaining work is **STEP D** alone — of
+which **D1 and D2 are now done**, so the next piece is **D3, the media library at `/admin/media`**.
 
 ---
 
@@ -238,12 +239,12 @@ A4 + B1 are done, so **the first real upload from the backoffice can now succeed
 
 ---
 
-## STEP D — the rest, in order ← **all that is left**
+## STEP D — the rest, in order ← **all that is left** (D1, D2 done)
 
 | # | Work | Depends on | Notes |
 |---|---|---|---|
-| D1 | **Migration** — `storage`/`stream_uid`/`bytes`/`duration_seconds`/`poster_media_id`, `r2_key` nullable, CHECK constraint | C | Additive + numbered. **Run `pnpm db:check` first** — this repo has a known journal-ordering trap. Widening `r2_key` to nullable touches an existing column → ADR (golden rule 4). |
-| D2 | **Upload-time normalisation** — cap the longest edge at 3000px, apply-then-strip EXIF orientation, keep the colour profile, skip when already within budget | C | Amends ADR 0018 ("only the original lands in R2") → ADR 0025. Without it, a 12 MB 6000×4000 JPEG gets re-read whole for every size/format. |
+| D1 | ✅ **DONE** — migration `0013_media_asset_two_backends` (ADR 0026). Applied and verified: columns + default present, `r2_key` nullable, CHECK proven in both directions. | C | — |
+| D2 | ✅ **DONE** — upload-time normalisation (ADR 0025). Verified against the live bucket: a real 5000×3324 photo goes **4.0 MB → 979 KB (−76%)**, an in-budget file is untouched byte-for-byte, an orientation=6 buffer is stored upright and recorded as portrait. Also fixed transposed `width`/`height` and the sideways blurhash. | C | ⚠️ finalize is now 3.5 s for an 11.5 MB upload — see ADR 0025 on `maxDuration`. |
 | D3 | **Media library at `/admin/media`** — paginated, filter by kind, dims/bytes/mime | C | `deleteMedia` exists and *nothing calls it*: assets can be created but never browsed, reused or removed, so orphans accumulate from the first upload. |
 | D4 | **Reference-safe delete** | D3 | Check every `*_media_id` column and `media_id[]` array across slices; refuse with the list of referencing entities. ADR 0018 explicitly defers refcount GC to the admin slices, so it is this work's job. A blind delete silently blanks a live page. |
 | D5 | **Reuse in the pickers** — "choose existing" mode | D3 | Today picking the same logo twice uploads it twice. |
