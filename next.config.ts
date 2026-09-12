@@ -75,15 +75,17 @@ const nextConfig: NextConfig = {
    * attempt at this fix changed nothing. The first glob below is the one that counts:
    * it reaches the library through the sibling path the linker actually resolves.
    *
-   * Both globs are platform- and version-agnostic on purpose — they match whichever
-   * `@img/sharp-*` packages the install produced, so they resolve to linux-x64 on
-   * Vercel and darwin-arm64 here, with no arch or version to rot.
+   * The single glob covers both the sibling path and the store path, and is platform-
+   * and version-agnostic: it matches whichever `@img/sharp-*` packages the install
+   * produced, resolving to linux-x64 on Vercel and darwin-arm64 here.
+   *
+   * Do not try to "narrow" it by excluding the libvips package with a character class —
+   * an earlier attempt used `@img+sharp-[!l]*` to skip `libvips` and silently skipped
+   * **linux** too, which is the one platform that matters here. It passed locally,
+   * because macOS is `darwin`.
    */
   outputFileTracingIncludes: {
-    "/admin/**": [
-      "./node_modules/.pnpm/@img+sharp-[!l]*/node_modules/@img/sharp-libvips-*/lib/*",
-      "./node_modules/.pnpm/@img+sharp-libvips-*/node_modules/@img/*/lib/*",
-    ],
+    "/admin/**": ["./node_modules/.pnpm/@img+sharp-*/node_modules/@img/sharp-libvips-*/lib/*"],
   },
   images: {
     remotePatterns: r2RemotePatterns(),

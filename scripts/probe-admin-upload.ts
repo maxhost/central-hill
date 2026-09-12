@@ -107,20 +107,34 @@ async function main() {
     .jpeg({ quality: 90 })
     .toBuffer();
 
+  // Every candidate id is tried with presign's arguments; the other actions reject them
+  // and now do so by *returning* an error, so a rejection here is expected noise rather
+  // than a failure. Only report those if nothing succeeded.
   let presigned: Record<string, string> | null = null;
   let presignId = "";
+  const rejections: string[] = [];
   for (const id of ids) {
     const res = await call(id, [
       { filename: "admin-probe.jpg", contentType: "image/jpeg", size: image.length },
     ]);
     const got = unwrap(await res.text(), "uploadUrl");
     if (!got) continue;
-    if (!got.ok) fail("presign", got.error);
+    if (!got.ok) {
+      rejections.push(`${id.slice(0, 8)}: ${got.error}`);
+      continue;
+    }
     presigned = got.data;
     presignId = id;
     break;
   }
-  if (!presigned) fail("presign", "no action returned an upload URL — is the deployment current?");
+  if (!presigned) {
+    fail(
+      "presign",
+      rejections.length
+        ? `no action returned an upload URL. Responses:\n  ${rejections.join("\n  ")}`
+        : "no action returned an upload URL — is the deployment current?",
+    );
+  }
   console.log(`presign     ✓ ${presigned.r2Key}`);
 
   // 4. The PUT the browser would make.
