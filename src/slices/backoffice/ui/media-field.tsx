@@ -23,25 +23,37 @@ const ACCEPT: Record<"image" | "media", string> = {
   media: "image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm",
 };
 
-/** Run the presign → PUT → finalize round trip for one file. Throws on failure. */
+/**
+ * Run the presign → PUT → finalize round trip for one file. Throws on failure.
+ *
+ * The actions hand back a result union because Next masks thrown Server Action errors
+ * in production; unwrapping it here turns the server's real message into a normal
+ * client-side throw, so both fields' existing `catch` blocks surface it unchanged.
+ */
 async function uploadOne(file: File): Promise<AdminMediaPreview> {
   const presigned = await presignAdminUpload({
     filename: file.name,
     contentType: file.type,
     size: file.size,
   });
-  const put = await fetch(presigned.uploadUrl, {
+  if (!presigned.ok) throw new Error(presigned.error);
+  const put = await fetch(presigned.data.uploadUrl, {
     method: "PUT",
     body: file,
     // Both headers are SIGNED into the presigned URL — R2 rejects the PUT if either is
     // missing or differs, so echo what presign returned rather than hardcoding values.
     headers: {
-      "Content-Type": presigned.contentType,
-      "Cache-Control": presigned.cacheControl,
+      "Content-Type": presigned.data.contentType,
+      "Cache-Control": presigned.data.cacheControl,
     },
   });
   if (!put.ok) throw new Error(`Upload failed (${put.status}).`);
-  return finalizeAdminUpload({ id: presigned.id, r2Key: presigned.r2Key });
+  const finalized = await finalizeAdminUpload({
+    id: presigned.data.id,
+    r2Key: presigned.data.r2Key,
+  });
+  if (!finalized.ok) throw new Error(finalized.error);
+  return finalized.data;
 }
 
 /** Small visual: image thumbnail, or a labelled tile for video / unknown. */

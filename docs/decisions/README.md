@@ -888,16 +888,36 @@ This class of bug is invisible locally *by construction*: `next start` resolves 
 and never consults the trace, so a full local production build exercising the real upload path
 succeeds while the deployment fails.
 
-**Decision:** `outputFileTracingIncludes` force-includes the libvips lib directory for `/admin/**`:
+**Decision:** `outputFileTracingIncludes` force-includes the libvips lib directory for `/admin/**`.
+
+🔴 **The path matters as much as the file, and the first version of this fix got it wrong.** It
+included only the store location (`.pnpm/@img+sharp-libvips-<plat>@<ver>/…`), the deployment was
+still broken, and the symptom was byte-identical — same error, same digest. `sharp-<plat>.node`
+finds libvips through an **RPATH of `$ORIGIN/../../sharp-libvips-<plat>/lib`**, i.e. a *sibling*
+directory of `sharp-<plat>`, which pnpm materialises as a symlink into the store. Shipping the `.so`
+only at its real store path puts it somewhere the dynamic linker never looks. Verified by dumping
+the `.node`'s load commands. So two globs, the first being the load-bearing one:
 
 ```
-"/admin/**": ["./node_modules/.pnpm/@img+sharp-libvips-*/node_modules/@img/*/lib/*"]
+"/admin/**": [
+  "./node_modules/.pnpm/@img+sharp-[!l]*/node_modules/@img/sharp-libvips-*/lib/*",
+  "./node_modules/.pnpm/@img+sharp-libvips-*/node_modules/@img/*/lib/*",
+]
 ```
 
-The glob is deliberately platform- and version-agnostic: it matches whichever
-`@img/sharp-libvips-*` the install actually produced, resolving to linux-x64 on Vercel and
-darwin-arm64 locally, with no hardcoded arch or version to rot. Scoped to `/admin/**` because only
-the backoffice runs sharp — public pages are prerendered and must not carry a ~15 MB native library.
+Both are platform- and version-agnostic: they match whichever `@img/sharp-*` packages the install
+produced, resolving to linux-x64 on Vercel and darwin-arm64 locally, with no arch or version to rot.
+Scoped to `/admin/**` because only the backoffice runs sharp — public pages are prerendered and must
+not carry a native image library.
+
+**Also decided: the upload actions return errors as values, not throws.** Next masks every error
+thrown from a Server Action in production, so a failed upload showed staff nothing but "An error
+occurred in the Server Components render" plus a digest, and the cause was reachable only by
+correlating that digest against the platform logs. `presignAdminUpload`/`finalizeAdminUpload` now
+return `{ ok, data | error }`; the island unwraps it and throws client-side, so both fields' existing
+`catch` blocks surface the real message unchanged. The full error is still logged server-side under
+a greppable `[media:<phase>]` prefix, and the libvips signature is translated into a sentence that
+says it is a deployment problem, not a bad file.
 
 **Consequences:** 41 admin route traces now carry the shared object (verified in the manifest; no
 admin route is missed and no public route is affected). Admin function bundles grow by the size of
@@ -911,4 +931,7 @@ deployment. `scripts/probe-admin-upload.ts` is that check — it drives presign 
 against a deployed origin through the real gated Server Actions.
 
 **Status:** Accepted (2026-09-12). Root cause confirmed by reproducing the failure against
-production and by reading the trace manifests before and after.
+production and by reading the trace manifests before and after. **The first fix was verified only
+against the local trace manifest and shipped broken** — the manifest showed the `.so` present and
+the deployment still failed, because "present in the bundle" and "present where the linker looks"
+are different claims. Only a probe against the real deployment distinguishes them.

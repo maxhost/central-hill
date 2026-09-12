@@ -36,16 +36,29 @@ function fail(hop: string, detail: string): never {
   process.exit(1);
 }
 
-/** Pull the line of a Server Action flight response that carries `key`. */
-function pick(text: string, key: string): Record<string, string> | null {
+/**
+ * Unwrap a Server Action flight response. The body is one JSON value per line; the
+ * upload actions answer with the `{ ok, data | error }` union, so a failure carries the
+ * real server-side message instead of a digest.
+ */
+type Unwrapped = { ok: true; data: Record<string, string> } | { ok: false; error: string };
+
+function unwrap(text: string, key: string): Unwrapped | null {
   for (const line of text.split("\n")) {
     const i = line.indexOf(":");
     if (i < 0) continue;
+    let o: unknown;
     try {
-      const o = JSON.parse(line.slice(i + 1));
-      if (o && typeof o === "object" && key in o) return o;
+      o = JSON.parse(line.slice(i + 1));
     } catch {
-      /* not every flight line is JSON */
+      continue; // not every flight line is JSON
+    }
+    if (!o || typeof o !== "object") continue;
+    const r = o as Record<string, unknown>;
+    if (r.ok === false && typeof r.error === "string") return { ok: false, error: r.error };
+    const data = r.ok === true ? r.data : r;
+    if (data && typeof data === "object" && key in (data as object)) {
+      return { ok: true, data: data as Record<string, string> };
     }
   }
   return null;
@@ -57,10 +70,12 @@ async function main() {
   // 1. Sign in and keep the session cookie.
   const login = await fetch(`${origin}/api/auth/sign-in/email`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    // Better Auth rejects a cross-origin-looking POST with MISSING_OR_NULL_ORIGIN, and
+    // `fetch` sends no Origin of its own — so state it explicitly.
+    headers: { "content-type": "application/json", origin },
     body: JSON.stringify({ email, password }),
   });
-  if (!login.ok) fail("sign in", `${login.status} — check the credentials`);
+  if (!login.ok) fail("sign in", `${login.status} — ${(await login.text()).slice(0, 200)}`);
   const cookie = (login.headers.getSetCookie?.() ?? [])
     .map((c) => c.split(";")[0])
     .join("; ");
@@ -98,12 +113,12 @@ async function main() {
     const res = await call(id, [
       { filename: "admin-probe.jpg", contentType: "image/jpeg", size: image.length },
     ]);
-    const got = pick(await res.text(), "uploadUrl");
-    if (got) {
-      presigned = got;
-      presignId = id;
-      break;
-    }
+    const got = unwrap(await res.text(), "uploadUrl");
+    if (!got) continue;
+    if (!got.ok) fail("presign", got.error);
+    presigned = got.data;
+    presignId = id;
+    break;
   }
   if (!presigned) fail("presign", "no action returned an upload URL — is the deployment current?");
   console.log(`presign     ✓ ${presigned.r2Key}`);
@@ -132,20 +147,18 @@ async function main() {
     if (id === presignId) continue;
     const res = await call(id, [{ id: presigned.id, r2Key: presigned.r2Key }]);
     const text = await res.text();
-    const got = pick(text, "url");
-    if (got) {
-      finalized = got;
+    const got = unwrap(text, "url");
+    if (got?.ok) {
+      finalized = got.data;
       break;
     }
+    if (got && !got.ok) fail("finalize", got.error);
     if (res.status === 500 && /"digest"/.test(text)) {
       const digest = (text.match(/"digest":"(\d+)"/) || [])[1];
       fail(
         "finalize",
-        `500 (digest ${digest}).\n` +
-          `The message is redacted in production — read it with:\n` +
-          `  vercel logs ${origin}\n` +
-          "A libvips/ERR_DLOPEN_FAILED there means the native library is missing from the " +
-          "traced function bundle (ADR 0029), NOT that sharp failed to install.",
+        `500 (digest ${digest}) — the action threw instead of returning an error.\n` +
+          `Read the real message with:  vercel logs ${origin}`,
       );
     }
   }

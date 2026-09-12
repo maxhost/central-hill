@@ -67,12 +67,23 @@ const nextConfig: NextConfig = {
    * objects were traced. Image upload has never worked in a deployed environment
    * because of this (ADR 0029).
    *
-   * The glob is platform-agnostic on purpose — it matches whichever
-   * `@img/sharp-libvips-*` package the install actually produced, so it resolves to
-   * linux-x64 on Vercel and darwin-arm64 here, with no hardcoded version or arch.
+   * ⚠️ **The path matters as much as the file.** `sharp-<plat>.node` finds libvips
+   * through an RPATH of `$ORIGIN/../../sharp-libvips-<plat>/lib` — a *sibling*
+   * directory, which pnpm materialises as a symlink next to `sharp-<plat>`. Including
+   * only the real package location (the `@img+sharp-libvips-...` store entry) puts the
+   * shared object somewhere the dynamic linker never looks, which is why the first
+   * attempt at this fix changed nothing. The first glob below is the one that counts:
+   * it reaches the library through the sibling path the linker actually resolves.
+   *
+   * Both globs are platform- and version-agnostic on purpose — they match whichever
+   * `@img/sharp-*` packages the install produced, so they resolve to linux-x64 on
+   * Vercel and darwin-arm64 here, with no arch or version to rot.
    */
   outputFileTracingIncludes: {
-    "/admin/**": ["./node_modules/.pnpm/@img+sharp-libvips-*/node_modules/@img/*/lib/*"],
+    "/admin/**": [
+      "./node_modules/.pnpm/@img+sharp-[!l]*/node_modules/@img/sharp-libvips-*/lib/*",
+      "./node_modules/.pnpm/@img+sharp-libvips-*/node_modules/@img/*/lib/*",
+    ],
   },
   images: {
     remotePatterns: r2RemotePatterns(),
