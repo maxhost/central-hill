@@ -56,6 +56,14 @@ const nextConfig: NextConfig = {
   // time — which is also what keeps visitors off the r2.dev host. Asserted above.
   images: {
     remotePatterns: r2RemotePatterns(),
+    // AVIF first, WebP for anything that can't take it (ADR 0028). Next's default is
+    // WebP only. Measured on two real catalogue interiors at the widths we actually
+    // serve: AVIF is 12–33% smaller with encode time within noise of WebP (1.0–1.2x).
+    // The usual "AVIF encodes 2–5x slower" is real, but it is a property of sharp's
+    // defaults, not of what Next asks for — Next encodes AVIF at `quality - 20` with
+    // `effort: 3`, which is where both the saving and the speed come from. Ordered
+    // by preference: the first entry the Accept header supports is what gets served.
+    formats: ["image/avif", "image/webp"],
   },
 };
 

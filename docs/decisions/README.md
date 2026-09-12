@@ -34,6 +34,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0027 — Optimised delivery: blurhash placeholders + `mediaImgTag()` for HTML-string builders](#0027)
 - [0025 — Upload-time normalisation: cap the master at 3000px, bake in orientation](#0025)
 - [0026 — `media_asset` becomes two-backend (R2 | Stream); Stream vendor still unratified](#0026)
+- [0028 — AVIF before WebP in `images.formats`](#0028)
 
 ---
 
@@ -815,3 +816,33 @@ starts; that is the deliberate price of not editing a migration later.
 **Status:** Accepted (2026-09-12). Migration applied and verified against the database: columns and
 default present, `r2_key` nullable, and the constraint proven in both directions — it rejects
 `storage='stream'` with no uid and accepts a valid Stream row.
+
+---
+
+## 0028 — AVIF before WebP in `images.formats` <a id="0028"></a>
+**Context:** Next's default is `formats: ['image/webp']`, so the catalogue served WebP only. The
+standing objection to AVIF is that it encodes far more slowly, which would land on the first visitor
+to request each `(image, width)` — and this project's stated ceiling is a 3 s LCP.
+
+**Decision:** `formats: ["image/avif", "image/webp"]`. The objection was **measured, not assumed**,
+and it does not survive contact with what Next actually does. Encoding the same two real catalogue
+interiors at the widths we serve:
+
+| | WebP q75 | AVIF | size | encode |
+|---|---|---|---|---|
+| sharp defaults (AVIF q75, default effort) | 54–316 KB | 71–442 KB | **+32 to +101%** | **2.1–4.9× slower** |
+| what Next asks for (AVIF `quality-20`, `effort: 3`) | 54–316 KB | 36–224 KB | **−12 to −33%** | **1.0–1.2×** |
+
+The folklore in both directions is a statement about sharp's defaults, not about AVIF: quality
+scales are not comparable across codecs, and `effort: 3` is where the speed comes from. At the
+settings Next uses, AVIF is meaningfully smaller for essentially the same encode cost.
+
+**Consequences:** Order is preference order — the first entry the `Accept` header supports wins, so
+anything that cannot take AVIF still gets WebP and nothing regresses. Cost on Vercel is unchanged:
+transformations are billed per `(source, width, quality, format)` and only one format is served per
+request. Cached results are keyed by format, so the first request per variant after this deploy is a
+MISS. The measurement is reproducible with `sharp` at `quality - 20` / `effort: 3` — **re-run it
+before trusting any future claim here**, because the answer is entirely a function of the encoder
+settings Next happens to use, which is an implementation detail we do not control.
+
+**Status:** Accepted (2026-09-12). Kernel change to `next.config.ts` (golden rule 3).
