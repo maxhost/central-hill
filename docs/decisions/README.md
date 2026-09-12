@@ -30,6 +30,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0021 — S14 translation-pipeline: kernel target-write/read seam + provider interface + review inbox](#0021)
 - [0022 — Home restored to the approved mockup; Warm Editorial locked as the production palette](#0022)
 - [0023 — Pages drop draft/published state; Home editor gains the dual-CTA block + optional images](#0023)
+- [0027 — Optimised delivery: blurhash placeholders + `mediaImgTag()` for HTML-string builders](#0027)
 
 ---
 
@@ -602,3 +603,60 @@ marquee), so Owners/Real-Estate's formerly hard-coded `#faq` markup is removed. 
 the `owners` + `real_estate` groups from that former static Q&A (source `en`, published) and binds each
 page via `data.faq_group_key`; Home/Guest/About default to blank. This makes Guest/Real-Estate/About
 read the DB for the first time (page row, ISR-cached) — they still prerender.
+
+
+---
+
+## 0027 — Optimised delivery: blurhash placeholders + `mediaImgTag()` for HTML-string builders <a id="0027"></a>
+**Context:** ADR 0018 delegates responsive resizing to `next/image` and stores a **blurhash** per
+asset for the LCP placeholder. The media-pipeline spec (`docs/specs/r2-media-pipeline.md`, §2 and
+§9.1) found both halves of that promise unkept on the render side:
+
+1. The blurhash is encoded on finalize, stored, selected by **every** slice into `MediaImageData`, and
+   serialised into every page's RSC payload — and `core/media/image.tsx` **never reads it**. We pay
+   the encode, the column, the join and the bytes, and the visitor still sees a blank box.
+2. Nine public pages are built as **HTML strings** injected with `dangerouslySetInnerHTML` (the 1:1
+   `mock/*.html` embeds). Inside them images are raw `<img src="${url}">`, and **13 of those take
+   their `src` straight from a `media_asset`** — owners hero/services/dashboard, real-estate
+   hero + section helper, guest welcome, every building card cover, the whole building-detail
+   gallery, plus `dual-cta` and `guests-section` on Home. So **every photo the client uploads for
+   the portfolio bypasses the optimizer**: no `srcset`, no AVIF/WebP, no `width`/`height` (→ CLS),
+   no blurhash, no `loading`/`fetchpriority` control — and with the public R2 host being the managed
+   `pub-*.r2.dev` URL, those `<img>`s are the only thing that would hit r2.dev directly.
+
+Both fixes live in the kernel (`core/media`) → golden rule 3 → this ADR.
+
+**Decision:**
+1. **Decode the blurhash at render time, in pure JS, synchronously.** New kernel module
+   `core/media/blur.ts` exports `blurDataUrl(hash, width, height)`, which decodes to a **12 px
+   (longest side, aspect-preserved) raster** and hand-rolls an **uncompressed (stored-block) PNG**
+   data URI; `MediaImage` passes it to `next/image` as `placeholder="blur"` + `blurDataURL`.
+   *Not* `sharp`: `sharp` is native, async, and is deliberately lazy-imported everywhere else in this
+   kernel because its `dlopen` crashed the serverless runtime (ADR 0018 consequences) — using it here
+   would force `MediaImage`, a synchronous component every slice renders, to become async. Pure JS
+   keeps the component synchronous and client-safe. Deflate is skipped on purpose: at 12×12 it saves
+   a few hundred bytes and costs a dependency; a placeholder is ~500–700 chars. Public pages are ISR,
+   so the decode runs at build/revalidate, not per request. A missing or undecodable hash returns
+   `null` → no placeholder, never a broken image.
+2. **Optimised `<img>` *as an HTML string*, via `getImageProps()`.** Rewriting nine pages back into
+   JSX is large, risky, touches several slices and buys the user nothing. Instead the kernel gains
+   `mediaImgTag()`, built on `next/image`'s official `getImageProps()` — so we get the real optimizer
+   `src`/`srcSet`/`sizes` without hand-assembling `/_next/image` URLs or coupling to that URL format.
+   It emits `srcset` + `sizes` + explicit `width`/`height` + `loading`/`decoding`/`fetchpriority`,
+   escapes attributes exactly as the pages' existing `esc`/`escAttr` do, **passes external fallback
+   URLs (Unsplash/Pexels) through untouched** — they already arrive pre-sized from their own CDN, so
+   re-optimising costs money and gains nothing — and falls back to `public/placeholders/*.svg` when
+   there is neither an asset nor a fallback. The two JSX call sites (`dual-cta`, `guests-section`)
+   use `<MediaImage>` directly instead, raw `<img>` only on the external-fallback branch.
+
+**Consequences:** `MediaImage` stays synchronous and gains no dependency (`blurhash` was already a
+dependency, used by `finalizeUpload`). Every backoffice-uploaded image on the public site goes through
+the optimizer, which is also what keeps the `pub-*.r2.dev` host off the critical path (spec §1.2).
+`mediaImgTag()` is a kernel export, so the nine page builders change only at the `<img>` line. The
+blurhash path is **inert until real uploads exist** — the seeded demo asset has no hash — so the
+visible win arrives with the first R2 upload, while the correctness win (dimensions, srcset) is
+immediate. Rendering an `<img>` from a string keeps these pages outside React's control; that is
+already true and this ADR does not widen it.
+
+**Status:** Accepted (2026-09-12). Part 1 (blurhash) implemented; part 2 (`mediaImgTag`) is spec §12
+step 2. Supersedes nothing; amends ADR 0018's render half.

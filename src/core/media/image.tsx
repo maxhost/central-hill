@@ -1,5 +1,6 @@
 import NextImage from "next/image";
 import { env } from "@core/env";
+import { blurDataUrl } from "./blur";
 
 /**
  * R2 image component (kernel — `core/media`). Always renders with explicit
@@ -31,6 +32,9 @@ export function MediaImage({
   sizes?: string;
   priority?: boolean;
 }) {
+  // Decoded from the stored blurhash (ADR 0027) — at build/revalidate time, since public
+  // pages are ISR. Absent or undecodable hash → no placeholder, never a broken image.
+  const blur = blurDataUrl(data.blurhash, data.width, data.height);
   return (
     <NextImage
       src={data.url}
@@ -40,6 +44,7 @@ export function MediaImage({
       className={className}
       sizes={sizes}
       priority={priority}
+      {...(blur ? { placeholder: "blur" as const, blurDataURL: blur } : {})}
     />
   );
 }

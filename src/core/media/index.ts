@@ -6,6 +6,7 @@
 export type { MediaAsset } from "./queries";
 export { loadMedia } from "./queries";
 export type { MediaImageData } from "./image";
+export { blurDataUrl } from "./blur";
 export { MediaImage, mediaUrl } from "./image";
 export type { FinalizeInput, PresignInput, PresignResult } from "./server/ingest";
 export { deleteMedia, finalizeUpload, presignUpload } from "./server/ingest";
