@@ -1,7 +1,28 @@
 import type { NextConfig } from "next";
+import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+/**
+ * Fail the build rather than ship broken images (ADR 0024).
+ *
+ * `images.remotePatterns` below is computed from `R2_PUBLIC_BASE_URL` **at build time**.
+ * If the variable is absent when the build runs, the list is `[]` — and then every
+ * optimised R2 image returns 400 at runtime while the dashboard shows the variable
+ * present and correct, because it simply arrived too late. That is a silent, expensive
+ * failure with a misleading symptom, so a production build without it stops here.
+ */
+function assertR2PublicBaseUrl(): void {
+  if (process.env.R2_PUBLIC_BASE_URL) return;
+  throw new Error(
+    "R2_PUBLIC_BASE_URL is missing at BUILD time.\n" +
+      "Next computes images.remotePatterns from it during the build, so a build without " +
+      "it produces a deployment where every optimised R2 image 400s at runtime.\n" +
+      "Set it in the build environment (Vercel → Settings → Environment Variables, all " +
+      "three environments) and redeploy — see docs/specs/r2-runbook.md §B.",
+  );
+}
 
 /** Allow Next/Image to fetch R2-served originals, derived from R2_PUBLIC_BASE_URL. */
 function r2RemotePatterns(): NonNullable<NextConfig["images"]>["remotePatterns"] {
@@ -30,12 +51,15 @@ const nextConfig: NextConfig = {
     root: import.meta.dirname,
   },
   outputFileTracingRoot: import.meta.dirname,
-  // R2-backed media served from the public R2 base domain (ADR 0018). The host is
-  // derived from R2_PUBLIC_BASE_URL so Next/Image (Netlify Image CDN today, Vercel's
-  // if migrated) can fetch + resize originals at request time. Empty until configured.
+  // R2-backed media served from the public R2 base domain (ADR 0018/0024). The host is
+  // derived from R2_PUBLIC_BASE_URL so Next/Image can fetch + resize originals at request
+  // time — which is also what keeps visitors off the r2.dev host. Asserted above.
   images: {
     remotePatterns: r2RemotePatterns(),
   },
 };
 
-export default withNextIntl(nextConfig);
+export default function config(phase: string): NextConfig {
+  if (phase === PHASE_PRODUCTION_BUILD) assertR2PublicBaseUrl();
+  return withNextIntl(nextConfig);
+}

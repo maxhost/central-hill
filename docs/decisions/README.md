@@ -30,6 +30,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0021 — S14 translation-pipeline: kernel target-write/read seam + provider interface + review inbox](#0021)
 - [0022 — Home restored to the approved mockup; Warm Editorial locked as the production palette](#0022)
 - [0023 — Pages drop draft/published state; Home editor gains the dual-CTA block + optional images](#0023)
+- [0024 — R2 provisioning: EU bucket, endpoint from env, immutable signed cache policy](#0024)
 - [0027 — Optimised delivery: blurhash placeholders + `mediaImgTag()` for HTML-string builders](#0027)
 
 ---
@@ -669,3 +670,60 @@ cannot emit a `<link rel=preload>` from inside a string, so `fetchpriority="high
 
 **Status:** Accepted (2026-09-12). Both parts implemented. Supersedes nothing; amends ADR 0018's
 render half.
+
+
+---
+
+## 0024 — R2 provisioning: EU bucket, endpoint from env, immutable signed cache policy <a id="0024"></a>
+**Context:** ADR 0018 designed the upload pipeline but nothing was ever provisioned. Turning it on
+forced three decisions and exposed three defects — two predicted by the media-pipeline spec, one
+found only by probing the real bucket.
+
+**Decision:**
+1. **Bucket `central-hill-media`, EU jurisdiction** (ADR 0015 data residency). Jurisdiction is
+   immutable after creation. Access is an R2 API token scoped to **Object Read & Write on this one
+   bucket** — never account-wide, because the credential backs a browser-facing presign path.
+2. **Public host = the managed `pub-*.r2.dev` development URL**, not a custom domain. The client's
+   domain still points at Avantio and there is no Cloudflare zone. This is safe *because*
+   `next/image` shields R2: the optimizer fetches each original once per (image, width, format), so
+   visitors never hit `r2.dev`. Migrating to a custom domain later is one env var + a redeploy,
+   since we store `r2_key` and never absolute URLs. **Verified**: the r2.dev public URL *is* offered
+   for an EU-jurisdiction bucket — this was the spec's day-one unknown and it is now closed.
+3. **The S3 endpoint comes from `R2_S3_ENDPOINT`**, copied from the dashboard, with the old
+   hardcoded host kept only as a fallback for a non-jurisdictional bucket. `core/media/server/r2.ts`
+   built `https://<account>.r2.cloudflarestorage.com`; an EU bucket is not there. Confirmed against
+   the live bucket: that host returns `NotFound` while `<account>.eu.r2.cloudflarestorage.com`
+   works. Presign would have minted signed URLs pointing nowhere and **every** upload would have
+   failed.
+4. **Every upload is stored with `Cache-Control: public, max-age=31536000, immutable`, and both
+   `content-type` and `cache-control` are added to `signableHeaders`.** `r2_key` is
+   `${uuid}/${filename}`, so a key is immutable by construction — replacing a photo mints a new
+   uuid — and a one-year immutable cache is a fact about the naming scheme, not a bet.
+   The spec assumed setting `CacheControl` on the `PutObjectCommand` was enough and that R2 would
+   *reject* a PUT omitting a signed header. **Both are wrong**, and probing the real bucket was the
+   only way to find out: by default the presigner signs `host` alone
+   (`X-Amz-SignedHeaders=host`), hoists nothing into the query string, and a PUT with **no headers
+   at all** returns 200 and stores the object **with no cache directive**. The directive is whatever
+   the browser sends. Signing both headers converts that silent, permanent misconfiguration into a
+   403 at upload time. Verified: correct PUT → 200 and the directive is stored and served; omitted
+   `Cache-Control` → 403; tampered `Content-Type` → 403.
+5. **CORS `AllowedHeaders` must list `content-type` and `cache-control`.** This is now load-bearing,
+   not hygiene: the browser sends both, so the preflight fails without them. `AllowedOrigins` cannot
+   be wildcarded mid-string, so uploads work from localhost and production but **not from a Vercel
+   preview deployment**, whose URL changes every deploy. Accepted — the backoffice is staff-only.
+6. **`R2_PUBLIC_BASE_URL` is asserted at build time** (`PHASE_PRODUCTION_BUILD` in
+   `next.config.ts`). Next computes `images.remotePatterns` from it *during the build*; absent then,
+   the list is `[]` and every optimised image returns 400 at runtime while the dashboard shows the
+   variable present and correct — it merely arrived too late. A production build without it now
+   fails with an actionable message instead of shipping broken images.
+
+**Consequences:** `R2_S3_ENDPOINT` joins the env schema and `.env.example`; it must be set wherever
+the app runs or builds. The presigned URL now carries `X-Amz-SignedHeaders=cache-control;
+content-type;host`, so the upload island and the presign action are coupled — the island echoes the
+`cacheControl` that presign returns rather than hardcoding it, and changing the directive is a
+one-line server change. A build can now fail for an environment reason; that is the point. Nothing
+about the *signature* protects the bytes: `finalizeUpload` still HEADs the object and validates mime
+and size server-side (ADR 0018), which remains the real gate.
+
+**Status:** Accepted (2026-09-12). Bucket live and the full round trip — presign → PUT → finalize →
+public GET → delete — verified end to end against it. Runbook: `docs/specs/r2-runbook.md`.

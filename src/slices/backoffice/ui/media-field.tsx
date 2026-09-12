@@ -33,7 +33,12 @@ async function uploadOne(file: File): Promise<AdminMediaPreview> {
   const put = await fetch(presigned.uploadUrl, {
     method: "PUT",
     body: file,
-    headers: { "Content-Type": presigned.contentType },
+    // Both headers are SIGNED into the presigned URL — R2 rejects the PUT if either is
+    // missing or differs, so echo what presign returned rather than hardcoding values.
+    headers: {
+      "Content-Type": presigned.contentType,
+      "Cache-Control": presigned.cacheControl,
+    },
   });
   if (!put.ok) throw new Error(`Upload failed (${put.status}).`);
   return finalizeAdminUpload({ id: presigned.id, r2Key: presigned.r2Key });

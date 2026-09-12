@@ -14,6 +14,12 @@ const EnvSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().optional(),
   R2_BUCKET: z.string().optional(),
   R2_PUBLIC_BASE_URL: z.string().optional(),
+  /**
+   * S3 API endpoint for THIS bucket, copied from the R2 dashboard (ADR 0024). Required
+   * for a jurisdiction-restricted bucket: ours is EU (ADR 0015) and lives on
+   * `<account>.eu.r2.cloudflarestorage.com`, not the generic host.
+   */
+  R2_S3_ENDPOINT: z.string().optional(),
 
   // Better Auth (backoffice).
   BETTER_AUTH_SECRET: z.string().optional(),

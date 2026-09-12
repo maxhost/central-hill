@@ -29,6 +29,23 @@ const MAX_VIDEO_BYTES = 200 * 1024 * 1024; // 200 MB — hero loops, not feature
 const PRESIGN_TTL_SECONDS = 600; // 10 min to start the PUT.
 
 /**
+ * Cache directive signed into every upload (ADR 0024). `r2_key` is `${uuid}/${filename}`,
+ * so a key is **immutable by construction** — replacing a photo mints a new uuid and
+ * therefore a new key. A one-year immutable cache is not a bet, it is a fact about the
+ * naming scheme. Objects previously served with no directive at all.
+ *
+ * ⚠️ Setting it on the command alone does **nothing**. By default the presigner signs only
+ * `host` and neither hoists `Content-Type`/`CacheControl` into the query string nor requires
+ * them — verified against the real bucket, where a PUT with no headers at all returned 200
+ * and stored the object with no cache directive. The directive is whatever the **browser**
+ * sends, so `signableHeaders` below puts both headers into the signature: now an upload that
+ * omits or alters either is rejected with a 403 instead of silently landing uncacheable.
+ * That makes the bucket's CORS `AllowedHeaders` load-bearing — it must list `content-type`
+ * **and** `cache-control`, or the browser blocks the request at preflight.
+ */
+const UPLOAD_CACHE_CONTROL = "public, max-age=31536000, immutable";
+
+/**
  * Lazy-load the native `sharp` binary only when an image is actually processed. A
  * top-level `import sharp` triggers sharp's native dlopen at module-load time — which
  * fails on the Netlify linux-x64 serverless runtime (ERR_DLOPEN_FAILED: libvips) — and
@@ -85,6 +102,8 @@ export interface PresignResult {
   uploadUrl: string;
   /** Header the browser MUST send on the PUT (must match what we signed). */
   contentType: string;
+  /** Ditto — signed, so the PUT is rejected unless the browser echoes it exactly. */
+  cacheControl: string;
   expiresInSeconds: number;
 }
 
@@ -97,10 +116,25 @@ export async function presignUpload(input: PresignInput): Promise<PresignResult>
   const r2Key = `${id}/${safeFilename(input.filename)}`;
   const uploadUrl = await getSignedUrl(
     r2Client(),
-    new PutObjectCommand({ Bucket: r2Bucket(), Key: r2Key, ContentType: input.contentType }),
-    { expiresIn: PRESIGN_TTL_SECONDS },
+    new PutObjectCommand({
+      Bucket: r2Bucket(),
+      Key: r2Key,
+      ContentType: input.contentType,
+      CacheControl: UPLOAD_CACHE_CONTROL,
+    }),
+    {
+      expiresIn: PRESIGN_TTL_SECONDS,
+      signableHeaders: new Set(["content-type", "cache-control"]),
+    },
   );
-  return { id, r2Key, uploadUrl, contentType: input.contentType, expiresInSeconds: PRESIGN_TTL_SECONDS };
+  return {
+    id,
+    r2Key,
+    uploadUrl,
+    contentType: input.contentType,
+    cacheControl: UPLOAD_CACHE_CONTROL,
+    expiresInSeconds: PRESIGN_TTL_SECONDS,
+  };
 }
 
 export interface FinalizeInput {

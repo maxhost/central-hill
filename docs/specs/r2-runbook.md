@@ -13,20 +13,19 @@ Two columns of work run here:
 | C | — | Endpoint fix, Cache-Control fix, build assertion |
 | D | — | Migration, normalisation, media library |
 
-**C can be written before A and B exist** — it is blocked on nothing. A and B are the real gate.
+**Status (2026-09-12):** A1–A3 done, B local `.env` done and verified against the live bucket, **C
+done** (ADR 0024). Outstanding for the owner: **A4 (CORS)** and **B1 (Vercel variables)**.
 
 ---
 
-## STEP 0 — the day-one blocker, do this first
+## STEP 0 — the day-one blocker ✅ CLOSED
 
-⚠️ **Verify that Cloudflare offers the public `r2.dev` development URL for an
-EU-jurisdiction bucket.** Our whole public-host decision rests on it (spec §1.2) and it is
-*unverified*. Create a throwaway EU bucket, try to enable the public dev URL, then delete it.
+The open question was whether Cloudflare offers the public `r2.dev` development URL for an
+**EU-jurisdiction** bucket, since the whole public-host decision rests on it (spec §1.2).
 
-- **If it works** → continue below, nothing changes.
-- **If it does NOT** → stop and tell me. The fallback is a custom domain on a Cloudflare zone, which
-  the client does not have (their domain still points at Avantio) — that is a decision for you, not a
-  workaround for me. Everything downstream waits on it.
+**It does.** The bucket is live on `…eu.r2.cloudflarestorage.com` with a working
+`https://pub-*.r2.dev` public URL, verified by a full round trip. No fallback to a custom domain is
+needed.
 
 ---
 
@@ -78,10 +77,10 @@ The result screen shows three things you need — **copy all three now, the secr
 | Endpoint / "Use jurisdiction-specific endpoints for S3 clients" | `R2_S3_ENDPOINT` |
 
 **Copy the endpoint the dashboard shows — do not assemble it from a pattern.** An EU bucket does
-*not* live on the generic `https://<account>.r2.cloudflarestorage.com` host that the code currently
-hardcodes (it is expected to be `…<account>.eu.r2.cloudflarestorage.com`, but confirm from the
-screen). This is spec §3.1 — with the wrong host, presign mints URLs pointing nowhere and every
-single upload fails.
+*not* live on the generic `https://<account>.r2.cloudflarestorage.com` host the code used to
+hardcode — confirmed against this bucket, where that host returns `NotFound`. Ours is
+`…<account>.eu.r2.cloudflarestorage.com`. With the wrong host, presign mints URLs pointing nowhere
+and every single upload fails (spec §3.1, fixed in C1).
 
 `R2_ACCOUNT_ID` is the Account ID from the R2 overview page (also in the dashboard URL).
 
@@ -107,9 +106,9 @@ Bucket → **Settings** → *CORS policy* → Edit → paste:
 ```
 
 Notes:
-- **`cache-control` must be allowed**, even though nothing sends it yet. Step C2 starts signing it,
-  and R2 rejects a PUT whose signed headers the browser is not permitted to send. Allowing it now
-  means C2 doesn't need a second dashboard trip.
+- 🔴 **`cache-control` is load-bearing, not hygiene.** The upload island now sends it and it is part
+  of the request signature, so the browser will ask for it at preflight and the upload is blocked
+  outright if the bucket does not allow it. Same for `content-type`. This is not optional.
 - Add the production domain to `AllowedOrigins` the day the site moves off the `.vercel.app` host.
 - **Vercel preview deployments get a unique URL each time**, and CORS origins cannot be wildcarded
   mid-string. So uploads will work **locally and in production, not from a preview deploy**. That is
@@ -130,8 +129,8 @@ R2_PUBLIC_BASE_URL        = https://pub-<hash>.r2.dev
 R2_S3_ENDPOINT            ← copied from A3, NOT guessed
 ```
 
-(`R2_S3_ENDPOINT` does not exist in the env schema yet — step C1 adds it. Setting it early is
-harmless.)
+All six are already in the local `.env` and verified against the live bucket. What is left is
+loading them into **Vercel**.
 
 ### B1. Vercel — via the dashboard (recommended)
 
@@ -169,8 +168,8 @@ vercel --prod                     # redeploy so the build picks them up
 vercel env pull .env.local        # pulls what you just set
 ```
 
-or append the same six lines to `.env` by hand. `.env.example` is the documented template — I'll add
-the new keys there in step C1.
+or append the same six lines to `.env` by hand — `.env.example` documents all six. **Already done
+locally.**
 
 ### B4. 🔴 The trap that makes everything look fine and still break
 
@@ -183,19 +182,31 @@ Concretely, this means:
 - set the variables **before** you redeploy, not after;
 - any environment that builds without it produces a broken-images deployment.
 
-Step C3 adds a build-time assertion so this fails loudly at build instead of silently in production.
+C3 added a build-time assertion, so this now fails loudly at build instead of silently in
+production. Verified in both directions: without the variable the build stops with an actionable
+message; with it, all 99 pages prerender.
 
 ---
 
-## STEP C — code I write (blocked on nothing; say the word)
+## STEP C — code fixes ✅ DONE
 
 | # | Change | Spec | Kernel? |
 |---|---|---|---|
 | C1 | `R2_S3_ENDPOINT` in the env schema, preferred by `core/media/server/r2.ts` over today's hardcoded host (kept as fallback). `.env.example` updated. | §3.1 | yes → ADR 0024 |
-| C2 | Sign `CacheControl: "public, max-age=31536000, immutable"` into the presigned PUT **and** send the matching header from `media-field.tsx`. Both sides change together or R2 rejects the upload. Keys are `${uuid}/${filename}` — immutable by construction, so a 1-year immutable cache is correct. | §3.4 | yes |
+| C2 | `Cache-Control: public, max-age=31536000, immutable` on every upload — signed **and** echoed by `media-field.tsx`. Keys are `${uuid}/${filename}`, immutable by construction, so a 1-year immutable cache is a fact rather than a bet. | §3.4 | yes |
 | C3 | Build-time assertion for §B4. | §3.5 | yes |
 
-After A + B + C, **the first real upload can succeed.** Everything below is then unblocked.
+**All three are done** (ADR 0024) and verified end to end against the live bucket: presign → PUT →
+finalize → public GET → delete.
+
+> The spec was wrong about C2 in a way only probing the real bucket revealed. Setting `CacheControl`
+> on the command does **nothing** on its own: by default the presigner signs `host` alone, hoists
+> nothing into the query string, and a PUT with *no headers at all* returns 200 and stores the object
+> **with no cache directive**. The directive is whatever the browser sends. Both headers are now in
+> `signableHeaders`, so omitting or tampering with either is a 403 at upload time instead of a
+> silent, permanent misconfiguration. That is exactly why A4 is not optional.
+
+After A4 + B1, **the first real upload from the backoffice can succeed.**
 
 ---
 

@@ -4,10 +4,16 @@ import { env } from "@core/env";
 
 /**
  * R2 (S3-compatible) client for the media upload pipeline (kernel — `core/media`,
- * ADR 0018). Server-only; never imported by public render code. The bucket is
- * EU-jurisdiction per ADR 0015. Configuration comes from the existing `R2_*` env
- * vars; if any is missing the client throws a clear, actionable error rather than
- * failing deep inside the SDK.
+ * ADR 0018). Server-only; never imported by public render code. Configuration comes
+ * from the `R2_*` env vars; if any is missing the client throws a clear, actionable
+ * error rather than failing deep inside the SDK.
+ *
+ * **The endpoint must come from `R2_S3_ENDPOINT`** (ADR 0024). Our bucket is
+ * EU-jurisdiction (ADR 0015) and a jurisdiction-restricted bucket is *not* served from
+ * the generic `<account>.r2.cloudflarestorage.com` host this file used to hardcode —
+ * verified against the real bucket, where that host returns `NotFound`. Presign would
+ * otherwise mint signed URLs pointing nowhere and every upload would fail. The old
+ * host stays as the fallback for a non-jurisdictional bucket.
  */
 function requireR2() {
   const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET } = env;
@@ -16,7 +22,13 @@ function requireR2() {
       "R2 is not configured: set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET.",
     );
   }
-  return { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET };
+  return {
+    R2_ACCOUNT_ID,
+    R2_ACCESS_KEY_ID,
+    R2_SECRET_ACCESS_KEY,
+    R2_BUCKET,
+    endpoint: env.R2_S3_ENDPOINT || `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  };
 }
 
 let _client: S3Client | null = null;
@@ -27,7 +39,7 @@ export function r2Client(): S3Client {
   const c = requireR2();
   _client = new S3Client({
     region: "auto",
-    endpoint: `https://${c.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    endpoint: c.endpoint,
     credentials: { accessKeyId: c.R2_ACCESS_KEY_ID, secretAccessKey: c.R2_SECRET_ACCESS_KEY },
   });
   return _client;
