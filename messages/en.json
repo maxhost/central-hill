@@ -905,7 +905,16 @@
       "empty": "No image",
       "moveUp": "Move up",
       "moveDown": "Move down",
-      "uploadError": "Upload failed. Please try again."
+      "uploadError": "Upload failed. Please try again.",
+      "uploadingTitle": "Uploading media",
+      "uploadingHint": "Keep this window open until every file has finished.",
+      "statusQueued": "Waiting",
+      "statusDone": "Done",
+      "statusFailed": "Failed",
+      "retryFailed": "Retry failed",
+      "close": "Close",
+      "preparing": "Preparing…",
+      "queuedNote": "Uploads when you save"
     },
     "actions": {
       "save": "Save",

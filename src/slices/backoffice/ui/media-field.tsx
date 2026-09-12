@@ -3,11 +3,8 @@
 import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@core/ui";
-import {
-  type AdminMediaPreview,
-  finalizeAdminUpload,
-  presignAdminUpload,
-} from "../server/media-actions";
+import type { AdminMediaPreview } from "../server/media-actions";
+import { reserveUpload, useMediaQueue } from "./media-queue";
 
 /**
  * Media picker client islands (S12 + ADR 0018). The single `MediaField` (cover /
@@ -24,37 +21,10 @@ const ACCEPT: Record<"image" | "media", string> = {
 };
 
 /**
- * Run the presign → PUT → finalize round trip for one file. Throws on failure.
- *
- * The actions hand back a result union because Next masks thrown Server Action errors
- * in production; unwrapping it here turns the server's real message into a normal
- * client-side throw, so both fields' existing `catch` blocks surface it unchanged.
+ * Picking a file **reserves an id and queues the bytes** — it does not upload (ADR
+ * 0030). The bytes go up when the form is saved, via the queue's `flush()`. The
+ * preview is a local object URL, because there is nothing on R2 to point at yet.
  */
-async function uploadOne(file: File): Promise<AdminMediaPreview> {
-  const presigned = await presignAdminUpload({
-    filename: file.name,
-    contentType: file.type,
-    size: file.size,
-  });
-  if (!presigned.ok) throw new Error(presigned.error);
-  const put = await fetch(presigned.data.uploadUrl, {
-    method: "PUT",
-    body: file,
-    // Both headers are SIGNED into the presigned URL — R2 rejects the PUT if either is
-    // missing or differs, so echo what presign returned rather than hardcoding values.
-    headers: {
-      "Content-Type": presigned.data.contentType,
-      "Cache-Control": presigned.data.cacheControl,
-    },
-  });
-  if (!put.ok) throw new Error(`Upload failed (${put.status}).`);
-  const finalized = await finalizeAdminUpload({
-    id: presigned.data.id,
-    r2Key: presigned.data.r2Key,
-  });
-  if (!finalized.ok) throw new Error(finalized.error);
-  return finalized.data;
-}
 
 /** Small visual: image thumbnail, or a labelled tile for video / unknown. */
 function Thumb({
@@ -95,6 +65,7 @@ export function MediaField({
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<AdminMediaPreview | null>(initialPreview ?? null);
+  const queue = useMediaQueue();
 
   const shown = preview && preview.id === value ? preview : null;
 
@@ -107,9 +78,12 @@ export function MediaField({
     if (!file) return;
     start(async () => {
       try {
-        const result = await uploadOne(file);
-        setPreview(result);
-        onChange(result.id, result);
+        const { id, preview: local } = await reserveUpload(file);
+        // Replacing a pick must not leave the previous file queued for upload.
+        if (value) queue.dequeue(value);
+        queue.enqueue(id, file);
+        setPreview(local);
+        onChange(id, local);
       } catch (e) {
         setError(e instanceof Error ? e.message : t("media.uploadError"));
       }
@@ -129,12 +103,13 @@ export function MediaField({
             disabled={pending}
             className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-ink disabled:opacity-60"
           >
-            {pending ? t("media.uploading") : value ? t("media.replace") : t("media.upload")}
+            {pending ? t("media.preparing") : value ? t("media.replace") : t("media.upload")}
           </button>
           {value ? (
             <button
               type="button"
               onClick={() => {
+                if (value) queue.dequeue(value);
                 setPreview(null);
                 onChange(null, null);
               }}
@@ -156,6 +131,9 @@ export function MediaField({
           e.target.value = "";
         }}
       />
+      {!error && value && queue.isQueued(value) ? (
+        <p className="text-xs text-ink-soft">{t("media.queuedNote")}</p>
+      ) : null}
       {error ? <p className="text-xs font-medium text-red-600">{error}</p> : null}
     </div>
   );
@@ -180,6 +158,7 @@ export function MediaGalleryField({
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [previews, setPreviews] = useState<Record<string, AdminMediaPreview>>(initialPreviews ?? {});
+  const queue = useMediaQueue();
 
   function move(index: number, delta: number) {
     const next = [...value];
@@ -192,6 +171,7 @@ export function MediaGalleryField({
   }
 
   function remove(id: string) {
+    queue.dequeue(id); // a removed image must not still be uploaded on save
     onChange(value.filter((v) => v !== id));
   }
 
@@ -201,7 +181,11 @@ export function MediaGalleryField({
     start(async () => {
       try {
         const added: AdminMediaPreview[] = [];
-        for (const file of list) added.push(await uploadOne(file));
+        for (const file of list) {
+          const { id, preview } = await reserveUpload(file);
+          queue.enqueue(id, file);
+          added.push(preview);
+        }
         setPreviews((prev) => {
           const next = { ...prev };
           for (const p of added) next[p.id] = p;

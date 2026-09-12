@@ -19,6 +19,7 @@ import {
   TextArea,
   TextInput,
   useToast,
+  useMediaQueue,
 } from "@slices/backoffice/contract";
 import { deleteBuilding, saveBuilding } from "../actions";
 import type { AmenityOption, BuildingEditData, LocationOptions } from "../queries";
@@ -142,6 +143,7 @@ export function BuildingForm({
   const router = useRouter();
   const toast = useToast();
   const [pending, start] = useTransition();
+  const queue = useMediaQueue();
   const [state, setState] = useState<FormState>(() => initialState(initial));
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -213,6 +215,9 @@ export function BuildingForm({
   function onSubmit() {
     setErrors({});
     start(async () => {
+      // Upload anything the editor picked before persisting ids that point at it
+      // (ADR 0030). Abort the save if the bytes did not make it.
+      if (!(await queue.flush())) return;
       const result = await saveBuilding(buildPayload(state, initial?.id));
       if (result.ok) {
         toast.success(tb("actions.saved"));

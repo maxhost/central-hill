@@ -15,6 +15,7 @@ import {
   MediaField,
   TextArea,
   TextInput,
+  useMediaQueue,
 } from "@slices/backoffice/contract";
 import { saveGlobals } from "../actions";
 import type { GlobalsEditData, StatForm } from "../queries";
@@ -41,6 +42,7 @@ export function GlobalsForm({
   const tb = useTranslations("backoffice");
   const router = useRouter();
   const [pending, start] = useTransition();
+  const queue = useMediaQueue();
   const [state, setState] = useState<GlobalsEditData>(initial);
   const [previews, setPreviews] = useState(initialPreviews);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -90,6 +92,9 @@ export function GlobalsForm({
     };
 
     start(async () => {
+      // Upload anything the editor picked before persisting ids that point at it
+      // (ADR 0030). Abort the save if the bytes did not make it.
+      if (!(await queue.flush())) return;
       const result = await saveGlobals(payload);
       if (result.ok) {
         setBanner(tb("actions.saved"));

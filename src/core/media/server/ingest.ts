@@ -116,6 +116,16 @@ export interface PresignInput {
   contentType: string;
   /** Declared size (bytes) — a soft gate; the real limit is enforced on finalize. */
   size: number;
+  /**
+   * Reuse a previously minted id instead of generating one.
+   *
+   * The admin reserves an id the moment a file is picked, but only uploads when the
+   * form is saved (ADR 0030), which can be well past `PRESIGN_TTL_SECONDS`. Re-signing
+   * with the same id refreshes the URL without changing the identity the form already
+   * holds. Presign writes nothing — no row, no object — so a reserved id that is never
+   * uploaded leaves nothing behind.
+   */
+  id?: string;
 }
 
 export interface PresignResult {
@@ -135,7 +145,7 @@ export async function presignUpload(input: PresignInput): Promise<PresignResult>
   if (input.size > maxBytesFor(kind)) {
     throw new Error(`File too large for ${kind}: ${input.size} bytes.`);
   }
-  const id = crypto.randomUUID();
+  const id = input.id ?? crypto.randomUUID();
   const r2Key = `${id}/${safeFilename(input.filename)}`;
   const uploadUrl = await getSignedUrl(
     r2Client(),

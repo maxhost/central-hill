@@ -905,7 +905,16 @@
       "empty": "Aucune image",
       "moveUp": "Monter",
       "moveDown": "Descendre",
-      "uploadError": "Échec du téléversement. Réessayez."
+      "uploadError": "Échec du téléversement. Réessayez.",
+      "uploadingTitle": "Téléversement des médias",
+      "uploadingHint": "Gardez cette fenêtre ouverte jusqu’à la fin de tous les fichiers.",
+      "statusQueued": "En attente",
+      "statusDone": "Terminé",
+      "statusFailed": "Échec",
+      "retryFailed": "Réessayer les échecs",
+      "close": "Fermer",
+      "preparing": "Préparation…",
+      "queuedNote": "Envoyé à l’enregistrement"
     },
     "actions": {
       "save": "Enregistrer",

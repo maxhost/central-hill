@@ -12,6 +12,7 @@ import {
   FormActions,
   type AdminMediaPreview,
   MediaField,
+  useMediaQueue,
 } from "@slices/backoffice/contract";
 import { savePage } from "../actions";
 import { type FieldNode, type SelectOptions, humanizeKey } from "../form-model";
@@ -59,6 +60,7 @@ export function PageEditor({
   const tb = useTranslations("backoffice");
   const router = useRouter();
   const [pending, start] = useTransition();
+  const queue = useMediaQueue();
   const [data, setData] = useState<Record<string, unknown>>(initialData);
   const [ogImage, setOgImage] = useState<string>(initialOgImageMediaId ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -75,6 +77,9 @@ export function PageEditor({
     setBanner(null);
     setErrors({});
     start(async () => {
+      // Upload anything the editor picked before persisting ids that point at it
+      // (ADR 0030). Abort the save if the bytes did not make it.
+      if (!(await queue.flush())) return;
       const result = await savePage(pageKey, {
         data,
         og_image_media_id: ogImage || null,

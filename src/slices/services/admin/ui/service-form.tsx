@@ -17,6 +17,7 @@ import {
   Select,
   TextArea,
   TextInput,
+  useMediaQueue,
 } from "@slices/backoffice/contract";
 import { deleteService, saveService } from "../actions";
 import type { ServiceEditData } from "../queries";
@@ -122,6 +123,7 @@ export function ServiceForm({
   const tb = useTranslations("backoffice");
   const router = useRouter();
   const [pending, start] = useTransition();
+  const queue = useMediaQueue();
   const [state, setState] = useState<FormState>(() =>
     initialState(initial, categories[0]?.id ?? ""),
   );
@@ -140,6 +142,9 @@ export function ServiceForm({
     }
     setErrors({});
     start(async () => {
+      // Upload anything the editor picked before persisting ids that point at it
+      // (ADR 0030). Abort the save if the bytes did not make it.
+      if (!(await queue.flush())) return;
       const result = await saveService(buildPayload(state, initial?.id));
       if (result.ok) {
         if (!initial) {

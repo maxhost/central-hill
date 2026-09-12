@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { requireStaff } from "@core/auth";
-import { AdminShell, composeAdminNav } from "@slices/backoffice/contract";
+import { AdminShell, composeAdminNav, MediaQueueProvider } from "@slices/backoffice/contract";
 import { apartmentsAdminScreens } from "@slices/apartments/contract";
 import { blogAdminScreens } from "@slices/blog/contract";
 import { buildingsAdminScreens } from "@slices/buildings/contract";
@@ -52,9 +52,14 @@ export default async function PanelLayout({ children }: { children: ReactNode })
     ],
     staff.role,
   );
+  // One upload queue for the whole panel: media is picked inside a form but only
+  // uploaded when that form is saved (ADR 0030), and the progress modal it raises
+  // has to sit above the shell.
   return (
-    <AdminShell staff={staff} nav={nav}>
-      {children}
-    </AdminShell>
+    <MediaQueueProvider>
+      <AdminShell staff={staff} nav={nav}>
+        {children}
+      </AdminShell>
+    </MediaQueueProvider>
   );
 }

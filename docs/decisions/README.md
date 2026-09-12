@@ -36,6 +36,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0026 — `media_asset` becomes two-backend (R2 | Stream); Stream vendor still unratified](#0026)
 - [0028 — AVIF before WebP in `images.formats`](#0028)
 - [0029 — Trace the libvips shared object into the function bundle](#0029)
+- [0030 — Media uploads happen on save, not on pick](#0030)
 
 ---
 
@@ -935,3 +936,53 @@ production and by reading the trace manifests before and after. **The first fix 
 against the local trace manifest and shipped broken** — the manifest showed the `.so` present and
 the deployment still failed, because "present in the bundle" and "present where the linker looks"
 are different claims. Only a probe against the real deployment distinguishes them.
+
+
+---
+
+## 0030 — Media uploads happen on save, not on pick <a id="0030"></a>
+**Context:** Picking a file uploaded it immediately (ADR 0018): presign → PUT → finalize ran from the
+field's `onChange`, while the resulting id was only persisted when the surrounding form was saved.
+Anything picked and then replaced, or picked and never saved, therefore became a `media_asset` row
+plus an R2 object referenced by nothing — invisible, undeletable from the backoffice, and
+accumulating silently. Observed on the very first QA session: two uploads a minute apart, one live
+and one orphaned.
+
+The reference-safe delete and media library (runbook D3/D4/D7) would let staff *clean up* orphans.
+They would not stop them being created, and the cheapest orphan is the one that never exists.
+
+**Decision:** Picking a file **reserves an id and queues the bytes locally**; the upload happens when
+the form is saved.
+
+1. **A reservation creates nothing.** `presignUpload` writes no row and no object — it mints a uuid
+   and signs a URL. So a file picked and then replaced, or a form abandoned, leaves *literally
+   nothing* behind. "No orphans" becomes a property of the design rather than a cleanup job.
+   Verified directly: after reserving, the table has no row and the public URL 404s.
+2. **The reserved id goes into form state immediately**, so every form keeps storing a plain
+   `media_id` string and nothing about their data shape changes. This is what keeps the change to a
+   single line per form instead of a rewrite of twelve.
+3. **`presignUpload` accepts an optional `id`** so the queue can re-sign at save time. A reservation
+   can easily outlive the 10-minute presign TTL while the editor keeps working; re-signing refreshes
+   the URL without changing the identity the form already holds.
+4. **`flush()` runs before the save action, after client-side validation.** An invalid form uploads
+   nothing. A failed flush aborts the save, so a record is never persisted pointing at bytes that did
+   not land.
+5. **A blocking modal reports per-file progress**, enables *Close* only once every item has settled,
+   offers a retry for failures, and arms `beforeunload` while running.
+
+**Consequences:** Save is now the slow action — for a gallery it is N uploads, not a DB write — which
+is exactly why the modal is part of the decision rather than a nicety. **Progress is measured with
+`XMLHttpRequest`, the one place in this codebase that uses it**: `fetch` exposes no upload progress,
+so a bar built on it would be decoration that lies.
+
+Previews become local `URL.createObjectURL` blobs instead of R2 URLs, which incidentally removes any
+window in which the admin could fetch a pre-normalisation original (ADR 0025). Oversize files are now
+rejected when picked rather than after a pointless upload, since the size gate lives in presign.
+
+Orphans are reduced, not eliminated: if upload 7 of 10 fails, the first six are finalized. The modal
+keeps them on screen with a retry rather than silently abandoning them, and D7's sweep remains the
+backstop. Forms that gain a `MediaField` later **must** await `flush()` — the contract says so,
+because forgetting it persists ids whose bytes were never sent.
+
+**Status:** Accepted (2026-09-12). Wired into all eight admin forms that contain a media field.
+Amends ADR 0018's upload trigger; the two-phase presign/finalize architecture itself is unchanged.

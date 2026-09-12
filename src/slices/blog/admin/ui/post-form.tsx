@@ -17,6 +17,7 @@ import {
   Select,
   TextArea,
   TextInput,
+  useMediaQueue,
 } from "@slices/backoffice/contract";
 import { deletePost, savePost } from "../actions";
 import type { PostEditData } from "../queries";
@@ -93,6 +94,7 @@ export function PostForm({
   const tb = useTranslations("backoffice");
   const router = useRouter();
   const [pending, start] = useTransition();
+  const queue = useMediaQueue();
   const [state, setState] = useState<FormState>(() =>
     initialState(initial, categories[0]?.id ?? "", authors[0]?.id ?? ""),
   );
@@ -154,6 +156,9 @@ export function PostForm({
     }
     setErrors({});
     start(async () => {
+      // Upload anything the editor picked before persisting ids that point at it
+      // (ADR 0030). Abort the save if the bytes did not make it.
+      if (!(await queue.flush())) return;
       const result = await savePost(buildPayload());
       if (result.ok) {
         if (!initial) {

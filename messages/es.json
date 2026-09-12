@@ -905,7 +905,16 @@
       "empty": "Sin imagen",
       "moveUp": "Mover arriba",
       "moveDown": "Mover abajo",
-      "uploadError": "Error al subir. Inténtalo de nuevo."
+      "uploadError": "Error al subir. Inténtalo de nuevo.",
+      "uploadingTitle": "Subiendo archivos",
+      "uploadingHint": "Mantén esta ventana abierta hasta que terminen todos los archivos.",
+      "statusQueued": "En espera",
+      "statusDone": "Listo",
+      "statusFailed": "Error",
+      "retryFailed": "Reintentar los fallidos",
+      "close": "Cerrar",
+      "preparing": "Preparando…",
+      "queuedNote": "Se sube al guardar"
     },
     "actions": {
       "save": "Guardar",

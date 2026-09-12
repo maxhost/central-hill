@@ -16,6 +16,7 @@ import {
   Select,
   TextInput,
   useToast,
+  useMediaQueue,
 } from "@slices/backoffice/contract";
 import { deleteApartment, saveApartment } from "../actions";
 import type { ApartmentEditData } from "../queries";
@@ -102,6 +103,7 @@ export function ApartmentForm({
   const router = useRouter();
   const toast = useToast();
   const [pending, start] = useTransition();
+  const queue = useMediaQueue();
   const [state, setState] = useState<FormState>(() =>
     initialState(initial, buildings[0]?.id ?? ""),
   );
@@ -114,6 +116,9 @@ export function ApartmentForm({
   function onSubmit() {
     setErrors({});
     start(async () => {
+      // Upload anything the editor picked before persisting ids that point at it
+      // (ADR 0030). Abort the save if the bytes did not make it.
+      if (!(await queue.flush())) return;
       const result = await saveApartment(buildPayload(state, initial?.id));
       if (result.ok) {
         toast.success(tb("actions.saved"));

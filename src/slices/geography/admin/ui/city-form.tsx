@@ -16,6 +16,7 @@ import {
   Select,
   TextArea,
   TextInput,
+  useMediaQueue,
 } from "@slices/backoffice/contract";
 import { deleteCity, saveCity } from "../actions";
 import type { CityEditData } from "../queries";
@@ -95,6 +96,7 @@ export function CityForm({
   const tb = useTranslations("backoffice");
   const router = useRouter();
   const [pending, start] = useTransition();
+  const queue = useMediaQueue();
   const [state, setState] = useState<FormState>(() => initialState(initial));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(null);
@@ -132,6 +134,9 @@ export function CityForm({
     setBanner(null);
     setErrors({});
     start(async () => {
+      // Upload anything the editor picked before persisting ids that point at it
+      // (ADR 0030). Abort the save if the bytes did not make it.
+      if (!(await queue.flush())) return;
       const result = await saveCity(buildPayload(state, initial?.id));
       if (result.ok) {
         if (!initial) {

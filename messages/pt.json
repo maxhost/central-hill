@@ -905,7 +905,16 @@
       "empty": "Sem imagem",
       "moveUp": "Mover para cima",
       "moveDown": "Mover para baixo",
-      "uploadError": "Falha no carregamento. Tente novamente."
+      "uploadError": "Falha no carregamento. Tente novamente.",
+      "uploadingTitle": "A carregar media",
+      "uploadingHint": "Mantenha esta janela aberta até todos os ficheiros terminarem.",
+      "statusQueued": "Em espera",
+      "statusDone": "Concluído",
+      "statusFailed": "Falhou",
+      "retryFailed": "Repetir os que falharam",
+      "close": "Fechar",
+      "preparing": "A preparar…",
+      "queuedNote": "Carrega ao guardar"
     },
     "actions": {
       "save": "Guardar",

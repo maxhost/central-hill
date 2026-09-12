@@ -56,6 +56,13 @@ export {
  * resolved previews via {@link resolveMediaPreviews} from their server screens.
  */
 export { MediaField, MediaGalleryField } from "./ui/media-field";
+/**
+ * Deferred media uploads (ADR 0030). `MediaQueueProvider` is mounted once in the panel
+ * layout; every form that contains a `MediaField` MUST `await flush()` from
+ * `useMediaQueue()` before calling its save action, or it will persist ids whose bytes
+ * were never uploaded.
+ */
+export { MediaQueueProvider, useMediaQueue } from "./ui/media-queue";
 export {
   presignAdminUpload,
   finalizeAdminUpload,
