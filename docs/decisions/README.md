@@ -35,6 +35,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0025 — Upload-time normalisation: cap the master at 3000px, bake in orientation](#0025)
 - [0026 — `media_asset` becomes two-backend (R2 | Stream); Stream vendor still unratified](#0026)
 - [0028 — AVIF before WebP in `images.formats`](#0028)
+- [0029 — Trace the libvips shared object into the function bundle](#0029)
 
 ---
 
@@ -856,3 +857,58 @@ before trusting any future claim here**, because the answer is entirely a functi
 settings Next happens to use, which is an implementation detail we do not control.
 
 **Status:** Accepted (2026-09-12). Kernel change to `next.config.ts` (golden rule 3).
+
+
+---
+
+## 0029 — Trace the libvips shared object into the function bundle <a id="0029"></a>
+**Context:** Every image upload from the deployed backoffice failed. The client-visible symptom was
+the generic *"An error occurred in the Server Components render"*; the real error, recovered from the
+runtime logs by reproducing the gated action over HTTP, was:
+
+```
+Could not load the "sharp" module using the linux-x64 runtime
+ERR_DLOPEN_FAILED: libvips-cpp.so.8.18.3: cannot open shared object file
+```
+
+This is **not** a regression from ADR 0025 — `finalizeUpload` has called `sharp` for dimensions and
+the blurhash since ADR 0018, so **image upload has never worked in any deployed environment**. It was
+carried as an open unknown ("uploads may fail on Netlify") and turns out to be neither
+Netlify-specific nor an install problem.
+
+The install is fine: `pnpm-lock.yaml` contains `@img/sharp-libvips-linux-x64`, and the error proves
+sharp's own `.node` binary loaded — it got as far as `dlopen`. What is missing is libvips itself.
+`sharp` is in `serverExternalPackages`, so Next traces it, **but tracing follows `require()` graphs
+and `libvips-cpp.so` is resolved by the dynamic linker via RPATH, not by any require**. Confirmed by
+reading the build's own `*.nft.json`: the bundle contained
+`@img/sharp-libvips-<platform>/lib/index.js`, its `package.json` and `versions.json`, and **zero
+native shared objects**.
+
+This class of bug is invisible locally *by construction*: `next start` resolves from `node_modules`
+and never consults the trace, so a full local production build exercising the real upload path
+succeeds while the deployment fails.
+
+**Decision:** `outputFileTracingIncludes` force-includes the libvips lib directory for `/admin/**`:
+
+```
+"/admin/**": ["./node_modules/.pnpm/@img+sharp-libvips-*/node_modules/@img/*/lib/*"]
+```
+
+The glob is deliberately platform- and version-agnostic: it matches whichever
+`@img/sharp-libvips-*` the install actually produced, resolving to linux-x64 on Vercel and
+darwin-arm64 locally, with no hardcoded arch or version to rot. Scoped to `/admin/**` because only
+the backoffice runs sharp — public pages are prerendered and must not carry a ~15 MB native library.
+
+**Consequences:** 41 admin route traces now carry the shared object (verified in the manifest; no
+admin route is missed and no public route is affected). Admin function bundles grow by the size of
+libvips. The lazy `await import("sharp")` from ADR 0018 stays exactly as it is — it solves a
+different problem (a top-level import dlopens at module load and 500s the whole backoffice) and
+neither fix substitutes for the other.
+
+The deeper lesson is about verification, not sharp: **a local production build cannot falsify a
+file-tracing bug**, so anything depending on a native module needs a check against a real
+deployment. `scripts/probe-admin-upload.ts` is that check — it drives presign → PUT → finalize
+against a deployed origin through the real gated Server Actions.
+
+**Status:** Accepted (2026-09-12). Root cause confirmed by reproducing the failure against
+production and by reading the trace manifests before and after.

@@ -54,6 +54,26 @@ const nextConfig: NextConfig = {
   // R2-backed media served from the public R2 base domain (ADR 0018/0024). The host is
   // derived from R2_PUBLIC_BASE_URL so Next/Image can fetch + resize originals at request
   // time — which is also what keeps visitors off the r2.dev host. Asserted above.
+  /**
+   * Force the libvips shared object into the traced function bundle.
+   *
+   * `sharp` is an external package (below), so Next traces its files — but tracing
+   * follows `require()` graphs, and `libvips-cpp.so` is pulled in by the *dynamic
+   * linker* via RPATH, not by any require. The result is a bundle that contains
+   * `@img/sharp-libvips-<platform>/lib/index.js` and its `package.json` but **not the
+   * `.so` itself**, so `finalizeUpload` dies at first use with
+   * `ERR_DLOPEN_FAILED: libvips-cpp.so.8.18.3: cannot open shared object file`.
+   * Confirmed by reading `.next/server/app/**\/*.nft.json`: zero native libvips
+   * objects were traced. Image upload has never worked in a deployed environment
+   * because of this (ADR 0029).
+   *
+   * The glob is platform-agnostic on purpose — it matches whichever
+   * `@img/sharp-libvips-*` package the install actually produced, so it resolves to
+   * linux-x64 on Vercel and darwin-arm64 here, with no hardcoded version or arch.
+   */
+  outputFileTracingIncludes: {
+    "/admin/**": ["./node_modules/.pnpm/@img+sharp-libvips-*/node_modules/@img/*/lib/*"],
+  },
   images: {
     remotePatterns: r2RemotePatterns(),
     // AVIF first, WebP for anything that can't take it (ADR 0028). Next's default is
