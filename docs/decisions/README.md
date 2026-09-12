@@ -769,16 +769,26 @@ served from that same post-finalize URL, so it sees the normalised master too.
 
 ⚠️ **Finalize is now a heavy request: 3.5 s locally for an 11.5 MB upload** (download, decode,
 resize, re-encode, upload, blurhash). Locally that is a fast machine close to the bucket; on a
-Vercel function in `iad1` talking to an EU bucket it will be slower, and the image ceiling is 15 MB.
-No `maxDuration` is configured in `vercel.json`, so this runs on the platform default. **If staff
-report failed uploads of very large photos, that is the first thing to check** — the fix is either
-a raised `maxDuration` or moving the functions to an EU region (which also matches ADR 0015 but
-would move them away from the current us-east-1 Neon, so it is not a free change).
+Vercel function talking to an EU bucket it will be slower, and the image ceiling is 15 MB — so the
+platform default of 10 s on this plan was not a safe margin.
+
+**Resolved: `export const maxDuration = 60` on the gated panel layout**
+(`src/app/(admin)/admin/(panel)/layout.tsx`), 60 s being the Hobby plan maximum. It goes on the
+layout because Server Actions execute in the function serving the route that invoked them, so one
+export covers every upload screen. Verified in the build artefact
+(`.next/server/functions-config-manifest.json`): **39 `/admin/*` routes carry it and no public route
+does** — the public pages are prerendered and must not inherit a long budget.
+
+The alternative — moving functions to an EU region, next to the bucket — was **not** taken. It
+would match ADR 0015, but it moves them away from the current us-east-1 Neon and would slow every
+database read to speed up one staff-only action. Revisit it when production Neon actually moves to
+Frankfurt, at which point the two changes belong together.
 
 **Status:** Accepted (2026-09-12). Implemented in `core/media/server/ingest.ts` and verified against
 the live bucket: an oversized export is capped at 3000px and shrinks 76%; an in-budget file comes
 back byte-for-byte identical; a 4000×2500 buffer tagged orientation=6 is stored upright, with the
-EXIF stripped, and recorded as portrait. Amends ADR 0018.
+EXIF stripped, and recorded as portrait. The `maxDuration` question raised here is resolved above.
+Amends ADR 0018.
 
 ---
 

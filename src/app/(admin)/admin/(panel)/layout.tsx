@@ -20,6 +20,20 @@ import { translationAdminScreens } from "@slices/translation/contract";
  * the core screens plus each slice's contributed `AdminScreen[]` (leads inbox so
  * far); more get spread into `composeAdminNav` here as they land.
  */
+/**
+ * Upload finalize is the long pole in this shell (ADR 0025): it downloads the freshly
+ * uploaded original from R2, decodes it, resizes, re-encodes, uploads the normalised
+ * master back and encodes a blurhash — measured at 3.5s for an 11.5MB image on a fast
+ * local machine close to the bucket. In production that is a Vercel function talking to
+ * an EU bucket with less CPU, and the accepted image ceiling is 15MB, so the platform
+ * default (10s on this plan) is not a safe margin. 60s is the Hobby maximum.
+ *
+ * It lives on the layout because Server Actions execute in the function serving the
+ * route that invoked them, so this covers every upload screen under `(panel)` at once
+ * rather than needing the export repeated on each.
+ */
+export const maxDuration = 60;
+
 export default async function PanelLayout({ children }: { children: ReactNode }) {
   const staff = await requireStaff();
   const nav = composeAdminNav(
