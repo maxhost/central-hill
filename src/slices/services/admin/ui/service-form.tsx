@@ -55,7 +55,10 @@ interface FormState {
   gallery: string[];
 }
 
-function initialState(data: ServiceEditData | null, defaultCategoryId: string): FormState {
+function initialState(
+  data: ServiceEditData | null,
+  defaultCategoryId: string,
+): FormState {
   return {
     slug: data?.slug ?? "",
     status: data?.status ?? "draft",
@@ -141,29 +144,32 @@ export function ServiceForm({
       return;
     }
     setErrors({});
-    start(async () => {
-      // Upload anything the editor picked before persisting ids that point at it
-      // (ADR 0030). Abort the save if the bytes did not make it.
+    void (async () => {
+      // Uploads run OUTSIDE the transition on purpose: `startTransition` marks every
+      // update in its scope as low priority, so the queue's progress modal would not
+      // paint until the transition it lives in had already finished (ADR 0030).
       if (!(await queue.flush())) return;
-      const result = await saveService(buildPayload(state, initial?.id));
-      if (result.ok) {
-        if (!initial) {
-          router.push(`/admin/services/${result.id}`);
+      start(async () => {
+        const result = await saveService(buildPayload(state, initial?.id));
+        if (result.ok) {
+          if (!initial) {
+            router.push(`/admin/services/${result.id}`);
+            return;
+          }
+          setBanner(tb("actions.saved"));
+          router.refresh();
           return;
         }
-        setBanner(tb("actions.saved"));
-        router.refresh();
-        return;
-      }
-      if (result.error === "validation") {
-        setErrors(result.fieldErrors);
-        setBanner(tb("actions.saveError"));
-      } else if (result.error === "slug_conflict") {
-        setErrors({ slug: t("admin.errors.slugConflict") });
-      } else {
-        setBanner(tb("actions.saveError"));
-      }
-    });
+        if (result.error === "validation") {
+          setErrors(result.fieldErrors);
+          setBanner(tb("actions.saveError"));
+        } else if (result.error === "slug_conflict") {
+          setErrors({ slug: t("admin.errors.slugConflict") });
+        } else {
+          setBanner(tb("actions.saveError"));
+        }
+      });
+    })();
   }
 
   function onDelete() {
@@ -179,23 +185,33 @@ export function ServiceForm({
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title={initial ? state.name || t("admin.editTitle") : t("admin.newTitle")}
+        title={
+          initial ? state.name || t("admin.editTitle") : t("admin.newTitle")
+        }
         description={t("admin.formSubtitle")}
         actions={
-          <Link href="/admin/services" className="text-sm text-ink-soft hover:text-ink">
+          <Link
+            href="/admin/services"
+            className="text-sm text-ink-soft hover:text-ink"
+          >
             ← {t("admin.backToList")}
           </Link>
         }
       />
 
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
+        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+          {banner}
+        </p>
       ) : null}
 
       <AdminCard title={t("admin.sections.status")}>
         <FieldGrid>
           <Field label={t("admin.fields.status")}>
-            <Select value={state.status} onChange={(e) => set("status", e.target.value as Status)}>
+            <Select
+              value={state.status}
+              onChange={(e) => set("status", e.target.value as Status)}
+            >
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {t(`admin.status.${s}`)}
@@ -203,7 +219,10 @@ export function ServiceForm({
               ))}
             </Select>
           </Field>
-          <Field label={t("admin.fields.position")} hint={t("admin.fields.positionHint")}>
+          <Field
+            label={t("admin.fields.position")}
+            hint={t("admin.fields.positionHint")}
+          >
             <TextInput
               type="number"
               value={state.position}
@@ -215,8 +234,15 @@ export function ServiceForm({
 
       <AdminCard title={t("admin.sections.identity")}>
         <div className="space-y-4">
-          <Field label={t("admin.fields.category")} required error={err("category_id")}>
-            <Select value={state.category_id} onChange={(e) => set("category_id", e.target.value)}>
+          <Field
+            label={t("admin.fields.category")}
+            required
+            error={err("category_id")}
+          >
+            <Select
+              value={state.category_id}
+              onChange={(e) => set("category_id", e.target.value)}
+            >
               <option value="">{t("admin.fields.choose")}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -226,27 +252,52 @@ export function ServiceForm({
             </Select>
           </Field>
           <Field label={t("admin.fields.name")} required error={err("name")}>
-            <TextInput value={state.name} onChange={(e) => set("name", e.target.value)} />
+            <TextInput
+              value={state.name}
+              onChange={(e) => set("name", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.fields.slug")} required hint={t("admin.fields.slugHint")} error={err("slug")}>
-            <TextInput value={state.slug} onChange={(e) => set("slug", e.target.value)} />
+          <Field
+            label={t("admin.fields.slug")}
+            required
+            hint={t("admin.fields.slugHint")}
+            error={err("slug")}
+          >
+            <TextInput
+              value={state.slug}
+              onChange={(e) => set("slug", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.fields.excerpt")} required error={err("excerpt")}>
-            <TextArea value={state.excerpt} onChange={(e) => set("excerpt", e.target.value)} />
+          <Field
+            label={t("admin.fields.excerpt")}
+            required
+            error={err("excerpt")}
+          >
+            <TextArea
+              value={state.excerpt}
+              onChange={(e) => set("excerpt", e.target.value)}
+            />
           </Field>
         </div>
       </AdminCard>
 
       <AdminCard title={t("admin.sections.media")}>
         <div className="space-y-5">
-          <Field label={t("admin.fields.cover")} required error={err("cover_media_id")}>
+          <Field
+            label={t("admin.fields.cover")}
+            required
+            error={err("cover_media_id")}
+          >
             <MediaField
               value={state.cover_media_id || null}
               preview={previews[state.cover_media_id] ?? null}
               onChange={(id) => set("cover_media_id", id ?? "")}
             />
           </Field>
-          <Field label={t("admin.fields.ogImage")} hint={t("admin.fields.ogImageHint")}>
+          <Field
+            label={t("admin.fields.ogImage")}
+            hint={t("admin.fields.ogImageHint")}
+          >
             <MediaField
               value={state.og_image_media_id || null}
               preview={previews[state.og_image_media_id] ?? null}
@@ -265,21 +316,32 @@ export function ServiceForm({
 
       <AdminCard title={t("admin.sections.body")}>
         <Field label={t("admin.fields.body")} required error={err("body")}>
-          <TextArea rows={8} value={state.body} onChange={(e) => set("body", e.target.value)} />
+          <TextArea
+            rows={8}
+            value={state.body}
+            onChange={(e) => set("body", e.target.value)}
+          />
         </Field>
       </AdminCard>
 
       <AdminCard title={t("admin.sections.booking")}>
         <div className="space-y-4">
           <FieldGrid>
-            <Field label={t("admin.fields.priceFrom")} hint={t("admin.fields.priceFromHint")} error={err("price_from")}>
+            <Field
+              label={t("admin.fields.priceFrom")}
+              hint={t("admin.fields.priceFromHint")}
+              error={err("price_from")}
+            >
               <TextInput
                 type="number"
                 value={state.price_from}
                 onChange={(e) => set("price_from", e.target.value)}
               />
             </Field>
-            <Field label={t("admin.fields.durationLabel")} error={err("duration_label")}>
+            <Field
+              label={t("admin.fields.durationLabel")}
+              error={err("duration_label")}
+            >
               <TextInput
                 value={state.duration_label}
                 onChange={(e) => set("duration_label", e.target.value)}
@@ -288,7 +350,9 @@ export function ServiceForm({
             <Field label={t("admin.fields.bookingType")}>
               <Select
                 value={state.booking_type}
-                onChange={(e) => set("booking_type", e.target.value as BookingType)}
+                onChange={(e) =>
+                  set("booking_type", e.target.value as BookingType)
+                }
               >
                 {BOOKING_TYPES.map((b) => (
                   <option key={b} value={b}>
@@ -300,11 +364,20 @@ export function ServiceForm({
           </FieldGrid>
           {state.booking_type === "external" ? (
             <FieldGrid>
-              <Field label={t("admin.fields.ctaLabel")} error={err("cta_label")}>
-                <TextInput value={state.cta_label} onChange={(e) => set("cta_label", e.target.value)} />
+              <Field
+                label={t("admin.fields.ctaLabel")}
+                error={err("cta_label")}
+              >
+                <TextInput
+                  value={state.cta_label}
+                  onChange={(e) => set("cta_label", e.target.value)}
+                />
               </Field>
               <Field label={t("admin.fields.ctaUrl")} error={err("cta_url")}>
-                <TextInput value={state.cta_url} onChange={(e) => set("cta_url", e.target.value)} />
+                <TextInput
+                  value={state.cta_url}
+                  onChange={(e) => set("cta_url", e.target.value)}
+                />
               </Field>
             </FieldGrid>
           ) : null}
@@ -314,9 +387,15 @@ export function ServiceForm({
       <AdminCard title={t("admin.sections.seo")}>
         <div className="space-y-4">
           <Field label={t("admin.fields.metaTitle")} error={err("meta_title")}>
-            <TextInput value={state.meta_title} onChange={(e) => set("meta_title", e.target.value)} />
+            <TextInput
+              value={state.meta_title}
+              onChange={(e) => set("meta_title", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.fields.metaDescription")} error={err("meta_description")}>
+          <Field
+            label={t("admin.fields.metaDescription")}
+            error={err("meta_description")}
+          >
             <TextArea
               value={state.meta_description}
               onChange={(e) => set("meta_description", e.target.value)}
@@ -331,7 +410,11 @@ export function ServiceForm({
             {tb("actions.delete")}
           </AdminButton>
         ) : null}
-        <AdminButton variant="ghost" onClick={() => router.push("/admin/services")} disabled={pending}>
+        <AdminButton
+          variant="ghost"
+          onClick={() => router.push("/admin/services")}
+          disabled={pending}
+        >
           {tb("actions.cancel")}
         </AdminButton>
         <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>

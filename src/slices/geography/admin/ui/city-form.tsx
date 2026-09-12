@@ -58,7 +58,11 @@ function initialState(data: CityEditData | null): FormState {
     name: data?.name ?? "",
     intro: data?.intro ?? "",
     neighbourhoods:
-      data?.neighbourhoods.map((n) => ({ id: n.id, slug: n.slug, name: n.name })) ?? [],
+      data?.neighbourhoods.map((n) => ({
+        id: n.id,
+        slug: n.slug,
+        name: n.name,
+      })) ?? [],
   };
 }
 
@@ -108,11 +112,16 @@ export function CityForm({
   function updateNb(index: number, patch: Partial<NeighbourhoodState>) {
     setState((prev) => ({
       ...prev,
-      neighbourhoods: prev.neighbourhoods.map((n, i) => (i === index ? { ...n, ...patch } : n)),
+      neighbourhoods: prev.neighbourhoods.map((n, i) =>
+        i === index ? { ...n, ...patch } : n,
+      ),
     }));
   }
   function addNb() {
-    setState((prev) => ({ ...prev, neighbourhoods: [...prev.neighbourhoods, { slug: "", name: "" }] }));
+    setState((prev) => ({
+      ...prev,
+      neighbourhoods: [...prev.neighbourhoods, { slug: "", name: "" }],
+    }));
   }
   function removeNb(index: number) {
     setState((prev) => ({
@@ -133,30 +142,33 @@ export function CityForm({
   function onSubmit() {
     setBanner(null);
     setErrors({});
-    start(async () => {
-      // Upload anything the editor picked before persisting ids that point at it
-      // (ADR 0030). Abort the save if the bytes did not make it.
+    void (async () => {
+      // Uploads run OUTSIDE the transition on purpose: `startTransition` marks every
+      // update in its scope as low priority, so the queue's progress modal would not
+      // paint until the transition it lives in had already finished (ADR 0030).
       if (!(await queue.flush())) return;
-      const result = await saveCity(buildPayload(state, initial?.id));
-      if (result.ok) {
-        if (!initial) {
-          router.push(`/admin/cities/${result.id}`);
+      start(async () => {
+        const result = await saveCity(buildPayload(state, initial?.id));
+        if (result.ok) {
+          if (!initial) {
+            router.push(`/admin/cities/${result.id}`);
+            return;
+          }
+          setBanner(tb("actions.saved"));
+          router.refresh();
           return;
         }
-        setBanner(tb("actions.saved"));
-        router.refresh();
-        return;
-      }
-      if (result.error === "validation") {
-        setErrors(result.fieldErrors);
-        setBanner(tb("actions.saveError"));
-      } else if (result.error === "slug_conflict") {
-        setErrors({ slug: t("admin.errors.slugConflict") });
-        setBanner(tb("actions.saveError"));
-      } else {
-        setBanner(tb("actions.saveError"));
-      }
-    });
+        if (result.error === "validation") {
+          setErrors(result.fieldErrors);
+          setBanner(tb("actions.saveError"));
+        } else if (result.error === "slug_conflict") {
+          setErrors({ slug: t("admin.errors.slugConflict") });
+          setBanner(tb("actions.saveError"));
+        } else {
+          setBanner(tb("actions.saveError"));
+        }
+      });
+    })();
   }
 
   function onDelete() {
@@ -172,33 +184,57 @@ export function CityForm({
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title={initial ? state.name || t("admin.editTitle") : t("admin.newTitle")}
+        title={
+          initial ? state.name || t("admin.editTitle") : t("admin.newTitle")
+        }
         description={t("admin.formSubtitle")}
         actions={
-          <Link href="/admin/cities" className="text-sm text-ink-soft hover:text-ink">
+          <Link
+            href="/admin/cities"
+            className="text-sm text-ink-soft hover:text-ink"
+          >
             ← {t("admin.backToList")}
           </Link>
         }
       />
 
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
+        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+          {banner}
+        </p>
       ) : null}
 
       <AdminCard title={t("admin.sections.identity")}>
         <div className="space-y-4">
           <Field label={t("admin.fields.name")} required error={err("name")}>
-            <TextInput value={state.name} onChange={(e) => set("name", e.target.value)} />
+            <TextInput
+              value={state.name}
+              onChange={(e) => set("name", e.target.value)}
+            />
           </Field>
           <FieldGrid>
-            <Field label={t("admin.fields.slug")} required hint={t("admin.fields.slugHint")} error={err("slug")}>
-              <TextInput value={state.slug} onChange={(e) => set("slug", e.target.value)} />
+            <Field
+              label={t("admin.fields.slug")}
+              required
+              hint={t("admin.fields.slugHint")}
+              error={err("slug")}
+            >
+              <TextInput
+                value={state.slug}
+                onChange={(e) => set("slug", e.target.value)}
+              />
             </Field>
             <Field label={t("admin.fields.country")} error={err("country")}>
-              <TextInput value={state.country} onChange={(e) => set("country", e.target.value)} />
+              <TextInput
+                value={state.country}
+                onChange={(e) => set("country", e.target.value)}
+              />
             </Field>
             <Field label={t("admin.fields.status")}>
-              <Select value={state.status} onChange={(e) => set("status", e.target.value as Status)}>
+              <Select
+                value={state.status}
+                onChange={(e) => set("status", e.target.value as Status)}
+              >
                 {STATUSES.map((s) => (
                   <option key={s} value={s}>
                     {t(`admin.status.${s}`)}
@@ -206,7 +242,10 @@ export function CityForm({
                 ))}
               </Select>
             </Field>
-            <Field label={t("admin.fields.position")} hint={t("admin.fields.positionHint")}>
+            <Field
+              label={t("admin.fields.position")}
+              hint={t("admin.fields.positionHint")}
+            >
               <TextInput
                 type="number"
                 value={state.position}
@@ -214,8 +253,16 @@ export function CityForm({
               />
             </Field>
           </FieldGrid>
-          <Field label={t("admin.fields.intro")} hint={t("admin.fields.introHint")} error={err("intro")}>
-            <TextArea rows={4} value={state.intro} onChange={(e) => set("intro", e.target.value)} />
+          <Field
+            label={t("admin.fields.intro")}
+            hint={t("admin.fields.introHint")}
+            error={err("intro")}
+          >
+            <TextArea
+              rows={4}
+              value={state.intro}
+              onChange={(e) => set("intro", e.target.value)}
+            />
           </Field>
         </div>
       </AdminCard>
@@ -236,33 +283,60 @@ export function CityForm({
         ) : (
           <div className="space-y-4">
             {state.neighbourhoods.map((nb, i) => (
-              <div key={nb.id ?? `new-${i}`} className="space-y-3 rounded-md border border-line p-4">
+              <div
+                key={nb.id ?? `new-${i}`}
+                className="space-y-3 rounded-md border border-line p-4"
+              >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
                     {t("admin.neighbourhoodLabel", { n: i + 1 })}
                   </span>
                   <div className="flex items-center gap-1">
-                    <AdminButton variant="ghost" onClick={() => moveNb(i, -1)} disabled={pending || i === 0}>
+                    <AdminButton
+                      variant="ghost"
+                      onClick={() => moveNb(i, -1)}
+                      disabled={pending || i === 0}
+                    >
                       {tb("media.moveUp")}
                     </AdminButton>
                     <AdminButton
                       variant="ghost"
                       onClick={() => moveNb(i, 1)}
-                      disabled={pending || i === state.neighbourhoods.length - 1}
+                      disabled={
+                        pending || i === state.neighbourhoods.length - 1
+                      }
                     >
                       {tb("media.moveDown")}
                     </AdminButton>
-                    <AdminButton variant="danger" onClick={() => removeNb(i)} disabled={pending}>
+                    <AdminButton
+                      variant="danger"
+                      onClick={() => removeNb(i)}
+                      disabled={pending}
+                    >
                       {tb("actions.delete")}
                     </AdminButton>
                   </div>
                 </div>
                 <FieldGrid>
-                  <Field label={t("admin.fields.nbName")} required error={err(`neighbourhoods.${i}.name`)}>
-                    <TextInput value={nb.name} onChange={(e) => updateNb(i, { name: e.target.value })} />
+                  <Field
+                    label={t("admin.fields.nbName")}
+                    required
+                    error={err(`neighbourhoods.${i}.name`)}
+                  >
+                    <TextInput
+                      value={nb.name}
+                      onChange={(e) => updateNb(i, { name: e.target.value })}
+                    />
                   </Field>
-                  <Field label={t("admin.fields.nbSlug")} required error={err(`neighbourhoods.${i}.slug`)}>
-                    <TextInput value={nb.slug} onChange={(e) => updateNb(i, { slug: e.target.value })} />
+                  <Field
+                    label={t("admin.fields.nbSlug")}
+                    required
+                    error={err(`neighbourhoods.${i}.slug`)}
+                  >
+                    <TextInput
+                      value={nb.slug}
+                      onChange={(e) => updateNb(i, { slug: e.target.value })}
+                    />
                   </Field>
                 </FieldGrid>
               </div>
@@ -282,7 +356,11 @@ export function CityForm({
             {tb("actions.delete")}
           </AdminButton>
         ) : null}
-        <AdminButton variant="ghost" onClick={() => router.push("/admin/cities")} disabled={pending}>
+        <AdminButton
+          variant="ghost"
+          onClick={() => router.push("/admin/cities")}
+          disabled={pending}
+        >
           {tb("actions.cancel")}
         </AdminButton>
         <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>

@@ -6,7 +6,10 @@ import {
   DataTable,
   EmptyState,
 } from "@slices/backoffice/contract";
-import { type BlogCategoryAdminListItem, listBlogCategoriesAdmin } from "../queries";
+import {
+  type BlogCategoryAdminListItem,
+  listBlogCategoriesAdmin,
+} from "../queries";
 
 /** Blog-category backoffice list (S12) at `/admin/blog-categories`. */
 export async function BlogCategoriesAdminList() {
@@ -63,7 +66,12 @@ export async function BlogCategoriesAdminList() {
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.id}
-        empty={<EmptyState title={t("admin.cat.empty")} hint={t("admin.cat.emptyHint")} />}
+        empty={
+          <EmptyState
+            title={t("admin.cat.empty")}
+            hint={t("admin.cat.emptyHint")}
+          />
+        }
       />
     </div>
   );

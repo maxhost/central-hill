@@ -14,7 +14,10 @@ import { type ServiceAdminListItem, listServicesAdmin } from "../queries";
  * live, links each row to its editor. Strings come from the `services` namespace.
  */
 
-const STATUS_TONE: Record<ServiceAdminListItem["status"], "approved" | "draft" | "neutral"> = {
+const STATUS_TONE: Record<
+  ServiceAdminListItem["status"],
+  "approved" | "draft" | "neutral"
+> = {
   published: "approved",
   draft: "draft",
   archived: "neutral",
@@ -28,7 +31,10 @@ export async function ServicesAdminList() {
     {
       header: t("admin.columns.name"),
       cell: (row) => (
-        <Link href={`/admin/services/${row.id}`} className="font-medium text-ink hover:text-accent-deep">
+        <Link
+          href={`/admin/services/${row.id}`}
+          className="font-medium text-ink hover:text-accent-deep"
+        >
           {row.name}
         </Link>
       ),
@@ -36,7 +42,10 @@ export async function ServicesAdminList() {
     {
       header: t("admin.columns.status"),
       cell: (row) => (
-        <StateBadge label={t(`admin.status.${row.status}`)} tone={STATUS_TONE[row.status]} />
+        <StateBadge
+          label={t(`admin.status.${row.status}`)}
+          tone={STATUS_TONE[row.status]}
+        />
       ),
     },
     {
@@ -64,7 +73,9 @@ export async function ServicesAdminList() {
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.id}
-        empty={<EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />}
+        empty={
+          <EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />
+        }
       />
     </div>
   );

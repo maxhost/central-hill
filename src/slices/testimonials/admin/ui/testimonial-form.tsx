@@ -74,7 +74,11 @@ function buildPayload(s: FormState, id: string | undefined) {
   };
 }
 
-export function TestimonialForm({ initial }: { initial: TestimonialEditData | null }) {
+export function TestimonialForm({
+  initial,
+}: {
+  initial: TestimonialEditData | null;
+}) {
   const t = useTranslations("testimonials");
   const tb = useTranslations("backoffice");
   const router = useRouter();
@@ -123,23 +127,35 @@ export function TestimonialForm({ initial }: { initial: TestimonialEditData | nu
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title={initial ? state.author_name || t("admin.editTitle") : t("admin.newTitle")}
+        title={
+          initial
+            ? state.author_name || t("admin.editTitle")
+            : t("admin.newTitle")
+        }
         description={t("admin.formSubtitle")}
         actions={
-          <Link href="/admin/testimonials" className="text-sm text-ink-soft hover:text-ink">
+          <Link
+            href="/admin/testimonials"
+            className="text-sm text-ink-soft hover:text-ink"
+          >
             ← {t("admin.backToList")}
           </Link>
         }
       />
 
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
+        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+          {banner}
+        </p>
       ) : null}
 
       <AdminCard title={t("admin.sections.classification")}>
         <FieldGrid>
           <Field label={t("admin.fields.audience")}>
-            <Select value={state.audience} onChange={(e) => set("audience", e.target.value as Audience)}>
+            <Select
+              value={state.audience}
+              onChange={(e) => set("audience", e.target.value as Audience)}
+            >
               {AUDIENCES.map((a) => (
                 <option key={a} value={a}>
                   {t(`admin.audience.${a}`)}
@@ -148,7 +164,10 @@ export function TestimonialForm({ initial }: { initial: TestimonialEditData | nu
             </Select>
           </Field>
           <Field label={t("admin.fields.rating")}>
-            <Select value={state.rating} onChange={(e) => set("rating", e.target.value)}>
+            <Select
+              value={state.rating}
+              onChange={(e) => set("rating", e.target.value)}
+            >
               {RATINGS.map((r) => (
                 <option key={r} value={r}>
                   {"★".repeat(r)}
@@ -157,7 +176,10 @@ export function TestimonialForm({ initial }: { initial: TestimonialEditData | nu
             </Select>
           </Field>
           <Field label={t("admin.fields.status")}>
-            <Select value={state.status} onChange={(e) => set("status", e.target.value as Status)}>
+            <Select
+              value={state.status}
+              onChange={(e) => set("status", e.target.value as Status)}
+            >
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {t(`admin.status.${s}`)}
@@ -165,7 +187,10 @@ export function TestimonialForm({ initial }: { initial: TestimonialEditData | nu
               ))}
             </Select>
           </Field>
-          <Field label={t("admin.fields.position")} hint={t("admin.fields.positionHint")}>
+          <Field
+            label={t("admin.fields.position")}
+            hint={t("admin.fields.positionHint")}
+          >
             <TextInput
               type="number"
               value={state.position}
@@ -177,10 +202,21 @@ export function TestimonialForm({ initial }: { initial: TestimonialEditData | nu
 
       <AdminCard title={t("admin.sections.author")}>
         <FieldGrid>
-          <Field label={t("admin.fields.authorName")} required error={err("author_name")}>
-            <TextInput value={state.author_name} onChange={(e) => set("author_name", e.target.value)} />
+          <Field
+            label={t("admin.fields.authorName")}
+            required
+            error={err("author_name")}
+          >
+            <TextInput
+              value={state.author_name}
+              onChange={(e) => set("author_name", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.fields.authorCountry")} required error={err("author_country")}>
+          <Field
+            label={t("admin.fields.authorCountry")}
+            required
+            error={err("author_country")}
+          >
             <TextInput
               value={state.author_country}
               onChange={(e) => set("author_country", e.target.value)}
@@ -201,7 +237,11 @@ export function TestimonialForm({ initial }: { initial: TestimonialEditData | nu
 
       <AdminCard title={t("admin.sections.quote")}>
         <Field label={t("admin.fields.quote")} required error={err("quote")}>
-          <TextArea rows={5} value={state.quote} onChange={(e) => set("quote", e.target.value)} />
+          <TextArea
+            rows={5}
+            value={state.quote}
+            onChange={(e) => set("quote", e.target.value)}
+          />
         </Field>
       </AdminCard>
 
@@ -211,7 +251,11 @@ export function TestimonialForm({ initial }: { initial: TestimonialEditData | nu
             {tb("actions.delete")}
           </AdminButton>
         ) : null}
-        <AdminButton variant="ghost" onClick={() => router.push("/admin/testimonials")} disabled={pending}>
+        <AdminButton
+          variant="ghost"
+          onClick={() => router.push("/admin/testimonials")}
+          disabled={pending}
+        >
           {tb("actions.cancel")}
         </AdminButton>
         <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>

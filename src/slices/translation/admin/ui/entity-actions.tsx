@@ -14,17 +14,28 @@ import { approveEntity, generateEntityDrafts } from "../actions";
 export function EntityActions({ type, id }: { type: string; id: string }) {
   const t = useTranslations("translation");
   const [pending, startTransition] = useTransition();
-  const run = (fn: () => Promise<unknown>) => startTransition(async () => void (await fn()));
+  const run = (fn: () => Promise<unknown>) =>
+    startTransition(async () => void (await fn()));
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <AdminButton disabled={pending} onClick={() => run(() => generateEntityDrafts(type, id, false))}>
+      <AdminButton
+        disabled={pending}
+        onClick={() => run(() => generateEntityDrafts(type, id, false))}
+      >
         {t("actions.generate")}
       </AdminButton>
-      <AdminButton disabled={pending} onClick={() => run(() => generateEntityDrafts(type, id, true))}>
+      <AdminButton
+        disabled={pending}
+        onClick={() => run(() => generateEntityDrafts(type, id, true))}
+      >
         {t("actions.generateAll")}
       </AdminButton>
-      <AdminButton variant="primary" disabled={pending} onClick={() => run(() => approveEntity(type, id))}>
+      <AdminButton
+        variant="primary"
+        disabled={pending}
+        onClick={() => run(() => approveEntity(type, id))}
+      >
         {t("actions.approveAll")}
       </AdminButton>
     </div>

@@ -11,7 +11,10 @@ import { type PostAdminListItem, listPostsAdmin } from "../queries";
 
 /** Blog-posts backoffice list (S12) at `/admin/posts`. */
 
-const STATUS_TONE: Record<PostAdminListItem["status"], "approved" | "draft" | "neutral"> = {
+const STATUS_TONE: Record<
+  PostAdminListItem["status"],
+  "approved" | "draft" | "neutral"
+> = {
   published: "approved",
   draft: "draft",
   archived: "neutral",
@@ -25,7 +28,10 @@ export async function PostsAdminList() {
     {
       header: t("admin.post.columns.title"),
       cell: (row) => (
-        <Link href={`/admin/posts/${row.id}`} className="font-medium text-ink hover:text-accent-deep">
+        <Link
+          href={`/admin/posts/${row.id}`}
+          className="font-medium text-ink hover:text-accent-deep"
+        >
           {row.title}
         </Link>
       ),
@@ -33,7 +39,10 @@ export async function PostsAdminList() {
     {
       header: t("admin.post.columns.status"),
       cell: (row) => (
-        <StateBadge label={t(`admin.status.${row.status}`)} tone={STATUS_TONE[row.status]} />
+        <StateBadge
+          label={t(`admin.status.${row.status}`)}
+          tone={STATUS_TONE[row.status]}
+        />
       ),
     },
     {
@@ -44,7 +53,9 @@ export async function PostsAdminList() {
     {
       header: t("admin.post.columns.featured"),
       cell: (row) =>
-        row.isFeatured ? <StateBadge label={t("admin.post.featured")} tone="accent" /> : null,
+        row.isFeatured ? (
+          <StateBadge label={t("admin.post.featured")} tone="accent" />
+        ) : null,
       className: "hidden lg:table-cell",
     },
   ];
@@ -67,7 +78,12 @@ export async function PostsAdminList() {
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.id}
-        empty={<EmptyState title={t("admin.post.empty")} hint={t("admin.post.emptyHint")} />}
+        empty={
+          <EmptyState
+            title={t("admin.post.empty")}
+            hint={t("admin.post.emptyHint")}
+          />
+        }
       />
     </div>
   );

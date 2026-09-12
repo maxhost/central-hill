@@ -43,13 +43,16 @@ export async function TranslationReview({
   const entity = await getEntityTranslations(type, id);
   if (!entity) notFound();
 
-  const typeLabel = t.has(`entityTypes.${type}`) ? t(`entityTypes.${type}`) : type;
+  const typeLabel = t.has(`entityTypes.${type}`)
+    ? t(`entityTypes.${type}`)
+    : type;
   const selected: Locale =
     locale && (TARGET_LOCALES as string[]).includes(locale)
       ? (locale as Locale)
       : TARGET_LOCALES[0]!;
 
-  const tabHref = (l: Locale) => `/admin/translations/${type}/${id}?locale=${l}`;
+  const tabHref = (l: Locale) =>
+    `/admin/translations/${type}/${id}?locale=${l}`;
 
   return (
     <div className="space-y-6">
@@ -61,7 +64,10 @@ export async function TranslationReview({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <RollupBadges rollup={entity.rollup} t={t} />
-        <Link href="/admin/translations" className="text-sm text-ink-soft hover:text-ink">
+        <Link
+          href="/admin/translations"
+          className="text-sm text-ink-soft hover:text-ink"
+        >
           {t("backToInbox")}
         </Link>
       </div>
@@ -97,7 +103,10 @@ export async function TranslationReview({
                 source={row.source}
                 target={cell.value}
                 badge={
-                  <StateBadge tone={statusTone(cell.status)} label={t(`status.${STATUS_KEY[cell.status]}`)} />
+                  <StateBadge
+                    tone={statusTone(cell.status)}
+                    label={t(`status.${STATUS_KEY[cell.status]}`)}
+                  />
                 }
                 action={
                   <TranslationRowActions

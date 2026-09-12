@@ -21,7 +21,10 @@ export async function FaqAdminList() {
     {
       header: t("admin.columns.key"),
       cell: (row) => (
-        <Link href={`/admin/faq/${row.id}`} className="font-medium text-ink hover:text-accent-deep">
+        <Link
+          href={`/admin/faq/${row.id}`}
+          className="font-medium text-ink hover:text-accent-deep"
+        >
           {row.key}
         </Link>
       ),
@@ -56,7 +59,9 @@ export async function FaqAdminList() {
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.id}
-        empty={<EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />}
+        empty={
+          <EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />
+        }
       />
     </div>
   );

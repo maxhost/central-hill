@@ -51,7 +51,10 @@ interface FormState {
 
 const STATUSES: Status[] = ["draft", "published", "archived"];
 
-function initialState(data: ApartmentEditData | null, defaultBuildingId: string): FormState {
+function initialState(
+  data: ApartmentEditData | null,
+  defaultBuildingId: string,
+): FormState {
   return {
     status: data?.status ?? "draft",
     position: String(data?.position ?? 0),
@@ -115,27 +118,30 @@ export function ApartmentForm({
 
   function onSubmit() {
     setErrors({});
-    start(async () => {
-      // Upload anything the editor picked before persisting ids that point at it
-      // (ADR 0030). Abort the save if the bytes did not make it.
+    void (async () => {
+      // Uploads run OUTSIDE the transition on purpose: `startTransition` marks every
+      // update in its scope as low priority, so the queue's progress modal would not
+      // paint until the transition it lives in had already finished (ADR 0030).
       if (!(await queue.flush())) return;
-      const result = await saveApartment(buildPayload(state, initial?.id));
-      if (result.ok) {
-        toast.success(tb("actions.saved"));
-        if (!initial) {
-          router.push(`/admin/apartments/${result.id}`);
+      start(async () => {
+        const result = await saveApartment(buildPayload(state, initial?.id));
+        if (result.ok) {
+          toast.success(tb("actions.saved"));
+          if (!initial) {
+            router.push(`/admin/apartments/${result.id}`);
+            return;
+          }
+          router.refresh();
           return;
         }
-        router.refresh();
-        return;
-      }
-      if (result.error === "validation") {
-        setErrors(result.fieldErrors);
-        toast.error(tb("actions.saveError"));
-      } else {
-        toast.error(tb("actions.saveError"));
-      }
-    });
+        if (result.error === "validation") {
+          setErrors(result.fieldErrors);
+          toast.error(tb("actions.saveError"));
+        } else {
+          toast.error(tb("actions.saveError"));
+        }
+      });
+    })();
   }
 
   function onDelete() {
@@ -155,10 +161,15 @@ export function ApartmentForm({
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title={initial ? state.name || t("admin.editTitle") : t("admin.newTitle")}
+        title={
+          initial ? state.name || t("admin.editTitle") : t("admin.newTitle")
+        }
         description={t("admin.formSubtitle")}
         actions={
-          <Link href="/admin/apartments" className="text-sm text-ink-soft hover:text-ink">
+          <Link
+            href="/admin/apartments"
+            className="text-sm text-ink-soft hover:text-ink"
+          >
             ← {t("admin.backToList")}
           </Link>
         }
@@ -167,7 +178,10 @@ export function ApartmentForm({
       <AdminCard title={t("admin.sections.status")}>
         <FieldGrid>
           <Field label={t("admin.fields.status")}>
-            <Select value={state.status} onChange={(e) => set("status", e.target.value as Status)}>
+            <Select
+              value={state.status}
+              onChange={(e) => set("status", e.target.value as Status)}
+            >
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {t(`admin.status.${s}`)}
@@ -175,7 +189,10 @@ export function ApartmentForm({
               ))}
             </Select>
           </Field>
-          <Field label={t("admin.fields.position")} hint={t("admin.fields.positionHint")}>
+          <Field
+            label={t("admin.fields.position")}
+            hint={t("admin.fields.positionHint")}
+          >
             <TextInput
               type="number"
               value={state.position}
@@ -187,8 +204,15 @@ export function ApartmentForm({
 
       <AdminCard title={t("admin.sections.identity")}>
         <div className="space-y-4">
-          <Field label={t("admin.fields.building")} required error={err("building_id")}>
-            <Select value={state.building_id} onChange={(e) => set("building_id", e.target.value)}>
+          <Field
+            label={t("admin.fields.building")}
+            required
+            error={err("building_id")}
+          >
+            <Select
+              value={state.building_id}
+              onChange={(e) => set("building_id", e.target.value)}
+            >
               <option value="">{t("admin.fields.choose")}</option>
               {buildings.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -198,10 +222,20 @@ export function ApartmentForm({
             </Select>
           </Field>
           <Field label={t("admin.fields.name")} required error={err("name")}>
-            <TextInput value={state.name} onChange={(e) => set("name", e.target.value)} />
+            <TextInput
+              value={state.name}
+              onChange={(e) => set("name", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.fields.badge")} hint={t("admin.fields.badgeHint")} error={err("badge")}>
-            <TextInput value={state.badge} onChange={(e) => set("badge", e.target.value)} />
+          <Field
+            label={t("admin.fields.badge")}
+            hint={t("admin.fields.badgeHint")}
+            error={err("badge")}
+          >
+            <TextInput
+              value={state.badge}
+              onChange={(e) => set("badge", e.target.value)}
+            />
           </Field>
         </div>
       </AdminCard>
@@ -209,19 +243,39 @@ export function ApartmentForm({
       <AdminCard title={t("admin.sections.specs")}>
         <FieldGrid className="lg:grid-cols-3">
           <Field label={t("admin.fields.bedrooms")} error={err("bedrooms")}>
-            <TextInput type="number" value={state.bedrooms} onChange={(e) => set("bedrooms", e.target.value)} />
+            <TextInput
+              type="number"
+              value={state.bedrooms}
+              onChange={(e) => set("bedrooms", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.fields.maxGuests")} required error={err("max_guests")}>
-            <TextInput type="number" value={state.max_guests} onChange={(e) => set("max_guests", e.target.value)} />
+          <Field
+            label={t("admin.fields.maxGuests")}
+            required
+            error={err("max_guests")}
+          >
+            <TextInput
+              type="number"
+              value={state.max_guests}
+              onChange={(e) => set("max_guests", e.target.value)}
+            />
           </Field>
           <Field label={t("admin.fields.bedsCount")} error={err("beds_count")}>
-            <TextInput type="number" value={state.beds_count} onChange={(e) => set("beds_count", e.target.value)} />
+            <TextInput
+              type="number"
+              value={state.beds_count}
+              onChange={(e) => set("beds_count", e.target.value)}
+            />
           </Field>
         </FieldGrid>
       </AdminCard>
 
       <AdminCard title={t("admin.sections.media")}>
-        <Field label={t("admin.fields.cover")} hint={t("admin.fields.coverHint")} error={err("cover_media_id")}>
+        <Field
+          label={t("admin.fields.cover")}
+          hint={t("admin.fields.coverHint")}
+          error={err("cover_media_id")}
+        >
           <MediaField
             value={state.cover_media_id || null}
             preview={previews[state.cover_media_id] ?? null}
@@ -233,10 +287,20 @@ export function ApartmentForm({
       <AdminCard title={t("admin.sections.booking")}>
         <FieldGrid>
           <Field label={t("admin.fields.avantioId")} error={err("avantio_id")}>
-            <TextInput value={state.avantio_id} onChange={(e) => set("avantio_id", e.target.value)} />
+            <TextInput
+              value={state.avantio_id}
+              onChange={(e) => set("avantio_id", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.fields.avantioUrl")} hint={t("admin.fields.avantioUrlHint")} error={err("avantio_url")}>
-            <TextInput value={state.avantio_url} onChange={(e) => set("avantio_url", e.target.value)} />
+          <Field
+            label={t("admin.fields.avantioUrl")}
+            hint={t("admin.fields.avantioUrlHint")}
+            error={err("avantio_url")}
+          >
+            <TextInput
+              value={state.avantio_url}
+              onChange={(e) => set("avantio_url", e.target.value)}
+            />
           </Field>
         </FieldGrid>
       </AdminCard>
@@ -247,7 +311,11 @@ export function ApartmentForm({
             {tb("actions.delete")}
           </AdminButton>
         ) : null}
-        <AdminButton variant="ghost" onClick={() => router.push("/admin/apartments")} disabled={pending}>
+        <AdminButton
+          variant="ghost"
+          onClick={() => router.push("/admin/apartments")}
+          disabled={pending}
+        >
           {tb("actions.cancel")}
         </AdminButton>
         <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>

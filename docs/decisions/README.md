@@ -969,6 +969,12 @@ the form is saved.
    not land.
 5. **A blocking modal reports per-file progress**, enables *Close* only once every item has settled,
    offers a retry for failures, and arms `beforeunload` while running.
+6. 🔴 **`flush()` is awaited OUTSIDE the form's `startTransition`, not inside it.** This is not
+   stylistic. `startTransition` marks every update in its scope as low priority, so `setOpen(true)`
+   made from within it does not paint until the transition finishes — which is *after* the save it
+   was supposed to be blocking. The first implementation put the guard inside `start(...)`: the
+   uploads ran and the save succeeded, but **no modal ever appeared**. Only the transition/save goes
+   in `start(...)`; the upload phase runs at normal priority ahead of it.
 
 **Consequences:** Save is now the slow action — for a gallery it is N uploads, not a DB write — which
 is exactly why the modal is part of the decision rather than a nicety. **Progress is measured with
@@ -986,3 +992,10 @@ because forgetting it persists ids whose bytes were never sent.
 
 **Status:** Accepted (2026-09-12). Wired into all eight admin forms that contain a media field.
 Amends ADR 0018's upload trigger; the two-phase presign/finalize architecture itself is unchanged.
+
+Verified by driving the real forms in headless Chrome over CDP, not by reading the code: on the Home
+editor a picked file shows the queued note and Save raises the modal, 0% → 100% → closed → "Saved.";
+on a building gallery three files list by name and upload one at a time, the others showing
+*Waiting*, each ticking to ✓ as it lands. Test content was snapshotted and restored afterwards. The
+transition bug in point 6 was invisible to every other form of testing — the server path was
+completely healthy while the UI showed nothing.

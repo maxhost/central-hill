@@ -28,7 +28,11 @@ import { NodeField, type PathOnChange } from "./schema-fields";
  */
 
 /** Immutable nested set by path (string keys = object, number = array index). */
-function setIn(target: unknown, path: (string | number)[], value: unknown): unknown {
+function setIn(
+  target: unknown,
+  path: (string | number)[],
+  value: unknown,
+): unknown {
   if (path.length === 0) return value;
   const [head, ...rest] = path;
   if (typeof head === "number") {
@@ -36,7 +40,10 @@ function setIn(target: unknown, path: (string | number)[], value: unknown): unkn
     arr[head] = setIn(arr[head], rest, value);
     return arr;
   }
-  const obj = target && typeof target === "object" ? { ...(target as Record<string, unknown>) } : {};
+  const obj =
+    target && typeof target === "object"
+      ? { ...(target as Record<string, unknown>) }
+      : {};
   obj[head as string] = setIn(obj[head as string], rest, value);
   return obj;
 }
@@ -71,31 +78,36 @@ export function PageEditor({
   };
 
   const topFields = rootNode.kind === "object" ? rootNode.fields : [];
-  const pageName = t.has(`admin.pages.${pageKey}`) ? t(`admin.pages.${pageKey}`) : humanizeKey(pageKey);
+  const pageName = t.has(`admin.pages.${pageKey}`)
+    ? t(`admin.pages.${pageKey}`)
+    : humanizeKey(pageKey);
 
   function onSubmit() {
     setBanner(null);
     setErrors({});
-    start(async () => {
-      // Upload anything the editor picked before persisting ids that point at it
-      // (ADR 0030). Abort the save if the bytes did not make it.
+    void (async () => {
+      // Uploads run OUTSIDE the transition on purpose: `startTransition` marks every
+      // update in its scope as low priority, so the queue's progress modal would not
+      // paint until the transition it lives in had already finished (ADR 0030).
       if (!(await queue.flush())) return;
-      const result = await savePage(pageKey, {
-        data,
-        og_image_media_id: ogImage || null,
+      start(async () => {
+        const result = await savePage(pageKey, {
+          data,
+          og_image_media_id: ogImage || null,
+        });
+        if (result.ok) {
+          setBanner(tb("actions.saved"));
+          router.refresh();
+          return;
+        }
+        if (result.error === "validation") {
+          setErrors(result.fieldErrors);
+          setBanner(t("admin.validationError"));
+        } else {
+          setBanner(tb("actions.saveError"));
+        }
       });
-      if (result.ok) {
-        setBanner(tb("actions.saved"));
-        router.refresh();
-        return;
-      }
-      if (result.error === "validation") {
-        setErrors(result.fieldErrors);
-        setBanner(t("admin.validationError"));
-      } else {
-        setBanner(tb("actions.saveError"));
-      }
-    });
+    })();
   }
 
   return (
@@ -104,18 +116,26 @@ export function PageEditor({
         title={pageName}
         description={t("admin.formSubtitle")}
         actions={
-          <Link href="/admin/pages" className="text-sm text-ink-soft hover:text-ink">
+          <Link
+            href="/admin/pages"
+            className="text-sm text-ink-soft hover:text-ink"
+          >
             ← {t("admin.backToList")}
           </Link>
         }
       />
 
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
+        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+          {banner}
+        </p>
       ) : null}
 
       <AdminCard title={t("admin.sections.social")}>
-        <Field label={t("admin.fields.ogImage")} hint={t("admin.fields.ogImageHint")}>
+        <Field
+          label={t("admin.fields.ogImage")}
+          hint={t("admin.fields.ogImageHint")}
+        >
           <MediaField
             value={ogImage || null}
             preview={ogImage ? (previews[ogImage] ?? null) : null}
@@ -141,7 +161,11 @@ export function PageEditor({
       ))}
 
       <FormActions>
-        <AdminButton variant="ghost" onClick={() => router.push("/admin/pages")} disabled={pending}>
+        <AdminButton
+          variant="ghost"
+          onClick={() => router.push("/admin/pages")}
+          disabled={pending}
+        >
           {tb("actions.cancel")}
         </AdminButton>
         <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>

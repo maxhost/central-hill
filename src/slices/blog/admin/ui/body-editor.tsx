@@ -73,7 +73,11 @@ export function BodyEditor({
   const t = useTranslations("blog");
 
   const update = (i: number, patch: Record<string, unknown>) =>
-    onChange(value.map((b, idx) => (idx === i ? ({ ...b, ...patch } as BodyBlock) : b)));
+    onChange(
+      value.map((b, idx) =>
+        idx === i ? ({ ...b, ...patch } as BodyBlock) : b,
+      ),
+    );
   const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i));
   const add = (type: BlockType) => onChange([...value, emptyBlock(type)]);
   const move = (i: number, dir: -1 | 1) => {
@@ -86,7 +90,9 @@ export function BodyEditor({
 
   return (
     <div className="space-y-4">
-      {value.length === 0 ? <p className="text-sm text-ink-soft">{t("admin.post.body.empty")}</p> : null}
+      {value.length === 0 ? (
+        <p className="text-sm text-ink-soft">{t("admin.post.body.empty")}</p>
+      ) : null}
 
       {value.map((block, i) => (
         <div key={i} className="space-y-3 rounded-md border border-line p-4">
@@ -95,10 +101,18 @@ export function BodyEditor({
               {t(`admin.post.body.types.${block.type}`)}
             </span>
             <div className="flex items-center gap-1">
-              <AdminButton variant="ghost" onClick={() => move(i, -1)} disabled={i === 0}>
+              <AdminButton
+                variant="ghost"
+                onClick={() => move(i, -1)}
+                disabled={i === 0}
+              >
                 ↑
               </AdminButton>
-              <AdminButton variant="ghost" onClick={() => move(i, 1)} disabled={i === value.length - 1}>
+              <AdminButton
+                variant="ghost"
+                onClick={() => move(i, 1)}
+                disabled={i === value.length - 1}
+              >
                 ↓
               </AdminButton>
               <AdminButton variant="danger" onClick={() => remove(i)}>
@@ -113,7 +127,9 @@ export function BodyEditor({
                 <Field label={t("admin.post.body.fields.level")}>
                   <Select
                     value={String(block.level)}
-                    onChange={(e) => update(i, { level: Number(e.target.value) })}
+                    onChange={(e) =>
+                      update(i, { level: Number(e.target.value) })
+                    }
                   >
                     {HEADING_LEVELS.map((l) => (
                       <option key={l} value={l}>
@@ -125,19 +141,28 @@ export function BodyEditor({
                 <Field label={t("admin.post.body.fields.number")}>
                   <TextInput
                     value={block.number ?? ""}
-                    onChange={(e) => update(i, { number: e.target.value || undefined })}
+                    onChange={(e) =>
+                      update(i, { number: e.target.value || undefined })
+                    }
                   />
                 </Field>
               </FieldGrid>
               <Field label={t("admin.post.body.fields.text")}>
-                <TextInput value={block.text} onChange={(e) => update(i, { text: e.target.value })} />
+                <TextInput
+                  value={block.text}
+                  onChange={(e) => update(i, { text: e.target.value })}
+                />
               </Field>
             </div>
           ) : null}
 
           {block.type === "paragraph" ? (
             <Field label={t("admin.post.body.fields.text")}>
-              <TextArea rows={4} value={block.text} onChange={(e) => update(i, { text: e.target.value })} />
+              <TextArea
+                rows={4}
+                value={block.text}
+                onChange={(e) => update(i, { text: e.target.value })}
+              />
             </Field>
           ) : null}
 
@@ -168,13 +193,17 @@ export function BodyEditor({
                 <Field label={t("admin.post.body.fields.caption")}>
                   <TextInput
                     value={block.caption ?? ""}
-                    onChange={(e) => update(i, { caption: e.target.value || undefined })}
+                    onChange={(e) =>
+                      update(i, { caption: e.target.value || undefined })
+                    }
                   />
                 </Field>
                 <Field label={t("admin.post.body.fields.alt")}>
                   <TextInput
                     value={block.alt ?? ""}
-                    onChange={(e) => update(i, { alt: e.target.value || undefined })}
+                    onChange={(e) =>
+                      update(i, { alt: e.target.value || undefined })
+                    }
                   />
                 </Field>
               </FieldGrid>
@@ -184,12 +213,18 @@ export function BodyEditor({
           {block.type === "quote" ? (
             <div className="space-y-3">
               <Field label={t("admin.post.body.fields.text")}>
-                <TextArea rows={3} value={block.text} onChange={(e) => update(i, { text: e.target.value })} />
+                <TextArea
+                  rows={3}
+                  value={block.text}
+                  onChange={(e) => update(i, { text: e.target.value })}
+                />
               </Field>
               <Field label={t("admin.post.body.fields.attribution")}>
                 <TextInput
                   value={block.attribution ?? ""}
-                  onChange={(e) => update(i, { attribution: e.target.value || undefined })}
+                  onChange={(e) =>
+                    update(i, { attribution: e.target.value || undefined })
+                  }
                 />
               </Field>
             </div>
@@ -198,7 +233,10 @@ export function BodyEditor({
           {block.type === "callout" ? (
             <div className="space-y-3">
               <Field label={t("admin.post.body.fields.variant")}>
-                <Select value={block.variant} onChange={(e) => update(i, { variant: e.target.value })}>
+                <Select
+                  value={block.variant}
+                  onChange={(e) => update(i, { variant: e.target.value })}
+                >
                   {CALLOUT_VARIANTS.map((v) => (
                     <option key={v} value={v}>
                       {t(`admin.post.body.variants.${v}`)}
@@ -207,7 +245,11 @@ export function BodyEditor({
                 </Select>
               </Field>
               <Field label={t("admin.post.body.fields.text")}>
-                <TextArea rows={3} value={block.body} onChange={(e) => update(i, { body: e.target.value })} />
+                <TextArea
+                  rows={3}
+                  value={block.body}
+                  onChange={(e) => update(i, { body: e.target.value })}
+                />
               </Field>
             </div>
           ) : null}
@@ -215,16 +257,24 @@ export function BodyEditor({
           {block.type === "cta" ? (
             <FieldGrid>
               <Field label={t("admin.post.body.fields.ctaLabel")}>
-                <TextInput value={block.label} onChange={(e) => update(i, { label: e.target.value })} />
+                <TextInput
+                  value={block.label}
+                  onChange={(e) => update(i, { label: e.target.value })}
+                />
               </Field>
               <Field label={t("admin.post.body.fields.ctaUrl")}>
-                <TextInput value={block.url} onChange={(e) => update(i, { url: e.target.value })} />
+                <TextInput
+                  value={block.url}
+                  onChange={(e) => update(i, { url: e.target.value })}
+                />
               </Field>
             </FieldGrid>
           ) : null}
 
           {block.type === "divider" ? (
-            <p className="text-sm text-ink-soft">{t("admin.post.body.dividerNote")}</p>
+            <p className="text-sm text-ink-soft">
+              {t("admin.post.body.dividerNote")}
+            </p>
           ) : null}
         </div>
       ))}
@@ -261,13 +311,21 @@ function ListBlockFields({
 }) {
   return (
     <div className="space-y-3">
-      <Checkbox label={label} checked={ordered} onChange={(e) => onOrdered(e.target.checked)} />
+      <Checkbox
+        label={label}
+        checked={ordered}
+        onChange={(e) => onOrdered(e.target.checked)}
+      />
       <div className="space-y-2">
         {items.map((item, i) => (
           <div key={i} className="flex items-center gap-2">
             <TextInput
               value={item}
-              onChange={(e) => onItems(items.map((it, idx) => (idx === i ? e.target.value : it)))}
+              onChange={(e) =>
+                onItems(
+                  items.map((it, idx) => (idx === i ? e.target.value : it)),
+                )
+              }
             />
             <AdminButton
               variant="danger"

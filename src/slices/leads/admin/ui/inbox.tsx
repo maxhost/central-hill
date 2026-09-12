@@ -27,10 +27,18 @@ import {
  * the detail/audit screen. Strings come from the `leads` namespace.
  */
 
-const STATUS_TABS: (LeadStatus | "all")[] = ["all", "new", "in_progress", "closed"];
+const STATUS_TABS: (LeadStatus | "all")[] = [
+  "all",
+  "new",
+  "in_progress",
+  "closed",
+];
 
 /** Build an `/admin/leads` href, merging the given status/kind into the query. */
-function filterHref(next: { status?: LeadStatus | "all"; kind?: LeadKind | "all" }): string {
+function filterHref(next: {
+  status?: LeadStatus | "all";
+  kind?: LeadKind | "all";
+}): string {
   const params = new URLSearchParams();
   if (next.status && next.status !== "all") params.set("status", next.status);
   if (next.kind && next.kind !== "all") params.set("kind", next.kind);
@@ -38,7 +46,15 @@ function filterHref(next: { status?: LeadStatus | "all"; kind?: LeadKind | "all"
   return qs ? `/admin/leads?${qs}` : "/admin/leads";
 }
 
-function Chip({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+function Chip({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
@@ -64,21 +80,29 @@ export async function LeadsInbox({ filters }: { filters: LeadListFilters }) {
 
   const activeStatus: LeadStatus | "all" = filters.status ?? "all";
   const activeKind: LeadKind | "all" = filters.kind ?? "all";
-  const countFor = (s: LeadStatus | "all") => (counts as LeadStatusCounts & Record<string, number>)[s];
+  const countFor = (s: LeadStatus | "all") =>
+    (counts as LeadStatusCounts & Record<string, number>)[s];
 
   const columns: Column<LeadListItem>[] = [
     {
       header: t("admin.columns.contact"),
       cell: (row) => (
-        <Link href={`/admin/leads/${row.id}`} className="font-medium text-ink hover:text-accent-deep">
+        <Link
+          href={`/admin/leads/${row.id}`}
+          className="font-medium text-ink hover:text-accent-deep"
+        >
           {row.title}
         </Link>
       ),
     },
-    { header: t("admin.columns.kind"), cell: (row) => <StateBadge label={t(`admin.kind.${row.kind}`)} /> },
+    {
+      header: t("admin.columns.kind"),
+      cell: (row) => <StateBadge label={t(`admin.kind.${row.kind}`)} />,
+    },
     {
       header: t("admin.columns.email"),
-      cell: (row) => (row.email ? <span className="text-ink-soft">{row.email}</span> : "—"),
+      cell: (row) =>
+        row.email ? <span className="text-ink-soft">{row.email}</span> : "—",
     },
     {
       header: t("admin.columns.source"),
@@ -87,43 +111,70 @@ export async function LeadsInbox({ filters }: { filters: LeadListFilters }) {
     },
     {
       header: t("admin.columns.locale"),
-      cell: (row) => <span className="uppercase text-ink-soft">{row.locale}</span>,
+      cell: (row) => (
+        <span className="uppercase text-ink-soft">{row.locale}</span>
+      ),
       className: "hidden md:table-cell",
     },
     {
       header: t("admin.columns.consent"),
-      cell: (row) => (row.marketing_consent ? t("admin.consentYes") : t("admin.consentNo")),
+      cell: (row) =>
+        row.marketing_consent ? t("admin.consentYes") : t("admin.consentNo"),
       className: "hidden md:table-cell",
     },
     {
       header: t("admin.columns.status"),
-      cell: (row) => <StateBadge label={t(`admin.status.${row.status}`)} tone={statusTone(row.status)} />,
+      cell: (row) => (
+        <StateBadge
+          label={t(`admin.status.${row.status}`)}
+          tone={statusTone(row.status)}
+        />
+      ),
     },
     {
       header: t("admin.columns.created"),
-      cell: (row) => <span className="whitespace-nowrap text-ink-soft">{formatAdminDate(row.created_at)}</span>,
+      cell: (row) => (
+        <span className="whitespace-nowrap text-ink-soft">
+          {formatAdminDate(row.created_at)}
+        </span>
+      ),
       className: "hidden sm:table-cell",
     },
   ];
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader title={t("admin.title")} description={t("admin.subtitle")} />
+      <AdminPageHeader
+        title={t("admin.title")}
+        description={t("admin.subtitle")}
+      />
 
       <div className="space-y-3">
         <div className="flex flex-wrap gap-2">
           {STATUS_TABS.map((s) => (
-            <Chip key={s} href={filterHref({ status: s, kind: activeKind })} active={activeStatus === s}>
-              {t(`admin.filters.${s}`)} <span className="text-ink-soft/70">({countFor(s)})</span>
+            <Chip
+              key={s}
+              href={filterHref({ status: s, kind: activeKind })}
+              active={activeStatus === s}
+            >
+              {t(`admin.filters.${s}`)}{" "}
+              <span className="text-ink-soft/70">({countFor(s)})</span>
             </Chip>
           ))}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Chip href={filterHref({ status: activeStatus, kind: "all" })} active={activeKind === "all"}>
+          <Chip
+            href={filterHref({ status: activeStatus, kind: "all" })}
+            active={activeKind === "all"}
+          >
             {t("admin.filters.allKinds")}
           </Chip>
           {LEAD_KINDS.map((k) => (
-            <Chip key={k} href={filterHref({ status: activeStatus, kind: k })} active={activeKind === k}>
+            <Chip
+              key={k}
+              href={filterHref({ status: activeStatus, kind: k })}
+              active={activeKind === k}
+            >
               {t(`admin.kind.${k}`)}
             </Chip>
           ))}
@@ -134,11 +185,15 @@ export async function LeadsInbox({ filters }: { filters: LeadListFilters }) {
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.id}
-        empty={<EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />}
+        empty={
+          <EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />
+        }
       />
 
       {rows.length === LEAD_LIST_LIMIT ? (
-        <p className="text-xs text-ink-soft">{t("admin.truncated", { limit: LEAD_LIST_LIMIT })}</p>
+        <p className="text-xs text-ink-soft">
+          {t("admin.truncated", { limit: LEAD_LIST_LIMIT })}
+        </p>
       ) : null}
     </div>
   );

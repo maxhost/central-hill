@@ -12,7 +12,13 @@ import { setLeadStatus } from "../actions";
  */
 const STATUSES: LeadStatus[] = ["new", "in_progress", "closed"];
 
-export function StatusControl({ id, current }: { id: string; current: LeadStatus }) {
+export function StatusControl({
+  id,
+  current,
+}: {
+  id: string;
+  current: LeadStatus;
+}) {
   const t = useTranslations("leads");
   const [pending, startTransition] = useTransition();
 

@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { AdminPageHeader, type Column, DataTable } from "@slices/backoffice/contract";
+import {
+  AdminPageHeader,
+  type Column,
+  DataTable,
+} from "@slices/backoffice/contract";
 import { type PageAdminListItem, listPagesAdmin } from "../queries";
 
 /**
@@ -21,7 +25,9 @@ export async function PagesAdminList() {
           href={`/admin/pages/${row.key}`}
           className="font-medium text-ink hover:text-accent-deep"
         >
-          {t.has(`admin.pages.${row.key}`) ? t(`admin.pages.${row.key}`) : row.key}
+          {t.has(`admin.pages.${row.key}`)
+            ? t(`admin.pages.${row.key}`)
+            : row.key}
         </Link>
       ),
     },
@@ -29,7 +35,10 @@ export async function PagesAdminList() {
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader title={t("admin.title")} description={t("admin.subtitle")} />
+      <AdminPageHeader
+        title={t("admin.title")}
+        description={t("admin.subtitle")}
+      />
       <DataTable columns={columns} rows={rows} getRowKey={(row) => row.key} />
     </div>
   );

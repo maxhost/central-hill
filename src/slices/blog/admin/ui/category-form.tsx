@@ -48,7 +48,11 @@ function buildPayload(s: FormState, id: string | undefined) {
   };
 }
 
-export function BlogCategoryForm({ initial }: { initial: BlogCategoryEditData | null }) {
+export function BlogCategoryForm({
+  initial,
+}: {
+  initial: BlogCategoryEditData | null;
+}) {
   const t = useTranslations("blog");
   const tb = useTranslations("backoffice");
   const router = useRouter();
@@ -93,39 +97,76 @@ export function BlogCategoryForm({ initial }: { initial: BlogCategoryEditData | 
         router.push("/admin/blog-categories");
         return;
       }
-      setBanner(result.error === "in_use" ? t("admin.cat.inUse") : tb("actions.saveError"));
+      setBanner(
+        result.error === "in_use"
+          ? t("admin.cat.inUse")
+          : tb("actions.saveError"),
+      );
     });
   }
 
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title={initial ? state.name || t("admin.cat.editTitle") : t("admin.cat.newTitle")}
+        title={
+          initial
+            ? state.name || t("admin.cat.editTitle")
+            : t("admin.cat.newTitle")
+        }
         description={t("admin.cat.formSubtitle")}
         actions={
-          <Link href="/admin/blog-categories" className="text-sm text-ink-soft hover:text-ink">
+          <Link
+            href="/admin/blog-categories"
+            className="text-sm text-ink-soft hover:text-ink"
+          >
             ← {t("admin.cat.backToList")}
           </Link>
         }
       />
 
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
+        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+          {banner}
+        </p>
       ) : null}
 
       <AdminCard title={t("admin.cat.sections.details")}>
         <div className="space-y-4">
-          <Field label={t("admin.cat.fields.name")} required error={err("name")}>
-            <TextInput value={state.name} onChange={(e) => set("name", e.target.value)} />
+          <Field
+            label={t("admin.cat.fields.name")}
+            required
+            error={err("name")}
+          >
+            <TextInput
+              value={state.name}
+              onChange={(e) => set("name", e.target.value)}
+            />
           </Field>
           <FieldGrid>
-            <Field label={t("admin.cat.fields.slug")} required error={err("slug")}>
-              <TextInput value={state.slug} onChange={(e) => set("slug", e.target.value)} />
+            <Field
+              label={t("admin.cat.fields.slug")}
+              required
+              error={err("slug")}
+            >
+              <TextInput
+                value={state.slug}
+                onChange={(e) => set("slug", e.target.value)}
+              />
             </Field>
-            <Field label={t("admin.cat.fields.color")} hint={t("admin.cat.fields.colorHint")} error={err("color")}>
-              <TextInput value={state.color} onChange={(e) => set("color", e.target.value)} />
+            <Field
+              label={t("admin.cat.fields.color")}
+              hint={t("admin.cat.fields.colorHint")}
+              error={err("color")}
+            >
+              <TextInput
+                value={state.color}
+                onChange={(e) => set("color", e.target.value)}
+              />
             </Field>
-            <Field label={t("admin.cat.fields.position")} hint={t("admin.cat.fields.positionHint")}>
+            <Field
+              label={t("admin.cat.fields.position")}
+              hint={t("admin.cat.fields.positionHint")}
+            >
               <TextInput
                 type="number"
                 value={state.position}

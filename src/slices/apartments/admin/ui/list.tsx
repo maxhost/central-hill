@@ -14,7 +14,10 @@ import { type ApartmentAdminListItem, listApartmentsAdmin } from "../queries";
  * statuses, grouped visually by building (rows ordered by building then position).
  */
 
-const STATUS_TONE: Record<ApartmentAdminListItem["status"], "approved" | "draft" | "neutral"> = {
+const STATUS_TONE: Record<
+  ApartmentAdminListItem["status"],
+  "approved" | "draft" | "neutral"
+> = {
   published: "approved",
   draft: "draft",
   archived: "neutral",
@@ -43,7 +46,10 @@ export async function ApartmentsAdminList() {
     {
       header: t("admin.columns.status"),
       cell: (row) => (
-        <StateBadge label={t(`admin.status.${row.status}`)} tone={STATUS_TONE[row.status]} />
+        <StateBadge
+          label={t(`admin.status.${row.status}`)}
+          tone={STATUS_TONE[row.status]}
+        />
       ),
     },
     {
@@ -76,7 +82,9 @@ export async function ApartmentsAdminList() {
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.id}
-        empty={<EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />}
+        empty={
+          <EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />
+        }
       />
     </div>
   );

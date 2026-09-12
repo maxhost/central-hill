@@ -11,7 +11,10 @@ import { type AuthorAdminListItem, listAuthorsAdmin } from "../queries";
 
 /** Author backoffice list (S12) at `/admin/authors`. */
 
-const STATUS_TONE: Record<AuthorAdminListItem["status"], "approved" | "draft" | "neutral"> = {
+const STATUS_TONE: Record<
+  AuthorAdminListItem["status"],
+  "approved" | "draft" | "neutral"
+> = {
   published: "approved",
   draft: "draft",
   archived: "neutral",
@@ -25,7 +28,10 @@ export async function AuthorsAdminList() {
     {
       header: t("admin.author.columns.name"),
       cell: (row) => (
-        <Link href={`/admin/authors/${row.id}`} className="font-medium text-ink hover:text-accent-deep">
+        <Link
+          href={`/admin/authors/${row.id}`}
+          className="font-medium text-ink hover:text-accent-deep"
+        >
           {row.name}
         </Link>
       ),
@@ -38,7 +44,10 @@ export async function AuthorsAdminList() {
     {
       header: t("admin.author.columns.status"),
       cell: (row) => (
-        <StateBadge label={t(`admin.status.${row.status}`)} tone={STATUS_TONE[row.status]} />
+        <StateBadge
+          label={t(`admin.status.${row.status}`)}
+          tone={STATUS_TONE[row.status]}
+        />
       ),
     },
   ];
@@ -61,7 +70,12 @@ export async function AuthorsAdminList() {
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.id}
-        empty={<EmptyState title={t("admin.author.empty")} hint={t("admin.author.emptyHint")} />}
+        empty={
+          <EmptyState
+            title={t("admin.author.empty")}
+            hint={t("admin.author.emptyHint")}
+          />
+        }
       />
     </div>
   );

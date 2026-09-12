@@ -51,7 +51,11 @@ function buildPayload(s: FormState, id: string | undefined) {
   };
 }
 
-export function ServiceCategoryForm({ initial }: { initial: ServiceCategoryEditData | null }) {
+export function ServiceCategoryForm({
+  initial,
+}: {
+  initial: ServiceCategoryEditData | null;
+}) {
   const t = useTranslations("services");
   const tb = useTranslations("backoffice");
   const router = useRouter();
@@ -68,7 +72,9 @@ export function ServiceCategoryForm({ initial }: { initial: ServiceCategoryEditD
     setBanner(null);
     setErrors({});
     start(async () => {
-      const result = await saveServiceCategory(buildPayload(state, initial?.id));
+      const result = await saveServiceCategory(
+        buildPayload(state, initial?.id),
+      );
       if (result.ok) {
         if (!initial) {
           router.push(`/admin/service-categories/${result.id}`);
@@ -96,39 +102,77 @@ export function ServiceCategoryForm({ initial }: { initial: ServiceCategoryEditD
         router.push("/admin/service-categories");
         return;
       }
-      setBanner(result.error === "in_use" ? t("admin.cat.inUse") : tb("actions.saveError"));
+      setBanner(
+        result.error === "in_use"
+          ? t("admin.cat.inUse")
+          : tb("actions.saveError"),
+      );
     });
   }
 
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title={initial ? state.name || t("admin.cat.editTitle") : t("admin.cat.newTitle")}
+        title={
+          initial
+            ? state.name || t("admin.cat.editTitle")
+            : t("admin.cat.newTitle")
+        }
         description={t("admin.cat.formSubtitle")}
         actions={
-          <Link href="/admin/service-categories" className="text-sm text-ink-soft hover:text-ink">
+          <Link
+            href="/admin/service-categories"
+            className="text-sm text-ink-soft hover:text-ink"
+          >
             ← {t("admin.cat.backToList")}
           </Link>
         }
       />
 
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
+        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+          {banner}
+        </p>
       ) : null}
 
       <AdminCard title={t("admin.cat.sections.details")}>
         <div className="space-y-4">
-          <Field label={t("admin.cat.fields.name")} required error={err("name")}>
-            <TextInput value={state.name} onChange={(e) => set("name", e.target.value)} />
+          <Field
+            label={t("admin.cat.fields.name")}
+            required
+            error={err("name")}
+          >
+            <TextInput
+              value={state.name}
+              onChange={(e) => set("name", e.target.value)}
+            />
           </Field>
           <FieldGrid>
-            <Field label={t("admin.cat.fields.slug")} required error={err("slug")}>
-              <TextInput value={state.slug} onChange={(e) => set("slug", e.target.value)} />
+            <Field
+              label={t("admin.cat.fields.slug")}
+              required
+              error={err("slug")}
+            >
+              <TextInput
+                value={state.slug}
+                onChange={(e) => set("slug", e.target.value)}
+              />
             </Field>
-            <Field label={t("admin.cat.fields.icon")} required hint={t("admin.cat.fields.iconHint")} error={err("icon")}>
-              <TextInput value={state.icon} onChange={(e) => set("icon", e.target.value)} />
+            <Field
+              label={t("admin.cat.fields.icon")}
+              required
+              hint={t("admin.cat.fields.iconHint")}
+              error={err("icon")}
+            >
+              <TextInput
+                value={state.icon}
+                onChange={(e) => set("icon", e.target.value)}
+              />
             </Field>
-            <Field label={t("admin.cat.fields.position")} hint={t("admin.cat.fields.positionHint")}>
+            <Field
+              label={t("admin.cat.fields.position")}
+              hint={t("admin.cat.fields.positionHint")}
+            >
               <TextInput
                 type="number"
                 value={state.position}

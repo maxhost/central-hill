@@ -79,27 +79,30 @@ export function AuthorForm({
   function onSubmit() {
     setBanner(null);
     setErrors({});
-    start(async () => {
-      // Upload anything the editor picked before persisting ids that point at it
-      // (ADR 0030). Abort the save if the bytes did not make it.
+    void (async () => {
+      // Uploads run OUTSIDE the transition on purpose: `startTransition` marks every
+      // update in its scope as low priority, so the queue's progress modal would not
+      // paint until the transition it lives in had already finished (ADR 0030).
       if (!(await queue.flush())) return;
-      const result = await saveAuthor(buildPayload(state, initial?.id));
-      if (result.ok) {
-        if (!initial) {
-          router.push(`/admin/authors/${result.id}`);
+      start(async () => {
+        const result = await saveAuthor(buildPayload(state, initial?.id));
+        if (result.ok) {
+          if (!initial) {
+            router.push(`/admin/authors/${result.id}`);
+            return;
+          }
+          setBanner(tb("actions.saved"));
+          router.refresh();
           return;
         }
-        setBanner(tb("actions.saved"));
-        router.refresh();
-        return;
-      }
-      if (result.error === "validation") {
-        setErrors(result.fieldErrors);
-        setBanner(tb("actions.saveError"));
-      } else {
-        setBanner(tb("actions.saveError"));
-      }
-    });
+        if (result.error === "validation") {
+          setErrors(result.fieldErrors);
+          setBanner(tb("actions.saveError"));
+        } else {
+          setBanner(tb("actions.saveError"));
+        }
+      });
+    })();
   }
 
   function onDelete() {
@@ -111,37 +114,67 @@ export function AuthorForm({
         router.push("/admin/authors");
         return;
       }
-      setBanner(result.error === "in_use" ? t("admin.author.inUse") : tb("actions.saveError"));
+      setBanner(
+        result.error === "in_use"
+          ? t("admin.author.inUse")
+          : tb("actions.saveError"),
+      );
     });
   }
 
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title={initial ? state.name || t("admin.author.editTitle") : t("admin.author.newTitle")}
+        title={
+          initial
+            ? state.name || t("admin.author.editTitle")
+            : t("admin.author.newTitle")
+        }
         description={t("admin.author.formSubtitle")}
         actions={
-          <Link href="/admin/authors" className="text-sm text-ink-soft hover:text-ink">
+          <Link
+            href="/admin/authors"
+            className="text-sm text-ink-soft hover:text-ink"
+          >
             ← {t("admin.author.backToList")}
           </Link>
         }
       />
 
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
+        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+          {banner}
+        </p>
       ) : null}
 
       <AdminCard title={t("admin.author.sections.details")}>
         <div className="space-y-4">
-          <Field label={t("admin.author.fields.name")} required error={err("name")}>
-            <TextInput value={state.name} onChange={(e) => set("name", e.target.value)} />
+          <Field
+            label={t("admin.author.fields.name")}
+            required
+            error={err("name")}
+          >
+            <TextInput
+              value={state.name}
+              onChange={(e) => set("name", e.target.value)}
+            />
           </Field>
           <FieldGrid>
-            <Field label={t("admin.author.fields.slug")} required error={err("slug")}>
-              <TextInput value={state.slug} onChange={(e) => set("slug", e.target.value)} />
+            <Field
+              label={t("admin.author.fields.slug")}
+              required
+              error={err("slug")}
+            >
+              <TextInput
+                value={state.slug}
+                onChange={(e) => set("slug", e.target.value)}
+              />
             </Field>
             <Field label={t("admin.author.fields.status")}>
-              <Select value={state.status} onChange={(e) => set("status", e.target.value as Status)}>
+              <Select
+                value={state.status}
+                onChange={(e) => set("status", e.target.value as Status)}
+              >
                 {STATUSES.map((s) => (
                   <option key={s} value={s}>
                     {t(`admin.status.${s}`)}
@@ -151,7 +184,11 @@ export function AuthorForm({
             </Field>
           </FieldGrid>
           <Field label={t("admin.author.fields.bio")} error={err("bio")}>
-            <TextArea rows={4} value={state.bio} onChange={(e) => set("bio", e.target.value)} />
+            <TextArea
+              rows={4}
+              value={state.bio}
+              onChange={(e) => set("bio", e.target.value)}
+            />
           </Field>
         </div>
       </AdminCard>
@@ -172,7 +209,11 @@ export function AuthorForm({
             {tb("actions.delete")}
           </AdminButton>
         ) : null}
-        <AdminButton variant="ghost" onClick={() => router.push("/admin/authors")} disabled={pending}>
+        <AdminButton
+          variant="ghost"
+          onClick={() => router.push("/admin/authors")}
+          disabled={pending}
+        >
           {tb("actions.cancel")}
         </AdminButton>
         <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>

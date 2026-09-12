@@ -57,7 +57,11 @@ function toLocalInput(iso: string | null): string {
   return iso ? iso.slice(0, 16) : "";
 }
 
-function initialState(data: PostEditData | null, catId: string, authorId: string): FormState {
+function initialState(
+  data: PostEditData | null,
+  catId: string,
+  authorId: string,
+): FormState {
   return {
     slug: data?.slug ?? "",
     status: data?.status ?? "draft",
@@ -99,8 +103,11 @@ export function PostForm({
     initialState(initial, categories[0]?.id ?? "", authors[0]?.id ?? ""),
   );
   const [body, setBody] = useState<PostBody>(() => initial?.body ?? []);
-  const [relatedIds, setRelatedIds] = useState<string[]>(() => initial?.related_ids ?? []);
-  const [previews, setPreviews] = useState<Record<string, AdminMediaPreview>>(initialPreviews);
+  const [relatedIds, setRelatedIds] = useState<string[]>(
+    () => initial?.related_ids ?? [],
+  );
+  const [previews, setPreviews] =
+    useState<Record<string, AdminMediaPreview>>(initialPreviews);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(null);
 
@@ -134,7 +141,8 @@ export function PostForm({
       author_id: state.author_id,
       cover_media_id: state.cover_media_id || null,
       og_image_media_id: orNull(state.og_image_media_id),
-      published_at: state.published_at.trim() === "" ? null : state.published_at,
+      published_at:
+        state.published_at.trim() === "" ? null : state.published_at,
       reading_minutes: intOr(state.reading_minutes, 1),
       is_featured: state.is_featured,
       cta_label: orNull(state.cta_label),
@@ -155,29 +163,32 @@ export function PostForm({
       return;
     }
     setErrors({});
-    start(async () => {
-      // Upload anything the editor picked before persisting ids that point at it
-      // (ADR 0030). Abort the save if the bytes did not make it.
+    void (async () => {
+      // Uploads run OUTSIDE the transition on purpose: `startTransition` marks every
+      // update in its scope as low priority, so the queue's progress modal would not
+      // paint until the transition it lives in had already finished (ADR 0030).
       if (!(await queue.flush())) return;
-      const result = await savePost(buildPayload());
-      if (result.ok) {
-        if (!initial) {
-          router.push(`/admin/posts/${result.id}`);
+      start(async () => {
+        const result = await savePost(buildPayload());
+        if (result.ok) {
+          if (!initial) {
+            router.push(`/admin/posts/${result.id}`);
+            return;
+          }
+          setBanner(tb("actions.saved"));
+          router.refresh();
           return;
         }
-        setBanner(tb("actions.saved"));
-        router.refresh();
-        return;
-      }
-      if (result.error === "validation") {
-        setErrors(result.fieldErrors);
-        setBanner(tb("actions.saveError"));
-      } else if (result.error === "slug_conflict") {
-        setErrors({ slug: t("admin.post.errors.slugConflict") });
-      } else {
-        setBanner(tb("actions.saveError"));
-      }
-    });
+        if (result.error === "validation") {
+          setErrors(result.fieldErrors);
+          setBanner(tb("actions.saveError"));
+        } else if (result.error === "slug_conflict") {
+          setErrors({ slug: t("admin.post.errors.slugConflict") });
+        } else {
+          setBanner(tb("actions.saveError"));
+        }
+      });
+    })();
   }
 
   function onDelete() {
@@ -195,23 +206,35 @@ export function PostForm({
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title={initial ? state.title || t("admin.post.editTitle") : t("admin.post.newTitle")}
+        title={
+          initial
+            ? state.title || t("admin.post.editTitle")
+            : t("admin.post.newTitle")
+        }
         description={t("admin.post.formSubtitle")}
         actions={
-          <Link href="/admin/posts" className="text-sm text-ink-soft hover:text-ink">
+          <Link
+            href="/admin/posts"
+            className="text-sm text-ink-soft hover:text-ink"
+          >
             ← {t("admin.post.backToList")}
           </Link>
         }
       />
 
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
+        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+          {banner}
+        </p>
       ) : null}
 
       <AdminCard title={t("admin.post.sections.status")}>
         <FieldGrid>
           <Field label={t("admin.post.fields.status")}>
-            <Select value={state.status} onChange={(e) => set("status", e.target.value as Status)}>
+            <Select
+              value={state.status}
+              onChange={(e) => set("status", e.target.value as Status)}
+            >
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {t(`admin.status.${s}`)}
@@ -219,14 +242,20 @@ export function PostForm({
               ))}
             </Select>
           </Field>
-          <Field label={t("admin.post.fields.publishedAt")} hint={t("admin.post.fields.publishedAtHint")}>
+          <Field
+            label={t("admin.post.fields.publishedAt")}
+            hint={t("admin.post.fields.publishedAtHint")}
+          >
             <TextInput
               type="datetime-local"
               value={state.published_at}
               onChange={(e) => set("published_at", e.target.value)}
             />
           </Field>
-          <Field label={t("admin.post.fields.readingMinutes")} error={err("reading_minutes")}>
+          <Field
+            label={t("admin.post.fields.readingMinutes")}
+            error={err("reading_minutes")}
+          >
             <TextInput
               type="number"
               value={state.reading_minutes}
@@ -246,8 +275,15 @@ export function PostForm({
       <AdminCard title={t("admin.post.sections.identity")}>
         <div className="space-y-4">
           <FieldGrid>
-            <Field label={t("admin.post.fields.category")} required error={err("category_id")}>
-              <Select value={state.category_id} onChange={(e) => set("category_id", e.target.value)}>
+            <Field
+              label={t("admin.post.fields.category")}
+              required
+              error={err("category_id")}
+            >
+              <Select
+                value={state.category_id}
+                onChange={(e) => set("category_id", e.target.value)}
+              >
                 <option value="">{t("admin.post.fields.choose")}</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -256,8 +292,15 @@ export function PostForm({
                 ))}
               </Select>
             </Field>
-            <Field label={t("admin.post.fields.author")} required error={err("author_id")}>
-              <Select value={state.author_id} onChange={(e) => set("author_id", e.target.value)}>
+            <Field
+              label={t("admin.post.fields.author")}
+              required
+              error={err("author_id")}
+            >
+              <Select
+                value={state.author_id}
+                onChange={(e) => set("author_id", e.target.value)}
+              >
                 <option value="">{t("admin.post.fields.choose")}</option>
                 {authors.map((a) => (
                   <option key={a.id} value={a.id}>
@@ -267,21 +310,47 @@ export function PostForm({
               </Select>
             </Field>
           </FieldGrid>
-          <Field label={t("admin.post.fields.title")} required error={err("title")}>
-            <TextInput value={state.title} onChange={(e) => set("title", e.target.value)} />
+          <Field
+            label={t("admin.post.fields.title")}
+            required
+            error={err("title")}
+          >
+            <TextInput
+              value={state.title}
+              onChange={(e) => set("title", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.post.fields.slug")} required hint={t("admin.post.fields.slugHint")} error={err("slug")}>
-            <TextInput value={state.slug} onChange={(e) => set("slug", e.target.value)} />
+          <Field
+            label={t("admin.post.fields.slug")}
+            required
+            hint={t("admin.post.fields.slugHint")}
+            error={err("slug")}
+          >
+            <TextInput
+              value={state.slug}
+              onChange={(e) => set("slug", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.post.fields.excerpt")} required error={err("excerpt")}>
-            <TextArea value={state.excerpt} onChange={(e) => set("excerpt", e.target.value)} />
+          <Field
+            label={t("admin.post.fields.excerpt")}
+            required
+            error={err("excerpt")}
+          >
+            <TextArea
+              value={state.excerpt}
+              onChange={(e) => set("excerpt", e.target.value)}
+            />
           </Field>
         </div>
       </AdminCard>
 
       <AdminCard title={t("admin.post.sections.media")}>
         <div className="space-y-5">
-          <Field label={t("admin.post.fields.cover")} required error={err("cover_media_id")}>
+          <Field
+            label={t("admin.post.fields.cover")}
+            required
+            error={err("cover_media_id")}
+          >
             <MediaField
               value={state.cover_media_id || null}
               preview={previews[state.cover_media_id] ?? null}
@@ -291,7 +360,10 @@ export function PostForm({
               }}
             />
           </Field>
-          <Field label={t("admin.post.fields.ogImage")} hint={t("admin.post.fields.ogImageHint")}>
+          <Field
+            label={t("admin.post.fields.ogImage")}
+            hint={t("admin.post.fields.ogImageHint")}
+          >
             <MediaField
               value={state.og_image_media_id || null}
               preview={previews[state.og_image_media_id] ?? null}
@@ -305,26 +377,44 @@ export function PostForm({
       </AdminCard>
 
       <AdminCard title={t("admin.post.sections.body")}>
-        <BodyEditor value={body} onChange={setBody} previews={previews} onPreview={registerPreview} />
+        <BodyEditor
+          value={body}
+          onChange={setBody}
+          previews={previews}
+          onPreview={registerPreview}
+        />
       </AdminCard>
 
       <AdminCard title={t("admin.post.sections.cta")}>
         <FieldGrid>
-          <Field label={t("admin.post.fields.ctaLabel")} error={err("cta_label")}>
-            <TextInput value={state.cta_label} onChange={(e) => set("cta_label", e.target.value)} />
+          <Field
+            label={t("admin.post.fields.ctaLabel")}
+            error={err("cta_label")}
+          >
+            <TextInput
+              value={state.cta_label}
+              onChange={(e) => set("cta_label", e.target.value)}
+            />
           </Field>
           <Field label={t("admin.post.fields.ctaUrl")} error={err("cta_url")}>
-            <TextInput value={state.cta_url} onChange={(e) => set("cta_url", e.target.value)} />
+            <TextInput
+              value={state.cta_url}
+              onChange={(e) => set("cta_url", e.target.value)}
+            />
           </Field>
         </FieldGrid>
       </AdminCard>
 
       <AdminCard title={t("admin.post.sections.related")}>
         {relatable.length === 0 ? (
-          <p className="text-sm text-ink-soft">{t("admin.post.related.empty")}</p>
+          <p className="text-sm text-ink-soft">
+            {t("admin.post.related.empty")}
+          </p>
         ) : (
           <div className="space-y-2">
-            <p className="text-xs text-ink-soft">{t("admin.post.related.hint", { max: MAX_RELATED })}</p>
+            <p className="text-xs text-ink-soft">
+              {t("admin.post.related.hint", { max: MAX_RELATED })}
+            </p>
             {relatable.map((p) => {
               const checked = relatedIds.includes(p.id);
               return (
@@ -343,10 +433,19 @@ export function PostForm({
 
       <AdminCard title={t("admin.post.sections.seo")}>
         <div className="space-y-4">
-          <Field label={t("admin.post.fields.metaTitle")} error={err("meta_title")}>
-            <TextInput value={state.meta_title} onChange={(e) => set("meta_title", e.target.value)} />
+          <Field
+            label={t("admin.post.fields.metaTitle")}
+            error={err("meta_title")}
+          >
+            <TextInput
+              value={state.meta_title}
+              onChange={(e) => set("meta_title", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.post.fields.metaDescription")} error={err("meta_description")}>
+          <Field
+            label={t("admin.post.fields.metaDescription")}
+            error={err("meta_description")}
+          >
             <TextArea
               value={state.meta_description}
               onChange={(e) => set("meta_description", e.target.value)}
@@ -361,7 +460,11 @@ export function PostForm({
             {tb("actions.delete")}
           </AdminButton>
         ) : null}
-        <AdminButton variant="ghost" onClick={() => router.push("/admin/posts")} disabled={pending}>
+        <AdminButton
+          variant="ghost"
+          onClick={() => router.push("/admin/posts")}
+          disabled={pending}
+        >
           {tb("actions.cancel")}
         </AdminButton>
         <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>

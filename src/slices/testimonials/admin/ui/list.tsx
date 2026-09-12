@@ -7,7 +7,10 @@ import {
   EmptyState,
   StateBadge,
 } from "@slices/backoffice/contract";
-import { type TestimonialAdminListItem, listTestimonialsAdmin } from "../queries";
+import {
+  type TestimonialAdminListItem,
+  listTestimonialsAdmin,
+} from "../queries";
 
 /**
  * Testimonials backoffice list (S12) at `/admin/testimonials`. Server component:
@@ -16,7 +19,10 @@ import { type TestimonialAdminListItem, listTestimonialsAdmin } from "../queries
  * namespace.
  */
 
-const STATUS_TONE: Record<TestimonialAdminListItem["status"], "approved" | "draft" | "neutral"> = {
+const STATUS_TONE: Record<
+  TestimonialAdminListItem["status"],
+  "approved" | "draft" | "neutral"
+> = {
   published: "approved",
   draft: "draft",
   archived: "neutral",
@@ -40,12 +46,18 @@ export async function TestimonialsAdminList() {
     },
     {
       header: t("admin.columns.audience"),
-      cell: (row) => <span className="text-ink-soft">{t(`admin.audience.${row.audience}`)}</span>,
+      cell: (row) => (
+        <span className="text-ink-soft">
+          {t(`admin.audience.${row.audience}`)}
+        </span>
+      ),
       className: "hidden sm:table-cell",
     },
     {
       header: t("admin.columns.rating"),
-      cell: (row) => <span className="text-ink-soft">{"★".repeat(row.rating)}</span>,
+      cell: (row) => (
+        <span className="text-ink-soft">{"★".repeat(row.rating)}</span>
+      ),
       className: "hidden md:table-cell",
     },
     {
@@ -56,7 +68,10 @@ export async function TestimonialsAdminList() {
     {
       header: t("admin.columns.status"),
       cell: (row) => (
-        <StateBadge label={t(`admin.status.${row.status}`)} tone={STATUS_TONE[row.status]} />
+        <StateBadge
+          label={t(`admin.status.${row.status}`)}
+          tone={STATUS_TONE[row.status]}
+        />
       ),
     },
   ];
@@ -79,7 +94,9 @@ export async function TestimonialsAdminList() {
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.id}
-        empty={<EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />}
+        empty={
+          <EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />
+        }
       />
     </div>
   );

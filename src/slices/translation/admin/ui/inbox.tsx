@@ -9,10 +9,7 @@ import {
 } from "@slices/backoffice/contract";
 import { cn } from "@core/ui";
 import { formatAdminDate, type InboxItem, type Rollup } from "../derive";
-import {
-  getTranslationInbox,
-  type TranslationInboxFilters,
-} from "../queries";
+import { getTranslationInbox, type TranslationInboxFilters } from "../queries";
 
 /**
  * Translation review inbox (S14) — the list screen at `/admin/translations`. Server
@@ -33,7 +30,15 @@ function filterHref(next: { view?: View; entityType?: string }): string {
   return qs ? `/admin/translations?${qs}` : "/admin/translations";
 }
 
-function Chip({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+function Chip({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
@@ -51,8 +56,17 @@ function Chip({ href, active, children }: { href: string; active: boolean; child
 }
 
 /** Compact per-state counts; only non-zero buckets render. */
-export function RollupBadges({ rollup, t }: { rollup: Rollup; t: (k: string) => string }) {
-  const cells: { key: keyof Rollup; tone: "neutral" | "review" | "approved" }[] = [
+export function RollupBadges({
+  rollup,
+  t,
+}: {
+  rollup: Rollup;
+  t: (k: string) => string;
+}) {
+  const cells: {
+    key: keyof Rollup;
+    tone: "neutral" | "review" | "approved";
+  }[] = [
     { key: "missing", tone: "neutral" },
     { key: "stale", tone: "review" },
     { key: "needsReview", tone: "review" },
@@ -63,16 +77,25 @@ export function RollupBadges({ rollup, t }: { rollup: Rollup; t: (k: string) => 
   return (
     <div className="flex flex-wrap gap-1.5">
       {shown.map((c) => (
-        <StateBadge key={c.key} tone={c.tone} label={`${t(`status.${c.key}`)} ${rollup[c.key]}`} />
+        <StateBadge
+          key={c.key}
+          tone={c.tone}
+          label={`${t(`status.${c.key}`)} ${rollup[c.key]}`}
+        />
       ))}
     </div>
   );
 }
 
-export async function TranslationInbox({ filters }: { filters: TranslationInboxFilters }) {
+export async function TranslationInbox({
+  filters,
+}: {
+  filters: TranslationInboxFilters;
+}) {
   const t = await getTranslations("translation");
   const { items, counts, entityTypes } = await getTranslationInbox(filters);
-  const typeLabel = (type: string) => t.has(`entityTypes.${type}`) ? t(`entityTypes.${type}`) : type;
+  const typeLabel = (type: string) =>
+    t.has(`entityTypes.${type}`) ? t(`entityTypes.${type}`) : type;
 
   const activeView: View = filters.view ?? "all";
   const activeType = filters.entityType;
@@ -105,7 +128,9 @@ export async function TranslationInbox({ filters }: { filters: TranslationInboxF
     {
       header: t("columns.updated"),
       cell: (row) => (
-        <span className="whitespace-nowrap text-ink-soft">{formatAdminDate(row.updatedAt)}</span>
+        <span className="whitespace-nowrap text-ink-soft">
+          {formatAdminDate(row.updatedAt)}
+        </span>
       ),
       className: "hidden md:table-cell",
     },
@@ -118,7 +143,11 @@ export async function TranslationInbox({ filters }: { filters: TranslationInboxF
       <div className="space-y-3">
         <div className="flex flex-wrap gap-2">
           {VIEWS.map((v) => (
-            <Chip key={v} href={filterHref({ view: v, entityType: activeType })} active={activeView === v}>
+            <Chip
+              key={v}
+              href={filterHref({ view: v, entityType: activeType })}
+              active={activeView === v}
+            >
               {t(`views.${v}`)}
             </Chip>
           ))}
@@ -142,10 +171,22 @@ export async function TranslationInbox({ filters }: { filters: TranslationInboxF
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <StateBadge tone="neutral" label={`${t("status.missing")} ${counts.missing}`} />
-        <StateBadge tone="review" label={`${t("status.stale")} ${counts.stale}`} />
-        <StateBadge tone="review" label={`${t("status.needsReview")} ${counts.needsReview}`} />
-        <StateBadge tone="approved" label={`${t("status.approved")} ${counts.approved}`} />
+        <StateBadge
+          tone="neutral"
+          label={`${t("status.missing")} ${counts.missing}`}
+        />
+        <StateBadge
+          tone="review"
+          label={`${t("status.stale")} ${counts.stale}`}
+        />
+        <StateBadge
+          tone="review"
+          label={`${t("status.needsReview")} ${counts.needsReview}`}
+        />
+        <StateBadge
+          tone="approved"
+          label={`${t("status.approved")} ${counts.approved}`}
+        />
       </div>
 
       <DataTable

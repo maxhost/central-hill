@@ -15,7 +15,10 @@ import { type CityAdminListItem, listCitiesAdmin } from "../queries";
  * offers a "new city" action. Strings come from the `geography` namespace.
  */
 
-const STATUS_TONE: Record<CityAdminListItem["status"], "approved" | "draft" | "neutral"> = {
+const STATUS_TONE: Record<
+  CityAdminListItem["status"],
+  "approved" | "draft" | "neutral"
+> = {
   published: "approved",
   draft: "draft",
   archived: "neutral",
@@ -29,7 +32,10 @@ export async function CitiesAdminList() {
     {
       header: t("admin.columns.name"),
       cell: (row) => (
-        <Link href={`/admin/cities/${row.id}`} className="font-medium text-ink hover:text-accent-deep">
+        <Link
+          href={`/admin/cities/${row.id}`}
+          className="font-medium text-ink hover:text-accent-deep"
+        >
           {row.name}
         </Link>
       ),
@@ -37,7 +43,10 @@ export async function CitiesAdminList() {
     {
       header: t("admin.columns.status"),
       cell: (row) => (
-        <StateBadge label={t(`admin.status.${row.status}`)} tone={STATUS_TONE[row.status]} />
+        <StateBadge
+          label={t(`admin.status.${row.status}`)}
+          tone={STATUS_TONE[row.status]}
+        />
       ),
     },
     {
@@ -47,7 +56,9 @@ export async function CitiesAdminList() {
     },
     {
       header: t("admin.columns.neighbourhoods"),
-      cell: (row) => <span className="text-ink-soft">{row.neighbourhoods}</span>,
+      cell: (row) => (
+        <span className="text-ink-soft">{row.neighbourhoods}</span>
+      ),
       className: "hidden sm:table-cell",
     },
   ];
@@ -70,7 +81,9 @@ export async function CitiesAdminList() {
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.id}
-        empty={<EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />}
+        empty={
+          <EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />
+        }
       />
     </div>
   );

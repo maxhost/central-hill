@@ -38,7 +38,17 @@ interface RenderProps {
 }
 
 export function NodeField(props: RenderProps) {
-  const { node, value, path, label, depth, onChange, errors, previews, options } = props;
+  const {
+    node,
+    value,
+    path,
+    label,
+    depth,
+    onChange,
+    errors,
+    previews,
+    options,
+  } = props;
   const errorKey = path.join(".");
 
   if (node.kind === "object") {
@@ -73,7 +83,9 @@ export function NodeField(props: RenderProps) {
     const canRemove = items.length > node.min;
     return (
       <div className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">{label}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+          {label}
+        </p>
         {items.map((item, i) => (
           <div key={i} className="space-y-3 rounded-md border border-line p-3">
             <div className="flex items-center justify-between">
@@ -94,7 +106,12 @@ export function NodeField(props: RenderProps) {
                 <ArrayBtn
                   disabled={!canRemove}
                   tone="danger"
-                  onClick={() => onChange(path, items.filter((_, j) => j !== i))}
+                  onClick={() =>
+                    onChange(
+                      path,
+                      items.filter((_, j) => j !== i),
+                    )
+                  }
                   label="✕"
                 />
               </div>
@@ -162,7 +179,9 @@ export function NodeField(props: RenderProps) {
           ))}
         </Select>
         {opts.length === 0 ? (
-          <p className="mt-1 text-xs text-ink-soft">No FAQ groups yet — create one in /admin/faq.</p>
+          <p className="mt-1 text-xs text-ink-soft">
+            No FAQ groups yet — create one in /admin/faq.
+          </p>
         ) : null}
       </Field>
     );
@@ -173,9 +192,15 @@ export function NodeField(props: RenderProps) {
   return (
     <Field label={label} required={!node.optional} error={errors[errorKey]}>
       {node.multiline ? (
-        <TextArea value={str} onChange={(e) => onChange(path, e.target.value)} />
+        <TextArea
+          value={str}
+          onChange={(e) => onChange(path, e.target.value)}
+        />
       ) : (
-        <TextInput value={str} onChange={(e) => onChange(path, e.target.value)} />
+        <TextInput
+          value={str}
+          onChange={(e) => onChange(path, e.target.value)}
+        />
       )}
     </Field>
   );
@@ -205,7 +230,9 @@ function ArrayBtn({
       onClick={onClick}
       disabled={disabled}
       className={`rounded px-1.5 py-0.5 text-xs disabled:opacity-30 ${
-        tone === "danger" ? "text-red-600 hover:text-red-700" : "text-ink-soft hover:text-ink"
+        tone === "danger"
+          ? "text-red-600 hover:text-red-700"
+          : "text-ink-soft hover:text-ink"
       }`}
     >
       {label}

@@ -15,7 +15,10 @@ import { type BuildingAdminListItem, listBuildingsAdmin } from "../queries";
  * offers a "new building" action. Strings come from the `buildings` namespace.
  */
 
-const STATUS_TONE: Record<BuildingAdminListItem["status"], "approved" | "draft" | "neutral"> = {
+const STATUS_TONE: Record<
+  BuildingAdminListItem["status"],
+  "approved" | "draft" | "neutral"
+> = {
   published: "approved",
   draft: "draft",
   archived: "neutral",
@@ -40,7 +43,10 @@ export async function BuildingsAdminList() {
     {
       header: t("admin.columns.status"),
       cell: (row) => (
-        <StateBadge label={t(`admin.status.${row.status}`)} tone={STATUS_TONE[row.status]} />
+        <StateBadge
+          label={t(`admin.status.${row.status}`)}
+          tone={STATUS_TONE[row.status]}
+        />
       ),
     },
     {
@@ -57,8 +63,12 @@ export async function BuildingsAdminList() {
       header: t("admin.columns.flags"),
       cell: (row) => (
         <span className="flex flex-wrap gap-1">
-          {row.isFeatured ? <StateBadge label={t("admin.featured")} tone="accent" /> : null}
-          {row.isNew ? <StateBadge label={t("admin.new")} tone="review" /> : null}
+          {row.isFeatured ? (
+            <StateBadge label={t("admin.featured")} tone="accent" />
+          ) : null}
+          {row.isNew ? (
+            <StateBadge label={t("admin.new")} tone="review" />
+          ) : null}
         </span>
       ),
       className: "hidden lg:table-cell",
@@ -83,7 +93,9 @@ export async function BuildingsAdminList() {
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.id}
-        empty={<EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />}
+        empty={
+          <EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />
+        }
       />
     </div>
   );

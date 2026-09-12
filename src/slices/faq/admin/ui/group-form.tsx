@@ -73,7 +73,11 @@ function buildPayload(s: FormState, id: string | undefined) {
   };
 }
 
-export function FaqGroupForm({ initial }: { initial: FaqGroupEditData | null }) {
+export function FaqGroupForm({
+  initial,
+}: {
+  initial: FaqGroupEditData | null;
+}) {
   const t = useTranslations("faq");
   const tb = useTranslations("backoffice");
   const router = useRouter();
@@ -89,7 +93,9 @@ export function FaqGroupForm({ initial }: { initial: FaqGroupEditData | null }) 
   function updateItem(index: number, patch: Partial<ItemState>) {
     setState((prev) => ({
       ...prev,
-      items: prev.items.map((it, i) => (i === index ? { ...it, ...patch } : it)),
+      items: prev.items.map((it, i) =>
+        i === index ? { ...it, ...patch } : it,
+      ),
     }));
   }
   function addItem() {
@@ -99,7 +105,10 @@ export function FaqGroupForm({ initial }: { initial: FaqGroupEditData | null }) 
     }));
   }
   function removeItem(index: number) {
-    setState((prev) => ({ ...prev, items: prev.items.filter((_, i) => i !== index) }));
+    setState((prev) => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== index),
+    }));
   }
   function moveItem(index: number, dir: -1 | 1) {
     setState((prev) => {
@@ -147,25 +156,43 @@ export function FaqGroupForm({ initial }: { initial: FaqGroupEditData | null }) 
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title={initial ? state.key || t("admin.editTitle") : t("admin.newTitle")}
+        title={
+          initial ? state.key || t("admin.editTitle") : t("admin.newTitle")
+        }
         description={t("admin.formSubtitle")}
         actions={
-          <Link href="/admin/faq" className="text-sm text-ink-soft hover:text-ink">
+          <Link
+            href="/admin/faq"
+            className="text-sm text-ink-soft hover:text-ink"
+          >
             ← {t("admin.backToList")}
           </Link>
         }
       />
 
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
+        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+          {banner}
+        </p>
       ) : null}
 
       <AdminCard title={t("admin.sections.group")}>
         <FieldGrid>
-          <Field label={t("admin.fields.key")} required hint={t("admin.fields.keyHint")} error={err("key")}>
-            <TextInput value={state.key} onChange={(e) => set("key", e.target.value)} />
+          <Field
+            label={t("admin.fields.key")}
+            required
+            hint={t("admin.fields.keyHint")}
+            error={err("key")}
+          >
+            <TextInput
+              value={state.key}
+              onChange={(e) => set("key", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.fields.position")} hint={t("admin.fields.positionHint")}>
+          <Field
+            label={t("admin.fields.position")}
+            hint={t("admin.fields.positionHint")}
+          >
             <TextInput
               type="number"
               value={state.position}
@@ -181,13 +208,20 @@ export function FaqGroupForm({ initial }: { initial: FaqGroupEditData | null }) 
         ) : (
           <div className="space-y-5">
             {state.items.map((item, i) => (
-              <div key={item.id ?? `new-${i}`} className="space-y-3 rounded-md border border-line p-4">
+              <div
+                key={item.id ?? `new-${i}`}
+                className="space-y-3 rounded-md border border-line p-4"
+              >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
                     {t("admin.itemLabel", { n: i + 1 })}
                   </span>
                   <div className="flex items-center gap-1">
-                    <AdminButton variant="ghost" onClick={() => moveItem(i, -1)} disabled={pending || i === 0}>
+                    <AdminButton
+                      variant="ghost"
+                      onClick={() => moveItem(i, -1)}
+                      disabled={pending || i === 0}
+                    >
                       {tb("media.moveUp")}
                     </AdminButton>
                     <AdminButton
@@ -197,7 +231,11 @@ export function FaqGroupForm({ initial }: { initial: FaqGroupEditData | null }) 
                     >
                       {tb("media.moveDown")}
                     </AdminButton>
-                    <AdminButton variant="danger" onClick={() => removeItem(i)} disabled={pending}>
+                    <AdminButton
+                      variant="danger"
+                      onClick={() => removeItem(i)}
+                      disabled={pending}
+                    >
                       {tb("actions.delete")}
                     </AdminButton>
                   </div>
@@ -205,7 +243,9 @@ export function FaqGroupForm({ initial }: { initial: FaqGroupEditData | null }) 
                 <Field label={t("admin.fields.itemStatus")}>
                   <Select
                     value={item.status}
-                    onChange={(e) => updateItem(i, { status: e.target.value as Status })}
+                    onChange={(e) =>
+                      updateItem(i, { status: e.target.value as Status })
+                    }
                   >
                     {STATUSES.map((s) => (
                       <option key={s} value={s}>
@@ -214,13 +254,23 @@ export function FaqGroupForm({ initial }: { initial: FaqGroupEditData | null }) 
                     ))}
                   </Select>
                 </Field>
-                <Field label={t("admin.fields.question")} required error={err(`items.${i}.question`)}>
+                <Field
+                  label={t("admin.fields.question")}
+                  required
+                  error={err(`items.${i}.question`)}
+                >
                   <TextInput
                     value={item.question}
-                    onChange={(e) => updateItem(i, { question: e.target.value })}
+                    onChange={(e) =>
+                      updateItem(i, { question: e.target.value })
+                    }
                   />
                 </Field>
-                <Field label={t("admin.fields.answer")} required error={err(`items.${i}.answer`)}>
+                <Field
+                  label={t("admin.fields.answer")}
+                  required
+                  error={err(`items.${i}.answer`)}
+                >
                   <TextArea
                     rows={3}
                     value={item.answer}
@@ -244,7 +294,11 @@ export function FaqGroupForm({ initial }: { initial: FaqGroupEditData | null }) 
             {tb("actions.delete")}
           </AdminButton>
         ) : null}
-        <AdminButton variant="ghost" onClick={() => router.push("/admin/faq")} disabled={pending}>
+        <AdminButton
+          variant="ghost"
+          onClick={() => router.push("/admin/faq")}
+          disabled={pending}
+        >
           {tb("actions.cancel")}
         </AdminButton>
         <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>

@@ -31,7 +31,8 @@ export function TranslationRowActions({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value ?? "");
 
-  const run = (fn: () => Promise<unknown>) => startTransition(async () => void (await fn()));
+  const run = (fn: () => Promise<unknown>) =>
+    startTransition(async () => void (await fn()));
 
   if (editing) {
     return (
@@ -72,7 +73,7 @@ export function TranslationRowActions({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {(status === "needs_review" || status === "stale") ? (
+      {status === "needs_review" || status === "stale" ? (
         <AdminButton
           variant="primary"
           disabled={pending}
@@ -82,11 +83,20 @@ export function TranslationRowActions({
         </AdminButton>
       ) : null}
       {status === "approved" ? (
-        <AdminButton disabled={pending} onClick={() => run(() => resetField(type, id, field, locale))}>
+        <AdminButton
+          disabled={pending}
+          onClick={() => run(() => resetField(type, id, field, locale))}
+        >
           {t("actions.reset")}
         </AdminButton>
       ) : null}
-      <AdminButton disabled={pending} onClick={() => { setDraft(value ?? ""); setEditing(true); }}>
+      <AdminButton
+        disabled={pending}
+        onClick={() => {
+          setDraft(value ?? "");
+          setEditing(true);
+        }}
+      >
         {status === "missing" ? t("actions.add") : t("actions.edit")}
       </AdminButton>
       {status !== "missing" ? (

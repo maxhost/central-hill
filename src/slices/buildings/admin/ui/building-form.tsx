@@ -22,7 +22,11 @@ import {
   useMediaQueue,
 } from "@slices/backoffice/contract";
 import { deleteBuilding, saveBuilding } from "../actions";
-import type { AmenityOption, BuildingEditData, LocationOptions } from "../queries";
+import type {
+  AmenityOption,
+  BuildingEditData,
+  LocationOptions,
+} from "../queries";
 
 /**
  * Building create/edit form (S12) — the single client island for both
@@ -90,7 +94,12 @@ function initialState(data: BuildingEditData | null): FormState {
     meta_description: data?.meta_description ?? "",
     gallery: data?.gallery ?? [],
     amenity_ids: data?.amenity_ids ?? [],
-    faq: data?.faq.map((f) => ({ id: f.id, question: f.question, answer: f.answer })) ?? [],
+    faq:
+      data?.faq.map((f) => ({
+        id: f.id,
+        question: f.question,
+        answer: f.answer,
+      })) ?? [],
   };
 }
 
@@ -123,7 +132,11 @@ function buildPayload(s: FormState, id: string | undefined) {
     meta_description: orNull(s.meta_description),
     gallery: s.gallery,
     amenity_ids: s.amenity_ids,
-    faq: s.faq.map((f) => ({ id: f.id, question: f.question.trim(), answer: f.answer.trim() })),
+    faq: s.faq.map((f) => ({
+      id: f.id,
+      question: f.question.trim(),
+      answer: f.answer.trim(),
+    })),
   };
 }
 
@@ -173,7 +186,11 @@ export function BuildingForm({
       const stillValid = locations.neighbourhoods.some(
         (n) => n.id === prev.neighbourhood_id && n.cityId === cityId,
       );
-      return { ...prev, city_id: cityId, neighbourhood_id: stillValid ? prev.neighbourhood_id : "" };
+      return {
+        ...prev,
+        city_id: cityId,
+        neighbourhood_id: stillValid ? prev.neighbourhood_id : "",
+      };
     });
   }
 
@@ -186,7 +203,10 @@ export function BuildingForm({
     }));
   }
 
-  function setFaq(index: number, patch: Partial<{ question: string; answer: string }>) {
+  function setFaq(
+    index: number,
+    patch: Partial<{ question: string; answer: string }>,
+  ) {
     setState((prev) => {
       const faq = [...prev.faq];
       faq[index] = { ...faq[index]!, ...patch };
@@ -195,11 +215,17 @@ export function BuildingForm({
   }
 
   function addFaq() {
-    setState((prev) => ({ ...prev, faq: [...prev.faq, { question: "", answer: "" }] }));
+    setState((prev) => ({
+      ...prev,
+      faq: [...prev.faq, { question: "", answer: "" }],
+    }));
   }
 
   function removeFaq(index: number) {
-    setState((prev) => ({ ...prev, faq: prev.faq.filter((_, i) => i !== index) }));
+    setState((prev) => ({
+      ...prev,
+      faq: prev.faq.filter((_, i) => i !== index),
+    }));
   }
 
   function moveFaq(index: number, delta: number) {
@@ -214,30 +240,33 @@ export function BuildingForm({
 
   function onSubmit() {
     setErrors({});
-    start(async () => {
-      // Upload anything the editor picked before persisting ids that point at it
-      // (ADR 0030). Abort the save if the bytes did not make it.
+    void (async () => {
+      // Uploads run OUTSIDE the transition on purpose: `startTransition` marks every
+      // update in its scope as low priority, so the queue's progress modal would not
+      // paint until the transition it lives in had already finished (ADR 0030).
       if (!(await queue.flush())) return;
-      const result = await saveBuilding(buildPayload(state, initial?.id));
-      if (result.ok) {
-        toast.success(tb("actions.saved"));
-        if (!initial) {
-          router.push(`/admin/buildings/${result.id}`);
+      start(async () => {
+        const result = await saveBuilding(buildPayload(state, initial?.id));
+        if (result.ok) {
+          toast.success(tb("actions.saved"));
+          if (!initial) {
+            router.push(`/admin/buildings/${result.id}`);
+            return;
+          }
+          router.refresh();
           return;
         }
-        router.refresh();
-        return;
-      }
-      if (result.error === "validation") {
-        setErrors(result.fieldErrors);
-        toast.error(tb("actions.saveError"));
-      } else if (result.error === "slug_conflict") {
-        setErrors({ slug: t("admin.errors.slugConflict") });
-        toast.error(t("admin.errors.slugConflict"));
-      } else {
-        toast.error(tb("actions.saveError"));
-      }
-    });
+        if (result.error === "validation") {
+          setErrors(result.fieldErrors);
+          toast.error(tb("actions.saveError"));
+        } else if (result.error === "slug_conflict") {
+          setErrors({ slug: t("admin.errors.slugConflict") });
+          toast.error(t("admin.errors.slugConflict"));
+        } else {
+          toast.error(tb("actions.saveError"));
+        }
+      });
+    })();
   }
 
   function onDelete() {
@@ -257,10 +286,15 @@ export function BuildingForm({
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        title={initial ? state.name || t("admin.editTitle") : t("admin.newTitle")}
+        title={
+          initial ? state.name || t("admin.editTitle") : t("admin.newTitle")
+        }
         description={t("admin.formSubtitle")}
         actions={
-          <Link href="/admin/buildings" className="text-sm text-ink-soft hover:text-ink">
+          <Link
+            href="/admin/buildings"
+            className="text-sm text-ink-soft hover:text-ink"
+          >
             ← {t("admin.backToList")}
           </Link>
         }
@@ -269,7 +303,10 @@ export function BuildingForm({
       <AdminCard title={t("admin.sections.status")}>
         <FieldGrid>
           <Field label={t("admin.fields.status")}>
-            <Select value={state.status} onChange={(e) => set("status", e.target.value as Status)}>
+            <Select
+              value={state.status}
+              onChange={(e) => set("status", e.target.value as Status)}
+            >
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {t(`admin.status.${s}`)}
@@ -277,7 +314,10 @@ export function BuildingForm({
               ))}
             </Select>
           </Field>
-          <Field label={t("admin.fields.position")} hint={t("admin.fields.positionHint")}>
+          <Field
+            label={t("admin.fields.position")}
+            hint={t("admin.fields.positionHint")}
+          >
             <TextInput
               type="number"
               value={state.position}
@@ -302,7 +342,10 @@ export function BuildingForm({
       <AdminCard title={t("admin.sections.identity")}>
         <div className="space-y-4">
           <Field label={t("admin.fields.name")} required error={err("name")}>
-            <TextInput value={state.name} onChange={(e) => set("name", e.target.value)} />
+            <TextInput
+              value={state.name}
+              onChange={(e) => set("name", e.target.value)}
+            />
           </Field>
           <Field
             label={t("admin.fields.slug")}
@@ -310,13 +353,30 @@ export function BuildingForm({
             hint={t("admin.fields.slugHint")}
             error={err("slug")}
           >
-            <TextInput value={state.slug} onChange={(e) => set("slug", e.target.value)} />
+            <TextInput
+              value={state.slug}
+              onChange={(e) => set("slug", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.fields.headline")} required error={err("headline")}>
-            <TextInput value={state.headline} onChange={(e) => set("headline", e.target.value)} />
+          <Field
+            label={t("admin.fields.headline")}
+            required
+            error={err("headline")}
+          >
+            <TextInput
+              value={state.headline}
+              onChange={(e) => set("headline", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.fields.teaser")} required error={err("teaser")}>
-            <TextArea value={state.teaser} onChange={(e) => set("teaser", e.target.value)} />
+          <Field
+            label={t("admin.fields.teaser")}
+            required
+            error={err("teaser")}
+          >
+            <TextArea
+              value={state.teaser}
+              onChange={(e) => set("teaser", e.target.value)}
+            />
           </Field>
         </div>
       </AdminCard>
@@ -324,7 +384,10 @@ export function BuildingForm({
       <AdminCard title={t("admin.sections.location")}>
         <FieldGrid>
           <Field label={t("admin.fields.city")} required error={err("city_id")}>
-            <Select value={state.city_id} onChange={(e) => onCityChange(e.target.value)}>
+            <Select
+              value={state.city_id}
+              onChange={(e) => onCityChange(e.target.value)}
+            >
               <option value="">{t("admin.fields.choose")}</option>
               {locations.cities.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -349,7 +412,11 @@ export function BuildingForm({
           </Field>
         </FieldGrid>
         <div className="mt-4">
-          <Field label={t("admin.fields.streetAddress")} required error={err("street_address")}>
+          <Field
+            label={t("admin.fields.streetAddress")}
+            required
+            error={err("street_address")}
+          >
             <TextInput
               value={state.street_address}
               onChange={(e) => set("street_address", e.target.value)}
@@ -378,14 +445,21 @@ export function BuildingForm({
 
       <AdminCard title={t("admin.sections.media")}>
         <div className="space-y-5">
-          <Field label={t("admin.fields.cover")} hint={t("admin.fields.coverHint")} error={err("cover_media_id")}>
+          <Field
+            label={t("admin.fields.cover")}
+            hint={t("admin.fields.coverHint")}
+            error={err("cover_media_id")}
+          >
             <MediaField
               value={state.cover_media_id || null}
               preview={previews[state.cover_media_id] ?? null}
               onChange={(id) => set("cover_media_id", id ?? "")}
             />
           </Field>
-          <Field label={t("admin.fields.ogImage")} hint={t("admin.fields.ogImageHint")}>
+          <Field
+            label={t("admin.fields.ogImage")}
+            hint={t("admin.fields.ogImageHint")}
+          >
             <MediaField
               value={state.og_image_media_id || null}
               preview={previews[state.og_image_media_id] ?? null}
@@ -404,7 +478,11 @@ export function BuildingForm({
 
       <AdminCard title={t("admin.sections.descriptions")}>
         <div className="space-y-4">
-          <Field label={t("admin.fields.descriptionIntro")} required error={err("description_intro")}>
+          <Field
+            label={t("admin.fields.descriptionIntro")}
+            required
+            error={err("description_intro")}
+          >
             <TextArea
               rows={5}
               value={state.description_intro}
@@ -458,7 +536,10 @@ export function BuildingForm({
                   {index + 1}
                 </span>
                 <div className="flex items-center gap-1">
-                  <AdminButton onClick={() => moveFaq(index, -1)} disabled={index === 0}>
+                  <AdminButton
+                    onClick={() => moveFaq(index, -1)}
+                    disabled={index === 0}
+                  >
                     ↑
                   </AdminButton>
                   <AdminButton
@@ -467,19 +548,30 @@ export function BuildingForm({
                   >
                     ↓
                   </AdminButton>
-                  <AdminButton variant="danger" onClick={() => removeFaq(index)}>
+                  <AdminButton
+                    variant="danger"
+                    onClick={() => removeFaq(index)}
+                  >
                     {tb("actions.delete")}
                   </AdminButton>
                 </div>
               </div>
               <div className="space-y-3">
-                <Field label={t("admin.fields.question")} error={err(`faq.${index}.question`)}>
+                <Field
+                  label={t("admin.fields.question")}
+                  error={err(`faq.${index}.question`)}
+                >
                   <TextInput
                     value={item.question}
-                    onChange={(e) => setFaq(index, { question: e.target.value })}
+                    onChange={(e) =>
+                      setFaq(index, { question: e.target.value })
+                    }
                   />
                 </Field>
-                <Field label={t("admin.fields.answer")} error={err(`faq.${index}.answer`)}>
+                <Field
+                  label={t("admin.fields.answer")}
+                  error={err(`faq.${index}.answer`)}
+                >
                   <TextArea
                     value={item.answer}
                     onChange={(e) => setFaq(index, { answer: e.target.value })}
@@ -499,11 +591,16 @@ export function BuildingForm({
             checked={state.booking_enabled}
             onChange={(e) => set("booking_enabled", e.target.checked)}
           />
-          <p className="mt-1 text-xs text-ink-soft">{t("admin.fields.bookingEnabledHint")}</p>
+          <p className="mt-1 text-xs text-ink-soft">
+            {t("admin.fields.bookingEnabledHint")}
+          </p>
         </div>
         <FieldGrid>
           <Field label={t("admin.fields.avantioId")} error={err("avantio_id")}>
-            <TextInput value={state.avantio_id} onChange={(e) => set("avantio_id", e.target.value)} />
+            <TextInput
+              value={state.avantio_id}
+              onChange={(e) => set("avantio_id", e.target.value)}
+            />
           </Field>
           <Field
             label={t("admin.fields.avantioUrl")}
@@ -521,9 +618,15 @@ export function BuildingForm({
       <AdminCard title={t("admin.sections.seo")}>
         <div className="space-y-4">
           <Field label={t("admin.fields.metaTitle")} error={err("meta_title")}>
-            <TextInput value={state.meta_title} onChange={(e) => set("meta_title", e.target.value)} />
+            <TextInput
+              value={state.meta_title}
+              onChange={(e) => set("meta_title", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.fields.metaDescription")} error={err("meta_description")}>
+          <Field
+            label={t("admin.fields.metaDescription")}
+            error={err("meta_description")}
+          >
             <TextArea
               value={state.meta_description}
               onChange={(e) => set("meta_description", e.target.value)}
@@ -538,7 +641,11 @@ export function BuildingForm({
             {tb("actions.delete")}
           </AdminButton>
         ) : null}
-        <AdminButton variant="ghost" onClick={() => router.push("/admin/buildings")} disabled={pending}>
+        <AdminButton
+          variant="ghost"
+          onClick={() => router.push("/admin/buildings")}
+          disabled={pending}
+        >
           {tb("actions.cancel")}
         </AdminButton>
         <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>

@@ -26,10 +26,29 @@ import type { GlobalsEditData, StatForm } from "../queries";
  * config is edited as JSON (parsed on submit).
  */
 
-type StatKey = "bookings" | "years" | "guests" | "revenue" | "buildings" | "apartments";
-const STAT_KEYS: StatKey[] = ["bookings", "years", "guests", "revenue", "buildings", "apartments"];
+type StatKey =
+  | "bookings"
+  | "years"
+  | "guests"
+  | "revenue"
+  | "buildings"
+  | "apartments";
+const STAT_KEYS: StatKey[] = [
+  "bookings",
+  "years",
+  "guests",
+  "revenue",
+  "buildings",
+  "apartments",
+];
 type SocialKey = "instagram" | "facebook" | "linkedin" | "youtube" | "tiktok";
-const SOCIAL_KEYS: SocialKey[] = ["instagram", "facebook", "linkedin", "youtube", "tiktok"];
+const SOCIAL_KEYS: SocialKey[] = [
+  "instagram",
+  "facebook",
+  "linkedin",
+  "youtube",
+  "tiktok",
+];
 
 export function GlobalsForm({
   initial,
@@ -48,10 +67,15 @@ export function GlobalsForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(null);
 
-  const set = <K extends keyof GlobalsEditData>(key: K, value: GlobalsEditData[K]) =>
-    setState((prev) => ({ ...prev, [key]: value }));
+  const set = <K extends keyof GlobalsEditData>(
+    key: K,
+    value: GlobalsEditData[K],
+  ) => setState((prev) => ({ ...prev, [key]: value }));
   const setStat = (key: StatKey, patch: Partial<StatForm>) =>
-    setState((prev) => ({ ...prev, stats: { ...prev.stats, [key]: { ...prev.stats[key], ...patch } } }));
+    setState((prev) => ({
+      ...prev,
+      stats: { ...prev.stats, [key]: { ...prev.stats[key], ...patch } },
+    }));
   const setSocial = (key: SocialKey, value: string) =>
     setState((prev) => ({ ...prev, social: { ...prev.social, [key]: value } }));
   const err = (key: string) => errors[key];
@@ -63,7 +87,12 @@ export function GlobalsForm({
     let widgetConfig: Record<string, unknown>;
     try {
       const parsed = JSON.parse(state.avantio_widget_config.trim() || "{}");
-      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) throw new Error();
+      if (
+        typeof parsed !== "object" ||
+        parsed === null ||
+        Array.isArray(parsed)
+      )
+        throw new Error();
       widgetConfig = parsed as Record<string, unknown>;
     } catch {
       setErrors({ avantio_widget_config: t("admin.errors.invalidJson") });
@@ -76,9 +105,17 @@ export function GlobalsForm({
       email: state.email.trim(),
       phone: state.phone.trim(),
       whatsapp: orNull(state.whatsapp),
-      social: Object.fromEntries(SOCIAL_KEYS.map((k) => [k, orNull(state.social[k])])),
+      social: Object.fromEntries(
+        SOCIAL_KEYS.map((k) => [k, orNull(state.social[k])]),
+      ),
       stats: Object.fromEntries(
-        STAT_KEYS.map((k) => [k, { value: state.stats[k].value.trim(), label: state.stats[k].label.trim() }]),
+        STAT_KEYS.map((k) => [
+          k,
+          {
+            value: state.stats[k].value.trim(),
+            label: state.stats[k].label.trim(),
+          },
+        ]),
       ),
       office_address: state.office_address.trim(),
       office_hours: orNull(state.office_hours),
@@ -91,43 +128,71 @@ export function GlobalsForm({
       show_building_count: state.show_building_count,
     };
 
-    start(async () => {
-      // Upload anything the editor picked before persisting ids that point at it
-      // (ADR 0030). Abort the save if the bytes did not make it.
+    void (async () => {
+      // Uploads run OUTSIDE the transition on purpose: `startTransition` marks every
+      // update in its scope as low priority, so the queue's progress modal would not
+      // paint until the transition it lives in had already finished (ADR 0030).
       if (!(await queue.flush())) return;
-      const result = await saveGlobals(payload);
-      if (result.ok) {
-        setBanner(tb("actions.saved"));
-        router.refresh();
-        return;
-      }
-      if (result.error === "validation") {
-        setErrors(result.fieldErrors);
-        setBanner(tb("actions.saveError"));
-      } else {
-        setBanner(tb("actions.saveError"));
-      }
-    });
+      start(async () => {
+        const result = await saveGlobals(payload);
+        if (result.ok) {
+          setBanner(tb("actions.saved"));
+          router.refresh();
+          return;
+        }
+        if (result.error === "validation") {
+          setErrors(result.fieldErrors);
+          setBanner(tb("actions.saveError"));
+        } else {
+          setBanner(tb("actions.saveError"));
+        }
+      });
+    })();
   }
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader title={t("admin.globals.title")} description={t("admin.globals.subtitle")} />
+      <AdminPageHeader
+        title={t("admin.globals.title")}
+        description={t("admin.globals.subtitle")}
+      />
 
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
+        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+          {banner}
+        </p>
       ) : null}
 
       <AdminCard title={t("admin.globals.sections.contact")}>
         <FieldGrid>
-          <Field label={t("admin.globals.fields.email")} required error={err("email")}>
-            <TextInput value={state.email} onChange={(e) => set("email", e.target.value)} />
+          <Field
+            label={t("admin.globals.fields.email")}
+            required
+            error={err("email")}
+          >
+            <TextInput
+              value={state.email}
+              onChange={(e) => set("email", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.globals.fields.phone")} required error={err("phone")}>
-            <TextInput value={state.phone} onChange={(e) => set("phone", e.target.value)} />
+          <Field
+            label={t("admin.globals.fields.phone")}
+            required
+            error={err("phone")}
+          >
+            <TextInput
+              value={state.phone}
+              onChange={(e) => set("phone", e.target.value)}
+            />
           </Field>
-          <Field label={t("admin.globals.fields.whatsapp")} error={err("whatsapp")}>
-            <TextInput value={state.whatsapp} onChange={(e) => set("whatsapp", e.target.value)} />
+          <Field
+            label={t("admin.globals.fields.whatsapp")}
+            error={err("whatsapp")}
+          >
+            <TextInput
+              value={state.whatsapp}
+              onChange={(e) => set("whatsapp", e.target.value)}
+            />
           </Field>
         </FieldGrid>
       </AdminCard>
@@ -135,8 +200,15 @@ export function GlobalsForm({
       <AdminCard title={t("admin.globals.sections.social")}>
         <FieldGrid>
           {SOCIAL_KEYS.map((k) => (
-            <Field key={k} label={t(`admin.globals.social.${k}`)} error={err(`social.${k}`)}>
-              <TextInput value={state.social[k]} onChange={(e) => setSocial(k, e.target.value)} />
+            <Field
+              key={k}
+              label={t(`admin.globals.social.${k}`)}
+              error={err(`social.${k}`)}
+            >
+              <TextInput
+                value={state.social[k]}
+                onChange={(e) => setSocial(k, e.target.value)}
+              />
             </Field>
           ))}
         </FieldGrid>
@@ -146,15 +218,24 @@ export function GlobalsForm({
         <div className="space-y-4">
           {STAT_KEYS.map((k) => (
             <FieldGrid key={k}>
-              <Field label={t(`admin.globals.stats.${k}`)} error={err(`stats.${k}.value`)}>
+              <Field
+                label={t(`admin.globals.stats.${k}`)}
+                error={err(`stats.${k}.value`)}
+              >
                 <TextInput
                   value={state.stats[k].value}
                   onChange={(e) => setStat(k, { value: e.target.value })}
                   placeholder={t("admin.globals.fields.statValue")}
                 />
               </Field>
-              <Field label={t("admin.globals.fields.statLabel")} error={err(`stats.${k}.label`)}>
-                <TextInput value={state.stats[k].label} onChange={(e) => setStat(k, { label: e.target.value })} />
+              <Field
+                label={t("admin.globals.fields.statLabel")}
+                error={err(`stats.${k}.label`)}
+              >
+                <TextInput
+                  value={state.stats[k].label}
+                  onChange={(e) => setStat(k, { label: e.target.value })}
+                />
               </Field>
             </FieldGrid>
           ))}
@@ -163,14 +244,30 @@ export function GlobalsForm({
 
       <AdminCard title={t("admin.globals.sections.office")}>
         <div className="space-y-4">
-          <Field label={t("admin.globals.fields.officeAddress")} required error={err("office_address")}>
-            <TextInput value={state.office_address} onChange={(e) => set("office_address", e.target.value)} />
+          <Field
+            label={t("admin.globals.fields.officeAddress")}
+            required
+            error={err("office_address")}
+          >
+            <TextInput
+              value={state.office_address}
+              onChange={(e) => set("office_address", e.target.value)}
+            />
           </Field>
           <FieldGrid>
-            <Field label={t("admin.globals.fields.officeHours")} error={err("office_hours")}>
-              <TextInput value={state.office_hours} onChange={(e) => set("office_hours", e.target.value)} />
+            <Field
+              label={t("admin.globals.fields.officeHours")}
+              error={err("office_hours")}
+            >
+              <TextInput
+                value={state.office_hours}
+                onChange={(e) => set("office_hours", e.target.value)}
+              />
             </Field>
-            <Field label={t("admin.globals.fields.officeHoursLabel")} error={err("office_hours_label")}>
+            <Field
+              label={t("admin.globals.fields.officeHoursLabel")}
+              error={err("office_hours_label")}
+            >
               <TextInput
                 value={state.office_hours_label}
                 onChange={(e) => set("office_hours_label", e.target.value)}
@@ -181,13 +278,17 @@ export function GlobalsForm({
       </AdminCard>
 
       <AdminCard title={t("admin.globals.sections.brand")}>
-        <Field label={t("admin.globals.fields.ogImage")} hint={t("admin.globals.fields.ogImageHint")}>
+        <Field
+          label={t("admin.globals.fields.ogImage")}
+          hint={t("admin.globals.fields.ogImageHint")}
+        >
           <MediaField
             value={state.default_og_image_media_id || null}
             preview={previews[state.default_og_image_media_id] ?? null}
             onChange={(id, preview) => {
               set("default_og_image_media_id", id ?? "");
-              if (preview) setPreviews((prev) => ({ ...prev, [preview.id]: preview }));
+              if (preview)
+                setPreviews((prev) => ({ ...prev, [preview.id]: preview }));
             }}
           />
         </Field>
@@ -195,7 +296,11 @@ export function GlobalsForm({
 
       <AdminCard title={t("admin.globals.sections.avantio")}>
         <div className="space-y-4">
-          <Field label={t("admin.globals.fields.avantioAccount")} required error={err("avantio_account_id")}>
+          <Field
+            label={t("admin.globals.fields.avantioAccount")}
+            required
+            error={err("avantio_account_id")}
+          >
             <TextInput
               value={state.avantio_account_id}
               onChange={(e) => set("avantio_account_id", e.target.value)}

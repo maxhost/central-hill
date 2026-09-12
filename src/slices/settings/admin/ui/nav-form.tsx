@@ -13,7 +13,11 @@ import {
   TextInput,
 } from "@slices/backoffice/contract";
 import { saveNavigation } from "../actions";
-import type { NavLinkEdit, NavParentEdit, NavigationEditData } from "../queries";
+import type {
+  NavLinkEdit,
+  NavParentEdit,
+  NavigationEditData,
+} from "../queries";
 
 /**
  * Navigation builder (S12) — the header + footer trees (one level of children). Posts
@@ -45,10 +49,20 @@ export function NavForm({ initial }: { initial: NavigationEditData }) {
 
   function onSubmit() {
     setBanner(null);
-    const clean = (l: NavLinkEdit) => ({ id: l.id, url: l.url.trim(), label: l.label.trim() });
+    const clean = (l: NavLinkEdit) => ({
+      id: l.id,
+      url: l.url.trim(),
+      label: l.label.trim(),
+    });
     const payload = {
-      header: state.header.map((p) => ({ ...clean(p), children: p.children.map(clean) })),
-      footer: state.footer.map((p) => ({ ...clean(p), children: p.children.map(clean) })),
+      header: state.header.map((p) => ({
+        ...clean(p),
+        children: p.children.map(clean),
+      })),
+      footer: state.footer.map((p) => ({
+        ...clean(p),
+        children: p.children.map(clean),
+      })),
     };
     start(async () => {
       const result = await saveNavigation(payload);
@@ -59,10 +73,15 @@ export function NavForm({ initial }: { initial: NavigationEditData }) {
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader title={t("admin.nav.title")} description={t("admin.nav.subtitle")} />
+      <AdminPageHeader
+        title={t("admin.nav.title")}
+        description={t("admin.nav.subtitle")}
+      />
 
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">{banner}</p>
+        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+          {banner}
+        </p>
       ) : null}
 
       {LOCATIONS.map((loc) => (
@@ -100,23 +119,38 @@ function LocationEditor({
 
   const updateItem = (i: number, patch: Partial<NavParentEdit>) =>
     onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
-  const addItem = () => onChange([...items, { url: "", label: "", children: [] }]);
-  const removeItem = (i: number) => onChange(items.filter((_, idx) => idx !== i));
+  const addItem = () =>
+    onChange([...items, { url: "", label: "", children: [] }]);
+  const removeItem = (i: number) =>
+    onChange(items.filter((_, idx) => idx !== i));
 
   const updateChild = (i: number, j: number, patch: Partial<NavLinkEdit>) =>
     onChange(
       items.map((it, idx) =>
         idx === i
-          ? { ...it, children: it.children.map((c, cj) => (cj === j ? { ...c, ...patch } : c)) }
+          ? {
+              ...it,
+              children: it.children.map((c, cj) =>
+                cj === j ? { ...c, ...patch } : c,
+              ),
+            }
           : it,
       ),
     );
   const addChild = (i: number) =>
-    onChange(items.map((it, idx) => (idx === i ? { ...it, children: [...it.children, { url: "", label: "" }] } : it)));
+    onChange(
+      items.map((it, idx) =>
+        idx === i
+          ? { ...it, children: [...it.children, { url: "", label: "" }] }
+          : it,
+      ),
+    );
   const removeChild = (i: number, j: number) =>
     onChange(
       items.map((it, idx) =>
-        idx === i ? { ...it, children: it.children.filter((_, cj) => cj !== j) } : it,
+        idx === i
+          ? { ...it, children: it.children.filter((_, cj) => cj !== j) }
+          : it,
       ),
     );
 
@@ -127,13 +161,20 @@ function LocationEditor({
       ) : (
         <div className="space-y-5">
           {items.map((item, i) => (
-            <div key={item.id ?? `new-${i}`} className="space-y-3 rounded-md border border-line p-4">
+            <div
+              key={item.id ?? `new-${i}`}
+              className="space-y-3 rounded-md border border-line p-4"
+            >
               <div className="flex items-center justify-between gap-3">
                 <span className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
                   {t("admin.nav.itemLabel", { n: i + 1 })}
                 </span>
                 <div className="flex items-center gap-1">
-                  <AdminButton variant="ghost" onClick={() => onChange(move(items, i, -1))} disabled={pending || i === 0}>
+                  <AdminButton
+                    variant="ghost"
+                    onClick={() => onChange(move(items, i, -1))}
+                    disabled={pending || i === 0}
+                  >
                     {tb("media.moveUp")}
                   </AdminButton>
                   <AdminButton
@@ -143,36 +184,72 @@ function LocationEditor({
                   >
                     {tb("media.moveDown")}
                   </AdminButton>
-                  <AdminButton variant="danger" onClick={() => removeItem(i)} disabled={pending}>
+                  <AdminButton
+                    variant="danger"
+                    onClick={() => removeItem(i)}
+                    disabled={pending}
+                  >
                     {tb("actions.delete")}
                   </AdminButton>
                 </div>
               </div>
               <FieldGrid>
                 <Field label={t("admin.nav.fields.label")}>
-                  <TextInput value={item.label} onChange={(e) => updateItem(i, { label: e.target.value })} />
+                  <TextInput
+                    value={item.label}
+                    onChange={(e) => updateItem(i, { label: e.target.value })}
+                  />
                 </Field>
                 <Field label={t("admin.nav.fields.url")}>
-                  <TextInput value={item.url} onChange={(e) => updateItem(i, { url: e.target.value })} />
+                  <TextInput
+                    value={item.url}
+                    onChange={(e) => updateItem(i, { url: e.target.value })}
+                  />
                 </Field>
               </FieldGrid>
 
               <div className="space-y-2 border-l-2 border-line pl-4">
-                <span className="text-xs font-medium text-ink-soft">{t("admin.nav.children")}</span>
+                <span className="text-xs font-medium text-ink-soft">
+                  {t("admin.nav.children")}
+                </span>
                 {item.children.map((child, j) => (
-                  <div key={child.id ?? `new-${j}`} className="flex flex-wrap items-end gap-2">
-                    <Field label={t("admin.nav.fields.label")} className="flex-1">
-                      <TextInput value={child.label} onChange={(e) => updateChild(i, j, { label: e.target.value })} />
+                  <div
+                    key={child.id ?? `new-${j}`}
+                    className="flex flex-wrap items-end gap-2"
+                  >
+                    <Field
+                      label={t("admin.nav.fields.label")}
+                      className="flex-1"
+                    >
+                      <TextInput
+                        value={child.label}
+                        onChange={(e) =>
+                          updateChild(i, j, { label: e.target.value })
+                        }
+                      />
                     </Field>
                     <Field label={t("admin.nav.fields.url")} className="flex-1">
-                      <TextInput value={child.url} onChange={(e) => updateChild(i, j, { url: e.target.value })} />
+                      <TextInput
+                        value={child.url}
+                        onChange={(e) =>
+                          updateChild(i, j, { url: e.target.value })
+                        }
+                      />
                     </Field>
-                    <AdminButton variant="danger" onClick={() => removeChild(i, j)} disabled={pending}>
+                    <AdminButton
+                      variant="danger"
+                      onClick={() => removeChild(i, j)}
+                      disabled={pending}
+                    >
                       ✕
                     </AdminButton>
                   </div>
                 ))}
-                <AdminButton variant="ghost" onClick={() => addChild(i)} disabled={pending}>
+                <AdminButton
+                  variant="ghost"
+                  onClick={() => addChild(i)}
+                  disabled={pending}
+                >
                   {t("admin.nav.addChild")}
                 </AdminButton>
               </div>
