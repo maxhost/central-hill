@@ -8,5 +8,7 @@ export { loadMedia } from "./queries";
 export type { MediaImageData } from "./image";
 export { blurDataUrl } from "./blur";
 export { MediaImage, mediaUrl } from "./image";
+export type { MediaImgTagOptions } from "./img-tag";
+export { mediaImgTag } from "./img-tag";
 export type { FinalizeInput, PresignInput, PresignResult } from "./server/ingest";
 export { deleteMedia, finalizeUpload, presignUpload } from "./server/ingest";

@@ -66,7 +66,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
 
       <GuestsSection
         content={guests_pitch}
-        imageUrl={media[guests_pitch.image_media_id ?? ""]?.url ?? null}
+        image={media[guests_pitch.image_media_id ?? ""] ?? null}
       />
 
       <FeaturedPortfolio locale={locale} showEyebrow={false} />

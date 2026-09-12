@@ -1,6 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import type { MediaImageData } from "@core/media";
+import { mediaImgTag, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import { getOwnersPage, type OwnersContent } from "../contract";
 import { FaqSection } from "./components/faq-section";
@@ -123,6 +123,10 @@ const DASHBOARD_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=72";
 const DASHBOARD_FALLBACK_ALT = "Owner dashboard showing live revenue and occupancy";
 
+// The showcase image sits in one of two equal columns inside the 1240px `.wrap`
+// (28px padding, 64px gap) and goes full-width under 980px — see `.owner-showcase`.
+const SHOWCASE_SIZES = "(max-width: 980px) 100vw, 560px";
+
 // Bespoke per-benefit icons from the locked design — positional (paired by index with the
 // fixed-count benefit lists). Only the benefit *text* is data-driven; the SVGs never change.
 const WHY_ICONS = [
@@ -174,16 +178,29 @@ function benefitList(
  */
 function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageData>): string {
   const { hero, earnings_form: form, stats, why, services, plans, journey, dashboard } = content;
-  const heroImg = media[hero.image_media_id]?.url || HERO_FALLBACK_IMG;
-  const heroAlt = media[hero.image_media_id]?.alt || HERO_FALLBACK_ALT;
-  const servicesImg = media[services.image_media_id ?? ""]?.url || SERVICES_FALLBACK_IMG;
-  const servicesAlt = media[services.image_media_id ?? ""]?.alt || SERVICES_FALLBACK_ALT;
-  const dashboardImg = media[dashboard.image_media_id ?? ""]?.url || DASHBOARD_FALLBACK_IMG;
-  const dashboardAlt = media[dashboard.image_media_id ?? ""]?.alt || DASHBOARD_FALLBACK_ALT;
+  const heroImgTag = mediaImgTag({
+    data: media[hero.image_media_id],
+    fallbackSrc: HERO_FALLBACK_IMG,
+    fallbackAlt: HERO_FALLBACK_ALT,
+    sizes: "100vw",
+    priority: true, // full-bleed hero — the LCP element on this page
+  });
+  const servicesImgTag = mediaImgTag({
+    data: media[services.image_media_id ?? ""],
+    fallbackSrc: SERVICES_FALLBACK_IMG,
+    fallbackAlt: SERVICES_FALLBACK_ALT,
+    sizes: SHOWCASE_SIZES,
+  });
+  const dashboardImgTag = mediaImgTag({
+    data: media[dashboard.image_media_id ?? ""],
+    fallbackSrc: DASHBOARD_FALLBACK_IMG,
+    fallbackAlt: DASHBOARD_FALLBACK_ALT,
+    sizes: SHOWCASE_SIZES,
+  });
 
   return `
 <section id="worth" class="hero compact owner-hero" style="padding:0">
-  <img src="${escAttr(heroImg)}" alt="${escAttr(heroAlt)}">
+  ${heroImgTag}
   <div class="wrap">
     <div class="hero-copy">
       <h1>${esc(hero.headline)}</h1>
@@ -257,7 +274,7 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
       ${services.cta.note ? `<p class="sh-note">${esc(services.cta.note)}</p>` : ""}
     </div>
     <div class="sh-media reveal">
-      <img src="${escAttr(servicesImg)}" alt="${escAttr(servicesAlt)}">
+      ${servicesImgTag}
       <div class="sh-badge">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
         <span>Every detail handled — you stay free.</span>
@@ -335,7 +352,7 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
       ${dashboard.cta.note ? `<p class="sh-note">${esc(dashboard.cta.note)}</p>` : ""}
     </div>
     <div class="sh-media reveal">
-      <img src="${escAttr(dashboardImg)}" alt="${escAttr(dashboardAlt)}">
+      ${dashboardImgTag}
       <div class="sh-badge">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
         <span>Real-time data, from anywhere.</span>

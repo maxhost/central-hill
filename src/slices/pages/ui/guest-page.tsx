@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
-import type { MediaImageData } from "@core/media";
+import { mediaImgTag, type MediaImageData } from "@core/media";
 import { getGlobals } from "@slices/settings/contract";
 import { getGuestPage, type GuestContent } from "../contract";
 import { FaqSection } from "./components/faq-section";
@@ -36,6 +36,9 @@ const HERO_FALLBACK_POSTER =
 const WELCOME_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70";
 const WELCOME_FALLBACK_ALT = "Bright, design-led Central Hill apartment interior";
+// The welcome photo is the narrower of two columns in the 1240px `.wrap` (.95fr of
+// 1.05fr/.95fr with a 56px gap) and goes full-width under 880px — see `.welcome`.
+const WELCOME_SIZES = "(max-width: 880px) 100vw, 540px";
 
 // Escape admin-authored content before it is interpolated into the static body HTML string.
 const esc = (s: string) =>
@@ -128,9 +131,12 @@ function bodyTop(
 ): string {
   const { hero, welcome, why } = content;
   const heroVideo = media[hero.video_media_id ?? ""]?.url ?? HERO_FALLBACK_VIDEO;
-  const welcomeAsset = media[welcome.image_media_id ?? ""];
-  const welcomeImg = welcomeAsset?.url ?? WELCOME_FALLBACK_IMG;
-  const welcomeAlt = welcomeAsset?.alt || WELCOME_FALLBACK_ALT;
+  const welcomeImgTag = mediaImgTag({
+    data: media[welcome.image_media_id ?? ""],
+    fallbackSrc: WELCOME_FALLBACK_IMG,
+    fallbackAlt: WELCOME_FALLBACK_ALT,
+    sizes: WELCOME_SIZES,
+  });
 
   return `
 <!-- HERO -->
@@ -162,7 +168,7 @@ function bodyTop(
             : ""
         }
       </div>
-      <img src="${escAttr(welcomeImg)}" alt="${escAttr(welcomeAlt)}">
+      ${welcomeImgTag}
     </div>
   </div>
 </section>

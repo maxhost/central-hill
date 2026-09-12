@@ -1,6 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import type { MediaImageData } from "@core/media";
+import { mediaImgTag, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import { getRealEstatePage, type RealEstateContent } from "../contract";
 import {
@@ -46,6 +46,10 @@ const ASSET_FALLBACK_ALT = "Designer-furnished managed apartment in a Lisbon bui
 const CAP_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=72";
 const CAP_FALLBACK_ALT = "Central Hill's management team reviewing portfolio performance dashboards";
+
+// The showcase image sits in one of two equal columns inside the 1240px `.wrap`
+// (28px padding, 64px gap) and goes full-width under 980px — see `.asset-showcase`.
+const SHOWCASE_SIZES = "(max-width: 980px) 100vw, 560px";
 
 // Escape admin-authored content before it is interpolated into the static body HTML string.
 const esc = (s: string) =>
@@ -277,8 +281,8 @@ function showcase(opts: {
     cta: { label: string; url: string; note?: string };
   };
   icons: readonly string[];
-  img: string;
-  imgAlt: string;
+  /** Optimised `<img>` built by `mediaImgTag` (kernel) — already escaped. */
+  imgTag: string;
 }): string {
   const { data } = opts;
   const cta = data.cta.label
@@ -302,7 +306,7 @@ function showcase(opts: {
       ${cta}
     </div>
     <div class="sh-media reveal">
-      <img src="${escAttr(opts.img)}" alt="${escAttr(opts.imgAlt)}">
+      ${opts.imgTag}
       ${badge}
     </div>
   </div>
@@ -488,20 +492,33 @@ function bodyTop(content: RealEstateContent, media: Record<string, MediaImageDat
   const dealStructures = content.deal_structures ?? defaultDealStructures;
   const trackRecord = content.track_record ?? defaultTrackRecord;
   const process = content.process ?? defaultProcess;
-  const heroImg = media[hero.image_media_id]?.url || HERO_FALLBACK_IMG;
-  const heroAlt = media[hero.image_media_id]?.alt || HERO_FALLBACK_ALT;
   // Optional capability-statement asset behind the hero's secondary CTA (e.g. a PDF). If
   // no asset is set, the button keeps the design's in-page anchor.
   const capStmtUrl = media[hero.capability_statement_media_id ?? ""]?.url || "#deal-enquiry";
-  const assetImg = media[assets.image_media_id ?? ""]?.url || ASSET_FALLBACK_IMG;
-  const assetAlt = media[assets.image_media_id ?? ""]?.alt || ASSET_FALLBACK_ALT;
-  const capImg = media[capabilities.image_media_id ?? ""]?.url || CAP_FALLBACK_IMG;
-  const capAlt = media[capabilities.image_media_id ?? ""]?.alt || CAP_FALLBACK_ALT;
+  const heroImgTag = mediaImgTag({
+    data: media[hero.image_media_id],
+    fallbackSrc: HERO_FALLBACK_IMG,
+    fallbackAlt: HERO_FALLBACK_ALT,
+    sizes: "100vw",
+    priority: true, // full-bleed hero — the LCP element on this page
+  });
+  const assetImgTag = mediaImgTag({
+    data: media[assets.image_media_id ?? ""],
+    fallbackSrc: ASSET_FALLBACK_IMG,
+    fallbackAlt: ASSET_FALLBACK_ALT,
+    sizes: SHOWCASE_SIZES,
+  });
+  const capImgTag = mediaImgTag({
+    data: media[capabilities.image_media_id ?? ""],
+    fallbackSrc: CAP_FALLBACK_IMG,
+    fallbackAlt: CAP_FALLBACK_ALT,
+    sizes: SHOWCASE_SIZES,
+  });
 
   return `
 <!-- SECTION 1 — HERO -->
 <section class="hero compact" id="top">
-  <img src="${escAttr(heroImg)}" alt="${escAttr(heroAlt)}">
+  ${heroImgTag}
   <div class="wrap">
     ${hero.subheadline ? `<div class="eyebrow">${esc(hero.subheadline)}</div>` : ""}
     <h1>${esc(hero.headline)}</h1>
@@ -543,8 +560,7 @@ ${showcase({
   classes: "alt asset-showcase reverse cap-showcase",
   data: capabilities,
   icons: CAPABILITY_ICONS,
-  img: capImg,
-  imgAlt: capAlt,
+  imgTag: capImgTag,
 })}
 <!-- SECTION 4 — ASSET TYPES (Image Showcase, DB-driven) -->
 ${showcase({
@@ -552,8 +568,7 @@ ${showcase({
   classes: "asset-showcase",
   data: assets,
   icons: ASSET_ICONS,
-  img: assetImg,
-  imgAlt: assetAlt,
+  imgTag: assetImgTag,
 })}
 
 ${dealStructuresSection(dealStructures)}

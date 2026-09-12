@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import type { BuildingSummary } from "../contract";
 import { listBuildings } from "../server/queries";
@@ -33,6 +34,10 @@ function esc(s: string): string {
 
 const PLACEHOLDER_COVER = "/placeholders/building.svg";
 
+// `.pf-grid` is 3 columns inside the 1240px `.wrap` (28px padding, 1px gaps),
+// 2 columns under 980px and 1 under 680px — see `mock.css`.
+const CARD_SIZES = "(max-width: 680px) 100vw, (max-width: 980px) 50vw, 394px";
+
 interface CardLabels {
   isNew: string;
   viewMore: string;
@@ -43,8 +48,12 @@ interface CardLabels {
  *  When the building has booking enabled + an external URL, the whole card links out to it
  *  (new tab) instead of the internal detail page. */
 function cardHtml(b: BuildingSummary, locale: Locale, labels: CardLabels): string {
-  const cover = b.cover?.url ?? PLACEHOLDER_COVER;
-  const alt = b.cover?.alt ?? b.name;
+  const coverTag = mediaImgTag({
+    data: b.cover,
+    fallbackSrc: PLACEHOLDER_COVER,
+    fallbackAlt: b.name,
+    sizes: CARD_SIZES,
+  });
   const meta = [b.streetAddress, b.neighbourhood?.name, labels.apartments(b.stats.apartments)]
     .filter(Boolean)
     .join(" · ");
@@ -55,7 +64,7 @@ function cardHtml(b: BuildingSummary, locale: Locale, labels: CardLabels): strin
       <a class="pcard" href="${esc(href)}"${targetAttr}>
         <div class="ph">${
           b.isNew ? `<span class="badge">★ ${esc(labels.isNew)}</span>` : ""
-        }<img src="${esc(cover)}" alt="${esc(alt)}" loading="lazy"></div>
+        }${coverTag}</div>
         <div class="pbody">
           <h3>${esc(b.name)}</h3>
           <div class="pmeta">${esc(meta)}</div>

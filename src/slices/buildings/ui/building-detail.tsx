@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import { type ApartmentSummary, listByBuilding } from "@slices/apartments/contract";
 import type { BuildingDetail as BuildingDetailModel } from "../contract";
@@ -43,6 +44,13 @@ function paragraphs(text: string): string {
 const PLACEHOLDER_BUILDING = "/placeholders/building.svg";
 const PLACEHOLDER_APARTMENT = "/placeholders/apartment.svg";
 
+// `.pf-grid` is 3 columns inside the 1240px `.wrap`, 2 under 980px, 1 under 680px.
+const CARD_SIZES = "(max-width: 680px) 100vw, (max-width: 980px) 50vw, 394px";
+// `.gallery` is `2fr 1fr 1fr` × 2 rows with a 10px gap; `.g0` spans both rows (so it is
+// the 2fr column) and goes full-width at 680px, where the rest become 2 columns.
+const GALLERY_LEAD_SIZES = "(max-width: 680px) 100vw, 582px";
+const GALLERY_SIZES = "(max-width: 680px) 50vw, 291px";
+
 /** Generic amenity glyph (the DB stores an icon key, but a single check reads cleanly
  *  across the whole grid and degrades gracefully until a per-key icon map is wired). */
 const AMENITY_ICON =
@@ -80,8 +88,12 @@ interface ApartmentLabels {
 
 /** One `.pcard` for the "Apartments in this Building" grid, built from a published unit. */
 function apartmentCardHtml(a: ApartmentSummary, labels: ApartmentLabels): string {
-  const cover = a.cover?.url ?? PLACEHOLDER_APARTMENT;
-  const alt = a.cover?.alt ?? a.name;
+  const coverTag = mediaImgTag({
+    data: a.cover,
+    fallbackSrc: PLACEHOLDER_APARTMENT,
+    fallbackAlt: a.name,
+    sizes: CARD_SIZES,
+  });
   const meta = [labels.bedrooms(a.bedrooms), labels.guests(a.maxGuests), labels.beds(a.bedsCount)].join(
     " · ",
   );
@@ -91,7 +103,7 @@ function apartmentCardHtml(a: ApartmentSummary, labels: ApartmentLabels): string
       <a class="pcard" href="${esc(href)}"${external}>
         <div class="ph">${
           a.badge ? `<span class="badge">${esc(a.badge)}</span>` : ""
-        }<img src="${esc(cover)}" alt="${esc(alt)}" loading="lazy"></div>
+        }${coverTag}</div>
         <div class="pbody"><h3>${esc(a.name)}</h3><div class="pmeta">${esc(meta)}</div><span class="check">${esc(labels.checkAvailability)} →</span></div>
       </a>`;
 }
@@ -153,14 +165,19 @@ function bodyHtml(
   L: BuildingLabels,
   AL: ApartmentLabels,
 ): string {
-  const heroCover = detail.cover?.url ?? PLACEHOLDER_BUILDING;
-  const heroAlt = detail.cover?.alt ?? detail.name;
+  const heroTag = mediaImgTag({
+    data: detail.cover,
+    fallbackSrc: PLACEHOLDER_BUILDING,
+    fallbackAlt: detail.name,
+    sizes: "100vw",
+    priority: true, // full-bleed hero — the LCP element on this page
+  });
   const locationLine = `${detail.neighbourhood ? `${esc(detail.neighbourhood.name)} · ` : ""}${esc(detail.city.name)}`;
   const addrHtml = detail.streetAddress ? `<p class="addr">${esc(detail.streetAddress)}</p>` : "";
 
   const hero = `
 <section class="hero compact" style="padding:0">
-  <img src="${esc(heroCover)}" alt="${esc(heroAlt)}">
+  ${heroTag}
   <div class="wrap">
     <nav class="crumb" aria-label="Breadcrumb">
       <a href="/${locale}">${esc(L.home)}</a><span>/</span><a href="/${locale}/buildings">${esc(L.breadcrumb)}</a><span>/</span><span class="here">${esc(detail.name)}</span>
@@ -173,9 +190,12 @@ function bodyHtml(
 
   const galleryHtml = detail.gallery.length
     ? `<div class="gallery reveal">${detail.gallery
-        .map(
-          (g, i) =>
-            `<img${i === 0 ? ' class="g0"' : ""} src="${esc(g.url)}" alt="${esc(g.alt)}"${i > 0 ? ' loading="lazy"' : ""}>`,
+        .map((g, i) =>
+          mediaImgTag({
+            data: g,
+            sizes: i === 0 ? GALLERY_LEAD_SIZES : GALLERY_SIZES,
+            ...(i === 0 ? { className: "g0", loading: "eager" as const } : {}),
+          }),
         )
         .join("")}</div>`
     : "";

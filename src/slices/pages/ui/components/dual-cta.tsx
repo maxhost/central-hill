@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import type { MediaImageData } from "@core/media";
+import { MediaImage, type MediaImageData } from "@core/media";
 import { ButtonLink, Container } from "@core/ui";
 import { avantioBookingUrl, getGlobals } from "@slices/settings/contract";
 
@@ -20,6 +20,35 @@ const OWNER_IMG =
   "https://images.pexels.com/photos/20143167/pexels-photo-20143167.jpeg?auto=compress&cs=tinysrgb&w=1400";
 const GUEST_IMG =
   "https://images.pexels.com/photos/4450201/pexels-photo-4450201.jpeg?auto=compress&cs=tinysrgb&w=1400";
+
+const PANEL_CLASS =
+  "absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105";
+// Two equal panels from `md`, one full-width column below.
+const PANEL_SIZES = "(max-width: 768px) 100vw, 50vw";
+
+/** The panel background: optimised when the backoffice has an asset, otherwise the approved
+ *  mock photo emitted verbatim — Pexels already serves it pre-sized (ADR 0027). */
+function PanelImage({
+  asset,
+  fallbackSrc,
+  alt,
+}: {
+  asset?: MediaImageData;
+  fallbackSrc: string;
+  alt: string;
+}) {
+  if (asset) {
+    return (
+      <MediaImage
+        data={asset.alt ? asset : { ...asset, alt }}
+        className={PANEL_CLASS}
+        sizes={PANEL_SIZES}
+      />
+    );
+  }
+  // eslint-disable-next-line @next/next/no-img-element -- external mock photo, CDN-sized
+  return <img src={fallbackSrc} alt={alt} className={PANEL_CLASS} />;
+}
 
 type Panel = {
   image_media_id?: string;
@@ -42,8 +71,8 @@ export async function DualCta({
 
   const owner = content?.owner;
   const guest = content?.guest;
-  const ownerImg = (owner?.image_media_id && media[owner.image_media_id]?.url) || OWNER_IMG;
-  const guestImg = (guest?.image_media_id && media[guest.image_media_id]?.url) || GUEST_IMG;
+  const ownerAsset = owner?.image_media_id ? media[owner.image_media_id] : undefined;
+  const guestAsset = guest?.image_media_id ? media[guest.image_media_id] : undefined;
 
   const ownerContact = globals
     ? [globals.phone, globals.email, globals.whatsapp ? `WhatsApp ${globals.whatsapp}` : null]
@@ -58,11 +87,10 @@ export async function DualCta({
         <div className="grid grid-cols-1 gap-px overflow-hidden border border-line bg-line md:grid-cols-2">
           {/* Owner panel */}
           <div className="group relative flex min-h-[clamp(440px,54vh,580px)] overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element -- external/R2 panel image */}
-            <img
-              src={ownerImg}
+            <PanelImage
+              asset={ownerAsset}
+              fallbackSrc={OWNER_IMG}
               alt={owner?.title || t("dualCta.ownerTitle")}
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
             <div className="relative mt-auto p-8 text-white md:p-12">
@@ -88,11 +116,10 @@ export async function DualCta({
 
           {/* Guest panel */}
           <div className="group relative flex min-h-[clamp(440px,54vh,580px)] overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element -- external/R2 panel image */}
-            <img
-              src={guestImg}
+            <PanelImage
+              asset={guestAsset}
+              fallbackSrc={GUEST_IMG}
               alt={guest?.title || t("dualCta.guestTitle")}
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
             <div className="relative mt-auto p-8 text-white md:p-12">

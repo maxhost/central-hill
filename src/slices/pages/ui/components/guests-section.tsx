@@ -1,3 +1,4 @@
+import { MediaImage, type MediaImageData } from "@core/media";
 import { ButtonLink } from "@core/ui";
 import { Band, type CtaNote, type IconCard, altBg } from "./blocks";
 import { Icon } from "./icon";
@@ -23,15 +24,18 @@ type GuestsContent = {
   cta: CtaNote;
 };
 
+const SHOWCASE_CLASS = "aspect-[4/5] w-full rounded-sm object-cover";
+// One of two equal columns in the home container from `lg`, full-width below.
+const SHOWCASE_SIZES = "(max-width: 1024px) 100vw, 560px";
+
 export function GuestsSection({
   content,
-  imageUrl,
+  image,
 }: {
   content: GuestsContent;
-  /** Resolved R2 URL for `image_media_id`; falls back to the approved mock photo. */
-  imageUrl?: string | null;
+  /** Resolved asset for `image_media_id`; falls back to the approved mock photo. */
+  image?: MediaImageData | null;
 }) {
-  const showcase = imageUrl || SHOWCASE_IMG;
   return (
     <Band id="guests" className={altBg}>
       <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
@@ -60,13 +64,13 @@ export function GuestsSection({
         </div>
 
         <div className="relative order-first lg:order-last">
-          {/* eslint-disable-next-line @next/next/no-img-element -- external/R2 preview image */}
-          <img
-            src={showcase}
-            alt=""
-            loading="lazy"
-            className="aspect-[4/5] w-full rounded-sm object-cover"
-          />
+          {image ? (
+            <MediaImage data={image} className={SHOWCASE_CLASS} sizes={SHOWCASE_SIZES} />
+          ) : (
+            /* eslint-disable-next-line @next/next/no-img-element -- approved mock photo,
+               already sized by Unsplash's own CDN (ADR 0027) */
+            <img src={SHOWCASE_IMG} alt="" loading="lazy" className={SHOWCASE_CLASS} />
+          )}
           {content.cta.note ? (
             <div className="absolute -bottom-5 -left-4 hidden max-w-[15rem] items-start gap-2.5 rounded-sm border border-line bg-surface px-5 py-4 shadow-xl sm:flex">
               <Icon name="check" className="mt-0.5 h-5 w-5 shrink-0 text-accent-deep" />

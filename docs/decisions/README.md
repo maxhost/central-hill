@@ -658,5 +658,14 @@ visible win arrives with the first R2 upload, while the correctness win (dimensi
 immediate. Rendering an `<img>` from a string keeps these pages outside React's control; that is
 already true and this ADR does not widen it.
 
-**Status:** Accepted (2026-09-12). Part 1 (blurhash) implemented; part 2 (`mediaImgTag`) is spec §12
-step 2. Supersedes nothing; amends ADR 0018's render half.
+One cost is recorded deliberately: the blur placeholder is an inline `style` of ~1.3 KB per image
+(Next wraps `blurDataURL` in a gaussian-blur SVG), so a dense grid — a 30-building listing — adds
+tens of KB to the **document**, which is itself on the LCP path. It is left **on everywhere**, for
+parity with `<MediaImage>`; spec §12 step 11 is an LCP/format audit *with measurements*, and that is
+where to decide whether card grids should opt out — not here, by guessing. Two behaviours differ
+from the React component and are accepted: the placeholder background is never cleared on load
+(harmless — every call site is `object-fit: cover`, so the loaded photo covers it), and `priority`
+cannot emit a `<link rel=preload>` from inside a string, so `fetchpriority="high"` stands in.
+
+**Status:** Accepted (2026-09-12). Both parts implemented. Supersedes nothing; amends ADR 0018's
+render half.
