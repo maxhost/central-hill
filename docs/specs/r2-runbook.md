@@ -13,8 +13,24 @@ Two columns of work run here:
 | C | — | Endpoint fix, Cache-Control fix, build assertion |
 | D | — | Migration, normalisation, media library |
 
-**Status (2026-09-12):** A1–A3 done, B local `.env` done and verified against the live bucket, **C
-done** (ADR 0024). Outstanding for the owner: **A4 (CORS)** and **B1 (Vercel variables)**.
+**Status (2026-09-12): STEPS A, B and C are COMPLETE and verified against production.** The last
+two owner items — A4 (CORS) and B1 (the Vercel variables) — landed, the deploy that picked them up is
+live, and the full path was probed end to end through the *deployed* optimizer:
+
+```
+presign ✓ · PUT ✓ 200 · public GET ✓ (immutable cache directive stored) · /_next/image ✓ 200 webp
+(640→622 B, 1200→1880 B) · delete ✓ 404
+```
+
+**The backoffice can now accept its first real upload.** Re-run that probe any time the token,
+the CORS policy, `R2_PUBLIC_BASE_URL` or the build environment changes:
+
+```bash
+npx tsx --tsconfig scripts/tsconfig.json scripts/probe-r2.ts            # production
+npx tsx --tsconfig scripts/tsconfig.json scripts/probe-r2.ts http://localhost:3000
+```
+
+It writes no DB row and deletes the object it uploads. Remaining work is **STEP D** alone.
 
 ---
 
@@ -29,7 +45,7 @@ needed.
 
 ---
 
-## STEP A — Cloudflare R2 (dashboard)
+## STEP A — Cloudflare R2 (dashboard) ✅ DONE
 
 ### A1. Create the bucket
 
@@ -84,7 +100,17 @@ and every single upload fails (spec §3.1, fixed in C1).
 
 `R2_ACCOUNT_ID` is the Account ID from the R2 overview page (also in the dashboard URL).
 
-### A4. CORS — without this, every upload fails in the browser
+### A4. CORS — without this, every upload fails in the browser ✅ DONE
+
+**Verified live** — a preflight from both allowed origins returns `204` with
+`Access-Control-Allow-Methods: PUT` and `Access-Control-Allow-Headers: content-type, cache-control`:
+
+```bash
+curl -i -X OPTIONS "$R2_S3_ENDPOINT/central-hill-media/probe/x.jpg" \
+  -H "Origin: https://central-hill-umber.vercel.app" \
+  -H "Access-Control-Request-Method: PUT" \
+  -H "Access-Control-Request-Headers: content-type,cache-control"
+```
 
 The admin uploads **straight from the browser to R2**, so the bucket must accept it.
 
@@ -116,7 +142,7 @@ Notes:
 
 ---
 
-## STEP B — Load the variables
+## STEP B — Load the variables ✅ DONE
 
 Six variables, same values in all environments:
 
@@ -129,8 +155,9 @@ R2_PUBLIC_BASE_URL        = https://pub-<hash>.r2.dev
 R2_S3_ENDPOINT            ← copied from A3, NOT guessed
 ```
 
-All six are already in the local `.env` and verified against the live bucket. What is left is
-loading them into **Vercel**.
+All six are in the local `.env` **and in Vercel**, and the redeploy that picked them up is live.
+Note that the C3 build assertion makes this self-verifying: a build that *succeeds* proves
+`R2_PUBLIC_BASE_URL` was present at build time, which is precisely the §B4 trap.
 
 ### B1. Vercel — via the dashboard (recommended)
 
@@ -206,11 +233,12 @@ finalize → public GET → delete.
 > `signableHeaders`, so omitting or tampering with either is a 403 at upload time instead of a
 > silent, permanent misconfiguration. That is exactly why A4 is not optional.
 
-After A4 + B1, **the first real upload from the backoffice can succeed.**
+A4 + B1 are done, so **the first real upload from the backoffice can now succeed** — confirmed by
+`scripts/probe-r2.ts` against the live bucket and the deployed optimizer, not just locally.
 
 ---
 
-## STEP D — the rest, in order
+## STEP D — the rest, in order ← **all that is left**
 
 | # | Work | Depends on | Notes |
 |---|---|---|---|
