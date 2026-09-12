@@ -999,3 +999,9 @@ on a building gallery three files list by name and upload one at a time, the oth
 *Waiting*, each ticking to ✓ as it lands. Test content was snapshotted and restored afterwards. The
 transition bug in point 6 was invisible to every other form of testing — the server path was
 completely healthy while the UI showed nothing.
+
+**QA closed (2026-09-12).** Re-verified against the live deployment (`82600ae`) after the point-6
+fix, on both field shapes at once — a single `MediaField` (cover) plus a `MediaGalleryField` (three
+files) on the same save: modal appeared, per-file states progressed `Waiting → 0–100% → ✓ Done`, and
+it closed itself once everything landed. Test data was snapshotted before and restored after. This
+spec is implemented; no open item remains against it.

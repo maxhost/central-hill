@@ -237,6 +237,15 @@ finalize → public GET → delete.
 A4 + B1 are done, so **the first real upload from the backoffice can now succeed** — confirmed by
 `scripts/probe-r2.ts` against the live bucket and the deployed optimizer, not just locally.
 
+**Two problems surfaced only by QA on the deployed backoffice, both closed:**
+- Every upload 500'd in production (never worked in any deployed environment, not a regression) —
+  libvips was traced into the function bundle at the wrong path. Fixed, ADR 0029.
+- Uploading on file-pick rather than on save created orphans by construction. Fixed by deferring
+  upload to save with a blocking progress modal, ADR 0030. **QA closed (2026-09-12)**: verified
+  against the live deployment on both a single `MediaField` and a `MediaGalleryField` together —
+  modal appears, per-file progress advances `Waiting → 0–100% → ✓ Done`, closes itself when the
+  batch lands. Implemented, no open item remains.
+
 ---
 
 ## STEP D — the rest, in order ← **all that is left** (D1, D2 done)
