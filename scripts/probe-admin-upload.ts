@@ -43,6 +43,19 @@ function fail(hop: string, detail: string): never {
  */
 type Unwrapped = { ok: true; data: Record<string, string> } | { ok: false; error: string };
 
+/**
+ * The presign fields this probe actually uses. Declared rather than read off the loose
+ * `Record<string, string>` so `noUncheckedIndexedAccess` does not make every one of them
+ * `string | undefined` at the call sites below.
+ */
+interface Presigned {
+  id: string;
+  r2Key: string;
+  uploadUrl: string;
+  contentType: string;
+  cacheControl: string;
+}
+
 function unwrap(text: string, key: string): Unwrapped | null {
   for (const line of text.split("\n")) {
     const i = line.indexOf(":");
@@ -110,7 +123,7 @@ async function main() {
   // Every candidate id is tried with presign's arguments; the other actions reject them
   // and now do so by *returning* an error, so a rejection here is expected noise rather
   // than a failure. Only report those if nothing succeeded.
-  let presigned: Record<string, string> | null = null;
+  let presigned: Presigned | null = null;
   let presignId = "";
   const rejections: string[] = [];
   for (const id of ids) {
@@ -123,7 +136,7 @@ async function main() {
       rejections.push(`${id.slice(0, 8)}: ${got.error}`);
       continue;
     }
-    presigned = got.data;
+    presigned = got.data as unknown as Presigned;
     presignId = id;
     break;
   }
