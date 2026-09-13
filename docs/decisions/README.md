@@ -37,6 +37,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0028 — AVIF before WebP in `images.formats`](#0028)
 - [0029 — Trace the libvips shared object into the function bundle](#0029)
 - [0030 — Media uploads happen on save, not on pick](#0030)
+- [0031 — Home reduced to a guest-facing funnel](#0031)
 
 ---
 
@@ -1005,3 +1006,51 @@ fix, on both field shapes at once — a single `MediaField` (cover) plus a `Medi
 files) on the same save: modal appeared, per-file states progressed `Waiting → 0–100% → ✓ Done`, and
 it closed itself once everything landed. Test data was snapshotted before and restored after. This
 spec is implemented; no open item remains against it.
+
+
+---
+
+## 0031 — Home reduced to a guest-facing funnel <a id="0031"></a>
+**Context:** ADR 0022 locked Home to the approved `mock/home.html` composition, and ADR 0023 added
+the owner/guest dual-CTA band to the Home editor. The owner has since directed that Home stop
+serving both audiences and become a single guest-facing funnel: hero → availability search → proof
+→ one guest pitch → footer. Four sections come out — the owners pitch, the featured portfolio, the
+testimonials row and the dual-CTA band.
+
+This contradicts a standing ADR, which is exactly the case golden rule 6 reserves for a new
+decision record rather than a silent edit.
+
+**Decision:** Home renders **hero · Avantio search · stats band · guests pitch · optional FAQ**, and
+the `home` schema shrinks to match.
+
+1. **`owners_pitch` and `dual_cta` are removed from `homeSchema`.** The schema is the single source
+   the editor is generated from, so dropping the fields removes their editor sections with no admin
+   code to change — the backoffice and the public page cannot drift apart by construction.
+2. **The featured portfolio and testimonials are only *disconnected*.** They were never Home
+   content: they compose from the `buildings` and `testimonials` slices, and both still render on
+   the owners and guest pages. Their components stay.
+3. **`owners-section.tsx` and `dual-cta.tsx` are deleted.** Unlike the above, Home was their only
+   consumer, and their props are typed from the schema fields being removed — keeping them would
+   mean maintaining components that nothing can render. `pages.dualCta.*` (8 keys × 4 locales) goes
+   with them.
+4. **No data migration.** `page_content.data` rows still carry `owners_pitch` and `dual_cta` until
+   the page is next saved; Zod strips unknown keys on read, so they are inert in the meantime, and
+   the first save drops them for good. A migration to rewrite the JSON would buy nothing over that.
+   Checked before relying on it: the stored copy is **byte-identical to `scripts/seed-demo.ts`** —
+   the client never edited those blocks — so it remains recoverable from git (`git show
+   628d8ff:scripts/seed-demo.ts`) rather than living only in a database row about to be overwritten.
+   Had it diverged, this would have needed preserving deliberately instead.
+
+**Consequences:** Owner-facing conversion on Home is gone; the Owners page is now the only owner
+funnel, reachable from the hero's secondary CTA (which points at `/owners` and was already an
+absolute URL, so nothing broke). The removed sections took **all six owner benefit cards and both
+dual-CTA panels out of the translation pipeline** — the tests assert those paths are gone, so
+re-adding a block without re-adding its translations is a test failure rather than a silent gap.
+
+`faq_group_key` stays in the schema and the editor. It is currently blank, so Home renders no FAQ;
+this ADR does not decide whether Home should have one, it just does not remove an inactive,
+owner-controlled option that costs nothing.
+
+**Status:** Accepted (2026-09-12). Amends ADR 0022's composition and retires the Home half of ADR
+0023's dual-CTA block (the guest page keeps its own, separate `dual_cta`). Verified in the browser
+on both the public page and the generated editor.

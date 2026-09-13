@@ -36,8 +36,9 @@ settings publish cascades.
 **Booking links (client feedback B2)** — `avantioBookingUrl(locale)`, `AVANTIO_LOCALES`,
 `AVANTIO_OWNERS_LOGIN_URL` (pure, from `booking.ts`; safe in server + client). Every
 "search / book" CTA points at the Avantio rentals engine for the active locale, falling
-back to English for locales Avantio does not support (pt/en/es/fr only). Consumers:
-home/guest `dualCta.guestCta` and the header **Book Now** CTA.
+back to English for locales Avantio does not support (pt/en/es/fr only). Consumers: the guest
+page's dual-CTA panel and the header **Book Now** CTA. (Home's dual-CTA band was removed in
+ADR 0031, which also retired the `pages.dualCta.*` chrome.)
 
 **Avantio search bar** — `AvantioSearchBar({ locale })`, a server component that renders the
 vendor's external "barra de pesquisa" widget (doc: `docs/Widget Externo Avantio.pdf`, account

@@ -7,12 +7,13 @@
 > **footer** (Brand/contact · For Owners · Guests & Company) appear on every page → owned by `globals`.
 
 ## 0 · Home  → slice `pages` (key `home`)
-Dual-audience landing (owners + guests). Blocks: Hero (video/GIF bg) · Owner value-prop (6 benefit
-cards) · Company stats band (bookings/years/guests/revenue) · Guest value-prop (6 cards) · **Featured
-portfolio (3 buildings, `is_featured`, View All)** · Testimonials (6, owner/guest) · Company story ·
-Dual conversion (owner estimate / guest browse).
-- Dynamic: featured buildings (name, cover, bedrooms→capacity, link), testimonials, company stats.
-- ❓ Featured selection = manual flag vs ranked; fixed at 3? Stats = manual settings vs computed.
+**Guest-facing landing.** Blocks: Hero (video/GIF bg) · Avantio availability search · Company stats
+band (bookings/years/guests/revenue) · Guest value-prop (4 cards) · optional FAQ group.
+- Dynamic: company stats (settings), FAQ group (faq).
+- **Reduced by ADR 0031 (owner direction).** Previously also carried the owner value-prop, the
+  featured portfolio, the testimonials row and the owner/guest dual-CTA band. Owner-facing
+  conversion now lives on the Owners page; the portfolio and testimonials still render on the
+  owners and guest pages.
 
 ## 1 · Owners  → slice `pages` (key `owners`) + `leads` + `faq`
 Lead-gen for property owners. Anchored sub-nav. Blocks: Hero + **earnings-estimate form** (address,

@@ -22,14 +22,6 @@ const benefit = (n: number) => ({
   description: `Why benefit ${n} matters for you and your stay.`,
 });
 
-const panel = (side: string) => ({
-  image_media_id: UUID,
-  eyebrow: side,
-  title: `${side} title`,
-  body: `Why ${side.toLowerCase()}s should act now.`,
-  cta_label: `${side} CTA`,
-});
-
 const validHome = () => ({
   key: "home" as const,
   data: {
@@ -40,23 +32,12 @@ const validHome = () => ({
       cta_primary: { label: "Book", url: "https://centralhill.pt/buildings" },
       cta_secondary: { label: "Earnings", url: "https://centralhill.pt/owners" },
     },
-    owners_pitch: {
-      headline: "Own a property in Portugal?",
-      subheadline: "We turn it into a high-performing asset.",
-      benefits: [1, 2, 3, 4, 5, 6].map(benefit),
-      cta_primary: { label: "Estimate", url: "https://centralhill.pt/owners", note: "Free." },
-      cta_secondary: { label: "Owner page", url: "https://centralhill.pt/owners" },
-    },
     guests_pitch: {
       headline: "Why book with us",
       subheadline: "Professionally managed apartments.",
       benefits: [1, 2, 3, 4].map(benefit),
       image_media_id: UUID,
       cta: { label: "Browse", url: "https://centralhill.pt/buildings" },
-    },
-    dual_cta: {
-      owner: panel("Owner"),
-      guest: panel("Guest"),
     },
   },
 });
@@ -68,8 +49,20 @@ test("accepts a complete home page row", () => {
 
 test("rejects a home page with the wrong benefit arity (fixed-count array)", () => {
   const row = validHome();
-  row.data.owners_pitch.benefits = [1, 2, 3, 4, 5].map(benefit); // must be exactly 6
+  row.data.guests_pitch.benefits = [1, 2, 3].map(benefit); // must be exactly 4
   assert.equal(pageContentSchema.safeParse(row).success, false);
+});
+
+test("home drops the sections removed from the page (ADR 0031)", () => {
+  // Stale rows still carry these keys; the schema must strip rather than reject them,
+  // or an existing page would stop saving.
+  const withLegacy = validHome();
+  (withLegacy.data as Record<string, unknown>).owners_pitch = { headline: "gone" };
+  (withLegacy.data as Record<string, unknown>).dual_cta = { owner: {}, guest: {} };
+  const parsed = pageContentSchema.safeParse(withLegacy);
+  assert.equal(parsed.success, true, "legacy keys must not fail validation");
+  assert.ok(parsed.success && !("owners_pitch" in parsed.data.data), "owners_pitch is stripped");
+  assert.ok(parsed.success && !("dual_cta" in parsed.data.data), "dual_cta is stripped");
 });
 
 test("rejects an unknown page key", () => {
@@ -83,19 +76,23 @@ test("home exposes prose leaves as translatable but not media ids or urls", () =
   for (const p of [
     "hero.headline",
     "hero.cta_primary.label",
-    "owners_pitch.benefits[].title",
-    "owners_pitch.benefits[].description",
-    "owners_pitch.cta_primary.note",
+    "guests_pitch.headline",
+    "guests_pitch.benefits[].title",
+    "guests_pitch.benefits[].description",
     "guests_pitch.cta.label",
-    "dual_cta.owner.title",
-    "dual_cta.guest.cta_label",
+    "guests_pitch.cta.note",
   ]) {
     assert.ok(paths.includes(p), `expected translatable path ${p}`);
   }
   assert.ok(!paths.includes("hero.video_media_id"), "media ids are not translatable");
   assert.ok(!paths.includes("guests_pitch.image_media_id"), "media ids are not translatable");
-  assert.ok(!paths.includes("dual_cta.owner.image_media_id"), "media ids are not translatable");
   assert.ok(!paths.includes("hero.cta_primary.url"), "urls are not translatable");
+  // The removed sections must not leak back into the translation pipeline, which would
+  // queue work for copy that no page renders (ADR 0031).
+  assert.ok(
+    !paths.some((p) => p.startsWith("owners_pitch") || p.startsWith("dual_cta")),
+    "the removed Home sections are not translatable",
+  );
   assert.ok(!paths.includes("faq_group_key"), "the faq group key is language-neutral, not translatable");
 });
 
@@ -193,11 +190,11 @@ test("guest rejects a blank CTA url (the migration must backfill real links)", (
 
 // ── pure overlay logic ──────────────────────────────────────────────────────────
 test("expand walks fixed-count arrays into concrete numeric paths", () => {
-  const data = { owners_pitch: { benefits: [benefit(1), benefit(2)] } };
-  const concrete = expand(["owners_pitch", "benefits[]", "title"], data, []);
+  const data = { guests_pitch: { benefits: [benefit(1), benefit(2)] } };
+  const concrete = expand(["guests_pitch", "benefits[]", "title"], data, []);
   assert.deepEqual(concrete, [
-    ["owners_pitch", "benefits", "0", "title"],
-    ["owners_pitch", "benefits", "1", "title"],
+    ["guests_pitch", "benefits", "0", "title"],
+    ["guests_pitch", "benefits", "1", "title"],
   ]);
 });
 
@@ -205,19 +202,19 @@ test("overlayTranslations replaces approved leaves and falls back to source", ()
   const data = validHome().data;
   const translated: Record<string, string> = {
     "hero.headline": "Des moments en souvenirs",
-    "owners_pitch.benefits.0.title": "Avantage 1",
+    "guests_pitch.benefits.0.title": "Avantage 1",
   };
   const out = overlayTranslations(data, translatablePathsByPage.home, (p) => translated[p]);
 
   // overlaid where a translation exists…
   assert.equal((out.hero as { headline: string }).headline, "Des moments en souvenirs");
   assert.equal(
-    (out.owners_pitch as { benefits: { title: string }[] }).benefits[0]!.title,
+    (out.guests_pitch as { benefits: { title: string }[] }).benefits[0]!.title,
     "Avantage 1",
   );
   // …source-locale fallback where it does not.
   assert.equal(
-    (out.owners_pitch as { benefits: { title: string }[] }).benefits[1]!.title,
+    (out.guests_pitch as { benefits: { title: string }[] }).benefits[1]!.title,
     "Benefit 2",
   );
   // and the original is not mutated.
@@ -227,7 +224,7 @@ test("overlayTranslations replaces approved leaves and falls back to source", ()
 test("collectMediaIds gathers every *_media_id across nesting", () => {
   const ids: string[] = [];
   collectMediaIds(validHome().data, ids);
-  // hero.video + guests_pitch.image + dual_cta.owner.image + dual_cta.guest.image
-  assert.equal(ids.length, 4);
+  // hero.video + guests_pitch.image (the dual-CTA panels went with ADR 0031)
+  assert.equal(ids.length, 2);
   assert.ok(ids.every((id) => id === UUID));
 });

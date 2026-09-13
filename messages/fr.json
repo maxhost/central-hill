@@ -640,16 +640,6 @@
       "prev": "Biens précédents",
       "next": "Plus de biens"
     },
-    "dualCta": {
-      "ownerEyebrow": "Propriétaires",
-      "ownerTitle": "Vous possédez un bien ? Gagnez plus — gratuitement, sans engagement.",
-      "ownerBody": "Découvrez ce que votre bien pourrait rapporter grâce à une analyse de rentabilité gratuite et sans engagement. Notre équipe évalue votre bien et vous répond sous 48 heures.",
-      "ownerCta": "Je suis propriétaire",
-      "guestEyebrow": "Voyageurs",
-      "guestTitle": "Vous préparez un séjour ? Trouvez l'appartement idéal.",
-      "guestBody": "Parcourez notre portfolio complet d'appartements gérés par des professionnels dans les lieux les plus prisés du Portugal — du studio au 8 chambres, pour chaque type de séjour.",
-      "guestCta": "Réserver"
-    },
     "home": {
       "metaTitle": "Central Hill — Appartements Meublés Premium au Portugal",
       "metaDescription": "Des appartements meublés, gérés par des professionnels et au design soigné, dans les lieux les plus prisés du Portugal — et une gestion complète pour les propriétaires.",

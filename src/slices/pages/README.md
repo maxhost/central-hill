@@ -51,13 +51,12 @@ page out from `content` + `media`. Shared pieces in `ui/components/`:
   `Band`; `hero.tsx`: `PageHero` image/video);
 - data-composing (`stats-band.tsx` → settings, `testimonials-row.tsx` → testimonials,
   `featured-portfolio.tsx` → buildings, `faq-section.tsx` → faq, `lead-cta.tsx` → settings
-  contact). `dual-cta.tsx` renders the editable Home `dual_cta` block (owner/guest panel copy +
-  background images) with the settings contact line; unset fields fall back to the localized
-  `pages.dualCta.*` chrome and approved mock photos.
+  contact).
 
 `featured-portfolio.tsx` and `testimonials-row.tsx` take **optional** heading/CTA overrides
-(`eyebrow`, `title`, `intro`, `ctaLabel`, `ctaNote`, `ctaHref`). Home and Owners pass none and
-keep the shared `pages.portfolio.*` / `pages.reviews.*` copy; the Guests page passes its
+(`eyebrow`, `title`, `intro`, `ctaLabel`, `ctaNote`, `ctaHref`). **Home no longer renders either
+of them** (ADR 0031); Owners passes none and keeps the shared `pages.portfolio.*` /
+`pages.reviews.*` copy; the Guests page passes its
 admin-authored `guest.portfolio` block and `pages.reviews.titleGuests`. Both render `null` when
 the underlying slice has nothing published, so the section disappears rather than showing empty.
 

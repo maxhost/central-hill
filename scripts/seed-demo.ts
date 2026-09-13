@@ -276,20 +276,6 @@ function homeData() {
       cta_primary: { label: "Book Now", url: BOOK },
       cta_secondary: { label: "I'm a property owner", url: `${SITE}/en/owners` },
     },
-    owners_pitch: {
-      headline: "Own a property in Portugal? Earn more, do nothing.",
-      subheadline: "Full-service management that maximises your returns with AI-driven pricing and unmatched local expertise.",
-      benefits: [
-        ic("Maximised revenue", "Dynamic, AI-driven pricing keeps your calendar full at the best nightly rate.", "chart"),
-        ic("Fully managed", "Guests, cleaning, maintenance and compliance — all handled end to end.", "check"),
-        ic("Total transparency", "Track bookings, payouts and performance in real time from any device.", "search"),
-        ic("Five-star care", "Hotel-grade hospitality protects your asset and your reviews.", "trophy"),
-        ic("Local expertise", "A Lisbon team on the ground, available around the clock.", "map-pin"),
-        ic("No lock-in", "Flexible plans that grow with you — cancel anytime.", "tag"),
-      ],
-      cta_primary: { label: "I'm a property owner", url: `${SITE}/en/owners`, note: "Free, no obligation — reply within 48h." },
-      cta_secondary: { label: "See our plans", url: `${SITE}/en/owners` },
-    },
     guests_pitch: {
       headline: "Planning a stay? Find your perfect apartment.",
       subheadline: "Spacious, beautifully designed homes for couples, families and groups — in the heart of the city.",
@@ -301,22 +287,6 @@ function homeData() {
       ],
       image_media_id: "",
       cta: { label: "Book Now", url: BOOK, note: "Best-rate guarantee when you book direct." },
-    },
-    dual_cta: {
-      owner: {
-        image_media_id: "",
-        eyebrow: "Owners",
-        title: "Own a property? Start earning more — free, no obligation.",
-        body: "Find out what your property could earn with a free, no-obligation profitability analysis. Our team will assess your property and come back within 48 hours.",
-        cta_label: "I'm a property owner",
-      },
-      guest: {
-        image_media_id: "",
-        eyebrow: "Guests",
-        title: "Planning a stay? Find your perfect apartment.",
-        body: "Browse our full portfolio of professionally managed apartments across Portugal's most sought-after locations — studios to 8-bedrooms, for every type of stay.",
-        cta_label: "Book Now",
-      },
     },
   };
 }

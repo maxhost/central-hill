@@ -4,14 +4,10 @@ import type { Locale } from "@core/db/columns";
 import { ButtonLink } from "@core/ui";
 import { AvantioSearchBar } from "@slices/settings/contract";
 import { getHomePage } from "../contract";
-import { DualCta } from "./components/dual-cta";
 import { FaqSection } from "./components/faq-section";
-import { FeaturedPortfolio } from "./components/featured-portfolio";
 import { GuestsSection } from "./components/guests-section";
 import { PageHero } from "./components/hero";
-import { OwnersSection } from "./components/owners-section";
 import { StatsBand } from "./components/stats-band";
-import { TestimonialsRow } from "./components/testimonials-row";
 
 // TEMP: external hotlinks (the `mock/home.html` clip + poster) used only until a real hero
 // video is uploaded to R2 and set on the home page in the backoffice — then the resolved
@@ -22,12 +18,15 @@ const HERO_FALLBACK_POSTER =
   "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=2000&q=72";
 
 /**
- * Home page (content-briefs.md → 0 · Home) — restored to the approved `mock/home.html`
- * (Warm Editorial). Composes, in order: video hero · Avantio availability search (settings) ·
- * company stats (settings, dark band) ·
- * owners pitch (Editorial Split) · guests pitch (Image Showcase) · featured portfolio (buildings) ·
- * mixed testimonials (infinite marquee) · owner/guest dual CTA (settings). Static (ISR).
- * (The "our story" band was removed per owner direction.)
+ * Home page (content-briefs.md → 0 · Home). Composes, in order: video hero · Avantio
+ * availability search (settings) · company stats (settings, dark band) · guests pitch
+ * (Image Showcase) · optional FAQ group. Static (ISR).
+ *
+ * **Reduced to a guest-facing funnel by owner direction (ADR 0031)**, which amends the
+ * approved-mockup composition of ADR 0022. Removed: the owners pitch, the featured
+ * portfolio, the testimonials row and the owner/guest dual-CTA band. The portfolio and
+ * testimonials components still live in this slice and still render on the owners and
+ * guest pages — they are only no longer composed here.
  */
 export async function HomePage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
@@ -35,7 +34,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
-  const { hero, owners_pitch, guests_pitch, dual_cta } = content;
+  const { hero, guests_pitch } = content;
   const faqGroupKey = content.faq_group_key ?? "";
 
   return (
@@ -62,16 +61,10 @@ export async function HomePage({ locale }: { locale: Locale }) {
 
       <StatsBand locale={locale} keys={["bookings", "years", "guests", "revenue"]} />
 
-      <OwnersSection content={owners_pitch} />
-
       <GuestsSection
         content={guests_pitch}
         image={media[guests_pitch.image_media_id ?? ""] ?? null}
       />
-
-      <FeaturedPortfolio locale={locale} showEyebrow={false} />
-
-      <TestimonialsRow locale={locale} showEyebrow={false} />
 
       {faqGroupKey ? (
         <FaqSection
@@ -81,8 +74,6 @@ export async function HomePage({ locale }: { locale: Locale }) {
           title={t("faqTitle")}
         />
       ) : null}
-
-      <DualCta locale={locale} content={dual_cta} media={media} />
     </main>
   );
 }

@@ -99,11 +99,14 @@ page_content
 ### Per-page schemas (fields condensed; all prose fields are [T])
 
 - **home**: `hero{video_media_id, headline, subtitle, cta_primary{label,url}, cta_secondary{label,url}}`;
-  `owners_pitch{headline, subheadline, benefits[×6]{icon_key,title,description}, cta_primary{label,url,note}, cta_secondary{label,url,note}}`;
-  `guests_pitch{headline, subheadline, benefits[×6]{icon_key,title,description}, cta{label,url,note}}`;
-  `story{headline, copy, image_media_id, cta{label,url}}`.
-  → Stats band = **company_settings**; featured portfolio = **buildings** (`is_featured`, top 3 by position);
-  testimonials = **testimonials** entity (mixed audience); dual-CTA = **company_settings** contact.
+  `guests_pitch{headline, subheadline, benefits[×4]{icon_key,title,description}, image_media_id, cta{label,url,note}}`;
+  `faq_group_key`.
+  → Stats band = **company_settings**. Nothing else is composed in.
+  **Reduced by ADR 0031** to hero · booking search · stats · guests pitch: `owners_pitch`, `story`
+  and `dual_cta` were removed from the schema, and the featured portfolio and testimonials are no
+  longer composed into Home (they still render on the owners and guest pages). Rows written before
+  that change may still carry the removed keys — the schema strips them on read, and the first save
+  drops them for good.
 - **owners**: `hero{image_media_id, headline, copy}`; `earnings_form{badge, headline, subheadline, cta_label, note}`
   (the form *fields* are fixed in code → `lead.kind='earnings_estimate'`; the `badge` — "★ Earn +25%" —
   is highlighted inside the form card); `why{headline, subheadline?, benefits[×6]{icon_key,title,description},
