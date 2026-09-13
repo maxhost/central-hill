@@ -13,6 +13,30 @@ export const iconCard = z.object({
   description: tStr({ max: 400 }),
 });
 
+/**
+ * A compact "icon + label" reassurance mark — the trust strip that sits under a section
+ * heading (e.g. "Exclusive Selection", "24h Customer Support"). Unlike `iconCard` it has
+ * no description: it is a one-line claim, not a benefit card.
+ */
+export const assurance = z.object({
+  icon_key: iconKey,
+  label: tStr({ max: 60 }),
+});
+
+/**
+ * Optional reference to a `services` slice **category**, by its language-neutral `slug`.
+ * An empty string (or absent) means "every published service". Rendered as a dropdown fed
+ * by `services.listServiceCategories` — the `service_category_slug` field name drives the
+ * form-model's select heuristic, exactly like `faq_group_key`. Not a [T] field (the slug is
+ * language-neutral), so the translation pipeline skips it.
+ */
+export const serviceCategorySlug = z
+  .union([z.literal(""), z.string().max(120)])
+  .describe(
+    "Limit the carousel to one service category, or leave blank to show every published service.",
+  )
+  .optional();
+
 /** A titled step with a description (journeys, processes) — no icon. */
 export const step = z.object({
   title: tStr({ max: 120 }),

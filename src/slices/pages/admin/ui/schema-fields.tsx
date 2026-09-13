@@ -171,7 +171,7 @@ export function NodeField(props: RenderProps) {
     return (
       <Field label={label} hint={node.hint} error={errors[errorKey]}>
         <Select value={val} onChange={(e) => onChange(path, e.target.value)}>
-          <option value="">— None —</option>
+          <option value="">{node.emptyLabel}</option>
           {opts.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
@@ -179,9 +179,7 @@ export function NodeField(props: RenderProps) {
           ))}
         </Select>
         {opts.length === 0 ? (
-          <p className="mt-1 text-xs text-ink-soft">
-            No FAQ groups yet — create one in /admin/faq.
-          </p>
+          <p className="mt-1 text-xs text-ink-soft">{node.emptyHint}</p>
         ) : null}
       </Field>
     );

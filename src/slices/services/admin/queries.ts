@@ -137,6 +137,7 @@ export interface ServiceEditData {
   cover_media_id: string | null;
   og_image_media_id: string | null;
   price_from: number | null;
+  rating_tenths: number | null;
   booking_type: ServiceBookingType;
   cta_url: string | null;
   name: string;
@@ -176,6 +177,7 @@ export async function getServiceForEdit(id: string): Promise<ServiceEditBundle |
     cover_media_id: row.cover_media_id,
     og_image_media_id: row.og_image_media_id,
     price_from: row.price_from,
+    rating_tenths: row.rating_tenths,
     booking_type: row.booking_type,
     cta_url: row.cta_url,
     name: content.get(SERVICE, id, "name") ?? "",

@@ -99,6 +99,13 @@
       "when": 1789227478770,
       "tag": "0013_media_asset_two_backends",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1789261802417,
+      "tag": "0014_service_rating",
+      "breakpoints": true
     }
   ]
 }

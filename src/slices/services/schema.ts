@@ -24,6 +24,13 @@ export const service = pgTable("service", {
   cover_media_id: uuid(), // → media_asset.id (core/media)
   og_image_media_id: uuid(), // → media_asset.id (core/media)
   price_from: integer(), // cents
+  /**
+   * Partner/service satisfaction score in **tenths** (0–50 → 0.0–5.0), or null when the
+   * service has not been rated yet. Integer, never a float (data-model.md → Conventions);
+   * the public read divides by 10. Surfaced as the star chip on the home services
+   * carousel (ADR 0032).
+   */
+  rating_tenths: integer(),
   duration_label: text(),
   booking_type: text().$type<"enquiry" | "external" | "none">().notNull().default("none"),
   cta_label: text(),

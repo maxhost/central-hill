@@ -16,6 +16,11 @@ import { collectMediaIds, expand, overlayTranslations } from "../server/overlay"
 
 const UUID = "11111111-1111-4111-8111-111111111111";
 
+const assurance = (n: number) => ({
+  icon_key: "check-circle",
+  label: `Assurance ${n}`,
+});
+
 const benefit = (n: number) => ({
   icon_key: "chart",
   title: `Benefit ${n}`,
@@ -38,6 +43,12 @@ const validHome = () => ({
       benefits: [1, 2, 3, 4].map(benefit),
       image_media_id: UUID,
       cta: { label: "Browse", url: "https://centralhill.pt/buildings" },
+    },
+    services_carousel: {
+      eyebrow: "Partners",
+      headline: "Central Hill partners and services",
+      assurances: [1, 2, 3].map(assurance),
+      service_category_slug: "",
     },
   },
 });
@@ -81,6 +92,9 @@ test("home exposes prose leaves as translatable but not media ids or urls", () =
     "guests_pitch.benefits[].description",
     "guests_pitch.cta.label",
     "guests_pitch.cta.note",
+    "services_carousel.headline",
+    "services_carousel.eyebrow",
+    "services_carousel.assurances[].label",
   ]) {
     assert.ok(paths.includes(p), `expected translatable path ${p}`);
   }
@@ -94,6 +108,37 @@ test("home exposes prose leaves as translatable but not media ids or urls", () =
     "the removed Home sections are not translatable",
   );
   assert.ok(!paths.includes("faq_group_key"), "the faq group key is language-neutral, not translatable");
+  assert.ok(
+    !paths.includes("services_carousel.service_category_slug"),
+    "the service-category slug is language-neutral, not translatable",
+  );
+  assert.ok(
+    !paths.some((p) => p.startsWith("services_carousel.assurances[].icon_key")),
+    "icon keys are a code-side allowlist, not copy",
+  );
+});
+
+test("services_carousel takes exactly three assurances and an optional category filter", () => {
+  // The section's cards come from the `services` slice; only this copy lives on the page
+  // (ADR 0032). The category filter is optional — blank means "every published service".
+  const data = validHome().data;
+  assert.equal(homeSchema.safeParse(data).success, true);
+
+  const noFilter = { ...data, services_carousel: { ...data.services_carousel } } as Record<string, unknown>;
+  delete (noFilter.services_carousel as Record<string, unknown>).service_category_slug;
+  assert.equal(homeSchema.safeParse(noFilter).success, true);
+
+  const twoMarks = {
+    ...data,
+    services_carousel: { ...data.services_carousel, assurances: [1, 2].map(assurance) },
+  };
+  assert.equal(homeSchema.safeParse(twoMarks).success, false, "must be exactly three");
+
+  const fourMarks = {
+    ...data,
+    services_carousel: { ...data.services_carousel, assurances: [1, 2, 3, 4].map(assurance) },
+  };
+  assert.equal(homeSchema.safeParse(fourMarks).success, false, "must be exactly three");
 });
 
 test("faq_group_key is optional and accepts blank or a group key", () => {

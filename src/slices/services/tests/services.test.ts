@@ -49,6 +49,12 @@ test("rejects a negative price", () => {
   assert.equal(serviceInput.safeParse({ ...validService, price_from: -100 }).success, false);
 });
 
+test("rating_tenths is optional and bounded to 0–50 integer tenths", () => {
+  assert.equal(serviceInput.safeParse({ ...validService, rating_tenths: 47 }).success, true);
+  assert.equal(serviceInput.safeParse({ ...validService, rating_tenths: 51 }).success, false);
+  assert.equal(serviceInput.safeParse({ ...validService, rating_tenths: 4.7 }).success, false);
+});
+
 test("price_from is optional (unpriced services)", () => {
   const unpriced = {
     slug: validService.slug,

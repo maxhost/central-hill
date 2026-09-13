@@ -136,6 +136,7 @@ export async function saveService(raw: unknown): Promise<ServiceSaveResult> {
     cover_media_id: input.cover_media_id,
     og_image_media_id: input.og_image_media_id,
     price_from: input.price_from,
+    rating_tenths: input.rating_tenths,
     booking_type: input.booking_type,
     cta_url: input.cta_url,
   };

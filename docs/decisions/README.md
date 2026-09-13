@@ -38,6 +38,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0029 — Trace the libvips shared object into the function bundle](#0029)
 - [0030 — Media uploads happen on save, not on pick](#0030)
 - [0031 — Home reduced to a guest-facing funnel](#0031)
+- [0032 — Home gains a services & partners carousel, composed from the services catalogue](#0032)
 
 ---
 
@@ -1054,3 +1055,53 @@ owner-controlled option that costs nothing.
 **Status:** Accepted (2026-09-12). Amends ADR 0022's composition and retires the Home half of ADR
 0023's dual-CTA block (the guest page keeps its own, separate `dual_cta`). Verified in the browser
 on both the public page and the generated editor.
+
+---
+
+## 0032 — Home gains a services & partners carousel <a id="0032"></a>
+**Context:** ADR 0031 cut Home to hero · search · stats · guests pitch. The owner has since asked
+for a services strip under the stats band, matching a competitor pattern (lovelystay.com): a row of
+portrait partner cards scrolling horizontally, under a heading and three reassurance marks. Adding a
+section back to Home contradicts a standing ADR, which golden rule 6 reserves for a decision record.
+
+The interesting question is not the layout, it is **where the content lives**. The section shows two
+different kinds of content: section copy (heading, three marks) that belongs to the page, and service
+cards that already exist as a catalogue in slice `services`.
+
+**Decision:** Compose, don't duplicate.
+
+1. **The page stores only its own copy.** `homeSchema` gains
+   `services_carousel{eyebrow?, headline, assurances[×3]{icon_key,label}, service_category_slug?}`.
+   Nothing about an individual service is authored on the page — that would be a second, divergent
+   copy of the catalogue, editable in two places.
+2. **The cards come from `services` through its contract** (`listServices(locale, category?)`), in
+   the admin-set `position` order, capped at 12. Home therefore subscribes transitively to
+   `service-list`: publishing a service refreshes Home with no extra wiring, exactly as the
+   testimonials and portfolio sections already work.
+3. **`service_category_slug` is an optional filter, blank = every published service.** It is a
+   `select` leaf in the schema-driven editor, fed from the services contract — the second entry in
+   `SELECT_SOURCES` after `faq_group_key`, which is why that map now carries per-source wording
+   ("— All services —" vs "— None —") instead of the FAQ-specific strings that were hard-coded in the
+   renderer.
+4. **`service.rating_tenths` is added** (additive migration `0014_service_rating`, slice-owned
+   table): integer tenths 0–50, nullable. The reference design shows a score chip on each card and
+   we had nowhere to put one. Integer, not float, per the data-model convention; the contract
+   exposes `rating: number | null` (already divided), and the chip is simply absent when unrated.
+5. **The section hides itself when the catalogue is empty**, and when the `home` row predates the
+   schema (no `services_carousel` key). A half-rendered band with a heading and no cards is worse
+   than no band, and it means seeding order does not matter.
+
+**Consequences:** Home is a four-section funnel again, but the new section costs the editor nothing
+per service — staff manage services in `/admin/services` and the carousel follows. The trade-off
+accepted: Home cannot show an arbitrary hand-picked subset of services, only "all" or "one
+category"; ordering is the services list's `position`. A curated many-to-many would need a join
+table and a multi-select the editor does not have, which is not worth it for a home strip.
+
+`scripts/seed-services.ts` seeds a 9-service example catalogue, pushing each cover through the real
+R2 pipeline (presign → PUT → finalize) rather than hot-linking, and `scripts/backfill-home-services-carousel.ts`
+fills the section on the live `home` row. Both are idempotent; the seed tracks its photos through
+`media_asset.credit`, so changing a photo replaces the old asset instead of orphaning it.
+
+**Status:** Accepted (2026-09-12). Amends ADR 0031's composition (which it does not otherwise
+reopen) and extends ADR 0012's editor with the second `select` source. Verified in the browser at
+1440px, 390px and in `pt` (rating renders "4,9"), and in the generated Home editor.

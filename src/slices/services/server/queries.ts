@@ -36,6 +36,7 @@ interface ServiceRow {
   id: string;
   cover_media_id: string | null;
   price_from: number | null;
+  rating_tenths: number | null;
   booking_type: ServiceBookingType;
   cat_id: string;
   cat_slug: string;
@@ -46,6 +47,7 @@ const summarySelect = {
   id: service.id,
   cover_media_id: service.cover_media_id,
   price_from: service.price_from,
+  rating_tenths: service.rating_tenths,
   booking_type: service.booking_type,
   cat_id: service_category.id,
   cat_slug: service_category.slug,
@@ -129,6 +131,8 @@ function mapSummary(row: ServiceRow, ctx: SummaryCtx): ServiceSummary {
     category,
     cover,
     priceFrom: row.price_from,
+    // Integer tenths on the row → one-decimal score for the UI (0–5). Null stays null.
+    rating: row.rating_tenths == null ? null : row.rating_tenths / 10,
     durationLabel: content.get(SERVICE, row.id, "duration_label") ?? null,
     bookingType: row.booking_type,
   };

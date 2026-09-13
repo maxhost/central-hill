@@ -378,6 +378,8 @@
         "body": "Conteúdo",
         "priceFrom": "Preço desde (cêntimos)",
         "priceFromHint": "Cêntimos inteiros, ex.: 4500 = 45,00 €. Deixe em branco se sem preço.",
+        "rating": "Avaliação (0–5)",
+        "ratingHint": "Pontuação do parceiro mostrada no carrossel da Home, ex.: 4,7. Deixe em branco para ocultar.",
         "durationLabel": "Etiqueta de duração",
         "bookingType": "Tipo de reserva",
         "ctaLabel": "Texto do CTA",
@@ -627,6 +629,11 @@
       "prev": "Avaliações anteriores",
       "next": "Avaliações seguintes",
       "eyebrow": "Avaliações"
+    },
+    "servicesCarousel": {
+      "prev": "Serviços anteriores",
+      "next": "Mais serviços",
+      "region": "Serviços e parceiros"
     },
     "portfolio": {
       "title": "Explore o Nosso Portfólio",

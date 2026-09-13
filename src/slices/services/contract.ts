@@ -38,6 +38,11 @@ export interface ServiceSummary {
   cover: MediaImageData | null;
   /** Integer cents, or null when not priced ("from" semantics). */
   priceFrom: number | null;
+  /**
+   * Satisfaction score 0.0–5.0 (one decimal), or null when unrated. Stored as integer
+   * tenths on the row; divided here so consumers render it directly (ADR 0032).
+   */
+  rating: number | null;
   /** Resolved [T] duration label (e.g. "2.5 hours"), or null. */
   durationLabel: string | null;
   bookingType: ServiceBookingType;

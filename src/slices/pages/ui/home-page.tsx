@@ -7,6 +7,7 @@ import { getHomePage } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { GuestsSection } from "./components/guests-section";
 import { PageHero } from "./components/hero";
+import { ServicesCarousel } from "./components/services-carousel";
 import { StatsBand } from "./components/stats-band";
 
 // TEMP: external hotlinks (the `mock/home.html` clip + poster) used only until a real hero
@@ -19,14 +20,19 @@ const HERO_FALLBACK_POSTER =
 
 /**
  * Home page (content-briefs.md → 0 · Home). Composes, in order: video hero · Avantio
- * availability search (settings) · company stats (settings, dark band) · guests pitch
- * (Image Showcase) · optional FAQ group. Static (ISR).
+ * availability search (settings) · company stats (settings, dark band) · services &
+ * partners carousel (services slice) · guests pitch (Image Showcase) · optional FAQ
+ * group. Static (ISR).
  *
  * **Reduced to a guest-facing funnel by owner direction (ADR 0031)**, which amends the
  * approved-mockup composition of ADR 0022. Removed: the owners pitch, the featured
  * portfolio, the testimonials row and the owner/guest dual-CTA band. The portfolio and
  * testimonials components still live in this slice and still render on the owners and
  * guest pages — they are only no longer composed here.
+ *
+ * **The services & partners carousel was added back under the stats band (ADR 0032)**, on
+ * owner direction: its copy is editable in the Home editor, its cards come from the
+ * `services` catalogue. It disappears on its own while that catalogue is empty.
  */
 export async function HomePage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
@@ -34,7 +40,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
-  const { hero, guests_pitch } = content;
+  const { hero, guests_pitch, services_carousel } = content;
   const faqGroupKey = content.faq_group_key ?? "";
 
   return (
@@ -60,6 +66,9 @@ export async function HomePage({ locale }: { locale: Locale }) {
       <AvantioSearchBar locale={locale} />
 
       <StatsBand locale={locale} keys={["bookings", "years", "guests", "revenue"]} />
+
+      {/* Services & partners (ADR 0032) — copy from the page, cards from `services`. */}
+      <ServicesCarousel locale={locale} content={services_carousel} />
 
       <GuestsSection
         content={guests_pitch}

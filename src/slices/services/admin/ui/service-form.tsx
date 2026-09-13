@@ -43,6 +43,8 @@ interface FormState {
   cover_media_id: string;
   og_image_media_id: string;
   price_from: string;
+  /** Human-facing score ("4.7"); converted to integer tenths on submit. */
+  rating: string;
   booking_type: BookingType;
   cta_url: string;
   cta_label: string;
@@ -67,6 +69,7 @@ function initialState(
     cover_media_id: data?.cover_media_id ?? "",
     og_image_media_id: data?.og_image_media_id ?? "",
     price_from: data?.price_from != null ? String(data.price_from) : "",
+    rating: data?.rating_tenths != null ? String(data.rating_tenths / 10) : "",
     booking_type: data?.booking_type ?? "none",
     cta_url: data?.cta_url ?? "",
     cta_label: data?.cta_label ?? "",
@@ -78,6 +81,19 @@ function initialState(
     meta_description: data?.meta_description ?? "",
     gallery: data?.gallery ?? [],
   };
+}
+
+/**
+ * "4.7" → 47 integer tenths (the column's unit), clamped to 0–5 and rounded to one
+ * decimal. Blank or unparseable → null ("not rated"), which hides the star chip.
+ * Accepts a comma decimal separator, which PT/ES/FR keyboards produce by default.
+ */
+function ratingTenths(raw: string): number | null {
+  const trimmed = raw.trim().replace(",", ".");
+  if (trimmed === "") return null;
+  const n = Number.parseFloat(trimmed);
+  if (!Number.isFinite(n)) return null;
+  return Math.round(Math.min(5, Math.max(0, n)) * 10);
 }
 
 function buildPayload(s: FormState, id: string | undefined) {
@@ -100,6 +116,7 @@ function buildPayload(s: FormState, id: string | undefined) {
     cover_media_id: s.cover_media_id || null,
     og_image_media_id: orNull(s.og_image_media_id),
     price_from: intOrNull(s.price_from),
+    rating_tenths: ratingTenths(s.rating),
     booking_type: s.booking_type,
     cta_url: orNull(s.cta_url),
     cta_label: orNull(s.cta_label),
@@ -336,6 +353,20 @@ export function ServiceForm({
                 type="number"
                 value={state.price_from}
                 onChange={(e) => set("price_from", e.target.value)}
+              />
+            </Field>
+            <Field
+              label={t("admin.fields.rating")}
+              hint={t("admin.fields.ratingHint")}
+              error={err("rating_tenths")}
+            >
+              <TextInput
+                type="number"
+                step="0.1"
+                min="0"
+                max="5"
+                value={state.rating}
+                onChange={(e) => set("rating", e.target.value)}
               />
             </Field>
             <Field

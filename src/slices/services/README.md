@@ -8,8 +8,10 @@ Slice services.
 
 **Tables** (`schema.ts`, migration `0000`):
 - `service` — `slug, status, position, category_id→service_category, cover_media_id,
-  og_image_media_id?, price_from? (cents), duration_label?, booking_type
-  (enquiry|external|none), cta_label?, cta_url?`. [T]: `name, excerpt, body, duration_label,
+  og_image_media_id?, price_from? (cents), rating_tenths? (migration `0014`), duration_label?,
+  booking_type (enquiry|external|none), cta_label?, cta_url?`. `rating_tenths` is the partner
+  score in **integer tenths** (0–50 → 0.0–5.0), null when unrated; the contract exposes it as
+  `rating: number | null`, already divided (ADR 0032). [T]: `name, excerpt, body, duration_label,
   cta_label, meta_title, meta_description`.
 - `service_category` — `slug, icon, position`. [T]: `name`.
 - `service_media` — `service_id→service, media_id, position` (gallery). No [T].
@@ -34,7 +36,9 @@ a future targeted bust).
 
 All reads are `unstable_cache`-wrapped (keyed by locale, + category/slug) and tagged so a
 publish busts them. **S9 pages that embed a services teaser should add `SERVICE_TAGS.list`
-to their own cached reads' tags** so a services publish cascades.
+to their own cached reads' tags** so a services publish cascades. The home services carousel
+(S9 `pages`, ADR 0032) consumes `listServices` + `listServiceCategories` this way — it reads
+no table of this slice and authors no service copy of its own.
 
 ### Booking type → CTA
 
@@ -66,7 +70,9 @@ Plugs into the backoffice shell. Contributes two `content`-group screens
 
 - `admin/validation.ts` — `serviceCategorySaveInput` (slug/icon/position + [T] name) and
   `serviceSaveInput` (the editor's post shape: `id?`, nullable optionals, `min(1)` on
-  required [T] name/excerpt/body, `price_from` integer cents, gallery riding along).
+  required [T] name/excerpt/body, `price_from` integer cents, `rating_tenths` bounded to
+  0–50, gallery riding along). The form takes the rating as "4.7" (comma accepted) and
+  converts it to tenths on submit.
 - `admin/queries.ts` (server-only) — `listServiceCategoriesAdmin` / `getServiceCategoryForEdit`
   / `listServiceCategoryOptions` (for the service selector) and `listServicesAdmin` /
   `getServiceForEdit` (source values + media previews). Not cache-wrapped.
@@ -86,6 +92,14 @@ Plugs into the backoffice shell. Contributes two `content`-group screens
   icon set is wired (kernel/app-shell change → ADR).
 - **Service/Offer JSON-LD**: only `BreadcrumbList` is emitted; a richer `Service`/`Offer`
   builder belongs in `core/seo` (**S13**, ADR — golden rule 3), not hand-written here.
+
+## Demo catalogue
+
+`scripts/seed-services.ts` writes 3 categories + 9 published services with real cover photos,
+pushed through the production upload path (presign → PUT to R2 → finalize) so every row has true
+dimensions and a blurhash. Idempotent by slug; a cover is only re-fetched when the seed names a
+different photo, tracked via `media_asset.credit`. Run:
+`pnpm tsx --tsconfig scripts/tsconfig.json scripts/seed-services.ts` (`DRY=1` to report only).
 
 ## Tests
 

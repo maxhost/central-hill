@@ -24,7 +24,7 @@ import { building } from "@slices/buildings/schema";
 import { testimonial } from "@slices/testimonials/schema";
 import { faq_group, faq_item } from "@slices/faq/schema";
 import { page_content } from "@slices/pages/schema";
-import { homeSchema } from "@slices/pages/schemas/home";
+import { defaultServicesCarousel, homeSchema } from "@slices/pages/schemas/home";
 import { guestSchema } from "@slices/pages/schemas/guest";
 import { ownersSchema } from "@slices/pages/schemas/owners";
 import { realEstateSchema } from "@slices/pages/schemas/real-estate";
@@ -288,6 +288,9 @@ function homeData() {
       image_media_id: "",
       cta: { label: "Book Now", url: BOOK, note: "Best-rate guarantee when you book direct." },
     },
+    // Copy only — the cards come from the `services` catalogue (ADR 0032), which
+    // `scripts/seed-services.ts` fills. Until it does, the band hides itself.
+    services_carousel: defaultServicesCarousel,
   };
 }
 

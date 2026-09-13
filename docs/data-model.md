@@ -102,6 +102,9 @@ page_content
   `guests_pitch{headline, subheadline, benefits[×4]{icon_key,title,description}, image_media_id, cta{label,url,note}}`;
   `faq_group_key`.
   → Stats band = **company_settings**. Nothing else is composed in.
+  **ADR 0032** added `services_carousel{eyebrow?, headline, assurances[×3]{icon_key,label},
+  service_category_slug?}` — section copy only: the cards are the published rows of slice `services`
+  (filtered to `service_category_slug` when set), never authored here.
   **Reduced by ADR 0031** to hero · booking search · stats · guests pitch: `owners_pitch`, `story`
   and `dual_cta` were removed from the schema, and the featured portfolio and testimonials are no
   longer composed into Home (they still render on the owners and guest pages). Rows written before
@@ -222,12 +225,14 @@ default; Home/Guest/About start blank.
 
 ### Slice `services` — guest services (index + detail)
 - **service**: `id, slug, status, position, category_id→service_category, cover_media_id,
-  og_image_media_id?, price_from? (cents), duration_label?, booking_type (enquiry|external|none),
-  cta_label?, cta_url?`. **[T]**: `name`, `excerpt`, `body` (rich), `meta_title`, `meta_description`.
+  og_image_media_id?, price_from? (cents), rating_tenths? (integer tenths, 0–50 → 0.0–5.0; ADR 0032),
+  duration_label?, booking_type (enquiry|external|none), cta_label?, cta_url?`. **[T]**: `name`, `excerpt`, `body` (rich), `meta_title`, `meta_description`.
 - **service_category**: `id, slug, icon, position`. **[T]** `name`. (Seed from mockup tags: Arrival,
   Day Trip, On the Water, Experience, At Home, Convenience, Family.)
 - **service_media**: `service_id, media_id, position` (gallery).
-  - *Public contract:* `ServiceSummary`, `ServiceDetail`, `listServices(category?)`, `getBySlug`.
+  - *Public contract:* `ServiceSummary` (incl. `rating`, tenths already divided), `ServiceDetail`,
+    `listServices(category?)`, `getBySlug`. Consumed by the services pages **and** the home services
+    carousel (slice `pages`, ADR 0032).
   - (`booking_type='external'` → `cta_url` to the existing centralhill.pt/partner page; `'enquiry'`
     → routes to the guest contact path. No price *variants* — single `price_from`.)
 

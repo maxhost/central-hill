@@ -15,18 +15,43 @@ export type FieldNode =
   | { kind: "object"; fields: { key: string; node: FieldNode }[] }
   | { kind: "array"; element: FieldNode; min: number; max: number }
   | { kind: "media"; hint?: string }
-  | { kind: "select"; source: string; hint?: string }
+  | {
+      kind: "select";
+      source: string;
+      hint?: string;
+      /** Label of the "nothing selected" option (each source words it differently). */
+      emptyLabel: string;
+      /** Shown under the control when the catalogue is empty — tells staff where to author. */
+      emptyHint: string;
+    }
   | { kind: "boolean" }
   | { kind: "string"; multiline: boolean; optional: boolean };
 
 /**
- * Field-key → option source for the `select` leaf (a dropdown fed at render time from
- * another slice's contract — see `getPageEditModel`). Mirrors the `*_media_id` → media
- * picker heuristic: a known key suffix maps to a known catalogue. The only entry today is
- * `faq_group_key` → the `faq` slice's group list.
+ * Field-key → dropdown definition for the `select` leaf (fed at render time from another
+ * slice's contract — see `getPageEditModel`). Mirrors the `*_media_id` → media picker
+ * heuristic: a known key maps to a known catalogue. Each entry carries its own wording,
+ * because "no selection" means something different per source — no FAQ at all vs. every
+ * service category.
  */
-const SELECT_SOURCES: Record<string, string> = {
-  faq_group_key: "faq_group",
+interface SelectSource {
+  /** Catalogue key the options are looked up under in `SelectOptions`. */
+  source: string;
+  emptyLabel: string;
+  emptyHint: string;
+}
+
+const SELECT_SOURCES: Record<string, SelectSource> = {
+  faq_group_key: {
+    source: "faq_group",
+    emptyLabel: "— None —",
+    emptyHint: "No FAQ groups yet — create one in /admin/faq.",
+  },
+  service_category_slug: {
+    source: "service_category",
+    emptyLabel: "— All services —",
+    emptyHint: "No service categories yet — create one in /admin/service-categories.",
+  },
 };
 
 /** One dropdown choice for a `select` leaf (e.g. an FAQ group). */
@@ -96,13 +121,19 @@ export function describe(schema: z.ZodType, key = ""): FieldNode {
 
   if (base instanceof z.ZodBoolean) return { kind: "boolean" };
 
-  if (key in SELECT_SOURCES) {
-    // A known key maps to a dropdown sourced from another slice's catalogue (e.g. faq
-    // groups). `.describe()` on the field becomes the picker hint. Detected by key, like
-    // media, so the underlying schema can be any string/union shape.
+  const select = SELECT_SOURCES[key];
+  if (select) {
+    // A known key maps to a dropdown sourced from another slice's catalogue (faq groups,
+    // service categories). `.describe()` on the field becomes the picker hint. Detected by
+    // key, like media, so the underlying schema can be any string/union shape.
     const hint = (base as { description?: string }).description;
-    const source = SELECT_SOURCES[key]!;
-    return hint ? { kind: "select", source, hint } : { kind: "select", source };
+    const node = {
+      kind: "select" as const,
+      source: select.source,
+      emptyLabel: select.emptyLabel,
+      emptyHint: select.emptyHint,
+    };
+    return hint ? { ...node, hint } : node;
   }
 
   if (key.endsWith("_media_id")) {

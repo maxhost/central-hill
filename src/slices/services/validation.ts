@@ -33,6 +33,8 @@ export const serviceInput = z.object({
   cover_media_id: mediaId,
   og_image_media_id: mediaId.optional(),
   price_from: cents.optional(),
+  /** Satisfaction score in integer tenths (0–50 → 0.0–5.0); omitted = unrated (ADR 0032). */
+  rating_tenths: z.number().int().min(0).max(50).optional(),
   duration_label: tStrOpt({ max: 80 }),
   booking_type: z.enum(["enquiry", "external", "none"]),
   cta_label: tStrOpt({ max: 80 }),

@@ -27,6 +27,8 @@ export const serviceSaveInput = z.object({
   cover_media_id: z.uuid(),
   og_image_media_id: z.uuid().nullable(),
   price_from: cents.nullable(),
+  /** Satisfaction score in tenths (0–50 → 0.0–5.0); null when unrated (ADR 0032). */
+  rating_tenths: z.number().int().min(0).max(50).nullable(),
   booking_type: z.enum(["enquiry", "external", "none"]),
   cta_url: z.url().nullable(),
   // [T] source values (en):

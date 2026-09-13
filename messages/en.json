@@ -378,6 +378,8 @@
         "body": "Body",
         "priceFrom": "Price from (cents)",
         "priceFromHint": "Integer cents, e.g. 4500 = €45.00. Leave blank if unpriced.",
+        "rating": "Rating (0–5)",
+        "ratingHint": "Partner score shown on the home carousel, e.g. 4.7. Leave blank to hide the badge.",
         "durationLabel": "Duration label",
         "bookingType": "Booking type",
         "ctaLabel": "CTA label",
@@ -627,6 +629,11 @@
       "prev": "Previous reviews",
       "next": "Next reviews",
       "eyebrow": "Reviews"
+    },
+    "servicesCarousel": {
+      "prev": "Previous services",
+      "next": "More services",
+      "region": "Services and partners"
     },
     "portfolio": {
       "title": "Explore Our Portfolio",

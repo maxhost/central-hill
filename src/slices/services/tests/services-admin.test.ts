@@ -23,6 +23,7 @@ function validService(overrides: Record<string, unknown> = {}) {
     cover_media_id: COVER,
     og_image_media_id: null,
     price_from: 4500,
+    rating_tenths: 47,
     booking_type: "external",
     cta_url: "https://book.example.com/transfer",
     name: "Airport Transfer",
@@ -60,6 +61,16 @@ test("price_from must be a non-negative integer (cents) or null", () => {
   assert.equal(serviceSaveInput.safeParse(validService({ price_from: -1 })).success, false);
   assert.equal(serviceSaveInput.safeParse(validService({ price_from: 1.5 })).success, false);
   assert.equal(serviceSaveInput.safeParse(validService({ price_from: null })).success, true);
+});
+
+test("rating_tenths is integer tenths within 0–5, or null when unrated", () => {
+  assert.equal(serviceSaveInput.safeParse(validService({ rating_tenths: null })).success, true);
+  assert.equal(serviceSaveInput.safeParse(validService({ rating_tenths: 0 })).success, true);
+  assert.equal(serviceSaveInput.safeParse(validService({ rating_tenths: 50 })).success, true);
+  // 5.1 stars, a float, and a negative score are all out of range.
+  assert.equal(serviceSaveInput.safeParse(validService({ rating_tenths: 51 })).success, false);
+  assert.equal(serviceSaveInput.safeParse(validService({ rating_tenths: 4.7 })).success, false);
+  assert.equal(serviceSaveInput.safeParse(validService({ rating_tenths: -1 })).success, false);
 });
 
 test("booking_type must be one of enquiry|external|none", () => {

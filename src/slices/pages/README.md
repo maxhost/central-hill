@@ -17,8 +17,8 @@ foreign tables**. See `docs/vertical-slices.md` → S9.
   `entity_type='page_content'`, `field='block:<dot.path>'` (e.g. `block:owners.benefits.0.title`).
 
 **Page schemas** (`schemas/`): one fixed Zod schema per page (`home`, `owners`, `real-estate`,
-`about`, `guest`) composed from `_shared.ts` (`iconCard`, `step`, `titledItem`, fixed/range
-array helpers). `schemas/index.ts` maps `key → schema` (`pageSchemas`) and derives
+`about`, `guest`) composed from `_shared.ts` (`iconCard`, `assurance`, `step`, `titledItem`,
+`faqGroupKey`, `serviceCategorySlug`, fixed/range array helpers). `schemas/index.ts` maps `key → schema` (`pageSchemas`) and derives
 `translatablePathsByPage` (the [T] leaf paths the translation pipeline extracts). Repeating
 groups are **fixed-count arrays** (e.g. exactly 6 benefits) — the admin form shows N slots.
 
@@ -50,8 +50,15 @@ page out from `content` + `media`. Shared pieces in `ui/components/`:
 - presentational (`blocks.tsx`: `SectionHeading`, `FeatureGrid`, `Steps`, `CtaRow`, `Prose`,
   `Band`; `hero.tsx`: `PageHero` image/video);
 - data-composing (`stats-band.tsx` → settings, `testimonials-row.tsx` → testimonials,
-  `featured-portfolio.tsx` → buildings, `faq-section.tsx` → faq, `lead-cta.tsx` → settings
-  contact).
+  `featured-portfolio.tsx` → buildings, `services-carousel.tsx` → services, `faq-section.tsx`
+  → faq, `lead-cta.tsx` → settings contact).
+
+`services-carousel.tsx` (+ its `services-carousel-track.tsx` client island) is the Home
+**services & partners** band (ADR 0032): the page's `services_carousel` block supplies the
+heading and the three reassurance marks, while the cards are the published rows of slice
+`services` (`listServices`, optionally narrowed by `service_category_slug`), ordered by their
+admin `position` and capped at 12. It renders `null` when that block is absent (a `home` row
+saved before the section existed) or when no published service matches.
 
 `featured-portfolio.tsx` and `testimonials-row.tsx` take **optional** heading/CTA overrides
 (`eyebrow`, `title`, `intro`, `ctaLabel`, `ctaNote`, `ctaHref`). **Home no longer renders either

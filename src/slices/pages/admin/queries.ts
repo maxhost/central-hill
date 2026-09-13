@@ -4,6 +4,7 @@ import { db } from "@core/db/client";
 import { loadMedia, mediaUrl } from "@core/media";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
 import { listFaqGroups } from "@slices/faq/contract";
+import { listServiceCategories } from "@slices/services/contract";
 import { page_content } from "../schema";
 import { type PageKey, pageKey, pageSchemas } from "../schemas";
 import { type FieldNode, type SelectOptions, applyDefaults, describe } from "./form-model";
@@ -89,19 +90,26 @@ export async function getPageEditModel(rawKey: string): Promise<PageEditModel | 
 }
 
 /**
- * Build the dropdown catalogues for `select` leaves. The FAQ-group list comes from the
- * `faq` slice contract (golden rule 2 — cross-slice reads via contracts only); the admin
- * authors source content, so we read the source locale `en`. A group with 0 published
- * items is still selectable (the page just renders nothing until items go live), flagged
- * in the label.
+ * Build the dropdown catalogues for `select` leaves. Both lists come from the owning
+ * slice's contract (golden rule 2 — cross-slice reads via contracts only); the admin
+ * authors source content, so we read the source locale `en`.
+ *
+ * - `faq_group` — a group with 0 published items is still selectable (the page just
+ *   renders nothing until items go live), flagged in the label.
+ * - `service_category` — the home services carousel's optional category filter (ADR 0032);
+ *   blank means "every published service", so the empty option is not an error state.
  */
 async function buildSelectOptions(): Promise<SelectOptions> {
-  const groups = await listFaqGroups("en");
+  const [groups, categories] = await Promise.all([
+    listFaqGroups("en"),
+    listServiceCategories("en"),
+  ]);
   return {
     faq_group: groups.map((g) => ({
       value: g.key,
       label: g.publishedCount > 0 ? `${g.key} (${g.publishedCount})` : `${g.key} (no live items)`,
     })),
+    service_category: categories.map((c) => ({ value: c.slug, label: c.name })),
   };
 }
 
