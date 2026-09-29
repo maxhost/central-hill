@@ -274,7 +274,9 @@ function homeData() {
       headline: "Premium furnished apartments across Portugal",
       subtitle: "Design-led, professionally managed homes in Lisbon's most sought-after streets — for unforgettable stays and effortless ownership.",
       cta_primary: { label: "Book Now", url: BOOK },
-      cta_secondary: { label: "I'm a property owner", url: `${SITE}/en/owners` },
+      // Internal route (`/owners`) — hardcoded in home-page.tsx, not CMS-editable; see
+      // homeSchema.hero.cta_secondary.
+      cta_secondary: { label: "I'm a property owner" },
     },
     guests_pitch: {
       headline: "Planning a stay? Find your perfect apartment.",
@@ -291,6 +293,22 @@ function homeData() {
     // Copy only — the cards come from the `services` catalogue (ADR 0032), which
     // `scripts/seed-services.ts` fills. Until it does, the band hides itself.
     services_carousel: defaultServicesCarousel,
+    dual_cta: {
+      owner: {
+        image_media_id: "",
+        eyebrow: "Owners",
+        title: "Own a property? Start earning more — free, no obligation.",
+        body: "Find out what your property could earn with a free, no-obligation profitability analysis. Our team will assess your property and come back within 48 hours.",
+        cta_label: "I'm a property owner",
+      },
+      guest: {
+        image_media_id: "",
+        eyebrow: "Guests",
+        title: "Planning a stay? Find your perfect apartment.",
+        body: "Browse our full portfolio of professionally managed apartments across Portugal's most sought-after locations — studios to 8-bedrooms, for every type of stay.",
+        cta_label: "Book Now",
+      },
+    },
   };
 }
 

@@ -80,8 +80,10 @@ export function PageHero({
       className={cn(
         "relative isolate flex items-end overflow-hidden bg-feature",
         // `compact` keeps the headline smaller for form-bearing heroes (the aside card
-        // shares the row) but still fills the viewport like the mock.
-        "min-h-[92vh]",
+        // shares the row) but still fills the viewport like the mock. The hero is
+        // bottom-anchored (`items-end`) — this min-height is what sets the empty band above
+        // the copy under the fixed navbar, so it's the one value that tunes that gap.
+        "min-h-[73.6vh]",
       )}
     >
       {videoUrl ? (

@@ -4,7 +4,9 @@ import type { Locale } from "@core/db/columns";
 import { ButtonLink } from "@core/ui";
 import { AvantioSearchBar } from "@slices/settings/contract";
 import { getHomePage } from "../contract";
+import { DualCta } from "./components/dual-cta";
 import { FaqSection } from "./components/faq-section";
+import { FeaturedPortfolio } from "./components/featured-portfolio";
 import { GuestsSection } from "./components/guests-section";
 import { PageHero } from "./components/hero";
 import { ServicesCarousel } from "./components/services-carousel";
@@ -20,19 +22,23 @@ const HERO_FALLBACK_POSTER =
 
 /**
  * Home page (content-briefs.md → 0 · Home). Composes, in order: video hero · Avantio
- * availability search (settings) · company stats (settings, dark band) · services &
- * partners carousel (services slice) · guests pitch (Image Showcase) · optional FAQ
- * group. Static (ISR).
+ * availability search (settings) · company stats (settings, dark band) · guests pitch
+ * (Image Showcase) · featured portfolio (buildings) · services & partners carousel
+ * (services slice) · optional FAQ group · owner/guest dual CTA. Static (ISR).
  *
- * **Reduced to a guest-facing funnel by owner direction (ADR 0031)**, which amends the
- * approved-mockup composition of ADR 0022. Removed: the owners pitch, the featured
- * portfolio, the testimonials row and the owner/guest dual-CTA band. The portfolio and
- * testimonials components still live in this slice and still render on the owners and
- * guest pages — they are only no longer composed here.
+ * **Reduced to a guest-facing funnel by owner direction (ADR 0031)**, which amended the
+ * approved-mockup composition of ADR 0022 by removing the owners pitch, the featured
+ * portfolio, the testimonials row and the owner/guest dual-CTA band.
  *
  * **The services & partners carousel was added back under the stats band (ADR 0032)**, on
  * owner direction: its copy is editable in the Home editor, its cards come from the
  * `services` catalogue. It disappears on its own while that catalogue is empty.
+ *
+ * **The featured portfolio and the dual-CTA band were restored (client direction)** — the
+ * owners pitch and testimonials stay out. The portfolio composes straight from `buildings`
+ * (no Home content of its own); the dual-CTA band's copy/images are editable in the Home
+ * editor (`dual_cta`), with the owner panel's target still hardcoded to `/owners` (not
+ * CMS-editable — same reasoning as the hero's secondary CTA above).
  */
 export async function HomePage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
@@ -40,7 +46,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
-  const { hero, guests_pitch, services_carousel } = content;
+  const { hero, guests_pitch, services_carousel, dual_cta } = content;
   const faqGroupKey = content.faq_group_key ?? "";
 
   return (
@@ -55,7 +61,12 @@ export async function HomePage({ locale }: { locale: Locale }) {
         actions={
           <>
             <ButtonLink href={hero.cta_primary.url}>{hero.cta_primary.label}</ButtonLink>
-            <ButtonLink href={hero.cta_secondary.url} variant="light">
+            {/*
+             * Always our own internal Owners route — hardcoded, not CMS-editable, so it can
+             * never be pinned to a stale locale/domain the way a free-text CMS url would be
+             * (client feedback). Staff only edit the label.
+             */}
+            <ButtonLink href={`/${locale}/owners`} variant="light">
               {hero.cta_secondary.label}
             </ButtonLink>
           </>
@@ -67,13 +78,20 @@ export async function HomePage({ locale }: { locale: Locale }) {
 
       <StatsBand locale={locale} keys={["bookings", "years", "guests", "revenue"]} />
 
-      {/* Services & partners (ADR 0032) — copy from the page, cards from `services`. */}
-      <ServicesCarousel locale={locale} content={services_carousel} />
-
+      {/* Guests pitch now sits directly under stats, ahead of the carousel (client feedback). */}
       <GuestsSection
         content={guests_pitch}
         image={media[guests_pitch.image_media_id ?? ""] ?? null}
       />
+
+      {/*
+       * Featured portfolio (restored, client direction) — composes from `buildings`, ahead
+       * of the services carousel. No intro copy under the title (client feedback).
+       */}
+      <FeaturedPortfolio locale={locale} showEyebrow={false} intro="" tightBottom />
+
+      {/* Services & partners (ADR 0032) — copy from the page, cards from `services`. */}
+      <ServicesCarousel locale={locale} content={services_carousel} />
 
       {faqGroupKey ? (
         <FaqSection
@@ -83,6 +101,9 @@ export async function HomePage({ locale }: { locale: Locale }) {
           title={t("faqTitle")}
         />
       ) : null}
+
+      {/* Closing owner/guest dual CTA (restored, client direction) — sits right before the footer. */}
+      <DualCta locale={locale} content={dual_cta} media={media} />
     </main>
   );
 }

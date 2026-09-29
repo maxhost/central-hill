@@ -432,6 +432,7 @@
     "menu": "Ouvrir le menu",
     "close": "Fermer le menu",
     "ctaBook": "Réserver",
+    "ctaEarn": "Gagnez Avec Nous",
     "ctaList": "Publiez votre bien",
     "language": "Langue",
     "contact": "Contact",
@@ -469,7 +470,20 @@
       "about": "À propos",
       "blog": "Blog",
       "contact": "Contact",
-      "rights": "© {year} Central Hill Apartments · Lisbonne, Portugal"
+      "rights": "© {year} Central Hill Apartments · Lisbonne, Portugal",
+      "newsletter": {
+        "placeholder": "Votre email",
+        "cta": "S'abonner",
+        "ariaLabel": "Email pour la newsletter",
+        "modalTitle": "Abonnez-vous à notre newsletter",
+        "modalIntro": "Recevez les actualités, offres et nouveautés de Central Hill.",
+        "emailLabel": "Email",
+        "termsLabel": "J'accepte les Conditions Générales",
+        "marketingLabel": "Je souhaite recevoir des informations commerciales et des offres par email",
+        "submit": "S'abonner",
+        "success": "Inscription réussie. Merci !",
+        "close": "Fermer"
+      }
     },
     "admin": {
       "errors": {
@@ -620,6 +634,16 @@
     "leadNote": "Gratuit, instantané, sans engagement.",
     "stats": {
       "title": "Une Entreprise de Confiance et Leader du Marché"
+    },
+    "dualCta": {
+      "ownerEyebrow": "Propriétaires",
+      "ownerTitle": "Vous possédez un bien ? Gagnez plus — gratuitement, sans engagement.",
+      "ownerBody": "Découvrez ce que votre bien pourrait rapporter grâce à une analyse de rentabilité gratuite et sans engagement. Notre équipe évalue votre bien et vous répond sous 48 heures.",
+      "ownerCta": "Je suis propriétaire",
+      "guestEyebrow": "Voyageurs",
+      "guestTitle": "Vous préparez un séjour ? Trouvez l'appartement idéal.",
+      "guestBody": "Parcourez notre portfolio complet d'appartements gérés par des professionnels dans les lieux les plus prisés du Portugal — du studio au 8 chambres, pour chaque type de séjour.",
+      "guestCta": "Réserver"
     },
     "reviews": {
       "title": "Nous Prenons Soin de Nos\nPartenaires et de Nos Voyageurs",

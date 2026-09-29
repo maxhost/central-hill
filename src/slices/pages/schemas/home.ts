@@ -1,15 +1,15 @@
 /**
  * `home` page content schema (ADR 0012). Source-locale values only.
  *
- * Home was reduced to hero · booking search · stats · guests pitch (ADR 0031), so this
- * schema holds only what that composition renders. The owners pitch and the owner/guest
- * dual-CTA panels were removed along with their sections; the featured portfolio and
- * testimonials were never stored here — they are composed from their own slices, and are
- * simply no longer composed into Home.
+ * Home was reduced to a guest-facing funnel by ADR 0031 (owners pitch + dual-CTA removed);
+ * client direction has since restored the featured portfolio and the closing owner/guest
+ * dual-CTA band (the owners pitch and testimonials stay out for now). The featured portfolio
+ * is still composed straight from the `buildings` slice, not stored here.
  *
- * Composed (not authored) content: the stats band → company_settings (settings slice),
- * and the services carousel → the `services` slice catalogue (ADR 0032) — the page only
- * stores that section's own copy. See docs/data-model.md → Page content model → home.
+ * Composed (not authored) content: the stats band + dual-CTA contact line →
+ * company_settings (settings slice), and the services carousel → the `services` slice
+ * catalogue (ADR 0032) — the page only stores that section's own copy. See
+ * docs/data-model.md → Page content model → home.
  */
 import { z } from "zod";
 import { cta, ctaWithNote, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
@@ -25,17 +25,34 @@ import {
 /** Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). */
 const GUESTS_IMG_HINT =
   "Lifestyle photo for the Guests section. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
+const PANEL_IMG_HINT =
+  "Panel background photo. Landscape — recommended 1600×1200px, JPG or WebP, under 600 KB.";
 
 /** Exactly three reassurance marks — the strip under the carousel heading. */
 const ASSURANCE_COUNT = 3;
+
+/** One side of the closing owner/guest dual-CTA band (editable copy + background). */
+const ctaPanel = z.object({
+  image_media_id: optionalImage(PANEL_IMG_HINT),
+  eyebrow: tStr({ max: 60 }),
+  title: tStr({ max: 160 }),
+  body: tStr({ max: 400 }),
+  cta_label: tStr({ max: 60 }),
+});
 
 export const homeSchema = z.object({
   hero: z.object({
     video_media_id: mediaId,
     headline: tStr({ max: 160 }),
     subtitle: tStrOpt({ max: 280 }),
+    // External booking engine (Avantio) — genuinely a redirect, so its target is
+    // CMS-editable like any other cta.
     cta_primary: cta,
-    cta_secondary: cta,
+    // Always our own internal Owners route — never a CMS-editable target (client
+    // feedback: a free-text `url` shared by all 4 locales can only ever be correct for
+    // one of them). Staff can only edit the button's copy; `home-page.tsx` hardcodes the
+    // locale-aware `/owners` href.
+    cta_secondary: z.object({ label: tStr({ max: 80 }) }),
   }),
   guests_pitch: z.object({
     headline: tStr({ max: 160 }),
@@ -59,6 +76,11 @@ export const homeSchema = z.object({
   }),
   /** Optional FAQ group to show on the page (blank = none). */
   faq_group_key: faqGroupKey,
+  // Closing band: two image panels (owner / guest) with editable copy + CTA labels.
+  dual_cta: z.object({
+    owner: ctaPanel,
+    guest: ctaPanel,
+  }),
 });
 
 export type HomeContent = z.infer<typeof homeSchema>;

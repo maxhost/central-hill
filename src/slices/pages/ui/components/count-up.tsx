@@ -15,7 +15,7 @@ import { useEffect, useRef, useState } from "react";
  * to the static string when there is no parseable number or JS/IntersectionObserver is
  * unavailable. The accessible name is always the final value.
  */
-const DURATION_MS = 1600;
+const DURATION_MS = 4000;
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
 interface Parsed {

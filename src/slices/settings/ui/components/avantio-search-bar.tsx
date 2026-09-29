@@ -30,8 +30,10 @@ export async function AvantioSearchBar({ locale }: { locale: string }) {
 
   return (
     // The seam overlap lives in AVANTIO_STYLE next to the card metrics it is derived from, so
-    // the offset and the height it is half of cannot drift apart.
-    <section data-avantio="search-bar">
+    // the offset and the height it is half of cannot drift apart. `id` + `scrollMarginTop` are
+    // the anchor the header's "Book Now" CTA jumps to (mirrors owners-page's per-section
+    // scroll-margin convention, offset for the fixed `h-16` header instead of its sub-nav bar).
+    <section id="booking-engine" data-avantio="search-bar" style={{ scrollMarginTop: 96 }}>
       {/* Hoisted into <head> by React 19 — the integration doc's step 1. */}
       <meta name="avantio-integration" content="FrameworkITS" />
       {widget.stylesheets.map((href) => (

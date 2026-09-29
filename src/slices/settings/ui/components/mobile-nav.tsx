@@ -33,6 +33,7 @@ export function MobileNav({
   contactTitle,
   contactIntro,
   book,
+  earn,
   openLabel,
   closeLabel,
 }: {
@@ -43,6 +44,8 @@ export function MobileNav({
   contactTitle: string;
   contactIntro: string;
   book: NavCta;
+  /** Owner-acquisition CTA ("Earn With Us") — standout accent fill, drawer-only. */
+  earn: NavCta;
   openLabel: string;
   closeLabel: string;
 }) {
@@ -112,6 +115,18 @@ export function MobileNav({
                 className="inline-flex items-center justify-center rounded-[3px] border border-ink px-5 py-3 text-sm font-medium text-ink transition-colors hover:bg-ink hover:text-bg"
               >
                 {book.label}
+              </a>
+              {/* Owner-acquisition CTA, drawer-only (client feedback) — solid accent fill
+               * (mirrors `core/ui` `ButtonLink`'s `primary` variant) so it stands out next to
+               * the outlined "Book Now" above it. */}
+              <a
+                href={earn.href}
+                target={earn.external ? "_blank" : undefined}
+                rel={earn.external ? "noopener noreferrer" : undefined}
+                onClick={() => setOpen(false)}
+                className="inline-flex items-center justify-center rounded-[3px] bg-accent px-5 py-3 text-sm font-medium text-surface transition-colors hover:bg-accent-deep"
+              >
+                {earn.label}
               </a>
               <ContactDialog
                 variant="button"

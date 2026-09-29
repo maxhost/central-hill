@@ -432,6 +432,7 @@
     "menu": "Abrir menu",
     "close": "Fechar menu",
     "ctaBook": "Reservar",
+    "ctaEarn": "Ganhe Connosco",
     "ctaList": "Anuncie o seu imóvel",
     "language": "Idioma",
     "contact": "Contacto",
@@ -469,7 +470,20 @@
       "about": "Sobre nós",
       "blog": "Blog",
       "contact": "Contacto",
-      "rights": "© {year} Central Hill Apartments · Lisboa, Portugal"
+      "rights": "© {year} Central Hill Apartments · Lisboa, Portugal",
+      "newsletter": {
+        "placeholder": "O seu email",
+        "cta": "Subscrever",
+        "ariaLabel": "Email para a newsletter",
+        "modalTitle": "Subscreva a nossa newsletter",
+        "modalIntro": "Receba notícias, ofertas e novidades da Central Hill.",
+        "emailLabel": "Email",
+        "termsLabel": "Aceito os Termos e Condições",
+        "marketingLabel": "Quero receber informação comercial e ofertas por email",
+        "submit": "Subscrever",
+        "success": "Subscrição concluída. Obrigado!",
+        "close": "Fechar"
+      }
     },
     "admin": {
       "errors": {
@@ -620,6 +634,16 @@
     "leadNote": "Gratuito, imediato, sem compromisso.",
     "stats": {
       "title": "Uma Empresa de Confiança e Líder de Mercado"
+    },
+    "dualCta": {
+      "ownerEyebrow": "Proprietários",
+      "ownerTitle": "Tem um imóvel? Comece a ganhar mais — grátis, sem compromisso.",
+      "ownerBody": "Descubra quanto o seu imóvel poderia render com uma análise de rentabilidade gratuita e sem compromisso. A nossa equipa avalia o seu imóvel e responde em 48 horas.",
+      "ownerCta": "Sou proprietário",
+      "guestEyebrow": "Hóspedes",
+      "guestTitle": "A planear uma estadia? Encontre o apartamento perfeito.",
+      "guestBody": "Explore o nosso portfólio completo de apartamentos geridos profissionalmente nas localizações mais procuradas de Portugal — de estúdios a T8, para todo o tipo de estadia.",
+      "guestCta": "Reservar Agora"
     },
     "reviews": {
       "title": "Cuidamos dos Nossos\nParceiros e Hóspedes",

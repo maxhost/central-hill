@@ -432,6 +432,7 @@
     "menu": "Open menu",
     "close": "Close menu",
     "ctaBook": "Book Now",
+    "ctaEarn": "Earn With Us",
     "ctaList": "List Your Property",
     "language": "Language",
     "contact": "Contact",
@@ -469,7 +470,20 @@
       "about": "About Us",
       "blog": "Blog",
       "contact": "Contact",
-      "rights": "© {year} Central Hill Apartments · Lisbon, Portugal"
+      "rights": "© {year} Central Hill Apartments · Lisbon, Portugal",
+      "newsletter": {
+        "placeholder": "Your email",
+        "cta": "Subscribe",
+        "ariaLabel": "Newsletter email",
+        "modalTitle": "Subscribe to our newsletter",
+        "modalIntro": "Get news, offers and updates from Central Hill.",
+        "emailLabel": "Email",
+        "termsLabel": "I accept the Terms & Conditions",
+        "marketingLabel": "I'd like to receive commercial information and offers by email",
+        "submit": "Subscribe",
+        "success": "You're subscribed. Thank you!",
+        "close": "Close"
+      }
     },
     "admin": {
       "errors": {
@@ -620,6 +634,16 @@
     "leadNote": "Free, instant, no obligation.",
     "stats": {
       "title": "A Trusted and Leading Company"
+    },
+    "dualCta": {
+      "ownerEyebrow": "Owners",
+      "ownerTitle": "Own a property? Start earning more — free, no obligation.",
+      "ownerBody": "Find out what your property could earn with a free, no-obligation profitability analysis. Our team will assess your property and come back within 48 hours.",
+      "ownerCta": "I'm a property owner",
+      "guestEyebrow": "Guests",
+      "guestTitle": "Planning a stay? Find your perfect apartment.",
+      "guestBody": "Browse our full portfolio of professionally managed apartments across Portugal's most sought-after locations — studios to 8-bedrooms, for every type of stay.",
+      "guestCta": "Book Now"
     },
     "reviews": {
       "title": "We Care About Our\nPartners & Guests",

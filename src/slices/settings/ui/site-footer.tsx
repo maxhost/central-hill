@@ -4,6 +4,7 @@ import { Container } from "@core/ui";
 import { Link } from "@/i18n/navigation";
 import { DEFAULT_GLOBALS } from "../defaults";
 import { getGlobals, getNav } from "../server/queries";
+import { FooterNewsletter } from "./components/footer-newsletter";
 import { LocaleSwitcher } from "./components/locale-switcher";
 
 /**
@@ -71,21 +72,41 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
   return (
     <footer className="bg-feature text-on-feature">
       <Container className="pb-9 pt-[74px]">
-        <div className="mb-[38px] border-b border-white/[0.12] pb-[26px] text-[13px] tracking-[0.02em] text-on-feature-soft">
-          {t("footer.toggle")}{" "}
-          <Link
-            href="/owners"
-            className="border-b border-white/40 pb-px text-on-feature transition-colors hover:border-white"
-          >
-            {t("footer.owner")}
-          </Link>{" "}
-          ·{" "}
-          <Link
-            href="/guests"
-            className="border-b border-white/40 pb-px text-on-feature transition-colors hover:border-white"
-          >
-            {t("footer.guest")}
-          </Link>
+        <div className="mb-[38px] flex flex-col gap-5 border-b border-white/[0.12] pb-[26px] sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-[13px] tracking-[0.02em] text-on-feature-soft">
+            {t("footer.toggle")}{" "}
+            <Link
+              href="/owners"
+              className="border-b border-white/40 pb-px text-on-feature transition-colors hover:border-white"
+            >
+              {t("footer.owner")}
+            </Link>{" "}
+            ·{" "}
+            <Link
+              href="/guests"
+              className="border-b border-white/40 pb-px text-on-feature transition-colors hover:border-white"
+            >
+              {t("footer.guest")}
+            </Link>
+          </div>
+
+          {/* Newsletter signup (client feedback) — fills the empty space beside the toggle
+           * row on wide viewports; UI only, not wired to a provider yet. */}
+          <FooterNewsletter
+            labels={{
+              placeholder: t("footer.newsletter.placeholder"),
+              cta: t("footer.newsletter.cta"),
+              ariaLabel: t("footer.newsletter.ariaLabel"),
+              modalTitle: t("footer.newsletter.modalTitle"),
+              modalIntro: t("footer.newsletter.modalIntro"),
+              emailLabel: t("footer.newsletter.emailLabel"),
+              termsLabel: t("footer.newsletter.termsLabel"),
+              marketingLabel: t("footer.newsletter.marketingLabel"),
+              submit: t("footer.newsletter.submit"),
+              success: t("footer.newsletter.success"),
+              close: t("footer.newsletter.close"),
+            }}
+          />
         </div>
 
         <div className="grid gap-12 md:grid-cols-[1.6fr_1fr_1fr]">

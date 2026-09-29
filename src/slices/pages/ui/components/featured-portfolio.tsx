@@ -30,6 +30,7 @@ export async function FeaturedPortfolio({
   ctaLabel,
   ctaNote,
   ctaHref,
+  tightBottom,
 }: {
   locale: Locale;
   showEyebrow?: boolean;
@@ -45,6 +46,12 @@ export async function FeaturedPortfolio({
   ctaNote?: string;
   /** Overrides the `/{locale}/buildings` button target. */
   ctaHref?: string;
+  /**
+   * Drops the section's own bottom padding — for when the next section already supplies
+   * its own top padding, so the two don't stack into a double-sized gap (client feedback,
+   * Home: this section now sits directly above the services carousel).
+   */
+  tightBottom?: boolean;
 }) {
   const buildings = await getFeaturedBuildings(locale, CAROUSEL_LIMIT);
   if (buildings.length === 0) return null;
@@ -56,7 +63,10 @@ export async function FeaturedPortfolio({
   ));
 
   return (
-    <section className="py-[clamp(64px,10vw,160px)]">
+    <section
+      className="pt-[clamp(64px,10vw,160px)]"
+      style={tightBottom ? undefined : { paddingBottom: "clamp(64px, 10vw, 160px)" }}
+    >
       <Container>
         <SectionHeading
           center

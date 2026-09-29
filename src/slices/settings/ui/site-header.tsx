@@ -1,8 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { Container } from "@core/ui";
+import { ButtonLink, Container } from "@core/ui";
 import { Link } from "@/i18n/navigation";
-import { AVANTIO_OWNERS_LOGIN_URL, avantioBookingUrl } from "../contract";
+import { AVANTIO_OWNERS_LOGIN_URL } from "../contract";
 import { getNav } from "../server/queries";
 import { ContactDialog } from "./components/contact-dialog";
 import { HeaderScroll } from "./components/header-scroll";
@@ -168,16 +168,38 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
             ),
           )}
 
-          {/* "Book Now" lives with the menu (section 2), set off from the links by a margin. */}
-          <a
-            href={avantioBookingUrl(locale)}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-cta="ghost"
-            className="ml-2 inline-flex items-center gap-2 rounded-[3px] border border-ink px-5 py-[11px] text-sm font-medium text-ink transition-colors hover:bg-ink hover:text-bg"
-          >
-            {t("ctaBook")}
-          </a>
+          {/*
+           * The two persistent CTAs, paired and set off from the menu links by a margin
+           * (client feedback — "Earn With Us" sits right next to "Book Now", not lost among
+           * the regular nav links).
+           */}
+          <div className="ml-2 flex items-center gap-3">
+            {/*
+             * "Book Now" — anchors to the embedded Avantio search bar on Home (hero/stats
+             * seam) rather than opening the external Avantio engine — the locale-aware `Link`
+             * re-adds the prefix from any page, landing on Home and scrolling to
+             * `#booking-engine`.
+             */}
+            <Link
+              href="/#booking-engine"
+              data-cta="ghost"
+              className="inline-flex items-center gap-2 rounded-[3px] border border-ink px-5 py-[11px] text-sm font-medium text-ink transition-colors hover:bg-ink hover:text-bg"
+            >
+              {t("ctaBook")}
+            </Link>
+            {/*
+             * "Earn With Us" — the owner-acquisition CTA (client feedback), solid accent fill
+             * (`ButtonLink`'s `primary` variant — design-system.md) so it reads as the one
+             * standout action next to the outlined "Book Now". Always routes to `/owners` in
+             * the active locale.
+             */}
+            <ButtonLink
+              href={`/${locale}/owners`}
+              className="rounded-[3px] px-5 py-[11px] text-sm"
+            >
+              {t("ctaEarn")}
+            </ButtonLink>
+          </div>
         </nav>
 
         {/* Section 3 — utilities: account access, contact, language. */}
@@ -211,7 +233,8 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
           contactLabel={t("contact")}
           contactTitle={t("contactDialog.title")}
           contactIntro={t("contactDialog.intro")}
-          book={{ href: avantioBookingUrl(locale), label: t("ctaBook"), external: true }}
+          book={{ href: `/${locale}#booking-engine`, label: t("ctaBook") }}
+          earn={{ href: `/${locale}/owners`, label: t("ctaEarn") }}
           openLabel={t("menu")}
           closeLabel={t("close")}
         />
