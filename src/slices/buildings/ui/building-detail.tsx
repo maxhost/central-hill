@@ -124,7 +124,11 @@ const PAGE_STYLE = `
 .mk .gallery img{width:100%;height:100%;object-fit:cover;display:block}
 .mk .gallery .g0{grid-row:1/3}
 @media(max-width:680px){.mk .gallery{grid-template-columns:1fr 1fr}.mk .gallery .g0{grid-row:auto;grid-column:1/3}}
-.mk .specstrip{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:34px 0;margin-top:46px}
+/* Gallery+specstrip band: sits flush under the hero (no top padding) and pulls the next
+   section 15% of --section-y closer (negative margin — works regardless of which section
+   follows, since that's conditional on the building's content). */
+.mk .specband{padding:0;margin-bottom:calc(var(--section-y) * -0.15)}
+.mk .specstrip{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:34px 0}
 .mk .spec{flex:1 1 0;min-width:140px;text-align:center}
 .mk .spec .n{font-family:var(--serif);font-size:clamp(30px,3.4vw,44px);line-height:1;color:var(--ink)}
 .mk .spec .l{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-top:10px}
@@ -209,7 +213,7 @@ function bodyHtml(
     </div>`;
 
   const gallerySection = `
-<section style="padding-bottom:0">
+<section class="specband">
   <div class="wrap">
     ${galleryHtml}
     ${specstrip}
