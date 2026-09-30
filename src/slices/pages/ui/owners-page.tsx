@@ -2,8 +2,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { mediaImgTag, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
+import { ContactDialog } from "@slices/settings/contract";
 import { getOwnersPage, type OwnersContent } from "../contract";
+import { EstFormStepper } from "./components/est-form-stepper";
+import { EstFormWizard } from "./components/est-form-wizard";
 import { FaqSection } from "./components/faq-section";
+import { HeroContactCta } from "./components/hero-contact-cta";
 import { OwnerStatsCounter } from "./components/owner-stats-counter";
 import { TestimonialsRow } from "./components/testimonials-row";
 
@@ -41,19 +45,46 @@ const escAttr = (s: string) => esc(s).replace(/"/g, "&quot;");
 
 const OWNERS_STYLE = `
 .mk [id]{scroll-margin-top:130px}
-.mk .owner-hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:end}
-.mk .owner-hero .hero-copy{max-width:34ch}
+.mk .owner-hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:end}
+.mk .owner-hero .hero-copy{max-width:none}
+.mk .owner-hero h1{max-width:none;white-space:nowrap;font-size:clamp(30px,4vw,50px)}
+.mk .owner-hero .hero-cta{margin-top:28px}
+.mk .owner-hero .hero-cta button{padding:0.75rem 1.75rem}
 .mk .est-card{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:34px 32px 30px;box-shadow:0 30px 60px -30px rgba(0,0,0,.5)}
 .mk .est-card .earn-badge{display:inline-flex;align-items:center;gap:.5em;background:var(--accent);color:#fff;font-size:13px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:9px 18px;border-radius:30px;margin-bottom:16px;box-shadow:0 10px 24px -10px color-mix(in srgb,var(--accent) 75%,transparent)}
 .mk .est-card h3{font-size:26px;margin-bottom:8px}
 .mk .est-card .est-sub{font-size:14px;color:var(--ink-soft);margin-bottom:22px}
 .mk .est-field{margin-bottom:16px}
 .mk .est-field label{display:block;font-size:12px;letter-spacing:.04em;font-weight:600;color:var(--ink);margin-bottom:7px}
-.mk .est-field input,.mk .est-field select{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:13px 14px;transition:.2s var(--ease)}
+.mk .est-field input,.mk .est-field select{width:100%;height:44px;font-family:var(--sans);font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:0 14px;transition:.2s var(--ease)}
+.mk .est-field select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235c544c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:15px}
 .mk .est-field input:focus,.mk .est-field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
 .mk .est-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mk .est-stepper{display:flex;align-items:center;justify-content:space-between;height:44px;border:1px solid var(--line);border-radius:4px;background:var(--bg);padding:0 3px}
+.mk .est-stepper .step-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex:0 0 auto;border:0;border-radius:4px;background:transparent;color:var(--ink);cursor:pointer;transition:.2s var(--ease)}
+.mk .est-stepper .step-btn svg{width:16px;height:16px}
+.mk .est-stepper .step-btn:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent-deep)}
+.mk .est-stepper .step-btn:disabled{opacity:.35;cursor:not-allowed}
+.mk .est-stepper .step-val{flex:1;text-align:center;font-size:15px;font-weight:600;color:var(--ink)}
 .mk .est-card .btn{width:100%;justify-content:center;margin-top:6px}
 .mk .est-note{text-align:center;font-size:12.5px;color:var(--ink);font-weight:500;margin-top:14px}
+.mk .wiz-dots{display:flex;gap:6px;margin-bottom:22px}
+.mk .wiz-dots span{flex:1;height:3px;border-radius:2px;background:var(--line);transition:.3s var(--ease)}
+.mk .wiz-dots span.done{background:var(--accent)}
+.mk .est-phone{display:flex;gap:10px}
+.mk .est-phone select{width:112px;flex:0 0 auto;padding-left:12px;padding-right:30px;background-position:right 9px center}
+.mk .est-phone input{flex:1;min-width:0}
+.mk .est-check{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5;color:var(--ink-soft);cursor:pointer;margin-bottom:12px}
+.mk .est-check input{width:16px;height:16px;flex:0 0 auto;margin-top:2px;accent-color:var(--accent)}
+.mk .est-check a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+.mk .wiz-actions{display:flex;align-items:center;gap:14px;margin-top:6px}
+.mk .wiz-actions .btn{margin-top:0}
+.mk .wiz-back{background:none;border:0;padding:0;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;flex:0 0 auto}
+.mk .wiz-back:hover{color:var(--accent-deep)}
+.mk .wiz-confirm{text-align:center;padding:18px 0 6px}
+.mk .wiz-confirm .ic{width:46px;height:46px;color:var(--accent);border:1px solid var(--line);border-radius:50%;padding:12px;margin-bottom:18px}
+.mk .wiz-confirm h3{margin-bottom:10px}
+.mk .wiz-confirm p{font-size:14.5px;line-height:1.6;color:var(--ink-soft)}
 .mk .owner-pitch .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:start}
 .mk .owner-pitch .pitch-text{position:sticky;top:120px}
 .mk .owner-pitch .pitch-sub{margin-top:18px;font-size:18px;line-height:1.6;color:var(--ink-soft)}
@@ -86,6 +117,7 @@ const OWNERS_STYLE = `
 .mk .plan:hover{transform:translateY(-4px);box-shadow:0 24px 50px -30px rgba(0,0,0,.42)}
 .mk .plan.popular{border-color:var(--accent);box-shadow:0 24px 54px -28px color-mix(in srgb,var(--accent) 55%,transparent)}
 .mk .plan .pop-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;padding:6px 16px;border-radius:30px}
+.mk .plan .corner-badge{position:absolute;top:-16px;right:-16px;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;font-family:var(--serif);font-size:14px;font-weight:600;box-shadow:0 10px 24px -10px color-mix(in srgb,var(--accent) 75%,transparent);border:3px solid var(--bg)}
 .mk .plan .pname{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);font-weight:600}
 .mk .plan .ptag{font-family:var(--serif);font-size:25px;color:var(--ink);margin:10px 0 22px;line-height:1.2}
 .mk .plan ul{list-style:none;margin:0 0 28px;flex:1}
@@ -99,11 +131,15 @@ const OWNERS_STYLE = `
 .mk .plan-helper h4{font-family:var(--serif);font-size:25px;font-weight:500;color:var(--ink);margin-bottom:9px}
 .mk .plan-helper p{font-size:15px;color:var(--ink-soft);margin:0}
 .mk .plan-helper .btn{flex:0 0 auto}
-.mk .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
-.mk .step{background:var(--surface);padding:36px 28px}
-.mk .step .snum{font-family:var(--serif);font-size:46px;line-height:1;color:var(--accent);opacity:.85;margin-bottom:16px}
-.mk .step h3{font-size:20px;margin-bottom:9px}
-.mk .step p{font-size:14px;color:var(--ink-soft)}
+.mk .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:var(--line);border:1px solid var(--line)}
+.mk .step{position:relative;overflow:hidden;display:flex;min-height:360px;padding:26px 22px}
+.mk .step-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease)}
+.mk .step:hover .step-img{transform:scale(1.06)}
+.mk .step-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(23,18,14,0) 38%,rgba(23,18,14,.9) 100%)}
+.mk .step-body{position:relative;z-index:2;margin-top:auto}
+.mk .step .snum{font-family:var(--serif);font-size:36px;line-height:1;color:#fff;opacity:.92;margin-bottom:12px}
+.mk .step h3{font-size:18.5px;margin-bottom:7px;color:#fff}
+.mk .step p{font-size:13.5px;line-height:1.5;color:rgba(255,255,255,.82)}
 .mk .faq{max-width:820px;margin:0 auto;border-top:1px solid var(--line)}
 .mk .faq details{border-bottom:1px solid var(--line)}
 .mk .faq summary{list-style:none;cursor:pointer;padding:24px 44px 24px 4px;position:relative;font-family:var(--serif);font-size:20px;color:var(--ink);transition:color .2s}
@@ -126,6 +162,18 @@ const DASHBOARD_FALLBACK_ALT = "Owner dashboard showing live revenue and occupan
 // The showcase image sits in one of two equal columns inside the 1240px `.wrap`
 // (28px padding, 64px gap) and goes full-width under 980px — see `.owner-showcase`.
 const SHOWCASE_SIZES = "(max-width: 980px) 100vw, 560px";
+
+// TEMP: Pexels placeholders (client direction — trying a photo-background treatment on the
+// "growth path" cards; #core/media assets not uploaded yet) — swap for real R2 assets once
+// the client picks final photography. One per step, positional.
+const JOURNEY_FALLBACK_IMGS = [
+  "https://images.pexels.com/photos/259962/pexels-photo-259962.jpeg?auto=compress&cs=tinysrgb&w=900",
+  "https://images.pexels.com/photos/3182812/pexels-photo-3182812.jpeg?auto=compress&cs=tinysrgb&w=900",
+  "https://images.pexels.com/photos/210265/pexels-photo-210265.jpeg?auto=compress&cs=tinysrgb&w=900",
+  "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=900",
+  "https://images.pexels.com/photos/313782/pexels-photo-313782.jpeg?auto=compress&cs=tinysrgb&w=900",
+];
+const STEP_IMG_SIZES = "(max-width: 680px) 50vw, (max-width: 980px) 33vw, 20vw";
 
 // Bespoke per-benefit icons from the locked design — positional (paired by index with the
 // fixed-count benefit lists). Only the benefit *text* is data-driven; the SVGs never change.
@@ -198,39 +246,102 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
     sizes: SHOWCASE_SIZES,
   });
 
+  // Hero headline: authored with `;` between phrases so the design's stacked hero title
+  // ("Your Property" / "Our Expertise" / "Maximum Returns") renders as one line per phrase.
+  // A headline with no `;` renders as a single line, unchanged.
+  const heroHeadline = hero.headline
+    .split(";")
+    .map((line) => esc(line.trim()))
+    .filter(Boolean)
+    .join("<br>");
+
   return `
 <section id="worth" class="hero compact owner-hero" style="padding:0">
   ${heroImgTag}
   <div class="wrap">
     <div class="hero-copy">
-      <h1>${esc(hero.headline)}</h1>
+      <h1>${heroHeadline}</h1>
       <p>${esc(hero.copy)}</p>
+      <div class="hero-cta" id="hero-contact-slot"></div>
     </div>
 
-    <form class="est-card reveal" onsubmit="return false">
-      ${form.badge ? `<span class="earn-badge">★ ${esc(form.badge)}</span>` : ""}
-      <h3>${esc(form.headline)}</h3>
-      ${form.subheadline ? `<p class="est-sub">${esc(form.subheadline)}</p>` : ""}
-      <div class="est-field">
-        <label for="addr">Property Address</label>
-        <input id="addr" type="text" placeholder="Street, neighbourhood, city" autocomplete="off">
-      </div>
-      <div class="est-two">
+    <form class="est-card reveal" data-wizard data-step="1" onsubmit="return false">
+      <div class="wiz-dots" aria-hidden="true"><span data-dot="1"></span><span data-dot="2"></span><span data-dot="3"></span></div>
+
+      <div class="wiz-panel" data-panel="1">
+        ${form.badge ? `<span class="earn-badge">★ ${esc(form.badge)}</span>` : ""}
+        <h3>${esc(form.headline)}</h3>
+        ${form.subheadline ? `<p class="est-sub">${esc(form.subheadline)}</p>` : ""}
         <div class="est-field">
-          <label for="nprop">Nº of Properties</label>
-          <select id="nprop">
-            <option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option>
-          </select>
+          <label for="addr">Property Address</label>
+          <input id="addr" type="text" placeholder="Street, neighbourhood, city" autocomplete="off">
+        </div>
+        <div class="est-two">
+          <div class="est-field">
+            <label>Nº of Properties</label>
+            <div class="est-stepper" data-stepper data-value="1" data-min="1">
+              <button type="button" class="step-btn" data-step="down" disabled aria-label="Decrease number of properties">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+              </button>
+              <span class="step-val">1</span>
+              <button type="button" class="step-btn" data-step="up" aria-label="Increase number of properties">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+              <input type="hidden" id="nprop" name="nprop" value="1">
+            </div>
+          </div>
+          <div class="est-field">
+            <label for="nbed">Nº of Bedrooms</label>
+            <select id="nbed">
+              <option>Studio</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6+</option>
+            </select>
+          </div>
+        </div>
+        <button type="button" class="btn btn-accent" data-wiz-next>${esc(form.cta_label)} →</button>
+        ${form.note ? `<p class="est-note">${esc(form.note)}</p>` : ""}
+      </div>
+
+      <div class="wiz-panel" data-panel="2" hidden>
+        <h3>Your contact details</h3>
+        <p class="est-sub">Almost there — tell us how to reach you with the study.</p>
+        <div class="est-field">
+          <label for="fname">Full Name</label>
+          <input id="fname" type="text" placeholder="Jane Doe" autocomplete="name">
         </div>
         <div class="est-field">
-          <label for="nbed">Nº of Bedrooms</label>
-          <select id="nbed">
-            <option>Studio</option><option>1</option><option>2</option><option>3</option><option>4+</option>
-          </select>
+          <label for="femail">Email</label>
+          <input id="femail" type="email" placeholder="jane@example.com" autocomplete="email">
+        </div>
+        <div class="est-field">
+          <label for="fphone">Phone</label>
+          <div class="est-phone">
+            <select id="fphone-code" aria-label="Country code">
+              <option value="+351" selected>🇵🇹 +351</option>
+              <option value="+34">🇪🇸 +34</option>
+              <option value="+33">🇫🇷 +33</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+49">🇩🇪 +49</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+55">🇧🇷 +55</option>
+            </select>
+            <input id="fphone" type="tel" placeholder="912 345 678" autocomplete="tel">
+          </div>
+        </div>
+        <label class="est-check"><input type="checkbox">I agree to the <a href="#">Terms &amp; Conditions</a>.</label>
+        <label class="est-check"><input type="checkbox">I agree to the <a href="#">Privacy Policy</a> and consent to being contacted.</label>
+        <div class="wiz-actions">
+          <button type="button" class="wiz-back" data-wiz-back>← Back</button>
+          <button type="button" class="btn btn-accent" data-wiz-next>Submit request →</button>
         </div>
       </div>
-      <a class="btn btn-accent" href="#">${esc(form.cta_label)} →</a>
-      ${form.note ? `<p class="est-note">${esc(form.note)}</p>` : ""}
+
+      <div class="wiz-panel" data-panel="3" hidden>
+        <div class="wiz-confirm">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          <h3>Request received</h3>
+          <p>Thank you — our team will review your property and get back to you within 48 hours with your free profitability study.</p>
+        </div>
+      </div>
     </form>
   </div>
 </section>
@@ -295,6 +406,7 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
         (t) => `
       <div class="plan${t.is_popular ? " popular" : ""}">
         ${t.is_popular ? `<span class="pop-tag">Most Popular</span>` : ""}
+        ${t.corner_badge ? `<span class="corner-badge">${esc(t.corner_badge)}</span>` : ""}
         <div class="pname">${esc(t.name)}</div>
         ${t.tag ? `<div class="ptag">${esc(t.tag)}</div>` : ""}
         <ul>${t.features.map((f) => `\n          <li>${esc(f)}</li>`).join("")}
@@ -328,14 +440,25 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
       ${journey.subheadline ? `<p class="lede" style="margin:16px auto 0">${esc(journey.subheadline)}</p>` : ""}
     </div>
     <div class="steps reveal">${journey.steps
-      .map(
-        (s, i) => `
+      .map((s, i) => {
+        const stepImg = mediaImgTag({
+          data: media[s.image_media_id ?? ""],
+          fallbackSrc: JOURNEY_FALLBACK_IMGS[i % JOURNEY_FALLBACK_IMGS.length],
+          fallbackAlt: s.title,
+          sizes: STEP_IMG_SIZES,
+          className: "step-img",
+        });
+        return `
       <div class="step">
-        <div class="snum">${String(i + 1).padStart(2, "0")}</div>
-        <h3>${esc(s.title)}</h3>
-        <p>${esc(s.description)}</p>
-      </div>`,
-      )
+        ${stepImg}
+        <div class="step-scrim"></div>
+        <div class="step-body">
+          <div class="snum">${String(i + 1).padStart(2, "0")}</div>
+          <h3>${esc(s.title)}</h3>
+          <p>${esc(s.description)}</p>
+        </div>
+      </div>`;
+      })
       .join("")}
     </div>
   </div>
@@ -397,6 +520,17 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
       <div className="mk" data-page="owners">
         <style dangerouslySetInnerHTML={{ __html: OWNERS_STYLE }} />
         <OwnerStatsCounter />
+        <EstFormStepper />
+        <EstFormWizard />
+        <HeroContactCta>
+          <ContactDialog
+            variant="light"
+            label="Contact Us"
+            title="Contact us"
+            intro="Send us a message and our team will get back to you shortly."
+            source="owners-hero"
+          />
+        </HeroContactCta>
         <div dangerouslySetInnerHTML={{ __html: ownersBodyTop(content, media) }} />
       </div>
       {/*

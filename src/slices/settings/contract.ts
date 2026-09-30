@@ -105,6 +105,14 @@ export { avantioBookingUrl, AVANTIO_LOCALES, AVANTIO_OWNERS_LOGIN_URL } from "./
 export { AvantioSearchBar } from "./ui/components/avantio-search-bar";
 
 /**
+ * The header "Contact" trigger + modal (the leads `ContactForm`, `kind = "contact"`) —
+ * a self-contained client island (own open state, own dialog). Exported so other slices
+ * can reuse the exact same contact flow elsewhere on the site (e.g. a hero CTA), tagging
+ * the lead with their own `source`.
+ */
+export { ContactDialog } from "./ui/components/contact-dialog";
+
+/**
  * Backoffice contribution (S12). `settingsAdminScreens` is spread into
  * `composeAdminNav` by the admin panel layout; the globals + navigation editors mount
  * under `app/(admin)/admin/(panel)/{settings,navigation}/…` (admin-only). Pure data —

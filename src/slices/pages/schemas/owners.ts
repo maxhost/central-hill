@@ -25,14 +25,25 @@ const SERVICES_IMG_HINT =
   "Lifestyle photo for the Services showcase. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
 const DASHBOARD_IMG_HINT =
   "Image for the owner-dashboard showcase (e.g. an interface/laptop shot). Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
+const JOURNEY_STEP_IMG_HINT =
+  "Background photo for this step card (dark gradient overlay is applied — busy top area, calmer bottom works best). Portrait 3:4 — recommended 900×1200px, JPG or WebP, under 400 KB.";
 
 /** A management-plan column (cumulative bullet list; `commission` shown above the card). */
 const tier = z.object({
   name: tStr({ max: 80 }),
   tag: tStrOpt({ max: 80 }),
   commission: tStrOpt({ max: 20 }),
+  /** Short figure in the card's corner badge (e.g. "10%", "+5%") — extra-earnings callout. */
+  corner_badge: tStrOpt({ max: 12 }),
   is_popular: z.boolean(),
   features: between(tStr({ max: 200 }), 1, 20),
+});
+
+/** A `journey` step (client direction: each of the 5 cards gets a background photo). Local
+ * extension of the shared `step` — the image only makes sense for this page's photo-card
+ * treatment, so it doesn't belong on the shared shape (Real Estate reuses plain `step`). */
+const journeyStep = step.extend({
+  image_media_id: optionalImage(JOURNEY_STEP_IMG_HINT),
 });
 
 /** The single full-width highlighted helper band below the plans (e.g. "not sure which plan?"). */
@@ -112,7 +123,7 @@ export const ownersSchema = z.object({
   journey: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
-    steps: fixed(step, 5),
+    steps: fixed(journeyStep, 5),
   }),
   // "Your property, always in sight" — Image Showcase mirrored (image on the left): the owner
   // dashboard pitch as benefit highlights + CTA beside a 4:5 image with a floating badge.
