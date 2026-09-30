@@ -76,3 +76,13 @@ export {
  * mount under `app/(admin)/admin/(panel)/pages/…`. Pure data — safe to import anywhere.
  */
 export { pagesAdminScreens } from "./admin/screens";
+
+/**
+ * Client islands behind the earnings-estimate form's `.est-*`/`.wiz-*` static markup
+ * (`[data-stepper]`, `[data-wizard]` + `[data-panel]`) — the Owners hero's 3-step wizard.
+ * Pure DOM behaviour (no props, no page-specific coupling: they query `.mk` for their
+ * markup at runtime), so any slice embedding that same markup can reuse them instead of
+ * re-implementing the stepper/wizard logic. Render nothing themselves.
+ */
+export { EstFormStepper } from "./ui/components/est-form-stepper";
+export { EstFormWizard } from "./ui/components/est-form-wizard";

@@ -209,7 +209,7 @@
     "count": "{count, plural, =0 {Sin edificios} one {# Edificio} other {# Edificios}}",
     "apartments": "{count, plural, =0 {Sin apartamentos} one {# Apartamento} other {# Apartamentos}}",
     "new": "Nuevo",
-    "viewMore": "Ver más",
+    "viewMore": "Ver Todas las Unidades",
     "breadcrumb": "Edificios",
     "statApartments": "Apartamentos",
     "statCapacity": "Hasta huéspedes",

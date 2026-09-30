@@ -209,7 +209,7 @@
     "count": "{count, plural, =0 {Aucun immeuble} one {# Immeuble} other {# Immeubles}}",
     "apartments": "{count, plural, =0 {Aucun appartement} one {# Appartement} other {# Appartements}}",
     "new": "Nouveau",
-    "viewMore": "Voir plus",
+    "viewMore": "Voir Toutes les Unités",
     "breadcrumb": "Immeubles",
     "statApartments": "Appartements",
     "statCapacity": "Jusqu'à voyageurs",
