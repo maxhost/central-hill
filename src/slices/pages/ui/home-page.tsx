@@ -97,7 +97,6 @@ export async function HomePage({ locale }: { locale: Locale }) {
         <FaqSection
           locale={locale}
           groupKey={faqGroupKey}
-          eyebrow={t("faqEyebrow")}
           title={t("faqTitle")}
         />
       ) : null}

@@ -710,7 +710,6 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
-            eyebrow={t("faqEyebrow")}
             title={t("realEstate.faqTitle")}
           />
         </div>

@@ -306,7 +306,6 @@ export async function GuestPage({ locale }: { locale: Locale }) {
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
-            eyebrow={t("faqEyebrow")}
             title={t("faqTitle")}
           />
         </div>

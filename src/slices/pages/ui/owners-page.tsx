@@ -548,7 +548,6 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
-            eyebrow={t("faqEyebrow")}
             title={t("owners.faqTitle")}
           />
         </div>

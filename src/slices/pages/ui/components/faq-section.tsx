@@ -14,13 +14,11 @@ import { SectionHeading } from "./blocks";
 export async function FaqSection({
   locale,
   groupKey,
-  eyebrow,
   title,
   intro,
 }: {
   locale: Locale;
   groupKey: string;
-  eyebrow?: string;
   title: string;
   intro?: string;
 }) {
@@ -34,7 +32,7 @@ export async function FaqSection({
       />
       <Container>
         <div className="mx-auto max-w-3xl">
-          <SectionHeading center eyebrow={eyebrow} title={title} intro={intro} />
+          <SectionHeading center title={title} intro={intro} />
           {/*
            * Expand/collapse accordion (mirrors `mock/owners.html` `.faq`): native
            * <details>/<summary> so it stays a server component with zero JS, is keyboard-
