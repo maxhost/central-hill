@@ -6,11 +6,14 @@ import { countryFlag } from "./country-flag";
  * that scrolls horizontally and loops seamlessly (two identical copies translated by -50%). Pure
  * CSS (no JS / no client island): pauses on hover, and on `prefers-reduced-motion` the animation
  * stops and the track becomes manually scrollable. Cards mirror `mock/home.html` `.tcard` (bordered
- * surface, type label, oversized rating stars, serif quote, author + country flag). Purely
- * presentational; data is resolved by `TestimonialsRow`.
+ * surface, type label, oversized rating stars, serif quote, author + country flag) — an `owner`
+ * card gets a subtle warm accent tint (`bg-accent/5` + `border-accent/25`) instead of the plain
+ * `guest` surface, for a gentle contrast when both audiences mix in one marquee (e.g. Home).
+ * Purely presentational; data is resolved by `TestimonialsRow`.
  */
 export interface GridItem {
   id: string;
+  audience: "owner" | "guest";
   roleLabel: string;
   rating: number;
   quote: string;
@@ -67,7 +70,9 @@ function Card({ tm, ariaHidden }: { tm: GridItem; ariaHidden?: boolean }) {
   return (
     <figure
       aria-hidden={ariaHidden}
-      className="mr-7 flex w-[clamp(280px,78vw,360px)] shrink-0 flex-col border border-line bg-surface p-8"
+      className={`mr-7 flex w-[clamp(280px,78vw,360px)] shrink-0 flex-col border p-8 ${
+        tm.audience === "owner" ? "border-accent/25 bg-accent/5" : "border-line bg-surface"
+      }`}
     >
       <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-deep">
         {tm.roleLabel}

@@ -39,6 +39,7 @@ export async function TestimonialsRow({
 
   const items: GridItem[] = testimonials.slice(0, MAX_CARDS).map((tm) => ({
     id: tm.id,
+    audience: tm.audience,
     roleLabel: t(tm.audience === "owner" ? "reviews.owner" : "reviews.guest"),
     rating: tm.rating,
     quote: tm.quote,
