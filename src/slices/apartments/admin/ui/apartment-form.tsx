@@ -27,10 +27,10 @@ import type { ApartmentEditData } from "../queries";
  * fed from the buildings contract. Source [T] text authored in English.
  *
  * Simplified to the fields a building's apartment CARD shows (no standalone unit page):
- * building · name · badge · bedrooms / guests / beds · cover (optional → placeholder) ·
- * Avantio link. The slug is auto-generated from the name server-side. The remaining DB
- * columns (bathrooms, size, floor, gallery, description, OG, SEO) stay nullable but are
- * no longer authored here.
+ * building · name · badge · bedrooms / guests / beds / size (m²) · cover (optional →
+ * placeholder) · Avantio link. The slug is auto-generated from the name server-side.
+ * The remaining DB columns (bathrooms, floor, gallery, description, OG, SEO) stay
+ * nullable but are no longer authored here.
  */
 
 type Status = "draft" | "published" | "archived";
@@ -44,6 +44,7 @@ interface FormState {
   bedrooms: string;
   max_guests: string;
   beds_count: string;
+  size_m2: string;
   cover_media_id: string;
   avantio_id: string;
   avantio_url: string;
@@ -64,6 +65,7 @@ function initialState(
     bedrooms: String(data?.bedrooms ?? 0),
     max_guests: String(data?.max_guests ?? 1),
     beds_count: String(data?.beds_count ?? 0),
+    size_m2: data?.size_m2 != null ? String(data.size_m2) : "",
     cover_media_id: data?.cover_media_id ?? "",
     avantio_id: data?.avantio_id ?? "",
     avantio_url: data?.avantio_url ?? "",
@@ -76,6 +78,11 @@ function buildPayload(s: FormState, id: string | undefined) {
     const n = Number.parseInt(v, 10);
     return Number.isFinite(n) ? n : fallback;
   };
+  const intOrNull = (v: string) => {
+    if (v.trim() === "") return null;
+    const n = Number.parseInt(v, 10);
+    return Number.isFinite(n) ? n : null;
+  };
   return {
     id,
     status: s.status,
@@ -86,6 +93,7 @@ function buildPayload(s: FormState, id: string | undefined) {
     bedrooms: intOr(s.bedrooms, 0),
     max_guests: intOr(s.max_guests, 1),
     beds_count: intOr(s.beds_count, 0),
+    size_m2: intOrNull(s.size_m2),
     cover_media_id: s.cover_media_id || null,
     avantio_id: orNull(s.avantio_id),
     avantio_url: orNull(s.avantio_url),
@@ -241,7 +249,7 @@ export function ApartmentForm({
       </AdminCard>
 
       <AdminCard title={t("admin.sections.specs")}>
-        <FieldGrid className="lg:grid-cols-3">
+        <FieldGrid className="lg:grid-cols-4">
           <Field label={t("admin.fields.bedrooms")} error={err("bedrooms")}>
             <TextInput
               type="number"
@@ -265,6 +273,13 @@ export function ApartmentForm({
               type="number"
               value={state.beds_count}
               onChange={(e) => set("beds_count", e.target.value)}
+            />
+          </Field>
+          <Field label={t("admin.fields.sizeM2")} error={err("size_m2")}>
+            <TextInput
+              type="number"
+              value={state.size_m2}
+              onChange={(e) => set("size_m2", e.target.value)}
             />
           </Field>
         </FieldGrid>

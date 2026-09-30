@@ -56,6 +56,17 @@ const GALLERY_SIZES = "(max-width: 680px) 50vw, 291px";
 const AMENITY_ICON =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.4l2.4 2.4 4.6-5"/></svg>';
 
+/** Apartment-card spec-row glyphs (bedrooms, beds, guests, size) — positional, always
+ *  the same four, so plain consts rather than an icon-key map like the amenities grid. */
+const SPEC_ICONS = {
+  bedrooms:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="12" height="18" rx="1"/><path d="M14 12v.01"/></svg>',
+  beds: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19v-7a2 2 0 012-2h14a2 2 0 012 2v7"/><path d="M3 19h18M3 17v2M21 17v2"/><path d="M7 10V7a1 1 0 011-1h3a1 1 0 011 1v3"/></svg>',
+  guests:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5"/></svg>',
+  size: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>',
+} as const;
+
 interface BuildingLabels {
   home: string;
   breadcrumb: string;
@@ -84,6 +95,12 @@ interface ApartmentLabels {
   bedrooms: (n: number) => string;
   guests: (n: number) => string;
   beds: (n: number) => string;
+  size: (n: number) => string;
+}
+
+/** One icon+value chip in an apartment card's spec row (bedrooms/beds/guests/size). */
+function specChip(icon: string, value: number, label: string): string {
+  return `<span class="pspec" title="${esc(label)}">${icon}${esc(String(value))}</span>`;
 }
 
 /** One `.pcard` for the "Apartments in this Building" grid, built from a published unit. */
@@ -94,9 +111,12 @@ function apartmentCardHtml(a: ApartmentSummary, labels: ApartmentLabels): string
     fallbackAlt: a.name,
     sizes: CARD_SIZES,
   });
-  const meta = [labels.bedrooms(a.bedrooms), labels.guests(a.maxGuests), labels.beds(a.bedsCount)].join(
-    " · ",
-  );
+  const specs = [
+    specChip(SPEC_ICONS.bedrooms, a.bedrooms, labels.bedrooms(a.bedrooms)),
+    specChip(SPEC_ICONS.beds, a.bedsCount, labels.beds(a.bedsCount)),
+    specChip(SPEC_ICONS.guests, a.maxGuests, labels.guests(a.maxGuests)),
+    a.sizeM2 ? specChip(SPEC_ICONS.size, a.sizeM2, labels.size(a.sizeM2)) : "",
+  ].join("");
   const href = a.avantio.url ?? "#book";
   const external = a.avantio.url ? ' target="_blank" rel="noopener noreferrer"' : "";
   return `
@@ -104,7 +124,7 @@ function apartmentCardHtml(a: ApartmentSummary, labels: ApartmentLabels): string
         <div class="ph">${
           a.badge ? `<span class="badge">${esc(a.badge)}</span>` : ""
         }${coverTag}</div>
-        <div class="pbody"><h3>${esc(a.name)}</h3><div class="pmeta">${esc(meta)}</div><span class="check">${esc(labels.checkAvailability)} →</span></div>
+        <div class="pbody"><h3>${esc(a.name)}</h3><div class="pspecs">${specs}</div><span class="check">${esc(labels.checkAvailability)} →</span></div>
       </a>`;
 }
 
@@ -124,6 +144,11 @@ const PAGE_STYLE = `
 .mk .gallery img{width:100%;height:100%;object-fit:cover;display:block}
 .mk .gallery .g0{grid-row:1/3}
 @media(max-width:680px){.mk .gallery{grid-template-columns:1fr 1fr}.mk .gallery .g0{grid-row:auto;grid-column:1/3}}
+/* Apartment-card spec row (icon + value chips) — replaces the plain-text .pmeta line
+   on unit cards only; the building-listing cards keep the kernel .pmeta unchanged. */
+.mk .pspecs{display:flex;flex-wrap:wrap;gap:14px;margin-top:4px}
+.mk .pspec{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--ink-soft)}
+.mk .pspec svg{width:16px;height:16px;color:var(--accent-deep)}
 /* Gallery+specstrip band: sits flush under the hero (no top padding) and pulls the next
    section 15% of --section-y closer (negative margin — works regardless of which section
    follows, since that's conditional on the building's content). */
@@ -352,6 +377,7 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
     bedrooms: (n) => ta("bedrooms", { count: n }),
     guests: (n) => ta("guests", { count: n }),
     beds: (n) => ta("beds", { count: n }),
+    size: (n) => ta("size", { count: n }),
   };
 
   return (

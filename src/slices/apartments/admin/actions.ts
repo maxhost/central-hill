@@ -73,8 +73,8 @@ export async function saveApartment(raw: unknown): Promise<ApartmentSaveResult> 
   }
   const input = parsed.data;
 
-  // Card-only columns. Dropped fields (bathrooms / size_m2 / floor / og_image) keep
-  // their DB defaults (0) or stay null — they are no longer authored in the editor.
+  // Card-only columns. Dropped fields (bathrooms / floor / og_image) keep their DB
+  // defaults (0) or stay null — they are no longer authored in the editor.
   const coreValues = {
     status: input.status,
     position: input.position,
@@ -82,6 +82,7 @@ export async function saveApartment(raw: unknown): Promise<ApartmentSaveResult> 
     bedrooms: input.bedrooms,
     max_guests: input.max_guests,
     beds_count: input.beds_count,
+    size_m2: input.size_m2,
     cover_media_id: input.cover_media_id,
     avantio_id: input.avantio_id,
     avantio_url: input.avantio_url,

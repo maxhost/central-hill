@@ -560,6 +560,7 @@
     "bedrooms": "{count, plural, =0 {Estúdio} one {# Quarto} other {# Quartos}}",
     "guests": "Até {count, plural, one {# hóspede} other {# hóspedes}}",
     "beds": "{count, plural, one {# cama} other {# camas}}",
+    "size": "{count} m²",
     "checkAvailability": "Ver disponibilidade",
     "poweredBy": "Reservas com tecnologia Avantio — disponibilidade em tempo real e confirmação imediata.",
     "admin": {

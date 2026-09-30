@@ -21,6 +21,7 @@ import { translation, slug as slugTable } from "@core/i18n/schema";
 import { company_settings, nav_item } from "@slices/settings/schema";
 import { city, neighbourhood } from "@slices/geography/schema";
 import { building } from "@slices/buildings/schema";
+import { apartment } from "@slices/apartments/schema";
 import { testimonial } from "@slices/testimonials/schema";
 import { faq_group, faq_item } from "@slices/faq/schema";
 import { page_content } from "@slices/pages/schema";
@@ -37,6 +38,27 @@ const uid = () => randomUUID();
 /** iconCard helper — `icon_key` is decorative (not rendered), any kebab key is fine. */
 const ic = (title: string, description: string, icon_key = "spark") => ({ icon_key, title, description });
 const ti = (title: string, description: string) => ({ title, description });
+
+/** Distributes `total` across `n` buckets as evenly as possible, each at least `min`. */
+function splitEven(total: number, n: number, min: number): number[] {
+  const out = Array<number>(n).fill(min);
+  let remaining = total - min * n;
+  for (let i = 0; remaining > 0; i = (i + 1) % n) {
+    out[i] += 1;
+    remaining--;
+  }
+  return out;
+}
+
+const UNIT_NAMES = [
+  "Penthouse Suite",
+  "Terrace Loft",
+  "Garden View",
+  "Skyline Studio",
+  "Classic Double",
+  "Family Suite",
+  "Courtyard Nook",
+];
 
 /** FAQ group content (question, answer) — bound to the Owners/Real-Estate pages by key. */
 const OWNERS_FAQ: [string, string][] = [
@@ -97,6 +119,58 @@ async function setSlugs(type: string, id: string, byLocale: Record<string, strin
       .insert(slugTable)
       .values({ entity_type: type, entity_id: id, locale: locale as "en" | "pt" | "es" | "fr", slug: value })
       .onConflictDoNothing();
+  }
+}
+
+/** Kebab-case, url-safe slug — mirrors `apartments/admin/actions.ts`'s `slugify` (no
+ *  uniqueness constraint on `apartment.slug`, so no collision handling needed here). */
+function slugify(input: string): string {
+  return (
+    input
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 100) || "apartment"
+  );
+}
+
+/** Seeds `count` published units for a building, sized to sum to `capacity` guests and
+ *  `beds` beds (matching the building's own denormalized stats, seeded alongside it). */
+async function seedApartmentsFor(
+  buildingId: string,
+  buildingName: string,
+  count: number,
+  capacity: number,
+  beds: number,
+): Promise<void> {
+  const guestsPerUnit = splitEven(capacity, count, 2);
+  const bedsPerUnit = splitEven(beds, count, 1);
+  for (let i = 0; i < count; i++) {
+    const bedsN = bedsPerUnit[i]!;
+    const guestsN = guestsPerUnit[i]!;
+    const bedrooms = bedsN <= 1 ? 0 : Math.ceil(bedsN / 2);
+    const sizeM2 = Math.round(32 + bedrooms * 18 + guestsN * 3.2);
+    const name = `${buildingName} — ${UNIT_NAMES[i % UNIT_NAMES.length]}`;
+    const [row] = await db
+      .insert(apartment)
+      .values({
+        slug: slugify(name),
+        status: "published",
+        position: i,
+        building_id: buildingId,
+        bedrooms,
+        bathrooms: Math.max(1, Math.ceil(bedrooms / 2)),
+        max_guests: guestsN,
+        beds_count: bedsN,
+        size_m2: sizeM2,
+      })
+      .returning({ id: apartment.id });
+    await setSourceContent("apartment", row!.id, {
+      name,
+      badge: i === 0 ? "Best View" : undefined,
+    });
   }
 }
 
@@ -218,8 +292,9 @@ async function main() {
       description_intro: `${b.name} sits in the heart of Lisbon, steps from the city's best dining, nightlife and views. Professionally managed end-to-end by Central Hill.`,
     });
     await setSlugs("building", row!.id, { en: b.slug, pt: b.slug, es: b.slug, fr: b.slug });
+    await seedApartmentsFor(row!.id, b.name, b.aps, b.cap, b.beds);
   }
-  console.log(`✓ ${buildings.length} featured buildings`);
+  console.log(`✓ ${buildings.length} featured buildings (+ bookable units)`);
 
   // ── Testimonials (mixed, with countries for the flag carousel) ──────────────
   const tms: { audience: "owner" | "guest"; rating: number; name: string; country: string; loc: string; quote: string }[] = [
