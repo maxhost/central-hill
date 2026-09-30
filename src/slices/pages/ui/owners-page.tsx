@@ -148,7 +148,9 @@ const OWNERS_STYLE = `
 .mk .faq summary::after{content:"+";position:absolute;right:6px;top:22px;font-family:var(--sans);font-size:24px;color:var(--accent);transition:transform .25s var(--ease)}
 .mk .faq details[open] summary::after{transform:rotate(45deg)}
 .mk .faq .faq-a{padding:0 44px 26px 4px;font-size:15.5px;color:var(--ink-soft);max-width:70ch}
-@media(max-width:980px){.mk .owner-hero .wrap{grid-template-columns:1fr;gap:34px}.mk .owner-pitch .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-pitch .pitch-text{position:static}.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helper{flex-direction:column;align-items:flex-start;gap:22px;padding:32px 30px}.mk .steps{grid-template-columns:1fr 1fr}}
+.mk .cta-band .cta-wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;text-align:left;max-width:var(--max)}
+.mk .cta-band .cta-media img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:3px;display:block}
+@media(max-width:980px){.mk .owner-hero .wrap{grid-template-columns:1fr;gap:34px}.mk .owner-pitch .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-pitch .pitch-text{position:static}.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helper{flex-direction:column;align-items:flex-start;gap:22px;padding:32px 30px}.mk .steps{grid-template-columns:1fr 1fr}.mk .cta-band .cta-wrap{grid-template-columns:1fr;gap:34px;text-align:center}.mk .cta-band .cta-copy p{margin-left:auto;margin-right:auto}}
 @media(max-width:680px){.mk .est-two{grid-template-columns:1fr}.mk .owner-showcase .sh-list{grid-template-columns:1fr}.mk .plans{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
 `;
 
@@ -174,6 +176,11 @@ const JOURNEY_FALLBACK_IMGS = [
   "https://images.pexels.com/photos/313782/pexels-photo-313782.jpeg?auto=compress&cs=tinysrgb&w=900",
 ];
 const STEP_IMG_SIZES = "(max-width: 680px) 50vw, (max-width: 980px) 33vw, 20vw";
+
+// TEMP: Pexels placeholder for the closing CTA band's new photo column.
+const CTA_FALLBACK_IMG =
+  "https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=1200";
+const CTA_FALLBACK_ALT = "A Central Hill managed property at golden hour, overlooking the coast";
 
 // Bespoke per-benefit icons from the locked design — positional (paired by index with the
 // fixed-count benefit lists). Only the benefit *text* is data-driven; the SVGs never change.
@@ -490,22 +497,34 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 // The "What our owners say" testimonials AND the FAQ are rendered by shared React islands
 // (TestimonialsRow + FaqSection) outside the `.mk` wrapper, so the static body is split here:
 // top sections above the carousel, only the closing CTA below it. The FAQ is now editable —
-// its group is chosen per page via `faq_group_key` (see OwnersPage below).
-const OWNERS_BODY_BOTTOM = `
-<section id="start" class="stats" style="padding:var(--section-y) 0">
-  <div class="wrap" style="text-align:center;max-width:760px">
-    <span class="eyebrow" style="color:var(--feature-accent)">Start Earning More Today</span>
-    <h2 class="section-title" style="color:#fff;margin-top:14px">Ready to Make Your Property Work for You?</h2>
-    <p style="color:var(--on-feature-soft);font-size:18px;margin:18px auto 0;max-width:60ch">Join the growing number of property owners across Portugal who trust Central Hill Apartments to deliver exceptional results. Start with a free, no-obligation profitability analysis.</p>
-    <div style="margin-top:34px">
-      <a class="btn btn-accent" href="#worth">Get Your Free Earnings Estimate →</a>
+// its group is chosen per page via `faq_group_key` (see OwnersPage below). Two-column CTA
+// (client direction): photo on the left, the existing copy/CTA/contact line on the right —
+// the image is a Pexels placeholder (no schema field; this whole band is still hardcoded).
+function ownersBodyBottom(): string {
+  const ctaImg = mediaImgTag({
+    fallbackSrc: CTA_FALLBACK_IMG,
+    fallbackAlt: CTA_FALLBACK_ALT,
+    sizes: SHOWCASE_SIZES,
+  });
+  return `
+<section id="start" class="stats cta-band" style="padding:var(--section-y) 0">
+  <div class="wrap cta-wrap">
+    <div class="cta-media reveal">${ctaImg}</div>
+    <div class="cta-copy reveal">
+      <span class="eyebrow" style="color:var(--feature-accent)">Start Earning More Today</span>
+      <h2 class="section-title" style="color:#fff;margin-top:14px">Ready to Make Your Property Work for You?</h2>
+      <p style="color:var(--on-feature-soft);font-size:18px;margin:18px 0 0;max-width:48ch">Join the growing number of property owners across Portugal who trust Central Hill Apartments to deliver exceptional results. Start with a free, no-obligation profitability analysis.</p>
+      <div style="margin-top:34px">
+        <a class="btn btn-accent" href="#worth">Get Your Free Earnings Estimate →</a>
+      </div>
+      <p style="color:var(--on-feature-soft);font-size:14px;letter-spacing:.03em;margin-top:26px">
+        Call +351 910 075 725 &nbsp;·&nbsp; info@centralhill.pt &nbsp;·&nbsp; WhatsApp +351 910 075 725
+      </p>
     </div>
-    <p style="color:var(--on-feature-soft);font-size:14px;letter-spacing:.03em;margin-top:26px">
-      Call +351 910 075 725 &nbsp;·&nbsp; info@centralhill.pt &nbsp;·&nbsp; WhatsApp +351 910 075 725
-    </p>
   </div>
 </section>
 `;
+}
 
 export async function OwnersPage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
@@ -553,7 +572,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
         </div>
       ) : null}
       <div className="mk" data-page="owners">
-        <div dangerouslySetInnerHTML={{ __html: OWNERS_BODY_BOTTOM }} />
+        <div dangerouslySetInnerHTML={{ __html: ownersBodyBottom() }} />
       </div>
     </>
   );
