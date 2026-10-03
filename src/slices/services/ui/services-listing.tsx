@@ -22,12 +22,16 @@ const PAGE_STYLE = `
 .mk .how-item h4{font-family:var(--serif);font-size:19px;font-weight:500;color:var(--ink);margin:2px 0 6px}
 .mk .how-item p{font-size:14px;line-height:1.65;color:var(--ink-soft);margin:0}
 @media(max-width:820px){.mk .how-grid{grid-template-columns:1fr}}
-.mk .cta-band{background:var(--feature);color:var(--on-feature);text-align:center;transition:background .4s var(--ease)}
-.mk .cta-band .wrap{padding-top:84px;padding-bottom:84px}
-.mk .cta-band .eyebrow{color:var(--feature-accent)}
-.mk .cta-band h2{font-family:var(--serif);font-weight:500;font-size:clamp(30px,4vw,46px);line-height:1.08;color:var(--on-feature);max-width:660px;margin:14px auto 18px}
-.mk .cta-band p{color:var(--on-feature-soft);max-width:560px;margin:0 auto 30px;font-size:16px;line-height:1.7}
+.mk .cta-band{background:var(--feature);color:var(--on-feature);transition:background .4s var(--ease)}
+.mk .cta-band .wrap{padding-top:67px;padding-bottom:67px}
+.mk .cta-split{display:grid;grid-template-columns:1fr 1.1fr;gap:64px;align-items:center}
+.mk .cta-media{aspect-ratio:4/5;border-radius:6px;overflow:hidden}
+.mk .cta-media img{width:100%;height:100%;object-fit:cover;display:block}
+.mk .cta-copy .eyebrow{color:var(--feature-accent)}
+.mk .cta-band h2{font-family:var(--serif);font-weight:500;font-size:clamp(28px,3.6vw,42px);line-height:1.1;color:var(--on-feature);max-width:18ch;margin:14px 0 18px}
+.mk .cta-band p{color:var(--on-feature-soft);max-width:48ch;margin:0 0 30px;font-size:16px;line-height:1.7}
 .mk .cta-band .cta-note{margin-top:26px;font-size:13px;letter-spacing:.04em;color:var(--on-feature-soft)}
+@media(max-width:860px){.mk .cta-split{grid-template-columns:1fr;gap:32px;text-align:center}.mk .cta-media{aspect-ratio:16/10}.mk .cta-band h2{margin-left:auto;margin-right:auto}.mk .cta-band p{margin-left:auto;margin-right:auto}}
 `;
 
 const BODY = (locale: Locale) => `
@@ -207,13 +211,18 @@ const BODY = (locale: Locale) => `
 </div>
 
 <!-- CTA BAND (feature) -->
-<section class="cta-band">
-  <div class="wrap">
-    <span class="eyebrow">Planning your stay?</span>
-    <h2>Find your apartment, then we'll handle the rest</h2>
-    <p>Choose from fourteen handpicked addresses across Lisbon's most storied neighbourhoods — and layer on any of the services above to make the stay your own.</p>
-    <a class="btn btn-light" href="/${locale}/buildings">Browse Our Apartments →</a>
-    <div class="cta-note">All services are arranged through our 24/7 guest team · info@centralhill.pt · WhatsApp +351 910 075 725</div>
+<section class="cta-band" style="padding:0">
+  <div class="wrap cta-split reveal">
+    <div class="cta-media">
+      <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=70" alt="Bright, elegantly furnished living room with a city outlook in one of our Lisbon apartments" loading="lazy">
+    </div>
+    <div class="cta-copy">
+      <span class="eyebrow">Planning your stay?</span>
+      <h2>Find your apartment, then we'll handle the rest</h2>
+      <p>Choose from fourteen handpicked addresses across Lisbon's most storied neighbourhoods — and layer on any of the services above to make the stay your own.</p>
+      <a class="btn btn-light" href="/${locale}/buildings">Browse Our Apartments →</a>
+      <div class="cta-note">All services are arranged through our 24/7 guest team · info@centralhill.pt · WhatsApp +351 910 075 725</div>
+    </div>
   </div>
 </section>
 `;
