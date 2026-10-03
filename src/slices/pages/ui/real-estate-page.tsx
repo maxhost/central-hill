@@ -530,13 +530,6 @@ function bodyTop(content: RealEstateContent, media: Record<string, MediaImageDat
   </div>
 </section>
 
-<!-- positioning statement band -->
-<section class="alt" style="padding:48px 0">
-  <div class="wrap">
-    <p class="lede reveal" style="max-width:78ch;font-size:19px">We bring together AI-driven pricing technology, deep operational expertise, and a proven track record in Portugal's most competitive rental markets to deliver measurable, institutional-grade performance — at any scale.</p>
-  </div>
-</section>
-
 <!-- SECTION 2 — WHO WE WORK WITH (Editorial Split, DB-driven) -->
 <section id="partners" class="partner-pitch">
   <div class="wrap">
