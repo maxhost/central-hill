@@ -72,6 +72,25 @@ const OWNERS_SECTIONS: Array<{ label: string; href: string }> = [
   { label: "Start Earning More Today", href: "/owners#start" },
 ];
 
+/**
+ * Same hover-reveal treatment as `OWNERS_SECTIONS` above, applied to "Real Estate" — hardcoded
+ * rather than read from the DB nav sub-tabs. Hrefs map to the section anchors on the real-estate
+ * page — kept in sync with `slices/pages/ui/real-estate-page.tsx` (section ids: top, partners,
+ * capabilities, manage, deal-structures, market, track-record, process, faq, deal-enquiry).
+ */
+const REAL_ESTATE_SECTIONS: Array<{ label: string; href: string }> = [
+  { label: "Real Estate Partnerships", href: "/real-estate#top" },
+  { label: "Our Partners", href: "/real-estate#partners" },
+  { label: "Our Capabilities", href: "/real-estate#capabilities" },
+  { label: "What We Manage", href: "/real-estate#manage" },
+  { label: "Deal Structures", href: "/real-estate#deal-structures" },
+  { label: "Portugal- Market Opportunity", href: "/real-estate#market" },
+  { label: "Proven Performance", href: "/real-estate#track-record" },
+  { label: "The Process", href: "/real-estate#process" },
+  { label: "Questions & Answers", href: "/real-estate#faq" },
+  { label: "Start a Conversation", href: "/real-estate#deal-enquiry" },
+];
+
 export async function SiteHeader({ locale }: { locale: Locale }) {
   const t = await getTranslations("settings");
   const items = await getNav(locale, "header");
@@ -88,10 +107,12 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
         children: d.children?.map((c) => ({ label: t(`nav.${c.key}`), href: c.href })),
       }));
 
-  // Owners' sub-tabs come from the mock section list (above), not the DB.
-  const links: NavEntry[] = baseLinks.map((l) =>
-    l.href === "/owners" ? { ...l, children: OWNERS_SECTIONS } : l,
-  );
+  // Owners' and Real Estate's sub-tabs come from the mock section lists (above), not the DB.
+  const links: NavEntry[] = baseLinks.map((l) => {
+    if (l.href === "/owners") return { ...l, children: OWNERS_SECTIONS };
+    if (l.href === "/real-estate") return { ...l, children: REAL_ESTATE_SECTIONS };
+    return l;
+  });
 
   return (
     <header
