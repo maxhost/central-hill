@@ -73,7 +73,7 @@ const PAGE_STYLE = `
 // `.mk` to avoid mock.css leak), chosen per page via `faq_group_key`. The static body is split
 // here around it.
 const BODY_TOP = `
-<section class="hero compact" aria-label="Who We Are">
+<section id="who-we-are" class="hero compact" aria-label="Who We Are">
   <img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70" alt="Rooftops and historic streets of Lisbon at golden hour">
   <div class="wrap">
     <span class="eyebrow">Who We Are</span>
