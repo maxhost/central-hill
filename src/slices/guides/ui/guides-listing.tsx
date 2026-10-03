@@ -1,15 +1,66 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
+import type { GuideCityGroup, GuidePageSummary, GuideTemplate } from "../contract";
+import { listGuideCityGroups } from "../contract";
 
 /**
- * Guides index ("What to Do in Lisbon") — the approved `mock/what-to-do.html`
- * embedded 1:1 inside the live app shell. The mock's body markup is rendered
- * verbatim; its page styles are scoped under `.mk` (see `src/app/mock.css` for
- * the shared design system) so nothing leaks to Home/admin. No database is read
- * here — content is static, matching the mock exactly. The real header/footer +
- * i18n come from the app layout. The city chips are the mock's decorative static
- * markup (no JS wired).
+ * Guides index ("What to Do in Lisbon") — the approved `mock/what-to-do.html` embedded
+ * 1:1 inside the live app shell, now **DB-driven** like `buildings-listing.tsx`: the
+ * surrounding chrome (hero, city bar, "Top Recommendations", closing CTA band) is the
+ * mock's static markup verbatim, but the "Explore the City" card grid is generated from
+ * the published `guide_page` rows (`listGuideCityGroups`, ISR-cached + tagged
+ * `guide-list`/`city-list` → a guides or geography publish busts it). Page styles stay
+ * scoped under `.mk` (see `src/app/mock.css`) so nothing leaks to Home/admin. Cards link
+ * to each guide's real per-locale detail slug (`/[locale]/guides/[city]/[slug]`).
+ *
+ * The city chips, "Top Recommendations" picks and closing stats band stay the mock's
+ * static decorative markup for now (content brief 4.2 scopes only the guide pages
+ * themselves to the DB in this pass).
  */
+
+/** HTML-escape DB content before interpolating into the `.mk` markup string. */
+function esc(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Iconoir glyph per editorial template — matches the mock's original per-card icon. */
+const TEMPLATE_ICON: Record<GuideTemplate, string> = {
+  landing: "iconoir-bank",
+  eat: "iconoir-pizza-slice",
+  beaches: "iconoir-sea-waves",
+  events: "iconoir-music-double-note",
+  secrets: "iconoir-binocular",
+  families: "iconoir-group",
+  groups: "iconoir-community",
+  travellers: "iconoir-compass",
+  custom: "iconoir-compass",
+};
+
+const CARD_SIZES = "(max-width: 680px) 100vw, (max-width: 980px) 50vw, 420px";
+
+function guideCardHtml(guide: GuidePageSummary, locale: Locale, viewLabel: string): string {
+  const imgTag = mediaImgTag({
+    data: guide.hero,
+    fallbackAlt: guide.title,
+    sizes: CARD_SIZES,
+  });
+  const icon = TEMPLATE_ICON[guide.template];
+  return `
+      <a class="pcard gcard" href="/${locale}/guides/${esc(guide.city.slug)}/${esc(guide.slug)}">
+        <div class="ph">${imgTag}</div>
+        <div class="pbody">
+          <i class="${icon} g-ico" aria-hidden="true"></i>
+          <h3>${esc(guide.title)}</h3>
+          ${guide.intro ? `<p class="g-teaser">${esc(guide.intro)}</p>` : ""}
+          <div class="view">${esc(viewLabel)} →</div>
+        </div>
+      </a>`;
+}
 
 const PAGE_STYLE = `
 .mk .city-bar{border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--line) 26%,var(--bg))}
@@ -38,13 +89,29 @@ const PAGE_STYLE = `
 .mk .rec-type{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);font-weight:600}
 `;
 
-const BODY = (locale: Locale) => `
+function cityGroupHtml(group: GuideCityGroup, locale: Locale, labels: { guidesIn: (city: string) => string; view: string }): string {
+  return `
+<section>
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">Explore the City</span>
+      <h2 class="section-title">${esc(labels.guidesIn(group.city.name))}</h2>
+    </div>
+
+    <div class="pf-grid reveal">${group.guides.map((g) => guideCardHtml(g, locale, labels.view)).join("")}
+    </div>
+  </div>
+</section>`;
+}
+
+function HERO(locale: Locale, eyebrow: string, title: string, intro: string): string {
+  return `
 <section class="hero compact" style="padding:0">
   <img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70" alt="Sunlit rooftops, tiled façades and the Tagus river across Lisbon's historic centre">
   <div class="wrap">
-    <span class="eyebrow">Guest Guide</span>
-    <h1>The Best of Lisbon</h1>
-    <p>What to do in Lisbon — our curated guide to the neighbourhoods, tables, beaches and viewpoints we send our guests to. Local favourites, gathered in one place.</p>
+    <span class="eyebrow">${esc(eyebrow)}</span>
+    <h1>${esc(title)}</h1>
+    <p>${esc(intro)}</p>
   </div>
 </section>
 
@@ -58,102 +125,11 @@ const BODY = (locale: Locale) => `
     </div>
     <span class="city-note">More cities coming as Central Hill grows.</span>
   </div>
-</div>
+</div>`;
+}
 
-<section>
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">Explore the City</span>
-      <h2 class="section-title">What to Do in Lisbon</h2>
-      <p class="lede" style="margin-top:16px">Eight ways into the city — from the must-see monuments and miradouros to the tables, beaches and festivals just beyond them. Each guide is hand-written by our local team and updated through the season.</p>
-    </div>
-
-    <div class="pf-grid reveal">
-
-      <a class="pcard gcard" href="#">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1591825729269-caeb344f6df2?auto=format&fit=crop&w=900&q=70" alt="Tiled façades and tram tracks winding through Lisbon's Alfama district"></div>
-        <div class="pbody">
-          <i class="iconoir-bank g-ico" aria-hidden="true"></i>
-          <h3>Top Things to Do</h3>
-          <p class="g-teaser">São Jorge Castle, the Jerónimos Monastery and Belém Tower, a ride on Tram 28, the miradouros and the rooftops — the must-see Lisbon, gathered in one place.</p>
-          <div class="view">Explore →</div>
-        </div>
-      </a>
-
-      <a class="pcard gcard" href="#">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=900&q=70" alt="A spread of Portuguese dishes and pastel de nata on a café table"></div>
-        <div class="pbody">
-          <i class="iconoir-pizza-slice g-ico" aria-hidden="true"></i>
-          <h3>Where &amp; What to Eat</h3>
-          <p class="g-teaser">Portuguese gastronomy from authentic tascas to two-star kitchens — fresh seafood, regional dishes and wines, plus the trendy markets, brunch spots and vegan tables we keep going back to.</p>
-          <div class="view">Explore →</div>
-        </div>
-      </a>
-
-      <a class="pcard gcard" href="#">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=900&q=70" alt="Golden Atlantic beach with rolling surf near Lisbon"></div>
-        <div class="pbody">
-          <i class="iconoir-sea-waves g-ico" aria-hidden="true"></i>
-          <h3>Beaches near Lisbon</h3>
-          <p class="g-teaser">Portugal has 900km of coastline and 300 days of sun a year. From Costa da Caparica and Carcavelos to wild Guincho and the crystal coves of Arrábida — all within easy reach of the city.</p>
-          <div class="view">Explore →</div>
-        </div>
-      </a>
-
-      <a class="pcard gcard" href="#">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=900&q=70" alt="A lively open-air festival crowd lit by warm evening light"></div>
-        <div class="pbody">
-          <i class="iconoir-music-double-note g-ico" aria-hidden="true"></i>
-          <h3>Events &amp; Festivals</h3>
-          <p class="g-teaser">Santos Populares in June, NOS Alive and Rock in Rio in summer, OutJazz in the parks and Web Summit in November — world-class music, sport and culture all year round.</p>
-          <div class="view">Explore →</div>
-        </div>
-      </a>
-
-      <a class="pcard gcard" href="#">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=900&q=70" alt="Hidden lanes and tiled façades in Lisbon's old town at dusk"></div>
-        <div class="pbody">
-          <i class="iconoir-binocular g-ico" aria-hidden="true"></i>
-          <h3>Secrets of Lisbon</h3>
-          <p class="g-teaser">Underground Roman galleries, the Feira da Ladra flea market, the city's oldest house and a glass of ginjinha at A Ginginha — the lesser-known corners only locals know.</p>
-          <div class="view">Explore →</div>
-        </div>
-      </a>
-
-      <a class="pcard gcard" href="#">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1580323956656-26bbb1206e34?auto=format&fit=crop&w=900&q=70" alt="Families exploring the gardens and grounds of a palace near Lisbon"></div>
-        <div class="pbody">
-          <i class="iconoir-group g-ico" aria-hidden="true"></i>
-          <h3>Lisbon for Families &amp; Kids</h3>
-          <p class="g-teaser">The Oceanário, Europe's oldest zoo, the hands-on Pavilion of Knowledge, riverside bike rides and dolphin-watching in Arrábida — easy days out the whole family will love.</p>
-          <div class="view">Explore →</div>
-        </div>
-      </a>
-
-      <a class="pcard gcard" href="#">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=900&q=70" alt="Friends gathered together in a bright Lisbon interior"></div>
-        <div class="pbody">
-          <i class="iconoir-community g-ico" aria-hidden="true"></i>
-          <h3>Lisbon for Groups &amp; Friends</h3>
-          <p class="g-teaser">Bairro Alto and Pink Street by night, rooftop bars and Tagus boat tours by day, surf lessons, tuk-tuk tours and the LX Factory — the experiences that work best together.</p>
-          <div class="view">Explore →</div>
-        </div>
-      </a>
-
-      <a class="pcard gcard" href="#">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=900&q=70" alt="Travellers gathered outside a sunny Lisbon café"></div>
-        <div class="pbody">
-          <i class="iconoir-compass g-ico" aria-hidden="true"></i>
-          <h3>Information for Travellers</h3>
-          <p class="g-teaser">Airport transfers and the metro, the Lisboa Card, the best neighbourhoods to base yourself, opening hours and emergency contacts — the practical know-how for a smooth stay.</p>
-          <div class="view">Explore →</div>
-        </div>
-      </a>
-
-    </div>
-  </div>
-</section>
-
+function TAIL(locale: Locale): string {
+  return `
 <section class="alt">
   <div class="wrap">
     <div class="sec-head reveal">
@@ -207,16 +183,30 @@ const BODY = (locale: Locale) => `
       <a class="btn btn-accent" href="/${locale}/buildings">Browse Our Apartments →</a>
     </div>
   </div>
-</section>
-`;
+</section>`;
+}
 
-/** Guides index ("What to Do") — static embed of the approved mock, no DB. */
 export async function GuidesListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
+  const [groups, t] = await Promise.all([listGuideCityGroups(locale), getTranslations("guides")]);
+
+  const bodyHtml = groups.length
+    ? groups.map((g) => cityGroupHtml(g, locale, { guidesIn: (city) => t("guidesIn", { city }), view: t("viewGuide") })).join("")
+    : `
+<section>
+  <div class="wrap">
+    <p class="reveal" style="color:var(--ink-soft)">${esc(t("empty"))}</p>
+  </div>
+</section>`;
+
   return (
     <div className="mk" data-page="guides">
       <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-      <div dangerouslySetInnerHTML={{ __html: BODY(locale) }} />
+      <div
+        dangerouslySetInnerHTML={{
+          __html: HERO(locale, t("eyebrow"), t("title"), t("intro")) + bodyHtml + TAIL(locale),
+        }}
+      />
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { buildMetadata } from "@core/seo";
 import { GuidesListing } from "@slices/guides/ui/guides-listing";
 import "../../mock.css";
 
-/** Static per locale. Content is the embedded mock (no DB). */
+/** Static per locale; the card grid is DB-driven (tag-revalidated via `listGuideCityGroups`). */
 export const revalidate = 3600;
 
 export function generateStaticParams() {

@@ -27,11 +27,28 @@ module, never by querying its table.
 ## Routes (App Router, ISR)
 
 - `/[locale]/guides` — index: hero + one section per city with a card grid of its
-  published guide pages. `revalidate = 3600`, static per locale.
+  published guide pages (`listGuideCityGroups`). `revalidate = 3600` + tag-revalidated;
+  the surrounding chrome (hero, city chips, "Top Recommendations", closing CTA band) is
+  the approved mock's static markup, same `.mk`-embed-with-DB-driven-cards pattern as
+  `buildings/ui/buildings-listing.tsx`.
 - `/[locale]/guides/[city]/[slug]` — guide-page detail: breadcrumb, hero, a stack of
   sections (body, optional header image, "local tip" callout, place grid, optional CTA).
   `generateStaticParams` from `listGuideParams()`; `dynamicParams = true`. The `[city]`
   segment is verified against the page's `city_id` (a mismatched city → `notFound`).
+
+## Content
+
+The 8 real Lisbon guide pages (`things-to-do-in-lisbon`, `where-and-what-to-eat-in-lisbon`,
+`beaches-near-lisbon`, `events-and-festivals-in-lisbon`, `secrets-of-lisbon`,
+`lisbon-for-families-and-kids`, `lisbon-for-groups-and-friends`, `information-for-travellers`
+— one per `GuideTemplate`) are written by `scripts/seed-guides.ts`, adapted from the live
+centralhill.pt "What to do in Lisbon" pages. It is **not a migration**: idempotent,
+re-runnable, and writes through the same seams (`core/i18n` source content + slugs,
+`core/media` R2 ingest) the future admin (S12) will use — re-run it after editing the
+seed's content arrays. Source locale (`en`) only; `pt`/`es`/`fr` fall back to it until
+translated (same accepted gap as `scripts/seed-services.ts`).
+
+  pnpm tsx --env-file=.env.local --tsconfig scripts/tsconfig.json scripts/seed-guides.ts
 
 ## Contract (`contract.ts`)
 
