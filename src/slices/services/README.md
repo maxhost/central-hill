@@ -21,16 +21,28 @@ Slice services.
 
 ## Routes (App Router, ISR)
 
-- `/[locale]/services` — index: hero + category-filtered card grid + "how it works" +
-  CTA band. `revalidate = 3600`, static per locale.
-- `/[locale]/services/[slug]` — detail: hero, body, gallery, booking-type-aware CTA.
-  `generateStaticParams` from `listServiceParams()`; `dynamicParams = true`.
+- `/[locale]/services` — index: the approved `mock/services.html` design embedded 1:1 as
+  static markup (`ui/services-listing.tsx`) — hero + card grid + "how it works" + CTA band.
+  `revalidate = 3600`, static per locale, **no database read** (content is hardcoded English,
+  same gap as the detail pages below).
+- `/[locale]/services/[slug]` — detail (`ui/service-detail.tsx`): hero, highlights/itinerary/
+  menu options (content-dependent), pricing table or partner cards, gallery, conditions,
+  related services, and a live enquiry form. Today this renders the **static catalogue**
+  (`ui/service-detail-content.ts`) for the 7 real services with a page (Airport Transfer,
+  Sintra Tour, Fátima Tour, Boat Tour, Surf Experience, Chef at Home, Luggage Storage) via
+  `getServiceContent`/`listServiceSlugs` in the contract — **not** the `service` table/
+  `getServiceBySlug` below, which still backs the demo seed catalogue for other consumers.
+  `generateStaticParams` builds all (locale × slug) pairs; unknown slugs 404.
 
 ## Contract (`contract.ts`)
 
 Types: `ServiceSummary`, `ServiceDetail`, `ServiceCategoryRef`, `ServiceBookingType`.
 Reads: `listServices(locale, categorySlug?)`, `getServiceBySlug(locale, slug)`,
 `listServiceCategories(locale)`, `listServiceParams()`.
+
+Static detail-page read (see Routes + Deferred above): `getServiceContent(slug)`,
+`listServiceSlugs()`, and the `ServiceContent` shape (+ `PriceTable`, `OptionGroup`,
+`ItineraryStep`, `ExtraOption`, `Partner`, `GalleryImage`) from `ui/service-detail-content.ts`.
 Cache tags: `SERVICE_TAGS.list` = `service-list`, `SERVICE_TAGS.service(id)` (reserved for
 a future targeted bust).
 
@@ -92,6 +104,14 @@ Plugs into the backoffice shell. Contributes two `content`-group screens
   icon set is wired (kernel/app-shell change → ADR).
 - **Service/Offer JSON-LD**: only `BreadcrumbList` is emitted; a richer `Service`/`Offer`
   builder belongs in `core/seo` (**S13**, ADR — golden rule 3), not hand-written here.
+- **Backoffice-managed service detail content**: the 7 real services' pricing tables,
+  itineraries, menus, notes and partner cards live in `ui/service-detail-content.ts`
+  (English-only, hand-authored), not the `service`/`service_media` tables — those shapes
+  don't exist on the schema yet. Once the backoffice needs to create/edit/retire these
+  services and translate them (golden rule 7), extend `schema.ts` additively (new tables or
+  a JSON content column + migration), move this content there, and swap
+  `getServiceContent`/`listServiceSlugs` in the contract to read it — `ui/service-detail.tsx`
+  itself shouldn't need to change, since it already renders from the `ServiceContent` shape.
 
 ## Demo catalogue
 

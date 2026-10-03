@@ -2,17 +2,20 @@ import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
-import { getServiceBySlug, listServiceParams } from "@slices/services/contract";
+import { getServiceContent, listServiceSlugs } from "@slices/services/contract";
 import { ServiceDetail } from "@slices/services/ui/service-detail";
+import "../../../mock.css";
 
-/** ISR: known slugs prebuilt; unknown render on-demand then cache. */
+/**
+ * Static per (locale, slug) — content is the embedded static catalogue (no DB), same slug
+ * across every locale for now (see `service-detail-content.ts`).
+ */
 export const revalidate = 3600;
-export const dynamicParams = true;
 
-export async function generateStaticParams() {
-  return listServiceParams();
+export function generateStaticParams() {
+  const slugs = listServiceSlugs();
+  return routing.locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }
 
 export async function generateMetadata({
@@ -23,30 +26,20 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
 
-  const svc = await getServiceBySlug(locale, slug);
+  const svc = getServiceContent(slug);
   if (!svc) return {};
 
-  const languages: Partial<Record<Locale | "x-default", string>> = {};
-  for (const [l, s] of Object.entries(svc.alternateSlugs)) {
-    languages[l as Locale] = `/${l}/services/${s}`;
-  }
-  if (svc.alternateSlugs.en) languages["x-default"] = `/services/${svc.alternateSlugs.en}`;
+  const languages: Partial<Record<(typeof routing.locales)[number] | "x-default", string>> = {
+    "x-default": `/services/${slug}`,
+  };
+  for (const l of routing.locales) languages[l] = `/${l}/services/${slug}`;
 
   return buildMetadata({
-    title: svc.metaTitle ?? svc.name,
-    description: svc.metaDescription ?? svc.excerpt,
-    canonicalPath: `/${locale}/services/${svc.slug}`,
+    title: `${svc.name} — Central Hill`,
+    description: svc.tagline,
+    canonicalPath: `/${locale}/services/${slug}`,
     languages,
-    images: svc.ogImage
-      ? [
-          {
-            url: svc.ogImage.url,
-            width: svc.ogImage.width,
-            height: svc.ogImage.height,
-            alt: svc.ogImage.alt,
-          },
-        ]
-      : undefined,
+    images: [{ url: svc.heroImage.src, width: 1900, height: 1080, alt: svc.heroImage.alt }],
   });
 }
 

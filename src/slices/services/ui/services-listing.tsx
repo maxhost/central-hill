@@ -52,7 +52,7 @@ const BODY = (locale: Locale) => `
 
     <div class="pf-grid reveal">
 
-      <a class="pcard" href="#">
+      <a class="pcard" href="/${locale}/services/airport-private-transfer">
         <div class="ph">
           <span class="svc-tag">Arrival</span>
           <img src="https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=900&q=70" alt="Private car waiting outside the airport at dusk">
@@ -65,7 +65,7 @@ const BODY = (locale: Locale) => `
         </div>
       </a>
 
-      <a class="pcard" href="#">
+      <a class="pcard" href="/${locale}/services/sintra-tour">
         <div class="ph">
           <span class="svc-tag">Day Trip</span>
           <img src="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=900&q=70" alt="Fairytale palace and lush gardens in the hills of Sintra">
@@ -78,7 +78,7 @@ const BODY = (locale: Locale) => `
         </div>
       </a>
 
-      <a class="pcard" href="#">
+      <a class="pcard" href="/${locale}/services/fatima-tour">
         <div class="ph">
           <span class="svc-tag">Day Trip</span>
           <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=900&q=70" alt="Grand sanctuary square under an open sky">
@@ -91,7 +91,7 @@ const BODY = (locale: Locale) => `
         </div>
       </a>
 
-      <a class="pcard" href="#">
+      <a class="pcard" href="/${locale}/services/boat-tour">
         <div class="ph">
           <span class="svc-tag">On the Water</span>
           <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=900&q=70" alt="Sailboat gliding across the Tagus river at golden hour">
@@ -104,7 +104,7 @@ const BODY = (locale: Locale) => `
         </div>
       </a>
 
-      <a class="pcard" href="#">
+      <a class="pcard" href="/${locale}/services/surf-experience">
         <div class="ph">
           <span class="svc-tag">Experience</span>
           <img src="https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=900&q=70" alt="Surfer riding a clean wave along the Portuguese coast">
@@ -117,7 +117,7 @@ const BODY = (locale: Locale) => `
         </div>
       </a>
 
-      <a class="pcard" href="#">
+      <a class="pcard" href="/${locale}/services/chef-at-home">
         <div class="ph">
           <span class="svc-tag">At Home</span>
           <img src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=900&q=70" alt="Chef plating a refined dish in a home kitchen">
@@ -130,7 +130,7 @@ const BODY = (locale: Locale) => `
         </div>
       </a>
 
-      <a class="pcard" href="#">
+      <a class="pcard" href="/${locale}/services/luggage-storage">
         <div class="ph">
           <span class="svc-tag">Convenience</span>
           <img src="https://images.unsplash.com/photo-1553531384-cc64ac80f931?auto=format&fit=crop&w=900&q=70" alt="Neatly stacked suitcases beside a luggage trolley">
