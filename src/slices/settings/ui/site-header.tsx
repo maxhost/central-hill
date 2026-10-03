@@ -91,6 +91,25 @@ const REAL_ESTATE_SECTIONS: Array<{ label: string; href: string }> = [
   { label: "Start a Conversation", href: "/real-estate#deal-enquiry" },
 ];
 
+/**
+ * Same hover-reveal treatment as `OWNERS_SECTIONS`/`REAL_ESTATE_SECTIONS` above, applied to
+ * "About Us" — hardcoded rather than read from the DB nav sub-tabs. Hrefs map to the section
+ * anchors on the about page — kept in sync with `slices/pages/ui/about-page.tsx` (section ids:
+ * who-we-are, story, serve, values, organised, certifications, community, contact). Note the
+ * "values" and "certifications" sections share the same "What We Stand For" eyebrow on the page
+ * itself, so that label is intentionally repeated here too.
+ */
+const ABOUT_SECTIONS: Array<{ label: string; href: string }> = [
+  { label: "Who We Are", href: "/about#who-we-are" },
+  { label: "How We Started", href: "/about#story" },
+  { label: "Our Platform", href: "/about#serve" },
+  { label: "What We Stand For", href: "/about#values" },
+  { label: "Our Structure", href: "/about#organised" },
+  { label: "What We Stand For", href: "/about#certifications" },
+  { label: "Our Responsibility", href: "/about#community" },
+  { label: "Get in Touch", href: "/about#contact" },
+];
+
 export async function SiteHeader({ locale }: { locale: Locale }) {
   const t = await getTranslations("settings");
   const items = await getNav(locale, "header");
@@ -107,10 +126,11 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
         children: d.children?.map((c) => ({ label: t(`nav.${c.key}`), href: c.href })),
       }));
 
-  // Owners' and Real Estate's sub-tabs come from the mock section lists (above), not the DB.
+  // Owners', Real Estate's, and About's sub-tabs come from the mock section lists (above), not the DB.
   const links: NavEntry[] = baseLinks.map((l) => {
     if (l.href === "/owners") return { ...l, children: OWNERS_SECTIONS };
     if (l.href === "/real-estate") return { ...l, children: REAL_ESTATE_SECTIONS };
+    if (l.href === "/about") return { ...l, children: ABOUT_SECTIONS };
     return l;
   });
 
