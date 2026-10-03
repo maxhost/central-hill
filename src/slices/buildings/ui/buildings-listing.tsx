@@ -171,7 +171,7 @@ function BODY(locale: Locale, cardsHtml: string): string {
   <div class="wrap">
     <span class="eyebrow">Lisbon · Portugal</span>
     <h1>Strategic Properties in Prime Locations</h1>
-    <p>Explore our carefully curated portfolio of exceptional buildings, each handpicked for its location, character, and guest experience. From historic neighbourhoods brimming with charm to prime avenues in the heart of the city, every Central Hill property is selected to offer an outstanding stay in some of Portugal's most vibrant and iconic locations.</p>
+    <p>Explore our carefully curated portfolio of exceptional buildings — each handpicked for its location, character, and guest experience across Portugal's most vibrant neighbourhoods.</p>
     <div class="hero-cta" id="hero-contact-slot"></div>
   </div>
 </section>

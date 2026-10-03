@@ -517,7 +517,7 @@ function bodyTop(content: RealEstateContent, media: Record<string, MediaImageDat
 
   return `
 <!-- SECTION 1 — HERO -->
-<section class="hero compact" id="top">
+<section class="hero compact" id="top" style="padding:0">
   ${heroImgTag}
   <div class="wrap">
     ${hero.subheadline ? `<div class="eyebrow">${esc(hero.subheadline)}</div>` : ""}
