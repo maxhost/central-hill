@@ -287,7 +287,6 @@ export async function GuestPage({ locale }: { locale: Locale }) {
           title={portfolio.headline}
           intro={portfolio.intro}
           ctaLabel={portfolio.cta.label}
-          ctaNote={portfolio.cta.note}
           ctaHref={localizeUrl(portfolio.cta.url, locale)}
         />
       </div>

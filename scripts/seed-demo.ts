@@ -515,7 +515,7 @@ function guestData() {
       eyebrow: "The Portfolio",
       headline: "Explore Our Portfolio",
       intro: "Carefully selected properties across Portugal's most iconic locations — each chosen for its character and exceptional guest experience.",
-      cta: { label: "View All Properties", url: BUILDINGS, note: "Browse our full portfolio across Portugal." },
+      cta: { label: "View All Properties", url: BUILDINGS, note: "" },
     },
     services_teaser: {
       eyebrow: "Services",
