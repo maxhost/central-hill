@@ -40,6 +40,25 @@ const WELCOME_FALLBACK_ALT = "Bright, design-led Central Hill apartment interior
 // 1.05fr/.95fr with a 56px gap) and goes full-width under 880px — see `.welcome`.
 const WELCOME_SIZES = "(max-width: 880px) 100vw, 540px";
 
+// Premium photo backgrounds for the Services/What-to-do teaser cards (Pexels stock, by
+// position — placeholder until these cards get their own admin-managed image field).
+const SERVICES_TEASER_BG = [
+  "https://images.pexels.com/photos/29112731/pexels-photo-29112731.jpeg?auto=compress&cs=tinysrgb&w=1200", // Private Transfers
+  "https://images.pexels.com/photos/19627783/pexels-photo-19627783.jpeg?auto=compress&cs=tinysrgb&w=1200", // Day Tours
+  "https://images.pexels.com/photos/4581314/pexels-photo-4581314.jpeg?auto=compress&cs=tinysrgb&w=1200", // Boat Trips
+  "https://images.pexels.com/photos/21706254/pexels-photo-21706254.jpeg?auto=compress&cs=tinysrgb&w=1200", // Surf Experience
+  "https://images.pexels.com/photos/18337050/pexels-photo-18337050.jpeg?auto=compress&cs=tinysrgb&w=1200", // Chef at Home
+  "https://images.pexels.com/photos/34629931/pexels-photo-34629931.jpeg?auto=compress&cs=tinysrgb&w=1200", // Luggage Storage
+];
+const ACTIVITIES_TEASER_BG = [
+  "https://images.pexels.com/photos/31630076/pexels-photo-31630076.jpeg?auto=compress&cs=tinysrgb&w=1200", // Historic Districts
+  "https://images.pexels.com/photos/8163130/pexels-photo-8163130.jpeg?auto=compress&cs=tinysrgb&w=1200", // UNESCO Sites
+  "https://images.pexels.com/photos/35554378/pexels-photo-35554378.jpeg?auto=compress&cs=tinysrgb&w=1200", // Food & Wine
+  "https://images.pexels.com/photos/20715202/pexels-photo-20715202.jpeg?auto=compress&cs=tinysrgb&w=1200", // Beaches
+  "https://images.pexels.com/photos/25016471/pexels-photo-25016471.jpeg?auto=compress&cs=tinysrgb&w=1200", // Music & Festivals
+  "https://images.pexels.com/photos/16382447/pexels-photo-16382447.jpeg?auto=compress&cs=tinysrgb&w=1200", // Day Trips & Hidden Gems
+];
+
 // Escape admin-authored content before it is interpolated into the static body HTML string.
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -85,14 +104,21 @@ const paragraphs = (copy: string, attrs = ""): string =>
 type IconCard = { icon_key: string; title: string; description: string };
 type Cta = { label: string; url: string; note?: string };
 
-/** The mock's icon card, in either of its two wrappers (`.bcard` for Why, `.feat` for teasers). */
-const iconCards = (items: IconCard[], wrapper: "bcard" | "feat"): string =>
+/**
+ * The mock's icon card, in either of its two wrappers (`.bcard` for Why, `.feat` for
+ * teasers). `.feat` cards optionally render on a photo background (`bg`, by position) with
+ * a dark gradient overlay so the white icon/title/copy stay legible (client feedback:
+ * premium look for Services/What-to-do).
+ */
+const iconCards = (items: IconCard[], wrapper: "bcard" | "feat", bg?: string[]): string =>
   items
-    .map(
-      (c) =>
-        `<div class="${wrapper}"><i class="ico ${iconClass(c.icon_key)}" aria-hidden="true"></i>` +
-        `<h3>${esc(c.title)}</h3><p>${esc(c.description)}</p></div>`,
-    )
+    .map((c, i) => {
+      const style = bg?.[i] ? ` style="background-image:url('${escAttr(bg[i]!)}')"` : "";
+      return (
+        `<div class="${wrapper}"${style}><i class="ico ${iconClass(c.icon_key)}" aria-hidden="true"></i>` +
+        `<h3>${esc(c.title)}</h3><p>${esc(c.description)}</p></div>`
+      );
+    })
     .join("");
 
 /** The mock's centred section header (eyebrow + title + lede); optional parts are omitted. */
@@ -116,9 +142,13 @@ const PAGE_STYLE = `
 .mk .welcome .guarantee{margin-top:22px;font-weight:600;color:var(--accent-deep);font-size:16px;display:inline-flex;align-items:center;gap:10px}
 .mk .welcome .guarantee i{font-size:22px}
 .mk .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
-.mk .feat{background:var(--surface);border:1px solid var(--line);padding:34px 30px}
-.mk .feat h3{font-size:20px;margin-bottom:8px}
-.mk .feat p{font-size:14.5px;color:var(--ink-soft)}
+.mk .feat{position:relative;isolation:isolate;overflow:hidden;border:1px solid var(--line);padding:34px 30px;min-height:260px;display:flex;flex-direction:column;justify-content:flex-end;background-size:cover;background-position:center;transition:transform .35s ease}
+.mk .feat::before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(12,10,8,.15) 0%,rgba(12,10,8,.55) 60%,rgba(12,10,8,.82) 100%)}
+.mk .feat>*{position:relative;z-index:1}
+.mk .feat:hover{transform:translateY(-2px)}
+.mk .feat .ico{color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
+.mk .feat h3{font-size:20px;margin-bottom:8px;color:#fff}
+.mk .feat p{font-size:14.5px;color:rgba(255,255,255,.88)}
 @media(max-width:880px){.mk .welcome{grid-template-columns:1fr;gap:32px}.mk .welcome img{min-height:280px}.mk .feat-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.mk .feat-grid{grid-template-columns:1fr}}
 `;
@@ -196,7 +226,7 @@ function bodyMid(content: GuestContent, locale: Locale): string {
   <div class="wrap">
     ${secHead({ eyebrow: services.eyebrow, headline: services.headline, intro: services.intro })}
     <div class="feat-grid reveal">
-      ${iconCards(services.items, "feat")}
+      ${iconCards(services.items, "feat", SERVICES_TEASER_BG)}
     </div>
     ${ctaRow(services.cta, locale, "accent")}
   </div>
@@ -207,7 +237,7 @@ function bodyMid(content: GuestContent, locale: Locale): string {
   <div class="wrap">
     ${secHead({ eyebrow: activities.eyebrow, headline: activities.headline, intro: activities.intro })}
     <div class="feat-grid reveal">
-      ${iconCards(activities.items, "feat")}
+      ${iconCards(activities.items, "feat", ACTIVITIES_TEASER_BG)}
     </div>
     ${ctaRow(activities.cta, locale, "ghost")}
   </div>
