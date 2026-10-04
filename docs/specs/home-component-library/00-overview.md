@@ -1,13 +1,30 @@
 # Spec index — Home's sections as a reusable `core/ui` component library
 
-> **Scope:** cross-cutting (`core/ui` kernel + `pages`/`settings` slices) · **Status:** ✅ ADR 0033
-> Accepted (2026-10-03, `docs/decisions/README.md#0033`) — **all 8 components implemented**
-> (2026-10-03/04), see the table in §5. A real dev-server pass caught one runtime bug that
-> `typecheck`/`lint` missed — `Hero` importing `@core/media` directly broke every page with a
-> 500 once it joined the `core/ui` barrel (Turbopack can't bundle `sharp` for the client); fixed
-> by giving `Hero` a caller-built `background: ReactNode` prop instead, see `02-hero.md`. This is
-> the concrete reason every component spec's DoD requires a browser check, not just a clean
-> `typecheck`/`lint` — confirms it wasn't a redundant step.
+> **Scope:** cross-cutting (`core/ui` kernel + `pages`/`settings` slices) · **Status:** ✅ CLOSED —
+> ADR 0033 Accepted (2026-10-03, `docs/decisions/README.md#0033`), **every row in the table
+> below implemented and user-verified in a real browser** (desktop + mobile, 2026-10-03/04).
+> Nothing left open in this spec set.
+>
+> Two real bugs surfaced and fixed along the way (both doc'd in their component files, not
+> repeated here): (1) `Hero` importing `@core/media` directly 500'd every page once it joined
+> the `core/ui` barrel (Turbopack can't bundle `sharp` for the client) — fixed with a caller-built
+> `background: ReactNode` prop (`02-hero.md`); (2) a missing-whitespace `calc()` in `Carousel`'s
+> `basis` prop made `document.documentElement.scrollHeight` balloon past 25M px on desktop widths
+> only, via Safari's handling of the CSS-custom-property indirection (`04-carousel.md`). Neither
+> was caught by `typecheck`/`lint` — both were only found by actually running the dev server and
+> reading real console output, which is why every component spec's DoD requires a browser check.
+> The dev-only `Reveal`/`ScrollDebugProbe` console logging added in that debugging pass
+> (`01-motion-primitives.md`) is now a standing, reusable tool — reach for it again on any future
+> page instead of ad-hoc `console.log`.
+>
+> **Commits (local, main, not pushed):** `bdae6f0`, `42bf29c`, `d1b11eb`, `1344c68`, `c5448fa`,
+> `ad44b8b`.
+>
+> **Next:** a *separate*, page-by-page effort (agreed with the user, not part of this spec set)
+> to bring the still-`.mk` public pages (About/Guests/Owners/Real Estate/Buildings) onto these
+> same `core/ui` components where their sections match, one page at a time, verified in the
+> browser each time. First up: the Owners page hero (`/[locale]/owners`) — see
+> `docs/specs/handoff-2026-10-04.md`.
 > **Page under review:** `http://localhost:4455/es` = `/[locale]` (Home), composed in
 > `src/slices/pages/ui/home-page.tsx`.
 > **Explicitly scoped to Home only.** The `.mk`-HTML-string pages (About/Guests/Owners/Real
