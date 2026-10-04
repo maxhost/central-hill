@@ -130,9 +130,17 @@ icons follow the same positional-mapping precedent as `why` (`SERVICES_ICON_KEYS
 `wrench`/`trending-up`/`dollar-circle`/`calendar-lines`/`bar-chart`/`bell-alt` — the last kept
 distinct from the existing `bell` rather than reused, to preserve dashboard's exact pre-existing
 glyph). `OWNERS_STYLE`'s `.owner-showcase`/`.sh-*` CSS block is gone now that both sections (its
-only users) are ported — `plans` (up to 4 pricing
-tiers, with extra air before the single full-width highlighted helper band — drizzle 0010 trimmed
-`plans.helpers` 2→1), `journey` — and the closing CTA. Two sections are
+only users) are ported. `plans` ("A management plan built around your goals", up to 4 pricing
+tiers — drizzle 0010 trimmed `plans.helpers` 2→1) is real JSX too: two new `core/ui` components,
+`PricingCards` (the card grid: name/tag/popular ribbon/corner badge/feature list/CTA) and
+`CalloutBand` ("Not sure which plan fits?" — a bare highlighted title+copy+CTA strip, no
+`Section`/`Container` of its own, unlike every other new component so far — see its docstring).
+`CalloutBand` slots into `PricingCards`' `footer` prop so it keeps the original's tight `mt-20`
+coupling *inside* the same section, rather than becoming a second, separately-padded one — the
+reason neither component's own docstring explains in isolation. Both "Choose `<tier>`" and the
+helper band's CTA keep `href="#"`, matching the original markup exactly (the schema's
+`planHelper.cta.url` field was never actually wired to the href there either). `journey` — and
+the closing CTA. Two sections are
 shared React islands rendered **outside** the `.mk` wrapper (so `mock.css` bare-element rules don't
 leak into their Tailwind markup): the `testimonials` infinite marquee (`<TestimonialsRow>`, the same
 component as the home "Partners & Guests" carousel) and the `faq` accordion (`<FaqSection>`). Both

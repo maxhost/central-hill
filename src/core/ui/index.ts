@@ -20,6 +20,11 @@ export type { TwoColumnShowcaseBullet, TwoColumnShowcaseCta } from "./two-column
 /** Two-column "Editorial Split" section (sticky copy + CTAs beside a hairline icon/title/description list). */
 export { EditorialSplit } from "./editorial-split";
 export type { EditorialSplitCta, EditorialSplitItem } from "./editorial-split";
+/** Pricing/plan cards grid (heading + up to 4 bordered cards, optional `footer` slot). */
+export { PricingCards } from "./pricing-cards";
+export type { PricingTier } from "./pricing-cards";
+/** Bare highlighted horizontal callout (title + copy + one CTA) — no Section/Container of its own. */
+export { CalloutBand } from "./callout-band";
 /** Owner/guest "Immersive Panels" closing band — presentational, data composer stays slice-owned. */
 export { DualCtaPanels, type DualCtaPanel } from "./dual-cta-panels";
 /** Site-wide header chrome (sticky bar + hover-dropdown mechanics) — see `nav-bar.tsx`. */

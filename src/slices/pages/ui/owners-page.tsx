@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { MediaImage, mediaImgTag, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { EditorialSplit, Hero, Reveal, StatBand, TwoColumnShowcase } from "@core/ui";
+import { CalloutBand, EditorialSplit, Hero, PricingCards, Reveal, StatBand, TwoColumnShowcase } from "@core/ui";
 import { ContactDialog } from "@slices/settings/contract";
 import { getOwnersPage, type OwnersContent } from "../contract";
 import { EstFormStepper } from "./components/est-form-stepper";
@@ -55,25 +55,6 @@ const esc = (s: string) =>
 
 const OWNERS_STYLE = `
 .mk [id]{scroll-margin-top:130px}
-.mk .plans{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;align-items:start}
-.mk .plan{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:34px 26px;display:flex;flex-direction:column;position:relative;transition:.3s var(--ease)}
-.mk .plan:hover{transform:translateY(-4px);box-shadow:0 24px 50px -30px rgba(0,0,0,.42)}
-.mk .plan.popular{border-color:var(--accent);box-shadow:0 24px 54px -28px color-mix(in srgb,var(--accent) 55%,transparent)}
-.mk .plan .pop-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;padding:6px 16px;border-radius:30px}
-.mk .plan .corner-badge{position:absolute;top:-16px;right:-16px;width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;font-family:var(--serif);font-size:14px;font-weight:600;box-shadow:0 10px 24px -10px color-mix(in srgb,var(--accent) 75%,transparent);border:3px solid var(--bg)}
-.mk .plan .pname{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);font-weight:600}
-.mk .plan .ptag{font-family:var(--serif);font-size:25px;color:var(--ink);margin:10px 0 22px;line-height:1.2}
-.mk .plan ul{list-style:none;margin:0 0 28px;flex:1}
-.mk .plan li{font-size:14.5px;color:var(--ink-soft);padding:9px 0 9px 28px;position:relative;border-top:1px solid var(--line)}
-.mk .plan li:first-child{border-top:0}
-.mk .plan li::before{content:"";position:absolute;left:0;top:14px;width:14px;height:8px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg)}
-.mk .plan .btn{width:100%;justify-content:center}
-.mk .plan-helpers{margin-top:80px}
-.mk .plan-helper{display:flex;align-items:center;justify-content:space-between;gap:40px;background:color-mix(in srgb,var(--accent) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));border-radius:10px;padding:38px 48px;box-shadow:0 26px 56px -34px color-mix(in srgb,var(--accent) 50%,transparent)}
-.mk .plan-helper .ph-text{max-width:62ch}
-.mk .plan-helper h4{font-family:var(--serif);font-size:25px;font-weight:500;color:var(--ink);margin-bottom:9px}
-.mk .plan-helper p{font-size:15px;color:var(--ink-soft);margin:0}
-.mk .plan-helper .btn{flex:0 0 auto}
 .mk .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:var(--line);border:1px solid var(--line)}
 .mk .step{position:relative;overflow:hidden;display:flex;min-height:360px;padding:26px 22px}
 .mk .step-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s var(--ease)}
@@ -93,8 +74,8 @@ const OWNERS_STYLE = `
 .mk .faq .faq-a{padding:0 44px 26px 4px;font-size:15.5px;color:var(--ink-soft);max-width:70ch}
 .mk .cta-band .cta-wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;text-align:left;max-width:var(--max)}
 .mk .cta-band .cta-media img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:3px;display:block}
-@media(max-width:980px){.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helper{flex-direction:column;align-items:flex-start;gap:22px;padding:32px 30px}.mk .steps{grid-template-columns:1fr 1fr}.mk .cta-band .cta-wrap{grid-template-columns:1fr;gap:34px;text-align:center}.mk .cta-band .cta-copy p{margin-left:auto;margin-right:auto}}
-@media(max-width:680px){.mk .plans{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
+@media(max-width:980px){.mk .steps{grid-template-columns:1fr 1fr}.mk .cta-band .cta-wrap{grid-template-columns:1fr;gap:34px;text-align:center}.mk .cta-band .cta-copy p{margin-left:auto;margin-right:auto}}
+@media(max-width:680px){.mk .steps{grid-template-columns:1fr}}
 
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
    the rest, via <ScrollReveal page="owners">/scroll-reveal.tsx) — same pattern already
@@ -149,48 +130,9 @@ const CTA_FALLBACK_ALT = "A Central Hill managed property at golden hour, overlo
  * in the schema but intentionally not shown (the locked design has no commission display).
  */
 function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageData>): string {
-  const { plans, journey } = content;
+  const { journey } = content;
 
   return `
-<section id="plans">
-  <div class="wrap">
-    <div class="sec-head center reveal reveal-io pre-reveal">
-      <h2 class="section-title">${esc(plans.headline)}</h2>
-      ${plans.subheadline ? `<p class="lede" style="margin:16px auto 0">${esc(plans.subheadline)}</p>` : ""}
-    </div>
-
-    <div class="plans reveal reveal-io reveal-stagger pre-reveal">${plans.tiers
-      .map(
-        (t) => `
-      <div class="plan${t.is_popular ? " popular" : ""}">
-        ${t.is_popular ? `<span class="pop-tag">Most Popular</span>` : ""}
-        ${t.corner_badge ? `<span class="corner-badge">${esc(t.corner_badge)}</span>` : ""}
-        <div class="pname">${esc(t.name)}</div>
-        ${t.tag ? `<div class="ptag">${esc(t.tag)}</div>` : ""}
-        <ul>${t.features.map((f) => `\n          <li>${esc(f)}</li>`).join("")}
-        </ul>
-        <a class="btn ${t.is_popular ? "btn-accent" : "btn-ghost"}" href="#">Choose ${esc(t.name)}</a>
-      </div>`,
-      )
-      .join("")}
-    </div>
-
-    <div class="plan-helpers reveal reveal-io pre-reveal">${plans.helpers
-      .map(
-        (h) => `
-      <div class="plan-helper">
-        <div class="ph-text">
-          <h4>${esc(h.title)}</h4>
-          <p>${esc(h.copy)}</p>
-        </div>
-        ${h.cta ? `<a class="btn btn-accent" href="#">${esc(h.cta.label)} →</a>` : ""}
-      </div>`,
-      )
-      .join("")}
-    </div>
-  </div>
-</section>
-
 <section id="journey" class="alt">
   <div class="wrap">
     <div class="sec-head center reveal reveal-io pre-reveal">
@@ -263,7 +205,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
-  const { hero, earnings_form, stats, why, services, dashboard } = content;
+  const { hero, earnings_form, stats, why, services, dashboard, plans } = content;
   const faqGroupKey = content.faq_group_key ?? "";
 
   const whyItems = why.benefits.map((b, i) => ({
@@ -422,6 +364,36 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
                 />
               )
             }
+          />
+        </Reveal>
+      </div>
+      {/*
+       * "A management plan built around your goals" — `core/ui`'s new `PricingCards`, with
+       * the "Not sure which plan fits?" band slotted into its `footer` prop so it keeps the
+       * original's tight `mt-20` coupling (both sit inside `PricingCards`' own Section —
+       * see that component's docstring for why `CalloutBand` itself stays un-sectioned).
+       * The "Choose <plan>"/helper CTA `href`s are `#`, matching the original markup exactly
+       * (the schema's `planHelper.cta.url` field exists but was never actually wired to the
+       * href there either — preserved as-is, not silently fixed).
+       */}
+      <div id="plans" style={{ scrollMarginTop: 130 }}>
+        <Reveal label="owners-plans">
+          <PricingCards
+            headline={plans.headline}
+            body={plans.subheadline}
+            tiers={plans.tiers.map((t) => ({
+              name: t.name,
+              tag: t.tag,
+              cornerBadge: t.corner_badge,
+              isPopular: t.is_popular,
+              features: t.features,
+              cta: { href: "#", label: `Choose ${t.name}` },
+            }))}
+            footer={plans.helpers.map((h, i) =>
+              h.cta ? (
+                <CalloutBand key={i} title={h.title} body={h.copy} cta={{ href: "#", label: `${h.cta.label} →` }} />
+              ) : null,
+            )}
           />
         </Reveal>
       </div>
