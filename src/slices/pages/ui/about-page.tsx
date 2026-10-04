@@ -88,11 +88,13 @@ const PAGE_STYLE = `
 .mk[data-page="about"] #values .val .vnum{transition:color .35s var(--ease),transform .35s var(--ease)}
 .mk[data-page="about"] #values .val:hover .vnum{color:var(--accent-deep);transform:translateY(-2px)}
 .mk .cert-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
-.mk .cert{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:38px 32px;text-align:center}
+.mk .cert{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:38px 32px;text-align:center;transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
+.mk .cert:hover{transform:translateY(-4px);box-shadow:0 16px 28px -20px rgba(0,0,0,.35)}
 .mk .cert .ico{margin-bottom:16px;font-size:38px}
-.mk .cert .cert-logo{height:48px;width:auto;max-width:160px;margin:0 auto 18px;display:block;object-fit:contain}
-.mk .cert .cert-logo--placeholder{height:48px;display:flex;align-items:center;justify-content:center}
+.mk .cert .cert-logo{height:48px;width:auto;max-width:160px;margin:0 auto 18px;display:block;object-fit:contain;transition:transform .35s var(--ease)}
+.mk .cert .cert-logo--placeholder{height:48px;display:flex;align-items:center;justify-content:center;transition:transform .35s var(--ease)}
 .mk .cert .cert-logo--placeholder .ico{margin:0;font-size:40px}
+.mk .cert:hover .cert-logo,.mk .cert:hover .cert-logo--placeholder{transform:scale(1.08)}
 .mk .cert h3{font-size:22px;margin-bottom:6px}
 .mk .cert .cert-body{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-deep);font-weight:600;margin-bottom:14px}
 .mk .cert p{font-size:14px;color:var(--ink-soft)}
@@ -101,10 +103,14 @@ const PAGE_STYLE = `
 .mk .comm h2{font-size:clamp(28px,3.4vw,44px);margin:14px 0 18px}
 .mk .comm p{color:var(--ink-soft);margin-bottom:16px}
 .mk .touch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
-.mk .touch{background:var(--surface);padding:40px 34px;display:flex;flex-direction:column}
+.mk .touch{background:var(--surface);padding:40px 34px;display:flex;flex-direction:column;transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
+.mk .touch:hover{transform:translateY(-4px);box-shadow:0 16px 28px -20px rgba(0,0,0,.35);z-index:1}
+.mk .touch .ico{transition:transform .35s var(--ease),color .35s var(--ease)}
+.mk .touch:hover .ico{transform:translateY(-3px) scale(1.1);color:var(--accent)}
 .mk .touch h3{font-size:23px;margin-bottom:10px}
 .mk .touch p{font-size:15px;color:var(--ink-soft);flex:1}
-.mk .touch .view{margin-top:18px;font-size:14px;color:var(--accent-deep);font-weight:600}
+.mk .touch .view{margin-top:18px;font-size:14px;color:var(--accent-deep);font-weight:600;display:inline-block;transition:transform .35s var(--ease)}
+.mk .touch:hover .view{transform:translateX(4px)}
 .mk .contact-split{display:grid;grid-template-columns:.9fr 1.1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:48px}
 .mk .office{background:var(--feature);color:var(--on-feature);padding:48px 44px}
 .mk .office h3{color:#fff;font-size:26px;margin-bottom:22px}
@@ -278,12 +284,12 @@ const BODY_TOP = `
 
 <section id="certifications">
   <div class="wrap">
-    <div class="sec-head reveal">
+    <div class="sec-head reveal reveal-io pre-reveal">
       <span class="eyebrow">What We Stand For</span>
       <h2 class="section-title">Independently Verified</h2>
       <p class="lede" style="margin-top:18px">Our certifications and memberships represent a commitment to operating to the highest standards — verified by recognised independent bodies in Portugal and internationally.</p>
     </div>
-    <div class="cert-grid reveal">
+    <div class="cert-grid reveal reveal-io reveal-stagger pre-reveal">
       <div class="cert">
         <img class="cert-logo" src="https://d11n7da8rpqbjy.cloudfront.net/alep/19726083_1621536323PF6Ativo_12.png" alt="ALEP — Associação do Alojamento Local em Portugal logo">
         <h3>ALEP Member</h3>
@@ -308,7 +314,7 @@ const BODY_TOP = `
 
 <section id="community" class="alt">
   <div class="wrap">
-    <div class="comm reveal">
+    <div class="comm reveal reveal-io pre-reveal">
       <img src="https://images.unsplash.com/photo-1591825729269-caeb344f6df2?auto=format&fit=crop&w=900&q=70" alt="People sharing a meal together at a community table in Lisbon">
       <div>
         <span class="eyebrow">Our Responsibility</span>
@@ -325,11 +331,11 @@ const BODY_TOP = `
 const BODY_BOTTOM = (locale: Locale) => `
 <section id="contact">
   <div class="wrap">
-    <div class="sec-head reveal">
+    <div class="sec-head reveal reveal-io pre-reveal">
       <span class="eyebrow">Get in Touch</span>
       <h2 class="section-title">Let's Start a Conversation</h2>
     </div>
-    <div class="touch-grid reveal">
+    <div class="touch-grid reveal reveal-io reveal-stagger pre-reveal">
       <a class="touch" href="/${locale}/buildings">
         <i class="iconoir-suitcase ico" aria-hidden="true"></i>
         <h3>Planning a Stay?</h3>
@@ -350,7 +356,7 @@ const BODY_BOTTOM = (locale: Locale) => `
       </a>
     </div>
 
-    <div class="contact-split reveal">
+    <div class="contact-split reveal reveal-io pre-reveal">
       <div class="office">
         <h3>Our Office</h3>
         <div class="ofield">
