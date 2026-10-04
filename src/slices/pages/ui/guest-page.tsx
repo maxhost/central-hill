@@ -6,6 +6,7 @@ import { getGlobals } from "@slices/settings/contract";
 import { getGuestPage, type GuestContent } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
+import { ScrollReveal } from "./components/scroll-reveal";
 import { TestimonialsRow } from "./components/testimonials-row";
 
 /**
@@ -123,7 +124,7 @@ const iconCards = (items: IconCard[], wrapper: "bcard" | "feat", bg?: string[]):
 
 /** The mock's centred section header (eyebrow + title + lede); optional parts are omitted. */
 const secHead = (opts: { eyebrow?: string; headline: string; intro?: string }): string =>
-  `<div class="sec-head center reveal">
+  `<div class="sec-head center reveal reveal-io pre-reveal">
       ${opts.eyebrow ? `<span class="eyebrow">${esc(opts.eyebrow)}</span>` : ""}
       <h2 class="section-title">${esc(opts.headline)}</h2>
       ${opts.intro ? `<p class="lede" style="margin:16px auto 0">${esc(opts.intro)}</p>` : ""}
@@ -157,15 +158,30 @@ const PAGE_STYLE = `
 .mk .welcome .guarantee{margin-top:22px;font-weight:600;color:var(--accent-deep);font-size:16px;display:inline-flex;align-items:center;gap:10px}
 .mk .welcome .guarantee i{font-size:22px}
 .mk .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
-.mk .feat{position:relative;isolation:isolate;overflow:hidden;border:1px solid var(--line);padding:34px 30px;min-height:260px;display:flex;flex-direction:column;justify-content:flex-end;background-size:cover;background-position:center;transition:transform .35s ease}
+.mk .feat{position:relative;isolation:isolate;overflow:hidden;border:1px solid var(--line);padding:34px 30px;min-height:260px;display:flex;flex-direction:column;justify-content:flex-end;background-size:cover;background-position:center;transition:transform .35s var(--ease)}
 .mk .feat::before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(12,10,8,.15) 0%,rgba(12,10,8,.55) 60%,rgba(12,10,8,.82) 100%)}
 .mk .feat>*{position:relative;z-index:1}
-.mk .feat:hover{transform:translateY(-2px)}
-.mk .feat .ico{color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
+.mk .feat:hover{transform:translateY(-4px)}
+.mk .feat .ico{color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4));transition:transform .35s var(--ease)}
+.mk .feat:hover .ico{transform:translateY(-3px) scale(1.1)}
 .mk .feat h3{font-size:20px;margin-bottom:8px;color:#fff}
 .mk .feat p{font-size:14.5px;color:rgba(255,255,255,.88)}
+.mk[data-page="guests"] .bcard{transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
+.mk[data-page="guests"] .bcard:hover{transform:translateY(-4px);box-shadow:0 16px 28px -20px rgba(0,0,0,.35)}
+.mk[data-page="guests"] .bcard .ico{transition:transform .35s var(--ease),color .35s var(--ease)}
+.mk[data-page="guests"] .bcard:hover .ico{transform:translateY(-3px) scale(1.1);color:var(--accent)}
 @media(max-width:880px){.mk .welcome{grid-template-columns:1fr;gap:32px}.mk .welcome img{min-height:280px}.mk .feat-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:640px){.mk .feat-grid{grid-template-columns:1fr}}
+
+/* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
+   the rest, via <ScrollReveal page="guests">/scroll-reveal.tsx) + hover motion — same
+   pattern already applied to the About page. The hidden state is baked straight into the
+   server-rendered markup (.pre-reveal, applied via secHead()/the sections below) so
+   there's no flash of visible-then-hidden; the <noscript> rule keeps content visible with
+   JS off. Scoped to [data-page="guests"] so it never touches the shared, neutralised
+   .reveal rule in mock.css or any other page. */
+.mk[data-page="guests"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.mk[data-page="guests"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
 `;
 
 /** Hero · Welcome · Why book directly — above the featured-portfolio island. */
@@ -202,7 +218,7 @@ function bodyTop(
 <!-- WELCOME -->
 <section>
   <div class="wrap">
-    <div class="welcome reveal">
+    <div class="welcome reveal reveal-io pre-reveal">
       <div>
         <h2 class="section-title">${esc(welcome.headline)}</h2>
         <p class="lede" style="margin-top:18px">${esc(welcome.lede)}</p>
@@ -222,7 +238,7 @@ function bodyTop(
 <section class="alt">
   <div class="wrap">
     ${secHead({ eyebrow: why.eyebrow, headline: why.headline, intro: why.intro })}
-    <div class="grid-3 reveal" style="grid-template-columns:repeat(4,1fr)">
+    <div class="grid-3 reveal reveal-io reveal-stagger pre-reveal" style="grid-template-columns:repeat(4,1fr)">
       ${iconCards(why.benefits, "bcard")}
     </div>
     ${ctaRow(why.cta, locale, "accent")}
@@ -240,7 +256,7 @@ function bodyMid(content: GuestContent, locale: Locale): string {
 <section class="alt">
   <div class="wrap">
     ${secHead({ eyebrow: services.eyebrow, headline: services.headline, intro: services.intro })}
-    <div class="feat-grid reveal">
+    <div class="feat-grid reveal reveal-io reveal-stagger pre-reveal">
       ${iconCards(services.items, "feat", SERVICES_TEASER_BG)}
     </div>
     ${ctaRow(services.cta, locale, "accent")}
@@ -251,7 +267,7 @@ function bodyMid(content: GuestContent, locale: Locale): string {
 <section>
   <div class="wrap">
     ${secHead({ eyebrow: activities.eyebrow, headline: activities.headline, intro: activities.intro })}
-    <div class="feat-grid reveal">
+    <div class="feat-grid reveal reveal-io reveal-stagger pre-reveal">
       ${iconCards(activities.items, "feat", ACTIVITIES_TEASER_BG)}
     </div>
     ${ctaRow(activities.cta, locale, "ghost")}
@@ -295,7 +311,7 @@ function bodyBottom(
 <!-- DUAL CTA -->
 <section>
   <div class="wrap">
-    <div class="dual reveal">
+    <div class="dual reveal reveal-io pre-reveal">
       ${panel(guest, "", "solid", guestContact)}
       ${panel(owner, " owner", "accent", ownerContact)}
     </div>
@@ -321,6 +337,14 @@ export async function GuestPage({ locale }: { locale: Locale }) {
     <>
       <div className="mk" data-page="guests">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+        <noscript>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `.mk[data-page="guests"] .pre-reveal{opacity:1!important;transform:none!important}`,
+            }}
+          />
+        </noscript>
+        <ScrollReveal page="guests" />
         <div dangerouslySetInnerHTML={{ __html: bodyTop(content, media, locale) }} />
       </div>
 

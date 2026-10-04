@@ -1,9 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { getAboutPage } from "../contract";
-import { AboutReveal } from "./components/about-reveal";
 import { FaqSection } from "./components/faq-section";
 import { OwnerStatsCounter } from "./components/owner-stats-counter";
+import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
  * About page — the approved `mock/about.html` embedded 1:1 inside the live app shell.
@@ -65,13 +65,13 @@ const PAGE_STYLE = `
 }
 @media(max-width:680px){.mk[data-page="about"] #organised .org-list{grid-template-columns:1fr}}
 
-/* "How We Started" → "Our Structure": entrance motion (immediate on load for
-   above-the-fold content, on scroll for the rest, via <AboutReveal>/about-reveal.tsx)
-   + hover motion, only across this span (client feedback asked specifically for this
-   range to feel less static/more premium). The hidden state is baked straight into the
-   server-rendered markup (.pre-reveal, applied on the elements below) so there's no
-   flash of visible-then-hidden; the <noscript> rule keeps content visible with JS off.
-   Scoped to [data-page="about"] so it never touches the shared, neutralised .reveal
+/* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll
+   for the rest, via <ScrollReveal page="about">/scroll-reveal.tsx) + hover motion
+   (client feedback: the page read too static, wanted a more premium feel). The hidden
+   state is baked straight into the server-rendered markup (.pre-reveal, applied on the
+   elements below) so there's no flash of visible-then-hidden; the <noscript> rule keeps
+   content visible with JS off. Scoped to [data-page="about"] so it never touches the
+   shared, neutralised .reveal
    rule in mock.css or any other page/section. */
 .mk[data-page="about"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .mk[data-page="about"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
@@ -429,7 +429,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
             }}
           />
         </noscript>
-        <AboutReveal />
+        <ScrollReveal page="about" />
         <OwnerStatsCounter durationMs={5000} />
         <div dangerouslySetInnerHTML={{ __html: BODY_TOP }} />
       </div>

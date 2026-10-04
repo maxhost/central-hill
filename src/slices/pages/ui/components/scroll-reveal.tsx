@@ -3,18 +3,17 @@
 import { useEffect } from "react";
 
 /**
- * Scroll-reveal for the About page's "How We Started" → "Our Structure" span only
- * (`.pre-reveal` hook, scoped to `[data-page="about"]` — other pages' neutralised
- * `.reveal` in mock.css is untouched). The hidden state is already in the
- * server-rendered markup, so content above the fold fades/slides in once on mount
- * (one clean transition, no flash) and content below the fold reveals on scroll.
- * `.reveal-stagger` containers get their direct children staggered via transition-delay.
- * Honours `prefers-reduced-motion`. Renders nothing.
+ * Scroll-reveal for a page's `.pre-reveal` hooks, scoped to `.mk[data-page="${page}"]` so it
+ * never touches another page's content or the shared, neutralised `.reveal` rule in
+ * mock.css. The hidden state is already in the server-rendered markup, so content above the
+ * fold fades/slides in once on mount (one clean transition, no flash) and content below the
+ * fold reveals on scroll. `.reveal-stagger` containers get their direct children staggered
+ * via transition-delay. Honours `prefers-reduced-motion`. Renders nothing.
  */
-export function AboutReveal() {
+export function ScrollReveal({ page }: { page: string }) {
   useEffect(() => {
     const els = Array.from(
-      document.querySelectorAll<HTMLElement>('.mk[data-page="about"] .pre-reveal'),
+      document.querySelectorAll<HTMLElement>(`.mk[data-page="${page}"] .pre-reveal`),
     );
     if (els.length === 0) return;
 
@@ -24,7 +23,7 @@ export function AboutReveal() {
     }
 
     for (const group of document.querySelectorAll<HTMLElement>(
-      '.mk[data-page="about"] .reveal-stagger',
+      `.mk[data-page="${page}"] .reveal-stagger`,
     )) {
       Array.from(group.children).forEach((child, i) => {
         (child as HTMLElement).style.transitionDelay = `${Math.min(i * 70, 280)}ms`;
@@ -51,7 +50,7 @@ export function AboutReveal() {
     );
     for (const el of deferred) io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [page]);
 
   return null;
 }
