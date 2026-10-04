@@ -1,7 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { getAboutPage } from "../contract";
+import { AboutReveal } from "./components/about-reveal";
 import { FaqSection } from "./components/faq-section";
+import { OwnerStatsCounter } from "./components/owner-stats-counter";
 
 /**
  * About page — the approved `mock/about.html` embedded 1:1 inside the live app shell.
@@ -34,20 +36,63 @@ const PAGE_STYLE = `
 .mk[data-page="about"] #story{padding-top:50px}
 
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
-.mk .story-copy{max-width:760px}
-.mk .story-copy p{font-size:17px;color:var(--ink-soft);margin-bottom:18px}
 .mk .val-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
 .mk .val{background:var(--surface);padding:38px 30px}
 .mk .val .vnum{font-family:var(--serif);font-size:42px;line-height:1;color:var(--accent);opacity:.85;margin-bottom:18px}
 .mk .val h3{font-size:21px;margin-bottom:10px}
 .mk .val p{font-size:14.5px;color:var(--ink-soft)}
-.mk .dept-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
-.mk .dept{background:var(--surface);padding:38px 32px}
-.mk .dept h3{font-size:20px;margin-bottom:10px}
-.mk .dept p{font-size:14.5px;color:var(--ink-soft)}
+/* "Our Structure": redesigned to match the Owners page's "Everything handled. Nothing
+   overlooked." showcase — a two-column text+icon-list / image+floating-badge layout,
+   in place of the previous flat 3-col icon-grid. Page-scoped (own class names, not the
+   Owners page's unscoped .owner-showcase/.sh-* rules — those only exist on that page's
+   own injected stylesheet) so it can't collide with or depend on another page. */
+.mk[data-page="about"] #organised .org-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.mk[data-page="about"] #organised .org-text h2{font-size:clamp(28px,3.4vw,44px);margin:14px 0 0}
+.mk[data-page="about"] #organised .org-list{list-style:none;margin:32px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:22px 32px}
+.mk[data-page="about"] #organised .org-list li{display:flex;gap:14px}
+.mk[data-page="about"] #organised .org-list .ico{font-size:24px;margin:1px 0 0}
+.mk[data-page="about"] #organised .org-list h3{font-size:17px;margin:0 0 5px;color:var(--ink)}
+.mk[data-page="about"] #organised .org-list p{font-size:14px;line-height:1.55;color:var(--ink-soft);margin:0}
+.mk[data-page="about"] #organised .org-media{position:relative}
+.mk[data-page="about"] #organised .org-media img{aspect-ratio:4/5;width:100%;object-fit:cover;border-radius:3px;display:block}
+.mk[data-page="about"] #organised .org-badge{position:absolute;bottom:-20px;left:-16px;display:flex;align-items:flex-start;gap:10px;max-width:15rem;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 20px;box-shadow:0 24px 50px -20px rgba(0,0,0,.4)}
+.mk[data-page="about"] #organised .org-badge .ico{font-size:20px;margin:0;color:var(--accent-deep)}
+.mk[data-page="about"] #organised .org-badge span{font-size:14px;line-height:1.4;color:var(--ink)}
+@media(max-width:980px){
+  .mk[data-page="about"] #organised .org-grid{grid-template-columns:1fr;gap:36px}
+  .mk[data-page="about"] #organised .org-media{order:-1}
+  .mk[data-page="about"] #organised .org-badge{left:0}
+}
+@media(max-width:680px){.mk[data-page="about"] #organised .org-list{grid-template-columns:1fr}}
+
+/* "How We Started" → "Our Structure": entrance motion (immediate on load for
+   above-the-fold content, on scroll for the rest, via <AboutReveal>/about-reveal.tsx)
+   + hover motion, only across this span (client feedback asked specifically for this
+   range to feel less static/more premium). The hidden state is baked straight into the
+   server-rendered markup (.pre-reveal, applied on the elements below) so there's no
+   flash of visible-then-hidden; the <noscript> rule keeps content visible with JS off.
+   Scoped to [data-page="about"] so it never touches the shared, neutralised .reveal
+   rule in mock.css or any other page/section. */
+.mk[data-page="about"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.mk[data-page="about"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
+.mk[data-page="about"] #serve .bcard{position:relative;isolation:isolate;overflow:hidden;min-height:300px;display:flex;flex-direction:column;justify-content:flex-end;background-size:cover;background-position:center;transition:transform .35s var(--ease)}
+.mk[data-page="about"] #serve .bcard::before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(12,10,8,.15) 0%,rgba(12,10,8,.55) 60%,rgba(12,10,8,.85) 100%)}
+.mk[data-page="about"] #serve .bcard>*{position:relative;z-index:1}
+.mk[data-page="about"] #serve .bcard:hover{transform:translateY(-4px)}
+.mk[data-page="about"] #serve .bcard .ico{color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4));transition:transform .35s var(--ease)}
+.mk[data-page="about"] #serve .bcard:hover .ico{transform:translateY(-3px) scale(1.1)}
+.mk[data-page="about"] #serve .bcard h3{color:#fff}
+.mk[data-page="about"] #serve .bcard p{color:rgba(255,255,255,.88)}
+.mk[data-page="about"] #values .val{transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
+.mk[data-page="about"] #values .val:hover{transform:translateY(-4px);box-shadow:inset 0 0 0 1px var(--accent-deep),0 16px 28px -20px rgba(0,0,0,.35)}
+.mk[data-page="about"] #values .val .vnum{transition:color .35s var(--ease),transform .35s var(--ease)}
+.mk[data-page="about"] #values .val:hover .vnum{color:var(--accent-deep);transform:translateY(-2px)}
 .mk .cert-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
 .mk .cert{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:38px 32px;text-align:center}
 .mk .cert .ico{margin-bottom:16px;font-size:38px}
+.mk .cert .cert-logo{height:48px;width:auto;max-width:160px;margin:0 auto 18px;display:block;object-fit:contain}
+.mk .cert .cert-logo--placeholder{height:48px;display:flex;align-items:center;justify-content:center}
+.mk .cert .cert-logo--placeholder .ico{margin:0;font-size:40px}
 .mk .cert h3{font-size:22px;margin-bottom:6px}
 .mk .cert .cert-body{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-deep);font-weight:600;margin-bottom:14px}
 .mk .cert p{font-size:14px;color:var(--ink-soft)}
@@ -79,12 +124,12 @@ const PAGE_STYLE = `
 .mk .cform .btn{justify-content:center}
 @media(max-width:980px){
   .mk .val-grid{grid-template-columns:1fr 1fr}
-  .mk .dept-grid,.mk .cert-grid,.mk .touch-grid{grid-template-columns:1fr 1fr}
+  .mk .cert-grid,.mk .touch-grid{grid-template-columns:1fr 1fr}
   .mk .comm{grid-template-columns:1fr;gap:32px}
   .mk .contact-split{grid-template-columns:1fr}
 }
 @media(max-width:680px){
-  .mk .val-grid,.mk .dept-grid,.mk .cert-grid,.mk .touch-grid,.mk .cform-two{grid-template-columns:1fr}
+  .mk .val-grid,.mk .cert-grid,.mk .touch-grid,.mk .cform-two{grid-template-columns:1fr}
   .mk .office,.mk .cform{padding:36px 28px}
 }
 `;
@@ -104,49 +149,50 @@ const BODY_TOP = `
 
 <section id="story">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">How We Started</span>
-      <h2 class="section-title">From a Clear Vision to a Growing Platform</h2>
-    </div>
-    <div class="story-copy reveal">
-      <p>Central Hill Apartments was founded in 2012, identifying Lisbon as a city of exceptional hospitality opportunity — a destination where guests wanted more than a hotel room; they wanted to feel genuinely part of the city. We started with that conviction and a clear operational model: that professional, data-driven management of well-located residential assets could consistently outperform the market while delivering an experience worth returning to.</p>
-      <p>Over more than a decade, that process has produced one of Portugal's most established hospitality management platforms. We have built the operational infrastructure, the technology stack, and the institutional relationships needed to manage assets at scale — from individual apartments to full buildings, corporate housing programmes, and strategic real estate partnerships.</p>
-      <p>Today, Central Hill operates across Portugal's most in-demand urban markets, delivering consistent above-market returns for property owners, dependable occupancy for corporate clients, and institutional-grade performance for investment partners. The company we are now is the direct result of the discipline, systems, and expertise built over twelve years of active asset management.</p>
+    <div class="comm reveal reveal-io pre-reveal">
+      <img src="https://images.pexels.com/photos/19295144/pexels-photo-19295144.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200" alt="Traditional tiled façades along a historic Lisbon street">
+      <div>
+        <span class="eyebrow">How We Started</span>
+        <h2>From a Clear Vision to a Growing Platform</h2>
+        <p>Central Hill Apartments was founded in 2012, identifying Lisbon as a city of exceptional hospitality opportunity — a destination where guests wanted more than a hotel room; they wanted to feel genuinely part of the city. We started with that conviction and a clear operational model: that professional, data-driven management of well-located residential assets could consistently outperform the market while delivering an experience worth returning to.</p>
+        <p>Over more than a decade, that process has produced one of Portugal's most established hospitality management platforms. We have built the operational infrastructure, the technology stack, and the institutional relationships needed to manage assets at scale — from individual apartments to full buildings, corporate housing programmes, and strategic real estate partnerships.</p>
+        <p>Today, Central Hill operates across Portugal's most in-demand urban markets, delivering consistent above-market returns for property owners, dependable occupancy for corporate clients, and institutional-grade performance for investment partners. The company we are now is the direct result of the discipline, systems, and expertise built over twelve years of active asset management.</p>
+      </div>
     </div>
   </div>
 </section>
 
 <section class="stats" style="padding:0" aria-label="Central Hill in numbers">
   <div class="wrap" style="padding-top:58px;padding-bottom:58px">
-    <div class="stats-grid reveal" style="grid-template-columns:repeat(5,1fr)">
-      <div class="stat"><div class="num">2012</div><div class="lbl">Year Founded</div></div>
-      <div class="stat"><div class="num">40+</div><div class="lbl">Apartments Managed</div></div>
-      <div class="stat"><div class="num">14</div><div class="lbl">Buildings in Prime Locations</div></div>
-      <div class="stat"><div class="num">60,000+</div><div class="lbl">Guests Hosted Worldwide</div></div>
-      <div class="stat"><div class="num">6,000+</div><div class="lbl">Reservations per Year</div></div>
+    <div class="stats-grid reveal reveal-io reveal-stagger pre-reveal" style="grid-template-columns:repeat(5,1fr)">
+      <div class="stat"><div class="num" data-count data-to="2012">2012</div><div class="lbl">Year Founded</div></div>
+      <div class="stat"><div class="num" data-count data-to="40" data-suffix="+">40+</div><div class="lbl">Apartments Managed</div></div>
+      <div class="stat"><div class="num" data-count data-to="14">14</div><div class="lbl">Buildings in Prime Locations</div></div>
+      <div class="stat"><div class="num" data-count data-to="60000" data-suffix="+" data-group="true">60,000+</div><div class="lbl">Guests Hosted Worldwide</div></div>
+      <div class="stat"><div class="num" data-count data-to="6000" data-suffix="+" data-group="true">6,000+</div><div class="lbl">Reservations per Year</div></div>
     </div>
   </div>
 </section>
 
 <section id="serve" class="alt">
   <div class="wrap">
-    <div class="sec-head reveal">
+    <div class="sec-head reveal reveal-io pre-reveal">
       <span class="eyebrow">Our Platform</span>
       <h2 class="section-title">One Platform. Three Audiences.</h2>
       <p class="lede" style="margin-top:18px">Central Hill Apartments operates across three interconnected service lines, each supporting the others. Whether you are a guest looking for a home away from home, a property owner seeking to maximise your asset's potential, or an institutional partner exploring a management agreement — this is your platform.</p>
     </div>
-    <div class="grid-3 reveal">
-      <div class="bcard">
+    <div class="grid-3 reveal reveal-io reveal-stagger pre-reveal">
+      <div class="bcard" style="background-image:url('https://images.pexels.com/photos/39205181/pexels-photo-39205181.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200')">
         <i class="iconoir-suitcase ico" aria-hidden="true"></i>
         <h3>For Guests</h3>
         <p>Professionally managed, fully equipped apartments in Portugal's most desirable locations. Every property is quality-checked, consistently maintained, and backed by 24/7 support — so every stay is exactly what it should be.</p>
       </div>
-      <div class="bcard">
+      <div class="bcard" style="background-image:url('https://images.pexels.com/photos/7415097/pexels-photo-7415097.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200')">
         <i class="iconoir-home ico" aria-hidden="true"></i>
         <h3>For Property Owners</h3>
         <p>Full-service property management that removes every burden and maximises every opportunity. AI-driven dynamic pricing, professional photography, 24/7 guest management, maintenance, and a real-time performance dashboard — all included.</p>
       </div>
-      <div class="bcard">
+      <div class="bcard" style="background-image:url('https://images.pexels.com/photos/36733412/pexels-photo-36733412.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200')">
         <i class="iconoir-bank ico" aria-hidden="true"></i>
         <h3>For Institutional Partners</h3>
         <p>Flexible management structures designed for investment funds, developers, and large-scale operators. Fixed rent, management commission, or hybrid models — with full operational management, transparent reporting, and institutional-grade governance.</p>
@@ -157,12 +203,12 @@ const BODY_TOP = `
 
 <section id="values">
   <div class="wrap">
-    <div class="sec-head reveal">
+    <div class="sec-head reveal reveal-io pre-reveal">
       <span class="eyebrow">What We Stand For</span>
       <h2 class="section-title">What Guides Us</h2>
       <p class="lede" style="margin-top:18px">Our values are not statements on a wall. They are the criteria by which we select properties, build partnerships, and measure success. They have remained constant since 2012.</p>
     </div>
-    <div class="val-grid reveal">
+    <div class="val-grid reveal reveal-io reveal-stagger pre-reveal">
       <div class="val">
         <div class="vnum">01</div>
         <h3>Quality Without Compromise</h3>
@@ -188,42 +234,43 @@ const BODY_TOP = `
 </section>
 
 <section id="organised" class="alt">
-  <div class="wrap">
-    <div class="sec-head reveal">
+  <div class="wrap org-grid">
+    <div class="org-text reveal reveal-io pre-reveal">
       <span class="eyebrow">Our Structure</span>
-      <h2 class="section-title">How We Are Organised</h2>
+      <h2>How We Are Organised</h2>
       <p class="lede" style="margin-top:18px">Behind every well-managed property is a team of specialists working in close coordination. Central Hill Apartments is structured around six areas of expertise, each essential to the performance of every asset we manage.</p>
+      <ul class="org-list">
+        <li>
+          <i class="iconoir-settings ico" aria-hidden="true"></i>
+          <div><h3>Operations &amp; Property Management</h3><p>Manages day-to-day property performance, housekeeping, maintenance, and quality inspections across all buildings.</p></div>
+        </li>
+        <li>
+          <i class="iconoir-bell ico" aria-hidden="true"></i>
+          <div><h3>Guest Experience &amp; Support</h3><p>Available 24/7, ensuring every guest interaction — from pre-arrival to post-checkout — is handled with care and professionalism.</p></div>
+        </li>
+        <li>
+          <i class="iconoir-peace-hand ico" aria-hidden="true"></i>
+          <div><h3>Owner Relations &amp; Partnerships</h3><p>The dedicated point of contact for property owners, institutional partners, and corporate clients throughout the management relationship.</p></div>
+        </li>
+        <li>
+          <i class="iconoir-graph-up ico" aria-hidden="true"></i>
+          <div><h3>Revenue &amp; Pricing Technology</h3><p>Combines AI-powered dynamic pricing with hands-on revenue strategy to optimise nightly rates and occupancy across all platforms.</p></div>
+        </li>
+        <li>
+          <i class="iconoir-wrench ico" aria-hidden="true"></i>
+          <div><h3>Maintenance &amp; Asset Protection</h3><p>Proactive inspections and rapid-response maintenance protect the long-term value of every asset under our management.</p></div>
+        </li>
+        <li>
+          <i class="iconoir-clipboard-check ico" aria-hidden="true"></i>
+          <div><h3>Finance &amp; Compliance</h3><p>Manages owner payouts, financial reporting, regulatory filings, and certification maintenance with full transparency.</p></div>
+        </li>
+      </ul>
     </div>
-    <div class="dept-grid reveal">
-      <div class="dept">
-        <i class="iconoir-settings ico" aria-hidden="true"></i>
-        <h3>Operations &amp; Property Management</h3>
-        <p>Manages day-to-day property performance, housekeeping, maintenance, and quality inspections across all buildings.</p>
-      </div>
-      <div class="dept">
-        <i class="iconoir-bell ico" aria-hidden="true"></i>
-        <h3>Guest Experience &amp; Support</h3>
-        <p>Available 24/7, ensuring every guest interaction — from pre-arrival to post-checkout — is handled with care and professionalism.</p>
-      </div>
-      <div class="dept">
-        <i class="iconoir-peace-hand ico" aria-hidden="true"></i>
-        <h3>Owner Relations &amp; Partnerships</h3>
-        <p>The dedicated point of contact for property owners, institutional partners, and corporate clients throughout the management relationship.</p>
-      </div>
-      <div class="dept">
-        <i class="iconoir-graph-up ico" aria-hidden="true"></i>
-        <h3>Revenue &amp; Pricing Technology</h3>
-        <p>Combines AI-powered dynamic pricing with hands-on revenue strategy to optimise nightly rates and occupancy across all platforms.</p>
-      </div>
-      <div class="dept">
-        <i class="iconoir-wrench ico" aria-hidden="true"></i>
-        <h3>Maintenance &amp; Asset Protection</h3>
-        <p>Proactive inspections and rapid-response maintenance protect the long-term value of every asset under our management.</p>
-      </div>
-      <div class="dept">
-        <i class="iconoir-clipboard-check ico" aria-hidden="true"></i>
-        <h3>Finance &amp; Compliance</h3>
-        <p>Manages owner payouts, financial reporting, regulatory filings, and certification maintenance with full transparency.</p>
+    <div class="org-media reveal reveal-io pre-reveal">
+      <img src="https://images.pexels.com/photos/5324937/pexels-photo-5324937.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200" alt="Team reviewing property performance documents together">
+      <div class="org-badge">
+        <i class="iconoir-check-circle ico" aria-hidden="true"></i>
+        <span>Six departments. One coordinated platform.</span>
       </div>
     </div>
   </div>
@@ -238,19 +285,19 @@ const BODY_TOP = `
     </div>
     <div class="cert-grid reveal">
       <div class="cert">
-        <i class="iconoir-medal ico" aria-hidden="true"></i>
+        <img class="cert-logo" src="https://d11n7da8rpqbjy.cloudfront.net/alep/19726083_1621536323PF6Ativo_12.png" alt="ALEP — Associação do Alojamento Local em Portugal logo">
         <h3>ALEP Member</h3>
         <div class="cert-body">Associação do Alojamento Local em Portugal</div>
         <p>National association representing local accommodation operators. Membership signals compliance with industry best practices.</p>
       </div>
       <div class="cert">
-        <i class="iconoir-shield-check ico" aria-hidden="true"></i>
+        <img class="cert-logo" src="https://www.turismodeportugal.pt/Style%20Library/TPortugal16Branding/img/logotipo_institucional_preto.png" alt="Turismo de Portugal logo">
         <h3>Clean &amp; Safe Certified</h3>
         <div class="cert-body">Turismo de Portugal</div>
         <p>Quality and safety certification awarded by Portugal's national tourism authority, recognising our hygiene and guest safety standards.</p>
       </div>
       <div class="cert">
-        <i class="iconoir-check-circle ico" aria-hidden="true"></i>
+        <span class="cert-logo cert-logo--placeholder"><i class="iconoir-check-circle ico" aria-hidden="true"></i></span>
         <h3>I-PRAC Certified</h3>
         <div class="cert-body">International Property Rental Approval Certification</div>
         <p>International certification body verifying vacation rental operators worldwide, assuring guests and partners of our professional standards.</p>
@@ -369,6 +416,15 @@ export async function AboutPage({ locale }: { locale: Locale }) {
     <>
       <div className="mk" data-page="about">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+        <noscript>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `.mk[data-page="about"] .pre-reveal{opacity:1!important;transform:none!important}`,
+            }}
+          />
+        </noscript>
+        <AboutReveal />
+        <OwnerStatsCounter durationMs={5000} />
         <div dangerouslySetInnerHTML={{ __html: BODY_TOP }} />
       </div>
       {faqGroupKey ? (

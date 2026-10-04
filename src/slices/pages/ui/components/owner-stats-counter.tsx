@@ -3,14 +3,15 @@
 import { useEffect } from "react";
 
 /**
- * Animates the owners "numbers" band: each `[data-count]` figure counts up from 0 to its
+ * Animates a page's "numbers" band: each `[data-count]` figure counts up from 0 to its
  * `data-to` target the first time it scrolls into view (IntersectionObserver), then snaps
  * to its exact original text (e.g. "400,000+", "€55M+"). Honours `prefers-reduced-motion`
- * by jumping straight to the final value. Renders nothing.
+ * by jumping straight to the final value. Renders nothing. Shared across pages (Owners,
+ * About) that mount it — `durationMs` lets each tune the count-up speed independently.
  */
-const DURATION = 1600;
+const DEFAULT_DURATION = 1600;
 
-export function OwnerStatsCounter() {
+export function OwnerStatsCounter({ durationMs = DEFAULT_DURATION }: { durationMs?: number } = {}) {
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".mk [data-count]"));
     if (els.length === 0) return;
@@ -32,7 +33,7 @@ export function OwnerStatsCounter() {
       let start: number | null = null;
       const tick = (now: number) => {
         if (start === null) start = now;
-        const p = Math.min((now - start) / DURATION, 1);
+        const p = Math.min((now - start) / durationMs, 1);
         const eased = 1 - Math.pow(1 - p, 3);
         if (p < 1) {
           el.textContent = fmt(Math.round(to * eased));
@@ -58,7 +59,7 @@ export function OwnerStatsCounter() {
     );
     for (const el of els) io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [durationMs]);
 
   return null;
 }
