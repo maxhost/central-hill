@@ -3,15 +3,20 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { MediaImage, mediaImgTag, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { Hero, Reveal, StatBand } from "@core/ui";
+import { EditorialSplit, Hero, Reveal, StatBand } from "@core/ui";
 import { ContactDialog } from "@slices/settings/contract";
 import { getOwnersPage, type OwnersContent } from "../contract";
 import { EstFormStepper } from "./components/est-form-stepper";
 import { EstFormWizard } from "./components/est-form-wizard";
 import { FaqSection } from "./components/faq-section";
+import { Icon } from "./components/icon";
 import { OwnerEstimateForm } from "./components/owner-estimate-form";
 import { ScrollReveal } from "./components/scroll-reveal";
 import { TestimonialsRow } from "./components/testimonials-row";
+
+// `why.benefits` positional icons (locked design, not `benefit.icon_key` — matches the
+// pre-existing behavior this replaces, see `src/slices/pages/ui/components/icon.tsx`).
+const WHY_ICON_KEYS = ["chart", "trophy", "bell", "user", "map-pin", "search"] as const;
 
 // Image fallbacks = the approved mock photos, used 1:1 until a real R2 asset is set in the
 // backoffice (the seeded `*_media_id`s have no uploaded asset yet → resolved media is absent).
@@ -45,16 +50,6 @@ const esc = (s: string) =>
 
 const OWNERS_STYLE = `
 .mk [id]{scroll-margin-top:130px}
-.mk .owner-pitch .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:start}
-.mk .owner-pitch .pitch-text{position:sticky;top:120px}
-.mk .owner-pitch .pitch-sub{margin-top:18px;font-size:18px;line-height:1.6;color:var(--ink-soft)}
-.mk .owner-pitch .pitch-cta{margin-top:28px;display:flex;flex-wrap:wrap;gap:14px}
-.mk .owner-pitch .pitch-note{margin-top:14px;font-size:14px;color:var(--ink-soft)}
-.mk .owner-pitch .pitch-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
-.mk .owner-pitch .pitch-list li{display:flex;gap:20px;padding:24px 0;border-bottom:1px solid var(--line)}
-.mk .owner-pitch .pitch-list .ic{width:28px;height:28px;flex:0 0 auto;margin-top:2px;color:var(--accent-deep)}
-.mk .owner-pitch .pitch-list h3{font-size:19px;margin:0 0 6px}
-.mk .owner-pitch .pitch-list p{font-size:15px;line-height:1.6;color:var(--ink-soft);margin:0}
 .mk .owner-showcase .wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
 .mk .owner-showcase .sh-text h2{font-size:clamp(28px,3.4vw,44px);line-height:1.12;margin:0;color:var(--ink)}
 .mk .owner-showcase .sh-sub{margin-top:18px;font-size:18px;line-height:1.6;color:var(--ink-soft)}
@@ -110,7 +105,7 @@ const OWNERS_STYLE = `
 .mk .faq .faq-a{padding:0 44px 26px 4px;font-size:15.5px;color:var(--ink-soft);max-width:70ch}
 .mk .cta-band .cta-wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;text-align:left;max-width:var(--max)}
 .mk .cta-band .cta-media img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:3px;display:block}
-@media(max-width:980px){.mk .owner-pitch .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-pitch .pitch-text{position:static}.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helper{flex-direction:column;align-items:flex-start;gap:22px;padding:32px 30px}.mk .steps{grid-template-columns:1fr 1fr}.mk .cta-band .cta-wrap{grid-template-columns:1fr;gap:34px;text-align:center}.mk .cta-band .cta-copy p{margin-left:auto;margin-right:auto}}
+@media(max-width:980px){.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helper{flex-direction:column;align-items:flex-start;gap:22px;padding:32px 30px}.mk .steps{grid-template-columns:1fr 1fr}.mk .cta-band .cta-wrap{grid-template-columns:1fr;gap:34px;text-align:center}.mk .cta-band .cta-copy p{margin-left:auto;margin-right:auto}}
 @media(max-width:680px){.mk .owner-showcase .sh-list{grid-template-columns:1fr}.mk .plans{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
 
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
@@ -156,14 +151,9 @@ const CTA_FALLBACK_ALT = "A Central Hill managed property at golden hour, overlo
 
 // Bespoke per-benefit icons from the locked design — positional (paired by index with the
 // fixed-count benefit lists). Only the benefit *text* is data-driven; the SVGs never change.
-const WHY_ICONS = [
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H4V4"/><path d="M4 16.5L12 9L15 12L19.5 7.5"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.74534 4H17.3132C17.3132 4 16.4326 17.2571 12.0293 17.2571C9.87826 17.2571 8.56786 14.0935 7.79011 10.8571C6.97574 7.46844 6.74534 4 6.74534 4Z"/><path d="M17.3132 4C17.3132 4 18.2344 3.01733 19 2.99999C20.5 2.96603 20.7773 4 20.7773 4C21.0709 4.60953 21.3057 6.19429 19.8967 7.65715C18.4876 9.12 16.9103 10.4 16.2684 10.8571"/><path d="M6.74527 4.00001C6.74527 4.00001 5.78547 3.00614 4.99995 3.00001C3.49995 2.9883 3.22264 4.00001 3.22264 4.00001C2.92908 4.60953 2.69424 6.19429 4.1033 7.65715C5.51235 9.12001 7.14823 10.4 7.79004 10.8572"/><path d="M8.50662 20C8.50662 18.1714 12.0292 17.2571 12.0292 17.2571C12.0292 17.2571 15.5519 18.1714 15.5519 20H8.50662Z"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8.4C18 6.70261 17.3679 5.07475 16.2426 3.87452C15.1174 2.67428 13.5913 2 12 2C10.4087 2 8.88258 2.67428 7.75736 3.87452C6.63214 5.07475 6 6.70261 6 8.4C6 15.8667 3 18 3 18H21C21 18 18 15.8667 18 8.4Z"/><path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V19C5 15.134 8.13401 12 12 12C15.866 12 19 15.134 19 19V20"/><path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10C20 14.4183 12 22 12 22C12 22 4 14.4183 4 10C4 5.58172 7.58172 2 12 2C16.4183 2 20 5.58172 20 10Z"/><path d="M12 11C12.5523 11 13 10.5523 13 10C13 9.44772 12.5523 9 12 9C11.4477 9 11 9.44772 11 10C11 10.5523 11.4477 11 12 11Z" fill="currentColor"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 17L21 21"/><path d="M3 11C3 15.4183 6.58172 19 11 19C13.213 19 15.2161 18.1015 16.6644 16.6493C18.1077 15.2022 19 13.2053 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11Z"/></svg>`,
-];
+// (`why`'s equivalent is now `WHY_ICON_KEYS` below, resolved through the shared `<Icon>`
+// registry now that `#why` is real JSX — `services`/`dashboard` stay the old raw-HTML-string
+// embed for now, so their icons stay inline SVG strings here.)
 const SERVICES_ICONS = [
   `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6l1.5-2h5L16 6"/></svg>`,
   `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>`,
@@ -204,7 +194,7 @@ function benefitList(
  * in the schema but intentionally not shown (the locked design has no commission display).
  */
 function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageData>): string {
-  const { why, services, plans, journey, dashboard } = content;
+  const { services, plans, journey, dashboard } = content;
   const servicesImgTag = mediaImgTag({
     data: media[services.image_media_id ?? ""],
     fallbackSrc: SERVICES_FALLBACK_IMG,
@@ -219,22 +209,6 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
   });
 
   return `
-<section id="why" class="owner-pitch">
-  <div class="wrap">
-    <div class="pitch-text reveal-io pre-reveal">
-      <h2 class="section-title">${esc(why.headline)}</h2>
-      ${why.subheadline ? `<p class="pitch-sub">${esc(why.subheadline)}</p>` : ""}
-      <div class="pitch-cta">
-        <a class="btn btn-accent" href="#worth">${esc(why.cta_primary.label)} →</a>
-        <a class="btn btn-ghost" href="#start">${esc(why.cta_secondary.label)}</a>
-      </div>
-      ${why.cta_primary.note ? `<p class="pitch-note">${esc(why.cta_primary.note)}</p>` : ""}
-    </div>
-    <ul class="pitch-list reveal-io pre-reveal">${benefitList(why.benefits, WHY_ICONS)}
-    </ul>
-  </div>
-</section>
-
 <section id="services" class="alt owner-showcase">
   <div class="wrap">
     <div class="sh-text reveal reveal-io pre-reveal">
@@ -386,8 +360,14 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
-  const { hero, earnings_form, stats } = content;
+  const { hero, earnings_form, stats, why } = content;
   const faqGroupKey = content.faq_group_key ?? "";
+
+  const whyItems = why.benefits.map((b, i) => ({
+    icon: <Icon name={WHY_ICON_KEYS[i]} className="mt-0.5 h-7 w-7 flex-none text-accent-deep" />,
+    title: b.title,
+    description: b.description,
+  }));
 
   const heroMedia = media[hero.image_media_id];
   // Authored with `;` between phrases so the design's stacked hero title ("Your Property" /
@@ -470,6 +450,25 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
         <Reveal label="owners-stats">
           <StatBand cells={statCells} />
         </Reveal>
+      </div>
+      {/*
+       * "Why property owners trust us" — `core/ui`'s `EditorialSplit` (new; built for this
+       * section, ported 1:1 from the old `.mk`-scoped `.owner-pitch` CSS, including its own
+       * `Reveal`-based entrance animation — see that component's docstring for why the
+       * animation lives inside it rather than at this call site, unlike `StatBand` above).
+       * `id`/`scrollMarginTop` done the same way as the other sections now outside `.mk`
+       * (`#numbers`/`#testimonials`/`#faq`) rather than the component's own generic anchor,
+       * to match this page's 130px fixed-nav offset.
+       */}
+      <div id="why" style={{ scrollMarginTop: 130 }}>
+        <EditorialSplit
+          headline={why.headline}
+          body={why.subheadline}
+          items={whyItems}
+          primaryCta={{ href: "#worth", label: `${why.cta_primary.label} →` }}
+          secondaryCta={{ href: "#start", label: why.cta_secondary.label }}
+          note={why.cta_primary.note}
+        />
       </div>
       <div className="mk" data-page="owners">
         <style dangerouslySetInnerHTML={{ __html: OWNERS_STYLE }} />

@@ -17,6 +17,9 @@ export { Carousel } from "./carousel";
 /** Two-column "Image Showcase" section (copy + bullets + CTA beside an image). */
 export { TwoColumnShowcase } from "./two-column-showcase";
 export type { TwoColumnShowcaseBullet, TwoColumnShowcaseCta } from "./two-column-showcase";
+/** Two-column "Editorial Split" section (sticky copy + CTAs beside a hairline icon/title/description list). */
+export { EditorialSplit } from "./editorial-split";
+export type { EditorialSplitCta, EditorialSplitItem } from "./editorial-split";
 /** Owner/guest "Immersive Panels" closing band — presentational, data composer stays slice-owned. */
 export { DualCtaPanels, type DualCtaPanel } from "./dual-cta-panels";
 /** Site-wide header chrome (sticky bar + hover-dropdown mechanics) — see `nav-bar.tsx`. */

@@ -49,8 +49,11 @@ Page compositions (`ui/*-page.tsx`): `HomePage`, `OwnersPage`, `GuestPage`, `Rea
 page out from `content` + `media`. The shared page hero (full-bleed media band + editorial
 headline) is `core/ui`'s `Hero` (ADR 0033 moved it there from this slice, `hero.tsx` → renamed
 from `PageHero`) — both `HomePage` (video background) and `OwnersPage` (image background +
-`aside` earnings-form card, `compact` headline) render it directly; it is **not** a
-`ui/components/` piece. Other shared pieces in `ui/components/`:
+`aside` earnings-form card, `compact` headline) render it directly; and `OwnersPage`'s "why"
+section is `core/ui`'s `EditorialSplit` (sticky headline + CTAs beside a hairline icon/title/
+description list — new, built for this section; see its own docstring for why its entrance
+animation is wired internally rather than at the call site, unlike every other animated piece
+here). Neither is a `ui/components/` piece. Other shared pieces in `ui/components/`:
 - presentational (`blocks.tsx`: `SectionHeading`, `FeatureGrid`, `Steps`, `CtaRow`, `Prose`,
   `Band`; `owner-estimate-form.tsx`: the Owners-hero earnings-estimate card, slotted into
   `Hero`'s `aside` — markup only, see below);
@@ -103,10 +106,19 @@ raw-HTML grid + `owner-stats-counter.tsx`'s `[data-count]`-scanning counter. Hom
 band (`stats-band.tsx` → `StatsBand`) reads different, company-wide figures from
 `company_settings` — the two happen to differ, so Owners deliberately keeps its own numbers,
 just the shared widget. `owner-stats-counter.tsx` is otherwise unaffected and still shared with
-**About**, which still uses the raw-markup `.mk` stats grid. Then the full marketing flow — `why` (Editorial-
-Split: title + CTAs beside a hairline `benefits[×6]` list, the home owners-pitch layout reproduced
-as scoped `.mk` CSS since `mock.css` styles bare `.mk` elements and would leak into the Tailwind
-component), `services` and `dashboard` (#technology) — both the home **Image-Showcase** layout
+**About**, which still uses the raw-markup `.mk` stats grid. Then the full marketing flow — `why`
+("Why property owners trust us") is likewise now real JSX: `core/ui`'s new `EditorialSplit`
+(sticky headline + CTAs beside a hairline `benefits[×6]` list — the layout ADR 0022 called
+"Editorial Split" when Home briefly had its own version, since removed). It used to be
+reproduced as scoped `.mk` CSS (same "`mock.css` styles bare elements, would leak into Tailwind"
+reasoning `services`/`dashboard` below still have) because the page itself was a raw-markup
+embed at the time; now that the hero/numbers band are real JSX too, there was no longer a
+reason to keep `why` as a CSS-scoped duplicate, so it was ported into the reusable component
+instead and wired in beside `#numbers`/`#testimonials`/`#faq`, outside `.mk`. Icons stay the old
+positional mapping (`WHY_ICON_KEYS` in `owners-page.tsx`, resolved through the shared
+`pages/ui/components/icon.tsx` registry) rather than each benefit's own `icon_key` — preserving
+exactly what rendered before; wiring `icon_key` through is a separate, not-yet-requested change.
+`services` and `dashboard` (#technology) — both the home **Image-Showcase** layout
 (4 benefit highlights + CTA beside a 4:5 image with a floating badge; `dashboard` mirrored with the
 image on the left), reproduced as scoped `.mk` CSS for the same reason — `plans` (up to 4 pricing
 tiers, with extra air before the single full-width highlighted helper band — drizzle 0010 trimmed

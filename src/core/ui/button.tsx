@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { cn } from "./cn";
 
-type Variant = "primary" | "outline" | "light";
+type Variant = "primary" | "outline" | "light" | "ghost";
 
 const base =
   "inline-flex items-center justify-center rounded-md px-7 py-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
@@ -13,6 +13,9 @@ const variants: Record<Variant, string> = {
   // For CTAs over dark media/bands (hero, dual-CTA owner column): white hairline →
   // inverts to solid on hover. Focus ring stays the accent (set in `base`).
   light: "border border-white/60 text-white hover:bg-white hover:text-ink",
+  // Bolder than `outline`: an ink-colored (not hairline) border that fills solid ink on
+  // hover. Mirrors the mock's `.btn-ghost` (e.g. Owners' "why" secondary CTA).
+  ghost: "border border-ink text-ink hover:bg-ink hover:text-bg",
 };
 
 /**
