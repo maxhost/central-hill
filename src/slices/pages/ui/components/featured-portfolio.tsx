@@ -103,7 +103,7 @@ export async function FeaturedPortfolio({
             prevLabel={t("portfolio.prev")}
             nextLabel={t("portfolio.next")}
             gap="lg"
-            basis={{ base: "100%", sm: "calc((100%-1.75rem)/2)", lg: "calc((100%-3.5rem)/3)" }}
+            basis={{ base: "100%", sm: "calc((100% - 1.75rem) / 2)", lg: "calc((100% - 3.5rem) / 3)" }}
             buttonPlacement="below"
           />
         </div>

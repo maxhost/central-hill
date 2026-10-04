@@ -29,3 +29,5 @@ export { PropertyCard } from "./property-card";
 export { StatBand } from "./stat-band";
 /** Page hero (full-bleed video/image band with overlaid editorial headline) — never animated. */
 export { Hero } from "./hero";
+/** Dev-only diagnostic: logs viewport size + scroll progress to the console. No-op in prod. */
+export { ScrollDebugProbe } from "./motion/scroll-debug-probe";

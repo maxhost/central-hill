@@ -72,6 +72,26 @@ identical — with the breakpoint/gap/button values driven by the new props inst
 5. Verify both pages render identically (visual diff at desktop/tablet/mobile widths), then delete
    `portfolio-carousel.tsx` and `services-carousel-track.tsx`.
 
+## Bug found in the real browser, fixed — missing whitespace in `calc()`
+
+The `basis` values both call sites pass (`"calc((100%-1.75rem)/2)"` etc.) were missing the
+whitespace CSS requires around a binary `-`/`+` operator inside `calc()` (`calc(100% - 10px)` is
+valid, `calc(100%-10px)` is not — without it the parser can't tell the `-` apart from a
+negative-number token). Tailwind's own literal `basis-[calc(...)]` arbitrary-value classes (the
+*original* `PortfolioCarousel`/`ServicesCarouselTrack` components, and `mobile-drawer.tsx`'s
+unrelated `max-h-[calc(100vh-4rem)]`, left untouched) get away with this because the malformed
+string is baked into the compiled stylesheet directly. This component's `var(--carousel-basis-*)`
+indirection resolves the value through a CSS custom property at `var()`-substitution time instead,
+and that path does **not** forgive the missing whitespace — confirmed in Safari via
+`ScrollDebugProbe`/`Reveal` console logs (`01-motion-primitives.md`): `document.documentElement.
+scrollHeight` ballooned to 25,000,000+ px while scrolling past the carousels on desktop widths
+only, which made the page feel like it could never reach its own bottom (mobile was unaffected —
+narrower breakpoints never evaluate the broken `lg`/`md` values). Fixed by adding the required
+spaces (`"calc((100% - 1.75rem) / 2)"` etc.) in both `featured-portfolio.tsx` and
+`services-carousel.tsx`. **Takeaway for any future `Carousel` caller:** always include the
+whitespace in `basis` values passed to this component — the CSS-custom-property path is less
+forgiving than a literal Tailwind arbitrary-value class would be.
+
 ## Verification (component-specific, on top of the shared DoD in 00-overview §6)
 
 - [ ] Featured portfolio: 3-up desktop / 2-up tablet / 1-up mobile, buttons below the track,

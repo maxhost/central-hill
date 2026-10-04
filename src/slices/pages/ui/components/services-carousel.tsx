@@ -81,9 +81,9 @@ export async function ServicesCarousel({
             gap="sm"
             basis={{
               base: "78%",
-              sm: "calc((100%-1.25rem)/2)",
-              md: "calc((100%-2.5rem)/3)",
-              lg: "calc((100%-3.75rem)/4)",
+              sm: "calc((100% - 1.25rem) / 2)",
+              md: "calc((100% - 2.5rem) / 3)",
+              lg: "calc((100% - 3.75rem) / 4)",
             }}
             buttonPlacement="overlay"
           />

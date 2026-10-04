@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
-import { ButtonLink, Hero, Reveal } from "@core/ui";
+import { ButtonLink, Hero, Reveal, ScrollDebugProbe } from "@core/ui";
 import { AvantioSearchBar } from "@slices/settings/contract";
 import { getHomePage } from "../contract";
 import { DualCta } from "./components/dual-cta";
@@ -50,6 +50,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
 
   return (
     <main>
+      <ScrollDebugProbe page="home" />
       <Hero
         background={
           <video
@@ -98,12 +99,12 @@ export async function HomePage({ locale }: { locale: Locale }) {
         <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
       </noscript>
 
-      <Reveal>
+      <Reveal label="stats">
         <StatsBand locale={locale} keys={["bookings", "years", "guests", "revenue"]} />
       </Reveal>
 
       {/* Guests pitch now sits directly under stats, ahead of the carousel (client feedback). */}
-      <Reveal>
+      <Reveal label="guests-pitch">
         <GuestsSection
           content={guests_pitch}
           image={media[guests_pitch.image_media_id ?? ""] ?? null}
@@ -114,12 +115,12 @@ export async function HomePage({ locale }: { locale: Locale }) {
        * Featured portfolio (restored, client direction) — composes from `buildings`, ahead
        * of the services carousel. No intro copy under the title (client feedback).
        */}
-      <Reveal>
+      <Reveal label="featured-portfolio">
         <FeaturedPortfolio locale={locale} showEyebrow={false} intro="" tightBottom />
       </Reveal>
 
       {/* Services & partners (ADR 0032) — copy from the page, cards from `services`. */}
-      <Reveal>
+      <Reveal label="services-carousel">
         <ServicesCarousel locale={locale} content={services_carousel} />
       </Reveal>
 
@@ -132,7 +133,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
       ) : null}
 
       {/* Closing owner/guest dual CTA (restored, client direction) — sits right before the footer. */}
-      <Reveal>
+      <Reveal label="dual-cta">
         <DualCta locale={locale} content={dual_cta} media={media} />
       </Reveal>
     </main>
