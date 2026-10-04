@@ -33,6 +33,24 @@ import { cn } from "./cn";
  * `#worth` anchor target) — Home keeps the defaults.
  *
  * `eyebrowPill` renders the eyebrow as the mock's solid accent badge ("★ …").
+ *
+ * Third consumer, Buildings' listing hero (single-column, no `aside`, portrait-photo-safe
+ * text): needed five more additive escape hatches, all opt-in/`undefined`-default so Home/
+ * Owners are byte-for-byte unaffected. `align` (`items-end` default vs `items-center`,
+ * Buildings' CSS override) and `wrapClassName` (bypasses the shared `Container` entirely —
+ * rendered as a plain `<div>` instead — since Buildings' `1600px` wrap is *wider* than
+ * `Container`'s own `max-w-7xl`, which can't be overridden by an appended className without
+ * two conflicting `max-w-*` utilities fighting on Tailwind's generated-CSS order rather than
+ * JSX source order) are genuinely new concepts. `overlayClassName`/`headlineClassName`/
+ * `subtitleClassName` *replace* (never append to) their default computed class string — same
+ * "swap, don't stack conflicting utilities" reasoning as `copyClassName` already used, and why
+ * `headlineClassName` had to be added rather than reusing `compact` as-is: `compact`'s current
+ * `whitespace-nowrap`/`max-w-none` is not actually part of the mock's generic `.hero.compact`
+ * rule (which only shrinks the font-size clamp) — it's `.owner-hero h1`'s page-specific
+ * override baked into this component's only prior `compact` consumer (Owners). Buildings is
+ * also `compact` (same min-height/font-size) but keeps the generic *wrapping* behavior at its
+ * own width (`26ch`, not the mock's base `15ch`), which the old hard-coded ternary couldn't
+ * express — hence `headlineClassName` fully replacing the compact/non-compact default instead.
  */
 export function Hero({
   background,
@@ -46,6 +64,11 @@ export function Hero({
   compact,
   copyClassName,
   id,
+  align = "end",
+  overlayClassName,
+  headlineClassName,
+  subtitleClassName,
+  wrapClassName,
 }: {
   background?: ReactNode;
   eyebrow?: string;
@@ -60,6 +83,16 @@ export function Hero({
   /** Overrides the copy column's default max-width (Owners' live CSS uses `none`). */
   copyClassName?: string;
   id?: string;
+  /** Vertical anchor of the copy within the band (Buildings centers it; everyone else is bottom-anchored). */
+  align?: "end" | "center";
+  /** Replaces the default dark gradient scrim entirely (Buildings' photo needed a stronger one). */
+  overlayClassName?: string;
+  /** Replaces the whole compact/non-compact headline size+width+wrap default (see docstring). */
+  headlineClassName?: string;
+  /** Replaces the subtitle's default `max-w-xl` (Buildings' copy needed a wider `60ch`). */
+  subtitleClassName?: string;
+  /** Renders a plain `<div>` with this className instead of the shared `Container` (needs a wider-than-kernel max-width). */
+  wrapClassName?: string;
 }) {
   const copy = (
     <div className="text-surface">
@@ -78,15 +111,23 @@ export function Hero({
       <h1
         className={cn(
           "mt-4 font-serif font-medium leading-[1.05]",
-          compact
-            ? "max-w-none whitespace-nowrap text-[clamp(2.5rem,5.4vw,4.25rem)]"
-            : "max-w-[15ch] text-[clamp(2.75rem,7vw,5.5rem)]",
+          headlineClassName ??
+            (compact
+              ? "max-w-none whitespace-nowrap text-[clamp(2.5rem,5.4vw,4.25rem)]"
+              : "max-w-[15ch] text-[clamp(2.75rem,7vw,5.5rem)]"),
         )}
       >
         {headline}
       </h1>
       {subtitle ? (
-        <p className="mt-5 max-w-xl text-lg leading-relaxed text-surface/85">{subtitle}</p>
+        <p
+          className={cn(
+            "mt-5 text-lg leading-relaxed text-surface/85",
+            subtitleClassName ?? "max-w-xl",
+          )}
+        >
+          {subtitle}
+        </p>
       ) : null}
       {actions ? (
         <div className={cn("flex flex-wrap items-center gap-4", actionsClassName ?? "mt-8")}>
@@ -96,12 +137,22 @@ export function Hero({
     </div>
   );
 
+  const body = aside ? (
+    <div className="grid items-end gap-[34px] min-[981px]:grid-cols-[1.1fr_0.9fr] min-[981px]:gap-10">
+      <div className={copyClassName ?? "max-w-xl"}>{copy}</div>
+      {aside}
+    </div>
+  ) : (
+    <div className={copyClassName ?? "max-w-3xl"}>{copy}</div>
+  );
+
   return (
     <section
       id={id}
       data-hero
       className={cn(
-        "relative isolate flex items-end overflow-hidden bg-feature",
+        "relative isolate flex overflow-hidden bg-feature",
+        align === "center" ? "items-center" : "items-end",
         // `compact` keeps the headline smaller for form-bearing heroes (the aside card
         // shares the row) but still fills the viewport like the mock. The hero is
         // bottom-anchored (`items-end`) — this min-height is what sets the empty band above
@@ -116,21 +167,16 @@ export function Hero({
       <div
         className={cn(
           "absolute inset-0 -z-10",
-          "bg-gradient-to-t from-black/70 via-black/30 to-black/20",
+          overlayClassName ?? "bg-gradient-to-t from-black/70 via-black/30 to-black/20",
         )}
         aria-hidden
       />
 
-      <Container className="pb-[clamp(56px,9vh,104px)] pt-32">
-        {aside ? (
-          <div className="grid items-end gap-[34px] min-[981px]:grid-cols-[1.1fr_0.9fr] min-[981px]:gap-10">
-            <div className={copyClassName ?? "max-w-xl"}>{copy}</div>
-            {aside}
-          </div>
-        ) : (
-          <div className={copyClassName ?? "max-w-3xl"}>{copy}</div>
-        )}
-      </Container>
+      {wrapClassName ? (
+        <div className={wrapClassName}>{body}</div>
+      ) : (
+        <Container className="pb-[clamp(56px,9vh,104px)] pt-32">{body}</Container>
+      )}
     </section>
   );
 }

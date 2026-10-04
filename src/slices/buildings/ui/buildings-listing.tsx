@@ -1,21 +1,27 @@
+import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
+import { Hero } from "@core/ui";
 import { EstFormStepper, EstFormWizard } from "@slices/pages/contract";
 import { ContactDialog } from "@slices/settings/contract";
 import type { BuildingSummary } from "../contract";
 import { listBuildings } from "../server/queries";
-import { HeroContactCta } from "./components/hero-contact-cta";
 import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
  * Buildings listing — the approved `mock/buildings.html` design embedded 1:1 inside the
- * live app shell, now **DB-driven**: the surrounding chrome (hero, owner CTA band, stats
- * band, earnings calculator) is the mock's static markup verbatim, but the property grid
- * is generated from the published `building` rows (`listBuildings`, ISR-cached + tagged
+ * live app shell, now **DB-driven**: the surrounding chrome (owner CTA band, stats band,
+ * earnings calculator) is the mock's static markup verbatim, but the property grid is
+ * generated from the published `building` rows (`listBuildings`, ISR-cached + tagged
  * `building-list` → a publish busts it). Page styles stay scoped under `.mk` (see
  * `src/app/mock.css`) so nothing leaks to Home/admin. The real header/footer + i18n come
  * from the app layout.
+ *
+ * The **hero is real JSX**, not interpolated markup: `core/ui`'s `<Hero compact align="center">`
+ * (no `aside` — single-column, text + one CTA). This page has no `page_content` row, so every
+ * hero string/image is still a fixed literal, same as before this port — only the markup
+ * changed, not the content model.
  *
  * Card markup is the locked mock `.pcard` design (the Tailwind `BuildingCard` is a
  * different look — kept for other consumers); DB content is HTML-escaped before
@@ -37,6 +43,12 @@ function esc(s: string): string {
 }
 
 const PLACEHOLDER_COVER = "/placeholders/building.svg";
+
+// Hero background — no schema field (this page has no `page_content` row), so it's a fixed
+// Unsplash photo, same as before this port.
+const HERO_IMG =
+  "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70";
+const HERO_ALT = "Rooftops and the river over Lisbon's historic centre at golden hour";
 
 // TEMP: Pexels placeholder for the earnings-calculator's photo column (client direction).
 const CALC_FALLBACK_IMG =
@@ -84,31 +96,6 @@ function cardHtml(b: BuildingSummary, locale: Locale, labels: CardLabels): strin
 }
 
 const PAGE_STYLE = `
-/* Hero: strengthen the dark overlay over the background photo so the white headline/
-   eyebrow/intro stay legible (the bright Lisbon rooftops washed out the base gradient).
-   Evened out further vs. the original bottom-heavy gradient since centring the text
-   (below) puts it over what used to be the gradient's lightest band. Scoped to this
-   page only — overrides the kernel \`.mk .hero::after\` for Buildings. */
-.mk[data-page="buildings"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.5) 0%,rgba(18,16,13,.46) 45%,rgba(18,16,13,.88) 100%)}
-
-/* Vertically centre the text (the base mock anchors it to the bottom, which reads too
-   tall here). The base mock's h1/p are capped at 15ch/46ch — far narrower than the
-   .wrap column itself — so widening .wrap alone does nothing: the actual fix is
-   widening h1/p so each line holds more text, shortening the block (matching
-   Real Estate/About). .wrap stays centred (just a wider cap + tighter side padding
-   than the base mock's 1240px/28px) so the block doesn't shift flush-left. */
-.mk[data-page="buildings"] .hero{align-items:center}
-.mk[data-page="buildings"] .hero .wrap{max-width:1600px;margin:0 auto;padding-top:40px;padding-bottom:40px;padding-left:40px;padding-right:40px}
-.mk[data-page="buildings"] .hero h1{max-width:26ch}
-.mk[data-page="buildings"] .hero p{max-width:60ch}
-
-/* "Contact Us" CTA under the hero copy — the button is a portaled Tailwind ContactDialog
-   trigger (see hero-contact-cta.tsx), so it needs its padding restored: the kernel's
-   \`.mk *{margin:0;padding:0}\` reset wins the specificity tie against Tailwind's px-7/py-3
-   utility classes (same fix as the Owners hero). */
-.mk[data-page="buildings"] .hero .hero-cta{margin-top:8px}
-.mk[data-page="buildings"] .hero .hero-cta button{padding:0.75rem 1.75rem}
-
 /* Page-only: filter / IA bar (decorative, kernel-variable based) */
 .mk .filterbar{border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--line) 26%,var(--bg))}
 .mk .filterbar .wrap{padding-top:26px;padding-bottom:26px;display:flex;flex-wrap:wrap;align-items:center;gap:18px}
@@ -191,17 +178,6 @@ function BODY(locale: Locale, cardsHtml: string): string {
     sizes: "(max-width: 980px) 100vw, 560px",
   });
   return `
-<!-- HERO -->
-<section class="hero compact" style="padding:0">
-  <img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70" alt="Rooftops and the river over Lisbon's historic centre at golden hour">
-  <div class="wrap">
-    <span class="eyebrow">Lisbon · Portugal</span>
-    <h1>Strategic Properties in Prime Locations</h1>
-    <p>Explore our carefully curated portfolio of exceptional buildings — each handpicked for its location, character, and guest experience across Portugal's most vibrant neighbourhoods.</p>
-    <div class="hero-cta" id="hero-contact-slot"></div>
-  </div>
-</section>
-
 <!-- FILTER / IA BAR — hidden per client direction (B6). Kept (commented out) so it can
      be restored once the city/neighbourhood filter is wired to the DB taxonomy.
 <div class="filterbar">
@@ -273,8 +249,9 @@ function BODY(locale: Locale, cardsHtml: string): string {
 </section>
 
 <!-- SECTION 4 · EARNINGS CALCULATOR — the exact Owners hero wizard, two columns (form
-     left, photo right; see hero-contact-cta.tsx's sibling doc comment for why this is a
-     duplicate of the Owners markup rather than a cross-slice import of it). -->
+     left, photo right). Markup is duplicated from Owners rather than cross-slice-imported
+     (not part of any slice's public contract); the client wiring (EstFormStepper/
+     EstFormWizard) is genuinely shared, via @slices/pages/contract. -->
 <section class="calc-band">
   <div class="wrap calc-wrap">
     <form class="est-card reveal reveal-io pre-reveal" data-wizard data-step="1" onsubmit="return false">
@@ -375,28 +352,55 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
     : `\n      <p style="grid-column:1/-1;color:var(--ink-soft)">${esc(t("empty"))}</p>\n    `;
 
   return (
-    <div className="mk" data-page="buildings">
-      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-      <noscript>
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `.mk[data-page="buildings"] .pre-reveal{opacity:1!important;transform:none!important}`,
-          }}
-        />
-      </noscript>
-      <ScrollReveal page="buildings" />
-      <HeroContactCta>
-        <ContactDialog
-          variant="light"
-          label="Contact Us"
-          title="Contact us"
-          intro="Send us a message and our team will get back to you shortly."
-          source="buildings-hero"
-        />
-      </HeroContactCta>
-      <EstFormStepper />
-      <EstFormWizard />
-      <div dangerouslySetInnerHTML={{ __html: BODY(locale, cardsHtml) }} />
-    </div>
+    <Fragment>
+      {/*
+       * Real JSX — `core/ui`'s `Hero`, single-column (no `aside`), ported 1:1 from the old
+       * `.mk`-scoped overrides (now deleted) that strengthened the overlay, vertically
+       * centered the copy, and widened the wrap/headline/subtitle beyond the kernel's/other
+       * Hero consumers' defaults. See `hero.tsx`'s docstring for why that needed five new
+       * additive props rather than reusing `compact` as-is. No schema field backs this
+       * page's hero (`HERO_IMG`/every string below is a fixed literal, same as before).
+       */}
+      <Hero
+        background={
+          // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+          <img src={HERO_IMG} alt={HERO_ALT} className="absolute inset-0 -z-10 h-full w-full object-cover" />
+        }
+        compact
+        align="center"
+        overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.5)_0%,rgba(18,16,13,0.46)_45%,rgba(18,16,13,0.88)_100%)]"
+        wrapClassName="mx-auto max-w-[1600px] p-10"
+        copyClassName="max-w-none"
+        headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
+        subtitleClassName="max-w-[60ch]"
+        actionsClassName="mt-2"
+        eyebrow="Lisbon · Portugal"
+        headline="Strategic Properties in Prime Locations"
+        subtitle="Explore our carefully curated portfolio of exceptional buildings — each handpicked for its location, character, and guest experience across Portugal's most vibrant neighbourhoods."
+        actions={
+          <ContactDialog
+            variant="light"
+            label="Contact Us"
+            title="Contact us"
+            intro="Send us a message and our team will get back to you shortly."
+            source="buildings-hero"
+          />
+        }
+      />
+      <div className="mk" data-page="buildings">
+        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+        <noscript>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `.mk[data-page="buildings"] .pre-reveal{opacity:1!important;transform:none!important}`,
+            }}
+          />
+        </noscript>
+        <ScrollReveal page="buildings" />
+        <EstFormStepper />
+        <EstFormWizard />
+        <div dangerouslySetInnerHTML={{ __html: BODY(locale, cardsHtml) }} />
+      </div>
+    </Fragment>
   );
 }

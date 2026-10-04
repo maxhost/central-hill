@@ -48,9 +48,14 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
 ## Routes
 
 - `/{locale}/buildings` — listing (`ui/buildings-listing.tsx`): the approved
-  `mock/buildings.html` design (hero + owner CTA + stats + earnings calculator chrome,
-  static `.mk` markup) with a **DB-driven** card grid generated from `listBuildings(locale)`
-  into the locked `.pcard` markup. Client direction (B6): the city name is omitted from the
+  `mock/buildings.html` design. The **hero is real JSX** — `core/ui`'s `<Hero compact
+  align="center">`, single-column (no `aside`), ported 1:1 from the old `.mk`-scoped overrides
+  (now deleted) via five additive `Hero` props (`align`/`overlayClassName`/`headlineClassName`/
+  `subtitleClassName`/`wrapClassName` — see `core/ui/hero.tsx`'s docstring); this page has no
+  `page_content` row, so every hero string/image is still a fixed literal. The rest of the
+  chrome (owner CTA + stats + earnings calculator) stays the mock's static `.mk` markup, with a
+  **DB-driven** card grid generated from `listBuildings(locale)` into the locked `.pcard`
+  markup. Client direction (B6): the city name is omitted from the
   card meta line (`street · neighbourhood · N apartments`); the city/neighbourhood filter bar
   is hidden (kept commented out in source for later DB wiring); a building with no R2 cover
   yet falls back to `public/placeholders/building.svg` so cards never render empty. The
