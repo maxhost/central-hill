@@ -52,14 +52,6 @@ const HERO_FALLBACK_ALT = "Bright, designer-furnished Lisbon apartment interior"
 
 const OWNERS_STYLE = `
 .mk [id]{scroll-margin-top:130px}
-.mk .faq{max-width:820px;margin:0 auto;border-top:1px solid var(--line)}
-.mk .faq details{border-bottom:1px solid var(--line)}
-.mk .faq summary{list-style:none;cursor:pointer;padding:24px 44px 24px 4px;position:relative;font-family:var(--serif);font-size:20px;color:var(--ink);transition:color .2s}
-.mk .faq summary::-webkit-details-marker{display:none}
-.mk .faq summary:hover{color:var(--accent-deep)}
-.mk .faq summary::after{content:"+";position:absolute;right:6px;top:22px;font-family:var(--sans);font-size:24px;color:var(--accent);transition:transform .25s var(--ease)}
-.mk .faq details[open] summary::after{transform:rotate(45deg)}
-.mk .faq .faq-a{padding:0 44px 26px 4px;font-size:15.5px;color:var(--ink-soft);max-width:70ch}
 .mk .cta-band .cta-wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;text-align:left;max-width:var(--max)}
 .mk .cta-band .cta-media img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:3px;display:block}
 @media(max-width:980px){.mk .cta-band .cta-wrap{grid-template-columns:1fr;gap:34px;text-align:center}.mk .cta-band .cta-copy p{margin-left:auto;margin-right:auto}}
