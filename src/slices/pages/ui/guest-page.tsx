@@ -136,6 +136,21 @@ const ctaRow = (cta: Cta, locale: Locale, variant: "accent" | "ghost"): string =
   `${cta.note ? `<span class="cta-note">${esc(cta.note)}</span>` : ""}</div>`;
 
 const PAGE_STYLE = `
+/* Hero: vertically centre the text (the base mock anchors it to the bottom, which
+   reads too tall here). The base mock's h1/p are capped at 15ch/46ch — far narrower
+   than the .wrap column itself — so widening .wrap alone does nothing: the actual
+   fix is widening h1/p so each line holds more text, shortening the block (matching
+   About/Real Estate/Buildings). .wrap stays centred (just a wider cap + tighter side
+   padding than the base mock's 1240px/28px) so the block doesn't shift flush-left.
+   The overlay is strengthened and evened out (vs. the base mock's bottom-heavy
+   gradient) since centring the text puts it over the gradient's lightest band.
+   Scoped to this page only via the [data-page] hook. */
+.mk[data-page="guests"] .hero{align-items:center}
+.mk[data-page="guests"] .hero .wrap{max-width:1600px;margin:0 auto;padding-top:40px;padding-bottom:40px;padding-left:40px;padding-right:40px}
+.mk[data-page="guests"] .hero h1{max-width:26ch}
+.mk[data-page="guests"] .hero p{max-width:60ch}
+.mk[data-page="guests"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.46) 0%,rgba(18,16,13,.36) 45%,rgba(18,16,13,.8) 100%)}
+
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
 .mk .welcome{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
 .mk .welcome img{width:100%;height:100%;object-fit:cover;min-height:380px}

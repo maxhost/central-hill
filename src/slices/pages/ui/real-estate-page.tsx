@@ -319,10 +319,17 @@ const PAGE_STYLE = `
 
 /* Hero: vertically centre the text/CTAs (the base mock anchors them to the bottom,
    which read too low here) and strengthen the dark overlay over the photo so the
-   white copy stays legible — matching the Buildings index treatment. Scoped to this
-   page only via the [data-page] hook. */
+   white copy stays legible — matching the Buildings index treatment. The base mock's
+   h1/p are capped at 15ch/46ch — far narrower than the .wrap column itself — so
+   widening .wrap alone does nothing: the actual fix is widening h1/p so each line
+   holds more text, shortening the block (matching About/Buildings). .wrap stays
+   centred (just a wider cap + tighter side padding than the base mock's 1240px/28px)
+   so the block doesn't shift flush-left. Scoped to this page only via the [data-page]
+   hook. */
 .mk[data-page="real-estate"] .hero{align-items:center}
-.mk[data-page="real-estate"] .hero .wrap{padding-top:40px;padding-bottom:40px}
+.mk[data-page="real-estate"] .hero .wrap{max-width:1600px;margin:0 auto;padding-top:40px;padding-bottom:40px;padding-left:40px;padding-right:40px}
+.mk[data-page="real-estate"] .hero h1{max-width:26ch}
+.mk[data-page="real-estate"] .hero p{max-width:60ch}
 .mk[data-page="real-estate"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.5) 0%,rgba(18,16,13,.4) 45%,rgba(18,16,13,.82) 100%)}
 
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}

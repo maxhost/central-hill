@@ -13,6 +13,26 @@ import { FaqSection } from "./components/faq-section";
  */
 
 const PAGE_STYLE = `
+/* Hero: vertically centre the text (the base mock anchors it to the bottom, which
+   reads too tall here). The base mock's h1/p are capped at 15ch/46ch — far narrower
+   than the .wrap column itself — so widening .wrap alone does nothing: the actual
+   fix is widening h1/p so each line holds more text, shortening the block. .wrap
+   stays centred (just a wider cap + tighter side padding than the base mock's
+   1240px/28px) so the block doesn't shift flush-left. The overlay is strengthened
+   and evened out (vs. the base mock's bottom-heavy gradient) since centring the
+   text puts it over the gradient's lightest band. Scoped to this page only via the
+   [data-page] hook. */
+.mk[data-page="about"] .hero{align-items:center}
+.mk[data-page="about"] .hero .wrap{max-width:1600px;margin:0 auto;padding-top:40px;padding-bottom:40px;padding-left:40px;padding-right:40px}
+.mk[data-page="about"] .hero h1{max-width:26ch}
+.mk[data-page="about"] .hero p{max-width:60ch}
+.mk[data-page="about"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.46) 0%,rgba(18,16,13,.36) 45%,rgba(18,16,13,.8) 100%)}
+
+/* "How We Started" sits directly under the hero, so the kernel's generic section
+   top padding (clamp(72px,10vw,150px)) reads as a huge, disconnected gap right
+   after the hero's own bottom padding. Trimmed to a fixed, tighter value. */
+.mk[data-page="about"] #story{padding-top:50px}
+
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
 .mk .story-copy{max-width:760px}
 .mk .story-copy p{font-size:17px;color:var(--ink-soft);margin-bottom:18px}
