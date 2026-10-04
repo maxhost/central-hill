@@ -36,6 +36,13 @@ const PATHS: Record<string, string> = {
     '<path d="M3.5 6.5L12 3.5L20.5 6.5V11.1C20.5 16.0 17.1 20.4 12.4 21.6C12.1 21.7 11.9 21.7 11.6 21.6C6.9 20.4 3.5 16.0 3.5 11.1V6.5Z"/><path d="M9 11.8L11.2 14L15.2 10"/>',
   headset:
     '<path d="M5 13V11C5 7.13401 8.13401 4 12 4C15.866 4 19 7.13401 19 11V13"/><path d="M3 15.5C3 14.3954 3.89543 13.5 5 13.5H6C6.55228 13.5 7 13.9477 7 14.5V18.5C7 19.0523 6.55228 19.5 6 19.5H5C3.89543 19.5 3 18.6046 3 17.5V15.5Z"/><path d="M21 15.5C21 14.3954 20.1046 13.5 19 13.5H18C17.4477 13.5 17 13.9477 17 14.5V18.5C17 19.0523 17.4477 19.5 18 19.5H19C20.1046 19.5 21 18.6046 21 17.5V15.5Z"/><path d="M19 19.5V19.9C19 21.0 18.1 21.9 17 21.9H14"/>',
+  // Owners "Everything handled" showcase (#services)
+  camera:
+    '<rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6l1.5-2h5L16 6"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/>',
+  wrench:
+    '<path d="M19 6l-2 2-4-4 2-2a2.8 2.8 0 0 1 4 4z" transform="translate(-3 0)"/><path d="M3 21l9-9M5 14l5 5"/>',
+  "trending-up": '<path d="M3 17l5-5 4 4 8-9"/><path d="M21 7v5h-5"/>',
   // Generic decorative fallback (the seed's `"spark"` key)
   spark: SPARKS,
 };

@@ -118,9 +118,15 @@ instead and wired in beside `#numbers`/`#testimonials`/`#faq`, outside `.mk`. Ic
 positional mapping (`WHY_ICON_KEYS` in `owners-page.tsx`, resolved through the shared
 `pages/ui/components/icon.tsx` registry) rather than each benefit's own `icon_key` — preserving
 exactly what rendered before; wiring `icon_key` through is a separate, not-yet-requested change.
-`services` and `dashboard` (#technology) — both the home **Image-Showcase** layout
-(4 benefit highlights + CTA beside a 4:5 image with a floating badge; `dashboard` mirrored with the
-image on the left), reproduced as scoped `.mk` CSS for the same reason — `plans` (up to 4 pricing
+`services` is now real JSX too: `core/ui`'s existing `TwoColumnShowcase` (the same "Image
+Showcase" component Home's guests pitch uses — not a new component) via `imagePosition="right"`,
+`tone="alt"`, and the new `badge` prop (Owners' floating-badge text differs from the under-CTA
+caption, unlike Home's guests pitch where one `cta.note` served both — see that component's
+docstring). Benefit icons follow the same positional-mapping precedent as `why`
+(`SERVICES_ICON_KEYS`, four new keys added to the `icon.tsx` registry: `camera`/`calendar`/
+`wrench`/`trending-up`). `dashboard` (#technology) is the **next, separate step** — same layout
+mirrored (`imagePosition="left"`), still the raw-HTML `.owner-showcase.reverse` embed for now, so
+`OWNERS_STYLE`'s `.owner-showcase` CSS block stays until it's ported too — `plans` (up to 4 pricing
 tiers, with extra air before the single full-width highlighted helper band — drizzle 0010 trimmed
 `plans.helpers` 2→1), `journey` — and the closing CTA. Two sections are
 shared React islands rendered **outside** the `.mk` wrapper (so `mock.css` bare-element rules don't

@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { MediaImage, mediaImgTag, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { EditorialSplit, Hero, Reveal, StatBand } from "@core/ui";
+import { EditorialSplit, Hero, Reveal, StatBand, TwoColumnShowcase } from "@core/ui";
 import { ContactDialog } from "@slices/settings/contract";
 import { getOwnersPage, type OwnersContent } from "../contract";
 import { EstFormStepper } from "./components/est-form-stepper";
@@ -14,9 +14,12 @@ import { OwnerEstimateForm } from "./components/owner-estimate-form";
 import { ScrollReveal } from "./components/scroll-reveal";
 import { TestimonialsRow } from "./components/testimonials-row";
 
-// `why.benefits` positional icons (locked design, not `benefit.icon_key` — matches the
-// pre-existing behavior this replaces, see `src/slices/pages/ui/components/icon.tsx`).
+// `why.benefits`/`services.benefits` positional icons (locked design, not each benefit's own
+// `icon_key` — matches the pre-existing behavior this replaces, see
+// `src/slices/pages/ui/components/icon.tsx`).
 const WHY_ICON_KEYS = ["chart", "trophy", "bell", "user", "map-pin", "search"] as const;
+const SERVICES_ICON_KEYS = ["camera", "calendar", "wrench", "trending-up"] as const;
+const SERVICES_BADGE = "Every detail handled — you stay free.";
 
 // Image fallbacks = the approved mock photos, used 1:1 until a real R2 asset is set in the
 // backoffice (the seeded `*_media_id`s have no uploaded asset yet → resolved media is absent).
@@ -151,15 +154,9 @@ const CTA_FALLBACK_ALT = "A Central Hill managed property at golden hour, overlo
 
 // Bespoke per-benefit icons from the locked design — positional (paired by index with the
 // fixed-count benefit lists). Only the benefit *text* is data-driven; the SVGs never change.
-// (`why`'s equivalent is now `WHY_ICON_KEYS` below, resolved through the shared `<Icon>`
-// registry now that `#why` is real JSX — `services`/`dashboard` stay the old raw-HTML-string
-// embed for now, so their icons stay inline SVG strings here.)
-const SERVICES_ICONS = [
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><circle cx="12" cy="13" r="4"/><path d="M8 6l1.5-2h5L16 6"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 6l-2 2-4-4 2-2a2.8 2.8 0 0 1 4 4z" transform="translate(-3 0)"/><path d="M3 21l9-9M5 14l5 5"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M21 7v5h-5"/></svg>`,
-];
+// (`why`/`services`'s equivalents are now `WHY_ICON_KEYS`/`SERVICES_ICON_KEYS` above, resolved
+// through the shared `<Icon>` registry now that those sections are real JSX — `dashboard`
+// stays the old raw-HTML-string embed for now, so its icons stay inline SVG strings here.)
 const DASHBOARD_ICONS = [
   `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.5a2.5 2 0 0 0-2.5-1.5c-1.4 0-2.5.8-2.5 2s1.1 2 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2a2.5 2 0 0 1-2.5-1.5"/></svg>`,
   `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>`,
@@ -194,13 +191,7 @@ function benefitList(
  * in the schema but intentionally not shown (the locked design has no commission display).
  */
 function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageData>): string {
-  const { services, plans, journey, dashboard } = content;
-  const servicesImgTag = mediaImgTag({
-    data: media[services.image_media_id ?? ""],
-    fallbackSrc: SERVICES_FALLBACK_IMG,
-    fallbackAlt: SERVICES_FALLBACK_ALT,
-    sizes: SHOWCASE_SIZES,
-  });
+  const { plans, journey, dashboard } = content;
   const dashboardImgTag = mediaImgTag({
     data: media[dashboard.image_media_id ?? ""],
     fallbackSrc: DASHBOARD_FALLBACK_IMG,
@@ -209,26 +200,6 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
   });
 
   return `
-<section id="services" class="alt owner-showcase">
-  <div class="wrap">
-    <div class="sh-text reveal reveal-io pre-reveal">
-      <h2>${esc(services.headline)}</h2>
-      ${services.subheadline ? `<p class="sh-sub">${esc(services.subheadline)}</p>` : ""}
-      <ul class="sh-list">${benefitList(services.benefits, SERVICES_ICONS)}
-      </ul>
-      <div class="sh-cta"><a class="btn btn-accent" href="#worth">${esc(services.cta.label)} →</a></div>
-      ${services.cta.note ? `<p class="sh-note">${esc(services.cta.note)}</p>` : ""}
-    </div>
-    <div class="sh-media reveal reveal-io pre-reveal">
-      ${servicesImgTag}
-      <div class="sh-badge">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-        <span>Every detail handled — you stay free.</span>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section id="plans">
   <div class="wrap">
     <div class="sec-head center reveal reveal-io pre-reveal">
@@ -360,7 +331,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
-  const { hero, earnings_form, stats, why } = content;
+  const { hero, earnings_form, stats, why, services } = content;
   const faqGroupKey = content.faq_group_key ?? "";
 
   const whyItems = why.benefits.map((b, i) => ({
@@ -368,6 +339,13 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
     title: b.title,
     description: b.description,
   }));
+
+  const servicesBullets = services.benefits.map((b, i) => ({
+    icon: <Icon name={SERVICES_ICON_KEYS[i]} className="mt-0.5 h-[26px] w-[26px] flex-none text-accent-deep" />,
+    title: b.title,
+    description: b.description,
+  }));
+  const servicesMedia = media[services.image_media_id ?? ""];
 
   const heroMedia = media[hero.image_media_id];
   // Authored with `;` between phrases so the design's stacked hero title ("Your Property" /
@@ -469,6 +447,44 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
           secondaryCta={{ href: "#start", label: why.cta_secondary.label }}
           note={why.cta_primary.note}
         />
+      </div>
+      {/*
+       * "Everything handled. Nothing overlooked." — `core/ui`'s existing `TwoColumnShowcase`
+       * (the same "Image Showcase" component Home's guests pitch uses), not a new component:
+       * its `imagePosition` prop already supports mirroring, which `dashboard`/#technology
+       * (still the old raw-HTML embed, a separate follow-up) will reuse with
+       * `imagePosition="left"`. Wrapped in `<Reveal>` at this call site, same as Home wraps
+       * `<GuestsSection>` — unlike `EditorialSplit`, nothing here needs `position:sticky`, so
+       * there's no reason to wire the animation inside the component itself.
+       */}
+      <div id="services" style={{ scrollMarginTop: 130 }}>
+        <Reveal label="owners-services">
+          <TwoColumnShowcase
+            headline={services.headline}
+            body={services.subheadline}
+            bullets={servicesBullets}
+            cta={{ href: "#worth", label: `${services.cta.label} →`, note: services.cta.note }}
+            badge={SERVICES_BADGE}
+            tone="alt"
+            imagePosition="right"
+            image={
+              servicesMedia ? (
+                <MediaImage
+                  data={servicesMedia}
+                  className="aspect-[4/5] w-full rounded-sm object-cover"
+                  sizes={SHOWCASE_SIZES}
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+                <img
+                  src={SERVICES_FALLBACK_IMG}
+                  alt={SERVICES_FALLBACK_ALT}
+                  className="aspect-[4/5] w-full rounded-sm object-cover"
+                />
+              )
+            }
+          />
+        </Reveal>
       </div>
       <div className="mk" data-page="owners">
         <style dangerouslySetInnerHTML={{ __html: OWNERS_STYLE }} />

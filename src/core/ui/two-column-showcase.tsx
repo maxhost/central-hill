@@ -16,7 +16,10 @@ import { Section } from "./section";
  * Purely presentational, per the `core/ui` ground rule: no `@core/media`, no slice icon
  * registry, no i18n. `image` and each bullet's `icon` are caller-built `ReactNode`s (exactly
  * like `PropertyCard`/`Carousel` take their slides) — the caller resolves media + icon lookups
- * and passes the finished elements in.
+ * and passes the finished elements in. Second real consumer: Owners' `services`/`dashboard`
+ * showcases (`owners-page.tsx`) — `imagePosition="left"` mirrors the layout for `dashboard`,
+ * no new component needed. Their floating-badge text differs from the under-CTA caption
+ * (unlike Home's guests pitch, where one `cta.note` always served both), hence `badge`.
  */
 
 export type TwoColumnShowcaseBullet = {
@@ -29,7 +32,8 @@ export type TwoColumnShowcaseBullet = {
 export type TwoColumnShowcaseCta = {
   href: string;
   label: string;
-  /** Helper copy under the CTA button; also shown as the image's floating reassurance badge. */
+  /** Helper copy under the CTA button; also the image's floating badge text, unless the
+   * caller passes its own `badge` (Owners' services/dashboard showcases: the two differ). */
   note?: string;
 };
 
@@ -51,6 +55,7 @@ export function TwoColumnShowcase({
   body,
   bullets,
   cta,
+  badge,
   image,
   imagePosition = "right",
   tone = "default",
@@ -64,6 +69,8 @@ export function TwoColumnShowcase({
   /** Generalized name for the old `benefits`; caller caps the count it passes. */
   bullets?: TwoColumnShowcaseBullet[];
   cta?: TwoColumnShowcaseCta;
+  /** Image's floating badge text, when it must differ from `cta.note` (defaults to it). */
+  badge?: string;
   /** Caller's own `<MediaImage>`/`<img>` (with its own fallback logic already applied). */
   image: ReactNode;
   /** Desktop column order only — mobile always stacks the image first (CSS-only, unchanged). */
@@ -77,6 +84,7 @@ export function TwoColumnShowcase({
 }) {
   const toneClass = tone === "alt" ? ALT_BG : undefined;
   const imageOnLeft = imagePosition === "left";
+  const badgeText = badge ?? cta?.note;
 
   const content = (
     <Container>
@@ -111,10 +119,10 @@ export function TwoColumnShowcase({
 
         <div className={cn("relative order-first", !imageOnLeft && "lg:order-last")}>
           {image}
-          {cta?.note ? (
+          {badgeText ? (
             <div className="absolute -bottom-5 -left-4 hidden max-w-[15rem] items-start gap-2.5 rounded-sm border border-line bg-surface px-5 py-4 shadow-xl sm:flex">
               <CheckIcon className="mt-0.5 h-5 w-5 shrink-0 text-accent-deep" />
-              <span className="text-sm leading-snug text-ink">{cta.note}</span>
+              <span className="text-sm leading-snug text-ink">{badgeText}</span>
             </div>
           ) : null}
         </div>
