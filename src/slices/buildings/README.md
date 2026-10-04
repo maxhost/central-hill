@@ -48,21 +48,26 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
 ## Routes
 
 - `/{locale}/buildings` — listing (`ui/buildings-listing.tsx`): the approved
-  `mock/buildings.html` design. The **hero is real JSX** — `core/ui`'s `<Hero compact
-  align="center">`, single-column (no `aside`), ported 1:1 from the old `.mk`-scoped overrides
-  (now deleted) via five additive `Hero` props (`align`/`overlayClassName`/`headlineClassName`/
-  `subtitleClassName`/`wrapClassName` — see `core/ui/hero.tsx`'s docstring); this page has no
-  `page_content` row, so every hero string/image is still a fixed literal. The rest of the
-  chrome (owner CTA + stats + earnings calculator) stays the mock's static `.mk` markup, with a
-  **DB-driven** card grid generated from `listBuildings(locale)` into the locked `.pcard`
-  markup. Client direction (B6): the city name is omitted from the
-  card meta line (`street · neighbourhood · N apartments`); the city/neighbourhood filter bar
-  is hidden (kept commented out in source for later DB wiring); a building with no R2 cover
-  yet falls back to `public/placeholders/building.svg` so cards never render empty. The
-  Tailwind `BuildingCard`/`BuildingFilter` components are a different look, kept for other
-  consumers. A building with **booking enabled** (admin toggle + an `avantio_url`) makes its
-  whole card link out to that external booking URL in a new tab (`target="_blank"`) instead of
-  the internal detail page; `BuildingSummary.booking = { enabled, url }` carries this.
+  `mock/buildings.html` design. The **hero and building grid are real JSX**, not interpolated
+  markup — only the owner CTA + stats + earnings calculator chrome is still the mock's static
+  `.mk` markup. The hero is `core/ui`'s `<Hero compact align="center">`, single-column (no
+  `aside`), ported 1:1 from the old `.mk`-scoped overrides (now deleted) via five additive
+  `Hero` props (`align`/`overlayClassName`/`headlineClassName`/`subtitleClassName`/
+  `wrapClassName` — see `core/ui/hero.tsx`'s docstring); this page has no `page_content` row,
+  so every hero string/image is still a fixed literal. The grid is `./components/
+  building-listing-card.tsx`'s `BuildingListingCard` inside `core/ui`'s `Section`/`Container`
+  (one `Reveal`, no per-card stagger) fed from `listBuildings(locale)` — the locked `.pcard`
+  design ported to Tailwind, **purpose-built for this grid**: distinct from both `core/ui`'s
+  `PropertyCard` (Home/Guest's smaller featured-portfolio carousel card) and this slice's own
+  `building-card.tsx` (`BuildingCard` — dead code, no real consumer, a third different-again
+  look; left as-is rather than deleted, since it wasn't this task's target). Client direction
+  (B6): the city name is omitted from the card meta line (`street · neighbourhood ·
+  N apartments`); the city/neighbourhood filter bar is hidden (kept commented out in source for
+  later DB wiring); a building with no R2 cover yet falls back to
+  `public/placeholders/building.svg` so cards never render empty. A building with **booking
+  enabled** (admin toggle + an `avantio_url`) makes its whole card link out to that external
+  booking URL in a new tab (`target="_blank"`) instead of the internal detail page;
+  `BuildingSummary.booking = { enabled, url }` carries this.
 - `/{locale}/buildings/{slug}` — detail (`ui/building-detail.tsx`): the approved
   `mock/building-detail.html` design, now **DB-driven** from `getBuildingBySlug(locale, slug)`
   (`notFound()` when unknown/unpublished): hero (placeholder cover when no R2 image), gallery,

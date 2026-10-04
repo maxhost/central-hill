@@ -2,11 +2,11 @@ import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { Hero } from "@core/ui";
+import { Container, Hero, Reveal, Section } from "@core/ui";
 import { EstFormStepper, EstFormWizard } from "@slices/pages/contract";
 import { ContactDialog } from "@slices/settings/contract";
-import type { BuildingSummary } from "../contract";
 import { listBuildings } from "../server/queries";
+import { BuildingListingCard } from "./components/building-listing-card";
 import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
@@ -23,26 +23,17 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * hero string/image is still a fixed literal, same as before this port — only the markup
  * changed, not the content model.
  *
- * Card markup is the locked mock `.pcard` design (the Tailwind `BuildingCard` is a
- * different look — kept for other consumers); DB content is HTML-escaped before
- * interpolation. Client direction (B6):
+ * The **building grid is real JSX** too: `./components/building-listing-card.tsx`'s
+ * `BuildingListingCard`, the locked mock `.pcard` design ported 1:1 — purpose-built for this
+ * grid (not `core/ui`'s `PropertyCard`, Home/Guest's smaller featured-portfolio card, and not
+ * the slice's own unused `building-card.tsx`; see that new file's docstring for why). Client
+ * direction (B6):
  * - the city name is NOT shown — the meta line is `street · neighbourhood · N apartments`;
  * - the location filter bar is hidden (kept in source, commented out, not deleted);
  * - when a building has no R2 cover yet (`cover === null`) a Warm-Editorial placeholder
  *   SVG (`/placeholders/building.svg`) is shown so the card never renders empty.
  * Cards link to each building's real per-locale detail slug.
  */
-
-/** Minimal HTML escaper for interpolating DB content into the `.mk` markup string. */
-function esc(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-const PLACEHOLDER_COVER = "/placeholders/building.svg";
 
 // Hero background — no schema field (this page has no `page_content` row), so it's a fixed
 // Unsplash photo, same as before this port.
@@ -54,46 +45,6 @@ const HERO_ALT = "Rooftops and the river over Lisbon's historic centre at golden
 const CALC_FALLBACK_IMG =
   "https://images.pexels.com/photos/1571468/pexels-photo-1571468.jpeg?auto=compress&cs=tinysrgb&w=1200";
 const CALC_FALLBACK_ALT = "A bright, professionally staged Central Hill managed apartment";
-
-// `.pf-grid` is 3 columns inside the 1240px `.wrap` (28px padding, 1px gaps),
-// 2 columns under 980px and 1 under 680px — see `mock.css`.
-const CARD_SIZES = "(max-width: 680px) 100vw, (max-width: 980px) 50vw, 394px";
-
-interface CardLabels {
-  isNew: string;
-  viewMore: string;
-  apartments: (count: number) => string;
-}
-
-/** One `.pcard` built from a published building row (city omitted per client direction B6).
- *  When the building has booking enabled + an external URL, the whole card links out to it
- *  (new tab) instead of the internal detail page. */
-function cardHtml(b: BuildingSummary, locale: Locale, labels: CardLabels): string {
-  const coverTag = mediaImgTag({
-    data: b.cover,
-    fallbackSrc: PLACEHOLDER_COVER,
-    fallbackAlt: b.name,
-    sizes: CARD_SIZES,
-  });
-  const meta = [b.streetAddress, b.neighbourhood?.name, labels.apartments(b.stats.apartments)]
-    .filter(Boolean)
-    .join(" · ");
-  const bookOut = b.booking.enabled && Boolean(b.booking.url);
-  const href = bookOut ? b.booking.url! : `/${locale}/buildings/${b.slug}`;
-  const targetAttr = bookOut ? ' target="_blank" rel="noopener noreferrer"' : "";
-  return `
-      <a class="pcard" href="${esc(href)}"${targetAttr}>
-        <div class="ph">${
-          b.isNew ? `<span class="badge">★ ${esc(labels.isNew)}</span>` : ""
-        }${coverTag}</div>
-        <div class="pbody">
-          <h3>${esc(b.name)}</h3>
-          <div class="pmeta">${esc(meta)}</div>
-          <p style="font-size:14px;color:var(--ink-soft);margin-top:10px">${esc(b.teaser)}</p>
-          <div class="view">${esc(labels.viewMore)} →</div>
-        </div>
-      </a>`;
-}
 
 const PAGE_STYLE = `
 /* Page-only: filter / IA bar (decorative, kernel-variable based) */
@@ -158,12 +109,12 @@ const PAGE_STYLE = `
 @media(max-width:980px){.mk .calc-wrap{grid-template-columns:1fr;gap:34px}.mk .calc-media{order:-1}}
 @media(max-width:520px){.mk .calc-band .est-two{grid-template-columns:1fr}}
 
-/* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
-   the rest, via <ScrollReveal page="buildings">/scroll-reveal.tsx) — same pattern already
-   applied to About/Guests/Real Estate. The building cards (.pcard) already have their own
-   hover (lift + image zoom) from the shared mock.css, so that's left as-is — only the
-   scroll-in entrance was missing. The hidden state is baked straight into the
-   server-rendered markup (.pre-reveal, applied on the elements below) so there's no flash
+/* Page-wide entrance motion for the remaining raw-markup sections (owner CTA band, stats,
+   earnings calculator), immediate on load for above-the-fold content, on scroll for the
+   rest, via <ScrollReveal page="buildings">/scroll-reveal.tsx — same pattern already applied
+   to About/Guests/Real Estate. The building grid now animates separately via core/ui's
+   Reveal component (real JSX, outside .mk — see BuildingListingCard's hover, which is
+   Tailwind on the card itself, not .pcard's mock.css rule). The hidden state is baked straight into
    of visible-then-hidden; the <noscript> rule keeps content visible with JS off. Scoped to
    [data-page="buildings"] so it never touches the shared, neutralised .reveal rule in
    mock.css or any other page. */
@@ -171,7 +122,7 @@ const PAGE_STYLE = `
 .mk[data-page="buildings"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
 `;
 
-function BODY(locale: Locale, cardsHtml: string): string {
+function BODY(locale: Locale): string {
   const calcImg = mediaImgTag({
     fallbackSrc: CALC_FALLBACK_IMG,
     fallbackAlt: CALC_FALLBACK_ALT,
@@ -200,14 +151,6 @@ function BODY(locale: Locale, cardsHtml: string): string {
   </div>
 </div>
 -->
-
-<!-- BUILDING GRID -->
-<section>
-  <div class="wrap">
-    <div class="pf-grid reveal reveal-io reveal-stagger pre-reveal">${cardsHtml}
-    </div>
-  </div>
-</section>
 
 <!-- OWNER CTA BAND -->
 <section style="padding-top:0">
@@ -341,16 +284,6 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
   const [buildings, t] = await Promise.all([listBuildings(locale), getTranslations("buildings")]);
 
-  const labels: CardLabels = {
-    isNew: t("new"),
-    viewMore: t("viewMore"),
-    apartments: (count) => t("apartments", { count }),
-  };
-
-  const cardsHtml = buildings.length
-    ? `\n${buildings.map((b) => cardHtml(b, locale, labels)).join("\n")}\n    `
-    : `\n      <p style="grid-column:1/-1;color:var(--ink-soft)">${esc(t("empty"))}</p>\n    `;
-
   return (
     <Fragment>
       {/*
@@ -387,6 +320,28 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
           />
         }
       />
+      {/*
+       * Real JSX — the building grid, `./components/building-listing-card.tsx`'s
+       * `BuildingListingCard` (the locked `.pcard` design, ported to Tailwind) inside
+       * `core/ui`'s `Section`/`Container`, wrapped in one `<Reveal>` (the simplification
+       * already used for every other migrated section's entrance animation this session,
+       * e.g. Owners' `StepGallery`/`StatBand` — not a per-card stagger).
+       */}
+      <Section>
+        <Container>
+          {buildings.length > 0 ? (
+            <Reveal label="buildings-grid">
+              <div className="grid grid-cols-1 gap-[26px] min-[681px]:grid-cols-2 min-[981px]:grid-cols-3">
+                {buildings.map((b) => (
+                  <BuildingListingCard key={b.id} building={b} locale={locale} />
+                ))}
+              </div>
+            </Reveal>
+          ) : (
+            <p className="text-ink-soft">{t("empty")}</p>
+          )}
+        </Container>
+      </Section>
       <div className="mk" data-page="buildings">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <noscript>
@@ -399,7 +354,7 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
         <ScrollReveal page="buildings" />
         <EstFormStepper />
         <EstFormWizard />
-        <div dangerouslySetInnerHTML={{ __html: BODY(locale, cardsHtml) }} />
+        <div dangerouslySetInnerHTML={{ __html: BODY(locale) }} />
       </div>
     </Fragment>
   );
