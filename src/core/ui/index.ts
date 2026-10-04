@@ -23,3 +23,7 @@ export { DualCtaPanels, type DualCtaPanel } from "./dual-cta-panels";
 export { NavBar, type NavLinkEntry } from "./nav-bar";
 /** Mobile navigation drawer shell — see `mobile-drawer.tsx`. */
 export { MobileDrawer, type NavCta, type NavEntry } from "./mobile-drawer";
+/** Property card (image/badge/name/meta/view label) — fed as `Carousel` slides. */
+export { PropertyCard } from "./property-card";
+/** Presentational stats/count-up band (dark feature band + optional title). */
+export { StatBand } from "./stat-band";

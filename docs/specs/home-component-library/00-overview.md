@@ -69,9 +69,9 @@ src/core/ui/
 | 1 | `Reveal`, `CountUp` | [`01-motion-primitives.md`](./01-motion-primitives.md) | lowest | ✅ IMPLEMENTED (2026-10-03) |
 | 2 | `Carousel` | [`04-carousel.md`](./04-carousel.md) | low-medium | ✅ IMPLEMENTED (2026-10-03) |
 | 3 | `Hero` | [`02-hero.md`](./02-hero.md) | lowest | already pure, path move + rename only |
-| 4 | `StatBand` | [`03-stat-band.md`](./03-stat-band.md) | medium | needs the presentational/composer split |
+| 4 | `StatBand` | [`03-stat-band.md`](./03-stat-band.md) | medium | ✅ IMPLEMENTED (2026-10-04) |
 | 5 | `TwoColumnShowcase` | [`05-two-column-showcase.md`](./05-two-column-showcase.md) | medium | ✅ IMPLEMENTED (2026-10-03) |
-| 6 | `PropertyCard` | [`06-property-card.md`](./06-property-card.md) | medium | pulled out of `FeaturedPortfolio`'s inline card |
+| 6 | `PropertyCard` | [`06-property-card.md`](./06-property-card.md) | medium | ✅ IMPLEMENTED (2026-10-04) |
 | 7 | `DualCtaPanels` | [`07-dual-cta-panels.md`](./07-dual-cta-panels.md) | medium | ✅ IMPLEMENTED (2026-10-03) |
 | 8 | `NavBar`, `MobileDrawer` | [`08-nav-chrome.md`](./08-nav-chrome.md) | higher, **optional** | ✅ IMPLEMENTED (2026-10-03) |
 
