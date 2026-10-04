@@ -85,8 +85,21 @@ function cardHtml(b: BuildingSummary, locale: Locale, labels: CardLabels): strin
 const PAGE_STYLE = `
 /* Hero: strengthen the dark overlay over the background photo so the white headline/
    eyebrow/intro stay legible (the bright Lisbon rooftops washed out the base gradient).
-   Scoped to this page only — overrides the kernel \`.mk .hero::after\` for Buildings. */
-.mk[data-page="buildings"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.46) 0%,rgba(18,16,13,.34) 45%,rgba(18,16,13,.88) 100%)}
+   Evened out further vs. the original bottom-heavy gradient since centring the text
+   (below) puts it over what used to be the gradient's lightest band. Scoped to this
+   page only — overrides the kernel \`.mk .hero::after\` for Buildings. */
+.mk[data-page="buildings"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.5) 0%,rgba(18,16,13,.46) 45%,rgba(18,16,13,.88) 100%)}
+
+/* Vertically centre the text (the base mock anchors it to the bottom, which reads too
+   tall here). The base mock's h1/p are capped at 15ch/46ch — far narrower than the
+   .wrap column itself — so widening .wrap alone does nothing: the actual fix is
+   widening h1/p so each line holds more text, shortening the block (matching
+   Real Estate/About). .wrap stays centred (just a wider cap + tighter side padding
+   than the base mock's 1240px/28px) so the block doesn't shift flush-left. */
+.mk[data-page="buildings"] .hero{align-items:center}
+.mk[data-page="buildings"] .hero .wrap{max-width:1600px;margin:0 auto;padding-top:40px;padding-bottom:40px;padding-left:40px;padding-right:40px}
+.mk[data-page="buildings"] .hero h1{max-width:26ch}
+.mk[data-page="buildings"] .hero p{max-width:60ch}
 
 /* "Contact Us" CTA under the hero copy — the button is a portaled Tailwind ContactDialog
    trigger (see hero-contact-cta.tsx), so it needs its padding restored: the kernel's
