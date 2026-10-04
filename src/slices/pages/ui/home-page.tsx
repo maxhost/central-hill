@@ -1,14 +1,13 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
-import { ButtonLink, Reveal } from "@core/ui";
+import { ButtonLink, Hero, Reveal } from "@core/ui";
 import { AvantioSearchBar } from "@slices/settings/contract";
 import { getHomePage } from "../contract";
 import { DualCta } from "./components/dual-cta";
 import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
 import { GuestsSection } from "./components/guests-section";
-import { PageHero } from "./components/hero";
 import { ServicesCarousel } from "./components/services-carousel";
 import { StatsBand } from "./components/stats-band";
 
@@ -51,7 +50,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
 
   return (
     <main>
-      <PageHero
+      <Hero
         image={null}
         videoUrl={media[hero.video_media_id]?.url ?? HERO_FALLBACK_VIDEO}
         posterUrl={HERO_FALLBACK_POSTER}

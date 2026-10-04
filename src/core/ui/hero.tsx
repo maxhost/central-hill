@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { type MediaImageData, MediaImage } from "@core/media";
-import { Container, cn } from "@core/ui";
+import { Container } from "./container";
+import { cn } from "./cn";
 
 /**
  * Page hero (S9). A full-width media band with an overlaid editorial headline. Supports
@@ -18,7 +19,7 @@ import { Container, cn } from "@core/ui";
  * is a placeholder that resolves to nothing); mark such usages TEMP at the call site.
  * `eyebrowPill` renders the eyebrow as the mock's solid accent badge ("★ …").
  */
-export function PageHero({
+export function Hero({
   image,
   imageUrl,
   videoUrl,

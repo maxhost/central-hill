@@ -1,8 +1,9 @@
 # Spec index — Home's sections as a reusable `core/ui` component library
 
-> **Scope:** cross-cutting (`core/ui` kernel + `pages`/`settings` slices) · **Status:** 🟢 ADR 0033
-> Accepted (2026-10-03, `docs/decisions/README.md#0033`) — implementation underway, tracked
-> per-component below.
+> **Scope:** cross-cutting (`core/ui` kernel + `pages`/`settings` slices) · **Status:** ✅ ADR 0033
+> Accepted (2026-10-03, `docs/decisions/README.md#0033`) — **all 8 components implemented**
+> (2026-10-03/04), see the table in §5. Not yet done: a manual browser pass across the 4
+> locales (every agent flagged this as unverified — typecheck/lint only).
 > **Page under review:** `http://localhost:4455/es` = `/[locale]` (Home), composed in
 > `src/slices/pages/ui/home-page.tsx`.
 > **Explicitly scoped to Home only.** The `.mk`-HTML-string pages (About/Guests/Owners/Real
@@ -68,7 +69,7 @@ src/core/ui/
 |---|---|---|---|---|
 | 1 | `Reveal`, `CountUp` | [`01-motion-primitives.md`](./01-motion-primitives.md) | lowest | ✅ IMPLEMENTED (2026-10-03) |
 | 2 | `Carousel` | [`04-carousel.md`](./04-carousel.md) | low-medium | ✅ IMPLEMENTED (2026-10-03) |
-| 3 | `Hero` | [`02-hero.md`](./02-hero.md) | lowest | already pure, path move + rename only |
+| 3 | `Hero` | [`02-hero.md`](./02-hero.md) | lowest | ✅ IMPLEMENTED (2026-10-04) |
 | 4 | `StatBand` | [`03-stat-band.md`](./03-stat-band.md) | medium | ✅ IMPLEMENTED (2026-10-04) |
 | 5 | `TwoColumnShowcase` | [`05-two-column-showcase.md`](./05-two-column-showcase.md) | medium | ✅ IMPLEMENTED (2026-10-03) |
 | 6 | `PropertyCard` | [`06-property-card.md`](./06-property-card.md) | medium | ✅ IMPLEMENTED (2026-10-04) |

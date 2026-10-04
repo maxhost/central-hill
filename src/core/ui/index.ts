@@ -27,3 +27,5 @@ export { MobileDrawer, type NavCta, type NavEntry } from "./mobile-drawer";
 export { PropertyCard } from "./property-card";
 /** Presentational stats/count-up band (dark feature band + optional title). */
 export { StatBand } from "./stat-band";
+/** Page hero (full-bleed video/image band with overlaid editorial headline) — never animated. */
+export { Hero } from "./hero";
