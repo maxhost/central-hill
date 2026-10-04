@@ -20,6 +20,8 @@ import { TestimonialsRow } from "./components/testimonials-row";
 const WHY_ICON_KEYS = ["chart", "trophy", "bell", "user", "map-pin", "search"] as const;
 const SERVICES_ICON_KEYS = ["camera", "calendar", "wrench", "trending-up"] as const;
 const SERVICES_BADGE = "Every detail handled — you stay free.";
+const DASHBOARD_ICON_KEYS = ["dollar-circle", "calendar-lines", "bar-chart", "bell-alt"] as const;
+const DASHBOARD_BADGE = "Real-time data, from anywhere.";
 
 // Image fallbacks = the approved mock photos, used 1:1 until a real R2 asset is set in the
 // backoffice (the seeded `*_media_id`s have no uploaded asset yet → resolved media is absent).
@@ -53,23 +55,6 @@ const esc = (s: string) =>
 
 const OWNERS_STYLE = `
 .mk [id]{scroll-margin-top:130px}
-.mk .owner-showcase .wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
-.mk .owner-showcase .sh-text h2{font-size:clamp(28px,3.4vw,44px);line-height:1.12;margin:0;color:var(--ink)}
-.mk .owner-showcase .sh-sub{margin-top:18px;font-size:18px;line-height:1.6;color:var(--ink-soft)}
-.mk .owner-showcase .sh-list{list-style:none;margin:32px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:22px 32px}
-.mk .owner-showcase .sh-list li{display:flex;gap:14px}
-.mk .owner-showcase .sh-list .ic{width:26px;height:26px;flex:0 0 auto;margin-top:2px;color:var(--accent-deep)}
-.mk .owner-showcase .sh-list h3{font-size:17px;margin:0 0 5px;color:var(--ink)}
-.mk .owner-showcase .sh-list p{font-size:14px;line-height:1.55;color:var(--ink-soft);margin:0}
-.mk .owner-showcase .sh-cta{margin-top:36px}
-.mk .owner-showcase .sh-note{margin-top:14px;font-size:14px;color:var(--ink-soft)}
-.mk .owner-showcase .sh-media{position:relative}
-.mk .owner-showcase .sh-media img{aspect-ratio:4/5;width:100%;object-fit:cover;border-radius:3px;display:block}
-.mk .owner-showcase .sh-badge{position:absolute;bottom:-20px;left:-16px;display:flex;align-items:flex-start;gap:10px;max-width:15rem;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 20px;box-shadow:0 24px 50px -20px rgba(0,0,0,.4)}
-.mk .owner-showcase .sh-badge .ic{width:20px;height:20px;flex:0 0 auto;margin-top:1px;color:var(--accent-deep)}
-.mk .owner-showcase .sh-badge span{font-size:14px;line-height:1.4;color:var(--ink)}
-.mk .owner-showcase.reverse .sh-media{order:-1}
-.mk .owner-showcase.reverse .sh-badge{left:auto;right:-16px}
 .mk .plans{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;align-items:start}
 .mk .plan{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:34px 26px;display:flex;flex-direction:column;position:relative;transition:.3s var(--ease)}
 .mk .plan:hover{transform:translateY(-4px);box-shadow:0 24px 50px -30px rgba(0,0,0,.42)}
@@ -108,8 +93,8 @@ const OWNERS_STYLE = `
 .mk .faq .faq-a{padding:0 44px 26px 4px;font-size:15.5px;color:var(--ink-soft);max-width:70ch}
 .mk .cta-band .cta-wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;text-align:left;max-width:var(--max)}
 .mk .cta-band .cta-media img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:3px;display:block}
-@media(max-width:980px){.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helper{flex-direction:column;align-items:flex-start;gap:22px;padding:32px 30px}.mk .steps{grid-template-columns:1fr 1fr}.mk .cta-band .cta-wrap{grid-template-columns:1fr;gap:34px;text-align:center}.mk .cta-band .cta-copy p{margin-left:auto;margin-right:auto}}
-@media(max-width:680px){.mk .owner-showcase .sh-list{grid-template-columns:1fr}.mk .plans{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
+@media(max-width:980px){.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helper{flex-direction:column;align-items:flex-start;gap:22px;padding:32px 30px}.mk .steps{grid-template-columns:1fr 1fr}.mk .cta-band .cta-wrap{grid-template-columns:1fr;gap:34px;text-align:center}.mk .cta-band .cta-copy p{margin-left:auto;margin-right:auto}}
+@media(max-width:680px){.mk .plans{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
 
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
    the rest, via <ScrollReveal page="owners">/scroll-reveal.tsx) — same pattern already
@@ -131,9 +116,11 @@ const DASHBOARD_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=72";
 const DASHBOARD_FALLBACK_ALT = "Owner dashboard showing live revenue and occupancy";
 
-// The showcase image sits in one of two equal columns inside the 1240px `.wrap`
-// (28px padding, 64px gap) and goes full-width under 980px — see `.owner-showcase`.
+// The closing CTA band's image (still the raw-HTML `.cta-band` embed, `980px` breakpoint).
 const SHOWCASE_SIZES = "(max-width: 980px) 100vw, 560px";
+// `services`/`dashboard`'s showcase images: one of `TwoColumnShowcase`'s two `lg:` (1024px)
+// columns — same value Home's `guests-section.tsx` uses for the same component.
+const TWO_COL_SHOWCASE_SIZES = "(max-width: 1024px) 100vw, 560px";
 
 // TEMP: Pexels placeholders (client direction — trying a photo-background treatment on the
 // "growth path" cards; #core/media assets not uploaded yet) — swap for real R2 assets once
@@ -152,35 +139,6 @@ const CTA_FALLBACK_IMG =
   "https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=1200";
 const CTA_FALLBACK_ALT = "A Central Hill managed property at golden hour, overlooking the coast";
 
-// Bespoke per-benefit icons from the locked design — positional (paired by index with the
-// fixed-count benefit lists). Only the benefit *text* is data-driven; the SVGs never change.
-// (`why`/`services`'s equivalents are now `WHY_ICON_KEYS`/`SERVICES_ICON_KEYS` above, resolved
-// through the shared `<Icon>` registry now that those sections are real JSX — `dashboard`
-// stays the old raw-HTML-string embed for now, so its icons stay inline SVG strings here.)
-const DASHBOARD_ICONS = [
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.5a2.5 2 0 0 0-2.5-1.5c-1.4 0-2.5.8-2.5 2s1.1 2 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2a2.5 2 0 0 1-2.5-1.5"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h3M8 17h6"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>`,
-];
-
-/** Render a benefit list (`<li>` = positional SVG + title/description), pairing each item with
- * its design icon by index. Used by the `why` / `services` / `dashboard` sections. */
-function benefitList(
-  items: ReadonlyArray<{ title: string; description: string }>,
-  icons: readonly string[],
-): string {
-  return items
-    .map(
-      (b, i) => `
-      <li>
-        ${icons[i] ?? ""}
-        <div><h3>${esc(b.title)}</h3><p>${esc(b.description)}</p></div>
-      </li>`,
-    )
-    .join("");
-}
-
 /**
  * Top body sections (hero → technology), all wired to the owners `page_content` row while
  * preserving the locked design markup/CSS/SVGs verbatim. The bespoke per-benefit SVGs and the
@@ -191,13 +149,7 @@ function benefitList(
  * in the schema but intentionally not shown (the locked design has no commission display).
  */
 function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageData>): string {
-  const { plans, journey, dashboard } = content;
-  const dashboardImgTag = mediaImgTag({
-    data: media[dashboard.image_media_id ?? ""],
-    fallbackSrc: DASHBOARD_FALLBACK_IMG,
-    fallbackAlt: DASHBOARD_FALLBACK_ALT,
-    sizes: SHOWCASE_SIZES,
-  });
+  const { plans, journey } = content;
 
   return `
 <section id="plans">
@@ -270,26 +222,6 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
   </div>
 </section>
 
-<section id="technology" class="owner-showcase reverse">
-  <div class="wrap">
-    <div class="sh-text reveal reveal-io pre-reveal">
-      <h2>${esc(dashboard.headline)}</h2>
-      ${dashboard.subheadline ? `<p class="sh-sub">${esc(dashboard.subheadline)}</p>` : ""}
-      <ul class="sh-list">${benefitList(dashboard.benefits, DASHBOARD_ICONS)}
-      </ul>
-      <div class="sh-cta"><a class="btn btn-accent" href="#worth">${esc(dashboard.cta.label)} →</a></div>
-      ${dashboard.cta.note ? `<p class="sh-note">${esc(dashboard.cta.note)}</p>` : ""}
-    </div>
-    <div class="sh-media reveal reveal-io pre-reveal">
-      ${dashboardImgTag}
-      <div class="sh-badge">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-        <span>Real-time data, from anywhere.</span>
-      </div>
-    </div>
-  </div>
-</section>
-
 `;
 }
 
@@ -331,7 +263,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
-  const { hero, earnings_form, stats, why, services } = content;
+  const { hero, earnings_form, stats, why, services, dashboard } = content;
   const faqGroupKey = content.faq_group_key ?? "";
 
   const whyItems = why.benefits.map((b, i) => ({
@@ -346,6 +278,13 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
     description: b.description,
   }));
   const servicesMedia = media[services.image_media_id ?? ""];
+
+  const dashboardBullets = dashboard.benefits.map((b, i) => ({
+    icon: <Icon name={DASHBOARD_ICON_KEYS[i]} className="mt-0.5 h-[26px] w-[26px] flex-none text-accent-deep" />,
+    title: b.title,
+    description: b.description,
+  }));
+  const dashboardMedia = media[dashboard.image_media_id ?? ""];
 
   const heroMedia = media[hero.image_media_id];
   // Authored with `;` between phrases so the design's stacked hero title ("Your Property" /
@@ -472,7 +411,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
                 <MediaImage
                   data={servicesMedia}
                   className="aspect-[4/5] w-full rounded-sm object-cover"
-                  sizes={SHOWCASE_SIZES}
+                  sizes={TWO_COL_SHOWCASE_SIZES}
                 />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
@@ -497,6 +436,39 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
         </noscript>
         <ScrollReveal page="owners" />
         <div dangerouslySetInnerHTML={{ __html: ownersBodyTop(content, media) }} />
+      </div>
+      {/*
+       * "Your property, always in sight" — the same `TwoColumnShowcase` as `#services` above,
+       * mirrored (`imagePosition="left"`). This was the last `.owner-showcase` raw-HTML user,
+       * so that CSS block is gone from `OWNERS_STYLE` entirely now.
+       */}
+      <div id="technology" style={{ scrollMarginTop: 130 }}>
+        <Reveal label="owners-dashboard">
+          <TwoColumnShowcase
+            headline={dashboard.headline}
+            body={dashboard.subheadline}
+            bullets={dashboardBullets}
+            cta={{ href: "#worth", label: `${dashboard.cta.label} →`, note: dashboard.cta.note }}
+            badge={DASHBOARD_BADGE}
+            imagePosition="left"
+            image={
+              dashboardMedia ? (
+                <MediaImage
+                  data={dashboardMedia}
+                  className="aspect-[4/5] w-full rounded-sm object-cover"
+                  sizes={TWO_COL_SHOWCASE_SIZES}
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+                <img
+                  src={DASHBOARD_FALLBACK_IMG}
+                  alt={DASHBOARD_FALLBACK_ALT}
+                  className="aspect-[4/5] w-full rounded-sm object-cover"
+                />
+              )
+            }
+          />
+        </Reveal>
       </div>
       {/*
        * Shared testimonials marquee + FAQ accordion (same components/visuals as the home

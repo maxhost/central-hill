@@ -43,6 +43,16 @@ const PATHS: Record<string, string> = {
   wrench:
     '<path d="M19 6l-2 2-4-4 2-2a2.8 2.8 0 0 1 4 4z" transform="translate(-3 0)"/><path d="M3 21l9-9M5 14l5 5"/>',
   "trending-up": '<path d="M3 17l5-5 4 4 8-9"/><path d="M21 7v5h-5"/>',
+  // Owners "Your property, always in sight" showcase (#technology)
+  "dollar-circle":
+    '<circle cx="12" cy="12" r="9"/><path d="M12 7v10M14.5 9.5a2.5 2 0 0 0-2.5-1.5c-1.4 0-2.5.8-2.5 2s1.1 2 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2a2.5 2 0 0 1-2.5-1.5"/>',
+  "calendar-lines":
+    '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h3M8 17h6"/>',
+  "bar-chart": '<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
+  // A second, visually distinct bell glyph from `bell` above — kept separate rather than
+  // reused, to preserve this section's exact pre-existing icon (not a near-enough swap).
+  "bell-alt":
+    '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
   // Generic decorative fallback (the seed's `"spark"` key)
   spark: SPARKS,
 };
