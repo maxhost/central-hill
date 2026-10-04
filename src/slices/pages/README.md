@@ -46,9 +46,14 @@ those tags.
 
 Page compositions (`ui/*-page.tsx`): `HomePage`, `OwnersPage`, `GuestPage`, `RealEstatePage`,
 `AboutPage` — each fetches its `getXPage`, `notFound()`s when the row is missing, and lays the
-page out from `content` + `media`. Shared pieces in `ui/components/`:
+page out from `content` + `media`. The shared page hero (full-bleed media band + editorial
+headline) is `core/ui`'s `Hero` (ADR 0033 moved it there from this slice, `hero.tsx` → renamed
+from `PageHero`) — both `HomePage` (video background) and `OwnersPage` (image background +
+`aside` earnings-form card, `compact` headline) render it directly; it is **not** a
+`ui/components/` piece. Other shared pieces in `ui/components/`:
 - presentational (`blocks.tsx`: `SectionHeading`, `FeatureGrid`, `Steps`, `CtaRow`, `Prose`,
-  `Band`; `hero.tsx`: `PageHero` image/video);
+  `Band`; `owner-estimate-form.tsx`: the Owners-hero earnings-estimate card, slotted into
+  `Hero`'s `aside` — markup only, see below);
 - data-composing (`stats-band.tsx` → settings, `testimonials-row.tsx` → testimonials,
   `featured-portfolio.tsx` → buildings, `services-carousel.tsx` → services, `faq-section.tsx`
   → faq, `lead-cta.tsx` → settings contact).
@@ -68,19 +73,37 @@ admin-authored `guest.portfolio` block and `pages.reviews.titleGuests`. Both ren
 the underlying slice has nothing published, so the section disappears rather than showing empty.
 
 The **Owners** page (`owners-page.tsx`) is **DB-driven** (mock embedded 1:1, but every section now
-reads its values from the owners `page_content` row): the body is built by `ownersBodyTop(content,
-media)` which interpolates the resolved content into the locked design markup verbatim — the bespoke
-per-benefit SVGs, the "★" badge glyph and CTA "→" stay design, in-page CTAs keep their `#worth`/
-`#start` anchors, and the form *fields* stay fixed in code (`lead.kind='earnings_estimate'`). Optional
-images (`services`/`dashboard`, the hero) fall back to the approved mock photo until an R2 asset is
-set. Admin text is HTML-escaped before interpolation. It no longer renders its own section bar: the
-header's "Owners" mega-menu (settings slice) doubles as the section sub-nav — it opens on hover and
-the settings header pins it open once scrolled past the top (`OWNERS_NAV_CSS`, scoped via
-`body:has([data-page="owners"])`); on mobile those anchors live under "Owners" in the burger drawer.
+reads its values from the owners `page_content` row). The **hero + earnings-form card are real
+JSX**, not interpolated markup: `core/ui`'s `<Hero id="worth" compact aside={…}>` renders the
+background image (`<MediaImage>`, falling back to the approved mock photo until an R2 asset is
+set) + headline (`;`-joined phrases → one `<br/>`-separated line each, matching the locked
+design's stacked title) + the `ContactDialog` CTA directly (no more DOM-portal — the earlier
+`HeroContactCta` indirection is gone), with `owner-estimate-form.tsx`'s `OwnerEstimateForm`
+slotted into `aside`. `Hero`'s `compact`/`aside`/`copyClassName`/`actionsClassName` grid
+proportions, gap, and headline sizing were ported 1:1 from this page's own CSS (not
+`mock/owners.html`'s, which is stale) — see `core/ui/hero.tsx`'s docstring for the exact
+cascade/specificity reasoning. The 3-step wizard's client wiring (`est-form-wizard.tsx`,
+`est-form-stepper.tsx`) now queries `document` directly instead of a `.mk` ancestor, since the
+form no longer lives in the raw-markup wrapper. Everything **below** the hero is still built by
+`ownersBodyTop(content, media)`, which interpolates the resolved content into the locked design
+markup verbatim — the bespoke per-benefit SVGs, the "★" badge glyph and CTA "→" stay design,
+in-page CTAs keep their `#worth`/`#start` anchors, and the form *fields* stay fixed in code
+(`lead.kind='earnings_estimate'`). Optional images (`services`/`dashboard`) fall back to the
+approved mock photo until an R2 asset is set. Admin text is HTML-escaped before interpolation. It
+no longer renders its own section bar: the header's "Owners" mega-menu (settings slice) doubles
+as the section sub-nav — it opens on hover and the settings header pins it open once scrolled
+past the top (`OWNERS_NAV_CSS`, scoped via `body:has([data-page="owners"])`); on mobile those
+anchors live under "Owners" in the burger drawer.
 Layout: hero +
-earnings form, an animated "numbers" band (per-page `stats[×4]{to,prefix?,suffix?,group,label}`;
-`owner-stats-counter.tsx` counts each figure up on scroll to its `to`, honouring
-`prefers-reduced-motion`), then the full marketing flow — `why` (Editorial-
+earnings form, an animated "numbers" band — still this page's own `stats[×4]
+{to,prefix?,suffix?,group,label}` (drizzle 0009), but now rendered as real JSX through the same
+reusable, count-up band Home uses (`core/ui`'s presentational `StatBand` + `CountUp`, wrapped in
+`<Reveal>`; `#numbers` anchor on its own wrapper div since it sits outside `.mk`) instead of the
+raw-HTML grid + `owner-stats-counter.tsx`'s `[data-count]`-scanning counter. Home's own stats
+band (`stats-band.tsx` → `StatsBand`) reads different, company-wide figures from
+`company_settings` — the two happen to differ, so Owners deliberately keeps its own numbers,
+just the shared widget. `owner-stats-counter.tsx` is otherwise unaffected and still shared with
+**About**, which still uses the raw-markup `.mk` stats grid. Then the full marketing flow — `why` (Editorial-
 Split: title + CTAs beside a hairline `benefits[×6]` list, the home owners-pitch layout reproduced
 as scoped `.mk` CSS since `mock.css` styles bare `.mk` elements and would leak into the Tailwind
 component), `services` and `dashboard` (#technology) — both the home **Image-Showcase** layout

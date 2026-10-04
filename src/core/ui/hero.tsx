@@ -12,9 +12,25 @@ import { cn } from "./cn";
  * `TwoColumnShowcase`/`PropertyCard`/`DualCtaPanels` already use for their images.
  *
  * Two layouts: the default single-column editorial hero, or — when `aside` is provided
- * (Owners earnings-estimate card, mirroring `mock/owners.html`) — a two-column band with
- * the copy on the left and the slotted card bottom-aligned on the right. `compact` lowers
- * the minimum height for these form-bearing heroes so the page below stays close.
+ * (Owners earnings-estimate card) — a two-column band with the copy on the left and the
+ * slotted card bottom-aligned on the right, at the exact proportions/gap the live Owners
+ * page's `.mk`-scoped hero override used (`grid-template-columns:1.1fr .9fr;gap:40px`,
+ * `34px` under 980px) — not `mock/owners.html`'s original (now-superseded) values.
+ * `compact` lowers the minimum height and headline size for these form-bearing heroes so
+ * the page below stays close. The headline size (`clamp(40px,5.4vw,68px)`) is the live
+ * cascade's actual winner — `mock.css`'s `.hero.compact h1` (3 classes) beats the
+ * `.owner-hero h1` override (2 classes) on specificity even though the latter reads as
+ * the "more specific" one; verified against a real render, not just the stylesheet. The
+ * no-wrap/no-max-width (from `.owner-hero h1`, which *does* win there — nothing else sets
+ * those two properties) is what lets the stacked `;`-joined headline sit one phrase per
+ * line. Only Owners uses `aside`/`compact` today.
+ *
+ * `headline` accepts a `ReactNode` (not just a string) so a caller can join stacked
+ * phrases with `<br/>` (Owners' "Your Property. / Our Expertise. / Maximum Returns.").
+ * `copyClassName`/`actionsClassName`/`id` are additive escape hatches for a caller whose
+ * live design has already drifted from this component's own defaults in one specific
+ * spot — used today only by Owners (unconstrained copy width, `28px` actions gap, the
+ * `#worth` anchor target) — Home keeps the defaults.
  *
  * `eyebrowPill` renders the eyebrow as the mock's solid accent badge ("★ …").
  */
@@ -25,17 +41,25 @@ export function Hero({
   headline,
   subtitle,
   actions,
+  actionsClassName,
   aside,
   compact,
+  copyClassName,
+  id,
 }: {
   background?: ReactNode;
   eyebrow?: string;
   eyebrowPill?: boolean;
-  headline: string;
+  headline: ReactNode;
   subtitle?: string;
   actions?: ReactNode;
+  /** Overrides the actions row's default `mt-8` (Owners' live CSS uses `28px` → `mt-7`). */
+  actionsClassName?: string;
   aside?: ReactNode;
   compact?: boolean;
+  /** Overrides the copy column's default max-width (Owners' live CSS uses `none`). */
+  copyClassName?: string;
+  id?: string;
 }) {
   const copy = (
     <div className="text-surface">
@@ -53,10 +77,10 @@ export function Hero({
       ) : null}
       <h1
         className={cn(
-          "mt-4 max-w-[15ch] font-serif font-medium leading-[1.05]",
+          "mt-4 font-serif font-medium leading-[1.05]",
           compact
-            ? "text-[clamp(2.4rem,5.4vw,4.25rem)]"
-            : "text-[clamp(2.75rem,7vw,5.5rem)]",
+            ? "max-w-none whitespace-nowrap text-[clamp(2.5rem,5.4vw,4.25rem)]"
+            : "max-w-[15ch] text-[clamp(2.75rem,7vw,5.5rem)]",
         )}
       >
         {headline}
@@ -64,20 +88,27 @@ export function Hero({
       {subtitle ? (
         <p className="mt-5 max-w-xl text-lg leading-relaxed text-surface/85">{subtitle}</p>
       ) : null}
-      {actions ? <div className="mt-8 flex flex-wrap items-center gap-4">{actions}</div> : null}
+      {actions ? (
+        <div className={cn("flex flex-wrap items-center gap-4", actionsClassName ?? "mt-8")}>
+          {actions}
+        </div>
+      ) : null}
     </div>
   );
 
   return (
     <section
+      id={id}
       data-hero
       className={cn(
         "relative isolate flex items-end overflow-hidden bg-feature",
         // `compact` keeps the headline smaller for form-bearing heroes (the aside card
         // shares the row) but still fills the viewport like the mock. The hero is
         // bottom-anchored (`items-end`) — this min-height is what sets the empty band above
-        // the copy under the fixed navbar, so it's the one value that tunes that gap.
-        "min-h-[73.6vh]",
+        // the copy under the fixed navbar, so it's the one value that tunes that gap. It's a
+        // floor, not a cap — Owners' card is tall enough that actual rendered height is
+        // content-driven well past this minimum either way, confirmed against a live render.
+        compact ? "min-h-[64vh]" : "min-h-[73.6vh]",
       )}
     >
       {background}
@@ -92,12 +123,12 @@ export function Hero({
 
       <Container className="pb-[clamp(56px,9vh,104px)] pt-32">
         {aside ? (
-          <div className="grid items-end gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
-            <div className="max-w-xl">{copy}</div>
+          <div className="grid items-end gap-[34px] min-[981px]:grid-cols-[1.1fr_0.9fr] min-[981px]:gap-10">
+            <div className={copyClassName ?? "max-w-xl"}>{copy}</div>
             {aside}
           </div>
         ) : (
-          <div className="max-w-3xl">{copy}</div>
+          <div className={copyClassName ?? "max-w-3xl"}>{copy}</div>
         )}
       </Container>
     </section>

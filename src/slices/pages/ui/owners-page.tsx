@@ -1,14 +1,15 @@
+import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { mediaImgTag, type MediaImageData } from "@core/media";
+import { MediaImage, mediaImgTag, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
+import { Hero, Reveal, StatBand } from "@core/ui";
 import { ContactDialog } from "@slices/settings/contract";
 import { getOwnersPage, type OwnersContent } from "../contract";
 import { EstFormStepper } from "./components/est-form-stepper";
 import { EstFormWizard } from "./components/est-form-wizard";
 import { FaqSection } from "./components/faq-section";
-import { HeroContactCta } from "./components/hero-contact-cta";
-import { OwnerStatsCounter } from "./components/owner-stats-counter";
+import { OwnerEstimateForm } from "./components/owner-estimate-form";
 import { ScrollReveal } from "./components/scroll-reveal";
 import { TestimonialsRow } from "./components/testimonials-row";
 
@@ -19,10 +20,8 @@ const HERO_FALLBACK_IMG =
 const HERO_FALLBACK_ALT = "Bright, designer-furnished Lisbon apartment interior";
 
 // Escape admin-authored content before it is interpolated into the static body HTML string.
-// `esc` is for text nodes; `escAttr` also neutralises the attribute quote.
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-const escAttr = (s: string) => esc(s).replace(/"/g, "&quot;");
 
 /**
  * Owners page — a focused conversion landing embedded 1:1 inside the live app shell.
@@ -46,46 +45,6 @@ const escAttr = (s: string) => esc(s).replace(/"/g, "&quot;");
 
 const OWNERS_STYLE = `
 .mk [id]{scroll-margin-top:130px}
-.mk .owner-hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:end}
-.mk .owner-hero .hero-copy{max-width:none}
-.mk .owner-hero h1{max-width:none;white-space:nowrap;font-size:clamp(30px,4vw,50px)}
-.mk .owner-hero .hero-cta{margin-top:28px}
-.mk .owner-hero .hero-cta button{padding:0.75rem 1.75rem}
-.mk .est-card{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:34px 32px 30px;box-shadow:0 30px 60px -30px rgba(0,0,0,.5)}
-.mk .est-card .earn-badge{display:inline-flex;align-items:center;gap:.5em;background:var(--accent);color:#fff;font-size:13px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:9px 18px;border-radius:30px;margin-bottom:16px;box-shadow:0 10px 24px -10px color-mix(in srgb,var(--accent) 75%,transparent)}
-.mk .est-card h3{font-size:26px;margin-bottom:8px}
-.mk .est-card .est-sub{font-size:14px;color:var(--ink-soft);margin-bottom:22px}
-.mk .est-field{margin-bottom:16px}
-.mk .est-field label{display:block;font-size:12px;letter-spacing:.04em;font-weight:600;color:var(--ink);margin-bottom:7px}
-.mk .est-field input,.mk .est-field select{width:100%;height:44px;font-family:var(--sans);font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:0 14px;transition:.2s var(--ease)}
-.mk .est-field select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235c544c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:15px}
-.mk .est-field input:focus,.mk .est-field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
-.mk .est-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.mk .est-stepper{display:flex;align-items:center;justify-content:space-between;height:44px;border:1px solid var(--line);border-radius:4px;background:var(--bg);padding:0 3px}
-.mk .est-stepper .step-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex:0 0 auto;border:0;border-radius:4px;background:transparent;color:var(--ink);cursor:pointer;transition:.2s var(--ease)}
-.mk .est-stepper .step-btn svg{width:16px;height:16px}
-.mk .est-stepper .step-btn:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent-deep)}
-.mk .est-stepper .step-btn:disabled{opacity:.35;cursor:not-allowed}
-.mk .est-stepper .step-val{flex:1;text-align:center;font-size:15px;font-weight:600;color:var(--ink)}
-.mk .est-card .btn{width:100%;justify-content:center;margin-top:6px}
-.mk .est-note{text-align:center;font-size:12.5px;color:var(--ink);font-weight:500;margin-top:14px}
-.mk .wiz-dots{display:flex;gap:6px;margin-bottom:22px}
-.mk .wiz-dots span{flex:1;height:3px;border-radius:2px;background:var(--line);transition:.3s var(--ease)}
-.mk .wiz-dots span.done{background:var(--accent)}
-.mk .est-phone{display:flex;gap:10px}
-.mk .est-phone select{width:112px;flex:0 0 auto;padding-left:12px;padding-right:30px;background-position:right 9px center}
-.mk .est-phone input{flex:1;min-width:0}
-.mk .est-check{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5;color:var(--ink-soft);cursor:pointer;margin-bottom:12px}
-.mk .est-check input{width:16px;height:16px;flex:0 0 auto;margin-top:2px;accent-color:var(--accent)}
-.mk .est-check a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
-.mk .wiz-actions{display:flex;align-items:center;gap:14px;margin-top:6px}
-.mk .wiz-actions .btn{margin-top:0}
-.mk .wiz-back{background:none;border:0;padding:0;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;flex:0 0 auto}
-.mk .wiz-back:hover{color:var(--accent-deep)}
-.mk .wiz-confirm{text-align:center;padding:18px 0 6px}
-.mk .wiz-confirm .ic{width:46px;height:46px;color:var(--accent);border:1px solid var(--line);border-radius:50%;padding:12px;margin-bottom:18px}
-.mk .wiz-confirm h3{margin-bottom:10px}
-.mk .wiz-confirm p{font-size:14.5px;line-height:1.6;color:var(--ink-soft)}
 .mk .owner-pitch .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:start}
 .mk .owner-pitch .pitch-text{position:sticky;top:120px}
 .mk .owner-pitch .pitch-sub{margin-top:18px;font-size:18px;line-height:1.6;color:var(--ink-soft)}
@@ -151,8 +110,8 @@ const OWNERS_STYLE = `
 .mk .faq .faq-a{padding:0 44px 26px 4px;font-size:15.5px;color:var(--ink-soft);max-width:70ch}
 .mk .cta-band .cta-wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;text-align:left;max-width:var(--max)}
 .mk .cta-band .cta-media img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:3px;display:block}
-@media(max-width:980px){.mk .owner-hero .wrap{grid-template-columns:1fr;gap:34px}.mk .owner-pitch .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-pitch .pitch-text{position:static}.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helper{flex-direction:column;align-items:flex-start;gap:22px;padding:32px 30px}.mk .steps{grid-template-columns:1fr 1fr}.mk .cta-band .cta-wrap{grid-template-columns:1fr;gap:34px;text-align:center}.mk .cta-band .cta-copy p{margin-left:auto;margin-right:auto}}
-@media(max-width:680px){.mk .est-two{grid-template-columns:1fr}.mk .owner-showcase .sh-list{grid-template-columns:1fr}.mk .plans{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
+@media(max-width:980px){.mk .owner-pitch .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-pitch .pitch-text{position:static}.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helper{flex-direction:column;align-items:flex-start;gap:22px;padding:32px 30px}.mk .steps{grid-template-columns:1fr 1fr}.mk .cta-band .cta-wrap{grid-template-columns:1fr;gap:34px;text-align:center}.mk .cta-band .cta-copy p{margin-left:auto;margin-right:auto}}
+@media(max-width:680px){.mk .owner-showcase .sh-list{grid-template-columns:1fr}.mk .plans{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
 
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
    the rest, via <ScrollReveal page="owners">/scroll-reveal.tsx) — same pattern already
@@ -245,14 +204,7 @@ function benefitList(
  * in the schema but intentionally not shown (the locked design has no commission display).
  */
 function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageData>): string {
-  const { hero, earnings_form: form, stats, why, services, plans, journey, dashboard } = content;
-  const heroImgTag = mediaImgTag({
-    data: media[hero.image_media_id],
-    fallbackSrc: HERO_FALLBACK_IMG,
-    fallbackAlt: HERO_FALLBACK_ALT,
-    sizes: "100vw",
-    priority: true, // full-bleed hero — the LCP element on this page
-  });
+  const { why, services, plans, journey, dashboard } = content;
   const servicesImgTag = mediaImgTag({
     data: media[services.image_media_id ?? ""],
     fallbackSrc: SERVICES_FALLBACK_IMG,
@@ -266,118 +218,7 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
     sizes: SHOWCASE_SIZES,
   });
 
-  // Hero headline: authored with `;` between phrases so the design's stacked hero title
-  // ("Your Property" / "Our Expertise" / "Maximum Returns") renders as one line per phrase.
-  // A headline with no `;` renders as a single line, unchanged.
-  const heroHeadline = hero.headline
-    .split(";")
-    .map((line) => esc(line.trim()))
-    .filter(Boolean)
-    .join("<br>");
-
   return `
-<section id="worth" class="hero compact owner-hero" style="padding:0">
-  ${heroImgTag}
-  <div class="wrap">
-    <div class="hero-copy">
-      <h1>${heroHeadline}</h1>
-      <p>${esc(hero.copy)}</p>
-      <div class="hero-cta" id="hero-contact-slot"></div>
-    </div>
-
-    <form class="est-card reveal" data-wizard data-step="1" onsubmit="return false">
-      <div class="wiz-dots" aria-hidden="true"><span data-dot="1"></span><span data-dot="2"></span><span data-dot="3"></span></div>
-
-      <div class="wiz-panel" data-panel="1">
-        ${form.badge ? `<span class="earn-badge">★ ${esc(form.badge)}</span>` : ""}
-        <h3>${esc(form.headline)}</h3>
-        ${form.subheadline ? `<p class="est-sub">${esc(form.subheadline)}</p>` : ""}
-        <div class="est-field">
-          <label for="addr">Property Address</label>
-          <input id="addr" type="text" placeholder="Street, neighbourhood, city" autocomplete="off">
-        </div>
-        <div class="est-two">
-          <div class="est-field">
-            <label>Nº of Properties</label>
-            <div class="est-stepper" data-stepper data-value="1" data-min="1">
-              <button type="button" class="step-btn" data-step="down" disabled aria-label="Decrease number of properties">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
-              </button>
-              <span class="step-val">1</span>
-              <button type="button" class="step-btn" data-step="up" aria-label="Increase number of properties">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-              </button>
-              <input type="hidden" id="nprop" name="nprop" value="1">
-            </div>
-          </div>
-          <div class="est-field">
-            <label for="nbed">Nº of Bedrooms</label>
-            <select id="nbed">
-              <option>Studio</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6+</option>
-            </select>
-          </div>
-        </div>
-        <button type="button" class="btn btn-accent" data-wiz-next>${esc(form.cta_label)} →</button>
-        ${form.note ? `<p class="est-note">${esc(form.note)}</p>` : ""}
-      </div>
-
-      <div class="wiz-panel" data-panel="2" hidden>
-        <h3>Your contact details</h3>
-        <p class="est-sub">Almost there — tell us how to reach you with the study.</p>
-        <div class="est-field">
-          <label for="fname">Full Name</label>
-          <input id="fname" type="text" placeholder="Jane Doe" autocomplete="name">
-        </div>
-        <div class="est-field">
-          <label for="femail">Email</label>
-          <input id="femail" type="email" placeholder="jane@example.com" autocomplete="email">
-        </div>
-        <div class="est-field">
-          <label for="fphone">Phone</label>
-          <div class="est-phone">
-            <select id="fphone-code" aria-label="Country code">
-              <option value="+351" selected>🇵🇹 +351</option>
-              <option value="+34">🇪🇸 +34</option>
-              <option value="+33">🇫🇷 +33</option>
-              <option value="+44">🇬🇧 +44</option>
-              <option value="+49">🇩🇪 +49</option>
-              <option value="+1">🇺🇸 +1</option>
-              <option value="+55">🇧🇷 +55</option>
-            </select>
-            <input id="fphone" type="tel" placeholder="912 345 678" autocomplete="tel">
-          </div>
-        </div>
-        <label class="est-check"><input type="checkbox">I agree to the <a href="#">Terms &amp; Conditions</a>.</label>
-        <label class="est-check"><input type="checkbox">I agree to the <a href="#">Privacy Policy</a> and consent to being contacted.</label>
-        <div class="wiz-actions">
-          <button type="button" class="wiz-back" data-wiz-back>← Back</button>
-          <button type="button" class="btn btn-accent" data-wiz-next>Submit request →</button>
-        </div>
-      </div>
-
-      <div class="wiz-panel" data-panel="3" hidden>
-        <div class="wiz-confirm">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-          <h3>Request received</h3>
-          <p>Thank you — our team will review your property and get back to you within 48 hours with your free profitability study.</p>
-        </div>
-      </div>
-    </form>
-  </div>
-</section>
-
-<div id="numbers" class="stats">
-  <div class="wrap stats-grid reveal-io reveal-stagger pre-reveal">${stats
-    .map((s) => {
-      const num = s.group ? Number(s.to).toLocaleString("en-US") : s.to;
-      const display = `${s.prefix ?? ""}${num}${s.suffix ?? ""}`;
-      return `
-    <div class="stat"><div class="num" data-count data-to="${escAttr(s.to)}"${s.prefix ? ` data-prefix="${escAttr(s.prefix)}"` : ""} data-suffix="${escAttr(s.suffix ?? "")}"${s.group ? ` data-group="true"` : ""}>${esc(display)}</div><div class="lbl">${esc(s.label)}</div></div>`;
-    })
-    .join("")}
-  </div>
-</div>
-
 <section id="why" class="owner-pitch">
   <div class="wrap">
     <div class="pitch-text reveal-io pre-reveal">
@@ -545,10 +386,91 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
+  const { hero, earnings_form, stats } = content;
   const faqGroupKey = content.faq_group_key ?? "";
+
+  const heroMedia = media[hero.image_media_id];
+  // Authored with `;` between phrases so the design's stacked hero title ("Your Property" /
+  // "Our Expertise" / "Maximum Returns") renders one phrase per line via `<br/>`. A headline
+  // with no `;` renders as a single line, unchanged.
+  const heroHeadlineLines = hero.headline
+    .split(";")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  // This page's own per-page figures (`content.stats`, drizzle 0009) — NOT the company-wide
+  // `company_settings` ones `StatsBand`/Home read. Same derivation the old raw-HTML band used:
+  // prefix + (optionally grouped) `to` + suffix, e.g. "400000"+group+"+" → "400,000+".
+  const statCells = stats.map((s) => ({
+    value: `${s.prefix ?? ""}${s.group ? Number(s.to).toLocaleString("en-US") : s.to}${s.suffix ?? ""}`,
+    label: s.label,
+  }));
 
   return (
     <>
+      <Hero
+        id="worth"
+        background={
+          heroMedia ? (
+            <MediaImage
+              data={heroMedia}
+              className="absolute inset-0 -z-10 h-full w-full object-cover"
+              sizes="100vw"
+              priority
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+            <img
+              src={HERO_FALLBACK_IMG}
+              alt={HERO_FALLBACK_ALT}
+              className="absolute inset-0 -z-10 h-full w-full object-cover"
+            />
+          )
+        }
+        compact
+        copyClassName="max-w-none"
+        actionsClassName="mt-7"
+        headline={heroHeadlineLines.map((line, i) => (
+          <Fragment key={i}>
+            {i > 0 ? <br /> : null}
+            {line}
+          </Fragment>
+        ))}
+        subtitle={hero.copy}
+        actions={
+          <ContactDialog
+            variant="light"
+            label="Contact Us"
+            title="Contact us"
+            intro="Send us a message and our team will get back to you shortly."
+            source="owners-hero"
+          />
+        }
+        aside={
+          <OwnerEstimateForm
+            badge={earnings_form.badge}
+            headline={earnings_form.headline}
+            subheadline={earnings_form.subheadline}
+            ctaLabel={earnings_form.cta_label}
+            note={earnings_form.note}
+          />
+        }
+      />
+      <EstFormStepper />
+      <EstFormWizard />
+      {/*
+       * "Numbers that speak for themselves" — the same reusable, count-up band component Home
+       * uses (`core/ui`'s presentational `StatBand` + `CountUp`), fed this page's own
+       * `content.stats` (`statCells` above) rather than the company-wide settings figures
+       * `StatsBand`/Home read — the two happen to differ (e.g. 400,000+ bookings here vs.
+       * Home's live count), so this page keeps its own numbers, just the shared widget. No
+       * `title` → the bare proof band the locked design uses here (Home passes a heading).
+       */}
+      <div id="numbers" style={{ scrollMarginTop: 130 }}>
+        <Reveal label="owners-stats">
+          <StatBand cells={statCells} />
+        </Reveal>
+      </div>
       <div className="mk" data-page="owners">
         <style dangerouslySetInnerHTML={{ __html: OWNERS_STYLE }} />
         <noscript>
@@ -559,18 +481,6 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
           />
         </noscript>
         <ScrollReveal page="owners" />
-        <OwnerStatsCounter />
-        <EstFormStepper />
-        <EstFormWizard />
-        <HeroContactCta>
-          <ContactDialog
-            variant="light"
-            label="Contact Us"
-            title="Contact us"
-            intro="Send us a message and our team will get back to you shortly."
-            source="owners-hero"
-          />
-        </HeroContactCta>
         <div dangerouslySetInnerHTML={{ __html: ownersBodyTop(content, media) }} />
       </div>
       {/*

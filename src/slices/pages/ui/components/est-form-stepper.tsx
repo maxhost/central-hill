@@ -3,16 +3,15 @@
 import { useEffect } from "react";
 
 /**
- * Wires up the "Nº of Properties" stepper in the earnings-estimate form (static markup,
- * `[data-stepper]`): the +/- buttons adjust a count (never below `data-min`), keeping the
- * visible figure, the hidden field value, and the minus button's disabled state in sync.
- * Event-delegated on `.mk`, so it needs no per-instance wiring. Renders nothing.
+ * Wires up the "Nº of Properties" stepper in the earnings-estimate form
+ * (`OwnerEstimateForm`'s `[data-stepper]`): the +/- buttons adjust a count (never below
+ * `data-min`), keeping the visible figure, the hidden field value, and the minus button's
+ * disabled state in sync. Event-delegated on `document` (no longer scoped to the `.mk`
+ * raw-markup wrapper now that the Owners hero is real JSX), so it needs no per-instance
+ * wiring. Renders nothing.
  */
 export function EstFormStepper() {
   useEffect(() => {
-    const root = document.querySelector<HTMLElement>(".mk");
-    if (!root) return;
-
     const onClick = (e: MouseEvent) => {
       const btn = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-step]");
       if (!btn) return;
@@ -33,8 +32,8 @@ export function EstFormStepper() {
       if (minusBtn) minusBtn.disabled = next <= min;
     };
 
-    root.addEventListener("click", onClick);
-    return () => root.removeEventListener("click", onClick);
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
   }, []);
 
   return null;
