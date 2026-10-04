@@ -51,9 +51,21 @@ export async function HomePage({ locale }: { locale: Locale }) {
   return (
     <main>
       <Hero
-        image={null}
-        videoUrl={media[hero.video_media_id]?.url ?? HERO_FALLBACK_VIDEO}
-        posterUrl={HERO_FALLBACK_POSTER}
+        background={
+          <video
+            className="absolute inset-0 -z-10 h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster={HERO_FALLBACK_POSTER}
+          >
+            <source
+              src={media[hero.video_media_id]?.url ?? HERO_FALLBACK_VIDEO}
+              type="video/mp4"
+            />
+          </video>
+        }
         eyebrow={t("home.heroEyebrow")}
         headline={hero.headline}
         subtitle={hero.subtitle}

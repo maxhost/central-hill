@@ -2,8 +2,12 @@
 
 > **Scope:** cross-cutting (`core/ui` kernel + `pages`/`settings` slices) · **Status:** ✅ ADR 0033
 > Accepted (2026-10-03, `docs/decisions/README.md#0033`) — **all 8 components implemented**
-> (2026-10-03/04), see the table in §5. Not yet done: a manual browser pass across the 4
-> locales (every agent flagged this as unverified — typecheck/lint only).
+> (2026-10-03/04), see the table in §5. A real dev-server pass caught one runtime bug that
+> `typecheck`/`lint` missed — `Hero` importing `@core/media` directly broke every page with a
+> 500 once it joined the `core/ui` barrel (Turbopack can't bundle `sharp` for the client); fixed
+> by giving `Hero` a caller-built `background: ReactNode` prop instead, see `02-hero.md`. This is
+> the concrete reason every component spec's DoD requires a browser check, not just a clean
+> `typecheck`/`lint` — confirms it wasn't a redundant step.
 > **Page under review:** `http://localhost:4455/es` = `/[locale]` (Home), composed in
 > `src/slices/pages/ui/home-page.tsx`.
 > **Explicitly scoped to Home only.** The `.mk`-HTML-string pages (About/Guests/Owners/Real

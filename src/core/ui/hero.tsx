@@ -1,29 +1,25 @@
 import type { ReactNode } from "react";
-import { type MediaImageData, MediaImage } from "@core/media";
 import { Container } from "./container";
 import { cn } from "./cn";
 
 /**
- * Page hero (S9). A full-width media band with an overlaid editorial headline. Supports
- * a looping muted background **video** (home/guest) or a still **image** (owners/about/
- * real-estate). Media is resolved upstream into `MediaImageData`; the video reads `.url`.
+ * Page hero (S9). A full-width media band with an overlaid editorial headline.
+ *
+ * `background` is caller-built (its own `<video>`, `<MediaImage>`, or `<img>` — whatever
+ * precedence/fallback it needs) and rendered absolutely-positioned behind the gradient
+ * scrim; this keeps `@core/media` out of `core/ui` (golden rule 3 — the kernel's UI layer
+ * stays presentation-only, no slice/media-resolution coupling), the same pattern
+ * `TwoColumnShowcase`/`PropertyCard`/`DualCtaPanels` already use for their images.
  *
  * Two layouts: the default single-column editorial hero, or — when `aside` is provided
  * (Owners earnings-estimate card, mirroring `mock/owners.html`) — a two-column band with
  * the copy on the left and the slotted card bottom-aligned on the right. `compact` lowers
  * the minimum height for these form-bearing heroes so the page below stays close.
  *
- * Background precedence: `videoUrl` → `image` (R2 `MediaImageData`, optimised via next/image)
- * → `imageUrl` (a plain external hotlink). `imageUrl` is the escape hatch for the approved
- * mock art while the real asset hasn't been uploaded to R2 yet (the seeded `image_media_id`
- * is a placeholder that resolves to nothing); mark such usages TEMP at the call site.
  * `eyebrowPill` renders the eyebrow as the mock's solid accent badge ("★ …").
  */
 export function Hero({
-  image,
-  imageUrl,
-  videoUrl,
-  posterUrl,
+  background,
   eyebrow,
   eyebrowPill,
   headline,
@@ -32,10 +28,7 @@ export function Hero({
   aside,
   compact,
 }: {
-  image: MediaImageData | null;
-  imageUrl?: string | null;
-  videoUrl?: string | null;
-  posterUrl?: string | null;
+  background?: ReactNode;
   eyebrow?: string;
   eyebrowPill?: boolean;
   headline: string;
@@ -87,33 +80,7 @@ export function Hero({
         "min-h-[73.6vh]",
       )}
     >
-      {videoUrl ? (
-        <video
-          className="absolute inset-0 -z-10 h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster={posterUrl ?? image?.url}
-        >
-          <source src={videoUrl} type="video/mp4" />
-        </video>
-      ) : image ? (
-        <MediaImage
-          data={image}
-          priority
-          className="absolute inset-0 -z-10 h-full w-full object-cover"
-          sizes="100vw"
-        />
-      ) : imageUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element -- TEMP external hotlink (mock art → R2)
-        <img
-          src={imageUrl}
-          alt=""
-          aria-hidden
-          className="absolute inset-0 -z-10 h-full w-full object-cover"
-        />
-      ) : null}
+      {background}
 
       <div
         className={cn(

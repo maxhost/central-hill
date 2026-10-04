@@ -38,9 +38,22 @@ import this component today, and this spec does not change that (out of scope, o
 
 ## Target
 
-`src/core/ui/hero.tsx`, exported as `Hero` (renamed from `PageHero` — no other file in the repo
-should keep calling it `PageHero` after migration; grep and update every call site, not just
-Home's). Props identical, verbatim.
+`src/core/ui/hero.tsx`, exported as `Hero` (renamed from `PageHero`). **One prop shape change from
+the original, found during verification, not optional:** `image`/`imageUrl`/`videoUrl`/`posterUrl`
+collapse into a single `background?: ReactNode`, caller-built. Keeping `MediaImageData`/`MediaImage`
+imported directly in `core/ui/hero.tsx` (as the original did) breaks at runtime once `Hero` is
+exported through the shared `core/ui/index.ts` barrel: any `"use client"` component elsewhere in
+the app that imports anything from `@core/ui` (e.g. `settings/ui/components/contact-dialog.tsx`,
+which imports `ButtonLink`) pulls in the *entire* barrel's module graph for the browser bundle,
+including `@core/media`'s server-only `server/ingest.ts` (the `sharp`-based upload pipeline) —
+Turbopack can't chunk `sharp`'s `node:child_process`/`node:module` requires for the browser and
+every page 500s. This is exactly the failure mode `05-two-column-showcase.md`/`06-property-card.md`/
+`07-dual-cta-panels.md` already designed around (`image`/`panel.image` as `ReactNode`, caller
+builds the `<MediaImage>` element) — `Hero`'s original spec text missed applying the same rule to
+itself. Caller (`home-page.tsx`) now builds its own `<video>` element and passes it as
+`background`; the `image`/`imageUrl` fallback branches it had are dead code today (Home's `hero`
+schema is video-only, and `Hero` has no other caller — confirmed by grep) and were dropped rather
+than ported, since `ReactNode` makes the caller responsible for its own fallback chain.
 
 ## Migration steps
 
