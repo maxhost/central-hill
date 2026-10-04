@@ -11,6 +11,7 @@ import {
 } from "../schemas/real-estate";
 import { FaqSection } from "./components/faq-section";
 import { OwnerStatsCounter } from "./components/owner-stats-counter";
+import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
  * Real Estate page — the approved `mock/real-estate.html` embedded 1:1 inside the live app
@@ -104,11 +105,11 @@ function marketSection(market: RealEstateContent["market"]): string {
 <!-- SECTION 6 — WHY PORTUGAL (dynamic bento, DB-driven) -->
 <section id="market">
   <div class="wrap">
-    <div class="sec-head reveal">
+    <div class="sec-head reveal reveal-io pre-reveal">
       <h2 class="section-title">${esc(market.headline)}</h2>
       ${market.subheadline ? `<p class="lede" style="margin-top:16px">${esc(market.subheadline)}</p>` : ""}
     </div>
-    <div class="market-bento reveal">
+    <div class="market-bento reveal reveal-io reveal-stagger pre-reveal">
       <div class="mcell feature">
         <h3>${esc(market.fundamentals.title)}</h3>
         <div class="stat-row">${stats}</div>
@@ -152,11 +153,11 @@ function dealStructuresSection(d: RealEstateContent["deal_structures"]): string 
 <!-- SECTION 5 — PARTNERSHIP MODELS (DB-driven) -->
 <section class="alt" id="deal-structures">
   <div class="wrap">
-    <div class="sec-head center reveal">
+    <div class="sec-head center reveal reveal-io pre-reveal">
       <h2 class="section-title">${esc(d.headline)}</h2>
       ${d.subheadline ? `<p class="lede" style="margin:16px auto 0">${esc(d.subheadline)}</p>` : ""}
     </div>
-    <div class="models reveal">${cards}
+    <div class="models reveal reveal-io reveal-stagger pre-reveal">${cards}
     </div>
     ${d.note ? `<p class="model-note">${esc(d.note)}</p>` : ""}
   </div>
@@ -201,11 +202,11 @@ function trackRecordSection(t: RealEstateContent["track_record"]): string {
 <!-- SECTION 7 — TRACK RECORD (DB-driven) -->
 <section class="alt" id="track-record">
   <div class="wrap">
-    <div class="sec-head reveal">
+    <div class="sec-head reveal reveal-io pre-reveal">
       <h2 class="section-title">${esc(t.headline)}</h2>
       ${t.subheadline ? `<p class="lede" style="margin-top:16px">${esc(t.subheadline)}</p>` : ""}
     </div>
-    <div class="tiles reveal">
+    <div class="tiles reveal reveal-io reveal-stagger pre-reveal">
 ${tiles}
     </div>
   </div>
@@ -233,14 +234,14 @@ function processSection(p: RealEstateContent["process"]): string {
 <!-- SECTION 8 — HOW IT WORKS (Editorial Split, mirrors "Built for Institutional Partners", DB-driven) -->
 <section id="process" class="partner-pitch process-split">
   <div class="wrap">
-    <div class="pitch-text reveal">
+    <div class="pitch-text reveal reveal-io pre-reveal">
       <h2 class="section-title">${esc(p.headline)}</h2>
       ${p.subheadline ? `<p class="pitch-sub">${esc(p.subheadline)}</p>` : ""}
       <div class="pitch-cta">
         <a class="btn btn-accent" href="#deal-enquiry">${esc(p.cta.label)} →</a>
       </div>
     </div>
-    <ul class="pitch-list reveal">${steps}
+    <ul class="pitch-list reveal reveal-io pre-reveal">${steps}
     </ul>
   </div>
 </section>
@@ -298,14 +299,14 @@ function showcase(opts: {
   return `
 <section id="${opts.id}" class="${opts.classes}">
   <div class="wrap">
-    <div class="sh-text reveal">
+    <div class="sh-text reveal reveal-io pre-reveal">
       <h2>${esc(data.headline)}</h2>
       ${data.subheadline ? `<p class="sh-sub">${esc(data.subheadline)}</p>` : ""}
       <ul class="sh-list">${benefitList(data.benefits, opts.icons)}
       </ul>
       ${cta}
     </div>
-    <div class="sh-media reveal">
+    <div class="sh-media reveal reveal-io pre-reveal">
       ${opts.imgTag}
       ${badge}
     </div>
@@ -485,6 +486,17 @@ const PAGE_STYLE = `
   .mk #market .stat-row{grid-template-columns:1fr}
   .mk .tiles,.mk .steps,.mk .ftwo{grid-template-columns:1fr}
 }
+
+/* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
+   the rest, via <ScrollReveal page="real-estate">/scroll-reveal.tsx) — same pattern
+   already applied to About and Guests. This page's card/bento/tile hover states
+   (.model, .mcell, .stat, .thesis li) already existed and are left as-is. The hidden
+   state is baked straight into the server-rendered markup (.pre-reveal, applied on the
+   elements below) so there's no flash of visible-then-hidden; the <noscript> rule keeps
+   content visible with JS off. Scoped to [data-page="real-estate"] so it never touches
+   the shared, neutralised .reveal rule in mock.css or any other page. */
+.mk[data-page="real-estate"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.mk[data-page="real-estate"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
 `;
 
 // The institutional FAQ (former SECTION 9) is now a shared, editable <FaqSection> island chosen
@@ -540,7 +552,7 @@ function bodyTop(content: RealEstateContent, media: Record<string, MediaImageDat
 <!-- SECTION 2 — WHO WE WORK WITH (Editorial Split, DB-driven) -->
 <section id="partners" class="partner-pitch">
   <div class="wrap">
-    <div class="pitch-text reveal">
+    <div class="pitch-text reveal reveal-io pre-reveal">
       <h2 class="section-title">${esc(partners.headline)}</h2>
       ${partners.subheadline ? `<p class="pitch-sub">${esc(partners.subheadline)}</p>` : ""}
       <div class="pitch-cta">
@@ -549,7 +561,7 @@ function bodyTop(content: RealEstateContent, media: Record<string, MediaImageDat
       </div>
       ${partners.cta_primary.note ? `<p class="pitch-note">${esc(partners.cta_primary.note)}</p>` : ""}
     </div>
-    <ul class="pitch-list reveal">${benefitList(partners.benefits, PARTNER_ICONS)}
+    <ul class="pitch-list reveal reveal-io pre-reveal">${benefitList(partners.benefits, PARTNER_ICONS)}
     </ul>
   </div>
 </section>
@@ -583,7 +595,7 @@ const BODY_BOTTOM = `
 <section id="deal-enquiry">
   <div class="wrap">
     <div class="enquiry">
-      <div class="enquiry-intro reveal">
+      <div class="enquiry-intro reveal reveal-io pre-reveal">
         <h2>Ready to Explore a Partnership?</h2>
         <p class="lede">Whether you represent an investment fund, a development company, a large property operator, or a corporate seeking managed accommodation — we want to hear from you. Complete the enquiry form below and one of our senior team will respond within 24 hours.</p>
         <div class="contact-direct">
@@ -594,7 +606,7 @@ const BODY_BOTTOM = `
         </div>
       </div>
 
-      <form class="form-card reveal" onsubmit="return false">
+      <form class="form-card reveal reveal-io pre-reveal" onsubmit="return false">
         <div class="fgroup">
           <div class="fgroup-title">Organisation Details <span class="fgroup-tag">Required</span></div>
           <div class="ffield">
@@ -703,6 +715,14 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
     <>
       <div className="mk" data-page="real-estate">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+        <noscript>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `.mk[data-page="real-estate"] .pre-reveal{opacity:1!important;transform:none!important}`,
+            }}
+          />
+        </noscript>
+        <ScrollReveal page="real-estate" />
         <div dangerouslySetInnerHTML={{ __html: bodyTop(content, media) }} />
       </div>
       {faqGroupKey ? (
