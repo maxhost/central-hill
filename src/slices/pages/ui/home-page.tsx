@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
-import { ButtonLink } from "@core/ui";
+import { ButtonLink, Reveal } from "@core/ui";
 import { AvantioSearchBar } from "@slices/settings/contract";
 import { getHomePage } from "../contract";
 import { DualCta } from "./components/dual-cta";
@@ -9,7 +9,6 @@ import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
 import { GuestsSection } from "./components/guests-section";
 import { PageHero } from "./components/hero";
-import { Reveal } from "./components/reveal";
 import { ServicesCarousel } from "./components/services-carousel";
 import { StatsBand } from "./components/stats-band";
 

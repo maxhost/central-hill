@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
-import { ContactDialog } from "./contact-dialog";
 
 export interface NavCta {
   href: string;
@@ -19,19 +18,18 @@ export interface NavEntry {
 }
 
 /**
- * Mobile navigation drawer (hidden on `lg+`, where the header shows the full bar).
- * Receives already-resolved, serializable nav entries + CTA labels from the server
- * `SiteHeader` so the heavy data work stays server-side. The drawer also surfaces the
- * top-right utilities (contact form, owner login) that live inline on desktop, plus
- * each top-level item's sub-tabs as an indented sub-list (client feedback B1).
+ * Mobile navigation drawer shell (ADR 0033) — ported verbatim from
+ * `slices/settings/ui/components/mobile-nav.tsx`, minus the direct `ContactDialog` import:
+ * the caller (`site-header.tsx`) passes its own contact trigger as `contactSlot` so `core/ui`
+ * doesn't depend on a settings-slice component. Hidden on `lg+`, where `NavBar` shows the full
+ * bar. Receives already-resolved, serializable nav entries + CTA labels — no data fetching of
+ * its own. See `docs/specs/home-component-library/08-nav-chrome.md`.
  */
-export function MobileNav({
+export function MobileDrawer({
   links,
   loginHref,
   loginLabel,
-  contactLabel,
-  contactTitle,
-  contactIntro,
+  contactSlot,
   book,
   earn,
   openLabel,
@@ -40,9 +38,8 @@ export function MobileNav({
   links: NavEntry[];
   loginHref: string;
   loginLabel: string;
-  contactLabel: string;
-  contactTitle: string;
-  contactIntro: string;
+  /** Caller's own contact trigger (e.g. `<ContactDialog variant="button" .../>`). */
+  contactSlot: ReactNode;
   book: NavCta;
   /** Owner-acquisition CTA ("Earn With Us") — standout accent fill, drawer-only. */
   earn: NavCta;
@@ -128,12 +125,7 @@ export function MobileNav({
               >
                 {earn.label}
               </a>
-              <ContactDialog
-                variant="button"
-                label={contactLabel}
-                title={contactTitle}
-                intro={contactIntro}
-              />
+              {contactSlot}
             </div>
           </nav>
         </div>

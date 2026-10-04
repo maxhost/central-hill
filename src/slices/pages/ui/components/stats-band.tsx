@@ -1,8 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { Container } from "@core/ui";
+import { Container, CountUp } from "@core/ui";
 import { type StatKey, getGlobals } from "@slices/settings/contract";
-import { CountUp } from "./count-up";
 
 /**
  * Company stats band (Home/Owners/About). Reads the figures from the settings singleton

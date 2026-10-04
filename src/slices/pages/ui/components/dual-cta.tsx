@@ -1,22 +1,20 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { MediaImage, type MediaImageData } from "@core/media";
-import { ButtonLink } from "@core/ui";
+import { DualCtaPanels, type DualCtaPanel } from "@core/ui";
 import { avantioBookingUrl, getGlobals } from "@slices/settings/contract";
 
 /**
- * Owner/Guest dual call-to-action band (Home) — "Immersive Panels" layout (owner-chosen).
- * Two full-bleed image panels with a dark scrim and white copy overlaid; the image zooms
- * gently on hover (CSS only, so this stays a server component). Owner side links to the
- * owners page; guest side links to the Avantio booking engine. Edge-to-edge (no `Container`,
- * client feedback) — one full-width row, split 50/50 in two columns from `md`, stacked into
- * two rows below it.
+ * Owner/Guest dual call-to-action band (Home) — data composer for the presentational
+ * `DualCtaPanels` (`core/ui/dual-cta-panels.tsx`). Owner side links to the owners page;
+ * guest side links to the Avantio booking engine.
  *
  * The panel copy + background images are **editable in the Home editor** (`home.dual_cta`,
  * resolved upstream into `content`/`media`). When a panel field is unset — or for legacy
  * rows authored before this block existed — it falls back to the localized `pages.dualCta.*`
  * chrome and the approved mock photos below. The contact line is read from the settings
- * singleton (data-model.md → dual-CTA = company_settings). Subscribes transitively to `globals`.
+ * singleton (data-model.md → dual-CTA = company_settings). Subscribes transitively to
+ * `globals`. See `DualCtaPanels` for the actual layout/markup.
  */
 const OWNER_IMG =
   "https://images.pexels.com/photos/20143167/pexels-photo-20143167.jpeg?auto=compress&cs=tinysrgb&w=1400";
@@ -83,65 +81,33 @@ export async function DualCta({
     : null;
   const guestContact = globals ? `${globals.phone} · ${globals.email}` : null;
 
-  return (
-    <section className="pb-[clamp(64px,10vw,160px)]">
-      <div className="grid grid-cols-1 gap-px overflow-hidden border-y border-line bg-line md:grid-cols-2">
-        {/* Owner panel */}
-        <div className="group relative flex min-h-[clamp(440px,54vh,580px)] overflow-hidden">
-          <PanelImage
-            asset={ownerAsset}
-            fallbackSrc={OWNER_IMG}
-            alt={owner?.title || t("dualCta.ownerTitle")}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
-          <div className="relative mt-auto p-8 text-white md:p-12">
-            <span className="text-xs font-medium uppercase tracking-[0.16em] text-feature-accent">
-              {owner?.eyebrow || t("dualCta.ownerEyebrow")}
-            </span>
-            <h3 className="mt-3 font-serif text-2xl leading-snug">
-              {owner?.title || t("dualCta.ownerTitle")}
-            </h3>
-            <p className="mt-3 max-w-md leading-relaxed text-white/85">
-              {owner?.body || t("dualCta.ownerBody")}
-            </p>
-            <div className="mt-6">
-              <ButtonLink href={`/${locale}/owners`}>
-                {owner?.cta_label || t("dualCta.ownerCta")}
-              </ButtonLink>
-            </div>
-            {ownerContact ? (
-              <p className="mt-5 text-sm text-white/75">{ownerContact}</p>
-            ) : null}
-          </div>
-        </div>
+  const ownerTitle = owner?.title || t("dualCta.ownerTitle");
+  const guestTitle = guest?.title || t("dualCta.guestTitle");
 
-        {/* Guest panel */}
-        <div className="group relative flex min-h-[clamp(440px,54vh,580px)] overflow-hidden">
-          <PanelImage
-            asset={guestAsset}
-            fallbackSrc={GUEST_IMG}
-            alt={guest?.title || t("dualCta.guestTitle")}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
-          <div className="relative mt-auto p-8 text-white md:p-12">
-            <span className="text-xs font-medium uppercase tracking-[0.16em] text-white/80">
-              {guest?.eyebrow || t("dualCta.guestEyebrow")}
-            </span>
-            <h3 className="mt-3 font-serif text-2xl leading-snug">
-              {guest?.title || t("dualCta.guestTitle")}
-            </h3>
-            <p className="mt-3 max-w-md leading-relaxed text-white/85">
-              {guest?.body || t("dualCta.guestBody")}
-            </p>
-            <div className="mt-6">
-              <ButtonLink href={avantioBookingUrl(locale)} variant="light">
-                {guest?.cta_label || t("dualCta.guestCta")}
-              </ButtonLink>
-            </div>
-            {guestContact ? <p className="mt-5 text-sm text-white/75">{guestContact}</p> : null}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+  const ownerPanel: DualCtaPanel = {
+    image: <PanelImage asset={ownerAsset} fallbackSrc={OWNER_IMG} alt={ownerTitle} />,
+    eyebrow: owner?.eyebrow || t("dualCta.ownerEyebrow"),
+    title: ownerTitle,
+    body: owner?.body || t("dualCta.ownerBody"),
+    cta: {
+      href: `/${locale}/owners`,
+      label: owner?.cta_label || t("dualCta.ownerCta"),
+    },
+    contactLine: ownerContact ?? undefined,
+  };
+
+  const guestPanel: DualCtaPanel = {
+    image: <PanelImage asset={guestAsset} fallbackSrc={GUEST_IMG} alt={guestTitle} />,
+    eyebrow: guest?.eyebrow || t("dualCta.guestEyebrow"),
+    title: guestTitle,
+    body: guest?.body || t("dualCta.guestBody"),
+    cta: {
+      href: avantioBookingUrl(locale),
+      label: guest?.cta_label || t("dualCta.guestCta"),
+      variant: "light",
+    },
+    contactLine: guestContact ?? undefined,
+  };
+
+  return <DualCtaPanels panels={[ownerPanel, guestPanel]} />;
 }

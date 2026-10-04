@@ -2,9 +2,8 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import type { Locale } from "@core/db/columns";
 import { MediaImage } from "@core/media";
-import { Container, Eyebrow } from "@core/ui";
+import { Carousel, Container, Eyebrow } from "@core/ui";
 import { type ServiceSummary, listServices } from "@slices/services/contract";
-import { ServicesCarouselTrack } from "./services-carousel-track";
 import { Icon } from "./icon";
 
 /**
@@ -74,11 +73,19 @@ export async function ServicesCarousel({
         ) : null}
 
         <div className="mt-10">
-          <ServicesCarouselTrack
+          <Carousel
             slides={slides}
             prevLabel={t("servicesCarousel.prev")}
             nextLabel={t("servicesCarousel.next")}
             regionLabel={t("servicesCarousel.region")}
+            gap="sm"
+            basis={{
+              base: "78%",
+              sm: "calc((100%-1.25rem)/2)",
+              md: "calc((100%-2.5rem)/3)",
+              lg: "calc((100%-3.75rem)/4)",
+            }}
+            buttonPlacement="overlay"
           />
         </div>
       </Container>

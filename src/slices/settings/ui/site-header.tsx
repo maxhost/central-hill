@@ -1,13 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { ButtonLink, Container } from "@core/ui";
+import { ButtonLink, MobileDrawer, NavBar, type NavEntry } from "@core/ui";
 import { Link } from "@/i18n/navigation";
 import { AVANTIO_OWNERS_LOGIN_URL } from "../contract";
 import { getNav } from "../server/queries";
 import { ContactDialog } from "./components/contact-dialog";
 import { HeaderScroll } from "./components/header-scroll";
 import { LocaleSwitcher } from "./components/locale-switcher";
-import { MobileNav, type NavEntry } from "./components/mobile-nav";
 
 /**
  * Site-wide header (app-shell chrome). Renders the primary navigation from the
@@ -135,86 +134,24 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
   });
 
   return (
-    <header
-      data-site-header
-      className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/85 backdrop-blur transition-colors duration-300"
-    >
+    <>
       <HeaderScroll />
       <style>{OWNERS_NAV_CSS}</style>
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-3 focus:z-50 focus:rounded-md focus:bg-ink focus:px-4 focus:py-2 focus:text-sm focus:text-bg"
-      >
-        {t("skip")}
-      </a>
-      <Container className="flex h-16 items-center justify-between gap-6">
-        <Link
-          href="/"
-          aria-label={t("home")}
-          data-brand
-          className="font-serif text-xl font-semibold text-ink"
-        >
-          Central<span className="text-accent">Hill</span>
-        </Link>
-
-        <nav className="hidden items-center gap-7 lg:flex">
-          {links.map((l) =>
-            l.children?.length ? (
-              <div key={l.href + l.label} data-subnav data-nav-item={l.href} className="group">
-                <Link
-                  href={l.href}
-                  className="inline-flex items-center gap-1 py-5 text-sm text-ink-soft transition-colors hover:text-ink"
-                >
-                  {l.label}
-                  <span
-                    aria-hidden
-                    className="text-[0.6rem] opacity-70 transition-transform duration-200 group-hover:rotate-180"
-                  >
-                    ▾
-                  </span>
-                </Link>
-                {/*
-                 * Sub-tabs as a full-width frosted bar directly under the header (mirrors
-                 * mock/home.html owner sub-nav): revealed on hover/focus of this top-level
-                 * item. `inset-x-0` resolves against the fixed header → spans its full width.
-                 * `data-chrome-keep` opts the bar out of the over-hero white inversion so its
-                 * ink-soft links stay readable on the light frosted background.
-                 */}
-                <div
-                  data-chrome-keep
-                  data-subnav-panel
-                  className="invisible absolute inset-x-0 top-full z-40 border-b border-line bg-bg/95 opacity-0 shadow-sm backdrop-blur transition-all duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
-                >
-                  <Container className="flex items-center gap-1 overflow-x-auto">
-                    {l.children.map((c) => (
-                      <Link
-                        key={c.href + c.label}
-                        href={c.href}
-                        className="whitespace-nowrap border-b-2 border-transparent px-4 py-3.5 text-[13px] font-medium text-ink-soft transition-colors hover:border-accent hover:text-accent-deep"
-                      >
-                        {c.label}
-                      </Link>
-                    ))}
-                  </Container>
-                </div>
-              </div>
-            ) : (
-              <Link
-                key={l.href + l.label}
-                href={l.href}
-                className="text-sm text-ink-soft transition-colors hover:text-ink"
-              >
-                {l.label}
-              </Link>
-            ),
-          )}
-
-          {/*
-           * The two persistent CTAs, paired and set off from the menu links by a margin
-           * (client feedback — "Earn With Us" sits right next to "Book Now", not lost among
-           * the regular nav links).
-           */}
-          <div className="ml-2 flex items-center gap-3">
+      <NavBar
+        skipLinkLabel={t("skip")}
+        brand={
+          <Link
+            href="/"
+            aria-label={t("home")}
+            data-brand
+            className="font-serif text-xl font-semibold text-ink"
+          >
+            Central<span className="text-accent">Hill</span>
+          </Link>
+        }
+        links={links}
+        ctas={
+          <>
             {/*
              * "Book Now" — anchors to the embedded Avantio search bar on Home (hero/stats
              * seam) rather than opening the external Avantio engine — the locale-aware `Link`
@@ -234,52 +171,55 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
              * standout action next to the outlined "Book Now". Always routes to `/owners` in
              * the active locale.
              */}
-            <ButtonLink
-              href={`/${locale}/owners`}
-              className="rounded-[3px] px-5 py-[11px] text-sm"
-            >
+            <ButtonLink href={`/${locale}/owners`} className="rounded-[3px] px-5 py-[11px] text-sm">
               {t("ctaEarn")}
             </ButtonLink>
-          </div>
-        </nav>
-
-        {/* Section 3 — utilities: account access, contact, language. */}
-        <div className="hidden items-center gap-3 lg:flex">
-          <a
-            href={AVANTIO_OWNERS_LOGIN_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={t("ownerLogin")}
-            title={t("ownerLogin")}
-            data-icon-btn
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface hover:text-ink"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden className="h-5 w-5 fill-current">
-              <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.42 0-8 2.69-8 6v2h16v-2c0-3.31-3.58-6-8-6z" />
-            </svg>
-          </a>
-          <ContactDialog
-            variant="icon"
-            label={t("contact")}
-            title={t("contactDialog.title")}
-            intro={t("contactDialog.intro")}
+          </>
+        }
+        utilities={
+          <>
+            <a
+              href={AVANTIO_OWNERS_LOGIN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={t("ownerLogin")}
+              title={t("ownerLogin")}
+              data-icon-btn
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface hover:text-ink"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden className="h-5 w-5 fill-current">
+                <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.42 0-8 2.69-8 6v2h16v-2c0-3.31-3.58-6-8-6z" />
+              </svg>
+            </a>
+            <ContactDialog
+              variant="icon"
+              label={t("contact")}
+              title={t("contactDialog.title")}
+              intro={t("contactDialog.intro")}
+            />
+            <LocaleSwitcher current={locale} label={t("language")} />
+          </>
+        }
+        mobileDrawer={
+          <MobileDrawer
+            links={links}
+            loginHref={AVANTIO_OWNERS_LOGIN_URL}
+            loginLabel={t("ownerLogin")}
+            contactSlot={
+              <ContactDialog
+                variant="button"
+                label={t("contact")}
+                title={t("contactDialog.title")}
+                intro={t("contactDialog.intro")}
+              />
+            }
+            book={{ href: `/${locale}#booking-engine`, label: t("ctaBook") }}
+            earn={{ href: `/${locale}/owners`, label: t("ctaEarn") }}
+            openLabel={t("menu")}
+            closeLabel={t("close")}
           />
-          <LocaleSwitcher current={locale} label={t("language")} />
-        </div>
-
-        <MobileNav
-          links={links}
-          loginHref={AVANTIO_OWNERS_LOGIN_URL}
-          loginLabel={t("ownerLogin")}
-          contactLabel={t("contact")}
-          contactTitle={t("contactDialog.title")}
-          contactIntro={t("contactDialog.intro")}
-          book={{ href: `/${locale}#booking-engine`, label: t("ctaBook") }}
-          earn={{ href: `/${locale}/owners`, label: t("ctaEarn") }}
-          openLabel={t("menu")}
-          closeLabel={t("close")}
-        />
-      </Container>
-    </header>
+        }
+      />
+    </>
   );
 }

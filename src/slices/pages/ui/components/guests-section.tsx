@@ -1,6 +1,6 @@
 import { MediaImage, type MediaImageData } from "@core/media";
-import { ButtonLink, Container } from "@core/ui";
-import { type CtaNote, type IconCard, altBg } from "./blocks";
+import { TwoColumnShowcase } from "@core/ui";
+import type { CtaNote, IconCard } from "./blocks";
 import { Icon } from "./icon";
 
 /**
@@ -8,6 +8,12 @@ import { Icon } from "./icon";
  * floating reassurance badge beside the headline, compact benefit highlights and a single CTA. Sits
  * on the warm `altBg` band to keep the home's section rhythm. Purely presentational — `guests_pitch`
  * content is resolved upstream in `home-page.tsx`. Stays inside the S9 `pages` slice.
+ *
+ * Thin composer over the generalized `core/ui` `TwoColumnShowcase` (ADR 0033,
+ * `docs/specs/home-component-library/05-two-column-showcase.md`): resolves the image fallback
+ * and maps `GuestsContent`'s field names onto the shared component's generic prop names. The
+ * -10% `compact` rhythm and the `altBg` tone are passed straight through — see that component
+ * for why `compact` is an inline-style override rather than a competing Tailwind class.
  */
 
 // Fallback lifestyle image used when the editable `guests_pitch.image_media_id` has no
@@ -36,56 +42,31 @@ export function GuestsSection({
   /** Resolved asset for `image_media_id`; falls back to the approved mock photo. */
   image?: MediaImageData | null;
 }) {
-  return (
-    // Not `<Band>` (core/ui `Section`'s vertical rhythm is kernel-locked, `clamp(64px,10vw,160px)`
-    // — client feedback wants THIS section 10% tighter, not the site-wide rhythm) — same
-    // Container/altBg/id-anchor shape as `Band`, with an inline padding override so the -10%
-    // is deterministic regardless of Tailwind's utility-class cascade order.
-    <section className={altBg} style={{ paddingBlock: "clamp(57.6px, 9vw, 144px)" }}>
-      <Container>
-        <span id="guests" className="block scroll-mt-24" aria-hidden />
-        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
-          <div>
-            <h2 className="font-serif text-3xl leading-tight text-ink md:text-4xl">{content.headline}</h2>
-            {content.subheadline ? (
-              <p className="mt-5 text-lg leading-relaxed text-ink-soft">{content.subheadline}</p>
-            ) : null}
-            <ul className="mt-8 grid gap-x-8 gap-y-5 sm:grid-cols-2">
-              {content.benefits.slice(0, 4).map((b, i) => (
-                <li key={i} className="flex gap-3">
-                  <Icon name={b.icon_key} className="mt-0.5 h-6 w-6 shrink-0 text-accent-deep" />
-                  <div>
-                    <h3 className="font-medium text-ink">{b.title}</h3>
-                    <p className="mt-1 text-sm leading-relaxed text-ink-soft">{b.description}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-9">
-              <ButtonLink href={content.cta.url}>{content.cta.label}</ButtonLink>
-              {content.cta.note ? (
-                <p className="mt-3 text-sm text-ink-soft">{content.cta.note}</p>
-              ) : null}
-            </div>
-          </div>
+  const imageEl = image ? (
+    <MediaImage data={image} className={SHOWCASE_CLASS} sizes={SHOWCASE_SIZES} />
+  ) : (
+    /* eslint-disable-next-line @next/next/no-img-element -- approved mock photo,
+       already sized by Unsplash's own CDN (ADR 0027) */
+    <img src={SHOWCASE_IMG} alt="" loading="lazy" className={SHOWCASE_CLASS} />
+  );
 
-          <div className="relative order-first lg:order-last">
-            {image ? (
-              <MediaImage data={image} className={SHOWCASE_CLASS} sizes={SHOWCASE_SIZES} />
-            ) : (
-              /* eslint-disable-next-line @next/next/no-img-element -- approved mock photo,
-                 already sized by Unsplash's own CDN (ADR 0027) */
-              <img src={SHOWCASE_IMG} alt="" loading="lazy" className={SHOWCASE_CLASS} />
-            )}
-            {content.cta.note ? (
-              <div className="absolute -bottom-5 -left-4 hidden max-w-[15rem] items-start gap-2.5 rounded-sm border border-line bg-surface px-5 py-4 shadow-xl sm:flex">
-                <Icon name="check" className="mt-0.5 h-5 w-5 shrink-0 text-accent-deep" />
-                <span className="text-sm leading-snug text-ink">{content.cta.note}</span>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </Container>
-    </section>
+  return (
+    <TwoColumnShowcase
+      id="guests"
+      tone="alt"
+      compact
+      // Today's image sits on the right at `lg` (`order-last`) — the shared component's
+      // default — and stacks above the copy on mobile regardless (CSS-only, unchanged).
+      imagePosition="right"
+      headline={content.headline}
+      body={content.subheadline}
+      bullets={content.benefits.slice(0, 4).map((b) => ({
+        icon: <Icon name={b.icon_key} className="mt-0.5 h-6 w-6 shrink-0 text-accent-deep" />,
+        title: b.title,
+        description: b.description,
+      }))}
+      cta={{ href: content.cta.url, label: content.cta.label, note: content.cta.note }}
+      image={imageEl}
+    />
   );
 }

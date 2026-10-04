@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { cn } from "@core/ui";
+import { cn } from "../cn";
 
 /**
  * Scroll-reveal wrapper for a Home section: fades/slides in once, immediately on mount if

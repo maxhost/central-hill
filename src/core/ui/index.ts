@@ -8,3 +8,18 @@ export { Container } from "./container";
 export { Section } from "./section";
 export { Eyebrow } from "./eyebrow";
 export { ButtonLink } from "./button";
+/** Scroll-reveal wrapper (fade/slide-in once, IntersectionObserver-based). */
+export { Reveal } from "./motion/reveal";
+/** Animated count-up for headline figures, parses a display string and counts to it. */
+export { CountUp } from "./motion/count-up";
+/** Shared scroll-snap carousel (Home's featured portfolio + services tracks). */
+export { Carousel } from "./carousel";
+/** Two-column "Image Showcase" section (copy + bullets + CTA beside an image). */
+export { TwoColumnShowcase } from "./two-column-showcase";
+export type { TwoColumnShowcaseBullet, TwoColumnShowcaseCta } from "./two-column-showcase";
+/** Owner/guest "Immersive Panels" closing band — presentational, data composer stays slice-owned. */
+export { DualCtaPanels, type DualCtaPanel } from "./dual-cta-panels";
+/** Site-wide header chrome (sticky bar + hover-dropdown mechanics) — see `nav-bar.tsx`. */
+export { NavBar, type NavLinkEntry } from "./nav-bar";
+/** Mobile navigation drawer shell — see `mobile-drawer.tsx`. */
+export { MobileDrawer, type NavCta, type NavEntry } from "./mobile-drawer";

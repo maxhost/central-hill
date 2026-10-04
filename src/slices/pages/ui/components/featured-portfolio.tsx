@@ -2,10 +2,9 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import type { Locale } from "@core/db/columns";
 import { MediaImage } from "@core/media";
-import { ButtonLink, Container } from "@core/ui";
+import { ButtonLink, Carousel, Container } from "@core/ui";
 import { type BuildingSummary, getFeaturedBuildings } from "@slices/buildings/contract";
 import { SectionHeading } from "./blocks";
-import { PortfolioCarousel } from "./portfolio-carousel";
 
 /** How many featured buildings feed the carousel (three visible at a time). */
 const CAROUSEL_LIMIT = 9;
@@ -19,7 +18,7 @@ const CAROUSEL_LIMIT = 9;
  * shows **three properties at a time** (two on tablet, one on mobile) with prev/next
  * controls. Builds its own card from `BuildingSummary` (no cross-slice UI import, golden
  * rule 2). Subscribes transitively to `building-list`. The carousel itself is a small
- * client island (`PortfolioCarousel`); cards are server-rendered here and passed in.
+ * client island (`core/ui`'s `Carousel`); cards are server-rendered here and passed in.
  */
 export async function FeaturedPortfolio({
   locale,
@@ -75,10 +74,13 @@ export async function FeaturedPortfolio({
           intro={intro ?? t("portfolio.intro")}
         />
         <div className="mt-12">
-          <PortfolioCarousel
+          <Carousel
             slides={slides}
             prevLabel={t("portfolio.prev")}
             nextLabel={t("portfolio.next")}
+            gap="lg"
+            basis={{ base: "100%", sm: "calc((100%-1.75rem)/2)", lg: "calc((100%-3.5rem)/3)" }}
+            buttonPlacement="below"
           />
         </div>
         <div className="mt-12 text-center">

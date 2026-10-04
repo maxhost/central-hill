@@ -1105,3 +1105,39 @@ fills the section on the live `home` row. Both are idempotent; the seed tracks i
 **Status:** Accepted (2026-09-12). Amends ADR 0031's composition (which it does not otherwise
 reopen) and extends ADR 0012's editor with the second `select` source. Verified in the browser at
 1440px, 390px and in `pt` (rating renders "4,9"), and in the generated Home editor.
+
+---
+
+## 0033 — Home's section components move into `core/ui` as a reusable library <a id="0033"></a>
+**Context:** Home (`/[locale]`) is the one public page already built from real React/Tailwind
+components rather than `.mk` HTML-string templates. Its section components
+(`src/slices/pages/ui/components/`) can't be imported by any other slice — golden rule 2 limits
+cross-slice access to `contract.ts`, and UI components aren't a contract concern — so any future
+React-built screen would have to reimplement hero/stats/carousel/two-column/property-card/dual-CTA
+patterns from scratch. A concrete instance of the cost was found directly in Home's own code:
+`portfolio-carousel.tsx` and `services-carousel-track.tsx` are two independent, near-identical
+implementations of the same scroll-snap-carousel mechanism. Full survey, API design and migration
+plan: `docs/specs/home-component-library/` (one file per component, `00-overview.md` first).
+
+This is deliberately **narrower** than the `.mk`-vs-React paradigm question raised in
+`docs/specs/handoff-2026-10-03-b.md` Part 2 (which `.mk` pages should migrate, if any, onto which
+system) — that question is **not decided here** and stays open for a separate future ADR. This
+entry only concerns Home's already-React code.
+
+**Decision:** Extract Home's section components into `src/core/ui/` (`Hero`, `StatBand`,
+`Carousel`, `TwoColumnShowcase`, `PropertyCard`, `DualCtaPanels`, `motion/Reveal`,
+`motion/CountUp`, and optionally `NavBar`/`MobileDrawer`), split from their data-fetching
+composers which stay in `pages`/`settings` (golden rule 2 unchanged — `core/ui` never imports a
+slice contract). The two duplicate carousel-track implementations collapse into one shared
+`Carousel`. Scoped to Home only: no `.mk` page is touched, no visual change ships (pure refactor,
+verified pixel-identical per component).
+
+**Consequences:** `core/ui` grows from 5 files to ~11–13. Any future screen gets a ready-made
+hero/stats/carousel/two-column/property-card/dual-cta kit. `.mk` pages keep reimplementing the
+same visual patterns in raw CSS — unaffected by this ADR; the per-component specs note which
+patterns (e.g. "Image Showcase") a future `.mk` migration could target once the generic version
+exists. Implementation proceeds component-by-component per
+`docs/specs/home-component-library/00-overview.md` §5's ordering, each independently
+typecheck/lint/test-green and visually verified before the next lands.
+
+**Status:** Accepted (2026-10-03).
