@@ -9,6 +9,7 @@ import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
 import { GuestsSection } from "./components/guests-section";
 import { PageHero } from "./components/hero";
+import { Reveal } from "./components/reveal";
 import { ServicesCarousel } from "./components/services-carousel";
 import { StatsBand } from "./components/stats-band";
 
@@ -76,22 +77,41 @@ export async function HomePage({ locale }: { locale: Locale }) {
       {/* Avantio availability search, directly under the hero (client request). */}
       <AvantioSearchBar locale={locale} />
 
-      <StatsBand locale={locale} keys={["bookings", "years", "guests", "revenue"]} />
+      {/*
+       * Scroll-reveal from here down (client feedback: bring Home in line with the other
+       * pages' entrance motion). Each section is wrapped at this call site, not edited
+       * internally — `FeaturedPortfolio` is also rendered by the Guest page, so animating
+       * it here must not change its behaviour there. Hero/search stay unanimated, matching
+       * every other page. <noscript> below keeps content visible with JS off.
+       */}
+      <noscript>
+        <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
+      </noscript>
+
+      <Reveal>
+        <StatsBand locale={locale} keys={["bookings", "years", "guests", "revenue"]} />
+      </Reveal>
 
       {/* Guests pitch now sits directly under stats, ahead of the carousel (client feedback). */}
-      <GuestsSection
-        content={guests_pitch}
-        image={media[guests_pitch.image_media_id ?? ""] ?? null}
-      />
+      <Reveal>
+        <GuestsSection
+          content={guests_pitch}
+          image={media[guests_pitch.image_media_id ?? ""] ?? null}
+        />
+      </Reveal>
 
       {/*
        * Featured portfolio (restored, client direction) — composes from `buildings`, ahead
        * of the services carousel. No intro copy under the title (client feedback).
        */}
-      <FeaturedPortfolio locale={locale} showEyebrow={false} intro="" tightBottom />
+      <Reveal>
+        <FeaturedPortfolio locale={locale} showEyebrow={false} intro="" tightBottom />
+      </Reveal>
 
       {/* Services & partners (ADR 0032) — copy from the page, cards from `services`. */}
-      <ServicesCarousel locale={locale} content={services_carousel} />
+      <Reveal>
+        <ServicesCarousel locale={locale} content={services_carousel} />
+      </Reveal>
 
       {faqGroupKey ? (
         <FaqSection
@@ -102,7 +122,9 @@ export async function HomePage({ locale }: { locale: Locale }) {
       ) : null}
 
       {/* Closing owner/guest dual CTA (restored, client direction) — sits right before the footer. */}
-      <DualCta locale={locale} content={dual_cta} media={media} />
+      <Reveal>
+        <DualCta locale={locale} content={dual_cta} media={media} />
+      </Reveal>
     </main>
   );
 }
