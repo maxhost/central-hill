@@ -25,6 +25,9 @@ export { PricingCards } from "./pricing-cards";
 export type { PricingTier } from "./pricing-cards";
 /** Bare highlighted horizontal callout (title + copy + one CTA) — no Section/Container of its own. */
 export { CalloutBand } from "./callout-band";
+/** Numbered step gallery (heading + hairline grid of full-bleed photo cards with an overlaid index/title/description). */
+export { StepGallery } from "./step-gallery";
+export type { StepGalleryItem } from "./step-gallery";
 /** Owner/guest "Immersive Panels" closing band — presentational, data composer stays slice-owned. */
 export { DualCtaPanels, type DualCtaPanel } from "./dual-cta-panels";
 /** Site-wide header chrome (sticky bar + hover-dropdown mechanics) — see `nav-bar.tsx`. */

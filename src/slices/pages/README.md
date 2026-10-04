@@ -87,13 +87,12 @@ proportions, gap, and headline sizing were ported 1:1 from this page's own CSS (
 `mock/owners.html`'s, which is stale) — see `core/ui/hero.tsx`'s docstring for the exact
 cascade/specificity reasoning. The 3-step wizard's client wiring (`est-form-wizard.tsx`,
 `est-form-stepper.tsx`) now queries `document` directly instead of a `.mk` ancestor, since the
-form no longer lives in the raw-markup wrapper. Everything **below** the hero is still built by
-`ownersBodyTop(content, media)`, which interpolates the resolved content into the locked design
-markup verbatim — the bespoke per-benefit SVGs, the "★" badge glyph and CTA "→" stay design,
-in-page CTAs keep their `#worth`/`#start` anchors, and the form *fields* stay fixed in code
-(`lead.kind='earnings_estimate'`). Optional images (`services`/`dashboard`) fall back to the
-approved mock photo until an R2 asset is set. Admin text is HTML-escaped before interpolation. It
-no longer renders its own section bar: the header's "Owners" mega-menu (settings slice) doubles
+form no longer lives in the raw-markup wrapper. Every section below the hero is now real JSX too
+(see the `why`/`services`/`plans`/`journey`/`dashboard` walkthrough below) — `ownersBodyTop` is
+gone; the only raw-HTML `.mk` content left on this page is `ownersBodyBottom()`, the closing CTA
+band (bespoke "★"/"→" glyphs stay design, admin text HTML-escaped before interpolation). Optional
+images (`services`/`dashboard`/`journey` steps) fall back to the approved mock/Pexels photo until
+an R2 asset is set. It no longer renders its own section bar: the header's "Owners" mega-menu (settings slice) doubles
 as the section sub-nav — it opens on hover and the settings header pins it open once scrolled
 past the top (`OWNERS_NAV_CSS`, scoped via `body:has([data-page="owners"])`); on mobile those
 anchors live under "Owners" in the burger drawer.
@@ -139,8 +138,16 @@ tiers — drizzle 0010 trimmed `plans.helpers` 2→1) is real JSX too: two new `
 coupling *inside* the same section, rather than becoming a second, separately-padded one — the
 reason neither component's own docstring explains in isolation. Both "Choose `<tier>`" and the
 helper band's CTA keep `href="#"`, matching the original markup exactly (the schema's
-`planHelper.cta.url` field was never actually wired to the href there either). `journey` — and
-the closing CTA. Two sections are
+`planHelper.cta.url` field was never actually wired to the href there either). `journey` ("Your
+growth path", exactly 5 steps) is real JSX too: a new `core/ui` component, `StepGallery` (centred
+heading above a hairline-separated, `altBg`-toned grid of full-bleed photo cards — each with a
+dark bottom scrim, a hover zoom, and an overlaid "01"-style index + title + description), ported
+1:1 from the old `.steps`/`.step`/`.step-img`/`.step-scrim`/`.snum` CSS. The index is derived from
+array position, not a schema field (same reasoning as `PricingCards`' "Most Popular" ribbon); the
+step photos are still Pexels placeholders (`JOURNEY_FALLBACK_IMGS`, client direction — trying a
+photo-background treatment, `#core/media` assets not uploaded yet), one per step, falling back
+positionally like `services`/`dashboard`'s images. Only the closing CTA band remains raw markup.
+Two sections are
 shared React islands rendered **outside** the `.mk` wrapper (so `mock.css` bare-element rules don't
 leak into their Tailwind markup): the `testimonials` infinite marquee (`<TestimonialsRow>`, the same
 component as the home "Partners & Guests" carousel) and the `faq` accordion (`<FaqSection>`). Both
