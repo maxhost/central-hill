@@ -6,6 +6,7 @@ import { ContactDialog } from "@slices/settings/contract";
 import type { BuildingSummary } from "../contract";
 import { listBuildings } from "../server/queries";
 import { HeroContactCta } from "./components/hero-contact-cta";
+import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
  * Buildings listing — the approved `mock/buildings.html` design embedded 1:1 inside the
@@ -169,6 +170,18 @@ const PAGE_STYLE = `
 .mk .calc-band .wiz-confirm p{font-size:14.5px;line-height:1.6;color:var(--ink-soft)}
 @media(max-width:980px){.mk .calc-wrap{grid-template-columns:1fr;gap:34px}.mk .calc-media{order:-1}}
 @media(max-width:520px){.mk .calc-band .est-two{grid-template-columns:1fr}}
+
+/* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
+   the rest, via <ScrollReveal page="buildings">/scroll-reveal.tsx) — same pattern already
+   applied to About/Guests/Real Estate. The building cards (.pcard) already have their own
+   hover (lift + image zoom) from the shared mock.css, so that's left as-is — only the
+   scroll-in entrance was missing. The hidden state is baked straight into the
+   server-rendered markup (.pre-reveal, applied on the elements below) so there's no flash
+   of visible-then-hidden; the <noscript> rule keeps content visible with JS off. Scoped to
+   [data-page="buildings"] so it never touches the shared, neutralised .reveal rule in
+   mock.css or any other page. */
+.mk[data-page="buildings"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.mk[data-page="buildings"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
 `;
 
 function BODY(locale: Locale, cardsHtml: string): string {
@@ -215,7 +228,7 @@ function BODY(locale: Locale, cardsHtml: string): string {
 <!-- BUILDING GRID -->
 <section>
   <div class="wrap">
-    <div class="pf-grid reveal">${cardsHtml}
+    <div class="pf-grid reveal reveal-io reveal-stagger pre-reveal">${cardsHtml}
     </div>
   </div>
 </section>
@@ -223,7 +236,7 @@ function BODY(locale: Locale, cardsHtml: string): string {
 <!-- OWNER CTA BAND -->
 <section style="padding-top:0">
   <div class="wrap">
-    <div class="dual reveal" style="grid-template-columns:1fr">
+    <div class="dual reveal reveal-io pre-reveal" style="grid-template-columns:1fr">
       <div class="dcol owner">
         <span class="eyebrow">For Owners</span>
         <h3>Looking to add your property to our portfolio?</h3>
@@ -239,7 +252,7 @@ function BODY(locale: Locale, cardsHtml: string): string {
 <section class="stats">
   <div class="wrap">
     <h2 style="text-align:center;margin-bottom:42px">Numbers That Speak for Themselves</h2>
-    <div class="stats-grid reveal" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stats-grid reveal reveal-io reveal-stagger pre-reveal" style="grid-template-columns:repeat(3,1fr)">
       <div class="stat">
         <div class="num">400,000+</div>
         <div class="lbl">Bookings Completed</div>
@@ -264,7 +277,7 @@ function BODY(locale: Locale, cardsHtml: string): string {
      duplicate of the Owners markup rather than a cross-slice import of it). -->
 <section class="calc-band">
   <div class="wrap calc-wrap">
-    <form class="est-card reveal" data-wizard data-step="1" onsubmit="return false">
+    <form class="est-card reveal reveal-io pre-reveal" data-wizard data-step="1" onsubmit="return false">
       <div class="wiz-dots" aria-hidden="true"><span data-dot="1"></span><span data-dot="2"></span><span data-dot="3"></span></div>
 
       <div class="wiz-panel" data-panel="1">
@@ -341,7 +354,7 @@ function BODY(locale: Locale, cardsHtml: string): string {
         </div>
       </div>
     </form>
-    <div class="calc-media reveal">${calcImg}</div>
+    <div class="calc-media reveal reveal-io pre-reveal">${calcImg}</div>
   </div>
 </section>
 `;
@@ -364,6 +377,14 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
   return (
     <div className="mk" data-page="buildings">
       <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+      <noscript>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `.mk[data-page="buildings"] .pre-reveal{opacity:1!important;transform:none!important}`,
+          }}
+        />
+      </noscript>
+      <ScrollReveal page="buildings" />
       <HeroContactCta>
         <ContactDialog
           variant="light"
