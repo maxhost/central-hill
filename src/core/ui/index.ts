@@ -30,6 +30,8 @@ export { StepGallery } from "./step-gallery";
 export type { StepGalleryItem } from "./step-gallery";
 /** Owner/guest "Immersive Panels" closing band — presentational, data composer stays slice-owned. */
 export { DualCtaPanels, type DualCtaPanel } from "./dual-cta-panels";
+/** Dark "feature band" closing CTA: photo one side, eyebrow/headline/body/CTA/contact-line the other. */
+export { FeatureCtaBand } from "./feature-cta-band";
 /** Site-wide header chrome (sticky bar + hover-dropdown mechanics) — see `nav-bar.tsx`. */
 export { NavBar, type NavLinkEntry } from "./nav-bar";
 /** Mobile navigation drawer shell — see `mobile-drawer.tsx`. */

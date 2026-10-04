@@ -1,9 +1,19 @@
 import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { MediaImage, mediaImgTag } from "@core/media";
+import { MediaImage } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { CalloutBand, EditorialSplit, Hero, PricingCards, Reveal, StatBand, StepGallery, TwoColumnShowcase } from "@core/ui";
+import {
+  CalloutBand,
+  EditorialSplit,
+  FeatureCtaBand,
+  Hero,
+  PricingCards,
+  Reveal,
+  StatBand,
+  StepGallery,
+  TwoColumnShowcase,
+} from "@core/ui";
 import { ContactDialog } from "@slices/settings/contract";
 import { getOwnersPage } from "../contract";
 import { EstFormStepper } from "./components/est-form-stepper";
@@ -11,7 +21,6 @@ import { EstFormWizard } from "./components/est-form-wizard";
 import { FaqSection } from "./components/faq-section";
 import { Icon } from "./components/icon";
 import { OwnerEstimateForm } from "./components/owner-estimate-form";
-import { ScrollReveal } from "./components/scroll-reveal";
 import { TestimonialsRow } from "./components/testimonials-row";
 
 // `why.benefits`/`services.benefits` positional icons (locked design, not each benefit's own
@@ -30,44 +39,25 @@ const HERO_FALLBACK_IMG =
 const HERO_FALLBACK_ALT = "Bright, designer-furnished Lisbon apartment interior";
 
 /**
- * Owners page — a focused conversion landing embedded 1:1 inside the live app shell.
- * The mock's body markup is rendered verbatim; its page styles are scoped under `.mk`
- * (see `src/app/mock.css` for the shared design system) so nothing leaks to Home/admin.
- * The static body is split around one shared React island — the testimonials marquee — which
- * is the only piece that reads the DB (via the testimonials contract, like the home).
+ * Owners page — a focused conversion landing, now composed entirely from `core/ui`/slice React
+ * components (no more `.mk`/`dangerouslySetInnerHTML` raw-markup body — see `src/app/mock.css`
+ * for the shared design system every section's Tailwind port was measured against). The static
+ * body is split around shared React islands — the testimonials marquee and FAQ accordion — the
+ * only pieces that read the DB beyond this page's own `page_content` row.
  *
- * Sections (owner direction): hero + earnings form, the animated "numbers" band, then the
- * full marketing flow — why / services / plans (up to 4 tiers) / journey (5 photo-card steps) /
- * technology / testimonials / faq — and the closing CTA. Per owner request the per-section
- * *eyebrow* labels were dropped (the big section titles stay); the "★ Earn +25%" badge sits
- * inside the form card (highlighted); the `why` section uses the home's Editorial-Split layout;
- * `services` ("Everything Handled") and `dashboard` ("Always in Sight") use the home's
- * Image-Showcase layout (4 benefit highlights + CTA beside a 4:5 image with a floating badge) —
- * `dashboard` mirrored with the image on the left; `journey` ("Your growth path") uses
- * `core/ui`'s `StepGallery`; the `testimonials` section is the shared <TestimonialsRow> marquee
- * (the home "Partners & Guests" carousel), rendered outside `.mk` to avoid style leak. Marketing
- * sections are mirrored in the owners schema (editor-ready, drizzle 0005→0007). (The closing CTA
- * band is still raw markup for now; wiring it to the DB + leads action is a follow-up.)
+ * Sections (owner direction): hero + earnings form, the animated "numbers" band, then the full
+ * marketing flow — why / services / plans (up to 4 tiers) / journey (5 photo-card steps) /
+ * technology / testimonials / faq / closing CTA. Per owner request the per-section *eyebrow*
+ * labels were dropped (the big section titles stay); the "★ Earn +25%" badge sits inside the
+ * form card (highlighted); `why` uses the home's Editorial-Split layout; `services` ("Everything
+ * Handled") and `dashboard` ("Always in Sight") use the home's Image-Showcase layout (4 benefit
+ * highlights + CTA beside a 4:5 image with a floating badge) — `dashboard` mirrored with the
+ * image on the left; `journey` ("Your growth path") uses `core/ui`'s `StepGallery`; the closing
+ * CTA ("Start Earning More Today") uses `core/ui`'s `FeatureCtaBand`, still fully hardcoded (no
+ * schema field yet — a separate follow-up); `testimonials` is the shared <TestimonialsRow>
+ * marquee (the home "Partners & Guests" carousel). Marketing sections are mirrored in the owners
+ * schema (editor-ready, drizzle 0005→0007).
  */
-
-const OWNERS_STYLE = `
-.mk [id]{scroll-margin-top:130px}
-.mk .cta-band .cta-wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;text-align:left;max-width:var(--max)}
-.mk .cta-band .cta-media img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:3px;display:block}
-@media(max-width:980px){.mk .cta-band .cta-wrap{grid-template-columns:1fr;gap:34px;text-align:center}.mk .cta-band .cta-copy p{margin-left:auto;margin-right:auto}}
-
-/* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
-   the rest, via <ScrollReveal page="owners">/scroll-reveal.tsx) — same pattern already
-   applied to About/Guests/Real Estate/Buildings. This page's card hover states (.plan,
-   .step) already existed and are left as-is — only the scroll-in entrance was missing.
-   The hero + earnings form are left untouched, matching every other page. The hidden
-   state is baked straight into the server-rendered markup (.pre-reveal, applied on the
-   elements below) so there's no flash of visible-then-hidden; the <noscript> rule keeps
-   content visible with JS off. Scoped to [data-page="owners"] so it never touches the
-   shared, neutralised .reveal rule in mock.css or any other page. */
-.mk[data-page="owners"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
-.mk[data-page="owners"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
-`;
 
 const SERVICES_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=72";
@@ -76,8 +66,6 @@ const DASHBOARD_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=72";
 const DASHBOARD_FALLBACK_ALT = "Owner dashboard showing live revenue and occupancy";
 
-// The closing CTA band's image (still the raw-HTML `.cta-band` embed, `980px` breakpoint).
-const SHOWCASE_SIZES = "(max-width: 980px) 100vw, 560px";
 // `services`/`dashboard`'s showcase images: one of `TwoColumnShowcase`'s two `lg:` (1024px)
 // columns — same value Home's `guests-section.tsx` uses for the same component.
 const TWO_COL_SHOWCASE_SIZES = "(max-width: 1024px) 100vw, 560px";
@@ -95,42 +83,11 @@ const JOURNEY_FALLBACK_IMGS = [
 // `StepGallery`'s photo cards: one of its 5 (desktop)/2 (tablet)/1 (mobile) grid cells.
 const JOURNEY_STEP_IMG_SIZES = "(max-width: 680px) 100vw, (max-width: 980px) 50vw, 20vw";
 
-// TEMP: Pexels placeholder for the closing CTA band's new photo column.
+// TEMP: Pexels placeholder for the closing CTA band's photo column (no schema field for this
+// section yet — the whole band is still hardcoded, same as before this port).
 const CTA_FALLBACK_IMG =
   "https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=1200";
 const CTA_FALLBACK_ALT = "A Central Hill managed property at golden hour, overlooking the coast";
-
-// The "What our owners say" testimonials AND the FAQ are rendered by shared React islands
-// (TestimonialsRow + FaqSection) outside the `.mk` wrapper, so the static body is split here:
-// top sections above the carousel, only the closing CTA below it. The FAQ is now editable —
-// its group is chosen per page via `faq_group_key` (see OwnersPage below). Two-column CTA
-// (client direction): photo on the left, the existing copy/CTA/contact line on the right —
-// the image is a Pexels placeholder (no schema field; this whole band is still hardcoded).
-function ownersBodyBottom(): string {
-  const ctaImg = mediaImgTag({
-    fallbackSrc: CTA_FALLBACK_IMG,
-    fallbackAlt: CTA_FALLBACK_ALT,
-    sizes: SHOWCASE_SIZES,
-  });
-  return `
-<section id="start" class="stats cta-band" style="padding:var(--section-y) 0">
-  <div class="wrap cta-wrap">
-    <div class="cta-media reveal reveal-io pre-reveal">${ctaImg}</div>
-    <div class="cta-copy reveal reveal-io pre-reveal">
-      <span class="eyebrow" style="color:var(--feature-accent)">Start Earning More Today</span>
-      <h2 class="section-title" style="color:#fff;margin-top:14px">Ready to Make Your Property Work for You?</h2>
-      <p style="color:var(--on-feature-soft);font-size:18px;margin:18px 0 0;max-width:48ch">Join the growing number of property owners across Portugal who trust Central Hill Apartments to deliver exceptional results. Start with a free, no-obligation profitability analysis.</p>
-      <div style="margin-top:34px">
-        <a class="btn btn-accent" href="#worth">Get Your Free Earnings Estimate →</a>
-      </div>
-      <p style="color:var(--on-feature-soft);font-size:14px;letter-spacing:.03em;margin-top:26px">
-        Call +351 910 075 725 &nbsp;·&nbsp; info@centralhill.pt &nbsp;·&nbsp; WhatsApp +351 910 075 725
-      </p>
-    </div>
-  </div>
-</section>
-`;
-}
 
 export async function OwnersPage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
@@ -354,10 +311,8 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
       </div>
       {/*
        * "Your growth path" — `core/ui`'s new `StepGallery` (a numbered photo-card grid), ported
-       * 1:1 from the old `.mk`-scoped CSS (`.steps`/`.step`/`.step-img`/`.step-scrim`/`.snum`
-       * in `OWNERS_STYLE`, now deleted). The `.mk`-wrapped `OWNERS_STYLE`/`ScrollReveal` block
-       * that used to sit here moved down next to `ownersBodyBottom()` below — the only raw-HTML
-       * `.mk` content left on this page is the closing CTA band.
+       * 1:1 from the old `.mk`-scoped CSS (`.steps`/`.step`/`.step-img`/`.step-scrim`/`.snum`,
+       * now deleted along with the rest of `OWNERS_STYLE`/the `.mk` wrapper/`ScrollReveal`).
        */}
       <div id="journey" style={{ scrollMarginTop: 130 }}>
         <Reveal label="owners-journey">
@@ -399,10 +354,9 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
       </div>
       {/*
        * Shared testimonials marquee + FAQ accordion (same components/visuals as the home
-       * "Partners & Guests" carousel and the marketing FAQ). Rendered OUTSIDE the `.mk` wrapper
-       * so `mock.css`'s bare-element rules don't leak into their Tailwind markup. Each wrapper
-       * carries the `#…` anchor + scroll offset the header's Owners section menu links to. The
-       * FAQ group is editable per page (`faq_group_key`); blank/empty → nothing renders.
+       * "Partners & Guests" carousel and the marketing FAQ). Each wrapper carries the `#…`
+       * anchor + scroll offset the header's Owners section menu links to. The FAQ group is
+       * editable per page (`faq_group_key`); blank/empty → nothing renders.
        */}
       <div id="testimonials" style={{ scrollMarginTop: 130 }}>
         <TestimonialsRow locale={locale} showEyebrow={false} />
@@ -416,17 +370,32 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
           />
         </div>
       ) : null}
-      <div className="mk" data-page="owners">
-        <style dangerouslySetInnerHTML={{ __html: OWNERS_STYLE }} />
-        <noscript>
-          <style
-            dangerouslySetInnerHTML={{
-              __html: `.mk[data-page="owners"] .pre-reveal{opacity:1!important;transform:none!important}`,
-            }}
+      {/*
+       * "Start Earning More Today" / "Ready to Make Your Property Work for You?" — `core/ui`'s
+       * new `FeatureCtaBand`, ported 1:1 from the old `.mk`-scoped `.cta-band`/`.cta-wrap` CSS
+       * (the last raw-HTML content on this page — see that component's docstring for why it
+       * isn't built on `TwoColumnShowcase`). Still fully hardcoded, same as before this port:
+       * no schema field exists for this section yet (a separate follow-up), so the image is
+       * always the Pexels fallback and every string is a literal below, not `content.*`.
+       */}
+      <div id="start" style={{ scrollMarginTop: 130 }}>
+        <Reveal label="owners-cta">
+          <FeatureCtaBand
+            eyebrow="Start Earning More Today"
+            headline="Ready to Make Your Property Work for You?"
+            body="Join the growing number of property owners across Portugal who trust Central Hill Apartments to deliver exceptional results. Start with a free, no-obligation profitability analysis."
+            cta={{ href: "#worth", label: "Get Your Free Earnings Estimate →" }}
+            contactLine="Call +351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725"
+            image={
+              // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+              <img
+                src={CTA_FALLBACK_IMG}
+                alt={CTA_FALLBACK_ALT}
+                className="aspect-[4/5] w-full rounded-sm object-cover"
+              />
+            }
           />
-        </noscript>
-        <ScrollReveal page="owners" />
-        <div dangerouslySetInnerHTML={{ __html: ownersBodyBottom() }} />
+        </Reveal>
       </div>
     </>
   );

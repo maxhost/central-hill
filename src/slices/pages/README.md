@@ -87,12 +87,12 @@ proportions, gap, and headline sizing were ported 1:1 from this page's own CSS (
 `mock/owners.html`'s, which is stale) — see `core/ui/hero.tsx`'s docstring for the exact
 cascade/specificity reasoning. The 3-step wizard's client wiring (`est-form-wizard.tsx`,
 `est-form-stepper.tsx`) now queries `document` directly instead of a `.mk` ancestor, since the
-form no longer lives in the raw-markup wrapper. Every section below the hero is now real JSX too
-(see the `why`/`services`/`plans`/`journey`/`dashboard` walkthrough below) — `ownersBodyTop` is
-gone; the only raw-HTML `.mk` content left on this page is `ownersBodyBottom()`, the closing CTA
-band (bespoke "★"/"→" glyphs stay design, admin text HTML-escaped before interpolation). Optional
-images (`services`/`dashboard`/`journey` steps) fall back to the approved mock/Pexels photo until
-an R2 asset is set. It no longer renders its own section bar: the header's "Owners" mega-menu (settings slice) doubles
+form no longer lives in a raw-markup wrapper. **Every section is now real JSX** (see the
+`why`/`services`/`plans`/`journey`/`dashboard`/closing-CTA walkthrough below) — `ownersBodyTop`
+and `ownersBodyBottom` are both gone, and with them the entire `.mk`/`OWNERS_STYLE`/`<ScrollReveal
+page="owners">` scaffold (`dangerouslySetInnerHTML` no longer appears anywhere in this file).
+Optional images (`services`/`dashboard`/`journey` steps/the closing CTA) fall back to the approved
+mock/Pexels photo until an R2 asset is set. It no longer renders its own section bar: the header's "Owners" mega-menu (settings slice) doubles
 as the section sub-nav — it opens on hover and the settings header pins it open once scrolled
 past the top (`OWNERS_NAV_CSS`, scoped via `body:has([data-page="owners"])`); on mobile those
 anchors live under "Owners" in the burger drawer.
@@ -146,14 +146,21 @@ dark bottom scrim, a hover zoom, and an overlaid "01"-style index + title + desc
 array position, not a schema field (same reasoning as `PricingCards`' "Most Popular" ribbon); the
 step photos are still Pexels placeholders (`JOURNEY_FALLBACK_IMGS`, client direction — trying a
 photo-background treatment, `#core/media` assets not uploaded yet), one per step, falling back
-positionally like `services`/`dashboard`'s images. Only the closing CTA band remains raw markup.
-Two sections are
-shared React islands rendered **outside** the `.mk` wrapper (so `mock.css` bare-element rules don't
-leak into their Tailwind markup): the `testimonials` infinite marquee (`<TestimonialsRow>`, the same
-component as the home "Partners & Guests" carousel) and the `faq` accordion (`<FaqSection>`). Both
-read the DB (testimonials + faq slices, ISR-cached) — the interpolated body is split around them. Per owner
-direction the per-section **eyebrow** labels were dropped (titles stay), the hero badge moved into the
-form, and `why`/`services`/`dashboard` were restyled; the editable marketing sections (now incl.
+positionally like `services`/`dashboard`'s images. The closing CTA ("Start Earning More Today" /
+"Ready to Make Your Property Work for You?", `#start`) is real JSX too: a new `core/ui` component,
+`FeatureCtaBand` (a photo on one side, eyebrow/headline/body/CTA/contact-line on the other, on the
+dark "feature" band — `bg-feature`/`text-on-feature*`, the same tokens `StatBand`/`DualCtaPanels`
+use), ported 1:1 from the old `.cta-band`/`.cta-wrap` CSS. It isn't built on `TwoColumnShowcase`
+(always light-themed; every text color would need a dark override for this, its only consumer) —
+see its docstring. Still fully hardcoded, same as before this port: this section has no schema
+field yet (a separate follow-up), so its image is always the Pexels fallback and every string is
+a literal at the `owners-page.tsx` call site, not `content.*`.
+
+Two sections are shared React islands: the `testimonials` infinite marquee (`<TestimonialsRow>`,
+the same component as the home "Partners & Guests" carousel) and the `faq` accordion
+(`<FaqSection>`). Both read the DB (testimonials + faq slices, ISR-cached). Per owner direction
+the per-section **eyebrow** labels were dropped (titles stay), the hero badge moved into the form,
+and `why`/`services`/`dashboard` were restyled; the editable marketing sections (now incl.
 `services.image_media_id` + `dashboard.image_media_id`, plans capped at 4 tiers, and the new
 `faq_group_key`) are mirrored in the owners schema and stored row, editor-ready (drizzle 0004→0008).
 
