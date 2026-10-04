@@ -9,6 +9,7 @@ import { EstFormWizard } from "./components/est-form-wizard";
 import { FaqSection } from "./components/faq-section";
 import { HeroContactCta } from "./components/hero-contact-cta";
 import { OwnerStatsCounter } from "./components/owner-stats-counter";
+import { ScrollReveal } from "./components/scroll-reveal";
 import { TestimonialsRow } from "./components/testimonials-row";
 
 // Image fallbacks = the approved mock photos, used 1:1 until a real R2 asset is set in the
@@ -152,6 +153,18 @@ const OWNERS_STYLE = `
 .mk .cta-band .cta-media img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:3px;display:block}
 @media(max-width:980px){.mk .owner-hero .wrap{grid-template-columns:1fr;gap:34px}.mk .owner-pitch .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-pitch .pitch-text{position:static}.mk .owner-showcase .wrap{grid-template-columns:1fr;gap:36px}.mk .owner-showcase .sh-media,.mk .owner-showcase.reverse .sh-media{order:-1}.mk .owner-showcase .sh-badge{left:0}.mk .owner-showcase.reverse .sh-badge{left:0;right:auto}.mk .plans{grid-template-columns:repeat(2,1fr)}.mk .plan-helper{flex-direction:column;align-items:flex-start;gap:22px;padding:32px 30px}.mk .steps{grid-template-columns:1fr 1fr}.mk .cta-band .cta-wrap{grid-template-columns:1fr;gap:34px;text-align:center}.mk .cta-band .cta-copy p{margin-left:auto;margin-right:auto}}
 @media(max-width:680px){.mk .est-two{grid-template-columns:1fr}.mk .owner-showcase .sh-list{grid-template-columns:1fr}.mk .plans{grid-template-columns:1fr}.mk .steps{grid-template-columns:1fr}}
+
+/* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
+   the rest, via <ScrollReveal page="owners">/scroll-reveal.tsx) — same pattern already
+   applied to About/Guests/Real Estate/Buildings. This page's card hover states (.plan,
+   .step) already existed and are left as-is — only the scroll-in entrance was missing.
+   The hero + earnings form are left untouched, matching every other page. The hidden
+   state is baked straight into the server-rendered markup (.pre-reveal, applied on the
+   elements below) so there's no flash of visible-then-hidden; the <noscript> rule keeps
+   content visible with JS off. Scoped to [data-page="owners"] so it never touches the
+   shared, neutralised .reveal rule in mock.css or any other page. */
+.mk[data-page="owners"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.mk[data-page="owners"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
 `;
 
 const SERVICES_FALLBACK_IMG =
@@ -354,7 +367,7 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 </section>
 
 <div id="numbers" class="stats">
-  <div class="wrap stats-grid">${stats
+  <div class="wrap stats-grid reveal-io reveal-stagger pre-reveal">${stats
     .map((s) => {
       const num = s.group ? Number(s.to).toLocaleString("en-US") : s.to;
       const display = `${s.prefix ?? ""}${num}${s.suffix ?? ""}`;
@@ -367,7 +380,7 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 
 <section id="why" class="owner-pitch">
   <div class="wrap">
-    <div class="pitch-text">
+    <div class="pitch-text reveal-io pre-reveal">
       <h2 class="section-title">${esc(why.headline)}</h2>
       ${why.subheadline ? `<p class="pitch-sub">${esc(why.subheadline)}</p>` : ""}
       <div class="pitch-cta">
@@ -376,14 +389,14 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
       </div>
       ${why.cta_primary.note ? `<p class="pitch-note">${esc(why.cta_primary.note)}</p>` : ""}
     </div>
-    <ul class="pitch-list">${benefitList(why.benefits, WHY_ICONS)}
+    <ul class="pitch-list reveal-io pre-reveal">${benefitList(why.benefits, WHY_ICONS)}
     </ul>
   </div>
 </section>
 
 <section id="services" class="alt owner-showcase">
   <div class="wrap">
-    <div class="sh-text reveal">
+    <div class="sh-text reveal reveal-io pre-reveal">
       <h2>${esc(services.headline)}</h2>
       ${services.subheadline ? `<p class="sh-sub">${esc(services.subheadline)}</p>` : ""}
       <ul class="sh-list">${benefitList(services.benefits, SERVICES_ICONS)}
@@ -391,7 +404,7 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
       <div class="sh-cta"><a class="btn btn-accent" href="#worth">${esc(services.cta.label)} →</a></div>
       ${services.cta.note ? `<p class="sh-note">${esc(services.cta.note)}</p>` : ""}
     </div>
-    <div class="sh-media reveal">
+    <div class="sh-media reveal reveal-io pre-reveal">
       ${servicesImgTag}
       <div class="sh-badge">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
@@ -403,12 +416,12 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 
 <section id="plans">
   <div class="wrap">
-    <div class="sec-head center reveal">
+    <div class="sec-head center reveal reveal-io pre-reveal">
       <h2 class="section-title">${esc(plans.headline)}</h2>
       ${plans.subheadline ? `<p class="lede" style="margin:16px auto 0">${esc(plans.subheadline)}</p>` : ""}
     </div>
 
-    <div class="plans reveal">${plans.tiers
+    <div class="plans reveal reveal-io reveal-stagger pre-reveal">${plans.tiers
       .map(
         (t) => `
       <div class="plan${t.is_popular ? " popular" : ""}">
@@ -424,7 +437,7 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
       .join("")}
     </div>
 
-    <div class="plan-helpers reveal">${plans.helpers
+    <div class="plan-helpers reveal reveal-io pre-reveal">${plans.helpers
       .map(
         (h) => `
       <div class="plan-helper">
@@ -442,11 +455,11 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 
 <section id="journey" class="alt">
   <div class="wrap">
-    <div class="sec-head center reveal">
+    <div class="sec-head center reveal reveal-io pre-reveal">
       <h2 class="section-title">${esc(journey.headline)}</h2>
       ${journey.subheadline ? `<p class="lede" style="margin:16px auto 0">${esc(journey.subheadline)}</p>` : ""}
     </div>
-    <div class="steps reveal">${journey.steps
+    <div class="steps reveal reveal-io reveal-stagger pre-reveal">${journey.steps
       .map((s, i) => {
         const stepImg = mediaImgTag({
           data: media[s.image_media_id ?? ""],
@@ -473,7 +486,7 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
 
 <section id="technology" class="owner-showcase reverse">
   <div class="wrap">
-    <div class="sh-text reveal">
+    <div class="sh-text reveal reveal-io pre-reveal">
       <h2>${esc(dashboard.headline)}</h2>
       ${dashboard.subheadline ? `<p class="sh-sub">${esc(dashboard.subheadline)}</p>` : ""}
       <ul class="sh-list">${benefitList(dashboard.benefits, DASHBOARD_ICONS)}
@@ -481,7 +494,7 @@ function ownersBodyTop(content: OwnersContent, media: Record<string, MediaImageD
       <div class="sh-cta"><a class="btn btn-accent" href="#worth">${esc(dashboard.cta.label)} →</a></div>
       ${dashboard.cta.note ? `<p class="sh-note">${esc(dashboard.cta.note)}</p>` : ""}
     </div>
-    <div class="sh-media reveal">
+    <div class="sh-media reveal reveal-io pre-reveal">
       ${dashboardImgTag}
       <div class="sh-badge">
         <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
@@ -509,8 +522,8 @@ function ownersBodyBottom(): string {
   return `
 <section id="start" class="stats cta-band" style="padding:var(--section-y) 0">
   <div class="wrap cta-wrap">
-    <div class="cta-media reveal">${ctaImg}</div>
-    <div class="cta-copy reveal">
+    <div class="cta-media reveal reveal-io pre-reveal">${ctaImg}</div>
+    <div class="cta-copy reveal reveal-io pre-reveal">
       <span class="eyebrow" style="color:var(--feature-accent)">Start Earning More Today</span>
       <h2 class="section-title" style="color:#fff;margin-top:14px">Ready to Make Your Property Work for You?</h2>
       <p style="color:var(--on-feature-soft);font-size:18px;margin:18px 0 0;max-width:48ch">Join the growing number of property owners across Portugal who trust Central Hill Apartments to deliver exceptional results. Start with a free, no-obligation profitability analysis.</p>
@@ -538,6 +551,14 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
     <>
       <div className="mk" data-page="owners">
         <style dangerouslySetInnerHTML={{ __html: OWNERS_STYLE }} />
+        <noscript>
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `.mk[data-page="owners"] .pre-reveal{opacity:1!important;transform:none!important}`,
+            }}
+          />
+        </noscript>
+        <ScrollReveal page="owners" />
         <OwnerStatsCounter />
         <EstFormStepper />
         <EstFormWizard />
