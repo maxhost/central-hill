@@ -63,8 +63,9 @@ src/core/ui/
   motion/
     reveal.tsx              # → 01-motion-primitives.md
     count-up.tsx            # → 01-motion-primitives.md
-  nav-bar.tsx                # optional → 08-nav-chrome.md
-  mobile-drawer.tsx          # optional → 08-nav-chrome.md
+  nav-bar.tsx                # → 08-nav-chrome.md
+  mobile-drawer.tsx          # → 08-nav-chrome.md
+  footer.tsx                 # → 08-nav-chrome.md (added 2026-10-04, on request)
 ```
 
 ## 5. Component index — read in this order
@@ -78,7 +79,7 @@ src/core/ui/
 | 5 | `TwoColumnShowcase` | [`05-two-column-showcase.md`](./05-two-column-showcase.md) | medium | ✅ IMPLEMENTED (2026-10-03) |
 | 6 | `PropertyCard` | [`06-property-card.md`](./06-property-card.md) | medium | ✅ IMPLEMENTED (2026-10-04) |
 | 7 | `DualCtaPanels` | [`07-dual-cta-panels.md`](./07-dual-cta-panels.md) | medium | ✅ IMPLEMENTED (2026-10-03) |
-| 8 | `NavBar`, `MobileDrawer` | [`08-nav-chrome.md`](./08-nav-chrome.md) | higher, **optional** | ✅ IMPLEMENTED (2026-10-03) |
+| 8 | `NavBar`, `MobileDrawer`, `Footer` | [`08-nav-chrome.md`](./08-nav-chrome.md) | higher | ✅ IMPLEMENTED (`NavBar`/`MobileDrawer` 2026-10-03, `Footer` 2026-10-04) |
 
 Each file is self-contained: current state (file:line), target API, migration steps, and a DoD
 checklist scoped to that one component. None of them repeat §1–§4 above — they assume you've read

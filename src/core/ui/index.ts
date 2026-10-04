@@ -31,3 +31,5 @@ export { StatBand } from "./stat-band";
 export { Hero } from "./hero";
 /** Dev-only diagnostic: logs viewport size + scroll progress to the console. No-op in prod. */
 export { ScrollDebugProbe } from "./motion/scroll-debug-probe";
+/** Site-wide footer chrome — see `footer.tsx`. */
+export { Footer, type FooterContact, type FooterNavGroup, type FooterSocialLink } from "./footer";

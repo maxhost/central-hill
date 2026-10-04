@@ -1,4 +1,4 @@
-# Component spec — `NavBar` / `MobileDrawer` shell (optional)
+# Component spec — `NavBar` / `MobileDrawer` shell + `Footer`
 
 > Part of [`00-overview.md`](./00-overview.md) — read that first for the ADR requirement and the
 > presentational/composer ground rule. **Order: 8th, optional.** Lower priority than every other
@@ -54,9 +54,17 @@ and skip it entirely if review time is short.**
 - **`core/ui/mobile-drawer.tsx`**, exported `MobileDrawer` — same `NavEntry`/`NavCta` prop shapes
   `mobile-nav.tsx` already defines, minus the `ContactDialog` import (passed as a `children`/slot
   prop instead, so `core/ui` doesn't depend on settings' contact-dialog component).
-- Footer: lower value to split further — `site-footer.tsx`'s markup is less reusable-shaped (no
-  second instance anywhere), so this spec does **not** propose a `core/ui/footer.tsx`. Revisit
-  only if a second, different footer context ever appears (e.g. a backoffice-facing public page).
+- **Update (2026-10-04): the footer was extracted after all**, on direct user request, for full
+  symmetry with the navbar once it was pointed out that "footer" was on the original ask list.
+  `core/ui/footer.tsx`, exported `Footer` — same split as `NavBar`: `brand`/`newsletter`/
+  `localeSwitcher` are caller-built slots (`FooterNewsletter`/`LocaleSwitcher` stay
+  settings-slice, same reasoning as `NavBar`'s `utilities`), `contact`/`social`/`groups`/
+  `copyrightLabel` are plain resolved data the composer (`site-footer.tsx`, shrunk) builds from
+  the settings singleton + `nav_item` footer columns + i18n. Uses `@/i18n/navigation`'s `Link`
+  internally for the owner/guest toggle and every group link, same convention as `NavBar`. The
+  "lower value, no second instance" reasoning above was correct on its own terms (there's still
+  only one footer) — it just wasn't the only consideration once consistency with the rest of the
+  now-complete component set mattered more than strict reuse pressure.
 
 ## Migration steps (if pursued)
 

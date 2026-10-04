@@ -1,27 +1,21 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { Container } from "@core/ui";
-import { Link } from "@/i18n/navigation";
+import { Footer, type FooterNavGroup, type FooterSocialLink } from "@core/ui";
 import { DEFAULT_GLOBALS } from "../defaults";
 import { getGlobals, getNav } from "../server/queries";
 import { FooterNewsletter } from "./components/footer-newsletter";
 import { LocaleSwitcher } from "./components/locale-switcher";
 
 /**
- * Site-wide footer (app-shell chrome): brand + contact + social, the navigation
- * columns from the `nav_item` table (location `footer`, grouped by parent), and a
- * bottom bar with copyright + language switcher. Globals come from the singleton
- * (`getGlobals`), falling back to `DEFAULT_GLOBALS` until S12 configures settings;
- * footer columns fall back to a localized default (i18n `settings.footer.*`).
+ * Site-wide footer (app-shell chrome) — data composer for the presentational `Footer`
+ * (`core/ui/footer.tsx`, ADR 0033). Reads the settings singleton (falling back to
+ * `DEFAULT_GLOBALS` until S12 configures settings) and the `nav_item` footer columns
+ * (falling back to a localized default), resolves every i18n string, and builds the
+ * `contact`/`social`/`groups`/`copyrightLabel` props. See `Footer` for the actual markup.
  */
 
-interface FooterGroup {
-  title: string;
-  links: Array<{ label: string; href: string }>;
-}
-
 /** Default columns (key → route) used when no footer `nav_item` rows exist yet. */
-function defaultGroups(t: (k: string) => string): FooterGroup[] {
+function defaultGroups(t: (k: string) => string): FooterNavGroup[] {
   return [
     {
       title: t("footer.ownersTitle"),
@@ -59,118 +53,61 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
   const g = (await getGlobals(locale)) ?? DEFAULT_GLOBALS;
   const navGroups = await getNav(locale, "footer");
 
-  const groups: FooterGroup[] = navGroups.length
+  const groups: FooterNavGroup[] = navGroups.length
     ? navGroups.map((grp) => ({
         title: grp.label,
         links: grp.children.map((c) => ({ label: c.label, href: c.url })),
       }))
     : defaultGroups(t);
 
-  const social = Object.entries(g.social).filter(([, url]) => Boolean(url));
+  const social: FooterSocialLink[] = Object.entries(g.social)
+    .filter(([, url]) => Boolean(url))
+    .map(([key, url]) => ({
+      key,
+      url: url as string,
+      label: SOCIAL_LABELS[key] ?? key.slice(0, 2),
+    }));
+
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-feature text-on-feature">
-      <Container className="pb-9 pt-[74px]">
-        <div className="mb-[38px] flex flex-col gap-5 border-b border-white/[0.12] pb-[26px] sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-[13px] tracking-[0.02em] text-on-feature-soft">
-            {t("footer.toggle")}{" "}
-            <Link
-              href="/owners"
-              className="border-b border-white/40 pb-px text-on-feature transition-colors hover:border-white"
-            >
-              {t("footer.owner")}
-            </Link>{" "}
-            ·{" "}
-            <Link
-              href="/guests"
-              className="border-b border-white/40 pb-px text-on-feature transition-colors hover:border-white"
-            >
-              {t("footer.guest")}
-            </Link>
-          </div>
-
-          {/* Newsletter signup (client feedback) — fills the empty space beside the toggle
-           * row on wide viewports; UI only, not wired to a provider yet. */}
-          <FooterNewsletter
-            labels={{
-              placeholder: t("footer.newsletter.placeholder"),
-              cta: t("footer.newsletter.cta"),
-              ariaLabel: t("footer.newsletter.ariaLabel"),
-              modalTitle: t("footer.newsletter.modalTitle"),
-              modalIntro: t("footer.newsletter.modalIntro"),
-              emailLabel: t("footer.newsletter.emailLabel"),
-              termsLabel: t("footer.newsletter.termsLabel"),
-              marketingLabel: t("footer.newsletter.marketingLabel"),
-              submit: t("footer.newsletter.submit"),
-              success: t("footer.newsletter.success"),
-              close: t("footer.newsletter.close"),
-            }}
-          />
+    <Footer
+      brand={
+        <div className="font-serif text-[27px] font-semibold">
+          Central<span className="text-feature-accent">Hill</span>
         </div>
-
-        <div className="grid gap-12 md:grid-cols-[1.6fr_1fr_1fr]">
-          <div>
-            <div className="font-serif text-[27px] font-semibold">
-              Central<span className="text-feature-accent">Hill</span>
-            </div>
-            <div className="mt-[18px] text-sm leading-[1.9] text-on-feature-soft">
-              <div>
-                {t("footer.call")}{" "}
-                <a href={`tel:${g.phone.replace(/\s+/g, "")}`} className="hover:text-on-feature">
-                  {g.phone}
-                </a>
-              </div>
-              <div>
-                <a href={`mailto:${g.email}`} className="hover:text-on-feature">
-                  {g.email}
-                </a>
-              </div>
-              {g.whatsapp ? (
-                <div>
-                  {t("footer.whatsapp")} {g.whatsapp}
-                </div>
-              ) : null}
-            </div>
-            {social.length ? (
-              <div className="mt-5 flex gap-[14px]">
-                {social.map(([key, url]) => (
-                  <a
-                    key={key}
-                    href={url}
-                    aria-label={key}
-                    className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-full border border-white/20 text-[13px] text-on-feature transition-colors hover:border-white"
-                  >
-                    {SOCIAL_LABELS[key] ?? key.slice(0, 2)}
-                  </a>
-                ))}
-              </div>
-            ) : null}
-          </div>
-
-          {groups.map((grp) => (
-            <div key={grp.title}>
-              <h4 className="mb-[18px] text-xs font-semibold uppercase tracking-[0.16em] text-on-feature-soft opacity-80">
-                {grp.title}
-              </h4>
-              <ul className="space-y-[11px] text-sm">
-                {grp.links.map((l) => (
-                  <li key={l.href + l.label}>
-                    <Link href={l.href} className="text-on-feature-soft transition-colors hover:text-on-feature">
-                      {l.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-[52px] flex flex-col gap-3 border-t border-white/[0.12] pt-6 text-xs text-on-feature-soft opacity-80 sm:flex-row sm:items-center sm:justify-between">
-          <span>{t("footer.rights", { year })}</span>
-          <LocaleSwitcher current={locale} label={t("language")} tone="bg" />
-        </div>
-      </Container>
-    </footer>
+      }
+      toggleLabel={t("footer.toggle")}
+      ownerLabel={t("footer.owner")}
+      guestLabel={t("footer.guest")}
+      newsletter={
+        <FooterNewsletter
+          labels={{
+            placeholder: t("footer.newsletter.placeholder"),
+            cta: t("footer.newsletter.cta"),
+            ariaLabel: t("footer.newsletter.ariaLabel"),
+            modalTitle: t("footer.newsletter.modalTitle"),
+            modalIntro: t("footer.newsletter.modalIntro"),
+            emailLabel: t("footer.newsletter.emailLabel"),
+            termsLabel: t("footer.newsletter.termsLabel"),
+            marketingLabel: t("footer.newsletter.marketingLabel"),
+            submit: t("footer.newsletter.submit"),
+            success: t("footer.newsletter.success"),
+            close: t("footer.newsletter.close"),
+          }}
+        />
+      }
+      contact={{
+        callLabel: t("footer.call"),
+        phone: g.phone,
+        email: g.email,
+        whatsappLabel: g.whatsapp ? t("footer.whatsapp") : undefined,
+        whatsapp: g.whatsapp || undefined,
+      }}
+      social={social}
+      groups={groups}
+      copyrightLabel={t("footer.rights", { year })}
+      localeSwitcher={<LocaleSwitcher current={locale} label={t("language")} tone="bg" />}
+    />
   );
 }
