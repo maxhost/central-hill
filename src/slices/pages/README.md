@@ -234,6 +234,29 @@ that the live page (and the `track_record` schema) never had — left as-is. The
 (hero, partners, capabilities/manage showcases, deal structures, process, enquiry form) is
 unaffected — out of scope for this change.
 
+Its `deal_structures` ("Deal Structures Built Around Your Risk Profile", `#deal-structures`,
+SECTION 5 — the partnership-model cards) section is real JSX too: `core/ui`'s new
+`ChecklistCards` (3 → 1 columns at the original's 980px breakpoint, top-aligned, gap 26px;
+bordered `bg-surface` cards with serif `<h3>` name, uppercase accent-deep tagline, hairline
+checklist with a CSS-drawn accent check, hover lift; the `featured` card gets the accent border +
+accent glow — kept on hover, as before — and a floating pill whose text is the DB
+`feature_label`), ported 1:1 from the old `.models`/`.model`/`.feat-tag`/`.mtag` CSS (identical
+to `mock/real-estate.html`'s; verified numerically against the live render at 1440/834/390 —
+identical boxes, type, colours, hover `transform`/`box-shadow`, and `#market`'s position). Not
+`PricingCards` (Owners' plans — 4 cols, different padding/gap, inverted name/tag hierarchy,
+mandatory CTA, hardcoded "Most Popular"; left untouched). The section shell is JSX with the exact
+`.mk section`/`.wrap` metrics plus the `class="alt"` warm band; the centred sec-head stays raw in
+its own `.mk[data-page="real-estate"]` wrapper (same as `#market`/`#track-record`) so
+`ScrollReveal` still fades it in; the cards are wrapped in `Reveal`; the optional disclaimer
+`note` (never revealed in the original) is a plain JSX `<p>` outside `Reveal`. The original's
+`.reveal-stagger` produced no visible entrance stagger (only the `.models` container
+faded/slid; the per-card `transition-delay`s it set only ended up delaying cards 2–3's *hover*
+lift by 70/140ms — an unintended side effect, not reproduced), so one `Reveal` is equivalent.
+`bodyTopA` now ends after SECTION 4 (asset types); the old `.models`/`.model*` CSS (and its
+`max-width:980px` rule) was removed from `PAGE_STYLE`. `mock/real-estate.html` still shows an
+eyebrow ("Deal Structures") above this section's title that the live page (and the
+`deal_structures` schema) never had — left as-is.
+
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
 `docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyActivitiesTeaser` / `bodyBottom`
 interpolate the resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`.

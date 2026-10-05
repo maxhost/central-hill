@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { mediaImgTag, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { Reveal, StatBento, StatTiles } from "@core/ui";
+import { ChecklistCards, Reveal, StatBento, StatTiles } from "@core/ui";
 import { getRealEstatePage, type RealEstateContent } from "../contract";
 import {
   defaultCapabilities,
@@ -38,6 +38,11 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * with its sec-head kept raw in its own `.mk[data-page="real-estate"]` wrapper, same as
  * `#market`. It replaced the raw `.tiles` markup + the `OwnerStatsCounter` `[data-count]`
  * island (no longer mounted on this page — nothing else here used `[data-count]`).
+ *
+ * "Deal Structures" (`#deal-structures`, SECTION 5 — the partnership-model cards) is likewise
+ * real JSX — `core/ui`'s `ChecklistCards` in `Reveal`, plus its optional disclaimer note as a
+ * plain JSX `<p>` — with its centred sec-head kept raw in its own `.mk[data-page="real-estate"]`
+ * wrapper. `bodyTopA` now ends after SECTION 4 (asset types).
  *
  * Follow-up: the "Submit Partnership Enquiry" form is the mock's static markup (onsubmit
  * disabled, no action wired). Wiring it to the leads slice's deal-enquiry action is a
@@ -114,39 +119,19 @@ function marketSecHead(market: RealEstateContent["market"]): string {
 `;
 }
 
-/** Render the "Deal Structures" partnership-model cards (SECTION 5) from the DB-driven
- * `deal_structures` content: a centered section head, a three-card grid (each card = name +
- * tagline + bullet list, optionally highlighted with a `feature_label` badge), and an
- * optional disclaimer note. All values are admin-authored and escaped. */
-function dealStructuresSection(d: RealEstateContent["deal_structures"]): string {
-  const cards = d.models
-    .map((m) => {
-      const points = m.points.map((p) => `<li>${esc(p)}</li>`).join("");
-      const badge =
-        m.featured && m.feature_label ? `<span class="feat-tag">${esc(m.feature_label)}</span>` : "";
-      return `
-      <div class="model${m.featured ? " featured" : ""}">
-        ${badge}
-        <h3>${esc(m.name)}</h3>
-        <div class="mtag">${esc(m.tagline)}</div>
-        <ul>${points}</ul>
-      </div>`;
-    })
-    .join("");
-
+/** Render just the "Deal Structures" (`#deal-structures`, SECTION 5) centred section head —
+ * raw mock markup (title + optional lede), still `.mk`-scoped since it reuses mock.css's generic
+ * `.sec-head.center`/`.section-title`/`.lede` rules (same treatment as `marketSecHead`). The
+ * partnership-model cards are `core/ui`'s `ChecklistCards` and the disclaimer note is plain JSX,
+ * both rendered outside `.mk` — see `RealEstatePage`. All values are admin-authored and
+ * escaped. */
+function dealStructuresSecHead(d: RealEstateContent["deal_structures"]): string {
   return `
-<!-- SECTION 5 — PARTNERSHIP MODELS (DB-driven) -->
-<section class="alt" id="deal-structures">
-  <div class="wrap">
-    <div class="sec-head center reveal reveal-io pre-reveal">
-      <h2 class="section-title">${esc(d.headline)}</h2>
-      ${d.subheadline ? `<p class="lede" style="margin:16px auto 0">${esc(d.subheadline)}</p>` : ""}
-    </div>
-    <div class="models reveal reveal-io reveal-stagger pre-reveal">${cards}
-    </div>
-    ${d.note ? `<p class="model-note">${esc(d.note)}</p>` : ""}
-  </div>
-</section>
+<!-- SECTION 5 — PARTNERSHIP MODELS (sec-head only; the cards are real JSX, see RealEstatePage) -->
+<div class="sec-head center reveal reveal-io pre-reveal">
+  <h2 class="section-title">${esc(d.headline)}</h2>
+  ${d.subheadline ? `<p class="lede" style="margin:16px auto 0">${esc(d.subheadline)}</p>` : ""}
+</div>
 `;
 }
 
@@ -328,19 +313,9 @@ const PAGE_STYLE = `
 .mk .cap-showcase .sh-list{grid-template-columns:1fr;gap:18px 0}
 .mk .cap-showcase .sh-list p{font-size:14.5px}
 
-/* partnership-model cards */
-.mk .models{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;align-items:start}
-.mk .model{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:38px 32px;display:flex;flex-direction:column;position:relative;transition:.3s var(--ease)}
-.mk .model:hover{transform:translateY(-4px);box-shadow:0 24px 50px -30px rgba(0,0,0,.42)}
-.mk .model.featured{border-color:var(--accent);box-shadow:0 24px 54px -28px color-mix(in srgb,var(--accent) 55%,transparent)}
-.mk .model .feat-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;padding:6px 16px;border-radius:30px}
-.mk .model h3{font-size:26px;margin-bottom:6px}
-.mk .model .mtag{font-size:13.5px;letter-spacing:.04em;color:var(--accent-deep);font-weight:600;text-transform:uppercase;margin-bottom:22px}
-.mk .model ul{list-style:none;margin:0;flex:1}
-.mk .model li{font-size:14.5px;color:var(--ink-soft);padding:11px 0 11px 28px;position:relative;border-top:1px solid var(--line)}
-.mk .model li:first-child{border-top:0}
-.mk .model li::before{content:"";position:absolute;left:0;top:16px;width:14px;height:8px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg)}
-.mk .model-note{margin-top:34px;font-size:13.5px;color:var(--ink-soft);text-align:center;max-width:80ch;margin-left:auto;margin-right:auto}
+/* partnership-model cards — now real JSX (core/ui's ChecklistCards + a JSX note, rendered
+   outside .mk); only their centred .sec-head is still raw mock markup, styled by mock.css's
+   generic .sec-head/.section-title/.lede rules. */
 
 /* why portugal — the asymmetric bento (tall feature stat card + two supporting cells) is now
    real JSX (core/ui's StatBento, rendered outside .mk); only its .sec-head (title/lede) is
@@ -403,7 +378,6 @@ const PAGE_STYLE = `
   .mk .partner-pitch .pitch-text{position:static}
   .mk .asset-showcase .wrap{grid-template-columns:1fr;gap:36px}
   .mk .asset-showcase .sh-media{order:-1}
-  .mk .models{grid-template-columns:1fr}
   .mk .steps{grid-template-columns:1fr 1fr}
   .mk .enquiry{grid-template-columns:1fr;gap:34px}
 }
@@ -415,7 +389,7 @@ const PAGE_STYLE = `
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
    the rest, via <ScrollReveal page="real-estate">/scroll-reveal.tsx) — same pattern
    already applied to About and Guests. This page's card/bento hover states
-   (.model, .mcell, .stat, .thesis li) already existed and are left as-is. The hidden
+   (.mcell, .stat, .thesis li) already existed and are left as-is. The hidden
    state is baked straight into the server-rendered markup (.pre-reveal, applied on the
    elements below) so there's no flash of visible-then-hidden; the <noscript> rule keeps
    content visible with JS off. Scoped to [data-page="real-estate"] so it never touches
@@ -427,17 +401,17 @@ const PAGE_STYLE = `
 // The institutional FAQ (former SECTION 9) is now a shared, editable <FaqSection> island chosen
 // per page via `faq_group_key`, rendered between the process steps and the deal-enquiry form
 // (outside `.mk` so its Tailwind markup doesn't pick up mock.css bare-element rules). The static
-// body is split here around that island — and, within the first chunk, around the `#market`
-// section's bento (now real JSX, `core/ui`'s `StatBento`) and the `#track-record` tiles (real
-// JSX, `core/ui`'s `StatTiles`): `bodyTopA` ends after SECTION 5 (deal structures), the
-// `#market` and `#track-record` sections render as real JSX in between, and `bodyTopB` picks
-// back up with SECTION 8 (process).
+// body is split here around that island — and, within the first chunk, around the
+// `#deal-structures` cards (real JSX, `core/ui`'s `ChecklistCards`), the `#market` section's
+// bento (now real JSX, `core/ui`'s `StatBento`) and the `#track-record` tiles (real JSX,
+// `core/ui`'s `StatTiles`): `bodyTopA` ends after SECTION 4 (asset types), the
+// `#deal-structures`, `#market` and `#track-record` sections render as real JSX in between, and
+// `bodyTopB` picks back up with SECTION 8 (process).
 function bodyTopA(content: RealEstateContent, media: Record<string, MediaImageData>): string {
   const { hero, partners, asset_management: assets } = content;
   // `capabilities` is newer than the original seed — fall back to the approved default copy
   // so a `real_estate` row authored before this section existed still renders correctly.
   const capabilities = content.capabilities ?? defaultCapabilities;
-  const dealStructures = content.deal_structures ?? defaultDealStructures;
   // Optional capability-statement asset behind the hero's secondary CTA (e.g. a PDF). If
   // no asset is set, the button keeps the design's in-page anchor.
   const capStmtUrl = media[hero.capability_statement_media_id ?? ""]?.url || "#deal-enquiry";
@@ -509,8 +483,6 @@ ${showcase({
   icons: ASSET_ICONS,
   imgTag: assetImgTag,
 })}
-
-${dealStructuresSection(dealStructures)}
 `;
 }
 
@@ -643,6 +615,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
   const faqGroupKey = content.faq_group_key ?? "";
   const market = content.market;
   const trackRecord = content.track_record ?? defaultTrackRecord;
+  const dealStructures = content.deal_structures ?? defaultDealStructures;
 
   return (
     <>
@@ -658,6 +631,47 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         <ScrollReveal page="real-estate" />
         <div dangerouslySetInnerHTML={{ __html: bodyTopA(content, media) }} />
       </div>
+      {/*
+       * "Deal Structures" (`#deal-structures`, SECTION 5 — partnership models) — same shell
+       * technique as `#track-record` below: the `<section>`/`.wrap` metrics reproduced exactly
+       * (`.mk section`'s `padding:clamp(72px,10vw,150px) 0; scroll-margin-top:84px`, `.mk .wrap`'s
+       * `max-width:1240px; padding:0 28px`) plus the original's `class="alt"` warm band. The
+       * centred sec-head stays raw markup in its own `.mk[data-page="real-estate"]` wrapper so
+       * `ScrollReveal` still fades it in. The cards are `core/ui`'s `ChecklistCards` in `Reveal`
+       * (the original `.models` was one `reveal-io pre-reveal` unit; its `.reveal-stagger` only set
+       * per-card `transition-delay`s, and since the cards themselves don't change during the
+       * reveal — only the `.models` container fades/slides — no entrance stagger was ever visible;
+       * one `Reveal` is equivalent. The only observable effect of those delays was cards 2–3's
+       * hover lift starting 70/140ms late — an unintended side effect, deliberately not kept). The disclaimer note had no reveal in the original, so it sits
+       * outside `Reveal` (`.model-note`'s exact metrics as Tailwind tokens). `id` is kept — the
+       * partners section's secondary CTA anchors to `#deal-structures`.
+       */}
+      <section
+        id="deal-structures"
+        className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)]"
+      >
+        <div className="mx-auto max-w-[1240px] px-[28px]">
+          <div className="mk" data-page="real-estate">
+            <div dangerouslySetInnerHTML={{ __html: dealStructuresSecHead(dealStructures) }} />
+          </div>
+          <Reveal>
+            <ChecklistCards
+              cards={dealStructures.models.map((m) => ({
+                name: m.name,
+                tagline: m.tagline,
+                points: m.points,
+                featured: m.featured,
+                featureLabel: m.feature_label,
+              }))}
+            />
+          </Reveal>
+          {dealStructures.note ? (
+            <p className="mx-auto mt-[34px] max-w-[80ch] text-center text-[13.5px] leading-[1.6] text-ink-soft">
+              {dealStructures.note}
+            </p>
+          ) : null}
+        </div>
+      </section>
       {/*
        * "Why Portugal" (`#market`) — the `<section>`/`.wrap` shell is reproduced with the
        * exact mock metrics (`.mk section`'s `padding:clamp(72px,10vw,150px) 0;
