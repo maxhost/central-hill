@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
+import { NumberedFeatureGrid, Reveal } from "@core/ui";
 import { getAboutPage } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { OwnerStatsCounter } from "./components/owner-stats-counter";
@@ -36,11 +37,10 @@ const PAGE_STYLE = `
 .mk[data-page="about"] #story{padding-top:50px}
 
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
-.mk .val-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
-.mk .val{background:var(--surface);padding:38px 30px}
-.mk .val .vnum{font-family:var(--serif);font-size:42px;line-height:1;color:var(--accent);opacity:.85;margin-bottom:18px}
-.mk .val h3{font-size:21px;margin-bottom:10px}
-.mk .val p{font-size:14.5px;color:var(--ink-soft)}
+/* "What Guides Us" values grid is real JSX now — core/ui's NumberedFeatureGrid, rendered
+   outside .mk (see that component's docstring). Its old .val-grid/.val/.vnum rules
+   (plus the hover motion below, under "#values .val:hover") were here; removed in favour of
+   the component's own Tailwind. */
 /* "Our Structure": redesigned to match the Owners page's "Everything handled. Nothing
    overlooked." showcase — a two-column text+icon-list / image+floating-badge layout,
    in place of the previous flat 3-col icon-grid. Page-scoped (own class names, not the
@@ -83,10 +83,6 @@ const PAGE_STYLE = `
 .mk[data-page="about"] #serve .bcard:hover .ico{transform:translateY(-3px) scale(1.1)}
 .mk[data-page="about"] #serve .bcard h3{color:#fff}
 .mk[data-page="about"] #serve .bcard p{color:rgba(255,255,255,.88)}
-.mk[data-page="about"] #values .val{transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
-.mk[data-page="about"] #values .val:hover{transform:translateY(-4px);box-shadow:inset 0 0 0 1px var(--accent-deep),0 16px 28px -20px rgba(0,0,0,.35)}
-.mk[data-page="about"] #values .val .vnum{transition:color .35s var(--ease),transform .35s var(--ease)}
-.mk[data-page="about"] #values .val:hover .vnum{color:var(--accent-deep);transform:translateY(-2px)}
 .mk .cert-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
 .mk .cert{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:38px 32px;text-align:center;transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
 .mk .cert:hover{transform:translateY(-4px);box-shadow:0 16px 28px -20px rgba(0,0,0,.35)}
@@ -129,13 +125,12 @@ const PAGE_STYLE = `
 .mk .cform-two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .mk .cform .btn{justify-content:center}
 @media(max-width:980px){
-  .mk .val-grid{grid-template-columns:1fr 1fr}
   .mk .cert-grid,.mk .touch-grid{grid-template-columns:1fr 1fr}
   .mk .comm{grid-template-columns:1fr;gap:32px}
   .mk .contact-split{grid-template-columns:1fr}
 }
 @media(max-width:680px){
-  .mk .val-grid,.mk .cert-grid,.mk .touch-grid,.mk .cform-two{grid-template-columns:1fr}
+  .mk .cert-grid,.mk .touch-grid,.mk .cform-two{grid-template-columns:1fr}
   .mk .office,.mk .cform{padding:36px 28px}
 }
 `;
@@ -143,7 +138,13 @@ const PAGE_STYLE = `
 // An optional, editable <FaqSection> island is rendered before the contact section (outside
 // `.mk` to avoid mock.css leak), chosen per page via `faq_group_key`. The static body is split
 // here around it.
-const BODY_TOP = `
+// Split around "What Guides Us" (`#values`): its `.val-grid` is real JSX now (`core/ui`'s
+// `NumberedFeatureGrid`, rendered outside `.mk` — see that component's docstring for the
+// `.mk * {margin:0;padding:0}` layering trap). The section's `sec-head` (eyebrow/title/lede)
+// is untouched raw markup (not this task's target), given its own small `.mk` wrapper; the
+// `<section>` element itself and its `.wrap`-equivalent container are now real JSX too, since
+// a raw-HTML fragment can't open a tag that a JSX sibling closes — see `AboutPage` below.
+const BODY_TOP_A = `
 <section id="who-we-are" class="hero compact" aria-label="Who We Are">
   <img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70" alt="Rooftops and historic streets of Lisbon at golden hour">
   <div class="wrap">
@@ -206,39 +207,42 @@ const BODY_TOP = `
     </div>
   </div>
 </section>
+`;
 
-<section id="values">
-  <div class="wrap">
-    <div class="sec-head reveal reveal-io pre-reveal">
-      <span class="eyebrow">What We Stand For</span>
-      <h2 class="section-title">What Guides Us</h2>
-      <p class="lede" style="margin-top:18px">Our values are not statements on a wall. They are the criteria by which we select properties, build partnerships, and measure success. They have remained constant since 2012.</p>
-    </div>
-    <div class="val-grid reveal reveal-io reveal-stagger pre-reveal">
-      <div class="val">
-        <div class="vnum">01</div>
-        <h3>Quality Without Compromise</h3>
-        <p>We apply the same standard of care to every property we manage — in its presentation, its maintenance, and its guest experience.</p>
-      </div>
-      <div class="val">
-        <div class="vnum">02</div>
-        <h3>Transparency in Everything</h3>
-        <p>Owners have real-time access to performance data. Partners receive full, accurate reporting. Trust is built through information, not withheld by it.</p>
-      </div>
-      <div class="val">
-        <div class="vnum">03</div>
-        <h3>Local Knowledge, Applied</h3>
-        <p>Over a decade learning Portugal's hospitality markets — their rhythms, their regulations, and their opportunities. That knowledge shapes every decision we make.</p>
-      </div>
-      <div class="val">
-        <div class="vnum">04</div>
-        <h3>People at the Centre</h3>
-        <p>Great hospitality is ultimately about people. We invest in our team, care for our guests, respect our owners' assets, and take our role in the community seriously.</p>
-      </div>
-    </div>
-  </div>
-</section>
+// "What Guides Us" section head only (eyebrow/title/lede) — untouched raw markup, given its
+// own small `.mk` wrapper at the `AboutPage` call site (see the `BODY_TOP_A`/`BODY_TOP_B`
+// split comment above). Its `reveal reveal-io pre-reveal` classes still drive the page's
+// `ScrollReveal` entrance motion (scoped to `.mk[data-page="about"] .pre-reveal`) since this
+// fragment stays inside that subtree.
+const VALUES_SEC_HEAD_HTML = `
+<div class="sec-head reveal reveal-io pre-reveal">
+  <span class="eyebrow">What We Stand For</span>
+  <h2 class="section-title">What Guides Us</h2>
+  <p class="lede" style="margin-top:18px">Our values are not statements on a wall. They are the criteria by which we select properties, build partnerships, and measure success. They have remained constant since 2012.</p>
+</div>
+`;
 
+// Content for `core/ui`'s `NumberedFeatureGrid` — ported 1:1 from the mock's 4 `.val` cards.
+const VALUES_ITEMS = [
+  {
+    title: "Quality Without Compromise",
+    body: "We apply the same standard of care to every property we manage — in its presentation, its maintenance, and its guest experience.",
+  },
+  {
+    title: "Transparency in Everything",
+    body: "Owners have real-time access to performance data. Partners receive full, accurate reporting. Trust is built through information, not withheld by it.",
+  },
+  {
+    title: "Local Knowledge, Applied",
+    body: "Over a decade learning Portugal's hospitality markets — their rhythms, their regulations, and their opportunities. That knowledge shapes every decision we make.",
+  },
+  {
+    title: "People at the Centre",
+    body: "Great hospitality is ultimately about people. We invest in our team, care for our guests, respect our owners' assets, and take our role in the community seriously.",
+  },
+];
+
+const BODY_TOP_B = `
 <section id="organised" class="alt">
   <div class="wrap org-grid">
     <div class="org-text reveal reveal-io pre-reveal">
@@ -431,7 +435,35 @@ export async function AboutPage({ locale }: { locale: Locale }) {
         </noscript>
         <ScrollReveal page="about" />
         <OwnerStatsCounter durationMs={5000} />
-        <div dangerouslySetInnerHTML={{ __html: BODY_TOP }} />
+        <div dangerouslySetInnerHTML={{ __html: BODY_TOP_A }} />
+      </div>
+      {/*
+       * "What Guides Us" (`#values`) — real JSX section now. The `<section>` element and its
+       * `.wrap`-equivalent container are reproduced with the exact mock metrics (`.mk section`'s
+       * `padding:clamp(72px,10vw,150px) 0;scroll-margin-top:84px` and `.mk .wrap`'s
+       * `max-width:1240px;margin:0 auto;padding:0 28px` — not `core/ui`'s generic `Section`/
+       * `Container`, which use different values and would misalign this grid's edges against
+       * the raw `sec-head` markup directly above it). `sec-head` stays untouched raw markup in
+       * its own `.mk` wrapper; the grid is `core/ui`'s `NumberedFeatureGrid`. Wrapped in
+       * `core/ui`'s `Reveal` (a real-React equivalent of the page's `ScrollReveal`/`.pre-reveal`
+       * pattern, which can't reach this subtree since it's outside `.mk[data-page="about"]` —
+       * required, see `NumberedFeatureGrid`'s docstring) so the section still fades/slides in
+       * once on scroll like its neighbours; the original's per-card stagger (`.reveal-stagger`)
+       * isn't reproduced — `Reveal` animates its subtree as one unit, and building a staggered
+       * variant was out of scope for this extraction.
+       */}
+      <section id="values" className="py-[clamp(72px,10vw,150px)] scroll-mt-[84px]">
+        <div className="mx-auto max-w-[1240px] px-[28px]">
+          <div className="mk">
+            <div dangerouslySetInnerHTML={{ __html: VALUES_SEC_HEAD_HTML }} />
+          </div>
+          <Reveal>
+            <NumberedFeatureGrid items={VALUES_ITEMS} />
+          </Reveal>
+        </div>
+      </section>
+      <div className="mk" data-page="about">
+        <div dangerouslySetInnerHTML={{ __html: BODY_TOP_B }} />
       </div>
       {faqGroupKey ? (
         <div id="faq" style={{ scrollMarginTop: 130 }}>

@@ -44,6 +44,8 @@ export { PropertyCard } from "./property-card";
 export { StatBand } from "./stat-band";
 /** Bare, static (no animation) bordered value/label strip — a value can be plain text too. */
 export { SpecStrip } from "./spec-strip";
+/** Hairline-separated grid of numbered feature cards (index + title + body) with hover lift. */
+export { NumberedFeatureGrid } from "./numbered-feature-grid";
 /** Page hero (full-bleed video/image band with overlaid editorial headline) — never animated. */
 export { Hero } from "./hero";
 /** Dev-only diagnostic: logs viewport size + scroll progress to the console. No-op in prod. */

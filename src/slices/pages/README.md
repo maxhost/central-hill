@@ -174,6 +174,21 @@ and `why`/`services`/`dashboard` were restyled; the editable marketing sections 
 markup, now read their group (`owners` / `real_estate`, seeded in drizzle 0008 from the former static
 Q&A); Home/Guest/About start blank.
 
+**About** (`about-page.tsx`) is still mostly the raw-markup `.mk` embed, but its `values`
+("What Guides Us") section is real JSX now: `core/ui`'s new `NumberedFeatureGrid` (a hairline
+grid of numbered index+title+body cards with hover lift), ported 1:1 from the old
+`.val-grid`/`.val`/`.vnum` CSS (including the page-scoped `#values .val:hover` motion rules,
+now the component's own Tailwind). The section's `sec-head` (eyebrow/title/lede) stays
+untouched raw markup in its own small `.mk` wrapper; the `<section>` element and its
+`.wrap`-equivalent container are real JSX too, reproducing the exact mock metrics
+(`max-width:1240px;padding:0 28px`, `padding:clamp(72px,10vw,150px) 0`) rather than `core/ui`'s
+generic `Section`/`Container` (different values — would have misaligned the grid against the
+raw `sec-head` above it). Wrapped in `core/ui`'s `Reveal` so it still fades in on scroll like
+its raw-markup neighbours (`ScrollReveal`/`.pre-reveal` can't reach outside `.mk`); the
+original's per-card stagger isn't reproduced (`Reveal` animates its subtree as one unit). The
+rest of the page (stats grid, `organised`, `certifications`, `community`, `contact`) is
+unaffected — out of scope for this change.
+
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
 `docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyMid` / `bodyBottom` interpolate the
 resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`. Its nine sections
