@@ -76,16 +76,21 @@ export { MosaicGallery } from "./mosaic-gallery";
 export { SplitCtaPanels, type SplitCtaPanel } from "./split-cta-panels";
 /** Closing enquiry section: serif title + lede + hairline "contact directly" block beside a form slot (.85fr/1.15fr → 1 col), each column optionally revealed. */
 export { EnquirySplit, type EnquiryContactLine } from "./enquiry-split";
-/** Form-card primitives: raised card `<form>`, titled groups w/ pill tag, label-over-control fields (req marker), 2-up row, `<details>` optional sections, full-width accent submit + note. */
+/** Form-card primitives: raised card `<form>`, titled groups w/ pill tag, label-over-control fields (req marker), 2-up row, `<details>` optional sections, inputs/selects (opt. chevron)/textarea, accent button + full-width submit + note, consent checkbox line, controlled −/+ number stepper, wizard progress bars. */
 export {
   FormAccordion,
+  FormButton,
   FormCard,
+  FormCheckbox,
   FormField,
   FormGroup,
   FormInput,
   FormNote,
+  FormProgress,
   FormRow,
   FormSelect,
+  FormStepper,
   FormSubmit,
   FormTextarea,
+  type FormSelectOption,
 } from "./form-card";

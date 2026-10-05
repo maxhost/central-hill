@@ -56,8 +56,8 @@ animation is wired internally rather than at the call site, unlike every other a
 here). Neither is a `ui/components/` piece. Other shared pieces in `ui/components/`:
 - presentational (`blocks.tsx`: `SectionHeading`, `FeatureGrid`, `Steps`, `CtaRow`, `Prose`,
   `Band`; `owner-estimate-form.tsx`: the Owners-hero earnings-estimate card, slotted into
-  `Hero`'s `aside` — markup only, see below). `OwnerEstimateForm` is exported via
-  `contract.ts` (alongside the already-shared `EstFormStepper`/`EstFormWizard`) so other
+  `Hero`'s `aside` — a self-contained client wizard on `core/ui`'s form-card primitives, still
+  submitting nothing, see below). `OwnerEstimateForm` is exported via `contract.ts` so other
   slices can reuse the exact same wizard — Buildings' listing "earnings calculator" does,
   parameterizing only step 1's copy (steps 2/3 were already identical on both pages);
 - data-composing (`stats-band.tsx` → settings, `testimonials-row.tsx` → testimonials,
@@ -88,9 +88,9 @@ design's stacked title) + the `ContactDialog` CTA directly (no more DOM-portal �
 slotted into `aside`. `Hero`'s `compact`/`aside`/`copyClassName`/`actionsClassName` grid
 proportions, gap, and headline sizing were ported 1:1 from this page's own CSS (not
 `mock/owners.html`'s, which is stale) — see `core/ui/hero.tsx`'s docstring for the exact
-cascade/specificity reasoning. The 3-step wizard's client wiring (`est-form-wizard.tsx`,
-`est-form-stepper.tsx`) now queries `document` directly instead of a `.mk` ancestor, since the
-form no longer lives in a raw-markup wrapper. **Every section is now real JSX** (see the
+cascade/specificity reasoning. The 3-step wizard's step/count logic is React state inside
+`OwnerEstimateForm` itself (see "Owners earnings wizard on form-card" below); the former
+`est-form-wizard.tsx`/`est-form-stepper.tsx` DOM islands are gone. **Every section is now real JSX** (see the
 `why`/`services`/`plans`/`journey`/`dashboard`/closing-CTA walkthrough below) — `ownersBodyTop`
 and `ownersBodyBottom` are both gone, and with them the entire `.mk`/`OWNERS_STYLE`/`<ScrollReveal
 page="owners">` scaffold (`dangerouslySetInnerHTML` no longer appears anywhere in this file).
@@ -271,9 +271,9 @@ independent `reveal-io pre-reveal` hooks) and the `form-card.tsx` primitives (`F
 + `mock.css`'s `.btn.btn-accent`/`h2`/`.lede`; verified numerically against the live render at
 1440/834/390 (closed and open accordions, focus ring on input/select/textarea, button hover,
 placeholder colour) — identical boxes, type, colours and pixels, and the FAQ/footer positions are
-unchanged. Not `OwnerEstimateForm` (a different wizard design: `h-11` inputs, custom chevron,
-`rounded-md` button) nor the leads slice's controlled `fields.tsx` (slice-internal, `bg-surface`
-inputs, wired to `submitLead`). The fields (ids/names/types/placeholders/`required`/options) live
+unchanged. `OwnerEstimateForm` was later moved onto these same primitives (see "Owners earnings
+wizard on form-card" below); the leads slice's controlled `fields.tsx` (slice-internal,
+`bg-surface` inputs, wired to `submitLead`) is not on them yet. The fields (ids/names/types/placeholders/`required`/options) live
 in the slice; the components only style them. The old CSS (and its 980px `.enquiry` / 680px
 `.ftwo` media-query entries) was removed from `PAGE_STYLE`.
 **Still pending (unchanged by this UI-only extraction):** the copy is hardcoded English (not
@@ -351,6 +351,39 @@ so the section never renders empty.
 
 All cross-slice data is read **through contracts only** (golden rule 2) — e.g. the featured
 portfolio builds its own card from `BuildingSummary` rather than importing buildings' UI.
+
+### Owners earnings wizard on form-card (style unification)
+
+`OwnerEstimateForm` (Owners hero `aside` + Buildings' listing calculator) is built on `core/ui`'s
+`form-card.tsx` primitives and **deliberately adopts their look** (user-approved unification
+with Real Estate's `#deal-enquiry` form — not a pixel-identical port): 52px controls with a
+`bg` fill, 12.5px/`0.03em` labels, the 3px-radius `14px 28px` accent button, the accent border +
+3px halo focus, `FormCard`'s 8px radius/padding/shadow, soft-ink `FormNote`. Unchanged:
+structure, copy, ids/names/types/placeholders/options, initial state, navigation and the
+no-submit behaviour (a verified 0-diff DOM/behaviour inventory, bar the a11y additions below).
+
+- **Logic moved into React.** Step + property count are `useState` in the (now `"use client"`)
+  component; the `EstFormWizard`/`EstFormStepper` DOM islands (and their contract exports +
+  mounts on Owners and Buildings) were removed. The `data-wizard`/`data-step`/`data-panel`/
+  `data-dot`/`data-stepper`/`data-value`/`data-min`/`data-step="up|down"`/`data-wiz-next`/
+  `data-wiz-back` markers stay on the same elements. A real `submit` (Enter) is cancelled via
+  `onSubmit`, as the island did.
+- **New `core/ui` primitives it uses:** `FormButton`, `FormStepper`, `FormCheckbox`,
+  `FormProgress`, plus additive `FormSelect` (`placeholder` optional, `{value,label}` options,
+  `defaultValue`, opt-in `chevron`), `FormField` (`htmlFor` optional, `labelId`) and `FormRow`
+  (`stack={false}`) props — see `form-card.tsx`. Real Estate's render is numerically unchanged.
+- **Layout calls (not covered by form-card):** `FormCard` padding/shadow used as-is in both hosts
+  (the card grows ~24px: taller controls); `text-ink` + `leading-[1.6]` on the card (the hero is
+  `text-surface`; the controls' 52px box needs the 1.6 line box), headings/badge pinned to their
+  previous `leading-[1.5]`; properties/bedrooms stay two-up at every width (`stack={false}`, as
+  before); both selects use the custom `chevron` (native menulists render 48px with an OS
+  arrow); the phone-code select widened 112 → 124px to fit the chevron + 14px padding.
+- **Small fixes that came with it:** the consent lines' copy is wrapped in one `<span>` (the
+  inline links used to become separate flex items, leaving 10px gaps around them); the stepper
+  is a labelled `role="group"` (`aria-labelledby` → its "Nº of Properties" label, which gains
+  `id="nprop-label"`) with an `aria-live` value; decorative SVGs are `aria-hidden`.
+- Still pending, unchanged: hardcoded English copy (steps 2/3 + labels), `href="#"` terms/privacy
+  links, not wired to `submitLead`.
 
 ## Routes (`src/app/[locale]/…`)
 

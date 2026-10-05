@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { Container, FeaturePanel, Hero, Reveal, Section, StatBand } from "@core/ui";
-import { EstFormStepper, EstFormWizard, OwnerEstimateForm } from "@slices/pages/contract";
+import { OwnerEstimateForm } from "@slices/pages/contract";
 import { ContactDialog } from "@slices/settings/contract";
 import { listBuildings } from "../server/queries";
 import { BuildingListingCard } from "./components/building-listing-card";
@@ -260,8 +260,6 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
           />
         </noscript>
         <ScrollReveal page="buildings" />
-        <EstFormStepper />
-        <EstFormWizard />
         <div dangerouslySetInnerHTML={{ __html: BODY }} />
       </div>
     </Fragment>

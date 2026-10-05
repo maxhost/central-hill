@@ -78,15 +78,12 @@ export {
 export { pagesAdminScreens } from "./admin/screens";
 
 /**
- * The Owners hero's 3-step earnings-estimate wizard: `OwnerEstimateForm` (the `[data-wizard]`/
- * `[data-panel]`/`[data-stepper]` markup, Tailwind, step-1 copy parameterized — steps 2/3 are
- * fixed, identical on every consumer) + `EstFormStepper`/`EstFormWizard` (the client islands
- * that wire it up, pure DOM behaviour, no props, query `document` for the markup at runtime —
- * render nothing themselves). Any slice embedding this same wizard (e.g. Buildings' listing
- * "earnings calculator") reuses all three instead of re-implementing the form or its
- * stepper/wizard logic — render `OwnerEstimateForm` once per page alongside one
- * `<EstFormStepper/><EstFormWizard/>` pair.
+ * The Owners hero's 3-step earnings-estimate wizard: `OwnerEstimateForm` — a self-contained
+ * client component (step + property-count state in React) built on `core/ui`'s `form-card`
+ * primitives, step-1 copy parameterized (steps 2/3 are fixed, identical on every consumer).
+ * Any slice embedding this same wizard (e.g. Buildings' listing "earnings calculator") just
+ * renders it — once per page (its field ids are fixed). It replaced the former
+ * `OwnerEstimateForm` markup + `EstFormStepper`/`EstFormWizard` DOM-island trio; those two
+ * exports are gone (nothing to mount any more).
  */
-export { EstFormStepper } from "./ui/components/est-form-stepper";
-export { EstFormWizard } from "./ui/components/est-form-wizard";
 export { OwnerEstimateForm } from "./ui/components/owner-estimate-form";

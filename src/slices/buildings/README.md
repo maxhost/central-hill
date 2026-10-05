@@ -82,7 +82,8 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   "Discover your property's earning potential" earnings calculator is the exact Owners hero
   wizard — `@slices/pages/contract`'s `OwnerEstimateForm` (now a cross-slice-reusable export;
   see that component's + the contract's docstrings for why only step 1's copy is a prop while
-  steps 2/3 stay fixed) + `EstFormStepper`/`EstFormWizard`, two columns (form/photo, photo
+  steps 2/3 stay fixed; a self-contained client component on `core/ui`'s form-card
+  primitives — no `EstFormStepper`/`EstFormWizard` islands to mount any more), two columns (form/photo, photo
   first when stacked). Image is still a fixed Pexels placeholder (no schema field).
 - `/{locale}/buildings/{slug}` — detail (`ui/building-detail.tsx`): the approved
   `mock/building-detail.html` design, now **DB-driven** from `getBuildingBySlug(locale, slug)`

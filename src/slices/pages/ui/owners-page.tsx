@@ -16,8 +16,6 @@ import {
 } from "@core/ui";
 import { ContactDialog } from "@slices/settings/contract";
 import { getOwnersPage } from "../contract";
-import { EstFormStepper } from "./components/est-form-stepper";
-import { EstFormWizard } from "./components/est-form-wizard";
 import { FaqSection } from "./components/faq-section";
 import { Icon } from "./components/icon";
 import { OwnerEstimateForm } from "./components/owner-estimate-form";
@@ -207,8 +205,6 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
           />
         }
       />
-      <EstFormStepper />
-      <EstFormWizard />
       {/*
        * "Numbers that speak for themselves" — the same reusable, count-up band component Home
        * uses (`core/ui`'s presentational `StatBand` + `CountUp`), fed this page's own
