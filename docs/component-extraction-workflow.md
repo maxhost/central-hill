@@ -114,6 +114,40 @@ to `main`. Mechanics worked end to end; a few things the research pass couldn't 
    should check for an already-running dev server first and reuse it, rather than assuming a new
    `-p <port>` invocation will succeed.
 
+### Round 2 (same day, 2026-10-05): 3 more agents, cross-file, all merged
+
+Different pages this time (Buildings' "THE BUILDING" intro → `ProseSection`, Real Estate's "Why
+Portugal" bento → `StatBento`, Guests' services teaser → `PhotoFeatureGrid`), same process.
+Confirms round 1 wasn't a fluke and adds a few things:
+
+9. **A pilot agent caught a real regression in *previously merged* code, from a different
+   agent's prior task.** The agent extracting Real Estate's bento noticed About's `#values`
+   sec-head wrapper (merged the round before, `82d4229`) was missing `data-page="about"` —
+   checked it specifically because it was about to reuse the same raw-wrapper-next-to-a-new-
+   component pattern for its own section, and compared against every other `.mk` wrapper on
+   that page first rather than copying the nearest example blindly. Not hidden content (the
+   opacity rule that would've hidden it is scoped the same way, so the fragment just never
+   animated), but a real, confirmed, now-fixed bug (`1c1f9c8`) that neither of that prior round's
+   agents nor the coordinator caught at the time. Emergent benefit of running more than one
+   round: later agents re-derive context from the live page rather than trusting a prior
+   extraction's precedent at face value, and that habit pays off even outside their own task.
+10. **The coordinator got stuck inside a worktree a second time** — same mistake as item 7
+    above (a `cd` into a worktree as part of a combined command), confirming it's a real
+    recurring risk for this coordinator role, not a one-off. Worth being more deliberate about:
+    always run `cd <repo-root> && pwd` as its own standalone command immediately after any
+    command that touches a worktree path, rather than trusting yourself to remember not to
+    combine it with other work next time.
+11. **Real cost held steady**: ~180k–237k tokens per agent this round (the Real Estate bento,
+    the most structurally complex of the six sections extracted so far across both rounds, used
+    the most — 237k). Still consistent with round 1's numbers and the 2–4 ceiling's rationale.
+12. **New coordinator step worth formalizing: after merging a batch, clear `.next` and relaunch
+    the dev server cold, then re-check every touched route.** Hot-reload through a long dev
+    session (worktree agents' own servers, then the coordinator's incremental rebuilds across
+    two rounds of merges) can mask a stale-cache false pass. A full cache-clear + relaunch +
+    re-verify (all N touched routes return 200 with expected content, plus a fresh
+    `typecheck`/`lint`) is cheap and catches what incremental rebuilds might paper over — added
+    as the closing step of "Coordinator responsibilities" below.
+
 ## What this covers
 
 Central Hill's public pages were first built as locked static HTML/CSS mocks (`mock/*.html`,
@@ -319,6 +353,10 @@ Pasos obligatorios, en orden:
    `messages/*.json`) even when the target sections themselves don't share a file.
 6. Never commit or push to `main`/shared branches without the user's explicit go-ahead, per the
    project's standing rule (reconfirmed throughout this whole session).
+7. After the whole batch is merged: stop whatever dev server is running on `main`, delete
+   `.next`, relaunch cold, and re-check every touched route (HTTP 200 + expected content) plus a
+   fresh `typecheck`/`lint` — don't rely on an incrementally hot-reloaded server as the final
+   check (see "Round 2" in "Pilot results" above for why).
 
 ## Open questions still open after the pilot
 
