@@ -62,3 +62,5 @@ export { ProseSection, type ProseSectionSubsection } from "./prose-section";
 export { StatBento, type StatBentoCell, type StatBentoStat } from "./stat-bento";
 /** Bordered grid of full-bleed photo cards (icon/title/description, white-on-scrim) + optional CTA row. */
 export { PhotoFeatureGrid, type PhotoFeatureGridItem } from "./photo-feature-grid";
+/** Hairline grid (3→2→1 cols) of light centred stat tiles: count-up serif accent figure + uppercase label + optional caption. */
+export { StatTiles, type StatTile } from "./stat-tiles";

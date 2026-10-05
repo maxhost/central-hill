@@ -208,9 +208,30 @@ query still reaches it and the original fade/slide-in on scroll is preserved exa
 About's `#values`. Wrapped in `core/ui`'s `Reveal`; the original's per-cell stagger
 (`.reveal-stagger`) isn't reproduced, same accepted trade-off as About's `NumberedFeatureGrid`
 extraction. `bodyTop` is now split into `bodyTopA` (sections 1–5, ending after deal structures)
-and `bodyTopB` (sections 7–8, track record + process) around the new JSX in between — same
-split-string pattern as About's `BODY_TOP_A`/`BODY_TOP_B`. The rest of the page (hero, partners,
-capabilities/manage showcases, deal structures, track record, process, enquiry form) is
+and `bodyTopB` (now section 8 only, process) around the new JSX in between — same
+split-string pattern as About's `BODY_TOP_A`/`BODY_TOP_B`.
+
+Its `track_record` ("Performance You Can Measure", `#track-record`, SECTION 7) section is real JSX
+too: `core/ui`'s new `StatTiles` (hairline grid — `gap-px` over `bg-line`, `border-line` frame —
+of light centred tiles: count-up serif accent figure, uppercase label, optional caption; 3 → 2 →
+1 columns at the original's 980px/680px breakpoints), ported 1:1 from the old `.tiles`/`.tile`/
+`.tval`/`.tlbl`/`.tcap` CSS (verified numerically against the live render at 1440/834/390 —
+identical boxes, colours, type, and settled figures). Not `StatBand` (dark band, no cells/
+captions), `SpecStrip` (flat ink strip, no animation) or `StatBento`'s embedded strip. The
+section shell is JSX with the exact `.mk section`/`.wrap` metrics plus the `class="alt"` warm
+band; the sec-head stays raw in its own `.mk[data-page="real-estate"]` wrapper (same as
+`#market`) so `ScrollReveal` still fades it in; the tiles are wrapped in `Reveal`. The original's
+`.reveal-stagger` was a no-op (the per-tile delays landed on tiles with no transition of their
+own — the grid always faded as one unit), so a single `Reveal` reproduces it exactly. The count-up
+moved from the `OwnerStatsCounter` `[data-count]` island + `countAttrs()` to `CountUp` (which got
+an additive `durationMs` prop — `StatTiles` passes the island's 1600ms — plus an exact-final-text
+snap and an `sr-only` accessible copy of the figure); `OwnerStatsCounter` is no longer mounted on
+this page (nothing else here used `[data-count]`) but is still used by **About**. This page's
+`<noscript>` rule now also un-hides `[data-reveal]`, so the `Reveal`-wrapped `#market` bento and
+`#track-record` tiles stay visible with JS off (the bento was previously hidden in that case).
+`mock/real-estate.html` still shows an eyebrow ("Proven Performance") above this section's title
+that the live page (and the `track_record` schema) never had — left as-is. The rest of the page
+(hero, partners, capabilities/manage showcases, deal structures, process, enquiry form) is
 unaffected — out of scope for this change.
 
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +

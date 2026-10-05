@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { mediaImgTag, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { Reveal, StatBento } from "@core/ui";
+import { Reveal, StatBento, StatTiles } from "@core/ui";
 import { getRealEstatePage, type RealEstateContent } from "../contract";
 import {
   defaultCapabilities,
@@ -11,7 +11,6 @@ import {
   defaultTrackRecord,
 } from "../schemas/real-estate";
 import { FaqSection } from "./components/faq-section";
-import { OwnerStatsCounter } from "./components/owner-stats-counter";
 import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
@@ -24,9 +23,7 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * header/footer + i18n come from the app layout. The Iconoir CDN stylesheet (used by the
  * mock's `<i class="iconoir-… ico">` glyphs) is imported inside this page's scoped `<style>`.
  *
- * The "Performance You Can Measure" tiles count up on scroll-in via the shared
- * `OwnerStatsCounter` island (it animates any `.mk [data-count]` figure). The "How it works"
- * section ("A Structured Path…") uses the same Editorial-Split layout as the partners section
+ * The "How it works" section ("A Structured Path…") uses the same Editorial-Split layout as the partners section
  * (`partner-pitch`), with the step numbers as the hairline-list markers.
  *
  * The "Why Portugal" section (`#market`, `marketSection`'s former home) is now real JSX —
@@ -35,6 +32,12 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * wrapper (same convention as the rest of this page), split out of `bodyTopA`/`bodyTopB` around
  * it. See `StatBento`'s docstring for the full mock-vs-live drift this extraction resolved
  * (`mock/real-estate.html` still shows the old flat `.why-grid`, superseded here by the bento).
+ *
+ * "Performance You Can Measure" (`#track-record`, SECTION 7) is likewise real JSX — `core/ui`'s
+ * `StatTiles` (hairline tile grid, each figure counting up via `CountUp`), wrapped in `Reveal`,
+ * with its sec-head kept raw in its own `.mk[data-page="real-estate"]` wrapper, same as
+ * `#market`. It replaced the raw `.tiles` markup + the `OwnerStatsCounter` `[data-count]`
+ * island (no longer mounted on this page — nothing else here used `[data-count]`).
  *
  * Follow-up: the "Submit Partnership Enquiry" form is the mock's static markup (onsubmit
  * disabled, no action wired). Wiring it to the leads slice's deal-enquiry action is a
@@ -147,52 +150,18 @@ function dealStructuresSection(d: RealEstateContent["deal_structures"]): string 
 `;
 }
 
-/** Build the count-up animation attributes for a track-record figure from its displayed
- * string: the numeric core becomes `data-to`, any leading non-digits become `data-prefix`,
- * the trailing remainder becomes `data-suffix`, and a thousands comma sets `data-group`.
- * "85%+" → `data-to="85" data-suffix="%+"`; "+25%" → `data-to="25" data-prefix="+"
- * data-suffix="%"`. Returns "" when there is no number (the figure then renders static).
- * The `OwnerStatsCounter` island reads these and snaps to the exact text when it settles. */
-function countAttrs(value: string): string {
-  const m = value.match(/^(\D*)([\d.,]+)(.*)$/);
-  const num = m?.[2];
-  if (!num) return "";
-  const prefix = m?.[1] ?? "";
-  const suffix = m?.[3] ?? "";
-  const to = num.replace(/[.,]/g, "");
-  if (!to) return "";
-  return [
-    `data-count data-to="${escAttr(to)}"`,
-    prefix ? ` data-prefix="${escAttr(prefix)}"` : "",
-    suffix ? ` data-suffix="${escAttr(suffix)}"` : "",
-    num.includes(",") ? ` data-group="true"` : "",
-  ].join("");
-}
-
-/** Render the "Performance You Can Measure" track-record tiles (SECTION 7) from the DB-driven
- * `track_record` content. Each tile counts up on scroll-in via the shared `OwnerStatsCounter`
- * island. All values are admin-authored and escaped. */
-function trackRecordSection(t: RealEstateContent["track_record"]): string {
-  const tiles = t.tiles
-    .map((tile) => {
-      const attrs = countAttrs(tile.value);
-      return `      <div class="tile"><div class="tval"${attrs ? ` ${attrs}` : ""}>${esc(tile.value)}</div><div class="tlbl">${esc(tile.label)}</div>${tile.caption ? `<div class="tcap">${esc(tile.caption)}</div>` : ""}</div>`;
-    })
-    .join("\n");
-
+/** Render just the "Performance You Can Measure" (`#track-record`, SECTION 7) section head —
+ * raw mock markup (title + optional lede), still `.mk`-scoped since it reuses mock.css's generic
+ * `.sec-head`/`.section-title`/`.lede` rules (same treatment as `marketSecHead`). The tiles are
+ * `core/ui`'s `StatTiles`, real JSX rendered outside `.mk` — see `RealEstatePage`. All values are
+ * admin-authored and escaped. */
+function trackRecordSecHead(t: RealEstateContent["track_record"]): string {
   return `
-<!-- SECTION 7 — TRACK RECORD (DB-driven) -->
-<section class="alt" id="track-record">
-  <div class="wrap">
-    <div class="sec-head reveal reveal-io pre-reveal">
-      <h2 class="section-title">${esc(t.headline)}</h2>
-      ${t.subheadline ? `<p class="lede" style="margin-top:16px">${esc(t.subheadline)}</p>` : ""}
-    </div>
-    <div class="tiles reveal reveal-io reveal-stagger pre-reveal">
-${tiles}
-    </div>
-  </div>
-</section>
+<!-- SECTION 7 — TRACK RECORD (sec-head only; the tiles are real JSX, see RealEstatePage) -->
+<div class="sec-head reveal reveal-io pre-reveal">
+  <h2 class="section-title">${esc(t.headline)}</h2>
+  ${t.subheadline ? `<p class="lede" style="margin-top:16px">${esc(t.subheadline)}</p>` : ""}
+</div>
 `;
 }
 
@@ -378,12 +347,8 @@ const PAGE_STYLE = `
    still raw mock markup, styled by mock.css's generic .sec-head/.section-title/.lede rules
    above — no #market-scoped CSS needed here any more. */
 
-/* track-record stat tiles */
-.mk .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
-.mk .tile{background:var(--surface);padding:40px 34px;text-align:center}
-.mk .tile .tval{font-family:var(--serif);font-size:clamp(42px,5vw,58px);line-height:1;color:var(--accent);font-weight:500}
-.mk .tile .tlbl{font-size:13px;letter-spacing:.04em;font-weight:600;color:var(--ink);margin:14px 0 6px;text-transform:uppercase}
-.mk .tile .tcap{font-size:13.5px;color:var(--ink-soft)}
+/* track-record stat tiles — now real JSX (core/ui's StatTiles, rendered outside .mk); only
+   its .sec-head is still raw mock markup, styled by mock.css's generic rules. */
 
 /* numbered process steps */
 .mk .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
@@ -439,18 +404,17 @@ const PAGE_STYLE = `
   .mk .asset-showcase .wrap{grid-template-columns:1fr;gap:36px}
   .mk .asset-showcase .sh-media{order:-1}
   .mk .models{grid-template-columns:1fr}
-  .mk .tiles{grid-template-columns:1fr 1fr}
   .mk .steps{grid-template-columns:1fr 1fr}
   .mk .enquiry{grid-template-columns:1fr;gap:34px}
 }
 @media(max-width:680px){
   .mk .asset-showcase .sh-list{grid-template-columns:1fr}
-  .mk .tiles,.mk .steps,.mk .ftwo{grid-template-columns:1fr}
+  .mk .steps,.mk .ftwo{grid-template-columns:1fr}
 }
 
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
    the rest, via <ScrollReveal page="real-estate">/scroll-reveal.tsx) — same pattern
-   already applied to About and Guests. This page's card/bento/tile hover states
+   already applied to About and Guests. This page's card/bento hover states
    (.model, .mcell, .stat, .thesis li) already existed and are left as-is. The hidden
    state is baked straight into the server-rendered markup (.pre-reveal, applied on the
    elements below) so there's no flash of visible-then-hidden; the <noscript> rule keeps
@@ -464,9 +428,10 @@ const PAGE_STYLE = `
 // per page via `faq_group_key`, rendered between the process steps and the deal-enquiry form
 // (outside `.mk` so its Tailwind markup doesn't pick up mock.css bare-element rules). The static
 // body is split here around that island — and, within the first chunk, around the `#market`
-// section's bento (now real JSX, `core/ui`'s `StatBento`): `bodyTopA` ends after SECTION 5
-// (deal structures), the `#market` sec-head + `StatBento` render as real JSX in between, and
-// `bodyTopB` picks back up with SECTION 7 (track record) and SECTION 8 (process).
+// section's bento (now real JSX, `core/ui`'s `StatBento`) and the `#track-record` tiles (real
+// JSX, `core/ui`'s `StatTiles`): `bodyTopA` ends after SECTION 5 (deal structures), the
+// `#market` and `#track-record` sections render as real JSX in between, and `bodyTopB` picks
+// back up with SECTION 8 (process).
 function bodyTopA(content: RealEstateContent, media: Record<string, MediaImageData>): string {
   const { hero, partners, asset_management: assets } = content;
   // `capabilities` is newer than the original seed — fall back to the approved default copy
@@ -550,10 +515,8 @@ ${dealStructuresSection(dealStructures)}
 }
 
 function bodyTopB(content: RealEstateContent): string {
-  const trackRecord = content.track_record ?? defaultTrackRecord;
   const process = content.process ?? defaultProcess;
   return `
-${trackRecordSection(trackRecord)}
 ${processSection(process)}
 `;
 }
@@ -679,6 +642,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
   const { content, media } = page;
   const faqGroupKey = content.faq_group_key ?? "";
   const market = content.market;
+  const trackRecord = content.track_record ?? defaultTrackRecord;
 
   return (
     <>
@@ -687,7 +651,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         <noscript>
           <style
             dangerouslySetInnerHTML={{
-              __html: `.mk[data-page="real-estate"] .pre-reveal{opacity:1!important;transform:none!important}`,
+              __html: `.mk[data-page="real-estate"] .pre-reveal,[data-reveal]{opacity:1!important;transform:none!important}`,
             }}
           />
         </noscript>
@@ -729,6 +693,31 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
           </Reveal>
         </div>
       </section>
+      {/*
+       * "Performance You Can Measure" (`#track-record`) — same shell technique as `#market`
+       * above: the `<section>`/`.wrap` metrics reproduced exactly (`.mk section`'s
+       * `padding:clamp(72px,10vw,150px) 0; scroll-margin-top:84px`, `.mk .wrap`'s
+       * `max-width:1240px; padding:0 28px`) plus the original's `class="alt"` warm band
+       * (`.mk .alt`'s `color-mix(in srgb, var(--line) 38%, var(--bg))`, same formula
+       * `TwoColumnShowcase`/`StepGallery` use). The sec-head stays raw markup in its own
+       * `.mk[data-page="real-estate"]` wrapper so `ScrollReveal` still fades it in. The tiles
+       * are `core/ui`'s `StatTiles` in `Reveal` (the original `.tiles` was one
+       * `reveal-io pre-reveal` unit — its `.reveal-stagger` delays landed on tiles with no
+       * transition of their own, so they never actually staggered; one `Reveal` is equivalent).
+       */}
+      <section
+        id="track-record"
+        className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)]"
+      >
+        <div className="mx-auto max-w-[1240px] px-[28px]">
+          <div className="mk" data-page="real-estate">
+            <div dangerouslySetInnerHTML={{ __html: trackRecordSecHead(trackRecord) }} />
+          </div>
+          <Reveal>
+            <StatTiles tiles={trackRecord.tiles} />
+          </Reveal>
+        </div>
+      </section>
       <div className="mk" data-page="real-estate">
         <div dangerouslySetInnerHTML={{ __html: bodyTopB(content) }} />
       </div>
@@ -744,8 +733,6 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
       <div className="mk" data-page="real-estate">
         <div dangerouslySetInnerHTML={{ __html: BODY_BOTTOM }} />
       </div>
-      {/* Counts up the "Performance You Can Measure" tiles ([data-count]) on scroll-in. */}
-      <OwnerStatsCounter />
     </>
   );
 }
