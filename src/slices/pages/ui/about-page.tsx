@@ -454,7 +454,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
        */}
       <section id="values" className="py-[clamp(72px,10vw,150px)] scroll-mt-[84px]">
         <div className="mx-auto max-w-[1240px] px-[28px]">
-          <div className="mk">
+          <div className="mk" data-page="about">
             <div dangerouslySetInnerHTML={{ __html: VALUES_SEC_HEAD_HTML }} />
           </div>
           <Reveal>
