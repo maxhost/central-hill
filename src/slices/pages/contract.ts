@@ -78,11 +78,15 @@ export {
 export { pagesAdminScreens } from "./admin/screens";
 
 /**
- * Client islands behind the earnings-estimate form's `.est-*`/`.wiz-*` static markup
- * (`[data-stepper]`, `[data-wizard]` + `[data-panel]`) — the Owners hero's 3-step wizard.
- * Pure DOM behaviour (no props, no page-specific coupling: they query `.mk` for their
- * markup at runtime), so any slice embedding that same markup can reuse them instead of
- * re-implementing the stepper/wizard logic. Render nothing themselves.
+ * The Owners hero's 3-step earnings-estimate wizard: `OwnerEstimateForm` (the `[data-wizard]`/
+ * `[data-panel]`/`[data-stepper]` markup, Tailwind, step-1 copy parameterized — steps 2/3 are
+ * fixed, identical on every consumer) + `EstFormStepper`/`EstFormWizard` (the client islands
+ * that wire it up, pure DOM behaviour, no props, query `document` for the markup at runtime —
+ * render nothing themselves). Any slice embedding this same wizard (e.g. Buildings' listing
+ * "earnings calculator") reuses all three instead of re-implementing the form or its
+ * stepper/wizard logic — render `OwnerEstimateForm` once per page alongside one
+ * `<EstFormStepper/><EstFormWizard/>` pair.
  */
 export { EstFormStepper } from "./ui/components/est-form-stepper";
 export { EstFormWizard } from "./ui/components/est-form-wizard";
+export { OwnerEstimateForm } from "./ui/components/owner-estimate-form";

@@ -48,9 +48,11 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
 ## Routes
 
 - `/{locale}/buildings` — listing (`ui/buildings-listing.tsx`): the approved
-  `mock/buildings.html` design. The **hero, building grid, "For Owners" band, and stats band
-  are real JSX**, not interpolated markup — only the earnings calculator chrome is still the
-  mock's static `.mk` markup. The hero is `core/ui`'s `<Hero compact align="center">`,
+  `mock/buildings.html` design, **composed entirely from React/Tailwind components** — no
+  `dangerouslySetInnerHTML` content renders anymore (the only `BODY` string left is the
+  hidden, commented-out filter bar, kept for later DB wiring; the `.mk`/`PAGE_STYLE`/
+  `<ScrollReveal>` scaffold stays only for that dormant markup). The hero is `core/ui`'s
+  `<Hero compact align="center">`,
   single-column (no `aside`), ported 1:1 from the old `.mk`-scoped overrides (now deleted) via
   five additive `Hero` props (`align`/`overlayClassName`/`headlineClassName`/
   `subtitleClassName`/`wrapClassName` — see `core/ui/hero.tsx`'s docstring); this page has no
@@ -76,7 +78,12 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   Themselves" is the same `core/ui` `StatBand` Owners/Home use (ported 1:1 from the old
   `.stats`/`.stats-grid`/`.stat .lbl` CSS), extended with two additive props: `columns={3}`
   (this page's grid, vs. the default 4) and each cell's `description` (a second line under the
-  label); the figures themselves are still the same fixed literals as before this port.
+  label); the figures themselves are still the same fixed literals as before this port. The
+  "Discover your property's earning potential" earnings calculator is the exact Owners hero
+  wizard — `@slices/pages/contract`'s `OwnerEstimateForm` (now a cross-slice-reusable export;
+  see that component's + the contract's docstrings for why only step 1's copy is a prop while
+  steps 2/3 stay fixed) + `EstFormStepper`/`EstFormWizard`, two columns (form/photo, photo
+  first when stacked). Image is still a fixed Pexels placeholder (no schema field).
 - `/{locale}/buildings/{slug}` — detail (`ui/building-detail.tsx`): the approved
   `mock/building-detail.html` design, now **DB-driven** from `getBuildingBySlug(locale, slug)`
   (`notFound()` when unknown/unpublished): hero (placeholder cover when no R2 image), gallery,

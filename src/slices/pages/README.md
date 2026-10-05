@@ -56,7 +56,10 @@ animation is wired internally rather than at the call site, unlike every other a
 here). Neither is a `ui/components/` piece. Other shared pieces in `ui/components/`:
 - presentational (`blocks.tsx`: `SectionHeading`, `FeatureGrid`, `Steps`, `CtaRow`, `Prose`,
   `Band`; `owner-estimate-form.tsx`: the Owners-hero earnings-estimate card, slotted into
-  `Hero`'s `aside` — markup only, see below);
+  `Hero`'s `aside` — markup only, see below). `OwnerEstimateForm` is exported via
+  `contract.ts` (alongside the already-shared `EstFormStepper`/`EstFormWizard`) so other
+  slices can reuse the exact same wizard — Buildings' listing "earnings calculator" does,
+  parameterizing only step 1's copy (steps 2/3 were already identical on both pages);
 - data-composing (`stats-band.tsx` → settings, `testimonials-row.tsx` → testimonials,
   `featured-portfolio.tsx` → buildings, `services-carousel.tsx` → services, `faq-section.tsx`
   → faq, `lead-cta.tsx` → settings contact).

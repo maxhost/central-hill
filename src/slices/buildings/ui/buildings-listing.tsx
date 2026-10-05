@@ -1,21 +1,22 @@
 import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import { Container, FeaturePanel, Hero, Reveal, Section, StatBand } from "@core/ui";
-import { EstFormStepper, EstFormWizard } from "@slices/pages/contract";
+import { EstFormStepper, EstFormWizard, OwnerEstimateForm } from "@slices/pages/contract";
 import { ContactDialog } from "@slices/settings/contract";
 import { listBuildings } from "../server/queries";
 import { BuildingListingCard } from "./components/building-listing-card";
 import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
- * Buildings listing — the approved `mock/buildings.html` design embedded 1:1 inside the
- * live app shell, now **DB-driven**: the only remaining raw-markup chrome is the earnings
- * calculator; the property grid is generated from the published `building` rows
- * (`listBuildings`, ISR-cached + tagged `building-list` → a publish busts it). Page styles
- * stay scoped under `.mk` (see `src/app/mock.css`) so nothing leaks to Home/admin. The real
- * header/footer + i18n come from the app layout.
+ * Buildings listing — the approved `mock/buildings.html` design, now composed entirely from
+ * React/Tailwind components: no `dangerouslySetInnerHTML` content renders anymore (the one
+ * `BODY` string left is the hidden, commented-out filter bar — see below). The property grid
+ * is generated from the published `building` rows (`listBuildings`, ISR-cached + tagged
+ * `building-list` → a publish busts it). The `.mk`/`PAGE_STYLE`/`<ScrollReveal>` scaffold is
+ * kept only for that dormant filter bar (`src/app/mock.css`'s shared design system still
+ * backs it); nothing currently rendered depends on it. The real header/footer + i18n come
+ * from the app layout.
  *
  * The **hero is real JSX**, not interpolated markup: `core/ui`'s `<Hero compact align="center">`
  * (no `aside` — single-column, text + one CTA). This page has no `page_content` row, so every
@@ -41,6 +42,11 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * The **"Numbers That Speak for Themselves" stats band is real JSX** too: the same `core/ui`
  * `StatBand` Owners/Home use, extended with `columns`/per-cell `description` (see that
  * component's docstring) — still the same fixed literals as before this port.
+ *
+ * The **earnings calculator is real JSX** too — the last raw-markup section on this page:
+ * `@slices/pages/contract`'s `OwnerEstimateForm` (the exact Owners hero wizard, now a
+ * cross-slice-reusable export — see that component's + the contract's docstrings for why),
+ * two columns (form/photo), image still a fixed Pexels placeholder (no schema field).
  */
 
 // Hero background — no schema field (this page has no `page_content` row), so it's a fixed
@@ -72,58 +78,11 @@ const PAGE_STYLE = `
 .mk .fb-count{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;white-space:nowrap}
 @media(max-width:680px){.mk .fb-count{width:100%}}
 
-/* Page-only: earnings calculator — the exact Owners hero earnings-estimate wizard
-   (.est-card/.est-field/.wiz-*), reused verbatim (same classes, same behaviour via
-   EstFormStepper/EstFormWizard from @slices/pages/contract) so the two forms are
-   genuinely identical, not just similar. Laid out in two columns: form left, photo right. */
-.mk .calc-band{background:color-mix(in srgb,var(--line) 26%,var(--bg));border-top:1px solid var(--line)}
-.mk .calc-wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;max-width:var(--max)}
-.mk .calc-media img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:3px;display:block}
-.mk .calc-band .est-card{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:34px 32px 30px;box-shadow:0 30px 60px -30px rgba(0,0,0,.4)}
-.mk .calc-band .est-card .earn-badge{display:inline-flex;align-items:center;gap:.5em;background:var(--accent);color:#fff;font-size:13px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:9px 18px;border-radius:30px;margin-bottom:16px;box-shadow:0 10px 24px -10px color-mix(in srgb,var(--accent) 75%,transparent)}
-.mk .calc-band .est-card h3{font-size:26px;margin-bottom:8px}
-.mk .calc-band .est-card .est-sub{font-size:14px;color:var(--ink-soft);margin-bottom:22px}
-.mk .calc-band .est-field{margin-bottom:16px}
-.mk .calc-band .est-field label{display:block;font-size:12px;letter-spacing:.04em;font-weight:600;color:var(--ink);margin-bottom:7px}
-.mk .calc-band .est-field input,.mk .calc-band .est-field select{width:100%;height:44px;font-family:var(--sans);font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:0 14px;transition:.2s var(--ease)}
-.mk .calc-band .est-field select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235c544c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:15px}
-.mk .calc-band .est-field input:focus,.mk .calc-band .est-field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
-.mk .calc-band .est-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.mk .calc-band .est-stepper{display:flex;align-items:center;justify-content:space-between;height:44px;border:1px solid var(--line);border-radius:4px;background:var(--bg);padding:0 3px}
-.mk .calc-band .est-stepper .step-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;flex:0 0 auto;border:0;border-radius:4px;background:transparent;color:var(--ink);cursor:pointer;transition:.2s var(--ease)}
-.mk .calc-band .est-stepper .step-btn svg{width:16px;height:16px}
-.mk .calc-band .est-stepper .step-btn:hover:not(:disabled){background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent-deep)}
-.mk .calc-band .est-stepper .step-btn:disabled{opacity:.35;cursor:not-allowed}
-.mk .calc-band .est-stepper .step-val{flex:1;text-align:center;font-size:15px;font-weight:600;color:var(--ink)}
-.mk .calc-band .est-card .btn{width:100%;justify-content:center;margin-top:6px}
-.mk .calc-band .est-note{text-align:center;font-size:12.5px;color:var(--ink);font-weight:500;margin-top:14px}
-.mk .calc-band .wiz-dots{display:flex;gap:6px;margin-bottom:22px}
-.mk .calc-band .wiz-dots span{flex:1;height:3px;border-radius:2px;background:var(--line);transition:.3s var(--ease)}
-.mk .calc-band .wiz-dots span.done{background:var(--accent)}
-.mk .calc-band .est-phone{display:flex;gap:10px}
-.mk .calc-band .est-phone select{width:112px;flex:0 0 auto;padding-left:12px;padding-right:30px;background-position:right 9px center}
-.mk .calc-band .est-phone input{flex:1;min-width:0}
-.mk .calc-band .est-check{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.5;color:var(--ink-soft);cursor:pointer;margin-bottom:12px}
-.mk .calc-band .est-check input{width:16px;height:16px;flex:0 0 auto;margin-top:2px;accent-color:var(--accent)}
-.mk .calc-band .est-check a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
-.mk .calc-band .wiz-actions{display:flex;align-items:center;gap:14px;margin-top:6px}
-.mk .calc-band .wiz-actions .btn{margin-top:0}
-.mk .calc-band .wiz-back{background:none;border:0;padding:0;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;flex:0 0 auto}
-.mk .calc-band .wiz-back:hover{color:var(--accent-deep)}
-.mk .calc-band .wiz-confirm{text-align:center;padding:18px 0 6px}
-.mk .calc-band .wiz-confirm .ic{width:46px;height:46px;color:var(--accent);border:1px solid var(--line);border-radius:50%;padding:12px;margin-bottom:18px}
-.mk .calc-band .wiz-confirm h3{margin-bottom:10px}
-.mk .calc-band .wiz-confirm p{font-size:14.5px;line-height:1.6;color:var(--ink-soft)}
-@media(max-width:980px){.mk .calc-wrap{grid-template-columns:1fr;gap:34px}.mk .calc-media{order:-1}}
-@media(max-width:520px){.mk .calc-band .est-two{grid-template-columns:1fr}}
-
-/* Page-wide entrance motion for the one remaining raw-markup section (the earnings
-   calculator), immediate on load for above-the-fold content, on scroll for the rest, via
-   <ScrollReveal page="buildings">/scroll-reveal.tsx — same pattern already applied to
-   About/Guests/Real Estate. The building grid, "For Owners" band, and stats band now animate
-   separately via core/ui's Reveal component (real JSX, outside .mk — see
-   BuildingListingCard's hover, which is Tailwind on the card itself, not .pcard's mock.css
-   rule). The hidden state is baked straight into the server-rendered markup (.pre-reveal,
+/* Page-wide entrance motion — kept for the filter bar (currently hidden/commented out) and
+   as a harmless no-op once it's restored; every other raw-markup section is gone now (see
+   the top docstring — this page is React/Tailwind end to end), via <ScrollReveal
+   page="buildings">/scroll-reveal.tsx, same pattern already applied to About/Guests/Real
+   Estate. The hidden state is baked straight into the server-rendered markup (.pre-reveal,
    applied on the elements below) so there's no flash of visible-then-hidden; the <noscript>
    rule keeps content visible with JS off. Scoped to [data-page="buildings"] so it never
    touches the shared, neutralised .reveal rule in mock.css or any other page. */
@@ -131,13 +90,7 @@ const PAGE_STYLE = `
 .mk[data-page="buildings"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
 `;
 
-function BODY(): string {
-  const calcImg = mediaImgTag({
-    fallbackSrc: CALC_FALLBACK_IMG,
-    fallbackAlt: CALC_FALLBACK_ALT,
-    sizes: "(max-width: 980px) 100vw, 560px",
-  });
-  return `
+const BODY = `
 <!-- FILTER / IA BAR — hidden per client direction (B6). Kept (commented out) so it can
      be restored once the city/neighbourhood filter is wired to the DB taxonomy.
 <div class="filterbar">
@@ -160,95 +113,7 @@ function BODY(): string {
   </div>
 </div>
 -->
-
-<!-- SECTION 4 · EARNINGS CALCULATOR — the exact Owners hero wizard, two columns (form
-     left, photo right). Markup is duplicated from Owners rather than cross-slice-imported
-     (not part of any slice's public contract); the client wiring (EstFormStepper/
-     EstFormWizard) is genuinely shared, via @slices/pages/contract. -->
-<section class="calc-band">
-  <div class="wrap calc-wrap">
-    <form class="est-card reveal reveal-io pre-reveal" data-wizard data-step="1" onsubmit="return false">
-      <div class="wiz-dots" aria-hidden="true"><span data-dot="1"></span><span data-dot="2"></span><span data-dot="3"></span></div>
-
-      <div class="wiz-panel" data-panel="1">
-        <span class="earn-badge">★ Earn +25%</span>
-        <h3>Discover your property's earning potential</h3>
-        <p class="est-sub">Find out how much your property could earn — free, instant, no obligation.</p>
-        <div class="est-field">
-          <label for="calc-addr">Property Address</label>
-          <input id="calc-addr" type="text" placeholder="Street, neighbourhood, city" autocomplete="off">
-        </div>
-        <div class="est-two">
-          <div class="est-field">
-            <label>Nº of Properties</label>
-            <div class="est-stepper" data-stepper data-value="1" data-min="1">
-              <button type="button" class="step-btn" data-step="down" disabled aria-label="Decrease number of properties">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
-              </button>
-              <span class="step-val">1</span>
-              <button type="button" class="step-btn" data-step="up" aria-label="Increase number of properties">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-              </button>
-              <input type="hidden" id="calc-nprop" name="calc-nprop" value="1">
-            </div>
-          </div>
-          <div class="est-field">
-            <label for="calc-nbed">Nº of Bedrooms</label>
-            <select id="calc-nbed">
-              <option>Studio</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6+</option>
-            </select>
-          </div>
-        </div>
-        <button type="button" class="btn btn-accent" data-wiz-next>Calculate My Earnings →</button>
-      </div>
-
-      <div class="wiz-panel" data-panel="2" hidden>
-        <h3>Your contact details</h3>
-        <p class="est-sub">Almost there — tell us how to reach you with the study.</p>
-        <div class="est-field">
-          <label for="calc-fname">Full Name</label>
-          <input id="calc-fname" type="text" placeholder="Jane Doe" autocomplete="name">
-        </div>
-        <div class="est-field">
-          <label for="calc-femail">Email</label>
-          <input id="calc-femail" type="email" placeholder="jane@example.com" autocomplete="email">
-        </div>
-        <div class="est-field">
-          <label for="calc-fphone">Phone</label>
-          <div class="est-phone">
-            <select id="calc-fphone-code" aria-label="Country code">
-              <option value="+351" selected>🇵🇹 +351</option>
-              <option value="+34">🇪🇸 +34</option>
-              <option value="+33">🇫🇷 +33</option>
-              <option value="+44">🇬🇧 +44</option>
-              <option value="+49">🇩🇪 +49</option>
-              <option value="+1">🇺🇸 +1</option>
-              <option value="+55">🇧🇷 +55</option>
-            </select>
-            <input id="calc-fphone" type="tel" placeholder="912 345 678" autocomplete="tel">
-          </div>
-        </div>
-        <label class="est-check"><input type="checkbox">I agree to the <a href="#">Terms &amp; Conditions</a>.</label>
-        <label class="est-check"><input type="checkbox">I agree to the <a href="#">Privacy Policy</a> and consent to being contacted.</label>
-        <div class="wiz-actions">
-          <button type="button" class="wiz-back" data-wiz-back>← Back</button>
-          <button type="button" class="btn btn-accent" data-wiz-next>Submit request →</button>
-        </div>
-      </div>
-
-      <div class="wiz-panel" data-panel="3" hidden>
-        <div class="wiz-confirm">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-          <h3>Request received</h3>
-          <p>Thank you — our team will review your property and get back to you within 48 hours with your free profitability study.</p>
-        </div>
-      </div>
-    </form>
-    <div class="calc-media reveal reveal-io pre-reveal">${calcImg}</div>
-  </div>
-</section>
 `;
-}
 
 export async function BuildingsListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
@@ -353,6 +218,38 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
           ]}
         />
       </Reveal>
+      {/*
+       * "Discover your property's earning potential" — the exact Owners hero wizard,
+       * `@slices/pages/contract`'s `OwnerEstimateForm` (now a cross-slice-reusable export —
+       * see that component's + the contract's docstrings), two columns (form left, photo
+       * right on desktop; photo first when stacked, matching the old `.calc-media{order:-1}`
+       * override). Only step 1's copy differs from Owners' own hero form — steps 2/3 are
+       * fixed inside the component because they were already identical on both pages. No CTA
+       * `note` here (the original markup never had one under this particular button, unlike
+       * Owners' hero card). Image is still the fixed Pexels placeholder (no schema field).
+       */}
+      <Section className="border-t border-line bg-[color-mix(in_srgb,var(--color-line)_26%,var(--color-bg))]">
+        <Container>
+          <Reveal label="buildings-calculator">
+            <div className="grid grid-cols-1 items-center gap-[34px] min-[981px]:grid-cols-2 min-[981px]:gap-16">
+              <OwnerEstimateForm
+                badge="Earn +25%"
+                headline="Discover your property's earning potential"
+                subheadline="Find out how much your property could earn — free, instant, no obligation."
+                ctaLabel="Calculate My Earnings"
+              />
+              <div className="order-first min-[981px]:order-none">
+                {/* eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset */}
+                <img
+                  src={CALC_FALLBACK_IMG}
+                  alt={CALC_FALLBACK_ALT}
+                  className="aspect-[4/5] w-full rounded-sm object-cover"
+                />
+              </div>
+            </div>
+          </Reveal>
+        </Container>
+      </Section>
       <div className="mk" data-page="buildings">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <noscript>
@@ -365,7 +262,7 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
         <ScrollReveal page="buildings" />
         <EstFormStepper />
         <EstFormWizard />
-        <div dangerouslySetInnerHTML={{ __html: BODY() }} />
+        <div dangerouslySetInnerHTML={{ __html: BODY }} />
       </div>
     </Fragment>
   );

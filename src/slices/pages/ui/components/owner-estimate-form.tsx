@@ -14,6 +14,13 @@ import { cn } from "@core/ui";
  * `EstFormWizard`/`EstFormStepper` (client islands) wire up imperatively via
  * `document.querySelector` — unchanged by this rewrite, so no submission logic lives here
  * (still markup-only, see the slice README).
+ *
+ * Second consumer: Buildings' listing "earnings calculator" (`buildings-listing.tsx`) —
+ * exported via `pages/contract.ts` since that's a different slice (golden rule 2). Only
+ * step 1's copy (`badge`/`headline`/`subheadline`/`ctaLabel`/`note`) is parameterized because
+ * that's the only part that ever differed between the two pages' original markup; steps 2
+ * ("Your contact details") and 3 ("Request received") were already byte-for-byte identical
+ * on both, so they stay fixed here rather than becoming props nobody would vary.
  */
 
 const inputClass =
