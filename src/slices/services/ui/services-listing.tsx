@@ -1,27 +1,26 @@
 import { setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
+import { IconFeatureGrid, Reveal } from "@core/ui";
 
 /**
  * Guest services page — the approved `mock/services.html` embedded 1:1 inside the live app
- * shell. The mock's body markup is rendered verbatim; its page-only styles are scoped under
- * `.mk` (shared design system lives in `src/app/mock.css`) so nothing leaks to Home/admin.
- * No database is read here — content is static, matching the mock exactly. The real
- * header/footer + i18n come from the app layout. (Iconoir glyphs use the mock's `<i class>`
- * markup; the icon font is not loaded in the app shell, so those marks render blank — an
- * accepted gap matching the other rebuilt pages.)
+ * shell. Most of the body markup is still rendered verbatim; its page-only styles are scoped
+ * under `.mk` (shared design system lives in `src/app/mock.css`) so nothing leaks to
+ * Home/admin. No database is read here — content is static, matching the mock exactly. The
+ * real header/footer + i18n come from the app layout.
+ *
+ * The **"How It Works" value strip is real JSX** (`core/ui`'s new `IconFeatureGrid` — see
+ * its docstring), which is why `BODY` is split into `BODY_TOP`/`BODY_BOTTOM` around it
+ * instead of one block. Iconoir glyphs (the service cards' `.svc-ico`, this strip's `.hico`)
+ * render their real glyphs, not blank circles: `mock.css`'s Iconoir stylesheet is a
+ * mask-icon sheet (`mask-image` on `[class^='iconoir-']::before`), unscoped from `.mk` and
+ * already imported by this route — confirmed against the live render, not just the mock
+ * source (a prior version of this comment claimed they rendered blank; that was wrong).
  */
 
 const PAGE_STYLE = `
 .mk .pcard .ph .svc-ico{position:absolute;left:16px;bottom:16px;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--accent-deep);font-size:24px;box-shadow:0 8px 22px -12px rgba(0,0,0,.5);z-index:2}
 .mk .svc-tag{position:absolute;left:16px;top:16px;z-index:2;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:100px;padding:6px 12px}
-.mk .howstrip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--line) 26%,var(--bg))}
-.mk .howstrip .wrap{padding-top:54px;padding-bottom:54px}
-.mk .how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px}
-.mk .how-item{display:flex;gap:16px;align-items:flex-start}
-.mk .how-item .hico{flex:0 0 auto;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);color:var(--accent-deep);font-size:24px}
-.mk .how-item h4{font-family:var(--serif);font-size:19px;font-weight:500;color:var(--ink);margin:2px 0 6px}
-.mk .how-item p{font-size:14px;line-height:1.65;color:var(--ink-soft);margin:0}
-@media(max-width:820px){.mk .how-grid{grid-template-columns:1fr}}
 .mk .cta-band{background:var(--feature);color:var(--on-feature);transition:background .4s var(--ease)}
 .mk .cta-band .wrap{padding-top:67px;padding-bottom:67px}
 .mk .cta-split{display:grid;grid-template-columns:1fr 1.1fr;gap:64px;align-items:center}
@@ -34,7 +33,7 @@ const PAGE_STYLE = `
 @media(max-width:860px){.mk .cta-split{grid-template-columns:1fr;gap:32px;text-align:center}.mk .cta-media{aspect-ratio:16/10}.mk .cta-band h2{margin-left:auto;margin-right:auto}.mk .cta-band p{margin-left:auto;margin-right:auto}}
 `;
 
-const BODY = (locale: Locale) => `
+const BODY_TOP = (locale: Locale) => `
 <!-- HERO -->
 <section class="hero compact" style="padding:0">
   <img src="https://images.unsplash.com/photo-1469022563428-aa04fef9f5a2?auto=format&fit=crop&w=1900&q=70" alt="Sunlit Lisbon street with pastel façades and a tram climbing the hill">
@@ -176,40 +175,9 @@ const BODY = (locale: Locale) => `
     </div>
   </div>
 </section>
+`;
 
-<!-- HOW IT WORKS / VALUE STRIP -->
-<div class="howstrip">
-  <div class="wrap">
-    <div class="sec-head center reveal" style="margin-bottom:38px">
-      <span class="eyebrow">How It Works</span>
-      <h2 class="section-title">Arranged for you, end to end</h2>
-    </div>
-    <div class="how-grid reveal">
-      <div class="how-item">
-        <span class="hico"><i class="iconoir-chat-bubble" aria-hidden="true"></i></span>
-        <div>
-          <h4>Booked through your guest contact</h4>
-          <p>Tell your dedicated guest contact what you'd like and we'll handle the scheduling, partners and payments for you.</p>
-        </div>
-      </div>
-      <div class="how-item">
-        <span class="hico"><i class="iconoir-home-simple" aria-hidden="true"></i></span>
-        <div>
-          <h4>Available across all stays</h4>
-          <p>Every service is offered at each of our Lisbon apartments — add it before you arrive or any time during your stay.</p>
-        </div>
-      </div>
-      <div class="how-item">
-        <span class="hico"><i class="iconoir-headset" aria-hidden="true"></i></span>
-        <div>
-          <h4>Looked after 24/7</h4>
-          <p>Our local guest team is on hand around the clock, so plans can change and questions get answered, day or night.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
+const BODY_BOTTOM = (locale: Locale) => `
 <!-- CTA BAND (feature) -->
 <section class="cta-band" style="padding:0">
   <div class="wrap cta-split reveal">
@@ -230,9 +198,52 @@ const BODY = (locale: Locale) => `
 export async function ServicesListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
   return (
-    <div className="mk" data-page="services">
-      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-      <div dangerouslySetInnerHTML={{ __html: BODY(locale) }} />
-    </div>
+    <>
+      <div className="mk" data-page="services">
+        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+        <div dangerouslySetInnerHTML={{ __html: BODY_TOP(locale) }} />
+      </div>
+      {/*
+       * "How It Works" value strip — real JSX now, `core/ui`'s new `IconFeatureGrid`, ported
+       * 1:1 from the old `.mk`-scoped `.howstrip`/`.how-grid`/`.how-item` CSS (shared
+       * `mock.css` rules — left untouched, still used by other `.mk`-embedded pages).
+       * Rendered OUTSIDE `.mk`: `mock.css`'s `.mk * {margin:0;padding:0}` reset is unlayered
+       * CSS, which always beats a `@layer`-wrapped Tailwind utility regardless of
+       * specificity, so a `.mk`-nested instance would silently lose its own `py-[54px]`/
+       * `gap-[30px]` to that reset (see `SpecStrip`'s docstring for the same bug, found the
+       * same way on an earlier slice). The hero/services-grid and CTA-band sections on
+       * either side of it are still raw markup, so they keep their own `.mk` wrapper —
+       * split into `BODY_TOP`/`BODY_BOTTOM` around this component instead of one `.mk` block.
+       */}
+      <Reveal label="services-how-it-works">
+        <IconFeatureGrid
+          eyebrow="How It Works"
+          headline="Arranged for you, end to end"
+          items={[
+            {
+              icon: <i className="iconoir-chat-bubble" aria-hidden="true" />,
+              title: "Booked through your guest contact",
+              description:
+                "Tell your dedicated guest contact what you'd like and we'll handle the scheduling, partners and payments for you.",
+            },
+            {
+              icon: <i className="iconoir-home-simple" aria-hidden="true" />,
+              title: "Available across all stays",
+              description:
+                "Every service is offered at each of our Lisbon apartments — add it before you arrive or any time during your stay.",
+            },
+            {
+              icon: <i className="iconoir-headset" aria-hidden="true" />,
+              title: "Looked after 24/7",
+              description:
+                "Our local guest team is on hand around the clock, so plans can change and questions get answered, day or night.",
+            },
+          ]}
+        />
+      </Reveal>
+      <div className="mk" data-page="services">
+        <div dangerouslySetInnerHTML={{ __html: BODY_BOTTOM(locale) }} />
+      </div>
+    </>
   );
 }

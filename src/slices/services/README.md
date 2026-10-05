@@ -21,10 +21,16 @@ Slice services.
 
 ## Routes (App Router, ISR)
 
-- `/[locale]/services` — index: the approved `mock/services.html` design embedded 1:1 as
-  static markup (`ui/services-listing.tsx`) — hero + card grid + "how it works" + CTA band.
-  `revalidate = 3600`, static per locale, **no database read** (content is hardcoded English,
-  same gap as the detail pages below).
+- `/[locale]/services` — index: the approved `mock/services.html` design embedded 1:1
+  (`ui/services-listing.tsx`) — hero + card grid + CTA band are still static markup;
+  the **"How It Works" value strip is real JSX**, `core/ui`'s new `IconFeatureGrid` (a
+  centered eyebrow/heading above a fixed 3-column icon/title/description grid — see that
+  component's docstring), ported 1:1 from the old `.mk`-scoped `.howstrip`/`.how-grid`/
+  `.how-item` CSS and rendered **outside** `.mk` (same `.mk * {margin:0;padding:0}`
+  unlayered-CSS-vs-`@layer`-Tailwind pitfall `SpecStrip`/buildings hit — see that
+  component's docstring), which is why `BODY` in `services-listing.tsx` is split into
+  `BODY_TOP`/`BODY_BOTTOM` around it. `revalidate = 3600`, static per locale, **no database
+  read** (content is hardcoded English, same gap as the detail pages below).
 - `/[locale]/services/[slug]` — detail (`ui/service-detail.tsx`): hero, highlights/itinerary/
   menu options (content-dependent), pricing table or partner cards, gallery, conditions,
   related services, and a live enquiry form. Today this renders the **static catalogue**

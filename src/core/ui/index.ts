@@ -50,3 +50,5 @@ export { Hero } from "./hero";
 export { ScrollDebugProbe } from "./motion/scroll-debug-probe";
 /** Site-wide footer chrome — see `footer.tsx`. */
 export { Footer, type FooterContact, type FooterNavGroup, type FooterSocialLink } from "./footer";
+/** Bordered/tinted band: centered eyebrow+heading above a fixed 3-column icon/title/description grid. */
+export { IconFeatureGrid, type IconFeatureGridItem } from "./icon-feature-grid";
