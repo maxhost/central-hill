@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
 import { mediaImgTag, type MediaImageData } from "@core/media";
+import { PhotoFeatureGrid, Reveal } from "@core/ui";
 import { getGlobals } from "@slices/settings/contract";
 import { getGuestPage, type GuestContent } from "../contract";
 import { FaqSection } from "./components/faq-section";
@@ -26,6 +27,17 @@ import { TestimonialsRow } from "./components/testimonials-row";
  *
  * The hero <video> is the mock's markup (autoplay/muted/loop); no client JS is wired, so
  * `.reveal` is neutralised in mock.css and all content renders immediately.
+ *
+ * The "Make the Most of Your Stay" services teaser is real JSX now: `core/ui`'s new
+ * `PhotoFeatureGrid` (see that component's docstring for why it's neither `IconFeatureGrid`
+ * nor `StepGallery`, and for the deliberate mock-vs-live-render chrome deviation it ports).
+ * Its `sec-head` (eyebrow/headline/intro) stays raw markup — still DB-content, built through
+ * the existing `secHead()` helper — in its own small `.mk[data-page="guests"]` wrapper (kept
+ * `data-page`-scoped, not bare `.mk`, so it still picks up `<ScrollReveal page="guests">`'s
+ * `document.querySelectorAll('.mk[data-page="guests"] .pre-reveal')` sweep and keeps its
+ * scroll-fade-in, unlike About's bare-`.mk` precedent for the same split which loses it).
+ * The immediately adjacent "What to Do" teaser is unaffected — still raw markup, now in its
+ * own small `.mk` wrapper (`bodyActivitiesTeaser`, split out of the old combined `bodyMid`).
  */
 
 // Media fallbacks = the approved mock assets, used 1:1 until a real R2 asset is set in the
@@ -247,22 +259,29 @@ function bodyTop(
 `;
 }
 
-/** Services teaser · What-to-do teaser — between the portfolio and testimonials islands. */
-function bodyMid(content: GuestContent, locale: Locale): string {
-  const { services_teaser: services, activities_teaser: activities } = content;
+/**
+ * Services teaser's `sec-head` only (eyebrow/headline/intro) — the grid + CTA are real JSX now
+ * (`core/ui`'s `PhotoFeatureGrid`, wired at the `GuestPage` call site). Still raw markup, given
+ * its own small `.mk[data-page="guests"]` wrapper there — see `GuestPage`'s own doc comment for
+ * why it keeps the `data-page` scope (unlike About's bare-`.mk` precedent for the same kind of
+ * split) rather than going bare.
+ */
+function servicesTeaserSecHead(content: GuestContent): string {
+  const { services_teaser: services } = content;
+  return secHead({ eyebrow: services.eyebrow, headline: services.headline, intro: services.intro });
+}
+
+/**
+ * What-to-do teaser — still fully raw markup (out of scope for the services-teaser extraction
+ * above; same `.feat-grid`/`.feat`/`.cta-row` CSS, still declared in `PAGE_STYLE` since this
+ * section depends on it). Split out of the old combined `bodyMid` so it can get its own small
+ * `.mk` wrapper at the `GuestPage` call site, now that the services teaser sits beside it as
+ * real JSX instead of a markup sibling in the same string.
+ */
+function bodyActivitiesTeaser(content: GuestContent, locale: Locale): string {
+  const { activities_teaser: activities } = content;
 
   return `
-<!-- SERVICES TEASER -->
-<section class="alt">
-  <div class="wrap">
-    ${secHead({ eyebrow: services.eyebrow, headline: services.headline, intro: services.intro })}
-    <div class="feat-grid reveal reveal-io reveal-stagger pre-reveal">
-      ${iconCards(services.items, "feat", SERVICES_TEASER_BG)}
-    </div>
-    ${ctaRow(services.cta, locale, "accent")}
-  </div>
-</section>
-
 <!-- WHAT TO DO TEASER -->
 <section>
   <div class="wrap">
@@ -333,6 +352,13 @@ export async function GuestPage({ locale }: { locale: Locale }) {
   const { portfolio } = content;
   const faqGroupKey = content.faq_group_key ?? "";
 
+  const servicesTeaserItems = content.services_teaser.items.map((item, i) => ({
+    icon: <i className={iconClass(item.icon_key)} aria-hidden="true" />,
+    title: item.title,
+    description: item.description,
+    image: SERVICES_TEASER_BG[i],
+  }));
+
   return (
     <>
       <div className="mk" data-page="guests">
@@ -360,8 +386,41 @@ export async function GuestPage({ locale }: { locale: Locale }) {
         />
       </div>
 
+      {/*
+       * "Make the Most of Your Stay" services teaser — real JSX now, `core/ui`'s new
+       * `PhotoFeatureGrid` (see its docstring + `GuestPage`'s top doc comment for the
+       * IconFeatureGrid/StepGallery comparison and the mock-vs-live deviation it ports).
+       * Section/wrap chrome is reproduced here at the exact mock metrics (`max-width:1240px;
+       * padding:0 28px`, `padding:clamp(72px,10vw,150px) 0`, the `.alt` tint) rather than
+       * `core/ui`'s generic `Section`/`Container` (different values — would misalign this
+       * section's edges against its still-raw `.wrap`-based neighbours above/below), same
+       * reasoning `NumberedFeatureGrid`'s About call site documents for the identical choice.
+       * `sec-head` stays raw markup (still DB content) in its own small, `data-page`-scoped
+       * `.mk` wrapper so it keeps its scroll-reveal; the grid+CTA render outside `.mk` entirely
+       * (Lesson 1 — `.mk *{margin:0;padding:0}` would silently zero their Tailwind spacing).
+       */}
+      <section
+        className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)]"
+      >
+        <div className="mx-auto max-w-[1240px] px-[28px]">
+          <div className="mk" data-page="guests">
+            <div dangerouslySetInnerHTML={{ __html: servicesTeaserSecHead(content) }} />
+          </div>
+          <Reveal label="guests-services-teaser">
+            <PhotoFeatureGrid
+              items={servicesTeaserItems}
+              cta={{
+                href: localizeUrl(content.services_teaser.cta.url, locale),
+                label: `${content.services_teaser.cta.label} →`,
+                note: content.services_teaser.cta.note,
+              }}
+            />
+          </Reveal>
+        </div>
+      </section>
+
       <div className="mk" data-page="guests">
-        <div dangerouslySetInnerHTML={{ __html: bodyMid(content, locale) }} />
+        <div dangerouslySetInnerHTML={{ __html: bodyActivitiesTeaser(content, locale) }} />
       </div>
 
       {/* Guest reviews — the same shared marquee as Home/Owners, filtered to `audience='guest'`. */}

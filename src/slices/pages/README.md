@@ -214,16 +214,42 @@ capabilities/manage showcases, deal structures, track record, process, enquiry f
 unaffected — out of scope for this change.
 
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
-`docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyMid` / `bodyBottom` interpolate the
-resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`. Its nine sections
-split as follows — hero, welcome, why, services teaser and activities teaser come from
-`page_content`; the featured portfolio comes from **buildings**, the reviews from
+`docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyActivitiesTeaser` / `bodyBottom`
+interpolate the resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`.
+Its nine sections split as follows — hero, welcome, why, services teaser and activities teaser
+come from `page_content`; the featured portfolio comes from **buildings**, the reviews from
 **testimonials** (`audience='guest'`, managed in `/admin/testimonials` — the page schema owns no
 testimonials block), the optional FAQ from **faq**, and the dual-CTA contact line from
 **company_settings**. `icon_key` renders directly as an Iconoir glyph (`iconoir-<key>`; the font
 is loaded globally by `mock.css`), with `iconoir-sparks` as the fallback for unknown keys.
 `localizeUrl` rewrites the stored absolute `/en/…` CTA links to the active locale, because
 `cta.url` is `z.url()` and relative paths cannot be stored.
+
+The "Make the Most of Your Stay" **services teaser is real JSX now**: `core/ui`'s new
+`PhotoFeatureGrid` (a bordered grid of full-bleed photo cards — icon/title/description in white
+over a dark scrim — plus an optional CTA row), ported 1:1 from the old combined `bodyMid`'s
+`.feat-grid`/`.feat`/`.cta-row` CSS (now split out as `servicesTeaserSecHead` +
+`bodyActivitiesTeaser`, see below). Rendered **outside** `.mk` (Lesson 1: `.mk *{margin:0;
+padding:0}` is unlayered CSS and always beats a `@layer`-wrapped Tailwind utility); its
+`sec-head` (eyebrow/headline/intro — still DB content) stays raw markup through the existing
+`secHead()` helper, in its own small `.mk[data-page="guests"]` wrapper so it keeps picking up
+`<ScrollReveal page="guests">`'s sweep. The section/wrap chrome around it (`max-width:1240px;
+padding:0 28px`, `padding:clamp(72px,10vw,150px) 0`, the `.alt` tint) is reproduced at the exact
+mock metrics directly in `guest-page.tsx`, not `core/ui`'s generic `Section`/`Container` (same
+reasoning as About's `NumberedFeatureGrid` call site). **Not** `IconFeatureGrid` (different band
+chrome, icon-circle not photo card, 3 fixed items, no CTA) and **not** `StepGallery` (numbered
+index not icon, shared hairline-grid border not per-card border, 5 fixed items, no CTA) — see
+`PhotoFeatureGrid`'s own docstring for the full comparison, plus a documented, deliberate
+deviation it ports: the *approved static* `mock/guest.html` baseline defines `.feat` as a plain
+`surface`-background card, but the *live* `guest-page.tsx` had already (pre-dating this
+extraction) shipped a photo-background + gradient-scrim + white-text treatment instead, per an
+explicit in-code "client feedback: premium look for Services/What-to-do" comment — ported as
+shipped, flagged rather than silently resolved. The immediately adjacent "What to Do" teaser is
+**unchanged** — still raw markup (same `.feat-grid`/`.feat`/`.cta-row` CSS, still in `PAGE_STYLE`
+since this section needs it), now in its own small `.mk` wrapper (`bodyActivitiesTeaser`) since
+it no longer shares a markup string with the services teaser. A likely future second consumer of
+`PhotoFeatureGrid`: that "What to Do" teaser itself, once it's its own extraction task (just
+needs `cta.variant="ghost"`).
 
 **Deploy order matters for this page:** migration 0012 must run before the code ships, otherwise
 prerendering `/[locale]/guests` throws on the missing `portfolio` / `dual_cta` blocks. A stale

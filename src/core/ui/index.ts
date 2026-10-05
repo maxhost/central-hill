@@ -60,3 +60,5 @@ export { IconFeatureGrid, type IconFeatureGridItem } from "./icon-feature-grid";
 export { ProseSection, type ProseSectionSubsection } from "./prose-section";
 /** Asymmetric 2-row bento: a feature cell (title + embedded stat strip + paragraphs) beside two stacked text/list cells, shared hover-lift + accent sweep-line chrome. */
 export { StatBento, type StatBentoCell, type StatBentoStat } from "./stat-bento";
+/** Bordered grid of full-bleed photo cards (icon/title/description, white-on-scrim) + optional CTA row. */
+export { PhotoFeatureGrid, type PhotoFeatureGridItem } from "./photo-feature-grid";
