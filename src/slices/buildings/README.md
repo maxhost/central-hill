@@ -48,26 +48,35 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
 ## Routes
 
 - `/{locale}/buildings` — listing (`ui/buildings-listing.tsx`): the approved
-  `mock/buildings.html` design. The **hero and building grid are real JSX**, not interpolated
-  markup — only the owner CTA + stats + earnings calculator chrome is still the mock's static
-  `.mk` markup. The hero is `core/ui`'s `<Hero compact align="center">`, single-column (no
-  `aside`), ported 1:1 from the old `.mk`-scoped overrides (now deleted) via five additive
-  `Hero` props (`align`/`overlayClassName`/`headlineClassName`/`subtitleClassName`/
-  `wrapClassName` — see `core/ui/hero.tsx`'s docstring); this page has no `page_content` row,
-  so every hero string/image is still a fixed literal. The grid is `./components/
-  building-listing-card.tsx`'s `BuildingListingCard` inside `core/ui`'s `Section`/`Container`
-  (one `Reveal`, no per-card stagger) fed from `listBuildings(locale)` — the locked `.pcard`
-  design ported to Tailwind, **purpose-built for this grid**: distinct from both `core/ui`'s
-  `PropertyCard` (Home/Guest's smaller featured-portfolio carousel card) and this slice's own
-  `building-card.tsx` (`BuildingCard` — dead code, no real consumer, a third different-again
-  look; left as-is rather than deleted, since it wasn't this task's target). Client direction
-  (B6): the city name is omitted from the card meta line (`street · neighbourhood ·
-  N apartments`); the city/neighbourhood filter bar is hidden (kept commented out in source for
-  later DB wiring); a building with no R2 cover yet falls back to
+  `mock/buildings.html` design. The **hero, building grid, "For Owners" band, and stats band
+  are real JSX**, not interpolated markup — only the earnings calculator chrome is still the
+  mock's static `.mk` markup. The hero is `core/ui`'s `<Hero compact align="center">`,
+  single-column (no `aside`), ported 1:1 from the old `.mk`-scoped overrides (now deleted) via
+  five additive `Hero` props (`align`/`overlayClassName`/`headlineClassName`/
+  `subtitleClassName`/`wrapClassName` — see `core/ui/hero.tsx`'s docstring); this page has no
+  `page_content` row, so every hero string/image is still a fixed literal. The grid is
+  `./components/building-listing-card.tsx`'s `BuildingListingCard` inside `core/ui`'s
+  `Section`/`Container` (one `Reveal`, no per-card stagger) fed from `listBuildings(locale)` —
+  the locked `.pcard` design ported to Tailwind, **purpose-built for this grid**: distinct from
+  both `core/ui`'s `PropertyCard` (Home/Guest's smaller featured-portfolio carousel card) and
+  this slice's own `building-card.tsx` (`BuildingCard` — dead code, no real consumer, a third
+  different-again look; left as-is rather than deleted, since it wasn't this task's target).
+  Client direction (B6): the city name is omitted from the card meta line (`street ·
+  neighbourhood · N apartments`); the city/neighbourhood filter bar is hidden (kept commented
+  out in source for later DB wiring); a building with no R2 cover yet falls back to
   `public/placeholders/building.svg` so cards never render empty. A building with **booking
   enabled** (admin toggle + an `avantio_url`) makes its whole card link out to that external
   booking URL in a new tab (`target="_blank"`) instead of the internal detail page;
-  `BuildingSummary.booking = { enabled, url }` carries this.
+  `BuildingSummary.booking = { enabled, url }` carries this. The "For Owners" band is
+  `core/ui`'s new `FeaturePanel` (a single bordered, solid dark "feature band" panel — no
+  image, unlike `DualCtaPanels`/`FeatureCtaBand`, see that component's docstring for why it's
+  a separate primitive), ported 1:1 from the old `.dual`/`.dcol.owner`/`.contact-line` CSS
+  (shared `mock.css` rules, untouched — other `.mk`-embedded pages may still use them); no
+  schema field backs it, every string is still a fixed literal. "Numbers That Speak for
+  Themselves" is the same `core/ui` `StatBand` Owners/Home use (ported 1:1 from the old
+  `.stats`/`.stats-grid`/`.stat .lbl` CSS), extended with two additive props: `columns={3}`
+  (this page's grid, vs. the default 4) and each cell's `description` (a second line under the
+  label); the figures themselves are still the same fixed literals as before this port.
 - `/{locale}/buildings/{slug}` — detail (`ui/building-detail.tsx`): the approved
   `mock/building-detail.html` design, now **DB-driven** from `getBuildingBySlug(locale, slug)`
   (`notFound()` when unknown/unpublished): hero (placeholder cover when no R2 image), gallery,

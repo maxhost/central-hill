@@ -12,14 +12,24 @@ import { Container } from "./container";
  * No `durationMs` prop: `CountUp` (`./motion/count-up.tsx`) still hardcodes its 4000ms
  * duration as a module constant, not a prop (per `01-motion-primitives.md`) — out of scope
  * for this component's migration. Forwarding one here would be dead plumbing.
+ *
+ * `columns` (default 4, Home/Owners' cell count) and each cell's optional `description` are
+ * additive — Buildings' listing (`#` stats band, 3 cells, each with a second descriptive line
+ * under the label, e.g. "Bookings Completed" / "Across all managed properties") needed both,
+ * ported 1:1 from its old `.mk`-scoped `.stats`/`.stats-grid`/`.stat .lbl` CSS (two stacked
+ * `.lbl`s per cell — the original reused one class for both lines via an inline style
+ * override; `description` is a real second field here instead).
  */
 export function StatBand({
   title,
   cells,
+  columns = 4,
 }: {
   /** Centred heading in the band; omitted entirely renders a bare proof band (Owners-style). */
   title?: string;
-  cells: { value: string; label: string }[];
+  cells: { value: string; label: string; description?: string }[];
+  /** Desktop column count (`lg:grid-cols-N`); mobile stays a fixed 2-up either way. */
+  columns?: 3 | 4;
 }) {
   return (
     <section className="bg-feature py-[clamp(56px,8vw,104px)]">
@@ -30,9 +40,9 @@ export function StatBand({
           </h2>
         ) : null}
         <dl
-          className={`grid grid-cols-2 gap-x-8 gap-y-10 text-center lg:grid-cols-4 ${
-            title ? "mt-[clamp(40px,6vw,72px)]" : ""
-          }`}
+          className={`grid grid-cols-2 gap-x-8 gap-y-10 text-center ${
+            columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
+          } ${title ? "mt-[clamp(40px,6vw,72px)]" : ""}`}
         >
           {cells.map((s) => (
             <div key={s.label}>
@@ -42,6 +52,11 @@ export function StatBand({
               <dd className="mt-3 text-xs uppercase tracking-[0.14em] text-on-feature-soft">
                 {s.label}
               </dd>
+              {s.description ? (
+                <dd className="mt-1.5 text-xs tracking-[0.02em] text-on-feature-soft">
+                  {s.description}
+                </dd>
+              ) : null}
             </div>
           ))}
         </dl>

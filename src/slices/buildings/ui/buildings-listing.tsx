@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { Container, Hero, Reveal, Section } from "@core/ui";
+import { Container, FeaturePanel, Hero, Reveal, Section, StatBand } from "@core/ui";
 import { EstFormStepper, EstFormWizard } from "@slices/pages/contract";
 import { ContactDialog } from "@slices/settings/contract";
 import { listBuildings } from "../server/queries";
@@ -11,12 +11,11 @@ import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
  * Buildings listing — the approved `mock/buildings.html` design embedded 1:1 inside the
- * live app shell, now **DB-driven**: the surrounding chrome (owner CTA band, stats band,
- * earnings calculator) is the mock's static markup verbatim, but the property grid is
- * generated from the published `building` rows (`listBuildings`, ISR-cached + tagged
- * `building-list` → a publish busts it). Page styles stay scoped under `.mk` (see
- * `src/app/mock.css`) so nothing leaks to Home/admin. The real header/footer + i18n come
- * from the app layout.
+ * live app shell, now **DB-driven**: the only remaining raw-markup chrome is the earnings
+ * calculator; the property grid is generated from the published `building` rows
+ * (`listBuildings`, ISR-cached + tagged `building-list` → a publish busts it). Page styles
+ * stay scoped under `.mk` (see `src/app/mock.css`) so nothing leaks to Home/admin. The real
+ * header/footer + i18n come from the app layout.
  *
  * The **hero is real JSX**, not interpolated markup: `core/ui`'s `<Hero compact align="center">`
  * (no `aside` — single-column, text + one CTA). This page has no `page_content` row, so every
@@ -33,6 +32,15 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * - when a building has no R2 cover yet (`cover === null`) a Warm-Editorial placeholder
  *   SVG (`/placeholders/building.svg`) is shown so the card never renders empty.
  * Cards link to each building's real per-locale detail slug.
+ *
+ * The **"For Owners" band is real JSX** too: `core/ui`'s new `FeaturePanel`, ported 1:1 from
+ * the old `.mk`-scoped `.dual`/`.dcol.owner`/`.contact-line` CSS (shared `mock.css` rules,
+ * untouched — other `.mk`-embedded pages may still use them). No schema field backs it; every
+ * string is a fixed literal, same as before this port.
+ *
+ * The **"Numbers That Speak for Themselves" stats band is real JSX** too: the same `core/ui`
+ * `StatBand` Owners/Home use, extended with `columns`/per-cell `description` (see that
+ * component's docstring) — still the same fixed literals as before this port.
  */
 
 // Hero background — no schema field (this page has no `page_content` row), so it's a fixed
@@ -109,20 +117,21 @@ const PAGE_STYLE = `
 @media(max-width:980px){.mk .calc-wrap{grid-template-columns:1fr;gap:34px}.mk .calc-media{order:-1}}
 @media(max-width:520px){.mk .calc-band .est-two{grid-template-columns:1fr}}
 
-/* Page-wide entrance motion for the remaining raw-markup sections (owner CTA band, stats,
-   earnings calculator), immediate on load for above-the-fold content, on scroll for the
-   rest, via <ScrollReveal page="buildings">/scroll-reveal.tsx — same pattern already applied
-   to About/Guests/Real Estate. The building grid now animates separately via core/ui's
-   Reveal component (real JSX, outside .mk — see BuildingListingCard's hover, which is
-   Tailwind on the card itself, not .pcard's mock.css rule). The hidden state is baked straight into
-   of visible-then-hidden; the <noscript> rule keeps content visible with JS off. Scoped to
-   [data-page="buildings"] so it never touches the shared, neutralised .reveal rule in
-   mock.css or any other page. */
+/* Page-wide entrance motion for the one remaining raw-markup section (the earnings
+   calculator), immediate on load for above-the-fold content, on scroll for the rest, via
+   <ScrollReveal page="buildings">/scroll-reveal.tsx — same pattern already applied to
+   About/Guests/Real Estate. The building grid, "For Owners" band, and stats band now animate
+   separately via core/ui's Reveal component (real JSX, outside .mk — see
+   BuildingListingCard's hover, which is Tailwind on the card itself, not .pcard's mock.css
+   rule). The hidden state is baked straight into the server-rendered markup (.pre-reveal,
+   applied on the elements below) so there's no flash of visible-then-hidden; the <noscript>
+   rule keeps content visible with JS off. Scoped to [data-page="buildings"] so it never
+   touches the shared, neutralised .reveal rule in mock.css or any other page. */
 .mk[data-page="buildings"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .mk[data-page="buildings"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
 `;
 
-function BODY(locale: Locale): string {
+function BODY(): string {
   const calcImg = mediaImgTag({
     fallbackSrc: CALC_FALLBACK_IMG,
     fallbackAlt: CALC_FALLBACK_ALT,
@@ -151,45 +160,6 @@ function BODY(locale: Locale): string {
   </div>
 </div>
 -->
-
-<!-- OWNER CTA BAND -->
-<section style="padding-top:0">
-  <div class="wrap">
-    <div class="dual reveal reveal-io pre-reveal" style="grid-template-columns:1fr">
-      <div class="dcol owner">
-        <span class="eyebrow">For Owners</span>
-        <h3>Looking to add your property to our portfolio?</h3>
-        <p>Join the buildings above. We'll assess your apartment and show you what it could earn — free, no obligation, within 48 hours.</p>
-        <a class="btn btn-accent" href="/${locale}#owners">Get Your Free Earnings Estimate →</a>
-        <div class="contact-line">Call +351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SECTION 3 · STATS BAND -->
-<section class="stats">
-  <div class="wrap">
-    <h2 style="text-align:center;margin-bottom:42px">Numbers That Speak for Themselves</h2>
-    <div class="stats-grid reveal reveal-io reveal-stagger pre-reveal" style="grid-template-columns:repeat(3,1fr)">
-      <div class="stat">
-        <div class="num">400,000+</div>
-        <div class="lbl">Bookings Completed</div>
-        <div class="lbl" style="letter-spacing:.02em;text-transform:none;margin-top:6px">Across all managed properties</div>
-      </div>
-      <div class="stat">
-        <div class="num">12+</div>
-        <div class="lbl">Years of Experience</div>
-        <div class="lbl" style="letter-spacing:.02em;text-transform:none;margin-top:6px">Optimizing owner returns in Portugal</div>
-      </div>
-      <div class="stat">
-        <div class="num">€55M+</div>
-        <div class="lbl">Revenue Generated</div>
-        <div class="lbl" style="letter-spacing:.02em;text-transform:none;margin-top:6px">For our property owners</div>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- SECTION 4 · EARNINGS CALCULATOR — the exact Owners hero wizard, two columns (form
      left, photo right). Markup is duplicated from Owners rather than cross-slice-imported
@@ -342,6 +312,47 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
           )}
         </Container>
       </Section>
+      {/*
+       * Real JSX — "For Owners" band, `core/ui`'s new `FeaturePanel`, ported 1:1 from the old
+       * `.mk`-scoped `.dual`/`.dcol.owner`/`.contact-line` CSS (shared `mock.css` rules — left
+       * untouched, still used by other `.mk`-embedded pages). `pb-only` wrapper (no `Section`)
+       * mirrors the original's `padding-top:0` — it sits flush under the grid above, which
+       * already carries the gap — same technique `DualCtaPanels` uses for the same reason.
+       */}
+      <div className="pb-[clamp(64px,10vw,160px)]">
+        <Container>
+          <Reveal label="buildings-owner-panel">
+            <FeaturePanel
+              eyebrow="For Owners"
+              title="Looking to add your property to our portfolio?"
+              body="Join the buildings above. We'll assess your apartment and show you what it could earn — free, no obligation, within 48 hours."
+              cta={{ href: `/${locale}#owners`, label: "Get Your Free Earnings Estimate →" }}
+              contactLine="Call +351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725"
+            />
+          </Reveal>
+        </Container>
+      </div>
+      {/*
+       * "Numbers That Speak for Themselves" — the shared `core/ui` `StatBand` (same component
+       * Owners' bare "numbers" band and Home use), ported 1:1 from the old `.mk`-scoped
+       * `.stats`/`.stats-grid`/`.stat .lbl` CSS (shared `mock.css` rules — left untouched).
+       * Needed two additive extensions to `StatBand` itself: `columns={3}` (this page's grid
+       * is 3-up, not the default 4) and each cell's `description` (a second line under the
+       * label — the original reused one `.lbl` class for both via an inline style override;
+       * see that component's docstring). No schema field backs these figures; they're the
+       * same fixed literals as before this port.
+       */}
+      <Reveal label="buildings-stats">
+        <StatBand
+          title="Numbers That Speak for Themselves"
+          columns={3}
+          cells={[
+            { value: "400,000+", label: "Bookings Completed", description: "Across all managed properties" },
+            { value: "12+", label: "Years of Experience", description: "Optimizing owner returns in Portugal" },
+            { value: "€55M+", label: "Revenue Generated", description: "For our property owners" },
+          ]}
+        />
+      </Reveal>
       <div className="mk" data-page="buildings">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <noscript>
@@ -354,7 +365,7 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
         <ScrollReveal page="buildings" />
         <EstFormStepper />
         <EstFormWizard />
-        <div dangerouslySetInnerHTML={{ __html: BODY(locale) }} />
+        <div dangerouslySetInnerHTML={{ __html: BODY() }} />
       </div>
     </Fragment>
   );
