@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { mediaImgTag, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
+import { Reveal, StatBento } from "@core/ui";
 import { getRealEstatePage, type RealEstateContent } from "../contract";
 import {
   defaultCapabilities,
@@ -27,6 +28,13 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * `OwnerStatsCounter` island (it animates any `.mk [data-count]` figure). The "How it works"
  * section ("A Structured Path…") uses the same Editorial-Split layout as the partners section
  * (`partner-pitch`), with the step numbers as the hairline-list markers.
+ *
+ * The "Why Portugal" section (`#market`, `marketSection`'s former home) is now real JSX —
+ * `core/ui`'s `StatBento`, wrapped in `Reveal` — not raw `dangerouslySetInnerHTML` markup. Its
+ * `sec-head` (title/lede) stays raw mock markup in its own small `.mk[data-page="real-estate"]`
+ * wrapper (same convention as the rest of this page), split out of `bodyTopA`/`bodyTopB` around
+ * it. See `StatBento`'s docstring for the full mock-vs-live drift this extraction resolved
+ * (`mock/real-estate.html` still shows the old flat `.why-grid`, superseded here by the bento).
  *
  * Follow-up: the "Submit Partnership Enquiry" form is the mock's static markup (onsubmit
  * disabled, no action wired). Wiring it to the leads slice's deal-enquiry action is a
@@ -88,44 +96,18 @@ const ASSET_ICONS = [
   `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>`,
 ];
 
-/** Render the Why-Portugal bento (SECTION 6) from the DB-driven `market` content: a tall
- * feature card with a three-stat strip + two paragraphs, beside a regulatory cell and an
- * investment-thesis bullet list. All values are admin-authored and escaped. */
-function marketSection(market: RealEstateContent["market"]): string {
-  const stats = market.stats
-    .map(
-      (s) =>
-        `<div class="stat"><div class="sv">${esc(s.value)}</div><span class="sl">${esc(s.label)}</span></div>`,
-    )
-    .join("");
-  const fundamentals = market.fundamentals.body.map((p) => `<p>${esc(p)}</p>`).join("");
-  const thesis = market.thesis.points.map((p) => `<li>${esc(p)}</li>`).join("");
-
+/** Render just the "Why Portugal" (`#market`) section head — raw mock markup (title + optional
+ * lede), still `.mk`-scoped since it reuses mock.css's generic `.sec-head`/`.section-title`/
+ * `.lede` rules. The bento below it (SECTION 6's former body) is now `core/ui`'s `StatBento`,
+ * real JSX rendered outside `.mk` — see `RealEstatePage`. All values are admin-authored and
+ * escaped. */
+function marketSecHead(market: RealEstateContent["market"]): string {
   return `
-<!-- SECTION 6 — WHY PORTUGAL (dynamic bento, DB-driven) -->
-<section id="market">
-  <div class="wrap">
-    <div class="sec-head reveal reveal-io pre-reveal">
-      <h2 class="section-title">${esc(market.headline)}</h2>
-      ${market.subheadline ? `<p class="lede" style="margin-top:16px">${esc(market.subheadline)}</p>` : ""}
-    </div>
-    <div class="market-bento reveal reveal-io reveal-stagger pre-reveal">
-      <div class="mcell feature">
-        <h3>${esc(market.fundamentals.title)}</h3>
-        <div class="stat-row">${stats}</div>
-        ${fundamentals}
-      </div>
-      <div class="mcell">
-        <h3>${esc(market.regulatory.title)}</h3>
-        <p>${esc(market.regulatory.body)}</p>
-      </div>
-      <div class="mcell">
-        <h3>${esc(market.thesis.title)}</h3>
-        <ul class="thesis">${thesis}</ul>
-      </div>
-    </div>
-  </div>
-</section>
+<!-- SECTION 6 — WHY PORTUGAL (sec-head only; the bento is real JSX, see RealEstatePage) -->
+<div class="sec-head reveal reveal-io pre-reveal">
+  <h2 class="section-title">${esc(market.headline)}</h2>
+  ${market.subheadline ? `<p class="lede" style="margin-top:16px">${esc(market.subheadline)}</p>` : ""}
+</div>
 `;
 }
 
@@ -391,28 +373,10 @@ const PAGE_STYLE = `
 .mk .model li::before{content:"";position:absolute;left:0;top:16px;width:14px;height:8px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg)}
 .mk .model-note{margin-top:34px;font-size:13.5px;color:var(--ink-soft);text-align:center;max-width:80ch;margin-left:auto;margin-right:auto}
 
-/* why portugal — dynamic asymmetric bento (tall feature stat card + two supporting
-   cells), all hover-reactive. Replaces the former flat 2x2 why-grid. */
-.mk #market .market-bento{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-top:8px}
-.mk #market .mcell{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:38px 36px;transition:transform .38s var(--ease),box-shadow .38s var(--ease),border-color .38s var(--ease)}
-.mk #market .mcell::before{content:"";position:absolute;top:0;left:0;height:3px;width:0;background:var(--accent);transition:width .45s var(--ease)}
-.mk #market .mcell:hover{transform:translateY(-5px);box-shadow:0 28px 56px -32px rgba(0,0,0,.42);border-color:color-mix(in srgb,var(--accent) 38%,var(--line))}
-.mk #market .mcell:hover::before{width:100%}
-.mk #market .mcell h3{font-size:22px;margin-bottom:14px}
-.mk #market .mcell p{font-size:15px;color:var(--ink-soft);line-height:1.7;margin-bottom:14px}
-.mk #market .mcell p:last-child{margin-bottom:0}
-.mk #market .feature{grid-row:span 2;display:flex;flex-direction:column}
-.mk #market .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:30px}
-.mk #market .stat{background:var(--surface);padding:22px 16px;text-align:center;transition:background .3s var(--ease)}
-.mk #market .stat:hover{background:color-mix(in srgb,var(--accent) 7%,var(--surface))}
-.mk #market .stat .sv{font-family:var(--serif);font-size:clamp(28px,3.2vw,38px);line-height:1;color:var(--accent);font-weight:500}
-.mk #market .stat .sl{display:block;margin-top:9px;font-size:12.5px;color:var(--ink-soft);line-height:1.4}
-.mk #market .fig{color:var(--accent-deep);font-weight:600}
-.mk #market .thesis{list-style:none;margin:0}
-.mk #market .thesis li{font-size:14.5px;color:var(--ink-soft);padding:10px 0 10px 28px;position:relative;border-top:1px solid var(--line);transition:color .25s var(--ease),padding-left .25s var(--ease)}
-.mk #market .thesis li:first-child{border-top:0}
-.mk #market .thesis li:hover{color:var(--ink);padding-left:32px}
-.mk #market .thesis li::before{content:"";position:absolute;left:0;top:15px;width:14px;height:8px;border-left:2px solid var(--accent);border-bottom:2px solid var(--accent);transform:rotate(-45deg)}
+/* why portugal — the asymmetric bento (tall feature stat card + two supporting cells) is now
+   real JSX (core/ui's StatBento, rendered outside .mk); only its .sec-head (title/lede) is
+   still raw mock markup, styled by mock.css's generic .sec-head/.section-title/.lede rules
+   above — no #market-scoped CSS needed here any more. */
 
 /* track-record stat tiles */
 .mk .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
@@ -475,15 +439,12 @@ const PAGE_STYLE = `
   .mk .asset-showcase .wrap{grid-template-columns:1fr;gap:36px}
   .mk .asset-showcase .sh-media{order:-1}
   .mk .models{grid-template-columns:1fr}
-  .mk #market .market-bento{grid-template-columns:1fr}
-  .mk #market .feature{grid-row:auto}
   .mk .tiles{grid-template-columns:1fr 1fr}
   .mk .steps{grid-template-columns:1fr 1fr}
   .mk .enquiry{grid-template-columns:1fr;gap:34px}
 }
 @media(max-width:680px){
   .mk .asset-showcase .sh-list{grid-template-columns:1fr}
-  .mk #market .stat-row{grid-template-columns:1fr}
   .mk .tiles,.mk .steps,.mk .ftwo{grid-template-columns:1fr}
 }
 
@@ -502,15 +463,16 @@ const PAGE_STYLE = `
 // The institutional FAQ (former SECTION 9) is now a shared, editable <FaqSection> island chosen
 // per page via `faq_group_key`, rendered between the process steps and the deal-enquiry form
 // (outside `.mk` so its Tailwind markup doesn't pick up mock.css bare-element rules). The static
-// body is split here around that island.
-function bodyTop(content: RealEstateContent, media: Record<string, MediaImageData>): string {
-  const { hero, partners, asset_management: assets, market } = content;
+// body is split here around that island — and, within the first chunk, around the `#market`
+// section's bento (now real JSX, `core/ui`'s `StatBento`): `bodyTopA` ends after SECTION 5
+// (deal structures), the `#market` sec-head + `StatBento` render as real JSX in between, and
+// `bodyTopB` picks back up with SECTION 7 (track record) and SECTION 8 (process).
+function bodyTopA(content: RealEstateContent, media: Record<string, MediaImageData>): string {
+  const { hero, partners, asset_management: assets } = content;
   // `capabilities` is newer than the original seed — fall back to the approved default copy
   // so a `real_estate` row authored before this section existed still renders correctly.
   const capabilities = content.capabilities ?? defaultCapabilities;
   const dealStructures = content.deal_structures ?? defaultDealStructures;
-  const trackRecord = content.track_record ?? defaultTrackRecord;
-  const process = content.process ?? defaultProcess;
   // Optional capability-statement asset behind the hero's secondary CTA (e.g. a PDF). If
   // no asset is set, the button keeps the design's in-page anchor.
   const capStmtUrl = media[hero.capability_statement_media_id ?? ""]?.url || "#deal-enquiry";
@@ -584,7 +546,13 @@ ${showcase({
 })}
 
 ${dealStructuresSection(dealStructures)}
-${marketSection(market)}
+`;
+}
+
+function bodyTopB(content: RealEstateContent): string {
+  const trackRecord = content.track_record ?? defaultTrackRecord;
+  const process = content.process ?? defaultProcess;
+  return `
 ${trackRecordSection(trackRecord)}
 ${processSection(process)}
 `;
@@ -710,6 +678,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
 
   const { content, media } = page;
   const faqGroupKey = content.faq_group_key ?? "";
+  const market = content.market;
 
   return (
     <>
@@ -723,7 +692,45 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
           />
         </noscript>
         <ScrollReveal page="real-estate" />
-        <div dangerouslySetInnerHTML={{ __html: bodyTop(content, media) }} />
+        <div dangerouslySetInnerHTML={{ __html: bodyTopA(content, media) }} />
+      </div>
+      {/*
+       * "Why Portugal" (`#market`) — the `<section>`/`.wrap` shell is reproduced with the
+       * exact mock metrics (`.mk section`'s `padding:clamp(72px,10vw,150px) 0;
+       * scroll-margin-top:84px` and `.mk .wrap`'s `max-width:1240px;margin:0 auto;
+       * padding:0 28px`), same technique as About's `#values` extraction. `sec-head` stays
+       * raw markup in its own small `.mk[data-page="real-estate"]` wrapper (unlike About's
+       * extraction, this one keeps the `data-page` attribute so `ScrollReveal`'s
+       * `.mk[data-page="real-estate"] .pre-reveal` query still matches it — About's omitted
+       * it, which silently opts that fragment out of the fade/slide-in; keeping it here
+       * preserves the original behaviour exactly). The bento is `core/ui`'s `StatBento`,
+       * wrapped in `Reveal` for the same once-on-scroll fade/slide-in the raw markup had
+       * (`.market-bento`'s `reveal reveal-io pre-reveal` classes) — the original's per-cell
+       * stagger (`.reveal-stagger`) isn't reproduced, same accepted trade-off as About's
+       * `NumberedFeatureGrid` extraction.
+       */}
+      <section id="market" className="py-[clamp(72px,10vw,150px)] scroll-mt-[84px]">
+        <div className="mx-auto max-w-[1240px] px-[28px]">
+          <div className="mk" data-page="real-estate">
+            <div dangerouslySetInnerHTML={{ __html: marketSecHead(market) }} />
+          </div>
+          <Reveal>
+            <StatBento
+              feature={{
+                title: market.fundamentals.title,
+                stats: market.stats,
+                paragraphs: market.fundamentals.body,
+              }}
+              cells={[
+                { kind: "text", title: market.regulatory.title, body: market.regulatory.body },
+                { kind: "list", title: market.thesis.title, items: market.thesis.points },
+              ]}
+            />
+          </Reveal>
+        </div>
+      </section>
+      <div className="mk" data-page="real-estate">
+        <div dangerouslySetInnerHTML={{ __html: bodyTopB(content) }} />
       </div>
       {faqGroupKey ? (
         <div id="faq" style={{ scrollMarginTop: 130 }}>

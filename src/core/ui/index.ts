@@ -58,3 +58,5 @@ export { Footer, type FooterContact, type FooterNavGroup, type FooterSocialLink 
 export { IconFeatureGrid, type IconFeatureGridItem } from "./icon-feature-grid";
 /** Eyebrow + serif heading above free-prose paragraphs, with one optional named (`<h3>`) subsection. */
 export { ProseSection, type ProseSectionSubsection } from "./prose-section";
+/** Asymmetric 2-row bento: a feature cell (title + embedded stat strip + paragraphs) beside two stacked text/list cells, shared hover-lift + accent sweep-line chrome. */
+export { StatBento, type StatBentoCell, type StatBentoStat } from "./stat-bento";

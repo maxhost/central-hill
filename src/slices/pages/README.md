@@ -189,6 +189,30 @@ original's per-card stagger isn't reproduced (`Reveal` animates its subtree as o
 rest of the page (stats grid, `organised`, `certifications`, `community`, `contact`) is
 unaffected — out of scope for this change.
 
+**Real Estate** (`real-estate-page.tsx`) is still mostly the raw-markup `.mk` embed, but its
+`market` ("Portugal: One of Europe's Strongest Hospitality Markets", `#market`) section is real
+JSX now: `core/ui`'s new `StatBento` (an asymmetric 2-row bento — a tall feature cell with a
+title, an embedded 3-up stat strip, and supporting paragraphs, spanning two rows beside a plain
+text cell and a checkmark-bullet-list cell; all three share hover-lift + accent-sweep-line
+chrome), ported 1:1 from the old `.market-bento`/`.mcell`/`.stat-row`/`.thesis` CSS. **Known
+mock/live drift, resolved in favour of the live render:** `mock/real-estate.html` still shows
+this slot as the older flat `.why-grid`/`.why-block` 4-up grid — the shipped code had already
+replaced it with this bento (the old CSS even carried a `/* Replaces the former flat 2x2
+why-grid */` comment), so the mock is the stale artifact, not the code; this extraction was
+verified against the live `localhost:3025/en/real-estate` render, not the mock file. The
+section's `sec-head` (title/lede) stays untouched raw markup in its own small
+`.mk[data-page="real-estate"]` wrapper — kept `data-page`-scoped (unlike About's `#values`
+extraction, which dropped it) so `ScrollReveal`'s `.mk[data-page="real-estate"] .pre-reveal`
+query still reaches it and the original fade/slide-in on scroll is preserved exactly; the
+`<section>`/`.wrap` shell is real JSX reproducing the exact mock metrics, same technique as
+About's `#values`. Wrapped in `core/ui`'s `Reveal`; the original's per-cell stagger
+(`.reveal-stagger`) isn't reproduced, same accepted trade-off as About's `NumberedFeatureGrid`
+extraction. `bodyTop` is now split into `bodyTopA` (sections 1–5, ending after deal structures)
+and `bodyTopB` (sections 7–8, track record + process) around the new JSX in between — same
+split-string pattern as About's `BODY_TOP_A`/`BODY_TOP_B`. The rest of the page (hero, partners,
+capabilities/manage showcases, deal structures, track record, process, enquiry form) is
+unaffected — out of scope for this change.
+
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
 `docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyMid` / `bodyBottom` interpolate the
 resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`. Its nine sections
