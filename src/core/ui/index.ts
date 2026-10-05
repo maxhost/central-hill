@@ -74,3 +74,18 @@ export { ChecklistCards, type ChecklistCard } from "./checklist-cards";
 export { MosaicGallery } from "./mosaic-gallery";
 /** Hairline grid of 1–2 solid CTA panels (light `surface` / dark `feature`): eyebrow, serif title, body, ink or accent button, contact line. */
 export { SplitCtaPanels, type SplitCtaPanel } from "./split-cta-panels";
+/** Closing enquiry section: serif title + lede + hairline "contact directly" block beside a form slot (.85fr/1.15fr → 1 col), each column optionally revealed. */
+export { EnquirySplit, type EnquiryContactLine } from "./enquiry-split";
+/** Form-card primitives: raised card `<form>`, titled groups w/ pill tag, label-over-control fields (req marker), 2-up row, `<details>` optional sections, full-width accent submit + note. */
+export {
+  FormAccordion,
+  FormCard,
+  FormField,
+  FormGroup,
+  FormInput,
+  FormNote,
+  FormRow,
+  FormSelect,
+  FormSubmit,
+  FormTextarea,
+} from "./form-card";

@@ -10,6 +10,7 @@ import {
   defaultProcess,
   defaultTrackRecord,
 } from "../schemas/real-estate";
+import { DealEnquirySection } from "./components/deal-enquiry-section";
 import { FaqSection } from "./components/faq-section";
 import { ScrollReveal } from "./components/scroll-reveal";
 
@@ -44,12 +45,14 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * plain JSX `<p>` — with its centred sec-head kept raw in its own `.mk[data-page="real-estate"]`
  * wrapper. `bodyTopA` now ends after SECTION 4 (asset types).
  *
- * Follow-up: the "Submit Partnership Enquiry" form is the mock's static markup (onsubmit
- * disabled, no action wired). Wiring it to the leads slice's deal-enquiry action is a
- * separate task. Organisation-detail fields are `required`; the Asset Details and Additional
- * Information sections are optional and collapsed into `<details>` accordions to shorten the
- * form. The mock's reveal-on-scroll JS isn't loaded, so `.reveal` is neutralised in mock.css
- * and all content renders immediately.
+ * "Ready to Explore a Partnership?" (`#deal-enquiry`, SECTION 10 — the former `BODY_BOTTOM`) is
+ * likewise real JSX — `DealEnquirySection` (`./components/deal-enquiry-section.tsx`), built on
+ * `core/ui`'s `EnquirySplit` + form-card primitives, rendered outside `.mk` after the FAQ.
+ * Follow-up: that form still submits nothing (`StaticFormCard` cancels the submit, exactly like
+ * the mock's `onsubmit="return false"`) and its copy is hardcoded English (not i18n'd, not in
+ * `page_content`). Wiring it to the leads slice's deal-enquiry action is a separate task.
+ * Organisation-detail fields are `required`; the Asset Details and Additional Information
+ * sections are optional and collapsed into `<details>` accordions to shorten the form.
  */
 
 // Image fallbacks = the approved mock photo, used 1:1 until a real R2 asset is set in the
@@ -342,36 +345,8 @@ const PAGE_STYLE = `
 .mk .faq details[open] summary::after{transform:rotate(45deg)}
 .mk .faq .faq-a{padding:0 44px 26px 4px;font-size:15.5px;color:var(--ink-soft);max-width:70ch}
 
-/* deal-enquiry form */
-.mk .enquiry{display:grid;grid-template-columns:.85fr 1.15fr;gap:56px;align-items:start}
-.mk .enquiry-intro h2{font-size:clamp(30px,3.6vw,46px)}
-.mk .enquiry-intro .lede{margin-top:18px}
-.mk .contact-direct{margin-top:34px;border-top:1px solid var(--line);padding-top:26px;font-size:14.5px;color:var(--ink-soft);line-height:1.9}
-.mk .contact-direct b{display:block;color:var(--ink);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
-.mk .contact-direct a{color:var(--accent-deep);font-weight:600}
-.mk .form-card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:38px 36px 34px;box-shadow:0 30px 60px -34px rgba(0,0,0,.45)}
-.mk .fgroup{margin-bottom:30px}
-.mk .fgroup-title{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-deep);font-weight:600;margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--line)}
-.mk .ffield{margin-bottom:16px}
-.mk .ffield label{display:block;font-size:12.5px;letter-spacing:.03em;font-weight:600;color:var(--ink);margin-bottom:7px}
-.mk .ffield input,.mk .ffield select,.mk .ffield textarea{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:13px 14px;transition:.2s var(--ease)}
-.mk .ffield textarea{resize:vertical;min-height:110px}
-.mk .ffield input:focus,.mk .ffield select:focus,.mk .ffield textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
-.mk .ftwo{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.mk .form-card .btn{width:100%;justify-content:center;margin-top:6px}
-.mk .form-note{text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:14px}
-/* required-field marker + the "Required" tag on the Organisation Details group */
-.mk .ffield label .req{color:var(--accent);margin-left:1px}
-.mk .fgroup-tag{margin-left:8px;font-size:10px;letter-spacing:.1em;color:var(--accent-deep);background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:30px;padding:3px 9px;vertical-align:middle}
-/* collapsible optional sections (Asset Details / Additional Information) */
-.mk .facc{margin-bottom:16px;border:1px solid var(--line);border-radius:6px;background:var(--bg);overflow:hidden}
-.mk .facc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:16px 18px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent-deep)}
-.mk .facc>summary::-webkit-details-marker{display:none}
-.mk .facc>summary .facc-hint{margin-left:auto;font-size:11px;letter-spacing:.04em;text-transform:none;color:var(--ink-soft);font-weight:500}
-.mk .facc>summary::after{content:"+";font-family:var(--sans);font-size:20px;line-height:1;color:var(--accent);transition:transform .25s var(--ease)}
-.mk .facc[open]>summary::after{transform:rotate(45deg)}
-.mk .facc[open]>summary{border-bottom:1px solid var(--line)}
-.mk .facc .facc-body{padding:22px 18px 8px}
+/* deal-enquiry — now real JSX (DealEnquirySection: core/ui's EnquirySplit + form-card
+   primitives, rendered outside .mk); no CSS left here. */
 
 @media(max-width:980px){
   .mk .partner-pitch .wrap{grid-template-columns:1fr;gap:36px}
@@ -379,11 +354,10 @@ const PAGE_STYLE = `
   .mk .asset-showcase .wrap{grid-template-columns:1fr;gap:36px}
   .mk .asset-showcase .sh-media{order:-1}
   .mk .steps{grid-template-columns:1fr 1fr}
-  .mk .enquiry{grid-template-columns:1fr;gap:34px}
 }
 @media(max-width:680px){
   .mk .asset-showcase .sh-list{grid-template-columns:1fr}
-  .mk .steps,.mk .ftwo{grid-template-columns:1fr}
+  .mk .steps{grid-template-columns:1fr}
 }
 
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
@@ -492,119 +466,6 @@ function bodyTopB(content: RealEstateContent): string {
 ${processSection(process)}
 `;
 }
-
-const BODY_BOTTOM = `
-<!-- SECTION 10 — DEAL ENQUIRY -->
-<section id="deal-enquiry">
-  <div class="wrap">
-    <div class="enquiry">
-      <div class="enquiry-intro reveal reveal-io pre-reveal">
-        <h2>Ready to Explore a Partnership?</h2>
-        <p class="lede">Whether you represent an investment fund, a development company, a large property operator, or a corporate seeking managed accommodation — we want to hear from you. Complete the enquiry form below and one of our senior team will respond within 24 hours.</p>
-        <div class="contact-direct">
-          <b>Contact Our Institutional Team Directly</b>
-          Email: <a href="mailto:realestate@centralhillapartments.com">realestate@centralhillapartments.com</a><br>
-          Tel: <a href="tel:+351910075725">+351 910 075 725</a><br>
-          LinkedIn: <a href="#">Central Hill Apartments</a>
-        </div>
-      </div>
-
-      <form class="form-card reveal reveal-io pre-reveal" onsubmit="return false">
-        <div class="fgroup">
-          <div class="fgroup-title">Organisation Details <span class="fgroup-tag">Required</span></div>
-          <div class="ffield">
-            <label for="company">Company / Fund Name <span class="req" aria-hidden="true">*</span></label>
-            <input id="company" name="company" type="text" placeholder="Your organisation" required>
-          </div>
-          <div class="ffield">
-            <label for="contact">Contact Name &amp; Title <span class="req" aria-hidden="true">*</span></label>
-            <input id="contact" name="contact" type="text" placeholder="Name, role" required>
-          </div>
-          <div class="ftwo">
-            <div class="ffield">
-              <label for="email">Email Address <span class="req" aria-hidden="true">*</span></label>
-              <input id="email" name="email" type="email" placeholder="name@company.com" required>
-            </div>
-            <div class="ffield">
-              <label for="phone">Phone Number <span class="req" aria-hidden="true">*</span></label>
-              <input id="phone" name="phone" type="tel" placeholder="+351 …" required>
-            </div>
-          </div>
-          <div class="ffield">
-            <label for="country">Country / Jurisdiction <span class="req" aria-hidden="true">*</span></label>
-            <input id="country" name="country" type="text" placeholder="e.g. Portugal, United Kingdom" required>
-          </div>
-        </div>
-
-        <details class="facc">
-          <summary class="facc-summary">Asset Details <span class="facc-hint">Optional</span></summary>
-          <div class="facc-body">
-            <div class="ffield">
-              <label for="asset-type">Type of Asset</label>
-              <select id="asset-type" name="asset-type">
-                <option value="" selected disabled>Select asset type…</option>
-                <option>Apartments</option>
-                <option>Apart-hotel</option>
-                <option>Hotel</option>
-                <option>Mixed</option>
-                <option>Corporate housing</option>
-              </select>
-            </div>
-            <div class="ftwo">
-              <div class="ffield">
-                <label for="units">Number of Units or Keys</label>
-                <input id="units" name="units" type="text" placeholder="e.g. 24">
-              </div>
-              <div class="ffield">
-                <label for="locations">Location(s) in Portugal</label>
-                <input id="locations" name="locations" type="text" placeholder="e.g. Lisbon, Porto">
-              </div>
-            </div>
-            <div class="ffield">
-              <label for="status">Current Status</label>
-              <select id="status" name="status">
-                <option value="" selected disabled>Select current status…</option>
-                <option>Operating</option>
-                <option>In development</option>
-                <option>Acquisition phase</option>
-              </select>
-            </div>
-            <div class="ftwo">
-              <div class="ffield">
-                <label for="model">Target Partnership Model</label>
-                <select id="model" name="model">
-                  <option value="" selected disabled>Select model…</option>
-                  <option>Fixed rent</option>
-                  <option>Management commission</option>
-                  <option>Hybrid</option>
-                  <option>Open to discussion</option>
-                </select>
-              </div>
-              <div class="ffield">
-                <label for="timeline">Anticipated Start Date / Timeline</label>
-                <input id="timeline" name="timeline" type="text" placeholder="e.g. Q3 2026">
-              </div>
-            </div>
-          </div>
-        </details>
-
-        <details class="facc">
-          <summary class="facc-summary">Additional Information <span class="facc-hint">Optional</span></summary>
-          <div class="facc-body">
-            <div class="ffield">
-              <label for="notes">Tell us more about your asset and what you are looking to achieve</label>
-              <textarea id="notes" name="notes" placeholder="Your goals, asset details, any specific requirements…"></textarea>
-            </div>
-          </div>
-        </details>
-
-        <button class="btn btn-accent" type="submit">Submit Partnership Enquiry →</button>
-        <p class="form-note">A senior member of our institutional team will respond within 24 hours.</p>
-      </form>
-    </div>
-  </div>
-</section>
-`;
 
 export async function RealEstatePage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
@@ -744,9 +605,13 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
           />
         </div>
       ) : null}
-      <div className="mk" data-page="real-estate">
-        <div dangerouslySetInnerHTML={{ __html: BODY_BOTTOM }} />
-      </div>
+      {/*
+       * "Ready to Explore a Partnership?" (`#deal-enquiry`, SECTION 10) — real JSX, rendered
+       * outside `.mk`: `DealEnquirySection` (core/ui's `EnquirySplit` + form-card primitives; the
+       * section shell, 1240px/28px wrap and per-column reveal live in `EnquirySplit`). Replaced the
+       * raw `BODY_BOTTOM` markup + its `.enquiry`/`.form-card`/`.ffield`/`.facc` CSS.
+       */}
+      <DealEnquirySection />
     </>
   );
 }

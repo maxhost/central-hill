@@ -257,6 +257,33 @@ lift by 70/140ms — an unintended side effect, not reproduced), so one `Reveal`
 eyebrow ("Deal Structures") above this section's title that the live page (and the
 `deal_structures` schema) never had — left as-is.
 
+Its closing "Ready to Explore a Partnership?" section (`#deal-enquiry`, SECTION 10 — the former
+raw `BODY_BOTTOM` string) is real JSX too: `DealEnquirySection`
+(`ui/components/deal-enquiry-section.tsx`), composed from two new `core/ui` pieces —
+`EnquirySplit` (section shell + `.85fr/1.15fr` grid → 1 column ≤980px; intro column = serif
+`<h2>`, lede and a hairline-topped "contact directly" block of label/link lines; right column =
+a form slot; `reveal` wraps each column in its own `Reveal`, reproducing the original's two
+independent `reveal-io pre-reveal` hooks) and the `form-card.tsx` primitives (`FormCard`,
+`FormGroup` with its "Required" pill tag, `FormField` with the `aria-hidden` `*` marker,
+`FormRow` 2 → 1 columns ≤680px, `FormAccordion` `<details>` with the rotating `+`, `FormInput`/
+`FormSelect`/`FormTextarea`, full-width `FormSubmit`, `FormNote`). Ported 1:1 from the old
+`.enquiry`/`.contact-direct`/`.form-card`/`.fgroup*`/`.ffield`/`.ftwo`/`.facc*`/`.form-note` CSS
++ `mock.css`'s `.btn.btn-accent`/`h2`/`.lede`; verified numerically against the live render at
+1440/834/390 (closed and open accordions, focus ring on input/select/textarea, button hover,
+placeholder colour) — identical boxes, type, colours and pixels, and the FAQ/footer positions are
+unchanged. Not `OwnerEstimateForm` (a different wizard design: `h-11` inputs, custom chevron,
+`rounded-md` button) nor the leads slice's controlled `fields.tsx` (slice-internal, `bg-surface`
+inputs, wired to `submitLead`). The fields (ids/names/types/placeholders/`required`/options) live
+in the slice; the components only style them. The old CSS (and its 980px `.enquiry` / 680px
+`.ftwo` media-query entries) was removed from `PAGE_STYLE`.
+**Still pending (unchanged by this UI-only extraction):** the copy is hardcoded English (not
+i18n'd, not in `page_content` — `/pt` `/es` `/fr` show English), the form submits nothing
+(`StaticFormCard`, a 1-line client wrapper, cancels the submit like the mock's
+`onsubmit="return false"`; native `required` validation still runs) — wiring it to the leads
+slice's deal-enquiry action is a separate task — and the LinkedIn link is still `href="#"`.
+`mock/real-estate.html` differs from the live section (an eyebrow "Start a Conversation", three
+always-open groups, no `required`/markers/accordions) — the live variant was kept.
+
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
 `docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyActivitiesTeaser` (the old `bodyBottom`
 is gone — see the dual CTA below) interpolate the resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`.
