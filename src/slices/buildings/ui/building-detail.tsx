@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MediaImage, mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { Hero } from "@core/ui";
+import { Container, Hero, SpecStrip } from "@core/ui";
 import { type ApartmentSummary, listByBuilding } from "@slices/apartments/contract";
 import type { BuildingDetail as BuildingDetailModel } from "../contract";
 import { getBuildingBySlug } from "../server/queries";
@@ -26,6 +26,14 @@ import { getBuildingBySlug } from "../server/queries";
  * via `@core/media`'s `MediaImage` (falling back to the Warm-Editorial placeholder SVG when the
  * building has none yet) — the first DB-driven `background` this component has had, though the
  * prop itself needed no change (always caller-built).
+ *
+ * The **spec strip is real JSX** too — `core/ui`'s new `SpecStrip` (apartments/capacity/beds/
+ * neighbourhood), ported 1:1 from the old `.mk`-scoped `.specstrip`/`.spec`/`.spec .n`/`.spec
+ * .l` CSS. Not `StatBand`: no title, no dark band, no `CountUp` (one value here is a
+ * neighbourhood *name*, not a number — see that component's docstring). The gallery beside it
+ * is untouched raw markup (not this task's target); both still live inside the page's `.mk`
+ * wrapper so the gallery's CSS and the strip's wrapper `var(--section-y)` negative margin
+ * (pulls the next section closer, matching the mock) keep resolving correctly.
  *
  * Resilient to sparse content (the catalog is filled incrementally via the backoffice):
  * - no R2 cover yet → a Warm-Editorial placeholder SVG is shown (building + per-unit);
@@ -151,14 +159,6 @@ const PAGE_STYLE = `
 .mk .pspecs{display:flex;flex-wrap:wrap;gap:14px;margin-top:4px}
 .mk .pspec{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--ink-soft)}
 .mk .pspec svg{width:16px;height:16px;color:var(--accent-deep)}
-/* Gallery+specstrip band: sits flush under the hero (no top padding) and pulls the next
-   section 15% of --section-y closer (negative margin — works regardless of which section
-   follows, since that's conditional on the building's content). */
-.mk .specband{padding:0;margin-bottom:calc(var(--section-y) * -0.15)}
-.mk .specstrip{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:34px 0}
-.mk .spec{flex:1 1 0;min-width:140px;text-align:center}
-.mk .spec .n{font-family:var(--serif);font-size:clamp(30px,3.4vw,44px);line-height:1;color:var(--ink)}
-.mk .spec .l{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-top:10px}
 .mk .prose{max-width:68ch}
 .mk .prose p{color:var(--ink-soft);margin-bottom:18px;font-size:17px}
 .mk .prose h3{font-size:clamp(24px,3vw,34px);margin:46px 0 16px}
@@ -189,40 +189,26 @@ const PAGE_STYLE = `
 .mk .bookband .note{font-size:12.5px;color:var(--on-feature-soft);letter-spacing:.02em}
 `;
 
+/** The gallery grid only (the specstrip beside it is real JSX now — `core/ui`'s `SpecStrip`). */
+function galleryGridHtml(detail: BuildingDetailModel): string {
+  if (!detail.gallery.length) return "";
+  return `<div class="gallery">${detail.gallery
+    .map((g, i) =>
+      mediaImgTag({
+        data: g,
+        sizes: i === 0 ? GALLERY_LEAD_SIZES : GALLERY_SIZES,
+        ...(i === 0 ? { className: "g0", loading: "eager" as const } : {}),
+      }),
+    )
+    .join("")}</div>`;
+}
+
 function bodyHtml(
   detail: BuildingDetailModel,
   apartments: ApartmentSummary[],
   L: BuildingLabels,
   AL: ApartmentLabels,
 ): string {
-  const galleryHtml = detail.gallery.length
-    ? `<div class="gallery reveal">${detail.gallery
-        .map((g, i) =>
-          mediaImgTag({
-            data: g,
-            sizes: i === 0 ? GALLERY_LEAD_SIZES : GALLERY_SIZES,
-            ...(i === 0 ? { className: "g0", loading: "eager" as const } : {}),
-          }),
-        )
-        .join("")}</div>`
-    : "";
-
-  const specstrip = `
-    <div class="specstrip reveal">
-      <div class="spec"><div class="n">${detail.stats.apartments}</div><div class="l">${esc(L.statApartments)}</div></div>
-      <div class="spec"><div class="n">${detail.stats.capacity}</div><div class="l">${esc(L.statCapacity)}</div></div>
-      <div class="spec"><div class="n">${detail.stats.beds}</div><div class="l">${esc(L.statBeds)}</div></div>
-      <div class="spec"><div class="n">${esc(detail.neighbourhood?.name ?? detail.city.name)}</div><div class="l">${esc(L.statNeighbourhood)}</div></div>
-    </div>`;
-
-  const gallerySection = `
-<section class="specband">
-  <div class="wrap">
-    ${galleryHtml}
-    ${specstrip}
-  </div>
-</section>`;
-
   const introHtml = detail.descriptionIntro.trim() ? paragraphs(detail.descriptionIntro) : "";
   const neighHtml = detail.descriptionNeighbourhood?.trim()
     ? `<h3>${esc(L.theNeighbourhood)}</h3>${paragraphs(detail.descriptionNeighbourhood)}`
@@ -304,14 +290,7 @@ function bodyHtml(
   </div>
 </section>`;
 
-  return (
-    gallerySection +
-    buildingSection +
-    apartmentsSection +
-    amenitiesSection +
-    faqSection +
-    bookband
-  );
+  return buildingSection + apartmentsSection + amenitiesSection + faqSection + bookband;
 }
 
 export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: string }) {
@@ -418,6 +397,27 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
       />
       <div className="mk" data-page="building">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+        {/*
+         * Real JSX — the spec strip (apartments/capacity/beds/neighbourhood), `core/ui`'s new
+         * `SpecStrip` (see that component's docstring for why it's not `StatBand`). The gallery
+         * beside it stays raw markup for now (not this task's target) — still inside `.mk` so
+         * its `.gallery` CSS and this wrapper's `var(--section-y)` negative margin keep resolving.
+         */}
+        <div className="mb-[calc(var(--section-y)*-0.15)]">
+          <Container>
+            {detail.gallery.length > 0 ? (
+              <div dangerouslySetInnerHTML={{ __html: galleryGridHtml(detail) }} />
+            ) : null}
+            <SpecStrip
+              items={[
+                { value: detail.stats.apartments, label: L.statApartments },
+                { value: detail.stats.capacity, label: L.statCapacity },
+                { value: detail.stats.beds, label: L.statBeds },
+                { value: detail.neighbourhood?.name ?? detail.city.name, label: L.statNeighbourhood },
+              ]}
+            />
+          </Container>
+        </div>
         <div dangerouslySetInnerHTML={{ __html: bodyHtml(detail, apartments, L, AL) }} />
       </div>
     </Fragment>

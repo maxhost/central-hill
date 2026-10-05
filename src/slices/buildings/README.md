@@ -107,6 +107,13 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   real R2 cover via `@core/media`'s `MediaImage` (the first DB-driven Hero `background` in the
   app — everyone else so far is a fixed literal), falling back to
   `public/placeholders/building.svg` when the building has no cover yet.
+  The **spec strip (apartments/capacity/beds/neighbourhood) is real JSX** too: `core/ui`'s new
+  `SpecStrip`, ported 1:1 from the old `.mk`-scoped `.specstrip`/`.spec`/`.spec .n`/`.spec .l`
+  CSS — a plain, static bordered value/label row, deliberately **not** `StatBand` (no title, no
+  dark band, no `CountUp` — one of its values is a neighbourhood *name*, not a number, see that
+  component's docstring). The gallery next to it is still raw markup (not yet migrated); both
+  stay inside the page's `.mk` wrapper so the gallery's CSS and the strip's wrapper negative
+  bottom margin (`var(--section-y)`, pulls the next section closer) keep resolving.
 
 Both are ISR (`revalidate = 3600`); detail uses `generateStaticParams` (known slugs
 prebuilt, `dynamicParams = true`) + `generateMetadata` with hreflang alternates. A building
