@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MediaImage, mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { Container, Hero, ProseSection, SpecStrip, UnitCard, UnitCardGrid, type UnitCardSpec } from "@core/ui";
+import { ActionBand, Container, Hero, ProseSection, SpecStrip, UnitCard, UnitCardGrid, type UnitCardSpec } from "@core/ui";
 import { type ApartmentSummary, listByBuilding } from "@slices/apartments/contract";
 import type { BuildingDetail as BuildingDetailModel } from "../contract";
 import { getBuildingBySlug } from "../server/queries";
@@ -47,7 +47,7 @@ import { getBuildingBySlug } from "../server/queries";
  * HTML-string helper used) and passed as real `<p>` children — React escapes them, so no
  * `esc()` call is needed for this section anymore. Renders **outside** `.mk`, right after the
  * spec strip and before the apartments grid + the still-raw `.mk`-wrapped remainder
- * (amenities/FAQ/book band) — see `ProseSection`'s own docstring for the full cascade-layers reasoning (same trap
+ * (amenities/FAQ; the book band is now `ActionBand`, below) — see `ProseSection`'s own docstring for the full cascade-layers reasoning (same trap
  * as `SpecStrip`) and for a flagged pre-existing drift between `mock/assets/site.css`'s
  * `--section-y`/`--max` tokens (used here, to stay pixel-identical to the live page) and
  * `core/ui`'s canonical `Section`/`Container` values (ported, not reconciled — see that
@@ -69,6 +69,15 @@ import { getBuildingBySlug } from "../server/queries";
  * Covers: `MediaImage` (lazy, `CARD_SIZES`) for an R2 asset, else a plain lazy `<img>` of the
  * placeholder SVG — the same two branches `mediaImgTag()` produced. The badge now stays
  * visible on hover (it used to be painted over by the zoomed image — see `UnitCard`).
+ *
+ * **The closing "Book an apartment in this building" band is real JSX** too — `core/ui`'s new
+ * `ActionBand` (full-bleed dark feature band: eyebrow/`<h2>`/line left, accent button + note
+ * right), replacing the old `bookband` string in `bodyHtml()` and the `.mk .bookband*` rules in
+ * `PAGE_STYLE`. Not `FeaturePanel`/`FeatureCtaBand`/`CalloutBand`, and its button is a literal
+ * `.btn.btn-accent` port rather than `ButtonLink` (see `ActionBand`'s docstring). Rendered
+ * **outside** `.mk`, after the still-raw amenities/FAQ wrapper (section order unchanged), on
+ * every building; static (the old `.reveal` was neutralised). Verified computed-style- and
+ * screenshot-identical to the pre-extraction render at 1440/834/390, hover included.
  *
  * Resilient to sparse content (the catalog is filled incrementally via the backoffice):
  * - no R2 cover yet → a Warm-Editorial placeholder SVG is shown (building + per-unit);
@@ -223,13 +232,6 @@ const PAGE_STYLE = `
 .mk .faq summary::after{content:"+";font-family:var(--sans);font-size:24px;color:var(--accent-deep);line-height:1;transition:transform .25s var(--ease)}
 .mk .faq details[open] summary::after{transform:rotate(45deg)}
 .mk .faq details p{color:var(--ink-soft);font-size:16px;padding:0 0 26px;max-width:64ch}
-.mk .bookband{background:var(--feature);color:var(--on-feature)}
-.mk .bookband .inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:30px;padding:64px 0}
-.mk .bookband .eyebrow{color:var(--feature-accent)}
-.mk .bookband h2{font-size:clamp(28px,3.6vw,46px);color:#fff;margin:12px 0 14px;max-width:18ch}
-.mk .bookband .sub{color:var(--on-feature-soft);font-size:15px;max-width:46ch}
-.mk .bookband .act{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
-.mk .bookband .note{font-size:12.5px;color:var(--on-feature-soft);letter-spacing:.02em}
 `;
 
 /** The gallery grid only (the specstrip beside it is real JSX now — `core/ui`'s `SpecStrip`). */
@@ -246,7 +248,8 @@ function galleryGridHtml(detail: BuildingDetailModel): string {
     .join("")}</div>`;
 }
 
-/** The still-raw `.mk` remainder after the apartments grid: amenities, FAQ, book band. */
+/** The still-raw `.mk` remainder after the apartments grid: amenities, FAQ (the closing book
+ *  band after them is real JSX now — `core/ui`'s `ActionBand`). */
 function bodyHtml(detail: BuildingDetailModel, L: BuildingLabels): string {
   const amenitiesSection = detail.amenities.length
     ? `
@@ -276,26 +279,7 @@ function bodyHtml(detail: BuildingDetailModel, L: BuildingLabels): string {
 </section>`
     : "";
 
-  const bookHref = detail.avantio.url ?? "#book";
-  const bookExternal = detail.avantio.url ? ' target="_blank" rel="noopener noreferrer"' : "";
-  const bookband = `
-<section class="bookband" style="padding:0">
-  <div class="wrap">
-    <div class="inner reveal">
-      <div>
-        <span class="eyebrow">${esc(L.bookEyebrow)}</span>
-        <h2>${esc(L.bookTitle)}</h2>
-        <p class="sub">${esc(L.bookIntro)}</p>
-      </div>
-      <div class="act">
-        <a class="btn btn-accent" href="${esc(bookHref)}"${bookExternal}>${esc(L.bookCta)} →</a>
-        <span class="note">${esc(L.bookNote)}</span>
-      </div>
-    </div>
-  </div>
-</section>`;
-
-  return amenitiesSection + faqSection + bookband;
+  return amenitiesSection + faqSection;
 }
 
 export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: string }) {
@@ -494,6 +478,22 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <div dangerouslySetInnerHTML={{ __html: bodyHtml(detail, L) }} />
       </div>
+      {/*
+       * Real JSX — the closing "Book an apartment in this building" band, `core/ui`'s new
+       * `ActionBand` (see its docstring for why not `FeaturePanel`/`FeatureCtaBand`/`CalloutBand`
+       * and why the button isn't `ButtonLink`), replacing the old `.mk` `bookband` string and its
+       * `.mk .bookband*` rules. Rendered *outside* `.mk` (cascade-layers trap — see `SpecStrip`'s
+       * docstring), after the still-raw amenities/FAQ wrapper so the section order is unchanged.
+       * Always rendered. The CTA links to the building's Avantio URL in a new tab, or falls back
+       * to the in-page `#book` anchor. Static, like the original (its `.reveal` was neutralised).
+       */}
+      <ActionBand
+        eyebrow={L.bookEyebrow}
+        title={L.bookTitle}
+        body={L.bookIntro}
+        cta={{ href: detail.avantio.url ?? "#book", label: L.bookCta, external: Boolean(detail.avantio.url) }}
+        note={L.bookNote}
+      />
     </Fragment>
   );
 }

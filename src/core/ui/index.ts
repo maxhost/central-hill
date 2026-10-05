@@ -66,3 +66,5 @@ export { PhotoFeatureGrid, type PhotoFeatureGridItem } from "./photo-feature-gri
 export { StatTiles, type StatTile } from "./stat-tiles";
 /** Bookable-unit card (photo w/ hover zoom, badge, icon+value spec chips, underlined CTA) + its 3→2→1-col grid. */
 export { UnitCard, UnitCardGrid, type UnitCardSpec } from "./unit-card";
+/** Full-bleed dark feature band: eyebrow/serif heading/line on the left, accent button + small note on the right. */
+export { ActionBand, type ActionBandCta } from "./action-band";

@@ -108,6 +108,19 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   the card was hovered (paint order); it now stays on top (`z-[1]`). The apartments slice's
   Tailwind `BuildingApartments`/`ApartmentCard` are a different look, kept for other consumers
   (same rationale as `BuildingCard` on the listing).
+  The closing **"Book an apartment in this building" band is real JSX**: `core/ui`'s new
+  `ActionBand` (full-bleed `bg-feature` band; eyebrow + serif `<h2>` + line on the left, accent
+  button + small note on the right, wrapping to two rows when narrow), replacing the old
+  `bookband` string in `bodyHtml()` and its `.mk .bookband*` rules in `PAGE_STYLE`. Ported 1:1
+  from that CSS + `mock.css`'s `.wrap`/`.eyebrow`/`h2`/`.btn.btn-accent` (identical to
+  `mock/building-detail.html`; no drift found) and verified computed-style- and
+  screenshot-identical at 1440/834/390, button hover included. Not `FeaturePanel` (bordered,
+  stacked, `<h3>`), `FeatureCtaBand` (photo split) or `CalloutBand` (light, rounded); the button
+  is a literal `.btn.btn-accent` port, not `ButtonLink` (whose `primary` differs in radius,
+  padding, border, tracking and uses `next/link`) — see `ActionBand`'s docstring. Rendered on
+  every building, **outside** `.mk`, after the still-raw amenities/FAQ `.mk` wrapper (order
+  unchanged); links to the building's Avantio URL in a new tab, else the in-page `#book`
+  anchor; static (the old `.reveal` was neutralised). Labels: existing `buildings.book*` keys.
   The **hero is real JSX**: `core/ui`'s `<Hero compact>`, the fourth consumer (after Home,
   Owners, and this slice's own listing hero) — needed two more additive props, `breadcrumb`
   (the Home / Buildings / building-name trail, a caller-built `<Link>` nav, same "kernel owns
