@@ -51,11 +51,32 @@ import { cn } from "./cn";
  * also `compact` (same min-height/font-size) but keeps the generic *wrapping* behavior at its
  * own width (`26ch`, not the mock's base `15ch`), which the old hard-coded ternary couldn't
  * express — hence `headlineClassName` fully replacing the compact/non-compact default instead.
+ *
+ * Fourth consumer, Buildings' detail-page hero (`building-detail.tsx`) — a different shape
+ * from the other three: a breadcrumb trail sits above the eyebrow line, and the eyebrow
+ * line itself can carry an inline "★ New" flag before its text. Two more additive, caller-
+ * built slots cover this: `breadcrumb` (any `ReactNode`, rendered first in the copy column —
+ * the locale-aware `<Link>` trail is the caller's job, same "kernel owns layout, caller owns
+ * content" split as `actions`/`aside`) and `eyebrowBadge` (rendered inline immediately before
+ * the `eyebrow` text, only in the plain-text eyebrow branch — ignored when `eyebrowPill` is
+ * set, since that's a different, mutually-exclusive look already). The old `.mk .hero .addr`
+ * line (the street address under the headline) just reuses `subtitle` + `subtitleClassName`
+ * (no new prop needed — same escape hatch Buildings' listing hero already uses for its wider
+ * copy). It also has to pass its own `headlineClassName` (`max-w-[15ch]`, normal wrap) rather
+ * than take the `compact` default — that default's `whitespace-nowrap`/`max-w-none` is Owners'
+ * own page-specific override (see above), not the mock's *generic* `.hero.compact h1` rule
+ * (font-size only, keeps the base `max-width:15ch` + normal wrapping), which is what this
+ * page's building-name headline actually needs so a long name wraps instead of overflowing.
+ * This slice also uses `@core/media`'s `MediaImage` as `background` for the first time (a real
+ * R2 cover, not a fixed Unsplash/Pexels literal) — no component change needed for that,
+ * `background` was always caller-built.
  */
 export function Hero({
   background,
+  breadcrumb,
   eyebrow,
   eyebrowPill,
+  eyebrowBadge,
   headline,
   subtitle,
   actions,
@@ -71,8 +92,12 @@ export function Hero({
   wrapClassName,
 }: {
   background?: ReactNode;
+  /** Rendered above the eyebrow line (Buildings detail's breadcrumb trail). Caller-built. */
+  breadcrumb?: ReactNode;
   eyebrow?: string;
   eyebrowPill?: boolean;
+  /** Rendered inline before the eyebrow text (e.g. a small "★ New" flag) — ignored when `eyebrowPill` is set, a different standalone look. */
+  eyebrowBadge?: ReactNode;
   headline: ReactNode;
   subtitle?: string;
   actions?: ReactNode;
@@ -89,13 +114,14 @@ export function Hero({
   overlayClassName?: string;
   /** Replaces the whole compact/non-compact headline size+width+wrap default (see docstring). */
   headlineClassName?: string;
-  /** Replaces the subtitle's default `max-w-xl` (Buildings' copy needed a wider `60ch`). */
+  /** Replaces the subtitle's default `mt-5 max-w-xl text-lg` (color/line-height always stay). */
   subtitleClassName?: string;
   /** Renders a plain `<div>` with this className instead of the shared `Container` (needs a wider-than-kernel max-width). */
   wrapClassName?: string;
 }) {
   const copy = (
     <div className="text-surface">
+      {breadcrumb}
       {eyebrow ? (
         eyebrowPill ? (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] text-surface">
@@ -104,6 +130,7 @@ export function Hero({
           </span>
         ) : (
           <span className="text-xs font-medium uppercase tracking-[0.16em] text-feature-accent">
+            {eyebrowBadge}
             {eyebrow}
           </span>
         )
@@ -122,8 +149,8 @@ export function Hero({
       {subtitle ? (
         <p
           className={cn(
-            "mt-5 text-lg leading-relaxed text-surface/85",
-            subtitleClassName ?? "max-w-xl",
+            "leading-relaxed text-surface/85",
+            subtitleClassName ?? "mt-5 max-w-xl text-lg",
           )}
         >
           {subtitle}

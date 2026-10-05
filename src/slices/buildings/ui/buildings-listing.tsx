@@ -140,7 +140,7 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
         wrapClassName="mx-auto max-w-[1600px] p-10"
         copyClassName="max-w-none"
         headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
-        subtitleClassName="max-w-[60ch]"
+        subtitleClassName="mt-5 max-w-[60ch] text-lg"
         actionsClassName="mt-2"
         eyebrow="Lisbon · Portugal"
         headline="Strategic Properties in Prime Locations"

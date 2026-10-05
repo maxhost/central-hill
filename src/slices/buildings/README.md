@@ -86,15 +86,27 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   first when stacked). Image is still a fixed Pexels placeholder (no schema field).
 - `/{locale}/buildings/{slug}` — detail (`ui/building-detail.tsx`): the approved
   `mock/building-detail.html` design, now **DB-driven** from `getBuildingBySlug(locale, slug)`
-  (`notFound()` when unknown/unpublished): hero (placeholder cover when no R2 image), gallery,
-  the apartments-count/capacity/beds spec strip, "The Building" / "The Neighbourhood" prose,
-  the "Apartments in this Building" grid, building amenities, FAQ, and the Avantio
-  "Book an apartment" CTA. Sparse-content resilient: empty gallery / amenities / FAQ and an
-  empty unit set each omit their section (never an empty shell). The unit grid is rendered as
-  the locked `.mk .pcard` markup from `listByBuilding` (apartments contract — golden rule 2),
-  with `public/placeholders/apartment.svg` when a unit has no cover; the apartments slice's
-  Tailwind `BuildingApartments`/`ApartmentCard` are a different look, kept for other consumers
-  (same rationale as `BuildingCard` on the listing).
+  (`notFound()` when unknown/unpublished): hero, gallery, the apartments-count/capacity/beds
+  spec strip, "The Building" / "The Neighbourhood" prose, the "Apartments in this Building"
+  grid, building amenities, FAQ, and the Avantio "Book an apartment" CTA. Sparse-content
+  resilient: empty gallery / amenities / FAQ and an empty unit set each omit their section
+  (never an empty shell). The unit grid is rendered as the locked `.mk .pcard` markup from
+  `listByBuilding` (apartments contract — golden rule 2), with
+  `public/placeholders/apartment.svg` when a unit has no cover; the apartments slice's Tailwind
+  `BuildingApartments`/`ApartmentCard` are a different look, kept for other consumers (same
+  rationale as `BuildingCard` on the listing).
+  The **hero is real JSX**: `core/ui`'s `<Hero compact>`, the fourth consumer (after Home,
+  Owners, and this slice's own listing hero) — needed two more additive props, `breadcrumb`
+  (the Home / Buildings / building-name trail, a caller-built `<Link>` nav, same "kernel owns
+  layout, caller owns content" split as `actions`/`aside`) and `eyebrowBadge` (the inline
+  "★ New" flag before the eyebrow's neighbourhood/city text — a different, non-pill look from
+  `eyebrowPill`). The street address reuses `subtitle`/`subtitleClassName` (no new prop); it
+  also passes its own `headlineClassName` (`max-w-[15ch]`, normal wrap) rather than taking
+  `compact`'s default, since that default is Owners' own page-specific nowrap override, not
+  the mock's generic `.hero.compact h1` rule — see `hero.tsx`'s docstring. Background is the
+  real R2 cover via `@core/media`'s `MediaImage` (the first DB-driven Hero `background` in the
+  app — everyone else so far is a fixed literal), falling back to
+  `public/placeholders/building.svg` when the building has no cover yet.
 
 Both are ISR (`revalidate = 3600`); detail uses `generateStaticParams` (known slugs
 prebuilt, `dynamicParams = true`) + `generateMetadata` with hreflang alternates. A building

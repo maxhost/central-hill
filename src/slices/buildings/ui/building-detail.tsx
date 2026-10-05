@@ -1,18 +1,31 @@
+import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { mediaImgTag } from "@core/media";
+import { MediaImage, mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
+import { Hero } from "@core/ui";
 import { type ApartmentSummary, listByBuilding } from "@slices/apartments/contract";
 import type { BuildingDetail as BuildingDetailModel } from "../contract";
 import { getBuildingBySlug } from "../server/queries";
 
 /**
  * Building detail page — the approved `mock/building-detail.html` design embedded 1:1
- * inside the live app shell, now **DB-driven**: the page styles are the mock's verbatim
- * (scoped under `.mk` — see `src/app/mock.css`), but every section is generated from the
+ * inside the live app shell, now **DB-driven**: most of the page is still the mock's
+ * verbatim styling (scoped under `.mk` — see `src/app/mock.css`), generated from the
  * published `building` row (`getBuildingBySlug`) plus its bookable units
  * (`listByBuilding`, the apartments contract — golden rule 2). DB content is HTML-escaped
  * before interpolation; the real header/footer + i18n come from the app layout.
+ *
+ * The **hero is real JSX**: `core/ui`'s `<Hero compact>`, the fourth consumer — needed two
+ * more additive props (`breadcrumb`/`eyebrowBadge`, see `hero.tsx`'s docstring) for the
+ * breadcrumb trail above the eyebrow and the inline "★ New" flag. The street address reuses
+ * `subtitle`/`subtitleClassName` (no new prop); `headlineClassName` passes the mock's *generic*
+ * compact headline rule (`max-w-[15ch]`, normal wrap) explicitly, since `compact`'s own default
+ * is Owners' page-specific nowrap override, not this page's. Background is the real R2 cover
+ * via `@core/media`'s `MediaImage` (falling back to the Warm-Editorial placeholder SVG when the
+ * building has none yet) — the first DB-driven `background` this component has had, though the
+ * prop itself needed no change (always caller-built).
  *
  * Resilient to sparse content (the catalog is filled incrementally via the backoffice):
  * - no R2 cover yet → a Warm-Editorial placeholder SVG is shown (building + per-unit);
@@ -129,17 +142,6 @@ function apartmentCardHtml(a: ApartmentSummary, labels: ApartmentLabels): string
 }
 
 const PAGE_STYLE = `
-/* Hero: strengthen the dark overlay over the cover photo so the white breadcrumb/
-   headline/address stay legible (matches the Buildings index treatment). Scoped to
-   this page — overrides the kernel \`.mk .hero::after\`. */
-.mk[data-page="building"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.42) 0%,rgba(18,16,13,.30) 45%,rgba(18,16,13,.85) 100%)}
-.mk .crumb{font-size:13px;letter-spacing:.02em;color:#ecdcc2;margin-bottom:6px}
-.mk .crumb a{color:#ecdcc2;opacity:.85;transition:opacity .2s}
-.mk .crumb a:hover{opacity:1;text-decoration:underline}
-.mk .crumb span{opacity:.55;margin:0 8px}
-.mk .crumb .here{opacity:.7}
-.mk .hero .addr{font-size:16px;color:#f1ece2;max-width:none;margin:6px 0 0}
-.mk .hero .flag{display:inline-block;background:var(--accent);color:#fff;font-size:11px;letter-spacing:.13em;text-transform:uppercase;padding:4px 10px;font-weight:600;margin-right:12px}
 .mk .gallery{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;border-radius:4px;overflow:hidden}
 .mk .gallery img{width:100%;height:100%;object-fit:cover;display:block}
 .mk .gallery .g0{grid-row:1/3}
@@ -190,33 +192,9 @@ const PAGE_STYLE = `
 function bodyHtml(
   detail: BuildingDetailModel,
   apartments: ApartmentSummary[],
-  locale: Locale,
   L: BuildingLabels,
   AL: ApartmentLabels,
 ): string {
-  const heroTag = mediaImgTag({
-    data: detail.cover,
-    fallbackSrc: PLACEHOLDER_BUILDING,
-    fallbackAlt: detail.name,
-    sizes: "100vw",
-    priority: true, // full-bleed hero — the LCP element on this page
-  });
-  const locationLine = `${detail.neighbourhood ? `${esc(detail.neighbourhood.name)} · ` : ""}${esc(detail.city.name)}`;
-  const addrHtml = detail.streetAddress ? `<p class="addr">${esc(detail.streetAddress)}</p>` : "";
-
-  const hero = `
-<section class="hero compact" style="padding:0">
-  ${heroTag}
-  <div class="wrap">
-    <nav class="crumb" aria-label="Breadcrumb">
-      <a href="/${locale}">${esc(L.home)}</a><span>/</span><a href="/${locale}/buildings">${esc(L.breadcrumb)}</a><span>/</span><span class="here">${esc(detail.name)}</span>
-    </nav>
-    <span class="eyebrow">${detail.isNew ? `<span class="flag">★ ${esc(L.new)}</span>` : ""}${locationLine}</span>
-    <h1>${esc(detail.name)}</h1>
-    ${addrHtml}
-  </div>
-</section>`;
-
   const galleryHtml = detail.gallery.length
     ? `<div class="gallery reveal">${detail.gallery
         .map((g, i) =>
@@ -327,7 +305,6 @@ function bodyHtml(
 </section>`;
 
   return (
-    hero +
     gallerySection +
     buildingSection +
     apartmentsSection +
@@ -380,10 +357,69 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
     size: (n) => ta("size", { count: n }),
   };
 
+  const locationLine = `${detail.neighbourhood ? `${detail.neighbourhood.name} · ` : ""}${detail.city.name}`;
+
   return (
-    <div className="mk" data-page="building">
-      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-      <div dangerouslySetInnerHTML={{ __html: bodyHtml(detail, apartments, locale, L, AL) }} />
-    </div>
+    <Fragment>
+      {/*
+       * Real JSX — `core/ui`'s `<Hero compact>`, the breadcrumb trail + "★ New" flag are the
+       * two new additive props (`breadcrumb`/`eyebrowBadge`, see that component's docstring);
+       * the street address reuses `subtitle`/`subtitleClassName`. Background is the real R2
+       * cover (`MediaImage`), falling back to the Warm-Editorial placeholder SVG.
+       */}
+      <Hero
+        background={
+          detail.cover ? (
+            <MediaImage
+              data={detail.cover}
+              className="absolute inset-0 -z-10 h-full w-full object-cover"
+              sizes="100vw"
+              priority
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element -- placeholder SVG, not an R2 asset
+            <img
+              src={PLACEHOLDER_BUILDING}
+              alt={detail.name}
+              className="absolute inset-0 -z-10 h-full w-full object-cover"
+            />
+          )
+        }
+        compact
+        overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.42)_0%,rgba(18,16,13,0.30)_45%,rgba(18,16,13,0.85)_100%)]"
+        breadcrumb={
+          <nav aria-label="Breadcrumb" className="mb-1.5 text-[13px] tracking-[0.02em] text-feature-accent">
+            <Link href={`/${locale}`} className="opacity-85 transition-opacity duration-200 hover:opacity-100 hover:underline">
+              {L.home}
+            </Link>
+            <span className="mx-2 opacity-55">/</span>
+            <Link
+              href={`/${locale}/buildings`}
+              className="opacity-85 transition-opacity duration-200 hover:opacity-100 hover:underline"
+            >
+              {L.breadcrumb}
+            </Link>
+            <span className="mx-2 opacity-55">/</span>
+            <span className="opacity-70">{detail.name}</span>
+          </nav>
+        }
+        eyebrowBadge={
+          detail.isNew ? (
+            <span className="mr-3 inline-block bg-accent px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.13em] text-white">
+              ★ {L.new}
+            </span>
+          ) : null
+        }
+        eyebrow={locationLine}
+        headline={detail.name}
+        headlineClassName="max-w-[15ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
+        subtitle={detail.streetAddress ?? undefined}
+        subtitleClassName="mt-1.5 max-w-none text-base"
+      />
+      <div className="mk" data-page="building">
+        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+        <div dangerouslySetInnerHTML={{ __html: bodyHtml(detail, apartments, L, AL) }} />
+      </div>
+    </Fragment>
   );
 }
