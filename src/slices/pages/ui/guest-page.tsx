@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
 import { mediaImgTag, type MediaImageData } from "@core/media";
-import { PhotoFeatureGrid, Reveal } from "@core/ui";
+import { PhotoFeatureGrid, Reveal, SplitCtaPanels } from "@core/ui";
 import { getGlobals } from "@slices/settings/contract";
 import { getGuestPage, type GuestContent } from "../contract";
 import { FaqSection } from "./components/faq-section";
@@ -38,6 +38,11 @@ import { TestimonialsRow } from "./components/testimonials-row";
  * scroll-fade-in, unlike About's bare-`.mk` precedent for the same split which loses it).
  * The immediately adjacent "What to Do" teaser is unaffected — still raw markup, now in its
  * own small `.mk` wrapper (`bodyActivitiesTeaser`, split out of the old combined `bodyMid`).
+ *
+ * The closing guest/owner dual CTA is real JSX too: `core/ui`'s `SplitCtaPanels` (the old
+ * `bodyBottom()` HTML string + its trailing `.mk` wrapper are gone), with its section/wrap
+ * shell and single `Reveal` at the call site, outside `.mk`, same technique as the services
+ * teaser. Its contact lines are still built here from company_settings (`dualCtaContactLines`).
  */
 
 // Media fallbacks = the approved mock assets, used 1:1 until a real R2 asset is set in the
@@ -296,47 +301,22 @@ function bodyActivitiesTeaser(content: GuestContent, locale: Locale): string {
 }
 
 /**
- * Closing owner/guest dual CTA. Panel copy is admin-authored; the contact line is built from
- * the company_settings singleton (data-model.md → dual-CTA = company_settings), so the phone,
- * email and WhatsApp are edited once in /admin/settings and never duplicated per page.
+ * Closing guest/owner dual CTA's contact lines. Panel copy is admin-authored; the contact line
+ * is built from the company_settings singleton (data-model.md → dual-CTA = company_settings), so
+ * the phone, email and WhatsApp are edited once in /admin/settings and never duplicated per
+ * page. An empty string (no settings row / all fields blank) makes `SplitCtaPanels` omit it.
  */
-function bodyBottom(
-  content: GuestContent,
-  globals: Awaited<ReturnType<typeof getGlobals>>,
-  locale: Locale,
-): string {
-  const { guest, owner } = content.dual_cta;
-  const guestContact = globals ? [globals.phone, globals.email].filter(Boolean).join(" · ") : "";
-  const ownerContact = globals
-    ? [globals.phone, globals.email, globals.whatsapp ? `WhatsApp ${globals.whatsapp}` : null]
-        .filter(Boolean)
-        .join(" · ")
-    : "";
-
-  const panel = (
-    p: typeof guest,
-    modifier: string,
-    variant: "solid" | "accent",
-    contact: string,
-  ): string =>
-    `<div class="dcol${modifier}">
-        ${p.eyebrow ? `<span class="eyebrow">${esc(p.eyebrow)}</span>` : ""}<h3>${esc(p.title)}</h3>
-        <p>${esc(p.body)}</p>
-        <a class="btn btn-${variant}" href="${escAttr(localizeUrl(p.cta.url, locale))}">${esc(p.cta.label)} →</a>
-        ${contact ? `<div class="contact-line">${esc(contact)}</div>` : ""}
-      </div>`;
-
-  return `
-<!-- DUAL CTA -->
-<section>
-  <div class="wrap">
-    <div class="dual reveal reveal-io pre-reveal">
-      ${panel(guest, "", "solid", guestContact)}
-      ${panel(owner, " owner", "accent", ownerContact)}
-    </div>
-  </div>
-</section>
-`;
+function dualCtaContactLines(globals: Awaited<ReturnType<typeof getGlobals>>): {
+  guest: string;
+  owner: string;
+} {
+  if (!globals) return { guest: "", owner: "" };
+  return {
+    guest: [globals.phone, globals.email].filter(Boolean).join(" · "),
+    owner: [globals.phone, globals.email, globals.whatsapp ? `WhatsApp ${globals.whatsapp}` : null]
+      .filter(Boolean)
+      .join(" · "),
+  };
 }
 
 export async function GuestPage({ locale }: { locale: Locale }) {
@@ -351,6 +331,8 @@ export async function GuestPage({ locale }: { locale: Locale }) {
   const { content, media } = page;
   const { portfolio } = content;
   const faqGroupKey = content.faq_group_key ?? "";
+  const dualCta = content.dual_cta;
+  const contactLines = dualCtaContactLines(globals);
 
   const servicesTeaserItems = content.services_teaser.items.map((item, i) => ({
     icon: <i className={iconClass(item.icon_key)} aria-hidden="true" />,
@@ -366,7 +348,9 @@ export async function GuestPage({ locale }: { locale: Locale }) {
         <noscript>
           <style
             dangerouslySetInnerHTML={{
-              __html: `.mk[data-page="guests"] .pre-reveal{opacity:1!important;transform:none!important}`,
+              // `[data-reveal]` too: the `Reveal`-wrapped services-teaser grid and dual CTA
+              // render hidden server-side and only un-hide via JS (same fix as Real Estate).
+              __html: `.mk[data-page="guests"] .pre-reveal,[data-reveal]{opacity:1!important;transform:none!important}`,
             }}
           />
         </noscript>
@@ -438,9 +422,42 @@ export async function GuestPage({ locale }: { locale: Locale }) {
         </div>
       ) : null}
 
-      <div className="mk" data-page="guests">
-        <div dangerouslySetInnerHTML={{ __html: bodyBottom(content, globals, locale) }} />
-      </div>
+      {/*
+       * Closing guest/owner dual CTA — real JSX now, `core/ui`'s `SplitCtaPanels` (see its
+       * docstring for why it's neither `DualCtaPanels` nor `FeaturePanel`). Same shell technique
+       * as the services teaser above: the original `<section>` (`.mk section` →
+       * `padding:clamp(72px,10vw,150px) 0; scroll-margin-top:84px`, no tint) and `.wrap`
+       * (1240px/28px) reproduced at their exact mock metrics, and the original single
+       * `.dual.reveal-io.pre-reveal` scroll fade-in → one `Reveal` around the grid. Rendered
+       * outside `.mk` entirely (Lesson 1). React escapes the admin copy; CTA urls still go
+       * through `localizeUrl`; an empty contact line is omitted by the component.
+       */}
+      <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
+        <div className="mx-auto max-w-[1240px] px-[28px]">
+          <Reveal label="guests-dual-cta">
+            <SplitCtaPanels
+              panels={[
+                {
+                  tone: "light",
+                  eyebrow: dualCta.guest.eyebrow,
+                  title: dualCta.guest.title,
+                  body: dualCta.guest.body,
+                  cta: { href: localizeUrl(dualCta.guest.cta.url, locale), label: dualCta.guest.cta.label },
+                  contactLine: contactLines.guest,
+                },
+                {
+                  tone: "dark",
+                  eyebrow: dualCta.owner.eyebrow,
+                  title: dualCta.owner.title,
+                  body: dualCta.owner.body,
+                  cta: { href: localizeUrl(dualCta.owner.cta.url, locale), label: dualCta.owner.cta.label },
+                  contactLine: contactLines.owner,
+                },
+              ]}
+            />
+          </Reveal>
+        </div>
+      </section>
     </>
   );
 }

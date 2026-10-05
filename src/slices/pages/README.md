@@ -258,8 +258,8 @@ eyebrow ("Deal Structures") above this section's title that the live page (and t
 `deal_structures` schema) never had — left as-is.
 
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
-`docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyActivitiesTeaser` / `bodyBottom`
-interpolate the resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`.
+`docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyActivitiesTeaser` (the old `bodyBottom`
+is gone — see the dual CTA below) interpolate the resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`.
 Its nine sections split as follows — hero, welcome, why, services teaser and activities teaser
 come from `page_content`; the featured portfolio comes from **buildings**, the reviews from
 **testimonials** (`audience='guest'`, managed in `/admin/testimonials` — the page schema owns no
@@ -294,6 +294,25 @@ since this section needs it), now in its own small `.mk` wrapper (`bodyActivitie
 it no longer shares a markup string with the services teaser. A likely future second consumer of
 `PhotoFeatureGrid`: that "What to Do" teaser itself, once it's its own extraction task (just
 needs `cta.variant="ghost"`).
+
+The closing guest/owner **dual CTA is real JSX now** too: `core/ui`'s new `SplitCtaPanels` (a
+hairline grid — 1px `line` gap + 1px outer `line` border — of one or two solid panels, `light`
+= `surface` with an ink `.btn-solid`-style button, `dark` = `feature` with an accent button; 2
+cols from 981px, stacked at ≤980px), ported 1:1 from `mock.css`'s `.dual`/`.dcol`/`.dcol.owner`/
+`.contact-line`/`.btn-*` rules. The old `bodyBottom()` HTML string and its trailing `.mk` wrapper
+are deleted; `guest-page.tsx` keeps only `dualCtaContactLines(globals)` (company_settings →
+"phone · email" / "phone · email · WhatsApp …", empty → line omitted). Same shell technique as
+the services teaser: the `<section>` (`clamp(72px,10vw,150px)` padding, `scroll-mt-[84px]`, no
+tint) + 1240px/28px column at the call site, outside `.mk`, and the original single
+`.dual.reveal-io.pre-reveal` fade-in → one `Reveal`. **Not** `DualCtaPanels` (photo "Immersive
+Panels" with scrim — a different design, used by Home/Owners via `components/dual-cta.tsx`) and
+**not** `FeaturePanel` (dark-only, self-bordered — two of them in this grid would double the
+border); buttons are not `ButtonLink` (radius/padding/border/tracking/transition differ, no ink
+variant) — see the component's docstring. Props are shaped so `mock/home.html` (owner panel
+first, `padding-top:0`) and `mock/buildings.html` (one owner panel, single column) are just a
+different `panels` array / section padding — not wired there. The page's `<noscript>` rule now
+also un-hides `[data-reveal]` (same fix as Real Estate), which the services teaser's `Reveal`
+was already missing — with JS off both sections previously stayed at `opacity:0`.
 
 **Deploy order matters for this page:** migration 0012 must run before the code ships, otherwise
 prerendering `/[locale]/guests` throws on the missing `portfolio` / `dual_cta` blocks. A stale

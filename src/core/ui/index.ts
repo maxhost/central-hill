@@ -72,3 +72,5 @@ export { ActionBand, type ActionBandCta } from "./action-band";
 export { ChecklistCards, type ChecklistCard } from "./checklist-cards";
 /** Borderless rounded photo mosaic (`2fr 1fr 1fr`, first photo a 2-row lead tile; 2 cols ≤680px) — caller-built images. */
 export { MosaicGallery } from "./mosaic-gallery";
+/** Hairline grid of 1–2 solid CTA panels (light `surface` / dark `feature`): eyebrow, serif title, body, ink or accent button, contact line. */
+export { SplitCtaPanels, type SplitCtaPanel } from "./split-cta-panels";
