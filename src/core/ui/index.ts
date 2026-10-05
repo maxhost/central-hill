@@ -64,3 +64,5 @@ export { StatBento, type StatBentoCell, type StatBentoStat } from "./stat-bento"
 export { PhotoFeatureGrid, type PhotoFeatureGridItem } from "./photo-feature-grid";
 /** Hairline grid (3→2→1 cols) of light centred stat tiles: count-up serif accent figure + uppercase label + optional caption. */
 export { StatTiles, type StatTile } from "./stat-tiles";
+/** Bookable-unit card (photo w/ hover zoom, badge, icon+value spec chips, underlined CTA) + its 3→2→1-col grid. */
+export { UnitCard, UnitCardGrid, type UnitCardSpec } from "./unit-card";

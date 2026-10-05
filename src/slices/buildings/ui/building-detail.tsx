@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MediaImage, mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { Container, Hero, ProseSection, SpecStrip } from "@core/ui";
+import { Container, Hero, ProseSection, SpecStrip, UnitCard, UnitCardGrid, type UnitCardSpec } from "@core/ui";
 import { type ApartmentSummary, listByBuilding } from "@slices/apartments/contract";
 import type { BuildingDetail as BuildingDetailModel } from "../contract";
 import { getBuildingBySlug } from "../server/queries";
@@ -46,8 +46,8 @@ import { getBuildingBySlug } from "../server/queries";
  * arrays by `splitParagraphs()` (blank-line/newline split, same rule the old `paragraphs()`
  * HTML-string helper used) and passed as real `<p>` children — React escapes them, so no
  * `esc()` call is needed for this section anymore. Renders **outside** `.mk`, right after the
- * spec strip and before the still-raw `.mk`-wrapped remainder (apartments/amenities/FAQ/book
- * band) — see `ProseSection`'s own docstring for the full cascade-layers reasoning (same trap
+ * spec strip and before the apartments grid + the still-raw `.mk`-wrapped remainder
+ * (amenities/FAQ/book band) — see `ProseSection`'s own docstring for the full cascade-layers reasoning (same trap
  * as `SpecStrip`) and for a flagged pre-existing drift between `mock/assets/site.css`'s
  * `--section-y`/`--max` tokens (used here, to stay pixel-identical to the live page) and
  * `core/ui`'s canonical `Section`/`Container` values (ported, not reconciled — see that
@@ -56,6 +56,19 @@ import { getBuildingBySlug } from "../server/queries";
  * "Bairro Alto View" (`bairro-alto-view`) currently has only `description_intro` populated,
  * no `description_neighbourhood` row; the mock's richer two-subsection copy was used only to
  * verify `ProseSection` renders the optional subsection correctly, never written to the DB.
+ *
+ * **"Apartments in this Building" is real JSX** too — `core/ui`'s new `UnitCard` +
+ * `UnitCardGrid` (cover w/ hover zoom, badge, icon+value spec chips with per-chip `title`, the
+ * underlined "Check availability →" CTA; 3→2→1 columns at 980/680px), replacing the old
+ * `apartmentCardHtml()`/`.pcard` strings and the `.pspecs`/`.pspec`/`.check`/`.powered` rules
+ * in `PAGE_STYLE`. Not `PropertyCard` (different padding/type scale, no zoom, text meta line,
+ * `next/link` — see `UnitCard`'s docstring). The section shell, sec-head and the `#book`
+ * "Booking powered by Avantio" line are inline JSX here (no `.mk`, so no `.mk` reset trap and
+ * no `data-page` hook needed — nothing on this page keys off it for scroll-reveal; the old
+ * `.reveal` classes were neutralised by `mock.css`, so the section was and stays static).
+ * Covers: `MediaImage` (lazy, `CARD_SIZES`) for an R2 asset, else a plain lazy `<img>` of the
+ * placeholder SVG — the same two branches `mediaImgTag()` produced. The badge now stays
+ * visible on hover (it used to be painted over by the zoomed image — see `UnitCard`).
  *
  * Resilient to sparse content (the catalog is filled incrementally via the backoffice):
  * - no R2 cover yet → a Warm-Editorial placeholder SVG is shown (building + per-unit);
@@ -99,14 +112,43 @@ const AMENITY_ICON =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.4l2.4 2.4 4.6-5"/></svg>';
 
 /** Apartment-card spec-row glyphs (bedrooms, beds, guests, size) — positional, always
- *  the same four, so plain consts rather than an icon-key map like the amenities grid. */
+ *  the same four, so plain consts rather than an icon-key map like the amenities grid.
+ *  `UnitCard` sizes (16px) and tints (`accent-deep`) them. Same paths/attributes as the old
+ *  HTML-string glyphs; no a11y attributes added (the old markup had none either — each
+ *  chip's accessible hint is its `title`). */
+const SPEC_SVG = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.6,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+} as const;
 const SPEC_ICONS = {
-  bedrooms:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="12" height="18" rx="1"/><path d="M14 12v.01"/></svg>',
-  beds: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19v-7a2 2 0 012-2h14a2 2 0 012 2v7"/><path d="M3 19h18M3 17v2M21 17v2"/><path d="M7 10V7a1 1 0 011-1h3a1 1 0 011 1v3"/></svg>',
-  guests:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5"/></svg>',
-  size: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>',
+  bedrooms: (
+    <svg {...SPEC_SVG}>
+      <rect x="5" y="3" width="12" height="18" rx="1" />
+      <path d="M14 12v.01" />
+    </svg>
+  ),
+  beds: (
+    <svg {...SPEC_SVG}>
+      <path d="M3 19v-7a2 2 0 012-2h14a2 2 0 012 2v7" />
+      <path d="M3 19h18M3 17v2M21 17v2" />
+      <path d="M7 10V7a1 1 0 011-1h3a1 1 0 011 1v3" />
+    </svg>
+  ),
+  guests: (
+    <svg {...SPEC_SVG}>
+      <circle cx="12" cy="8" r="3.2" />
+      <path d="M5 20c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5" />
+    </svg>
+  ),
+  size: (
+    <svg {...SPEC_SVG}>
+      <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" />
+    </svg>
+  ),
 } as const;
 
 interface BuildingLabels {
@@ -140,34 +182,26 @@ interface ApartmentLabels {
   size: (n: number) => string;
 }
 
-/** One icon+value chip in an apartment card's spec row (bedrooms/beds/guests/size). */
-function specChip(icon: string, value: number, label: string): string {
-  return `<span class="pspec" title="${esc(label)}">${icon}${esc(String(value))}</span>`;
+/** A unit's `UnitCard` spec chips — bedrooms/beds/guests always, size only when `sizeM2` is set. */
+function apartmentSpecs(a: ApartmentSummary, labels: ApartmentLabels): UnitCardSpec[] {
+  const specs: UnitCardSpec[] = [
+    { icon: SPEC_ICONS.bedrooms, value: a.bedrooms, label: labels.bedrooms(a.bedrooms) },
+    { icon: SPEC_ICONS.beds, value: a.bedsCount, label: labels.beds(a.bedsCount) },
+    { icon: SPEC_ICONS.guests, value: a.maxGuests, label: labels.guests(a.maxGuests) },
+  ];
+  if (a.sizeM2) specs.push({ icon: SPEC_ICONS.size, value: a.sizeM2, label: labels.size(a.sizeM2) });
+  return specs;
 }
 
-/** One `.pcard` for the "Apartments in this Building" grid, built from a published unit. */
-function apartmentCardHtml(a: ApartmentSummary, labels: ApartmentLabels): string {
-  const coverTag = mediaImgTag({
-    data: a.cover,
-    fallbackSrc: PLACEHOLDER_APARTMENT,
-    fallbackAlt: a.name,
-    sizes: CARD_SIZES,
-  });
-  const specs = [
-    specChip(SPEC_ICONS.bedrooms, a.bedrooms, labels.bedrooms(a.bedrooms)),
-    specChip(SPEC_ICONS.beds, a.bedsCount, labels.beds(a.bedsCount)),
-    specChip(SPEC_ICONS.guests, a.maxGuests, labels.guests(a.maxGuests)),
-    a.sizeM2 ? specChip(SPEC_ICONS.size, a.sizeM2, labels.size(a.sizeM2)) : "",
-  ].join("");
-  const href = a.avantio.url ?? "#book";
-  const external = a.avantio.url ? ' target="_blank" rel="noopener noreferrer"' : "";
-  return `
-      <a class="pcard" href="${esc(href)}"${external}>
-        <div class="ph">${
-          a.badge ? `<span class="badge">${esc(a.badge)}</span>` : ""
-        }${coverTag}</div>
-        <div class="pbody"><h3>${esc(a.name)}</h3><div class="pspecs">${specs}</div><span class="check">${esc(labels.checkAvailability)} →</span></div>
-      </a>`;
+/** A unit's cover for `UnitCard`: the R2 asset (lazy, responsive `sizes`) or the placeholder
+ *  SVG — same two branches/attributes the old `mediaImgTag()` call produced. */
+function apartmentCover(a: ApartmentSummary) {
+  if (a.cover?.url && a.cover.width > 0 && a.cover.height > 0) {
+    return <MediaImage data={a.cover} sizes={CARD_SIZES} />;
+  }
+  // Asset without usable dimensions → served unoptimised (as `mediaImgTag` did); none → placeholder.
+  // eslint-disable-next-line @next/next/no-img-element -- placeholder SVG / dimensionless asset, not optimisable
+  return <img src={a.cover?.url || PLACEHOLDER_APARTMENT} alt={a.cover?.alt || a.name} loading="lazy" decoding="async" />;
 }
 
 const PAGE_STYLE = `
@@ -175,15 +209,6 @@ const PAGE_STYLE = `
 .mk .gallery img{width:100%;height:100%;object-fit:cover;display:block}
 .mk .gallery .g0{grid-row:1/3}
 @media(max-width:680px){.mk .gallery{grid-template-columns:1fr 1fr}.mk .gallery .g0{grid-row:auto;grid-column:1/3}}
-/* Apartment-card spec row (icon + value chips) — replaces the plain-text .pmeta line
-   on unit cards only; the building-listing cards keep the kernel .pmeta unchanged. */
-.mk .pspecs{display:flex;flex-wrap:wrap;gap:14px;margin-top:4px}
-.mk .pspec{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--ink-soft)}
-.mk .pspec svg{width:16px;height:16px;color:var(--accent-deep)}
-.mk .pbody .check{margin-top:18px;display:inline-flex;align-items:center;gap:.45em;font-size:13.5px;font-weight:600;letter-spacing:.02em;color:var(--accent-deep);border-bottom:1px solid color-mix(in srgb,var(--accent-deep) 35%,transparent);padding-bottom:2px;transition:.2s}
-.mk .pcard:hover .check{color:var(--accent)}
-.mk .powered{font-size:12.5px;letter-spacing:.04em;color:var(--ink-soft);margin-top:30px;text-align:center}
-.mk .powered b{color:var(--ink);font-weight:600}
 .mk .am-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
 .mk .am{background:var(--surface);display:flex;align-items:center;gap:14px;padding:24px 26px}
 .mk .am svg{width:22px;height:22px;flex:none;color:var(--accent-deep)}
@@ -221,28 +246,8 @@ function galleryGridHtml(detail: BuildingDetailModel): string {
     .join("")}</div>`;
 }
 
-function bodyHtml(
-  detail: BuildingDetailModel,
-  apartments: ApartmentSummary[],
-  L: BuildingLabels,
-  AL: ApartmentLabels,
-): string {
-  const apartmentsSection = apartments.length
-    ? `
-<section class="alt" id="apartments">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">${esc(AL.eyebrow)}</span>
-      <h2 class="section-title">${esc(AL.title)}</h2>
-      <p class="lede" style="margin-top:16px">${esc(AL.intro)}</p>
-    </div>
-    <div class="pf-grid reveal">${apartments.map((a) => apartmentCardHtml(a, AL)).join("")}
-    </div>
-    <div class="powered" id="book">${esc(AL.poweredBy)}</div>
-  </div>
-</section>`
-    : "";
-
+/** The still-raw `.mk` remainder after the apartments grid: amenities, FAQ, book band. */
+function bodyHtml(detail: BuildingDetailModel, L: BuildingLabels): string {
   const amenitiesSection = detail.amenities.length
     ? `
 <section>
@@ -290,7 +295,7 @@ function bodyHtml(
   </div>
 </section>`;
 
-  return apartmentsSection + amenitiesSection + faqSection + bookband;
+  return amenitiesSection + faqSection + bookband;
 }
 
 export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: string }) {
@@ -441,9 +446,53 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
           }
         />
       ) : null}
+      {/*
+       * Real JSX — "Apartments in this Building": `core/ui`'s new `UnitCard`/`UnitCardGrid`
+       * (see that file's docstring for why not `PropertyCard`), with the section shell (alt
+       * band, `--section-y` rhythm, 1240px/28px column), sec-head and the "Booking powered by
+       * Avantio" line (`#book`, the cards' fallback anchor) ported 1:1 from the old `.mk`
+       * `section.alt`/`.wrap`/`.sec-head`/`.eyebrow`/`h2.section-title`/`.lede`/`.powered`
+       * CSS. Rendered *outside* `.mk` (cascade-layers trap — see `SpecStrip`'s docstring).
+       * No `Reveal`: the old `.reveal` classes were neutralised by `mock.css` and this page
+       * mounts no scroll-reveal script, so the live section was static — kept static.
+       * Omitted entirely when the building has no published apartments.
+       */}
+      {apartments.length > 0 ? (
+        <section
+          id="apartments"
+          className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)] leading-[1.6] text-ink"
+        >
+          <div className="mx-auto max-w-[1240px] px-[28px]">
+            <div className="mb-[54px] max-w-[720px]">
+              <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-accent-deep">{AL.eyebrow}</span>
+              <h2 className="mt-[14px] font-serif text-[clamp(30px,4vw,50px)] font-medium leading-[1.08] tracking-[-0.015em] text-ink">
+                {AL.title}
+              </h2>
+              <p className="mt-4 max-w-[62ch] text-[18px] text-ink-soft">{AL.intro}</p>
+            </div>
+            <UnitCardGrid>
+              {apartments.map((a) => (
+                <UnitCard
+                  key={a.id}
+                  href={a.avantio.url ?? "#book"}
+                  external={Boolean(a.avantio.url)}
+                  image={apartmentCover(a)}
+                  name={a.name}
+                  badge={a.badge}
+                  specs={apartmentSpecs(a, AL)}
+                  ctaLabel={AL.checkAvailability}
+                />
+              ))}
+            </UnitCardGrid>
+            <div id="book" className="mt-[30px] text-center text-[12.5px] tracking-[0.04em] text-ink-soft">
+              {AL.poweredBy}
+            </div>
+          </div>
+        </section>
+      ) : null}
       <div className="mk" data-page="building">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-        <div dangerouslySetInnerHTML={{ __html: bodyHtml(detail, apartments, L, AL) }} />
+        <div dangerouslySetInnerHTML={{ __html: bodyHtml(detail, L) }} />
       </div>
     </Fragment>
   );

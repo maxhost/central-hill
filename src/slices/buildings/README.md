@@ -91,11 +91,23 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   "Apartments in this Building" grid, building amenities, FAQ, and the Avantio "Book an
   apartment" CTA. Sparse-content
   resilient: empty gallery / amenities / FAQ and an empty unit set each omit their section
-  (never an empty shell). The unit grid is rendered as the locked `.mk .pcard` markup from
-  `listByBuilding` (apartments contract — golden rule 2), with
-  `public/placeholders/apartment.svg` when a unit has no cover; the apartments slice's Tailwind
-  `BuildingApartments`/`ApartmentCard` are a different look, kept for other consumers (same
-  rationale as `BuildingCard` on the listing).
+  (never an empty shell). The **"Apartments in this Building" grid is real JSX**: `core/ui`'s
+  new `UnitCard` + `UnitCardGrid`, fed from `listByBuilding` (apartments contract — golden
+  rule 2), ported 1:1 from the old `.mk` `.pcard`/`.ph`/`.badge`/`.pbody` (`mock.css`) +
+  `.pspecs`/`.pspec`/`.check`/`.powered` (`PAGE_STYLE`, now deleted) CSS — verified by
+  computed-style diff at 1440/834/390 incl. hover (lift + shadow, 1.04 image zoom, CTA
+  `accent-deep`→`accent`). Not `PropertyCard` (padding/type scale differ, no zoom, text meta
+  line instead of icon chips, `next/link` while these link out — see `UnitCard`'s docstring).
+  Each card links to the unit's Avantio URL in a new tab, or falls back to the in-page `#book`
+  anchor (the "Booking powered by Avantio" line under the grid); spec chips keep their
+  translated `title` and the size chip is omitted when `sizeM2` is unset; covers are
+  `MediaImage` (lazy, responsive `sizes`) or `public/placeholders/apartment.svg`. The section
+  shell/sec-head/powered line are inline JSX in `building-detail.tsx`, **outside** `.mk` (no
+  raw wrapper needed; no scroll-reveal — the old `.reveal` was neutralised, section was static).
+  One deliberate fix vs. the old render: the badge used to vanish under the zoomed image while
+  the card was hovered (paint order); it now stays on top (`z-[1]`). The apartments slice's
+  Tailwind `BuildingApartments`/`ApartmentCard` are a different look, kept for other consumers
+  (same rationale as `BuildingCard` on the listing).
   The **hero is real JSX**: `core/ui`'s `<Hero compact>`, the fourth consumer (after Home,
   Owners, and this slice's own listing hero) — needed two more additive props, `breadcrumb`
   (the Home / Buildings / building-name trail, a caller-built `<Link>` nav, same "kernel owns
