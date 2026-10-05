@@ -28,9 +28,14 @@ module, never by querying its table.
 
 - `/[locale]/guides` — index: hero + one section per city with a card grid of its
   published guide pages (`listGuideCityGroups`). `revalidate = 3600` + tag-revalidated;
-  the surrounding chrome (hero, city chips, "Top Recommendations", closing CTA band) is
-  the approved mock's static markup, same `.mk`-embed-with-DB-driven-cards pattern as
-  `buildings/ui/buildings-listing.tsx`.
+  the surrounding chrome (hero, "Top Recommendations", closing CTA band) is the approved
+  mock's static markup, same `.mk`-embed-with-DB-driven-cards pattern as
+  `buildings/ui/buildings-listing.tsx`. The **"Choose your city" bar is real JSX** —
+  `core/ui`'s new `ChipBar` (`src/core/ui/chip-bar.tsx`), rendered outside `.mk` (the
+  reset-layering trap — see that component's docstring). Still presentational only: no
+  real city filter behind it yet (chip copy now goes through `t()` — `chooseCity`,
+  `cityLisbon`/`cityPorto`/`cityCascais`, `citySoon`, `cityNote` — instead of staying
+  hardcoded English).
 - `/[locale]/guides/[city]/[slug]` — guide-page detail: breadcrumb, hero, a stack of
   sections (body, optional header image, "local tip" callout, place grid, optional CTA).
   `generateStaticParams` from `listGuideParams()`; `dynamicParams = true`. The `[city]`
@@ -71,6 +76,7 @@ guessing.
 ## i18n
 
 UI chrome → `guides` namespace in `messages/{en,pt,es,fr}.json` (all 4 authored): hero,
+city bar (`chooseCity`/`cityLisbon`/`cityPorto`/`cityCascais`/`citySoon`/`cityNote`),
 per-city heading, card CTA, breadcrumb, "local tip", place meta labels (address/hours/
 phone) and outbound link labels (website/book/directions). DB content ([T] fields)
 resolves through `core/i18n` with the source-locale (`en`) fallback + `approved`-only

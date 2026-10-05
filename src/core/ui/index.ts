@@ -46,6 +46,8 @@ export { StatBand } from "./stat-band";
 export { SpecStrip } from "./spec-strip";
 /** Hairline-separated grid of numbered feature cards (index + title + body) with hover lift. */
 export { NumberedFeatureGrid } from "./numbered-feature-grid";
+/** Bordered pill-chip row inside a hairline bar (eyebrow label + chips + optional note), presentational. */
+export { ChipBar, type ChipBarItem } from "./chip-bar";
 /** Page hero (full-bleed video/image band with overlaid editorial headline) — never animated. */
 export { Hero } from "./hero";
 /** Dev-only diagnostic: logs viewport size + scroll progress to the console. No-op in prod. */

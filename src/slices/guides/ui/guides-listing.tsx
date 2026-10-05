@@ -1,6 +1,8 @@
+import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
+import { ChipBar } from "@core/ui";
 import type { GuideCityGroup, GuidePageSummary, GuideTemplate } from "../contract";
 import { listGuideCityGroups } from "../contract";
 
@@ -14,9 +16,20 @@ import { listGuideCityGroups } from "../contract";
  * scoped under `.mk` (see `src/app/mock.css`) so nothing leaks to Home/admin. Cards link
  * to each guide's real per-locale detail slug (`/[locale]/guides/[city]/[slug]`).
  *
- * The city chips, "Top Recommendations" picks and closing stats band stay the mock's
- * static decorative markup for now (content brief 4.2 scopes only the guide pages
- * themselves to the DB in this pass).
+ * The **city bar is real JSX** — `core/ui`'s new `ChipBar` (see that component's docstring
+ * for why it's a new primitive rather than reusing an existing one, and why it's
+ * presentational-only). It renders **between** two separate `.mk` blocks instead of nested
+ * inside one (required — `.mk * { margin:0; padding:0 }` is un-layered CSS in `mock.css`
+ * and always beats a layered Tailwind utility, so a `.mk`-nested instance would silently
+ * lose its own padding/gap; see `ChipBar`'s docstring). Chip copy ("Choose your city",
+ * city names, "Soon", the closing note) now goes through `t()` like the rest of the page
+ * chrome, rather than staying hardcoded English — the one other change from the raw mock.
+ * Still no real city filter behind it: `listGuideCityGroups` renders every published city
+ * unconditionally (see the component's docstring).
+ *
+ * "Top Recommendations" picks and the closing stats band stay the mock's static decorative
+ * markup for now (content brief 4.2 scopes only the guide pages themselves to the DB in
+ * this pass).
  */
 
 /** HTML-escape DB content before interpolating into the `.mk` markup string. */
@@ -63,20 +76,6 @@ function guideCardHtml(guide: GuidePageSummary, locale: Locale, viewLabel: strin
 }
 
 const PAGE_STYLE = `
-.mk .city-bar{border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--line) 26%,var(--bg))}
-.mk .city-bar .wrap{padding-top:24px;padding-bottom:24px;display:flex;flex-wrap:wrap;align-items:center;gap:16px}
-.mk .city-bar .cb-label{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
-.mk .city-chips{display:flex;flex-wrap:wrap;gap:9px;flex:1;min-width:240px}
-.mk .city-chip{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:500;letter-spacing:.01em;
-  color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:100px;
-  padding:9px 16px;cursor:pointer;transition:.2s var(--ease)}
-.mk .city-chip:hover{border-color:var(--ink-soft);color:var(--ink)}
-.mk .city-chip.is-active{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.mk .city-chip.is-soon{color:var(--ink-soft);opacity:.7;cursor:default}
-.mk .city-chip .soon{font-size:10px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--accent-deep);font-weight:600}
-.mk .city-note{font-size:12px;letter-spacing:.04em;color:var(--ink-soft);white-space:nowrap}
-
 .mk .gcard .ph::after{content:"";position:absolute;inset:0;
   background:linear-gradient(180deg,rgba(18,16,13,0) 38%,rgba(18,16,13,.42) 100%)}
 .mk .gcard .g-ico{font-size:28px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:14px}
@@ -113,19 +112,7 @@ function HERO(locale: Locale, eyebrow: string, title: string, intro: string): st
     <h1>${esc(title)}</h1>
     <p>${esc(intro)}</p>
   </div>
-</section>
-
-<div class="city-bar">
-  <div class="wrap">
-    <span class="cb-label">Choose your city</span>
-    <div class="city-chips">
-      <button class="city-chip is-active"><i class="iconoir-pin" aria-hidden="true"></i>Lisbon</button>
-      <button class="city-chip is-soon">Porto <span class="soon">Soon</span></button>
-      <button class="city-chip is-soon">Cascais <span class="soon">Soon</span></button>
-    </div>
-    <span class="city-note">More cities coming as Central Hill grows.</span>
-  </div>
-</div>`;
+</section>`;
 }
 
 function TAIL(locale: Locale): string {
@@ -200,13 +187,30 @@ export async function GuidesListing({ locale }: { locale: Locale }) {
 </section>`;
 
   return (
-    <div className="mk" data-page="guides">
-      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-      <div
-        dangerouslySetInnerHTML={{
-          __html: HERO(locale, t("eyebrow"), t("title"), t("intro")) + bodyHtml + TAIL(locale),
-        }}
+    <Fragment>
+      <div className="mk" data-page="guides">
+        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+        <div dangerouslySetInnerHTML={{ __html: HERO(locale, t("eyebrow"), t("title"), t("intro")) }} />
+      </div>
+      {/*
+       * Real JSX — `core/ui`'s `ChipBar` (see its docstring + this file's top docstring).
+       * Rendered outside `.mk` on purpose (the margin/padding reset trap), between the hero's
+       * `.mk` block and the city-sections/TAIL `.mk` block below — CSS selectors don't care
+       * about DOM proximity, so `PAGE_STYLE`'s `<style>` tag above still reaches `.mk`
+       * elements in the second block.
+       */}
+      <ChipBar
+        label={t("chooseCity")}
+        items={[
+          { key: "lisbon", label: t("cityLisbon"), icon: "iconoir-pin", active: true },
+          { key: "porto", label: t("cityPorto"), soon: true, soonLabel: t("citySoon") },
+          { key: "cascais", label: t("cityCascais"), soon: true, soonLabel: t("citySoon") },
+        ]}
+        note={t("cityNote")}
       />
-    </div>
+      <div className="mk" data-page="guides">
+        <div dangerouslySetInnerHTML={{ __html: bodyHtml + TAIL(locale) }} />
+      </div>
+    </Fragment>
   );
 }
