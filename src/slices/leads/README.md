@@ -66,6 +66,25 @@ success / inline field errors). Shared primitives + the `useLeadForm` hook (inje
 + `source_page`) live in `ui/components/fields.tsx`. Forms render **no surrounding heading** —
 the embedder supplies the section copy.
 
+**Look = `core/ui` form-card** (user-approved style unification, same as Real Estate's
+`#deal-enquiry` and the Owners/Buildings `OwnerEstimateForm`). `fields.tsx`'s pieces are thin
+wrappers over `@core/ui`'s `form-card.tsx` primitives — `LeadFormShell` → `FormCard` (+ the
+`leading-[1.6]` line box the controls need), `TextField`/`NumberField` → `FormField` +
+`FormInput`, `TextAreaField` → `FormTextarea`, `ConsentCheckbox` → `FormCheckbox`,
+`SubmitButton` → `FormSubmit` (full width, `disabled` + dimmed while pending), `FormStatus` →
+`FormMessage` (ok = `role="status"`, error = `role="alert"`). Server field errors render as the
+`FormField`/`FormCheckbox` error line, wired to the control with `aria-invalid` +
+`aria-describedby`. The honeypot is unchanged (off-screen, `aria-hidden`, `tabIndex=-1`, no
+`name`). Structure, labels, names/types/`required`/`autoComplete`, i18n keys, states and the
+`submitLead` payload are unchanged (verified by intercepting the server action).
+
+| Form | Chrome | Where it renders |
+| --- | --- | --- |
+| `ContactForm` | `bare` (host draws the container) | header contact dialog (`settings` `ContactDialog`, every page) · service pages' enquiry card (`services` `service-detail.tsx`) |
+| `NewsletterForm` | `bare`; `theme="dark"` → `tone="dark"` (on-feature colours, incl. the success message via `FormToneScope`) | blog `NewsletterSignup` band (`bg-feature`) — that component is currently **not mounted** on any route (the `/blog` listing still shows the mock's static newsletter markup) |
+| `DealEnquiryForm` | raised `FormCard`; optional sections = `FormAccordion` | not mounted (Real Estate's live form is the pages slice's own) |
+| `EarningsEstimateForm` | raised `FormCard` | not mounted (Owners/Buildings use `OwnerEstimateForm`) |
+
 ## i18n
 
 UI-chrome strings live in the root `messages/<locale>.json` under the `leads` namespace

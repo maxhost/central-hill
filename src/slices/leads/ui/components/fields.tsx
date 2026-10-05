@@ -1,99 +1,53 @@
 "use client";
-import {
-  createContext,
-  useContext,
-  useId,
-  useState,
-  useTransition,
-  type ReactNode,
-} from "react";
+import { useId, useState, useTransition, type ComponentProps } from "react";
 import { useLocale } from "next-intl";
-import { cn } from "@core/ui";
+import {
+  cn,
+  FormCard,
+  FormCheckbox,
+  FormField,
+  FormInput,
+  FormMessage,
+  FormSubmit,
+  FormTextarea,
+  FormToneScope,
+  type FormTone,
+} from "@core/ui";
 import { submitLead } from "../../server/actions";
 import type { LeadSubmission } from "../../validation";
 import type { LeadActionResult } from "../../types";
 
 /**
- * Client form primitives + submit hook shared by the four lead forms (slice
- * `leads`). Inputs are controlled; labels/messages are passed in by each form from
- * `useTranslations("leads")`. The hook injects `locale` (from next-intl) +
- * `source_page` and posts through the `submitLead` server action.
+ * Client form pieces + submit hook shared by the four lead forms (slice `leads`).
  *
- * Theme: forms default to the light surface palette; wrapping a form in
- * `<LeadFormTheme theme="dark">` switches the primitives to light-on-dark colours so
- * a form can sit on a dark band (e.g. the blog newsletter on `bg-feature`). Layout
- * is shared; only colours change.
+ * Since the form-style unification (user-approved; same pattern as Owners' `OwnerEstimateForm`)
+ * these are **thin wrappers over `core/ui`'s form-card primitives** (`FormCard`, `FormField`,
+ * `FormInput`, `FormTextarea`, `FormCheckbox`, `FormSubmit`, `FormMessage`, `FormToneScope`) — so
+ * every lead form now looks like Real Estate's `#deal-enquiry` / the Owners wizard. The wrappers
+ * only add the lead-specific wiring: a `useId` id per control, controlled `value` →
+ * `onChange(string)`, and the server's per-field error (`aria-invalid` + `aria-describedby` →
+ * the `FormField` error line). Inputs are controlled; labels/messages are passed in by each form
+ * from `useTranslations("leads")`. The hook injects `locale` (from next-intl) + `source_page` and
+ * posts through the `submitLead` server action — unchanged.
+ *
+ * Tone: `LeadFormShell tone="dark"` (and `LeadFormStatus tone="dark"` for the success message
+ * that replaces the form) switch the primitives to their on-feature colours, so a form can sit
+ * on a dark band (the blog newsletter on `bg-feature`). Layout is shared; only colours change.
  */
 
-type Theme = "light" | "dark";
-
-const THEME = {
-  light: {
-    input: "border-line bg-surface text-ink placeholder:text-ink-soft/60",
-    label: "text-ink",
-    consent: "text-ink-soft",
-    error: "text-accent-deep",
-    statusOk: "bg-accent/10 text-accent-deep",
-    statusErr: "border border-accent/40 bg-accent/5 text-accent-deep",
-  },
-  dark: {
-    input: "border-bg/20 bg-bg/5 text-bg placeholder:text-bg/50",
-    label: "text-bg",
-    consent: "text-bg/80",
-    error: "text-amber-200",
-    statusOk: "bg-bg/10 text-bg",
-    statusErr: "border border-bg/30 bg-bg/5 text-bg",
-  },
-} as const satisfies Record<Theme, Record<string, string>>;
-
-const ThemeContext = createContext<Theme>("light");
-const useThemeStyles = () => THEME[useContext(ThemeContext)];
-
-/** Switches the enclosed lead-form primitives to the given colour theme. */
-export function LeadFormTheme({ theme, children }: { theme: Theme; children: ReactNode }) {
-  return <ThemeContext.Provider value={theme}>{children}</ThemeContext.Provider>;
+/** The `<form>` every lead form renders: a `FormCard` (raised card by default; `bare` drops the
+ * card chrome for hosts that draw their own container), with the `leading-[1.6]` line box the
+ * form-card controls need (see `core/ui/form-card.tsx`). */
+export function LeadFormShell({
+  tone = "light",
+  bare = false,
+  className,
+  ...props
+}: ComponentProps<"form"> & { tone?: FormTone; bare?: boolean }) {
+  return <FormCard {...props} tone={tone} bare={bare} className={cn("leading-[1.6]", className)} />;
 }
 
-const inputBase =
-  "w-full rounded-md border px-4 py-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
-
-export function Field({
-  label,
-  htmlFor,
-  required,
-  error,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  required?: boolean;
-  error?: string;
-  children: ReactNode;
-}) {
-  const s = useThemeStyles();
-  return (
-    <div>
-      <label htmlFor={htmlFor} className={cn("block text-sm font-medium", s.label)}>
-        {label}
-        {required ? <span className="text-accent"> *</span> : null}
-      </label>
-      <div className="mt-1.5">{children}</div>
-      {error ? <p className={cn("mt-1 text-xs", s.error)}>{error}</p> : null}
-    </div>
-  );
-}
-
-export function TextField({
-  name,
-  label,
-  value,
-  onChange,
-  error,
-  required,
-  type = "text",
-  placeholder,
-  autoComplete,
-}: {
+type TextFieldProps = {
   name: string;
   label: string;
   value: string;
@@ -103,12 +57,14 @@ export function TextField({
   type?: string;
   placeholder?: string;
   autoComplete?: string;
-}) {
+};
+
+export function TextField({ name, label, value, onChange, error, required, type = "text", placeholder, autoComplete }: TextFieldProps) {
   const id = useId();
-  const s = useThemeStyles();
+  const errorId = `${id}-error`;
   return (
-    <Field label={label} htmlFor={id} required={required} error={error}>
-      <input
+    <FormField htmlFor={id} label={label} required={required} error={error} errorId={errorId}>
+      <FormInput
         id={id}
         name={name}
         type={type}
@@ -117,14 +73,14 @@ export function TextField({
         placeholder={placeholder}
         autoComplete={autoComplete}
         aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
         onChange={(e) => onChange(e.target.value)}
-        className={cn(inputBase, s.input)}
       />
-    </Field>
+    </FormField>
   );
 }
 
-export function NumberField(props: Omit<Parameters<typeof TextField>[0], "type">) {
+export function NumberField(props: Omit<TextFieldProps, "type">) {
   return <TextField {...props} type="number" />;
 }
 
@@ -146,23 +102,24 @@ export function TextAreaField({
   rows?: number;
 }) {
   const id = useId();
-  const s = useThemeStyles();
+  const errorId = `${id}-error`;
   return (
-    <Field label={label} htmlFor={id} required={required} error={error}>
-      <textarea
+    <FormField htmlFor={id} label={label} required={required} error={error} errorId={errorId}>
+      <FormTextarea
         id={id}
         name={name}
         rows={rows}
         required={required}
         value={value}
         aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
         onChange={(e) => onChange(e.target.value)}
-        className={cn(inputBase, s.input, "resize-y")}
       />
-    </Field>
+    </FormField>
   );
 }
 
+/** The mandatory consent line (`required` — the browser blocks submit until it's ticked). */
 export function ConsentCheckbox({
   checked,
   onChange,
@@ -175,22 +132,20 @@ export function ConsentCheckbox({
   error?: string;
 }) {
   const id = useId();
-  const s = useThemeStyles();
+  const errorId = `${id}-error`;
   return (
-    <div>
-      <label htmlFor={id} className={cn("flex items-start gap-3 text-sm leading-relaxed", s.consent)}>
-        <input
-          id={id}
-          type="checkbox"
-          required
-          checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
-          className="mt-1 h-4 w-4 shrink-0 rounded border-line text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-        />
-        <span>{label}</span>
-      </label>
-      {error ? <p className={cn("mt-1 text-xs", s.error)}>{error}</p> : null}
-    </div>
+    <FormCheckbox
+      id={id}
+      required
+      checked={checked}
+      onChange={(e) => onChange(e.target.checked)}
+      aria-invalid={error ? true : undefined}
+      aria-describedby={error ? errorId : undefined}
+      error={error}
+      errorId={errorId}
+    >
+      {label}
+    </FormCheckbox>
   );
 }
 
@@ -212,36 +167,30 @@ export function Honeypot({ value, onChange }: { value: string; onChange: (v: str
   );
 }
 
-export function SubmitButton({
-  pending,
-  label,
-  pendingLabel,
-}: {
-  pending: boolean;
-  label: string;
-  pendingLabel: string;
-}) {
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="inline-flex items-center justify-center rounded-md bg-accent px-7 py-3 text-sm font-medium text-surface transition-colors hover:bg-accent-deep disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      {pending ? pendingLabel : label}
-    </button>
-  );
+/** Full-width accent submit; disabled (dimmed) and relabelled while the submission is pending. */
+export function SubmitButton({ pending, label, pendingLabel }: { pending: boolean; label: string; pendingLabel: string }) {
+  return <FormSubmit disabled={pending}>{pending ? pendingLabel : label}</FormSubmit>;
 }
 
-export function FormStatus({ kind, message }: { kind: "ok" | "error"; message: string }) {
-  const s = useThemeStyles();
-  return (
-    <p
-      role={kind === "error" ? "alert" : "status"}
-      className={cn("rounded-md px-4 py-3 text-sm", kind === "ok" ? s.statusOk : s.statusErr)}
-    >
+/** Submit outcome (`FormMessage`). Inside a form it sits above the submit button; on success it
+ * replaces the form, so pass that form's `tone` (it's then outside the toned `<form>`). */
+export function FormStatus({
+  kind,
+  message,
+  tone,
+  className,
+}: {
+  kind: "ok" | "error";
+  message: string;
+  tone?: FormTone;
+  className?: string;
+}) {
+  const box = (
+    <FormMessage kind={kind} className={className}>
       {message}
-    </p>
+    </FormMessage>
   );
+  return tone ? <FormToneScope tone={tone}>{box}</FormToneScope> : box;
 }
 
 /** Distributes `Omit` across the discriminated union so `kind`↔`fields` stay paired. */

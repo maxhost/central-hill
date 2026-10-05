@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { FormAccordion, FormRow } from "@core/ui";
 import {
   ConsentCheckbox,
   FormStatus,
   Honeypot,
+  LeadFormShell,
   NumberField,
   SubmitButton,
   TextAreaField,
@@ -14,13 +16,15 @@ import {
 import type { LeadFormProps } from "./types";
 
 /**
- * Real-estate / institutional deal enquiry → `lead.kind = "deal_enquiry"`. Embedded
- * by the Real Estate page (S9).
+ * Real-estate / institutional deal enquiry → `lead.kind = "deal_enquiry"`. Built to be
+ * embedded by the Real Estate page (S9) — not mounted anywhere today (the live `#deal-enquiry`
+ * is the pages slice's own static form-card; see `slices/pages`).
  *
  * Client feedback B7: keep the form simple and unintimidating. Only the main contact
  * fields (name + email) are always visible and required; "Asset details" and
- * "Additional information" are collapsed by default (native `<details>` disclosures)
- * and fully optional, so a visitor can submit with just their contact info.
+ * "Additional information" are collapsed by default (`core/ui` `FormAccordion` — native
+ * `<details>` disclosures, no JS) and fully optional, so a visitor can submit with just their
+ * contact info. Rendered as a raised `FormCard`, like Real Estate's own enquiry card.
  */
 export function DealEnquiryForm({ source, className }: LeadFormProps) {
   const t = useTranslations("leads");
@@ -43,7 +47,7 @@ export function DealEnquiryForm({ source, className }: LeadFormProps) {
   const orUndef = (v: string) => (v.trim() === "" ? undefined : v.trim());
 
   return (
-    <form
+    <LeadFormShell
       className={className}
       onSubmit={(e) => {
         e.preventDefault();
@@ -69,55 +73,34 @@ export function DealEnquiryForm({ source, className }: LeadFormProps) {
         );
       }}
     >
-      <div className="grid gap-5">
-        {/* Main contact — always visible, the only required fields. */}
-        <div className="grid gap-5 sm:grid-cols-2">
-          <TextField name="contact_name" label={t("fields.contact_name")} value={contactName} onChange={setContactName} required autoComplete="name" error={fieldErrors.contact_name} />
-          <TextField name="email" type="email" label={t("fields.email")} value={email} onChange={setEmail} required autoComplete="email" error={fieldErrors.email} />
-          <TextField name="phone" type="tel" label={t("fields.phone")} value={phone} onChange={setPhone} autoComplete="tel" error={fieldErrors.phone} />
-        </div>
+      {/* Main contact — always visible, the only required fields. */}
+      <FormRow>
+        <TextField name="contact_name" label={t("fields.contact_name")} value={contactName} onChange={setContactName} required autoComplete="name" error={fieldErrors.contact_name} />
+        <TextField name="email" type="email" label={t("fields.email")} value={email} onChange={setEmail} required autoComplete="email" error={fieldErrors.email} />
+        <TextField name="phone" type="tel" label={t("fields.phone")} value={phone} onChange={setPhone} autoComplete="tel" error={fieldErrors.phone} />
+      </FormRow>
 
-        <Disclosure label={t("deal.assetDetails")}>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <TextField name="asset_type" label={t("fields.asset_type")} value={assetType} onChange={setAssetType} error={fieldErrors.asset_type} />
-            <NumberField name="units_count" label={t("fields.units_count")} value={unitsCount} onChange={setUnitsCount} error={fieldErrors.units_count} />
-            <TextField name="country" label={t("fields.country")} value={country} onChange={setCountry} autoComplete="country-name" error={fieldErrors.country} />
-            <TextField name="locations" label={t("fields.locations")} value={locations} onChange={setLocations} error={fieldErrors.locations} />
-          </div>
-        </Disclosure>
+      <FormAccordion title={t("deal.assetDetails")}>
+        <FormRow>
+          <TextField name="asset_type" label={t("fields.asset_type")} value={assetType} onChange={setAssetType} error={fieldErrors.asset_type} />
+          <NumberField name="units_count" label={t("fields.units_count")} value={unitsCount} onChange={setUnitsCount} error={fieldErrors.units_count} />
+          <TextField name="country" label={t("fields.country")} value={country} onChange={setCountry} autoComplete="country-name" error={fieldErrors.country} />
+          <TextField name="locations" label={t("fields.locations")} value={locations} onChange={setLocations} error={fieldErrors.locations} />
+        </FormRow>
+      </FormAccordion>
 
-        <Disclosure label={t("deal.additionalInfo")}>
-          <div className="grid gap-5">
-            <div className="grid gap-5 sm:grid-cols-2">
-              <TextField name="company_name" label={t("fields.company_name")} value={companyName} onChange={setCompanyName} autoComplete="organization" error={fieldErrors.company_name} />
-              <TextField name="contact_title" label={t("fields.contact_title")} value={contactTitle} onChange={setContactTitle} autoComplete="organization-title" error={fieldErrors.contact_title} />
-            </div>
-            <TextAreaField name="notes" label={t("fields.notes")} value={notes} onChange={setNotes} error={fieldErrors.notes} />
-          </div>
-        </Disclosure>
+      <FormAccordion title={t("deal.additionalInfo")}>
+        <FormRow>
+          <TextField name="company_name" label={t("fields.company_name")} value={companyName} onChange={setCompanyName} autoComplete="organization" error={fieldErrors.company_name} />
+          <TextField name="contact_title" label={t("fields.contact_title")} value={contactTitle} onChange={setContactTitle} autoComplete="organization-title" error={fieldErrors.contact_title} />
+        </FormRow>
+        <TextAreaField name="notes" label={t("fields.notes")} value={notes} onChange={setNotes} error={fieldErrors.notes} />
+      </FormAccordion>
 
-        <ConsentCheckbox checked={consent} onChange={setConsent} label={t("consent.notice")} error={fieldErrors.consent_text} />
-        <Honeypot value={hp} onChange={setHp} />
-        {status === "error" ? <FormStatus kind="error" message={t("error")} /> : null}
-        <div>
-          <SubmitButton pending={pending} label={t("deal.submit")} pendingLabel={t("submitting")} />
-        </div>
-      </div>
-    </form>
-  );
-}
-
-/** A collapsed-by-default optional section (native `<details>`, no JS). */
-function Disclosure({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <details className="group rounded-lg border border-line">
-      <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
-        {label}
-        <span aria-hidden className="text-ink-soft transition-transform group-open:rotate-180">
-          ▾
-        </span>
-      </summary>
-      <div className="border-t border-line px-4 py-4">{children}</div>
-    </details>
+      <ConsentCheckbox checked={consent} onChange={setConsent} label={t("consent.notice")} error={fieldErrors.consent_text} />
+      <Honeypot value={hp} onChange={setHp} />
+      {status === "error" ? <FormStatus kind="error" message={t("error")} className="mt-[16px] mb-[10px]" /> : null}
+      <SubmitButton pending={pending} label={t("deal.submit")} pendingLabel={t("submitting")} />
+    </LeadFormShell>
   );
 }

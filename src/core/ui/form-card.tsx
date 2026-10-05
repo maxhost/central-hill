@@ -24,9 +24,31 @@ import { cn } from "./cn";
  *   and an opt-in custom `chevron`; `FormField` gained optional `htmlFor` + `labelId` (for
  *   labelling a non-labelable control like `FormStepper`); `FormRow` gained `stack={false}`.
  *
- * Controlled-friendly by design (the leads slice's forms are the expected third consumer): every
- * control forwards native props, so `value`/`onChange`/`checked` work as on the raw element, and
- * the one stateful control (`FormStepper`) is purely controlled — the caller owns the number.
+ * Controlled-friendly by design: every control forwards native props, so `value`/`onChange`/
+ * `checked` work as on the raw element, and the one stateful control (`FormStepper`) is purely
+ * controlled — the caller owns the number.
+ *
+ * Third consumer (same user-approved style unification): the leads slice's four forms
+ * (`ContactForm` — header contact dialog + service pages, `NewsletterForm` — built for the
+ * blog's dark `bg-feature` band, `DealEnquiryForm`, `EarningsEstimateForm`). Again **additive
+ * only** — the default light render of Real Estate / Owners / Buildings is unchanged (verified
+ * numerically, 1440/834/390):
+ * - **Dark tone.** `FormCard tone="dark"` (or a `FormToneScope tone="dark"` wrapper for content
+ *   outside a form, e.g. the success message that replaces it) stamps `data-form-tone="dark"`;
+ *   every primitive carries `in-data-[form-tone=dark]:…` variants that swap to the on-feature
+ *   tokens (`text-on-feature` labels/values, `text-on-feature-soft` copy, `text-feature-accent`
+ *   titles/markers/errors, translucent `on-feature` control fills/hairlines). The light classes
+ *   are untouched, so a light form computes exactly as before. Not toned yet (no dark consumer):
+ *   `FormStepper`, `FormProgress`, and a `FormSelect`'s native option menu.
+ * - **`FormCard bare`** — the same `<form>` without the card chrome (no border/fill/padding/
+ *   shadow), for hosts that already draw their own container (a dialog panel, a service card,
+ *   a dark band).
+ * - **Field errors** — `FormField`/`FormCheckbox` take an optional `error` (+ `errorId`, to wire
+ *   the control's `aria-describedby`); controls with `aria-invalid` get an accent border.
+ * - **`FormMessage`** — the submit-outcome line (`kind="ok"` → `role="status"`, `"error"` →
+ *   `role="alert"`), a bordered tinted box with a check / alert glyph.
+ * - **Pending state** — `FormButton`/`FormSubmit` dim + `not-allowed` cursor when `disabled`;
+ *   `FormSubmit` now forwards native button props (`disabled`, `aria-*`…).
  *
  * Presentational only, per the `core/ui` ground rule: no i18n, no fetching, no submission
  * logic, no domain types — every string arrives pre-translated from the caller, and every
@@ -45,13 +67,36 @@ import { cn } from "./cn";
  * `SpecStrip`'s docstring / `docs/component-extraction-workflow.md` Lesson 1).
  */
 
-/** The raised card `<form>` (surface, hairline border, 8px radius, deep soft drop shadow). */
-export function FormCard({ className, children, ...props }: ComponentProps<"form">) {
+/** Colour tone of the form primitives: `light` (default — on `bg`/`surface`) or `dark` (on the
+ * `bg-feature` band). */
+export type FormTone = "light" | "dark";
+
+/** The attribute every primitive's `in-data-[form-tone=dark]:` variants key off. Light renders
+ * no attribute at all. */
+const toneAttr = (tone: FormTone) => (tone === "dark" ? { "data-form-tone": "dark" } : null);
+
+/** The raised card `<form>` (surface, hairline border, 8px radius, deep soft drop shadow).
+ * - `tone="dark"`: switches every enclosed primitive to its on-feature colours (and the card
+ *   itself, unless `bare`, to a `feature` fill with a translucent hairline).
+ * - `bare`: no card chrome at all — just the `<form>` (+ `className`), for a host that already
+ *   supplies its own container. */
+export function FormCard({
+  tone = "light",
+  bare = false,
+  className,
+  children,
+  ...props
+}: ComponentProps<"form"> & { tone?: FormTone; bare?: boolean }) {
   return (
     <form
       {...props}
+      {...toneAttr(tone)}
       className={cn(
-        "rounded-[8px] border border-line bg-surface px-[36px] pt-[38px] pb-[34px] [box-shadow:0_30px_60px_-34px_rgba(0,0,0,0.45)]",
+        bare
+          ? undefined
+          : tone === "dark"
+            ? "rounded-[8px] border border-on-feature/15 bg-feature px-[36px] pt-[38px] pb-[34px] [box-shadow:0_30px_60px_-34px_rgba(0,0,0,0.45)]"
+            : "rounded-[8px] border border-line bg-surface px-[36px] pt-[38px] pb-[34px] [box-shadow:0_30px_60px_-34px_rgba(0,0,0,0.45)]",
         className,
       )}
     >
@@ -60,17 +105,27 @@ export function FormCard({ className, children, ...props }: ComponentProps<"form
   );
 }
 
+/** Applies a tone to primitives rendered **outside** a `FormCard` (e.g. the `FormMessage` that
+ * replaces a dark form once it succeeds). A `display:contents` `<div>` — adds no box. */
+export function FormToneScope({ tone, children }: { tone: FormTone; children: ReactNode }) {
+  return (
+    <div {...toneAttr(tone)} className="contents">
+      {children}
+    </div>
+  );
+}
+
 /** A titled field group: small uppercase accent title over a hairline, with an optional pill tag
  * (e.g. "Required") inline after the title. */
 export function FormGroup({ title, tag, children }: { title: string; tag?: string; children: ReactNode }) {
   return (
     <div className="mb-[30px]">
-      <div className="mb-[18px] border-b border-b-line pb-[10px] text-[12px] font-semibold uppercase tracking-[0.14em] text-accent-deep">
+      <div className="mb-[18px] border-b border-b-line pb-[10px] text-[12px] font-semibold uppercase tracking-[0.14em] text-accent-deep in-data-[form-tone=dark]:border-b-on-feature/15 in-data-[form-tone=dark]:text-feature-accent">
         {title}
         {tag ? (
           <>
             {" "}
-            <span className="ml-[8px] rounded-[30px] bg-[color-mix(in_srgb,var(--color-accent)_12%,transparent)] px-[9px] py-[3px] align-middle text-[10px] tracking-[0.1em]">
+            <span className="ml-[8px] rounded-[30px] bg-[color-mix(in_srgb,var(--color-accent)_12%,transparent)] px-[9px] py-[3px] align-middle text-[10px] tracking-[0.1em] in-data-[form-tone=dark]:bg-on-feature/10">
               {tag}
             </span>
           </>
@@ -85,18 +140,24 @@ export function FormGroup({ title, tag, children }: { title: string; tag?: strin
  * control's own native `required` is what assistive tech announces); pass `required` on the
  * control too. `htmlFor` ties the label to a labelable control; for a composite that isn't one
  * (e.g. `FormStepper`, a `role="group"`), omit it and pass `labelId`, then point the control's
- * `aria-labelledby` at that id. */
+ * `aria-labelledby` at that id. `error` (pre-translated) renders a small accent line under the
+ * control with `errorId` as its id — point the control's `aria-describedby` at it and set its
+ * `aria-invalid`. */
 export function FormField({
   htmlFor,
   labelId,
   label,
   required,
+  error,
+  errorId,
   children,
 }: {
   htmlFor?: string;
   labelId?: string;
   label: string;
   required?: boolean;
+  error?: string;
+  errorId?: string;
   children: ReactNode;
 }) {
   return (
@@ -104,20 +165,30 @@ export function FormField({
       <label
         id={labelId}
         htmlFor={htmlFor}
-        className="mb-[7px] block text-[12.5px] font-semibold tracking-[0.03em] text-ink"
+        className="mb-[7px] block text-[12.5px] font-semibold tracking-[0.03em] text-ink in-data-[form-tone=dark]:text-on-feature"
       >
         {label}
         {required ? (
           <>
             {" "}
-            <span className="ml-px text-accent" aria-hidden="true">
+            <span className="ml-px text-accent in-data-[form-tone=dark]:text-feature-accent" aria-hidden="true">
               *
             </span>
           </>
         ) : null}
       </label>
       {children}
+      {error ? <FormError id={errorId}>{error}</FormError> : null}
     </div>
+  );
+}
+
+/** Small accent error line under a control (`FormField`/`FormCheckbox`'s `error`). */
+function FormError({ id, children }: { id?: string; children: ReactNode }) {
+  return (
+    <p id={id} className="mt-[6px] text-[12.5px] leading-[1.5] text-accent-deep in-data-[form-tone=dark]:text-feature-accent">
+      {children}
+    </p>
   );
 }
 
@@ -137,13 +208,13 @@ export function FormRow({ stack = true, children }: { stack?: boolean; children:
  * `×` (45°) when open (the summary also gains a hairline under it). Closed by default. */
 export function FormAccordion({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
-    <details className="group/facc mb-[16px] overflow-hidden rounded-[6px] border border-line bg-bg">
-      <summary className="flex cursor-pointer list-none items-center gap-[10px] px-[18px] py-[16px] text-[12px] font-semibold uppercase tracking-[0.14em] text-accent-deep group-open/facc:border-b group-open/facc:border-b-line after:font-sans after:text-[20px] after:leading-none after:text-accent after:content-['+'] after:[transition:transform_0.25s_cubic-bezier(0.4,0,0.2,1)] group-open/facc:after:[transform:rotate(45deg)] [&::-webkit-details-marker]:hidden">
+    <details className="group/facc mb-[16px] overflow-hidden rounded-[6px] border border-line bg-bg in-data-[form-tone=dark]:border-on-feature/20 in-data-[form-tone=dark]:bg-on-feature/5">
+      <summary className="flex cursor-pointer list-none items-center gap-[10px] px-[18px] py-[16px] text-[12px] font-semibold uppercase tracking-[0.14em] text-accent-deep group-open/facc:border-b group-open/facc:border-b-line after:font-sans after:text-[20px] after:leading-none after:text-accent after:content-['+'] after:[transition:transform_0.25s_cubic-bezier(0.4,0,0.2,1)] group-open/facc:after:[transform:rotate(45deg)] in-data-[form-tone=dark]:text-feature-accent in-data-[form-tone=dark]:group-open/facc:border-b-on-feature/20 in-data-[form-tone=dark]:after:text-feature-accent [&::-webkit-details-marker]:hidden">
         {title}
         {hint ? (
           <>
             {" "}
-            <span className="ml-auto text-[11px] font-medium normal-case tracking-[0.04em] text-ink-soft">{hint}</span>
+            <span className="ml-auto text-[11px] font-medium normal-case tracking-[0.04em] text-ink-soft in-data-[form-tone=dark]:text-on-feature-soft">{hint}</span>
           </>
         ) : null}
       </summary>
@@ -152,8 +223,10 @@ export function FormAccordion({ title, hint, children }: { title: string; hint?:
   );
 }
 
+/** Shared control look. The `aria-invalid` border and the `in-data-[form-tone=dark]:` variants
+ * are additive: a light, valid control computes exactly as before. */
 const controlClass =
-  "w-full rounded-[4px] border border-line bg-bg px-[14px] py-[13px] font-sans text-[15px] text-ink transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] focus:border-accent focus:[box-shadow:0_0_0_3px_color-mix(in_srgb,var(--color-accent)_18%,transparent)] focus:[outline:none]";
+  "w-full rounded-[4px] border border-line bg-bg px-[14px] py-[13px] font-sans text-[15px] text-ink transition-all duration-200 ease-[cubic-bezier(0.4,0,0.2,1)] focus:border-accent focus:[box-shadow:0_0_0_3px_color-mix(in_srgb,var(--color-accent)_18%,transparent)] focus:[outline:none] aria-invalid:border-accent in-data-[form-tone=dark]:border-on-feature/25 in-data-[form-tone=dark]:bg-on-feature/5 in-data-[form-tone=dark]:text-on-feature in-data-[form-tone=dark]:placeholder:text-on-feature-soft/70 in-data-[form-tone=dark]:focus:border-feature-accent in-data-[form-tone=dark]:focus:[box-shadow:0_0_0_3px_color-mix(in_srgb,var(--color-feature-accent)_25%,transparent)] in-data-[form-tone=dark]:aria-invalid:border-feature-accent";
 
 /** Text-like `<input>` (all native props forwarded). */
 export function FormInput({ className, ...props }: ComponentProps<"input">) {
@@ -230,7 +303,7 @@ export function FormTextarea({ className, ...props }: ComponentProps<"textarea">
 }
 
 const accentButtonClass =
-  "inline-flex cursor-pointer items-center justify-center gap-[0.5em] rounded-[3px] border border-transparent bg-accent px-[28px] py-[14px] text-[14px] font-medium tracking-[0.01em] text-white transition-all duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-accent-deep";
+  "inline-flex cursor-pointer items-center justify-center gap-[0.5em] rounded-[3px] border border-transparent bg-accent px-[28px] py-[14px] text-[14px] font-medium tracking-[0.01em] text-white transition-all duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-accent-deep disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-accent";
 
 /** The solid accent button (the original `.btn.btn-accent`) as a plain `<button>` — `type`
  * defaults to `"button"` (e.g. wizard "next" steps), every native prop forwarded, `className`
@@ -241,10 +314,12 @@ export function FormButton({ type = "button", className, ...props }: ComponentPr
 }
 
 /** Full-width solid accent submit button (`FormButton` with `type="submit"`, full width, 6px top
- * margin; the label is rendered as given — append any arrow in the string). */
-export function FormSubmit({ children }: { children: ReactNode }) {
+ * margin; the label is rendered as given — append any arrow in the string). Other native button
+ * props are forwarded (e.g. `disabled` while a submission is pending — the button dims);
+ * `className` is appended. */
+export function FormSubmit({ children, className, ...props }: Omit<ComponentProps<"button">, "type">) {
   return (
-    <button type="submit" className={cn("mt-[6px] w-full", accentButtonClass)}>
+    <button {...props} type="submit" className={cn("mt-[6px] w-full", accentButtonClass, className)}>
       {children}
     </button>
   );
@@ -252,7 +327,57 @@ export function FormSubmit({ children }: { children: ReactNode }) {
 
 /** Small centred soft note under the submit button. */
 export function FormNote({ children }: { children: ReactNode }) {
-  return <p className="mt-[14px] text-center text-[12.5px] text-ink-soft">{children}</p>;
+  return (
+    <p className="mt-[14px] text-center text-[12.5px] text-ink-soft in-data-[form-tone=dark]:text-on-feature-soft">{children}</p>
+  );
+}
+
+/** Submit-outcome message: a bordered, accent-tinted box (4px radius, like the controls) with a
+ * check (`ok`) or alert (`error`) glyph beside 14px copy. `ok` is a polite `role="status"`,
+ * `error` an assertive `role="alert"`. Toned by an enclosing `FormCard`/`FormToneScope`.
+ * `className` is appended (spacing). */
+export function FormMessage({
+  kind,
+  className,
+  children,
+}: {
+  kind: "ok" | "error";
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <p
+      role={kind === "error" ? "alert" : "status"}
+      className={cn(
+        "flex items-start gap-[10px] rounded-[4px] border px-[16px] py-[13px] text-[14px] leading-[1.5]",
+        kind === "ok"
+          ? "border-accent/30 bg-accent/8 text-accent-deep in-data-[form-tone=dark]:border-on-feature/25 in-data-[form-tone=dark]:bg-on-feature/8 in-data-[form-tone=dark]:text-on-feature"
+          : "border-accent/45 bg-accent/5 text-accent-deep in-data-[form-tone=dark]:border-feature-accent/50 in-data-[form-tone=dark]:bg-on-feature/5 in-data-[form-tone=dark]:text-on-feature",
+        className,
+      )}
+    >
+      <svg
+        aria-hidden
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="mt-[2px] h-[17px] w-[17px] flex-none text-accent in-data-[form-tone=dark]:text-feature-accent"
+      >
+        {kind === "ok" ? (
+          <path d="M20 6L9 17l-5-5" />
+        ) : (
+          <>
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v4.5M12 16h.01" />
+          </>
+        )}
+      </svg>
+      <span>{children}</span>
+    </p>
+  );
 }
 
 /** Checkbox line (e.g. consent): a 16px native checkbox tinted with the accent, beside soft-ink
@@ -260,21 +385,38 @@ export function FormNote({ children }: { children: ReactNode }) {
  * label copy (may contain links — style them at the call site) and is wrapped in one `<span>` so
  * inline links don't become separate flex items. Every native `<input>` prop is forwarded
  * (`name`, `required`, `checked`/`onChange` for controlled use, `defaultChecked`…); `type` is
- * fixed. `className` is appended to the `<label>`. */
+ * fixed. `className` is appended to the `<label>`. `error` (pre-translated) renders an accent
+ * line right under the label (`errorId` as its id, for the input's `aria-describedby`); without
+ * it the markup is just the `<label>`. */
 export function FormCheckbox({
   children,
   className,
+  error,
+  errorId,
   ...props
-}: Omit<ComponentProps<"input">, "type" | "children"> & { children: ReactNode }) {
-  return (
-    <label className={cn("mb-[12px] flex cursor-pointer items-start gap-[10px] text-[13px] leading-[1.5] text-ink-soft", className)}>
+}: Omit<ComponentProps<"input">, "type" | "children"> & { children: ReactNode; error?: string; errorId?: string }) {
+  const line = (
+    <label
+      className={cn(
+        "flex cursor-pointer items-start gap-[10px] text-[13px] leading-[1.5] text-ink-soft in-data-[form-tone=dark]:text-on-feature-soft",
+        !error && "mb-[12px]",
+        className,
+      )}
+    >
       <input
         {...props}
         type="checkbox"
-        className="mt-[2px] h-[16px] w-[16px] flex-none cursor-pointer accent-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="mt-[2px] h-[16px] w-[16px] flex-none cursor-pointer accent-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent in-data-[form-tone=dark]:accent-feature-accent in-data-[form-tone=dark]:focus-visible:outline-feature-accent"
       />
       <span>{children}</span>
     </label>
+  );
+  if (!error) return line;
+  return (
+    <div className="mb-[12px]">
+      {line}
+      <FormError id={errorId}>{error}</FormError>
+    </div>
   );
 }
 
