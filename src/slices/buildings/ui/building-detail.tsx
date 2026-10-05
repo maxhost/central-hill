@@ -28,12 +28,16 @@ import { getBuildingBySlug } from "../server/queries";
  * prop itself needed no change (always caller-built).
  *
  * The **spec strip is real JSX** too — `core/ui`'s new `SpecStrip` (apartments/capacity/beds/
- * neighbourhood), ported 1:1 from the old `.mk`-scoped `.specstrip`/`.spec`/`.spec .n`/`.spec
- * .l` CSS. Not `StatBand`: no title, no dark band, no `CountUp` (one value here is a
- * neighbourhood *name*, not a number — see that component's docstring). The gallery beside it
- * is untouched raw markup (not this task's target); both still live inside the page's `.mk`
- * wrapper so the gallery's CSS and the strip's wrapper `var(--section-y)` negative margin
- * (pulls the next section closer, matching the mock) keep resolving correctly.
+ * neighbourhood), adapted from the old `.mk`-scoped `.specstrip`/`.spec`/`.spec .n`/`.spec .l`
+ * CSS. Not `StatBand`: no title, no dark band, no `CountUp` (one value here is a neighbourhood
+ * *name*, not a number — see that component's docstring). It renders **outside** `.mk` (a first
+ * cut nested it inside, which silently zeroed its padding/margins — `mock.css`'s
+ * `.mk * {margin:0;padding:0}` reset is un-layered CSS, which always beats a layered Tailwind
+ * utility of any specificity; see `SpecStrip`'s docstring). Client direction deliberately drops
+ * the mock's own top rhythm here — no top gap, no top border, bottom-bordered only, flush under
+ * the hero/gallery (see `SpecStrip`'s docstring). The gallery beside it is untouched raw markup
+ * (not this task's target), given its own tiny dedicated `.mk` wrapper so `.gallery`'s CSS
+ * keeps resolving without reintroducing the reset.
  *
  * Resilient to sparse content (the catalog is filled incrementally via the backoffice):
  * - no R2 cover yet → a Warm-Editorial placeholder SVG is shown (building + per-unit);
@@ -395,29 +399,34 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
         subtitle={detail.streetAddress ?? undefined}
         subtitleClassName="mt-1.5 max-w-none text-base"
       />
+      {/*
+       * Real JSX — the spec strip (apartments/capacity/beds/neighbourhood), `core/ui`'s new
+       * `SpecStrip` (see that component's docstring for why it's not `StatBand`), rendered
+       * *outside* `.mk` (required — see `SpecStrip`'s own docstring for the `.mk * {margin:0;
+       * padding:0}` layering trap). Client direction: no top gap and no top border — it sits
+       * flush under the hero/gallery, bottom-bordered only (a deliberate deviation from the
+       * mock's own `margin-top:46px`/top `border`/section top-padding — see `SpecStrip`'s
+       * docstring). The gallery beside it is untouched raw markup (not this task's target) —
+       * given its own tiny, dedicated `.mk` wrapper so `.gallery`'s CSS still resolves without
+       * reintroducing the whole page's `.mk` subtree here.
+       */}
+      <Container>
+        {detail.gallery.length > 0 ? (
+          <div className="mk">
+            <div dangerouslySetInnerHTML={{ __html: galleryGridHtml(detail) }} />
+          </div>
+        ) : null}
+        <SpecStrip
+          items={[
+            { value: detail.stats.apartments, label: L.statApartments },
+            { value: detail.stats.capacity, label: L.statCapacity },
+            { value: detail.stats.beds, label: L.statBeds },
+            { value: detail.neighbourhood?.name ?? detail.city.name, label: L.statNeighbourhood },
+          ]}
+        />
+      </Container>
       <div className="mk" data-page="building">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-        {/*
-         * Real JSX — the spec strip (apartments/capacity/beds/neighbourhood), `core/ui`'s new
-         * `SpecStrip` (see that component's docstring for why it's not `StatBand`). The gallery
-         * beside it stays raw markup for now (not this task's target) — still inside `.mk` so
-         * its `.gallery` CSS and this wrapper's `var(--section-y)` negative margin keep resolving.
-         */}
-        <div className="mb-[calc(var(--section-y)*-0.15)]">
-          <Container>
-            {detail.gallery.length > 0 ? (
-              <div dangerouslySetInnerHTML={{ __html: galleryGridHtml(detail) }} />
-            ) : null}
-            <SpecStrip
-              items={[
-                { value: detail.stats.apartments, label: L.statApartments },
-                { value: detail.stats.capacity, label: L.statCapacity },
-                { value: detail.stats.beds, label: L.statBeds },
-                { value: detail.neighbourhood?.name ?? detail.city.name, label: L.statNeighbourhood },
-              ]}
-            />
-          </Container>
-        </div>
         <div dangerouslySetInnerHTML={{ __html: bodyHtml(detail, apartments, L, AL) }} />
       </div>
     </Fragment>

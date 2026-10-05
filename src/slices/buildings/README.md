@@ -108,12 +108,18 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   app — everyone else so far is a fixed literal), falling back to
   `public/placeholders/building.svg` when the building has no cover yet.
   The **spec strip (apartments/capacity/beds/neighbourhood) is real JSX** too: `core/ui`'s new
-  `SpecStrip`, ported 1:1 from the old `.mk`-scoped `.specstrip`/`.spec`/`.spec .n`/`.spec .l`
-  CSS — a plain, static bordered value/label row, deliberately **not** `StatBand` (no title, no
-  dark band, no `CountUp` — one of its values is a neighbourhood *name*, not a number, see that
-  component's docstring). The gallery next to it is still raw markup (not yet migrated); both
-  stay inside the page's `.mk` wrapper so the gallery's CSS and the strip's wrapper negative
-  bottom margin (`var(--section-y)`, pulls the next section closer) keep resolving.
+  `SpecStrip`, adapted from the old `.mk`-scoped `.specstrip`/`.spec`/`.spec .n`/`.spec .l`
+  CSS — a plain, static bottom-bordered value/label row, deliberately **not** `StatBand` (no
+  title, no dark band, no `CountUp` — one of its values is a neighbourhood *name*, not a
+  number, see that component's docstring). It renders **outside** `.mk` (required —
+  `mock.css`'s `.mk * {margin:0;padding:0}` reset is un-layered CSS, which always beats a
+  layered Tailwind utility regardless of specificity, so a `.mk`-nested instance silently loses
+  its own padding/margin; see `SpecStrip`'s docstring for the full explanation). Client
+  direction deliberately drops the mock's own top rhythm here (`margin-top:46px` + top
+  `border` + the wrapping section's own top padding) — the strip sits flush under the
+  hero/gallery, bottom-bordered only. The gallery next to it is still raw markup (not yet
+  migrated), given its own tiny dedicated `.mk` wrapper so `.gallery`'s CSS keeps resolving
+  without reintroducing the reset to the rest of the band.
 
 Both are ISR (`revalidate = 3600`); detail uses `generateStaticParams` (known slugs
 prebuilt, `dynamicParams = true`) + `generateMetadata` with hreflang alternates. A building
