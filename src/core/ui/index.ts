@@ -70,3 +70,5 @@ export { UnitCard, UnitCardGrid, type UnitCardSpec } from "./unit-card";
 export { ActionBand, type ActionBandCta } from "./action-band";
 /** Grid (3→1 cols) of bordered option cards: serif title + uppercase tagline + hairline checklist, hover lift, optional featured card w/ floating pill badge. */
 export { ChecklistCards, type ChecklistCard } from "./checklist-cards";
+/** Borderless rounded photo mosaic (`2fr 1fr 1fr`, first photo a 2-row lead tile; 2 cols ≤680px) — caller-built images. */
+export { MosaicGallery } from "./mosaic-gallery";

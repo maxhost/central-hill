@@ -2,9 +2,19 @@ import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { MediaImage, mediaImgTag } from "@core/media";
+import { MediaImage, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { ActionBand, Container, Hero, ProseSection, SpecStrip, UnitCard, UnitCardGrid, type UnitCardSpec } from "@core/ui";
+import {
+  ActionBand,
+  Container,
+  Hero,
+  MosaicGallery,
+  ProseSection,
+  SpecStrip,
+  UnitCard,
+  UnitCardGrid,
+  type UnitCardSpec,
+} from "@core/ui";
 import { type ApartmentSummary, listByBuilding } from "@slices/apartments/contract";
 import type { BuildingDetail as BuildingDetailModel } from "../contract";
 import { getBuildingBySlug } from "../server/queries";
@@ -35,9 +45,15 @@ import { getBuildingBySlug } from "../server/queries";
  * `.mk * {margin:0;padding:0}` reset is un-layered CSS, which always beats a layered Tailwind
  * utility of any specificity; see `SpecStrip`'s docstring). Client direction deliberately drops
  * the mock's own top rhythm here — no top gap, no top border, bottom-bordered only, flush under
- * the hero/gallery (see `SpecStrip`'s docstring). The gallery beside it is untouched raw markup
- * (not this task's target), given its own tiny dedicated `.mk` wrapper so `.gallery`'s CSS
- * keeps resolving without reintroducing the reset.
+ * the hero/gallery (see `SpecStrip`'s docstring).
+ *
+ * **The photo gallery above it is real JSX** too — `core/ui`'s new `MosaicGallery` (`2fr 1fr 1fr`,
+ * first photo a two-row lead tile; 2 columns with a full-width lead at ≤680px), replacing the old
+ * `galleryGridHtml()` string, its dedicated `.mk` wrapper and the `.mk .gallery*` rules in
+ * `PAGE_STYLE`. Not `StepGallery` (numbered captioned cards — see `MosaicGallery`'s docstring).
+ * Photos are `galleryImage()`'s `MediaImage`s (lead `GALLERY_LEAD_SIZES`, rest `GALLERY_SIZES`).
+ * Verified computed-style- and screenshot-identical at 1440/834/390 with 8 photos; one attribute
+ * deviation: the lead photo is now `loading="lazy"` (was `eager`) — see `galleryImage()`.
  *
  * **"THE BUILDING" is real JSX** too — `core/ui`'s new `ProseSection` (eyebrow + serif `<h2>`
  * + free-prose paragraphs, with an optional "The Neighbourhood" `<h3>` subsection), replacing
@@ -110,8 +126,10 @@ const PLACEHOLDER_APARTMENT = "/placeholders/apartment.svg";
 
 // `.pf-grid` is 3 columns inside the 1240px `.wrap`, 2 under 980px, 1 under 680px.
 const CARD_SIZES = "(max-width: 680px) 100vw, (max-width: 980px) 50vw, 394px";
-// `.gallery` is `2fr 1fr 1fr` × 2 rows with a 10px gap; `.g0` spans both rows (so it is
-// the 2fr column) and goes full-width at 680px, where the rest become 2 columns.
+// `MosaicGallery` is `2fr 1fr 1fr` × 2 rows with a 10px gap; the lead spans both rows (so it is
+// the 2fr column) and goes full-width at 680px, where the rest become 2 columns. (Values assume
+// the mock's 1184px `.wrap` content width; the live `Container` is 1200px → 590/295px tiles, and
+// a 6th+ photo auto-places into the 2fr column with the 291px hint — pre-existing, unchanged.)
 const GALLERY_LEAD_SIZES = "(max-width: 680px) 100vw, 582px";
 const GALLERY_SIZES = "(max-width: 680px) 50vw, 291px";
 
@@ -202,6 +220,20 @@ function apartmentSpecs(a: ApartmentSummary, labels: ApartmentLabels): UnitCardS
   return specs;
 }
 
+/** One `MosaicGallery` photo: the R2 asset via `MediaImage` (responsive `sizes` — the lead tile's
+ *  own, the rest the 1fr cells'), else a plain `<img>` — the same two branches the old
+ *  `mediaImgTag()` call produced. The old lead tile was `loading="eager"` with no `fetchpriority`;
+ *  `MediaImage` exposes only `priority` (eager **plus** `fetchpriority=high` **plus** a preload that
+ *  would compete with the hero cover, the real LCP), so on the asset branch every photo is now
+ *  lazy — an escalated deviation (see the slice README → gallery). The plain-`<img>` branch keeps it. */
+function galleryImage(g: MediaImageData, i: number) {
+  if (g.url && g.width > 0 && g.height > 0) {
+    return <MediaImage data={g} sizes={i === 0 ? GALLERY_LEAD_SIZES : GALLERY_SIZES} />;
+  }
+  // eslint-disable-next-line @next/next/no-img-element -- dimensionless asset, not optimisable
+  return <img src={g.url || PLACEHOLDER_BUILDING} alt={g.alt} loading={i === 0 ? "eager" : "lazy"} decoding="async" />;
+}
+
 /** A unit's cover for `UnitCard`: the R2 asset (lazy, responsive `sizes`) or the placeholder
  *  SVG — same two branches/attributes the old `mediaImgTag()` call produced. */
 function apartmentCover(a: ApartmentSummary) {
@@ -214,10 +246,6 @@ function apartmentCover(a: ApartmentSummary) {
 }
 
 const PAGE_STYLE = `
-.mk .gallery{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;border-radius:4px;overflow:hidden}
-.mk .gallery img{width:100%;height:100%;object-fit:cover;display:block}
-.mk .gallery .g0{grid-row:1/3}
-@media(max-width:680px){.mk .gallery{grid-template-columns:1fr 1fr}.mk .gallery .g0{grid-row:auto;grid-column:1/3}}
 .mk .am-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
 .mk .am{background:var(--surface);display:flex;align-items:center;gap:14px;padding:24px 26px}
 .mk .am svg{width:22px;height:22px;flex:none;color:var(--accent-deep)}
@@ -233,20 +261,6 @@ const PAGE_STYLE = `
 .mk .faq details[open] summary::after{transform:rotate(45deg)}
 .mk .faq details p{color:var(--ink-soft);font-size:16px;padding:0 0 26px;max-width:64ch}
 `;
-
-/** The gallery grid only (the specstrip beside it is real JSX now — `core/ui`'s `SpecStrip`). */
-function galleryGridHtml(detail: BuildingDetailModel): string {
-  if (!detail.gallery.length) return "";
-  return `<div class="gallery">${detail.gallery
-    .map((g, i) =>
-      mediaImgTag({
-        data: g,
-        sizes: i === 0 ? GALLERY_LEAD_SIZES : GALLERY_SIZES,
-        ...(i === 0 ? { className: "g0", loading: "eager" as const } : {}),
-      }),
-    )
-    .join("")}</div>`;
-}
 
 /** The still-raw `.mk` remainder after the apartments grid: amenities, FAQ (the closing book
  *  band after them is real JSX now — `core/ui`'s `ActionBand`). */
@@ -391,16 +405,11 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
        * padding:0}` layering trap). Client direction: no top gap and no top border — it sits
        * flush under the hero/gallery, bottom-bordered only (a deliberate deviation from the
        * mock's own `margin-top:46px`/top `border`/section top-padding — see `SpecStrip`'s
-       * docstring). The gallery beside it is untouched raw markup (not this task's target) —
-       * given its own tiny, dedicated `.mk` wrapper so `.gallery`'s CSS still resolves without
-       * reintroducing the whole page's `.mk` subtree here.
+       * docstring). The photo gallery above it is `core/ui`'s `MosaicGallery` (also *outside*
+       * `.mk`, no wrapper), omitted when the building has no gallery photos.
        */}
       <Container>
-        {detail.gallery.length > 0 ? (
-          <div className="mk">
-            <div dangerouslySetInnerHTML={{ __html: galleryGridHtml(detail) }} />
-          </div>
-        ) : null}
+        {detail.gallery.length > 0 ? <MosaicGallery images={detail.gallery.map(galleryImage)} /> : null}
         <SpecStrip
           items={[
             { value: detail.stats.apartments, label: L.statApartments },

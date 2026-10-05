@@ -143,9 +143,26 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   its own padding/margin; see `SpecStrip`'s docstring for the full explanation). Client
   direction deliberately drops the mock's own top rhythm here (`margin-top:46px` + top
   `border` + the wrapping section's own top padding) — the strip sits flush under the
-  hero/gallery, bottom-bordered only. The gallery next to it is still raw markup (not yet
-  migrated), given its own tiny dedicated `.mk` wrapper so `.gallery`'s CSS keeps resolving
-  without reintroducing the reset to the rest of the band.
+  hero/gallery, bottom-bordered only.
+  The **photo gallery** above the spec strip **is real JSX** too: `core/ui`'s new
+  `MosaicGallery` (borderless 4px-rounded grid, `2fr 1fr 1fr` × two `1fr` rows, 10px gap, the
+  first photo a two-row lead tile; 2 columns with a full-width lead at ≤680px), replacing the
+  old `galleryGridHtml()` string, its dedicated `.mk` wrapper and the `.mk .gallery*` rules in
+  `PAGE_STYLE` (identical to `mock/building-detail.html`; no CSS drift). Not `StepGallery`
+  (numbered, captioned photo cards inside a full section). Photos are built here by
+  `galleryImage()` — `MediaImage` with the lead's/cells' responsive `sizes`, or a plain `<img>`
+  for a dimensionless asset — and `MosaicGallery` only places/crops them. Omitted when the
+  building has no gallery photos. Verified with 8 photos on `bairro-alto-view`: every cell rect,
+  the grid tracks, SpecStrip and the next section are identical at 1440/834/390 (screenshots
+  pixel-identical), and a gallery-less building (`big-chiado-terrace`) is unchanged.
+  **Escalated deviation:** the lead photo used to be `loading="eager"` (no `fetchpriority`);
+  `MediaImage` can only express `priority` (eager + `fetchpriority=high` + a preload competing
+  with the hero cover), so it is now lazy like the rest — restoring it needs an additive
+  `loading` prop on `core/media`'s `MediaImage` (kernel, ADR). **Pre-existing, kept as-is:** only
+  two grid rows are explicit, so a 6th+ photo creates implicit `auto` rows (photo 6 lands in the
+  wide 2fr column, the row as tall as its aspect ratio); and the `sizes` hints assume the
+  mock's 1184px `.wrap`, while the live `Container` is 1200px wide (and the 2fr cells of those
+  extra rows get the 291px hint while rendering 590px wide).
   The **"THE BUILDING" block is real JSX** too: `core/ui`'s new `ProseSection` (eyebrow +
   serif `<h2>` + free-prose `<p>` paragraphs, with an optional "The Neighbourhood" `<h3>`
   subsection), replacing the old `.mk`-scoped `buildingSection` HTML string built by
