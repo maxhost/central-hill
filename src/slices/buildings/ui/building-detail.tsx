@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MediaImage, mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { Container, Hero, SpecStrip } from "@core/ui";
+import { Container, Hero, ProseSection, SpecStrip } from "@core/ui";
 import { type ApartmentSummary, listByBuilding } from "@slices/apartments/contract";
 import type { BuildingDetail as BuildingDetailModel } from "../contract";
 import { getBuildingBySlug } from "../server/queries";
@@ -39,6 +39,24 @@ import { getBuildingBySlug } from "../server/queries";
  * (not this task's target), given its own tiny dedicated `.mk` wrapper so `.gallery`'s CSS
  * keeps resolving without reintroducing the reset.
  *
+ * **"THE BUILDING" is real JSX** too — `core/ui`'s new `ProseSection` (eyebrow + serif `<h2>`
+ * + free-prose paragraphs, with an optional "The Neighbourhood" `<h3>` subsection), replacing
+ * the old `.mk`-scoped `buildingSection` HTML string in `bodyHtml()`. DB-sourced
+ * `detail.descriptionIntro`/`descriptionNeighbourhood` are plain text, split into paragraph
+ * arrays by `splitParagraphs()` (blank-line/newline split, same rule the old `paragraphs()`
+ * HTML-string helper used) and passed as real `<p>` children — React escapes them, so no
+ * `esc()` call is needed for this section anymore. Renders **outside** `.mk`, right after the
+ * spec strip and before the still-raw `.mk`-wrapped remainder (apartments/amenities/FAQ/book
+ * band) — see `ProseSection`'s own docstring for the full cascade-layers reasoning (same trap
+ * as `SpecStrip`) and for a flagged pre-existing drift between `mock/assets/site.css`'s
+ * `--section-y`/`--max` tokens (used here, to stay pixel-identical to the live page) and
+ * `core/ui`'s canonical `Section`/`Container` values (ported, not reconciled — see that
+ * docstring). Resilient to a building with no `descriptionNeighbourhood` at all (the
+ * subsection is omitted, not rendered empty) — confirmed live against the DB that
+ * "Bairro Alto View" (`bairro-alto-view`) currently has only `description_intro` populated,
+ * no `description_neighbourhood` row; the mock's richer two-subsection copy was used only to
+ * verify `ProseSection` renders the optional subsection correctly, never written to the DB.
+ *
  * Resilient to sparse content (the catalog is filled incrementally via the backoffice):
  * - no R2 cover yet → a Warm-Editorial placeholder SVG is shown (building + per-unit);
  * - empty gallery / amenities / FAQ → that section is omitted (never an empty shell);
@@ -56,14 +74,13 @@ function esc(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-/** Split source prose into escaped `<p>` paragraphs (blank lines or newlines split). */
-function paragraphs(text: string): string {
+/** Split source prose into paragraph strings (blank lines or newlines split) for
+ *  `ProseSection`'s real `<p>` children — no HTML-escaping needed, React escapes text nodes. */
+function splitParagraphs(text: string): string[] {
   return text
     .split(/\n+/)
     .map((p) => p.trim())
-    .filter(Boolean)
-    .map((p) => `<p>${esc(p)}</p>`)
-    .join("");
+    .filter(Boolean);
 }
 
 const PLACEHOLDER_BUILDING = "/placeholders/building.svg";
@@ -163,9 +180,6 @@ const PAGE_STYLE = `
 .mk .pspecs{display:flex;flex-wrap:wrap;gap:14px;margin-top:4px}
 .mk .pspec{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--ink-soft)}
 .mk .pspec svg{width:16px;height:16px;color:var(--accent-deep)}
-.mk .prose{max-width:68ch}
-.mk .prose p{color:var(--ink-soft);margin-bottom:18px;font-size:17px}
-.mk .prose h3{font-size:clamp(24px,3vw,34px);margin:46px 0 16px}
 .mk .pbody .check{margin-top:18px;display:inline-flex;align-items:center;gap:.45em;font-size:13.5px;font-weight:600;letter-spacing:.02em;color:var(--accent-deep);border-bottom:1px solid color-mix(in srgb,var(--accent-deep) 35%,transparent);padding-bottom:2px;transition:.2s}
 .mk .pcard:hover .check{color:var(--accent)}
 .mk .powered{font-size:12.5px;letter-spacing:.04em;color:var(--ink-soft);margin-top:30px;text-align:center}
@@ -213,24 +227,6 @@ function bodyHtml(
   L: BuildingLabels,
   AL: ApartmentLabels,
 ): string {
-  const introHtml = detail.descriptionIntro.trim() ? paragraphs(detail.descriptionIntro) : "";
-  const neighHtml = detail.descriptionNeighbourhood?.trim()
-    ? `<h3>${esc(L.theNeighbourhood)}</h3>${paragraphs(detail.descriptionNeighbourhood)}`
-    : "";
-  const buildingSection =
-    introHtml || neighHtml
-      ? `
-<section>
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">${esc(L.theBuilding)}</span>
-      <h2 class="section-title">${esc(detail.headline || detail.name)}</h2>
-    </div>
-    <div class="prose reveal">${introHtml}${neighHtml}</div>
-  </div>
-</section>`
-      : "";
-
   const apartmentsSection = apartments.length
     ? `
 <section class="alt" id="apartments">
@@ -294,7 +290,7 @@ function bodyHtml(
   </div>
 </section>`;
 
-  return buildingSection + apartmentsSection + amenitiesSection + faqSection + bookband;
+  return apartmentsSection + amenitiesSection + faqSection + bookband;
 }
 
 export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: string }) {
@@ -425,6 +421,26 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
           ]}
         />
       </Container>
+      {/*
+       * Real JSX — "THE BUILDING" (eyebrow + headline + free prose, optional "The
+       * Neighbourhood" subsection), `core/ui`'s new `ProseSection` (see that component's
+       * docstring for the reuse check, the `.mk`-cascade-layers requirement, and the flagged
+       * `--section-y`/`--max` drift vs. `core/ui`'s canonical `Section`/`Container`).
+       * Rendered *outside* `.mk`, same requirement as `Hero`/`SpecStrip` above. Omitted
+       * entirely when the building has neither an intro nor a neighbourhood description yet.
+       */}
+      {detail.descriptionIntro.trim() || detail.descriptionNeighbourhood?.trim() ? (
+        <ProseSection
+          eyebrow={L.theBuilding}
+          headline={detail.headline || detail.name}
+          paragraphs={detail.descriptionIntro.trim() ? splitParagraphs(detail.descriptionIntro) : []}
+          subsection={
+            detail.descriptionNeighbourhood?.trim()
+              ? { heading: L.theNeighbourhood, paragraphs: splitParagraphs(detail.descriptionNeighbourhood) }
+              : undefined
+          }
+        />
+      ) : null}
       <div className="mk" data-page="building">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <div dangerouslySetInnerHTML={{ __html: bodyHtml(detail, apartments, L, AL) }} />

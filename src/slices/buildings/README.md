@@ -87,8 +87,9 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
 - `/{locale}/buildings/{slug}` — detail (`ui/building-detail.tsx`): the approved
   `mock/building-detail.html` design, now **DB-driven** from `getBuildingBySlug(locale, slug)`
   (`notFound()` when unknown/unpublished): hero, gallery, the apartments-count/capacity/beds
-  spec strip, "The Building" / "The Neighbourhood" prose, the "Apartments in this Building"
-  grid, building amenities, FAQ, and the Avantio "Book an apartment" CTA. Sparse-content
+  spec strip, the "THE BUILDING" prose block (optionally "The Neighbourhood"), the
+  "Apartments in this Building" grid, building amenities, FAQ, and the Avantio "Book an
+  apartment" CTA. Sparse-content
   resilient: empty gallery / amenities / FAQ and an empty unit set each omit their section
   (never an empty shell). The unit grid is rendered as the locked `.mk .pcard` markup from
   `listByBuilding` (apartments contract — golden rule 2), with
@@ -120,6 +121,23 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   hero/gallery, bottom-bordered only. The gallery next to it is still raw markup (not yet
   migrated), given its own tiny dedicated `.mk` wrapper so `.gallery`'s CSS keeps resolving
   without reintroducing the reset to the rest of the band.
+  The **"THE BUILDING" block is real JSX** too: `core/ui`'s new `ProseSection` (eyebrow +
+  serif `<h2>` + free-prose `<p>` paragraphs, with an optional "The Neighbourhood" `<h3>`
+  subsection), replacing the old `.mk`-scoped `buildingSection` HTML string built by
+  `bodyHtml()`. `detail.descriptionIntro`/`descriptionNeighbourhood` (plain DB text) are
+  split into paragraph arrays by `splitParagraphs()` and passed as real `<p>` children — no
+  `esc()`/`dangerouslySetInnerHTML` needed for this section anymore. Renders **outside**
+  `.mk`, same requirement as the spec strip above (see `ProseSection`'s own docstring for
+  the full cascade-layers reasoning). That docstring also flags a **pre-existing drift**
+  between `mock/assets/site.css`'s `--section-y` (`clamp(72px,10vw,150px)`)/`--max` (1240px)
+  tokens — which this component ports literally, to stay pixel-identical to the live page —
+  and `core/ui`'s own canonical `Section`/`Container` values (`clamp(64px,10vw,160px)` /
+  `max-w-7xl`); not reconciled here (golden rule 6: escalate, don't decide unilaterally).
+  Checked live against the DB: "Bairro Alto View" (`bairro-alto-view`) currently has only
+  `description_intro` populated, no `description_neighbourhood` row, so the subsection is
+  currently never rendered for this building — `ProseSection`'s optional-subsection path was
+  verified separately (DOM-injected real mock copy against the live compiled CSS, screenshot
+  + computed-style checked), not against DB content, since none is populated yet.
 
 Both are ISR (`revalidate = 3600`); detail uses `generateStaticParams` (known slugs
 prebuilt, `dynamicParams = true`) + `generateMetadata` with hreflang alternates. A building
