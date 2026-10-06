@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { translatablePaths } from "@core/validation/primitives";
+import { EMPTY_DETAIL, isEmptyDetail, parseDetail, serviceDetailContent } from "../detail";
 import { serviceCategoryInput, serviceInput, serviceMediaInput } from "../validation";
 
 /**
@@ -105,6 +106,7 @@ test("service exposes exactly its [T] leaf paths", () => {
     "meta_description",
     "meta_title",
     "name",
+    "price_suffix",
   ]);
 });
 
@@ -114,4 +116,41 @@ test("service category exposes only its name", () => {
 
 test("service media has no translatable fields", () => {
   assert.deepEqual(translatablePaths(serviceMediaInput), []);
+});
+
+// ── Detail content ([T] JSON field) ──────────────────────────────────────────
+test("detail fills every missing section with an empty default", () => {
+  assert.deepEqual(serviceDetailContent.parse({}), EMPTY_DETAIL);
+  assert.equal(isEmptyDetail(serviceDetailContent.parse({})), true);
+  assert.equal(isEmptyDetail(serviceDetailContent.parse({ notes: ["Free cancellation."] })), false);
+});
+
+test("detail pricing rows must have one cell per column", () => {
+  const ok = serviceDetailContent.safeParse({
+    pricing: { columns: ["One way", "Round trip"], rows: [{ label: "1–6", cells: ["€72", "€144"] }] },
+  });
+  assert.equal(ok.success, true);
+  const bad = serviceDetailContent.safeParse({
+    pricing: { columns: ["One way", "Round trip"], rows: [{ label: "1–6", cells: ["€72"] }] },
+  });
+  assert.equal(bad.success, false);
+  assert.deepEqual(bad.error?.issues[0]?.path, ["pricing", "rows", 0, "cells"]);
+});
+
+test("detail partners need an absolute url", () => {
+  const partner = { name: "Bounce", desc: "Storage.", cta_label: "Find a location" };
+  assert.equal(
+    serviceDetailContent.safeParse({ partners: [{ ...partner, url: "https://bounce.com" }] }).success,
+    true,
+  );
+  assert.equal(serviceDetailContent.safeParse({ partners: [{ ...partner, url: "bounce" }] }).success, false);
+});
+
+test("parseDetail returns null for missing, malformed or invalid JSON", () => {
+  assert.equal(parseDetail(undefined), null);
+  assert.equal(parseDetail("{not json"), null);
+  assert.equal(parseDetail(JSON.stringify({ highlights: [""] })), null);
+  assert.deepEqual(parseDetail(JSON.stringify({ highlights: ["Live flight tracking"] }))?.highlights, [
+    "Live flight tracking",
+  ]);
 });

@@ -5,6 +5,7 @@
  * See docs/data-model.md → Slice services.
  */
 import { z } from "zod";
+import { serviceDetailContent } from "./detail";
 import {
   cents,
   contentStatus,
@@ -33,6 +34,7 @@ export const serviceInput = z.object({
   cover_media_id: mediaId,
   og_image_media_id: mediaId.optional(),
   price_from: cents.optional(),
+  price_suffix: tStrOpt({ max: 40 }), // e.g. "/ person"
   /** Satisfaction score in integer tenths (0–50 → 0.0–5.0); omitted = unrated (ADR 0032). */
   rating_tenths: z.number().int().min(0).max(50).optional(),
   duration_label: tStrOpt({ max: 80 }),
@@ -43,6 +45,11 @@ export const serviceInput = z.object({
   name: tStr({ max: 160 }),
   excerpt: tStr({ max: 400 }),
   body: tStr({ max: 6000 }), // rich text (markdown/portable)
+  /**
+   * Rich detail sections — ONE [T] field stored as portable JSON (like the blog body,
+   * ADR 0013), so it is not enumerated by `translatablePaths` (see `./detail`).
+   */
+  detail: serviceDetailContent.optional(),
   ...seoShape,
 });
 export type ServiceInput = z.infer<typeof serviceInput>;

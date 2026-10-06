@@ -5,6 +5,7 @@
  * S13 seo-geo (sitemap URLs), S14 translation.
  */
 import type { MediaImageData } from "@core/media";
+import type { ServiceDetailContent } from "./detail";
 
 /** Entity types used for translation/slug keys and cache tags. */
 export const SERVICE = "service" as const;
@@ -43,6 +44,8 @@ export interface ServiceSummary {
    * tenths on the row; divided here so consumers render it directly (ADR 0032).
    */
   rating: number | null;
+  /** Resolved [T] suffix shown after the price (e.g. "/ person"), or null. */
+  priceSuffix: string | null;
   /** Resolved [T] duration label (e.g. "2.5 hours"), or null. */
   durationLabel: string | null;
   bookingType: ServiceBookingType;
@@ -51,6 +54,11 @@ export interface ServiceSummary {
 export interface ServiceDetail extends ServiceSummary {
   /** Rich-text body (paragraphs), already locale-resolved. */
   body: string;
+  /**
+   * Rich detail sections (highlights, itinerary, options, pricing, extras, partners,
+   * notes), locale-resolved; every section empty when the service has none (`./detail`).
+   */
+  detail: ServiceDetailContent;
   /** Ordered gallery images (excludes the cover). */
   gallery: MediaImageData[];
   /** Resolved CTA when one applies (external link / enquiry target). */
@@ -68,6 +76,19 @@ export {
   listServiceCategories,
   listServiceParams,
 } from "./server/queries";
+
+export {
+  EMPTY_DETAIL,
+  serviceDetailContent,
+  type ExtraOption as DetailExtraOption,
+  type ItineraryStep as DetailItineraryStep,
+  type OptionGroup as DetailOptionGroup,
+  type OptionItem as DetailOptionItem,
+  type Partner as DetailPartner,
+  type PriceRow as DetailPriceRow,
+  type PriceTable as DetailPriceTable,
+  type ServiceDetailContent,
+} from "./detail";
 
 /**
  * Interim static-content read for the 7 real guest services with a premium detail page

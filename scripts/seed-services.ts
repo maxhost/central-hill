@@ -3,7 +3,7 @@
  *
  * The `services` catalogue ships empty, so the home services carousel (ADR 0032) and the
  * `/services/<slug>` detail pages have nothing to render. This script writes a coherent
- * example set — 3 categories, 9 published services — with **real cover photos**: each
+ * example set — 3 categories, 10 published services — with **real cover photos**: each
  * Unsplash original is pushed through the production media pipeline (presign → PUT to R2 →
  * finalize, ADR 0018/0025), so the rows carry true dimensions and a blurhash exactly like a
  * backoffice upload. Nothing is hot-linked.
@@ -11,6 +11,10 @@
  * Writes go through the same seams the admin actions use — `core/i18n` for source [T] text
  * and slugs (ADR 0019), `core/media` for ingest — so this cannot drift from the real write
  * path. Source locale (`en`) only; other locales fall back to it until translated.
+ *
+ * The first seven services carry the real centralhill.pt detail copy — the `detail` [T]
+ * JSON (highlights, itinerary, options, pricing, extras, partners, notes) plus a gallery
+ * (Unsplash/Wikimedia, uploaded the same way and reused by `media_asset.credit`).
  *
  * **Idempotent by slug.** A category or service whose slug already exists is updated in
  * place, and its cover is only re-fetched when the seed names a *different* photo than the
@@ -31,7 +35,8 @@ import { deleteContent, setSlugs, setSourceContent } from "@core/i18n/content-wr
 import { media_asset } from "@core/media/schema";
 import { deleteMedia, finalizeUpload, presignUpload } from "@core/media/server/ingest";
 import { SERVICE, SERVICE_CATEGORY } from "@slices/services/contract";
-import { service, service_category } from "@slices/services/schema";
+import { isEmptyDetail, serviceDetailContent } from "@slices/services/detail";
+import { service, service_category, service_media } from "@slices/services/schema";
 
 /** Portrait crop — the carousel card is 3:4, and the detail hero re-crops from the same master. */
 const PHOTO = (id: string) =>
@@ -45,6 +50,25 @@ const PHOTO = (id: string) =>
  * touched.
  */
 const CREDIT = (photoId: string) => `Unsplash · photo-${photoId}`;
+
+/** Landscape gallery sources (4:3 tiles on the detail page). */
+const unsplash = (id: string) =>
+  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1600&q=75&fm=jpg`;
+const wikimedia = (file: string) =>
+  `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=1600`;
+
+/** Credits this script stamps — the only assets it may reuse or delete. */
+const SEED_CREDIT = /^(Unsplash · photo-|Wikimedia Commons · )/;
+
+/** Wikimedia rejects requests without a descriptive User-Agent. */
+const FETCH_HEADERS = { "user-agent": "CentralHillSeed/1.0 (services demo catalogue)" };
+
+interface GallerySeed {
+  url: string;
+  /** Stamped on `media_asset.credit`; a re-run reuses the asset carrying it. */
+  credit: string;
+  alt: string;
+}
 
 interface CategorySeed {
   slug: string;
@@ -61,15 +85,23 @@ interface ServiceSeed {
   body: string;
   /** Unsplash photo id. Each was reviewed visually — the subject must match the service. */
   photo: string;
+  /** Non-Unsplash cover (e.g. Wikimedia) — overrides `photo` when set. */
+  coverImage?: { url: string; credit: string };
   alt: string;
   /** Integer cents, or null when the service is quoted on request. */
   priceFrom: number | null;
   /** Integer tenths (47 = 4.7 stars), or null when unrated. */
   ratingTenths: number | null;
+  /** [T] text after the price, e.g. "/ person". */
+  priceSuffix: string | null;
   durationLabel: string | null;
   bookingType: "enquiry" | "external" | "none";
   ctaLabel: string | null;
   ctaUrl: string | null;
+  /** Rich detail sections (validated against `serviceDetailContent`; omitted = none). */
+  detail?: Record<string, unknown>;
+  /** Detail-page gallery, in order (the cover is not repeated here). */
+  gallery?: GallerySeed[];
 }
 
 const CATEGORIES: CategorySeed[] = [
@@ -78,51 +110,156 @@ const CATEGORIES: CategorySeed[] = [
   { slug: "experiences", icon: "binocular", name: "Experiences" },
 ];
 
+const BOOK_DISCLAIMER =
+  "Arranged through your dedicated guest contact — send an enquiry and we'll confirm availability, price and payment.";
+
+const TOUR_NOTES = [
+  "Monument tickets and meals are not included.",
+  "Free cancellation up to 24 hours before the tour.",
+  "Guide available in Portuguese, English or Spanish; a dedicated driver joins for groups over 8.",
+  BOOK_DISCLAIMER,
+];
+
+/**
+ * The first seven services carry the real centralhill.pt copy (prices, itineraries, menus,
+ * conditions) that used to live in the static `ui/service-detail-content.ts`; the other three
+ * remain demo rows with a body only.
+ */
 const SERVICES: ServiceSeed[] = [
   {
     slug: "private-airport-transfer",
     categorySlug: "arrival",
-    name: "Private Transfer",
-    excerpt: "A private driver tracks your flight and meets you in the arrival hall.",
-    body: "Land, walk out, and your driver is waiting with your name on a sign — no queue, no haggling, no language barrier.\n\nWe track your flight, so a delay costs you nothing and nobody leaves without you. The fare is fixed when you book: luggage, tolls and the child seat you asked for are all included, and the car is sized to your group rather than to the cheapest slot available.\n\nTransfers run between Humberto Delgado Airport and any of our apartments, and the same service takes you back on departure day at whatever hour your flight demands.",
+    name: "Airport Private Transfer",
+    excerpt:
+      "A driver waiting with your name on a board — door to door, any hour of the day or night.",
+    body: "The moment you land, your private driver is already watching your flight. One transfer, no queues, no surprises — just a smooth, direct ride between the airport and your apartment door, available around the clock.\n\nAdd a return transfer for the day you leave, or ask your guest contact to arrange a pickup from anywhere else in the city.",
     photo: "1657459737249-0da225251448",
     alt: "Dark executive saloon car photographed from the front wing",
-    priceFrom: 3500,
+    priceFrom: 7200,
+    priceSuffix: null,
     ratingTenths: 49,
-    durationLabel: "Door to door",
+    durationLabel: "Available 24/7",
     bookingType: "enquiry",
     ctaLabel: "Request a transfer",
     ctaUrl: null,
+    detail: {
+      highlights: [
+        "Professional driver waiting in the arrivals hall with your name, or at your apartment door",
+        "Live flight tracking — your pickup time adjusts automatically if you're early or delayed",
+        "One large check-in bag or two cabin bags included per person",
+        "No hidden fees, no surge pricing",
+      ],
+      pricing: {
+        columns: ["One way", "Round trip"],
+        rows: [
+          { label: "1–6 passengers", cells: ["€72", "€144"] },
+          { label: "6–25 passengers", cells: ["€12 / person", "€24 / person"] },
+          { label: "25+ passengers", cells: ["On request", "On request"] },
+        ],
+      },
+      notes: [
+        "Extra luggage beyond the included allowance may require a larger vehicle (+€25).",
+        "A waiting-time charge of €40 applies from 1h30 after landing.",
+        "Free cancellation up to 24 hours before the transfer.",
+        BOOK_DISCLAIMER,
+      ],
+    },
   },
   {
     slug: "luggage-storage",
     categorySlug: "arrival",
     name: "Luggage Storage",
-    excerpt: "Drop your bags and start the trip early — or keep exploring after checkout.",
-    body: "Early flight in, late flight out: the two hours that usually go to waste dragging suitcases around cobbled streets.\n\nLeave your bags at a secured partner point minutes from the apartment and walk into the city with your hands free. Every bag is sealed, insured and tracked, and you collect it whenever suits you on the same day.\n\nIf you would rather not detour at all, we can arrange an early drop at the apartment itself, subject to the cleaning schedule.",
+    excerpt: "Two trusted partners so you can enjoy Lisbon right up to your flight — bag-free.",
+    body: "Your apartment can't hold your bags after check-out, but Lisbon doesn't have to stop there. We've partnered with two trusted companies so you can explore freely until it's time to leave.",
     photo: "1672501985900-4bd497734108",
     alt: "Wheeled suitcases lined up on a cobbled old-town street",
-    priceFrom: 600,
+    priceFrom: null,
+    priceSuffix: null,
     ratingTenths: 50,
-    durationLabel: "Per bag, per day",
-    bookingType: "external",
-    ctaLabel: "Reserve a locker",
-    ctaUrl: "https://www.centralhill.pt/en/contact",
+    durationLabel: null,
+    // Booked directly with the partners (their cards carry the links) — no enquiry form.
+    bookingType: "none",
+    ctaLabel: null,
+    ctaUrl: null,
+    detail: {
+      partners: [
+        {
+          name: "Bounce",
+          desc: "Secure storage locations across the city — drop your bags off after check-out and collect them whenever suits you.",
+          cta_label: "Find a location",
+          url: "https://www.bouncestorage.com",
+        },
+        {
+          name: "Luggit",
+          desc: "Door-to-door pickup and delivery, including straight to the airport. Central Hill guests save 10%.",
+          cta_label: "Book with 10% off",
+          url: "https://luggit.app",
+        },
+      ],
+      notes: [
+        "Luggit is a pickup-and-delivery service — book at least 24 hours ahead.",
+        "Request your Luggit pickup before the 11:00 check-out time.",
+      ],
+    },
   },
   {
     slug: "chef-at-home",
     categorySlug: "in-your-apartment",
     name: "Chef at Home",
-    excerpt: "A private chef cooks a Portuguese menu in your apartment kitchen.",
-    body: "The best table in Lisbon might be the one you are already sitting at.\n\nA private chef arrives with the shopping done, cooks a seasonal Portuguese menu in your kitchen, serves each course, and leaves the kitchen exactly as they found it. Menus are agreed in advance — seafood, meat, vegetarian, or a tasting run through all three — and allergies or a child's plain plate are never a problem.\n\nIdeal for the first night of a long stay, a birthday, or any evening when nobody wants to negotiate a restaurant booking for eight people.",
+    excerpt:
+      "A three-course Portuguese dinner, cooked in your apartment by someone who's spent a lifetime perfecting it.",
+    body: "Be surprised in the comfort of your apartment by the best of Portuguese home cooking.\n\nCentral Hill partners with 55+, a local social organisation that champions cooks over 55 — giving experienced home cooks the chance to keep doing what they love, for guests who want a truly authentic meal.\n\nEnjoy a full Portuguese menu — starter, main course, wine, bread and dessert — without leaving home.",
     photo: "1556910103-1c02745aae4d",
     alt: "Chef plating a refined dish in a home kitchen",
-    priceFrom: 6500,
+    priceFrom: 3500,
+    priceSuffix: "/ person",
     ratingTenths: 50,
-    durationLabel: "3 hours · from 2 guests",
+    durationLabel: "One evening, in your apartment",
     bookingType: "enquiry",
     ctaLabel: "Plan a dinner",
     ctaUrl: null,
+    detail: {
+      option_groups: [
+        {
+          title: "Starters — choose one",
+          items: [
+            { name: "Caldo Verde" },
+            { name: "Leek à Brás" },
+            { name: "Tomato Soup" },
+            { name: "Portuguese Cheese Board" },
+          ],
+        },
+        {
+          title: "Main course — choose one",
+          items: [
+            { name: "Duck Rice" },
+            { name: "Pork Pie" },
+            { name: "Stuffed Turkey with Farinheira" },
+            { name: "Prawn Rice" },
+            { name: "Bacalhau com Natas" },
+            { name: "Sweet Rice (vegetarian)" },
+            { name: "Stuffed Red Cabbage (vegetarian)" },
+          ],
+        },
+        {
+          title: "Dessert — choose one",
+          items: [{ name: "Apple Tart" }, { name: '"Baba de Camelo"' }],
+        },
+      ],
+      pricing: { columns: ["Price"], rows: [{ label: "Per person", cells: ["€35"] }] },
+      notes: [
+        "Includes one bottle of wine (red or white) for every four guests, plus bread.",
+        "A vegetarian adaptation is available on request.",
+        BOOK_DISCLAIMER,
+      ],
+    },
+    gallery: [
+      {
+        url: unsplash("1591825729269-caeb344f6df2"),
+        credit: "Unsplash · photo-1591825729269-caeb344f6df2",
+        alt: "Friends sharing a home-cooked meal together around the table",
+      },
+    ],
   },
   {
     slug: "grocery-pre-stocking",
@@ -133,6 +270,7 @@ const SERVICES: ServiceSeed[] = [
     photo: "1730984226564-8f3f226ac48c",
     alt: "Vegetables and herbs in cotton produce bags on a kitchen counter",
     priceFrom: 2000,
+    priceSuffix: null,
     ratingTenths: 48,
     durationLabel: "Order 48h ahead",
     bookingType: "enquiry",
@@ -148,6 +286,7 @@ const SERVICES: ServiceSeed[] = [
     photo: "1764616676739-57db6e5c00ee",
     alt: "An adult and a child building a tower of wooden blocks together",
     priceFrom: 1800,
+    priceSuffix: null,
     ratingTenths: 50,
     durationLabel: "Per hour · minimum 3h",
     bookingType: "enquiry",
@@ -163,6 +302,7 @@ const SERVICES: ServiceSeed[] = [
     photo: "1731336478850-6bce7235e320",
     alt: "A freshly made bed with white linen in a warm, designed bedroom",
     priceFrom: 4500,
+    priceSuffix: null,
     ratingTenths: 47,
     durationLabel: "About 2 hours",
     bookingType: "enquiry",
@@ -172,63 +312,248 @@ const SERVICES: ServiceSeed[] = [
   {
     slug: "sintra-day-tour",
     categorySlug: "experiences",
-    name: "Sintra Day Tour",
-    excerpt: "Palaces, gardens and the Atlantic coast, with a private driver-guide.",
-    body: "Sintra rewards anyone who gets there before the coaches, and punishes everyone who does not.\n\nYou leave the apartment early with a private driver-guide, take in Pena Palace and the Quinta da Regaleira gardens while the hills are still quiet, then drop down to Cabo da Roca and the coast road back through Cascais. Tickets are bought ahead, so no part of the day is spent in a queue.\n\nThe pace is yours: add the Moorish Castle, or trade a palace for a long lunch by the sea.",
+    name: "Sintra Tour",
+    excerpt:
+      "Palaces, cliffs and coastline — Sintra, Cabo da Roca and Cascais in one unhurried day.",
+    body: "A full day with a private driver-guide through Sintra's fairytale hills, the dramatic cliffs of Cabo da Roca — mainland Europe's westernmost point — and the seafront promenade of Cascais.\n\nThe pace is yours: linger longer at one stop, as long as you're back in Lisbon by early evening.",
     photo: "1697050303652-0b228f3f83df",
     alt: "The Pena Palace rising above the wooded hills of Sintra",
-    priceFrom: 14500,
+    priceFrom: 6500,
+    priceSuffix: "/ person",
     ratingTenths: 49,
-    durationLabel: "Full day · up to 6 guests",
+    durationLabel: "Full day · ~8 hours",
     bookingType: "enquiry",
     ctaLabel: "Plan the day",
     ctaUrl: null,
+    detail: {
+      itinerary: [
+        { time: "08:30", title: "Pickup", text: "Your driver-guide meets you at the apartment." },
+        {
+          time: "08:30 – 12:30",
+          title: "Sintra",
+          text: "Explore the National Palace and either Pena Palace or Quinta da Regaleira — we suggest choosing one; Sintra rewards an unhurried visit.",
+        },
+        { time: "12:30 – 13:30", title: "Lunch", text: "A stop to enjoy a local meal (not included)." },
+        {
+          time: "13:30 – 14:30",
+          title: "Cabo da Roca",
+          text: "Stand at the westernmost point of continental Europe.",
+        },
+        {
+          time: "14:30 – 16:00",
+          title: "Cascais",
+          text: "A walk along the seafront promenade and marina.",
+        },
+        { time: "16:00 – 17:00", title: "Return", text: "Back in Lisbon by early evening." },
+      ],
+      pricing: {
+        columns: ["Price"],
+        rows: [
+          { label: "1–5 guests", cells: ["€320 total"] },
+          { label: "6–25 guests", cells: ["€65 / person"] },
+          { label: "25+ guests", cells: ["On request"] },
+        ],
+      },
+      notes: TOUR_NOTES,
+    },
+    gallery: [
+      {
+        url: wikimedia("Initiation_Well_in_Quinta_da_Regaleira_-_Sintra_(16277476688).jpg"),
+        credit: "Wikimedia Commons · Initiation_Well_in_Quinta_da_Regaleira_-_Sintra_(16277476688).jpg",
+        alt: "The spiral Initiation Well at Quinta da Regaleira, Sintra",
+      },
+      {
+        url: wikimedia(
+          "Farol_do_Cabo_da_Roca,_Cabo_da_Roca,_the_westernmost_point_of_continental_Europe_(50657181383).jpg",
+        ),
+        credit:
+          "Wikimedia Commons · Farol_do_Cabo_da_Roca,_Cabo_da_Roca,_the_westernmost_point_of_continental_Europe_(50657181383).jpg",
+        alt: "The lighthouse at Cabo da Roca, the westernmost point of continental Europe",
+      },
+      {
+        url: wikimedia("View_from_the_Praia_da_Rainha_(Beach)_in_Cascais,_Portugal.jpg"),
+        credit: "Wikimedia Commons · View_from_the_Praia_da_Rainha_(Beach)_in_Cascais,_Portugal.jpg",
+        alt: "The seafront promenade and beach at Cascais, Portugal",
+      },
+    ],
+  },
+  {
+    slug: "fatima-tour",
+    categorySlug: "experiences",
+    name: "Fátima Tour",
+    excerpt:
+      "Fátima, Batalha, Nazaré and Óbidos — faith, history and the Atlantic coast in a single day.",
+    body: "A day trip to the spiritual heart of Portugal: the Sanctuary of Fátima, the Gothic Monastery of Batalha, the record-breaking waves of Nazaré, and the whitewashed medieval walls of Óbidos.",
+    photo: "",
+    coverImage: {
+      url: wikimedia("Sanctuary of Our Lady of Fátima.jpg"),
+      credit: "Wikimedia Commons · Sanctuary of Our Lady of Fátima.jpg",
+    },
+    alt: "The Basilica of Our Lady of the Rosary and its colonnade at the Sanctuary of Fátima",
+    priceFrom: 8600,
+    priceSuffix: "/ person",
+    ratingTenths: null,
+    durationLabel: "Full day · ~9 hours",
+    bookingType: "enquiry",
+    ctaLabel: "Plan the day",
+    ctaUrl: null,
+    detail: {
+      itinerary: [
+        { time: "08:30", title: "Pickup", text: "Your driver-guide meets you at the apartment." },
+        {
+          time: "08:30 – 12:00",
+          title: "Fátima",
+          text: "Free time at the Sanctuary and the Basilica of the Most Holy Trinity.",
+        },
+        {
+          time: "12:00 – 14:00",
+          title: "Batalha",
+          text: "Visit the Monastery of Batalha and stop for lunch (not included).",
+        },
+        { time: "14:00 – 15:00", title: "Nazaré", text: "See the Guinness World Record waves from the clifftop." },
+        { time: "15:00 – 16:30", title: "Óbidos", text: "Wander the medieval walled village." },
+        { time: "16:30 – 17:30", title: "Return", text: "Back in Lisbon by early evening." },
+      ],
+      pricing: {
+        columns: ["Price"],
+        rows: [
+          { label: "1–5 guests", cells: ["€480 total"] },
+          { label: "6–25 guests", cells: ["€86 / person"] },
+          { label: "25+ guests", cells: ["On request"] },
+        ],
+      },
+      notes: TOUR_NOTES,
+    },
+    gallery: [
+      {
+        url: wikimedia("Batalha_September_2021-2.jpg"),
+        credit: "Wikimedia Commons · Batalha_September_2021-2.jpg",
+        alt: "The Gothic facade of the Monastery of Batalha",
+      },
+      {
+        url: wikimedia("Nazaré_-_Praia_do_Norte_(25302065368).jpg"),
+        credit: "Wikimedia Commons · Nazaré_-_Praia_do_Norte_(25302065368).jpg",
+        alt: "The record-breaking waves at Praia do Norte, Nazaré",
+      },
+      {
+        url: wikimedia("Obidos_April_2009-4b.jpg"),
+        credit: "Wikimedia Commons · Obidos_April_2009-4b.jpg",
+        alt: "A whitewashed street inside the medieval walls of Óbidos",
+      },
+    ],
   },
   {
     slug: "tagus-sunset-sailing",
     categorySlug: "experiences",
-    name: "Sunset Sailing",
-    excerpt: "Two hours on the Tagus as the city turns gold — skipper and drinks included.",
-    body: "Lisbon looks like a different city from the water, and best of all in the last hour of light.\n\nA skippered sailing yacht leaves from Doca de Belém and takes you under the 25 de Abril bridge, past the Torre de Belém and the waterfront, with wine and a few petiscos on board. Between eight and twelve guests fits comfortably, which makes it a good fit for a family group or a small celebration.\n\nPrivate charters only — you are never sharing the deck with strangers.",
+    name: "Boat Tour",
+    excerpt: "A private sailboat or catamaran on the Tagus — your route, your hours, your pace.",
+    body: "See Lisbon the way it was meant to be seen — from the water. Choose a sailboat or catamaran, pick your duration, and sail past Belém's monuments, the hills of Alfama or out to the open Atlantic off Cascais.\n\nAdd a barbecue on board or an open bar to turn the afternoon into something to remember.",
     photo: "1605387202149-47169c4ea58a",
     alt: "The deck of a sailing yacht under a low sun at sea",
-    priceFrom: 9000,
+    priceFrom: 19900,
+    priceSuffix: null,
     ratingTenths: 48,
-    durationLabel: "2 hours",
-    bookingType: "external",
+    durationLabel: "2–8 hours",
+    bookingType: "enquiry",
     ctaLabel: "Check availability",
-    ctaUrl: "https://www.centralhill.pt/en/contact",
+    ctaUrl: null,
+    detail: {
+      option_groups: [
+        {
+          title: "Choose your boat",
+          items: [
+            {
+              name: "Catamaran",
+              desc: "A luxurious catamaran with four double cabins, private bathrooms, a spacious deck and a solarium. A smaller catamaran is also available.",
+            },
+            {
+              name: "Sailboat",
+              desc: "A 14-metre sailboat with a solarium and barbecue area — ideal for a relaxed afternoon with friends. A smaller sailboat is also available.",
+            },
+          ],
+        },
+        {
+          title: "Choose your route",
+          items: [
+            { name: "2 hours", desc: "Belém — the Belém Tower, Jerónimos Monastery, MAAT and the 25 de Abril Bridge." },
+            { name: "3 hours", desc: "Add Alfama, São Jorge Castle and the National Pantheon." },
+            { name: "4 hours", desc: "A half-day out to Oeiras, with time to swim in the summer months." },
+            { name: "8 hours", desc: "A full day out to Cascais bay and the open Atlantic." },
+          ],
+        },
+      ],
+      pricing: {
+        columns: ["2h", "3h", "4h", "8h"],
+        rows: [
+          { label: "Sailing Boat Fado · up to 6", cells: ["€199", "€249", "€299", "€600"] },
+          { label: "Sailing Boat Chiado · up to 12", cells: ["€299", "€399", "€449", "€699"] },
+          { label: "Catamaran Tejo · up to 12", cells: ["€359", "€459", "€525", "€799"] },
+          { label: "Catamaran Lisboa · up to 18", cells: ["€549", "€749", "€849", "€1,400"] },
+        ],
+      },
+      extras: [
+        {
+          label: "Barbecue",
+          price: "€14 / person",
+          desc: "Cheese, chouriço, bread, grilled meats, salad, cake and fruit, plus 4 drinks per person.",
+        },
+        {
+          label: "Open bar",
+          price: "€8 / person",
+          desc: "Unlimited beer, white wine, soft drinks and water (subject to the boat's safety rules).",
+        },
+      ],
+      notes: [BOOK_DISCLAIMER],
+    },
   },
   {
     slug: "surf-lesson",
     categorySlug: "experiences",
-    name: "Surf Lesson",
-    excerpt: "Atlantic beginner lessons an hour from the apartment, board and wetsuit included.",
-    body: "The beaches west of Lisbon are where half of Portugal learned to surf, and they are far more forgiving than their reputation.\n\nTransfer from the apartment, two hours in the water with a certified instructor, board and wetsuit included. Groups are small and split by ability, so a complete beginner is never in the same line-up as someone chasing a bigger wave.\n\nAvailable year-round: the Atlantic is colder in winter, but the wetsuits are good and the beaches are empty.",
+    name: "Surf Experience",
+    excerpt: "A 2.5-hour lesson at Carcavelos beach, built for every level.",
+    body: "Lisbon's mild Atlantic swell makes Carcavelos one of Portugal's best places to learn. An English-speaking instructor takes your group of up to six through the basics on the sand before heading into the water for your first waves.",
     photo: "1502680390469-be75c86b636f",
     alt: "Surfer riding a clean wave along the Portuguese coast",
-    priceFrom: 5500,
+    priceFrom: 4000,
+    priceSuffix: "/ person",
     ratingTenths: 47,
-    durationLabel: "Half day",
+    durationLabel: "~2.5 hours",
     bookingType: "enquiry",
     ctaLabel: "Book a lesson",
     ctaUrl: null,
+    detail: {
+      highlights: [
+        "Board, wetsuit and insurance included",
+        "One instructor per group of up to 6",
+        "If conditions are poor, the instructor can move the lesson to a better beach",
+        "Contact available around the clock",
+      ],
+      pricing: { columns: ["Price"], rows: [{ label: "Per person", cells: ["€40"] }] },
+      notes: [
+        "Free cancellation up to 24 hours before the lesson.",
+        "In case of bad weather the lesson may be relocated, postponed or cancelled — the surf school makes the final call on conditions, with a full refund if it can't be rescheduled.",
+        BOOK_DISCLAIMER,
+      ],
+    },
   },
 ];
 
 const sameSlugAllLocales = (value: string) => ({ en: value, pt: value, es: value, fr: value });
 
 /**
- * Download a photo and put it through the real upload path, returning the new
+ * Download an image and put it through the real upload path, returning the new
  * `media_asset.id`. Mirrors what the admin media picker does, minus the browser.
  */
-async function ingestPhoto(seed: ServiceSeed): Promise<string> {
-  const res = await fetch(PHOTO(seed.photo));
-  if (!res.ok) throw new Error(`photo fetch failed for ${seed.slug}: ${res.status}`);
+async function ingestImage(src: string, filename: string, credit: string, alt: string): Promise<string> {
+  const res = await fetch(src, { headers: FETCH_HEADERS });
+  const type = res.headers.get("content-type") ?? "";
+  if (!res.ok || !type.startsWith("image/")) {
+    throw new Error(`image fetch failed for ${filename}: ${res.status} ${type}`);
+  }
   const bytes = Buffer.from(await res.arrayBuffer());
 
   const presigned = await presignUpload({
-    filename: `${seed.slug}.jpg`,
+    filename,
     contentType: "image/jpeg",
     size: bytes.length,
   });
@@ -242,16 +567,70 @@ async function ingestPhoto(seed: ServiceSeed): Promise<string> {
     },
     body: new Uint8Array(bytes),
   });
-  if (!put.ok) throw new Error(`R2 PUT failed for ${seed.slug}: ${put.status} ${await put.text()}`);
+  if (!put.ok) throw new Error(`R2 PUT failed for ${filename}: ${put.status} ${await put.text()}`);
 
-  const asset = await finalizeUpload({
-    id: presigned.id,
-    r2Key: presigned.r2Key,
-    credit: CREDIT(seed.photo),
-  });
+  const asset = await finalizeUpload({ id: presigned.id, r2Key: presigned.r2Key, credit });
   // `alt` is [T] and lives in the translation table, not on the asset row.
-  await setSourceContent("media_asset", asset.id, { alt: seed.alt });
+  await setSourceContent("media_asset", asset.id, { alt });
   return asset.id;
+}
+
+const coverCredit = (seed: ServiceSeed) => seed.coverImage?.credit ?? CREDIT(seed.photo);
+
+const ingestPhoto = (seed: ServiceSeed) =>
+  ingestImage(
+    seed.coverImage?.url ?? PHOTO(seed.photo),
+    `${seed.slug}.jpg`,
+    coverCredit(seed),
+    seed.alt,
+  );
+
+/**
+ * Resolve the gallery to `media_asset` ids, reusing any asset already stamped with the
+ * same credit (so a re-run uploads nothing), then replace the service's `service_media`
+ * rows. Seed-owned gallery assets the service no longer references are deleted.
+ */
+async function syncGallery(serviceId: string, seed: ServiceSeed): Promise<string> {
+  const wanted = seed.gallery ?? [];
+  const current = await db
+    .select({ media_id: service_media.media_id, credit: media_asset.credit })
+    .from(service_media)
+    .innerJoin(media_asset, eq(service_media.media_id, media_asset.id))
+    .where(eq(service_media.service_id, serviceId));
+
+  let uploaded = 0;
+  const ids: string[] = [];
+  for (const [i, g] of wanted.entries()) {
+    const [existing] = await db
+      .select({ id: media_asset.id })
+      .from(media_asset)
+      .where(eq(media_asset.credit, g.credit))
+      .limit(1);
+    if (existing) {
+      await setSourceContent("media_asset", existing.id, { alt: g.alt });
+      ids.push(existing.id);
+    } else {
+      ids.push(await ingestImage(g.url, `${seed.slug}-gallery-${i + 1}.jpg`, g.credit, g.alt));
+      uploaded++;
+    }
+  }
+
+  await db.delete(service_media).where(eq(service_media.service_id, serviceId));
+  if (ids.length) {
+    await db
+      .insert(service_media)
+      .values(ids.map((media_id, position) => ({ service_id: serviceId, media_id, position })));
+  }
+
+  let removed = 0;
+  for (const c of current) {
+    if (!ids.includes(c.media_id) && c.credit && SEED_CREDIT.test(c.credit)) {
+      await deleteMedia(c.media_id);
+      await deleteContent("media_asset", c.media_id);
+      removed++;
+    }
+  }
+  return `gallery ${ids.length} (${uploaded} uploaded${removed ? `, ${removed} removed` : ""})`;
 }
 
 /**
@@ -271,11 +650,11 @@ async function resolveCover(
     .where(eq(media_asset.id, currentId))
     .limit(1);
 
-  if (current?.credit === CREDIT(seed.photo)) return { coverId: currentId, action: "reused" };
+  if (current?.credit === coverCredit(seed)) return { coverId: currentId, action: "reused" };
 
   const coverId = await ingestPhoto(seed);
   // Only ever drop an asset this script uploaded — never one a person put there.
-  if (current?.credit?.startsWith("Unsplash · photo-")) {
+  if (current?.credit && SEED_CREDIT.test(current.credit)) {
     await deleteMedia(currentId);
     await deleteContent("media_asset", currentId);
   }
@@ -350,15 +729,25 @@ async function upsertServices(categoryIds: Map<string, string>): Promise<void> {
       id = ins!.id;
     }
 
+    // Same shape the admin editor saves: the validated object as one [T] JSON field,
+    // cleared when every section is empty.
+    const detail = serviceDetailContent.parse(seed.detail ?? {});
+
     await setSlugs(SERVICE, id, sameSlugAllLocales(seed.slug));
     await setSourceContent(SERVICE, id, {
       name: seed.name,
       excerpt: seed.excerpt,
       body: seed.body,
+      price_suffix: seed.priceSuffix,
       duration_label: seed.durationLabel,
       cta_label: seed.ctaLabel,
+      detail: isEmptyDetail(detail) ? null : JSON.stringify(detail),
     });
-    console.log(`  service  ${existing ? "updated" : "created"}  ${seed.slug} (cover ${action})`);
+    // A seed without a gallery leaves whatever staff attached in /admin/services alone.
+    const gallery = seed.gallery ? await syncGallery(id, seed) : "gallery untouched";
+    console.log(
+      `  service  ${existing ? "updated" : "created"}  ${seed.slug} (cover ${action}, ${gallery})`,
+    );
   }
 }
 

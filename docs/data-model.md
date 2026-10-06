@@ -226,7 +226,14 @@ default; Home/Guest/About start blank.
 ### Slice `services` — guest services (index + detail)
 - **service**: `id, slug, status, position, category_id→service_category, cover_media_id,
   og_image_media_id?, price_from? (cents), rating_tenths? (integer tenths, 0–50 → 0.0–5.0; ADR 0032),
-  duration_label?, booking_type (enquiry|external|none), cta_label?, cta_url?`. **[T]**: `name`, `excerpt`, `body` (rich), `meta_title`, `meta_description`.
+  duration_label?, booking_type (enquiry|external|none), cta_label?, cta_url?`. **[T]**: `name`, `excerpt`, `body` (rich), `price_suffix?` (e.g. "/ person"), `detail?`, `meta_title`, `meta_description`.
+  - **`detail`** (portable JSON, one [T] field like the blog body — ADR 0013; schema in
+    `src/slices/services/detail.ts`): a **fixed-shape object**, not an ordered block list, because the
+    detail template's section order is designer-owned — `highlights[]`, `itinerary[]{time,title,text}`,
+    `option_groups[]{title, items[]{name, desc?}}`, `pricing{columns[], rows[]{label, cells[]}, footnote?} | null`
+    (one cell per column), `extras[]{label, price, desc}`, `partners[]{name, desc, cta_label, url}`, `notes[]`.
+    Each section renders only when non-empty; prices inside it are display text, not `price_from`.
+    No column and no migration: it lives in `translation` (entity_type='service', field='detail').
 - **service_category**: `id, slug, icon, position`. **[T]** `name`. (Seed from mockup tags: Arrival,
   Day Trip, On the Water, Experience, At Home, Convenience, Family.)
 - **service_media**: `service_id, media_id, position` (gallery).

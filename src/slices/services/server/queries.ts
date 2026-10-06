@@ -22,6 +22,7 @@ import {
   type ServiceDetail,
   type ServiceSummary,
 } from "../contract";
+import { EMPTY_DETAIL, parseDetail } from "../detail";
 import { service, service_category, service_media } from "../schema";
 
 /**
@@ -133,6 +134,7 @@ function mapSummary(row: ServiceRow, ctx: SummaryCtx): ServiceSummary {
     priceFrom: row.price_from,
     // Integer tenths on the row → one-decimal score for the UI (0–5). Null stays null.
     rating: row.rating_tenths == null ? null : row.rating_tenths / 10,
+    priceSuffix: content.get(SERVICE, row.id, "price_suffix") ?? null,
     durationLabel: content.get(SERVICE, row.id, "duration_label") ?? null,
     bookingType: row.booking_type,
   };
@@ -252,9 +254,18 @@ async function _getServiceBySlug(locale: Locale, slugValue: string): Promise<Ser
 
   const alternateSlugs = await loadAlternateSlugs(SERVICE, id);
 
+  // Rich sections: one [T] JSON field. A target-locale copy that fails the schema falls
+  // back to the source copy rather than rendering a half-broken page.
+  let detail = parseDetail(ctx.content.get(SERVICE, id, "detail"));
+  if (!detail && locale !== "en") {
+    const source = await loadContent([{ type: SERVICE, id }], "en");
+    detail = parseDetail(source.get(SERVICE, id, "detail"));
+  }
+
   return {
     ...summary,
     body: ctx.content.get(SERVICE, id, "body") ?? "",
+    detail: detail ?? EMPTY_DETAIL,
     gallery,
     cta,
     metaTitle: ctx.content.get(SERVICE, id, "meta_title") ?? undefined,
