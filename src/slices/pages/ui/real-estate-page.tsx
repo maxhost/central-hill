@@ -1,8 +1,8 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { mediaImgTag, type MediaImageData } from "@core/media";
+import { MediaImage, mediaImgTag, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { ChecklistCards, Reveal, StatBento, StatTiles } from "@core/ui";
+import { ButtonLink, ChecklistCards, Hero, Reveal, StatBento, StatTiles } from "@core/ui";
 import { getRealEstatePage, type RealEstateContent } from "../contract";
 import {
   defaultCapabilities,
@@ -26,6 +26,16 @@ import { ScrollReveal } from "./components/scroll-reveal";
  *
  * The "How it works" section ("A Structured Path…") uses the same Editorial-Split layout as the partners section
  * (`partner-pitch`), with the step numbers as the hairline-list markers.
+ *
+ * The hero (`#top`, SECTION 1) is now real JSX — `core/ui`'s `<Hero compact align="center">`,
+ * rendered outside (before) `.mk` — not raw `dangerouslySetInnerHTML` markup. Still DB-driven
+ * exactly as before (`hero.subheadline` → eyebrow, `headline` → h1, `positioning` → p, the two
+ * CTA labels → `#deal-enquiry` / the capability-statement asset URL), with the hero image as a
+ * `MediaImage` (or the fallback `<img>`) background, still the eager/high-priority LCP element.
+ * It uses exactly Buildings' listing-hero configuration (centred copy, 1600px/40px wrap, 26ch
+ * h1, 60ch p, `.5/.46/.88` scrim, default eyebrow, `ButtonLink` CTAs) for cross-page
+ * consistency; its former `.mk[data-page="real-estate"] .hero` overrides are gone and
+ * `bodyTopA` starts at SECTION 2 (partners).
  *
  * The "Why Portugal" section (`#market`, `marketSection`'s former home) is now real JSX —
  * `core/ui`'s `StatBento`, wrapped in `Reveal` — not raw `dangerouslySetInnerHTML` markup. Its
@@ -74,7 +84,6 @@ const SHOWCASE_SIZES = "(max-width: 980px) 100vw, 560px";
 // Escape admin-authored content before it is interpolated into the static body HTML string.
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-const escAttr = (s: string) => esc(s).replace(/"/g, "&quot;");
 
 // Positional per-partner icons from the locked design — paired by index with the fixed
 // four-item benefit list (funds / developers / operators / corporate). Only the benefit
@@ -257,20 +266,8 @@ function showcase(opts: {
 const PAGE_STYLE = `
 @import url("https://cdn.jsdelivr.net/npm/iconoir/css/iconoir.css");
 
-/* Hero: vertically centre the text/CTAs (the base mock anchors them to the bottom,
-   which read too low here) and strengthen the dark overlay over the photo so the
-   white copy stays legible — matching the Buildings index treatment. The base mock's
-   h1/p are capped at 15ch/46ch — far narrower than the .wrap column itself — so
-   widening .wrap alone does nothing: the actual fix is widening h1/p so each line
-   holds more text, shortening the block (matching About/Buildings). .wrap stays
-   centred (just a wider cap + tighter side padding than the base mock's 1240px/28px)
-   so the block doesn't shift flush-left. Scoped to this page only via the [data-page]
-   hook. */
-.mk[data-page="real-estate"] .hero{align-items:center}
-.mk[data-page="real-estate"] .hero .wrap{max-width:1600px;margin:0 auto;padding-top:40px;padding-bottom:40px;padding-left:40px;padding-right:40px}
-.mk[data-page="real-estate"] .hero h1{max-width:26ch}
-.mk[data-page="real-estate"] .hero p{max-width:60ch}
-.mk[data-page="real-estate"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.5) 0%,rgba(18,16,13,.4) 45%,rgba(18,16,13,.82) 100%)}
+/* hero — now real JSX (core/ui's Hero, rendered outside .mk before it); it uses
+   Buildings' listing-hero configuration, so no hero CSS is left here. */
 
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
 
@@ -382,20 +379,10 @@ const PAGE_STYLE = `
 // `#deal-structures`, `#market` and `#track-record` sections render as real JSX in between, and
 // `bodyTopB` picks back up with SECTION 8 (process).
 function bodyTopA(content: RealEstateContent, media: Record<string, MediaImageData>): string {
-  const { hero, partners, asset_management: assets } = content;
+  const { partners, asset_management: assets } = content;
   // `capabilities` is newer than the original seed — fall back to the approved default copy
   // so a `real_estate` row authored before this section existed still renders correctly.
   const capabilities = content.capabilities ?? defaultCapabilities;
-  // Optional capability-statement asset behind the hero's secondary CTA (e.g. a PDF). If
-  // no asset is set, the button keeps the design's in-page anchor.
-  const capStmtUrl = media[hero.capability_statement_media_id ?? ""]?.url || "#deal-enquiry";
-  const heroImgTag = mediaImgTag({
-    data: media[hero.image_media_id],
-    fallbackSrc: HERO_FALLBACK_IMG,
-    fallbackAlt: HERO_FALLBACK_ALT,
-    sizes: "100vw",
-    priority: true, // full-bleed hero — the LCP element on this page
-  });
   const assetImgTag = mediaImgTag({
     data: media[assets.image_media_id ?? ""],
     fallbackSrc: ASSET_FALLBACK_IMG,
@@ -410,20 +397,6 @@ function bodyTopA(content: RealEstateContent, media: Record<string, MediaImageDa
   });
 
   return `
-<!-- SECTION 1 — HERO -->
-<section class="hero compact" id="top" style="padding:0">
-  ${heroImgTag}
-  <div class="wrap">
-    ${hero.subheadline ? `<div class="eyebrow">${esc(hero.subheadline)}</div>` : ""}
-    <h1>${esc(hero.headline)}</h1>
-    <p>${esc(hero.positioning)}</p>
-    <div class="hero-cta">
-      <a class="btn btn-accent" href="#deal-enquiry">${esc(hero.cta_primary.label)} →</a>
-      <a class="btn btn-light" href="${escAttr(capStmtUrl)}">${esc(hero.cta_secondary.label)} →</a>
-    </div>
-  </div>
-</section>
-
 <!-- SECTION 2 — WHO WE WORK WITH (Editorial Split, DB-driven) -->
 <section id="partners" class="partner-pitch">
   <div class="wrap">
@@ -477,9 +450,64 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
   const market = content.market;
   const trackRecord = content.track_record ?? defaultTrackRecord;
   const dealStructures = content.deal_structures ?? defaultDealStructures;
+  const hero = content.hero;
+  const heroMedia = media[hero.image_media_id];
+  // Optional capability-statement asset behind the hero's secondary CTA (e.g. a PDF). If
+  // no asset is set, the button keeps the design's in-page anchor.
+  const capStmtUrl = media[hero.capability_statement_media_id ?? ""]?.url || "#deal-enquiry";
 
   return (
     <>
+      {/*
+       * Hero (`#top`, SECTION 1) — real JSX, `core/ui`'s `<Hero compact align="center">`, with
+       * exactly the same configuration as Buildings' listing hero (`buildings-listing.tsx`) so
+       * the two heroes are consistent — the user's call over 1:1 fidelity to this page's own
+       * mock overrides (`.5/.4/.82` scrim, `#ecdcc2` 600/.18em eyebrow, 1.08 h1 leading, 19px
+       * `#f1ece2` lede), which differed from Buildings' by a hair. CTAs are `ButtonLink`
+       * primary/light, the same look as Buildings' light hero button.
+       */}
+      <Hero
+        id="top"
+        background={
+          heroMedia?.url && heroMedia.width > 0 && heroMedia.height > 0 ? (
+            <MediaImage
+              data={{ ...heroMedia, alt: heroMedia.alt || HERO_FALLBACK_ALT }}
+              className="absolute inset-0 -z-10 h-full w-full object-cover"
+              sizes="100vw"
+              priority // full-bleed hero — the LCP element on this page
+            />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+            <img
+              src={heroMedia?.url || HERO_FALLBACK_IMG}
+              alt={heroMedia?.alt || HERO_FALLBACK_ALT}
+              className="absolute inset-0 -z-10 h-full w-full object-cover"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+            />
+          )
+        }
+        compact
+        align="center"
+        overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.5)_0%,rgba(18,16,13,0.46)_45%,rgba(18,16,13,0.88)_100%)]"
+        wrapClassName="mx-auto max-w-[1600px] p-10"
+        copyClassName="max-w-none"
+        headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
+        subtitleClassName="mt-5 max-w-[60ch] text-lg"
+        actionsClassName="mt-2"
+        eyebrow={hero.subheadline || undefined}
+        headline={hero.headline}
+        subtitle={hero.positioning}
+        actions={
+          <>
+            <ButtonLink href="#deal-enquiry">{`${hero.cta_primary.label} →`}</ButtonLink>
+            <ButtonLink href={capStmtUrl} variant="light">
+              {`${hero.cta_secondary.label} →`}
+            </ButtonLink>
+          </>
+        }
+      />
       <div className="mk" data-page="real-estate">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <noscript>

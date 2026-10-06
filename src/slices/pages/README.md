@@ -284,6 +284,18 @@ slice's deal-enquiry action is a separate task — and the LinkedIn link is stil
 `mock/real-estate.html` differs from the live section (an eyebrow "Start a Conversation", three
 always-open groups, no `required`/markers/accordions) — the live variant was kept.
 
+Its hero (`#top`, SECTION 1) is real JSX too: `core/ui`'s `<Hero compact align="center">`
+with **exactly** the Buildings-listing hero configuration (`buildings-listing.tsx`: 1600px/40px
+wrap, `.5/.46/.88` scrim, 26ch h1, 60ch p, default eyebrow, `ButtonLink` primary/light CTAs),
+rendered outside and before `.mk`. Cross-page consistency was chosen over 1:1 fidelity to this
+page's own mock overrides, which differed by a hair (`.5/.4/.82` scrim, `#ecdcc2` 600/.18em
+eyebrow, 1.08 h1 leading, 19px `#f1ece2` lede) and would have needed props-only workarounds.
+Still DB-driven (`hero.subheadline` → eyebrow, `headline` → h1, `positioning` → p,
+`cta_primary` → `#deal-enquiry`, `cta_secondary` → the capability-statement asset URL or
+`#deal-enquiry` — an absolute asset URL now opens in a new tab, `ButtonLink`'s rule); the
+background is `MediaImage` (or the fallback `<img>`), still the eager/`fetchpriority=high` LCP
+element. The former `.mk[data-page="real-estate"] .hero` overrides and `escAttr` are removed.
+
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
 `docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyActivitiesTeaser` (the old `bodyBottom`
 is gone — see the dual CTA below) interpolate the resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`.
