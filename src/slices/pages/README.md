@@ -189,7 +189,9 @@ original's per-card stagger isn't reproduced (`Reveal` animates its subtree as o
 rest of the page (stats grid, `organised`, `certifications`, `community`, `contact`) is
 unaffected — out of scope for this change.
 
-**Real Estate** (`real-estate-page.tsx`) is still mostly the raw-markup `.mk` embed, but its
+**Real Estate** (`real-estate-page.tsx`) started as the raw-markup `.mk` embed; it is now almost
+entirely real JSX — only "How it works" (`#process`, `bodyTopB`) and the `#deal-structures`/
+`#market`/`#track-record` sec-heads are still raw (see below). Its
 `market` ("Portugal: One of Europe's Strongest Hospitality Markets", `#market`) section is real
 JSX now: `core/ui`'s new `StatBento` (an asymmetric 2-row bento — a tall feature cell with a
 title, an embedded 3-up stat strip, and supporting paragraphs, spanning two rows beside a plain
@@ -313,21 +315,36 @@ Cross-page consistency was chosen over this page's own styling: `EditorialSplit`
 are sans (Inter) instead of `.mk`'s serif, the buttons are `ButtonLink` (46px tall, 6px radius)
 instead of the mock's `.btn` (52px, 3px) (the `#partners` anchor keeps this page's 84px offset). `mock/real-estate.html` still shows this slot as an older 4-up partner-type grid — the
 live Editorial Split was already the shipped design. The `.partner-pitch` CSS stays in
-`PAGE_STYLE` because "How it works" (`#process`) still uses it; `benefitList`/`esc` stay for the
-showcases and other raw sections. `bodyTopA` now starts at SECTION 3 (capabilities).
+`PAGE_STYLE` because "How it works" (`#process`) still uses it; `esc` stays for the remaining raw
+sections.
 
 "Asset Types" (`#manage`, SECTION 4) is real JSX too: `core/ui`'s existing `TwoColumnShowcase`
 with **exactly** Owners' `#services` configuration (26px `mt-0.5` accent-deep bullet icons, 4:5
 `rounded-sm` image, `(max-width: 1024px) 100vw, 560px` sizes, `Reveal` at the call site, CTA
-label + ` →`), rendered outside `.mk` right after `bodyTopA` (which now ends after
-`#capabilities`). Same role and the old `.asset-showcase` CSS was byte-identical to Owners'
+label + ` →`), rendered outside `.mk` right after `#capabilities`. Same role and the old `.asset-showcase` CSS was byte-identical to Owners'
 `.owner-showcase`, so no new component; consistency with Owners was chosen over 1:1 mock
 fidelity (visible deltas: 36px/400 h2 instead of `clamp(28px,3.4vw,44px)`/500, 16px Inter
 bullet titles instead of 17px Fraunces, `ButtonLink` 44px button, 1280px/40px container instead
 of 1240px/28px, kernel `Section` rhythm, Tailwind `shadow-xl` badge hidden under 640px, 2-col
 → stacked at 1024px instead of 980px). Still DB-driven (`asset_management`); the CTA keeps the
-hard-wired `#deal-enquiry` anchor, the badge is the CTA note. The `.asset-showcase` CSS stays in
-`PAGE_STYLE` only for `#capabilities` until it is ported the same way.
+hard-wired `#deal-enquiry` anchor, the badge is the CTA note.
+
+"Institutional-Grade Management" (`#capabilities`, SECTION 3) is real JSX too, ported the same
+way: the same `TwoColumnShowcase`, mirrored exactly like Owners' `#technology`
+(`imagePosition="left"`) plus `tone="alt"` (the raw section's `class="alt"` warm band), in
+`<div id="capabilities" className="scroll-mt-[84px]">` + `<Reveal label="real-estate-capabilities">`,
+with the same icon box (`SHOWCASE_ICON_CLASS`, shared with `#manage` via `showcaseIcons()`),
+image (`MediaImage` or the lazy `CAP_FALLBACK_IMG` `<img>`, `TWO_COL_SHOWCASE_SIZES`) and CTA/badge
+rules as `#manage`. Still DB-driven (`content.capabilities ?? defaultCapabilities`). User's call,
+consistency over mock fidelity: the mock's single-column `.cap-showcase` bullet list with 14.5px
+descriptions becomes the component's 2-column bullets (14px), and the floating badge stays
+bottom-left (overlapping the image's outer edge) like Owners' `#technology` instead of mirroring
+to the right; plus the same deltas listed for `#manage`. This was the last raw section in the old
+`bodyTopA`, so `bodyTopA`, `showcase()`, `benefitList()`, `SHOWCASE_SIZES`, the `mediaImgTag`
+import and all `.asset-showcase`/`.sh-*`/`.reverse`/`.cap-showcase` CSS (incl. their 980px/680px
+media-query entries) are gone. The first `.mk[data-page="real-estate"]` wrapper stays, now
+markup-less, carrying `PAGE_STYLE`, the `<noscript>` un-hide rule and `ScrollReveal` for the raw
+sec-heads and `#process` further down.
 
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
 `docs/specs/guest-page-db-wiring.md`): `bodyTop` (plus the two teasers' raw `sec-head` helpers;
