@@ -486,7 +486,12 @@
           "pricing": "Grille tarifaire",
           "extras": "Suppléments",
           "partners": "Partenaires",
-          "notes": "Remarques"
+          "notes": "Remarques",
+          "titleBooking": "Titre et carte de réservation",
+          "facts": "Points clés",
+          "about": "À propos",
+          "included": "Ce qui est inclus",
+          "goodToKnow": "Bon à savoir"
         },
         "add": {
           "highlight": "Ajouter un point fort",
@@ -498,7 +503,11 @@
           "row": "Ajouter une ligne",
           "extra": "Ajouter un supplément",
           "partner": "Ajouter un partenaire",
-          "note": "Ajouter une remarque"
+          "note": "Ajouter une remarque",
+          "badge": "Ajouter un badge",
+          "bookingRow": "Ajouter une ligne",
+          "fact": "Ajouter un point",
+          "gtkItem": "Ajouter un élément"
         },
         "items": {
           "step": "Étape {n}",
@@ -507,7 +516,9 @@
           "column": "Colonne {n}",
           "row": "Ligne {n}",
           "extra": "Supplément {n}",
-          "partner": "Partenaire {n}"
+          "partner": "Partenaire {n}",
+          "bookingRow": "Ligne {n}",
+          "fact": "Point {n}"
         },
         "fields": {
           "time": "Heure",
@@ -525,7 +536,23 @@
           "ctaLabel": "Libellé du bouton",
           "url": "URL",
           "rowLabel": "Libellé de la ligne",
-          "footnote": "Note de bas de page"
+          "footnote": "Note de bas de page",
+          "badges": "Badges",
+          "badgesHint": "Jusqu'à 3 courtes étiquettes sous le titre, p. ex. « Annulation gratuite · 24h ».",
+          "priceNote": "Note de prix",
+          "priceNoteHint": "Ligne sous le prix dans la carte de réservation, p. ex. « 480 € au total pour un groupe privé de 1 à 5 ».",
+          "bookingRows": "Lignes de la carte de réservation",
+          "value": "Valeur",
+          "icon": "Icône",
+          "factNote": "Note",
+          "optional": "Facultatif.",
+          "aboutTitle": "Titre « À propos »",
+          "aboutTitleHint": "Facultatif. Un titre générique est utilisé s'il est vide.",
+          "includedTitle": "Titre",
+          "includedTitleHint": "Facultatif. « Ce qui est inclus » est utilisé s'il est vide.",
+          "highlights": "Éléments inclus",
+          "stepImage": "Image",
+          "stepImageHint": "Miniature facultative. Sans elle, l'étape affiche son numéro."
         },
         "pricing": {
           "none": "Aucune grille tarifaire.",
@@ -537,6 +564,29 @@
           "moveUp": "Monter",
           "moveDown": "Descendre",
           "remove": "Supprimer"
+        },
+        "factIcons": {
+          "clock": "Horloge (durée)",
+          "group": "Groupe (personnes)",
+          "language": "Langue",
+          "pin": "Repère (lieu)",
+          "car": "Voiture (transport)",
+          "home": "Maison (prise en charge)",
+          "calendar": "Calendrier (disponibilité)",
+          "star": "Étoile (point fort)"
+        },
+        "module": {
+          "title": "Module variable",
+          "hint": "Sections propres au service. Ne remplissez que celles dont ce service a besoin."
+        },
+        "gtk": {
+          "included": "Inclus",
+          "cancellation": "Annulation",
+          "practical": "Pratique"
+        },
+        "legacyNotes": {
+          "hint": "Anciennes notes. La page les affiche comme « Pratique » uniquement tant que « Bon à savoir » est vide. Déplacez-les pour garder une seule source.",
+          "move": "Déplacer vers Pratique"
         }
       }
     }

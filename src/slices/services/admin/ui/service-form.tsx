@@ -356,6 +356,7 @@ export function ServiceForm({
           value={state.detail}
           onChange={(next) => set("detail", next)}
           errors={errors}
+          previews={previews}
         />
       </AdminCard>
 

@@ -1,18 +1,25 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   AdminButton,
+  type AdminMediaPreview,
   Field,
   FieldGrid,
+  MediaField,
+  Select,
   TextArea,
   TextInput,
 } from "@slices/backoffice/contract";
+import { FACT_ICONS, type FactIcon } from "../../detail";
 import {
   DETAIL_LIMITS as L,
   type DetailDraft,
+  type DraftBookingRow,
   type DraftExtra,
+  type DraftFact,
+  type DraftGoodToKnow,
   type DraftItinerary,
   type DraftOptionGroup,
   type DraftPartner,
@@ -21,6 +28,7 @@ import {
   addPricingRow,
   emptyPricing,
   moveAt,
+  moveNotesToPractical,
   movePricingColumn,
   removeAt,
   removePricingColumn,
@@ -31,22 +39,34 @@ import {
  * "Detail sections" editor for a service (the rich `/services/<slug>` sections stored as
  * the [T] `detail` JSON field — see `../../detail`). Pure controlled component: the
  * service form owns the {@link DetailDraft} state and serialises it with `draftToDetail`
- * on save. One panel per section in page order (Highlights → Itinerary → Options →
- * Pricing → Extras → Partners → Notes); list items add / remove / reorder inline, with
+ * on save. Panels follow the page's reading order (`mock/service-detail.html`): title &
+ * booking card → key facts → about heading → what's included → the variable module
+ * (itinerary, options, pricing, extras, partners) → good to know, plus a legacy "Notes"
+ * panel only while old notes remain. List items add / remove / reorder inline, with
  * the same ↑ ↓ ✕ idiom as the blog body editor. Errors are looked up by the dotted
  * path the save schema produces (`detail.pricing.rows.0.cells`, …).
  */
 
 type Errors = Record<string, string>;
 
+/** The three "Good to know" columns, in page order, with their schema caps. */
+const GTK_COLUMNS = [
+  ["included", L.gtk_included],
+  ["cancellation", L.gtk_cancellation],
+  ["practical", L.gtk_practical],
+] as const satisfies readonly (readonly [keyof DraftGoodToKnow, number])[];
+
 export function DetailEditor({
   value,
   onChange,
   errors,
+  previews,
 }: {
   value: DetailDraft;
   onChange: (next: DetailDraft) => void;
   errors: Errors;
+  /** Server-resolved previews for persisted media ids (itinerary step thumbnails). */
+  previews: Record<string, AdminMediaPreview>;
 }) {
   const t = useTranslations("services");
   const d = (key: string, values?: Record<string, string | number>) =>
@@ -54,13 +74,145 @@ export function DetailEditor({
   const err = (...path: (string | number)[]) => errors[["detail", ...path].join(".")];
   const set = <K extends keyof DetailDraft>(key: K, next: DetailDraft[K]) =>
     onChange({ ...value, [key]: next });
+  const setGtk = (key: keyof DraftGoodToKnow, next: string[]) =>
+    set("good_to_know", { ...value.good_to_know, [key]: next });
+
+  // Previews of step images picked in this session (not in the server's map yet). Steps
+  // are keyed by index, so each picker is re-keyed by its media id and fed from here.
+  const [picked, setPicked] = useState<Record<string, AdminMediaPreview>>({});
+  const previewFor = (id: string) => (id ? (picked[id] ?? previews[id] ?? null) : null);
 
   return (
     <div className="space-y-6">
       <p className="text-sm text-ink-soft">{d("hint")}</p>
 
-      {/* Highlights */}
-      <Section title={d("sections.highlights")} error={err("highlights")}>
+      {/* Title & booking card */}
+      <Section title={d("sections.titleBooking")}>
+        <SubHeading error={err("badges")}>{d("fields.badges")}</SubHeading>
+        <p className="text-xs text-ink-soft">{d("fields.badgesHint")}</p>
+        <StringList
+          items={value.badges}
+          onChange={(next) => set("badges", next)}
+          max={L.badges}
+          addLabel={d("add.badge")}
+          errorAt={(i) => err("badges", i)}
+          emptyLabel={d("empty")}
+          controlsLabels={controlsLabels(d)}
+        />
+        <Field
+          label={d("fields.priceNote")}
+          hint={d("fields.priceNoteHint")}
+          error={err("price_note")}
+        >
+          <TextInput
+            value={value.price_note}
+            onChange={(e) => set("price_note", e.target.value)}
+          />
+        </Field>
+        <SubHeading error={err("booking_rows")}>{d("fields.bookingRows")}</SubHeading>
+        <ItemList
+          items={value.booking_rows}
+          onChange={(next) => set("booking_rows", next)}
+          max={L.booking_rows}
+          heading={(i) => d("items.bookingRow", { n: i + 1 })}
+          addLabel={d("add.bookingRow")}
+          emptyLabel={d("empty")}
+          blank={(): DraftBookingRow => ({ label: "", value: "" })}
+          controlsLabels={controlsLabels(d)}
+          render={(row, i, update) => (
+            <FieldGrid>
+              <Field label={d("fields.label")} required error={err("booking_rows", i, "label")}>
+                <TextInput
+                  value={row.label}
+                  onChange={(e) => update({ ...row, label: e.target.value })}
+                />
+              </Field>
+              <Field label={d("fields.value")} required error={err("booking_rows", i, "value")}>
+                <TextInput
+                  value={row.value}
+                  onChange={(e) => update({ ...row, value: e.target.value })}
+                />
+              </Field>
+            </FieldGrid>
+          )}
+        />
+      </Section>
+
+      {/* Key facts */}
+      <Section title={d("sections.facts")} error={err("facts")}>
+        <ItemList
+          items={value.facts}
+          onChange={(next) => set("facts", next)}
+          max={L.facts}
+          heading={(i) => d("items.fact", { n: i + 1 })}
+          addLabel={d("add.fact")}
+          emptyLabel={d("empty")}
+          blank={(): DraftFact => ({ icon: FACT_ICONS[0], title: "", note: "" })}
+          controlsLabels={controlsLabels(d)}
+          render={(fact, i, update) => (
+            <div className="space-y-3">
+              <FieldGrid>
+                <Field label={d("fields.icon")} required error={err("facts", i, "icon")}>
+                  <Select
+                    value={fact.icon}
+                    onChange={(e) => update({ ...fact, icon: e.target.value as FactIcon })}
+                  >
+                    {FACT_ICONS.map((ic) => (
+                      <option key={ic} value={ic}>
+                        {d(`factIcons.${ic}`)}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                <Field label={d("fields.title")} required error={err("facts", i, "title")}>
+                  <TextInput
+                    value={fact.title}
+                    onChange={(e) => update({ ...fact, title: e.target.value })}
+                  />
+                </Field>
+              </FieldGrid>
+              <Field
+                label={d("fields.factNote")}
+                hint={d("fields.optional")}
+                error={err("facts", i, "note")}
+              >
+                <TextInput
+                  value={fact.note}
+                  onChange={(e) => update({ ...fact, note: e.target.value })}
+                />
+              </Field>
+            </div>
+          )}
+        />
+      </Section>
+
+      {/* About heading */}
+      <Section title={d("sections.about")}>
+        <Field
+          label={d("fields.aboutTitle")}
+          hint={d("fields.aboutTitleHint")}
+          error={err("about_title")}
+        >
+          <TextInput
+            value={value.about_title}
+            onChange={(e) => set("about_title", e.target.value)}
+          />
+        </Field>
+      </Section>
+
+      {/* What's included (heading + the highlights list) */}
+      <Section title={d("sections.included")}>
+        <Field
+          label={d("fields.includedTitle")}
+          hint={d("fields.includedTitleHint")}
+          error={err("included_title")}
+        >
+          <TextInput
+            value={value.included_title}
+            onChange={(e) => set("included_title", e.target.value)}
+          />
+        </Field>
+        <SubHeading error={err("highlights")}>{d("fields.highlights")}</SubHeading>
         <StringList
           items={value.highlights}
           onChange={(next) => set("highlights", next)}
@@ -72,6 +224,12 @@ export function DetailEditor({
         />
       </Section>
 
+      {/* Variable module */}
+      <div className="space-y-1 border-t border-line pt-4">
+        <p className="text-sm font-semibold text-ink">{d("module.title")}</p>
+        <p className="text-sm text-ink-soft">{d("module.hint")}</p>
+      </div>
+
       {/* Itinerary */}
       <Section title={d("sections.itinerary")} error={err("itinerary")}>
         <ItemList
@@ -81,7 +239,7 @@ export function DetailEditor({
           heading={(i) => d("items.step", { n: i + 1 })}
           addLabel={d("add.step")}
           emptyLabel={d("empty")}
-          blank={(): DraftItinerary => ({ time: "", title: "", text: "" })}
+          blank={(): DraftItinerary => ({ time: "", title: "", text: "", media_id: "" })}
           controlsLabels={controlsLabels(d)}
           render={(step, i, update) => (
             <div className="space-y-3">
@@ -103,6 +261,21 @@ export function DetailEditor({
                 <TextArea
                   value={step.text}
                   onChange={(e) => update({ ...step, text: e.target.value })}
+                />
+              </Field>
+              <Field
+                label={d("fields.stepImage")}
+                hint={d("fields.stepImageHint")}
+                error={err("itinerary", i, "media_id")}
+              >
+                <MediaField
+                  key={step.media_id || "none"}
+                  value={step.media_id || null}
+                  preview={previewFor(step.media_id)}
+                  onChange={(id, preview) => {
+                    if (id && preview) setPicked((prev) => ({ ...prev, [id]: preview }));
+                    update({ ...step, media_id: id ?? "" });
+                  }}
                 />
               </Field>
             </div>
@@ -291,19 +464,46 @@ export function DetailEditor({
         />
       </Section>
 
-      {/* Notes */}
-      <Section title={d("sections.notes")} error={err("notes")}>
-        <StringList
-          items={value.notes}
-          onChange={(next) => set("notes", next)}
-          max={L.notes}
-          addLabel={d("add.note")}
-          errorAt={(i) => err("notes", i)}
-          emptyLabel={d("empty")}
-          controlsLabels={controlsLabels(d)}
-          multiline
-        />
+      {/* Good to know (three fixed columns) */}
+      <Section title={d("sections.goodToKnow")} error={err("good_to_know")}>
+        {GTK_COLUMNS.map(([key, max]) => (
+          <div key={key} className="space-y-3">
+            <SubHeading error={err("good_to_know", key)}>{d(`gtk.${key}`)}</SubHeading>
+            <StringList
+              items={value.good_to_know[key]}
+              onChange={(next) => setGtk(key, next)}
+              max={max}
+              addLabel={d("add.gtkItem")}
+              errorAt={(i) => err("good_to_know", key, i)}
+              emptyLabel={d("empty")}
+              controlsLabels={controlsLabels(d)}
+              multiline
+            />
+          </div>
+        ))}
       </Section>
+
+      {/* Legacy notes: shown only while old notes remain, with a one-click migration. */}
+      {value.notes.length > 0 ? (
+        <Section title={d("sections.notes")} error={err("notes")}>
+          <p className="text-sm text-ink-soft">{d("legacyNotes.hint")}</p>
+          <div>
+            <AdminButton variant="ghost" onClick={() => onChange(moveNotesToPractical(value))}>
+              {d("legacyNotes.move")}
+            </AdminButton>
+          </div>
+          <StringList
+            items={value.notes}
+            onChange={(next) => set("notes", next)}
+            max={L.notes}
+            addLabel={d("add.note")}
+            errorAt={(i) => err("notes", i)}
+            emptyLabel={d("empty")}
+            controlsLabels={controlsLabels(d)}
+            multiline
+          />
+        </Section>
+      ) : null}
     </div>
   );
 }
@@ -576,7 +776,7 @@ function ItemList<T>({
   );
 }
 
-/** Ordered list of plain strings (highlights, notes): one control per row + ↑ ↓ ✕. */
+/** Ordered list of plain strings (badges, highlights, good to know, notes): one control per row + ↑ ↓ ✕. */
 function StringList({
   items,
   onChange,

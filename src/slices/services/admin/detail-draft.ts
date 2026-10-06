@@ -1,11 +1,12 @@
-import type { ServiceDetailContent } from "../detail";
+import type { FactIcon, ServiceDetailContent } from "../detail";
 
 /**
  * Editor-side model of the service `detail` sections (see `../detail`). The backoffice
  * edits a **draft** in which every optional string is a plain `string` (controlled inputs
  * never hold `undefined`), then {@link draftToDetail} turns it back into the save shape:
  * strings trimmed, and empty *optional* strings (`desc` on an option item, the pricing
- * `footnote`) **omitted** so `serviceDetailContent` accepts them. Empty *required*
+ * `footnote`, a fact `note`, a step `media_id`, `about_title` / `included_title` /
+ * `price_note`) **omitted** so `serviceDetailContent` accepts them. Empty *required*
  * strings are kept (trimmed to "") so validation reports them at their dotted path.
  * Pure — no React, no I/O — so it is unit-testable.
  */
@@ -14,6 +15,22 @@ export interface DraftItinerary {
   time: string;
   title: string;
   text: string;
+  /** Optional step thumbnail (media_asset id); "" when none. */
+  media_id: string;
+}
+export interface DraftFact {
+  icon: FactIcon;
+  title: string;
+  note: string;
+}
+export interface DraftBookingRow {
+  label: string;
+  value: string;
+}
+export interface DraftGoodToKnow {
+  included: string[];
+  cancellation: string[];
+  practical: string[];
 }
 export interface DraftOptionItem {
   name: string;
@@ -45,6 +62,13 @@ export interface DraftPartner {
 }
 
 export interface DetailDraft {
+  badges: string[];
+  facts: DraftFact[];
+  about_title: string;
+  included_title: string;
+  price_note: string;
+  booking_rows: DraftBookingRow[];
+  good_to_know: DraftGoodToKnow;
   highlights: string[];
   itinerary: DraftItinerary[];
   option_groups: DraftOptionGroup[];
@@ -57,8 +81,24 @@ export interface DetailDraft {
 /** Stored detail → editable draft. */
 export function detailToDraft(d: ServiceDetailContent): DetailDraft {
   return {
+    badges: [...d.badges],
+    facts: d.facts.map((f) => ({ icon: f.icon, title: f.title, note: f.note ?? "" })),
+    about_title: d.about_title ?? "",
+    included_title: d.included_title ?? "",
+    price_note: d.price_note ?? "",
+    booking_rows: d.booking_rows.map((r) => ({ label: r.label, value: r.value })),
+    good_to_know: {
+      included: [...d.good_to_know.included],
+      cancellation: [...d.good_to_know.cancellation],
+      practical: [...d.good_to_know.practical],
+    },
     highlights: [...d.highlights],
-    itinerary: d.itinerary.map((s) => ({ ...s })),
+    itinerary: d.itinerary.map((s) => ({
+      time: s.time,
+      title: s.title,
+      text: s.text,
+      media_id: s.media_id ?? "",
+    })),
     option_groups: d.option_groups.map((g) => ({
       title: g.title,
       items: g.items.map((it) => ({ name: it.name, desc: it.desc ?? "" })),
@@ -78,11 +118,33 @@ export function detailToDraft(d: ServiceDetailContent): DetailDraft {
 
 const tr = (s: string) => s.trim();
 
+/** `{ [key]: trimmed }` when non-blank, `{}` otherwise — for spreading optional strings. */
+function opt<K extends string>(key: K, s: string): Partial<Record<K, string>> {
+  const v = tr(s);
+  return v ? ({ [key]: v } as Record<K, string>) : {};
+}
+
 /** Editable draft → save payload (trimmed; empty optional strings omitted). */
 export function draftToDetail(d: DetailDraft) {
   return {
+    badges: d.badges.map(tr),
+    facts: d.facts.map((f) => ({ icon: f.icon, title: tr(f.title), ...opt("note", f.note) })),
+    ...opt("about_title", d.about_title),
+    ...opt("included_title", d.included_title),
+    ...opt("price_note", d.price_note),
+    booking_rows: d.booking_rows.map((r) => ({ label: tr(r.label), value: tr(r.value) })),
+    good_to_know: {
+      included: d.good_to_know.included.map(tr),
+      cancellation: d.good_to_know.cancellation.map(tr),
+      practical: d.good_to_know.practical.map(tr),
+    },
     highlights: d.highlights.map(tr),
-    itinerary: d.itinerary.map((s) => ({ time: tr(s.time), title: tr(s.title), text: tr(s.text) })),
+    itinerary: d.itinerary.map((s) => ({
+      time: tr(s.time),
+      title: tr(s.title),
+      text: tr(s.text),
+      ...opt("media_id", s.media_id),
+    })),
     option_groups: d.option_groups.map((g) => ({
       title: tr(g.title),
       items: g.items.map((it) =>
@@ -125,6 +187,25 @@ export function moveAt<T>(arr: readonly T[], i: number, dir: -1 | 1): T[] {
   return next;
 }
 
+/**
+ * Legacy `notes` → `good_to_know.practical` (the reader already shows notes as
+ * "practical" when good-to-know is empty; this makes it explicit). Blank notes are
+ * dropped; notes that would push `practical` past its cap stay in `notes` so nothing
+ * is lost and the editor keeps showing them.
+ */
+export function moveNotesToPractical(d: DetailDraft): DetailDraft {
+  const notes = d.notes.filter((n) => tr(n) !== "");
+  const room = Math.max(0, DETAIL_LIMITS.gtk_practical - d.good_to_know.practical.length);
+  return {
+    ...d,
+    good_to_know: {
+      ...d.good_to_know,
+      practical: [...d.good_to_know.practical, ...notes.slice(0, room)],
+    },
+    notes: notes.slice(room),
+  };
+}
+
 // ── Pricing table column operations (keep one cell per column in every row) ───
 export function emptyPricing(): DraftPricing {
   return { columns: [""], rows: [{ label: "", cells: [""] }], footnote: "" };
@@ -160,6 +241,12 @@ export function addPricingRow(p: DraftPricing): DraftPricing {
 
 /** The schema's per-section limits, mirrored so the editor can disable "add" at the cap. */
 export const DETAIL_LIMITS = {
+  badges: 3,
+  facts: 4,
+  booking_rows: 4,
+  gtk_included: 10,
+  gtk_cancellation: 6,
+  gtk_practical: 10,
   highlights: 12,
   itinerary: 20,
   option_groups: 8,

@@ -486,7 +486,12 @@
           "pricing": "Pricing table",
           "extras": "Extras",
           "partners": "Partners",
-          "notes": "Notes"
+          "notes": "Notes",
+          "titleBooking": "Title & booking card",
+          "facts": "Key facts",
+          "about": "About",
+          "included": "What's included",
+          "goodToKnow": "Good to know"
         },
         "add": {
           "highlight": "Add highlight",
@@ -498,7 +503,11 @@
           "row": "Add row",
           "extra": "Add extra",
           "partner": "Add partner",
-          "note": "Add note"
+          "note": "Add note",
+          "badge": "Add badge",
+          "bookingRow": "Add row",
+          "fact": "Add fact",
+          "gtkItem": "Add item"
         },
         "items": {
           "step": "Step {n}",
@@ -507,7 +516,9 @@
           "column": "Column {n}",
           "row": "Row {n}",
           "extra": "Extra {n}",
-          "partner": "Partner {n}"
+          "partner": "Partner {n}",
+          "bookingRow": "Row {n}",
+          "fact": "Fact {n}"
         },
         "fields": {
           "time": "Time",
@@ -525,7 +536,23 @@
           "ctaLabel": "Button label",
           "url": "URL",
           "rowLabel": "Row label",
-          "footnote": "Footnote"
+          "footnote": "Footnote",
+          "badges": "Badges",
+          "badgesHint": "Up to 3 short tags under the title, e.g. “Free cancellation · 24h”.",
+          "priceNote": "Price note",
+          "priceNoteHint": "Line under the price in the booking card, e.g. “€480 total for a private group of 1–5”.",
+          "bookingRows": "Booking card rows",
+          "value": "Value",
+          "icon": "Icon",
+          "factNote": "Note",
+          "optional": "Optional.",
+          "aboutTitle": "About heading",
+          "aboutTitleHint": "Optional. Falls back to a generic heading.",
+          "includedTitle": "Heading",
+          "includedTitleHint": "Optional. Falls back to “What's included”.",
+          "highlights": "Included items",
+          "stepImage": "Image",
+          "stepImageHint": "Optional thumbnail. Without one, the step shows its number."
         },
         "pricing": {
           "none": "No pricing table.",
@@ -537,6 +564,29 @@
           "moveUp": "Move up",
           "moveDown": "Move down",
           "remove": "Remove"
+        },
+        "factIcons": {
+          "clock": "Clock (duration)",
+          "group": "Group (people)",
+          "language": "Language",
+          "pin": "Pin (location)",
+          "car": "Car (transport)",
+          "home": "Home (pick-up)",
+          "calendar": "Calendar (availability)",
+          "star": "Star (highlight)"
+        },
+        "module": {
+          "title": "Variable module",
+          "hint": "Service-specific sections. Fill only the ones this service needs."
+        },
+        "gtk": {
+          "included": "Included",
+          "cancellation": "Cancellation",
+          "practical": "Practical"
+        },
+        "legacyNotes": {
+          "hint": "Legacy notes. The page shows them as “Practical” only while Good to know is empty. Move them to keep one source.",
+          "move": "Move to Practical"
         }
       }
     }

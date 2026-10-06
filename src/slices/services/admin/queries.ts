@@ -196,7 +196,14 @@ export async function getServiceForEdit(id: string): Promise<ServiceEditBundle |
     gallery: galleryRows.map((g) => g.media_id),
   };
 
-  const previews = await resolvePreviews([row.cover_media_id, row.og_image_media_id, ...data.gallery]);
+  // Previews for every media id the form shows: cover, og image, gallery, and the
+  // optional itinerary-step thumbnails inside the detail JSON.
+  const previews = await resolvePreviews([
+    row.cover_media_id,
+    row.og_image_media_id,
+    ...data.gallery,
+    ...data.detail.itinerary.map((s) => s.media_id ?? null),
+  ]);
   return { data, previews };
 }
 

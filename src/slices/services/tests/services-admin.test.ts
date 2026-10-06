@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { draftToDetail, detailToDraft, emptyPricing } from "../admin/detail-draft";
+import {
+  DETAIL_LIMITS,
+  draftToDetail,
+  detailToDraft,
+  emptyPricing,
+  moveNotesToPractical,
+} from "../admin/detail-draft";
 import { serviceCategorySaveInput, serviceSaveInput } from "../admin/validation";
+import { EMPTY_DETAIL } from "../detail";
 
 /**
  * Slice `services` backoffice (S12) — the admin **save** schemas. Pure (Zod, no DB).
@@ -127,10 +134,120 @@ test("price_suffix accepts null and a short string; rejects > 40 chars", () => {
   );
 });
 
-test("accepts a full detail object", () => {
+test("accepts a full (legacy-shaped) detail object; new sections default to empty", () => {
   const r = serviceSaveInput.safeParse(validService({ detail: FULL_DETAIL }));
   assert.equal(r.success, true);
-  if (r.success) assert.deepEqual(r.data.detail, FULL_DETAIL);
+  if (r.success) assert.deepEqual(r.data.detail, { ...EMPTY_DETAIL, ...FULL_DETAIL });
+});
+
+// ── Fixed-skeleton fields (approved service-detail mock) ─────────────────────
+const STEP_MEDIA = "44444444-4444-4444-8444-444444444444";
+
+const SKELETON_DETAIL = {
+  badges: ["Free cancellation · 24h", "Private group"],
+  facts: [
+    { icon: "clock", title: "4 hours", note: "Half-day" },
+    { icon: "group", title: "Up to 25 guests" },
+  ],
+  about_title: "About this tour",
+  included_title: "What's included",
+  price_note: "€480 total for a private group of 1–5",
+  booking_rows: [{ label: "Group", value: "Private, up to 25" }],
+  good_to_know: {
+    included: ["Hotel pick-up"],
+    cancellation: ["Free up to 24h before."],
+    practical: ["Wear comfortable shoes."],
+  },
+  highlights: ["Private guide"],
+  itinerary: [
+    { time: "09:00", title: "Pick-up", text: "We meet you.", media_id: STEP_MEDIA },
+    { time: "10:00", title: "Alfama", text: "Walk the old town." },
+  ],
+  option_groups: [],
+  pricing: null,
+  extras: [],
+  partners: [],
+  notes: [],
+};
+
+test("accepts every new skeleton field and keeps it as given", () => {
+  const r = serviceSaveInput.safeParse(validService({ detail: SKELETON_DETAIL }));
+  assert.equal(r.success, true);
+  if (r.success) assert.deepEqual(r.data.detail, SKELETON_DETAIL);
+});
+
+test("a fact with an unknown icon is rejected at its dotted path", () => {
+  const detail = { ...SKELETON_DETAIL, facts: [{ icon: "rocket", title: "Fast" }] };
+  const r = serviceSaveInput.safeParse(validService({ detail }));
+  assert.equal(r.success, false);
+  if (!r.success) assert.ok(r.error.issues.some((i) => i.path.join(".") === "detail.facts.0.icon"));
+});
+
+test("more than 3 badges, 4 facts or 4 booking rows are rejected", () => {
+  const fact = { icon: "pin", title: "Lisbon" };
+  const row = { label: "Group", value: "Private" };
+  for (const over of [
+    { badges: ["a", "b", "c", "d"] },
+    { facts: [fact, fact, fact, fact, fact] },
+    { booking_rows: [row, row, row, row, row] },
+  ]) {
+    const r = serviceSaveInput.safeParse(validService({ detail: { ...SKELETON_DETAIL, ...over } }));
+    assert.equal(r.success, false, JSON.stringify(Object.keys(over)));
+  }
+});
+
+test("step media_id must be a uuid", () => {
+  const detail = {
+    ...SKELETON_DETAIL,
+    itinerary: [{ time: "09:00", title: "Pick-up", text: "We meet you.", media_id: "nope" }],
+  };
+  const r = serviceSaveInput.safeParse(validService({ detail }));
+  assert.equal(r.success, false);
+  if (!r.success) {
+    assert.ok(r.error.issues.some((i) => i.path.join(".") === "detail.itinerary.0.media_id"));
+  }
+});
+
+test("draft round-trips the skeleton fields and omits blank optional strings", () => {
+  const draft = detailToDraft(serviceSaveInput.parse(validService({ detail: SKELETON_DETAIL })).detail);
+  assert.deepEqual(draftToDetail(draft), SKELETON_DETAIL);
+
+  const payload = draftToDetail({
+    ...draft,
+    about_title: "  ",
+    included_title: "",
+    price_note: " ",
+    badges: ["  Private group  "],
+    facts: [{ icon: "star", title: " Top rated ", note: "   " }],
+    itinerary: [{ time: "09:00", title: "Pick-up", text: "We meet you.", media_id: "" }],
+  });
+  assert.equal("about_title" in payload, false);
+  assert.equal("included_title" in payload, false);
+  assert.equal("price_note" in payload, false);
+  assert.deepEqual(payload.badges, ["Private group"]);
+  assert.deepEqual(payload.facts, [{ icon: "star", title: "Top rated" }]);
+  assert.equal("media_id" in payload.itinerary[0]!, false);
+  assert.equal(serviceSaveInput.safeParse(validService({ detail: payload })).success, true);
+});
+
+test("moveNotesToPractical appends non-blank notes and keeps any overflow in notes", () => {
+  const draft = detailToDraft(EMPTY_DETAIL);
+  const moved = moveNotesToPractical({
+    ...draft,
+    good_to_know: { ...draft.good_to_know, practical: ["Existing"] },
+    notes: ["First", "  ", "Second"],
+  });
+  assert.deepEqual(moved.good_to_know.practical, ["Existing", "First", "Second"]);
+  assert.deepEqual(moved.notes, []);
+
+  const full = Array.from({ length: DETAIL_LIMITS.gtk_practical - 1 }, (_, i) => `P${i}`);
+  const capped = moveNotesToPractical({
+    ...draft,
+    good_to_know: { ...draft.good_to_know, practical: full },
+    notes: ["A", "B"],
+  });
+  assert.equal(capped.good_to_know.practical.length, DETAIL_LIMITS.gtk_practical);
+  assert.deepEqual(capped.notes, ["B"]);
 });
 
 test("rejects a pricing row with the wrong cell count, keyed by its dotted path", () => {
@@ -156,7 +273,7 @@ test("nested detail errors carry their dotted path", () => {
 
 test("editor draft round-trips and omits empty optional strings", () => {
   const draft = detailToDraft(serviceSaveInput.parse(validService({ detail: FULL_DETAIL })).detail);
-  assert.deepEqual(draftToDetail(draft), FULL_DETAIL);
+  assert.deepEqual(draftToDetail(draft), { ...EMPTY_DETAIL, ...FULL_DETAIL });
 
   // An option without a description and a blank footnote must be omitted, not sent as "".
   const pricing = emptyPricing();

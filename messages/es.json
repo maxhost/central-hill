@@ -486,7 +486,12 @@
           "pricing": "Tabla de precios",
           "extras": "Extras",
           "partners": "Socios",
-          "notes": "Notas"
+          "notes": "Notas",
+          "titleBooking": "Título y tarjeta de reserva",
+          "facts": "Datos clave",
+          "about": "Acerca de",
+          "included": "Qué incluye",
+          "goodToKnow": "Bueno saber"
         },
         "add": {
           "highlight": "Añadir destacado",
@@ -498,7 +503,11 @@
           "row": "Añadir fila",
           "extra": "Añadir extra",
           "partner": "Añadir socio",
-          "note": "Añadir nota"
+          "note": "Añadir nota",
+          "badge": "Añadir etiqueta",
+          "bookingRow": "Añadir fila",
+          "fact": "Añadir dato",
+          "gtkItem": "Añadir elemento"
         },
         "items": {
           "step": "Paso {n}",
@@ -507,7 +516,9 @@
           "column": "Columna {n}",
           "row": "Fila {n}",
           "extra": "Extra {n}",
-          "partner": "Socio {n}"
+          "partner": "Socio {n}",
+          "bookingRow": "Fila {n}",
+          "fact": "Dato {n}"
         },
         "fields": {
           "time": "Hora",
@@ -525,7 +536,23 @@
           "ctaLabel": "Texto del botón",
           "url": "URL",
           "rowLabel": "Etiqueta de la fila",
-          "footnote": "Nota al pie"
+          "footnote": "Nota al pie",
+          "badges": "Etiquetas",
+          "badgesHint": "Hasta 3 etiquetas cortas bajo el título, p. ej. “Cancelación gratuita · 24h”.",
+          "priceNote": "Nota de precio",
+          "priceNoteHint": "Línea bajo el precio en la tarjeta de reserva, p. ej. “480 € en total para un grupo privado de 1–5”.",
+          "bookingRows": "Filas de la tarjeta de reserva",
+          "value": "Valor",
+          "icon": "Icono",
+          "factNote": "Nota",
+          "optional": "Opcional.",
+          "aboutTitle": "Título de «Acerca de»",
+          "aboutTitleHint": "Opcional. Si está vacío se usa un título genérico.",
+          "includedTitle": "Título",
+          "includedTitleHint": "Opcional. Si está vacío se usa “Qué incluye”.",
+          "highlights": "Elementos incluidos",
+          "stepImage": "Imagen",
+          "stepImageHint": "Miniatura opcional. Sin ella, el paso muestra su número."
         },
         "pricing": {
           "none": "Sin tabla de precios.",
@@ -537,6 +564,29 @@
           "moveUp": "Subir",
           "moveDown": "Bajar",
           "remove": "Eliminar"
+        },
+        "factIcons": {
+          "clock": "Reloj (duración)",
+          "group": "Grupo (personas)",
+          "language": "Idioma",
+          "pin": "Pin (ubicación)",
+          "car": "Coche (transporte)",
+          "home": "Casa (recogida)",
+          "calendar": "Calendario (disponibilidad)",
+          "star": "Estrella (destacado)"
+        },
+        "module": {
+          "title": "Módulo variable",
+          "hint": "Secciones específicas del servicio. Rellena solo las que necesite este servicio."
+        },
+        "gtk": {
+          "included": "Incluido",
+          "cancellation": "Cancelación",
+          "practical": "Práctico"
+        },
+        "legacyNotes": {
+          "hint": "Notas antiguas. La página las muestra como “Práctico” solo mientras «Bueno saber» esté vacío. Muévelas para mantener una única fuente.",
+          "move": "Mover a Práctico"
         }
       }
     }
