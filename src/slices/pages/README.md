@@ -378,7 +378,7 @@ is loaded globally by `mock.css`), with `iconoir-sparks` as the fallback for unk
 Its **hero is real JSX now**: `core/ui`'s `<Hero compact align="center">` with **exactly** the
 Buildings-listing / Real Estate hero configuration (`buildings-listing.tsx`: 1600px/40px wrap,
 `.5/.46/.88` scrim, 26ch h1, 60ch p, default eyebrow, `ButtonLink` primary CTA), rendered
-outside and before `.mk`; `bodyTop` now starts at WELCOME. Its `background` is Home's hero
+outside and before `.mk` (followed by the Welcome intro, see below). Its `background` is Home's hero
 `<video>` copied verbatim (autoplay/muted/loop/playsInline, `poster`, `absolute inset-0 -z-10
 h-full w-full object-cover`), so the poster/video load the same way as before. Cross-page
 consistency was chosen over 1:1 fidelity to this page's own mock overrides, which differed by a
@@ -388,6 +388,23 @@ Still DB-driven (`hero.eyebrow` → eyebrow, `headline` → h1, `subheadline` �
 absolute `centralhill.pt` URL now opens in a new tab (`ButtonLink`'s rule, same as the teasers'
 CTAs). The former `.mk[data-page="guests"] .hero` overrides are removed (`escAttr`/`localizeUrl`
 stay — the Why-book-directly `ctaRow` and the other CTAs still use them).
+
+The "Welcome to Central Hill" **intro is real JSX now** too: `core/ui`'s new `IntroSplit` (serif
+headline + 18px/62ch lede + ink-soft paragraphs + optional inline accent guarantee line with a
+caller-built icon, beside one full-height cover image; `1.05fr/.95fr`, 56px gap → one column,
+32px gap at ≤880px), ported 1:1 from the old `.welcome`/`.guarantee` `PAGE_STYLE` rules plus
+`mock.css`'s `h2.section-title`/`.lede` (live computed geometry identical at 1440/980/390).
+**Not** `TwoColumnShowcase`, the nearest existing component: it has one `body` string (no lede
++ multiple paragraphs) and its `badge` is a floating check card over the image, so the DB
+paragraphs and the inline guarantee line had no structural home there. Rendered between the
+hero and `.mk` with the same shell as the dual CTA (plain `<section>`, `clamp(72px,10vw,150px)`,
+`scroll-mt-[84px]`, 1240px/28px column) and one `Reveal` for the original single
+`.welcome.reveal-io` fade-in. Still DB-driven: `welcome.headline`/`lede`, `welcome.copy` split
+into paragraphs on blank lines, `guarantee_label` (line omitted when empty), and
+`image_media_id` → `MediaImage` (R2) or the lazy `WELCOME_FALLBACK_IMG` `<img>`, same pattern as
+Real Estate's `#manage`. The raw `<!-- WELCOME -->` block, its `PAGE_STYLE` rules, the
+`paragraphs()` helper and the `mediaImgTag` import are gone; `bodyTop` now starts at WHY BOOK
+DIRECTLY.
 
 The "Make the Most of Your Stay" **services teaser is real JSX now**: `core/ui`'s new
 `PhotoFeatureGrid` (a bordered grid of full-bleed photo cards — icon/title/description in white

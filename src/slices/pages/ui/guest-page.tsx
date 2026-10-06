@@ -1,8 +1,8 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
-import { mediaImgTag, type MediaImageData } from "@core/media";
-import { ButtonLink, Hero, PhotoFeatureGrid, Reveal, SplitCtaPanels } from "@core/ui";
+import { MediaImage } from "@core/media";
+import { ButtonLink, Hero, IntroSplit, PhotoFeatureGrid, Reveal, SplitCtaPanels } from "@core/ui";
 import { getGlobals } from "@slices/settings/contract";
 import { getGuestPage, type GuestContent } from "../contract";
 import { FaqSection } from "./components/faq-section";
@@ -35,7 +35,17 @@ import { TestimonialsRow } from "./components/testimonials-row";
  * poster attribute, `absolute inset-0 -z-10 h-full w-full object-cover`), so the poster still
  * paints first and loading is unchanged. Still DB-driven exactly as before (`hero.eyebrow`,
  * `headline`, `subheadline`, `cta` → `localizeUrl`, `video_media_id` → R2 url or the fallback
- * clip). `bodyTop` starts at WELCOME.
+ * clip).
+ *
+ * The "Welcome to Central Hill" intro right under it is real JSX too: `core/ui`'s new
+ * `IntroSplit` (headline + lede + paragraphs + optional inline guarantee line beside one cover
+ * image — see its docstring for why `TwoColumnShowcase`, the nearest existing component, doesn't
+ * fit structurally), ported 1:1 from the old `.welcome`/`.guarantee` CSS, with the same
+ * section/wrap shell + single `Reveal` at the call site as the dual CTA below, rendered outside
+ * (before) `.mk`. The old raw `<!-- WELCOME -->` block, its `PAGE_STYLE` rules, the
+ * `paragraphs()` helper and the `mediaImgTag` string image are gone; the image is now a
+ * `MediaImage` (R2 asset) or the lazy fallback `<img>`, same pattern as Real Estate's `#manage`.
+ * `bodyTop` now starts at WHY BOOK DIRECTLY.
  *
  * The "Make the Most of Your Stay" services teaser is real JSX now: `core/ui`'s new
  * `PhotoFeatureGrid` (see that component's docstring for why it's neither `IconFeatureGrid`
@@ -70,7 +80,7 @@ const WELCOME_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70";
 const WELCOME_FALLBACK_ALT = "Bright, design-led Central Hill apartment interior";
 // The welcome photo is the narrower of two columns in the 1240px `.wrap` (.95fr of
-// 1.05fr/.95fr with a 56px gap) and goes full-width under 880px — see `.welcome`.
+// 1.05fr/.95fr with a 56px gap) and goes full-width at ≤880px — see `core/ui`'s `IntroSplit`.
 const WELCOME_SIZES = "(max-width: 880px) 100vw, 540px";
 
 // Premium photo backgrounds for the Services/What-to-do teaser cards (Pexels stock, by
@@ -125,15 +135,6 @@ function localizeUrl(raw: string, locale: Locale): string {
   }
 }
 
-/** Split an admin-authored multi-paragraph field into escaped `<p>` blocks. */
-const paragraphs = (copy: string, attrs = ""): string =>
-  copy
-    .split(/\n{2,}/)
-    .map((block) => block.trim())
-    .filter(Boolean)
-    .map((block) => `<p${attrs}>${esc(block)}</p>`)
-    .join("");
-
 type IconCard = { icon_key: string; title: string; description: string };
 type Cta = { label: string; url: string; note?: string };
 
@@ -166,19 +167,14 @@ const ctaRow = (cta: Cta, locale: Locale): string =>
   `${cta.note ? `<span class="cta-note">${esc(cta.note)}</span>` : ""}</div>`;
 
 const PAGE_STYLE = `
-/* hero — now real JSX (core/ui's Hero, rendered outside .mk before it); it uses
-   Buildings' listing-hero configuration, so no hero CSS is left here. */
+/* hero + welcome — now real JSX (core/ui's Hero / IntroSplit, rendered outside .mk before
+   it), so no hero or .welcome/.guarantee CSS is left here. */
 
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
-.mk .welcome{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
-.mk .welcome img{width:100%;height:100%;object-fit:cover;min-height:380px}
-.mk .welcome .guarantee{margin-top:22px;font-weight:600;color:var(--accent-deep);font-size:16px;display:inline-flex;align-items:center;gap:10px}
-.mk .welcome .guarantee i{font-size:22px}
 .mk[data-page="guests"] .bcard{transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
 .mk[data-page="guests"] .bcard:hover{transform:translateY(-4px);box-shadow:0 16px 28px -20px rgba(0,0,0,.35)}
 .mk[data-page="guests"] .bcard .ico{transition:transform .35s var(--ease),color .35s var(--ease)}
 .mk[data-page="guests"] .bcard:hover .ico{transform:translateY(-3px) scale(1.1);color:var(--accent)}
-@media(max-width:880px){.mk .welcome{grid-template-columns:1fr;gap:32px}.mk .welcome img{min-height:280px}}
 
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
    the rest, via <ScrollReveal page="guests">/scroll-reveal.tsx) + hover motion — same
@@ -192,42 +188,13 @@ const PAGE_STYLE = `
 `;
 
 /**
- * Welcome · Why book directly — above the featured-portfolio island. (The hero above them is
- * real JSX now, rendered by `GuestPage` before the `.mk` wrapper.)
+ * Why book directly — above the featured-portfolio island. (The hero and the Welcome intro above
+ * it are real JSX now, rendered by `GuestPage` before the `.mk` wrapper.)
  */
-function bodyTop(
-  content: GuestContent,
-  media: Record<string, MediaImageData>,
-  locale: Locale,
-): string {
-  const { welcome, why } = content;
-  const welcomeImgTag = mediaImgTag({
-    data: media[welcome.image_media_id ?? ""],
-    fallbackSrc: WELCOME_FALLBACK_IMG,
-    fallbackAlt: WELCOME_FALLBACK_ALT,
-    sizes: WELCOME_SIZES,
-  });
+function bodyTop(content: GuestContent, locale: Locale): string {
+  const { why } = content;
 
   return `
-<!-- WELCOME -->
-<section>
-  <div class="wrap">
-    <div class="welcome reveal reveal-io pre-reveal">
-      <div>
-        <h2 class="section-title">${esc(welcome.headline)}</h2>
-        <p class="lede" style="margin-top:18px">${esc(welcome.lede)}</p>
-        ${paragraphs(welcome.copy, ' style="margin-top:14px;color:var(--ink-soft)"')}
-        ${
-          welcome.guarantee_label
-            ? `<span class="guarantee"><i class="iconoir-percentage-circle" aria-hidden="true"></i> ${esc(welcome.guarantee_label)}</span>`
-            : ""
-        }
-      </div>
-      ${welcomeImgTag}
-    </div>
-  </div>
-</section>
-
 <!-- WHY BOOK DIRECTLY -->
 <section class="alt">
   <div class="wrap">
@@ -293,7 +260,8 @@ export async function GuestPage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
-  const { hero, portfolio } = content;
+  const { hero, welcome, portfolio } = content;
+  const welcomeMedia = media[welcome.image_media_id ?? ""];
   const faqGroupKey = content.faq_group_key ?? "";
   const dualCta = content.dual_cta;
   const contactLines = dualCtaContactLines(globals);
@@ -352,19 +320,71 @@ export async function GuestPage({ locale }: { locale: Locale }) {
           <ButtonLink href={localizeUrl(hero.cta.url, locale)}>{`${hero.cta.label} →`}</ButtonLink>
         }
       />
+      {/*
+       * "Welcome to Central Hill" — real JSX now, `core/ui`'s new `IntroSplit` (see its docstring
+       * for why `TwoColumnShowcase` doesn't fit: one `body` string, floating check badge). Same
+       * shell technique as the dual CTA below: the original plain `<section>` (`.mk section` →
+       * `padding:clamp(72px,10vw,150px) 0; scroll-margin-top:84px`, no tint) + `.wrap`
+       * (1240px/28px) at the exact mock metrics, and the original single
+       * `.welcome.reveal-io.pre-reveal` fade-in → one `Reveal`. Rendered outside `.mk`
+       * (Lesson 1). Still DB-driven: `welcome.copy` is split into paragraphs on blank lines
+       * (the old `paragraphs()` rule), the guarantee line renders only when set, and the image is
+       * the R2 asset via `MediaImage` or the approved mock photo (lazy), like Real Estate's
+       * `#manage`. The component sizes the image to cover its full-height cell.
+       */}
+      <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
+        <div className="mx-auto max-w-[1240px] px-[28px]">
+          <Reveal label="guests-welcome">
+            <IntroSplit
+              headline={welcome.headline}
+              lede={welcome.lede || undefined}
+              paragraphs={welcome.copy
+                .split(/\n{2,}/)
+                .map((block) => block.trim())
+                .filter(Boolean)}
+              badge={
+                welcome.guarantee_label
+                  ? {
+                      icon: (
+                        <i className="iconoir-percentage-circle text-[22px]" aria-hidden="true" />
+                      ),
+                      label: welcome.guarantee_label,
+                    }
+                  : undefined
+              }
+              image={
+                welcomeMedia?.url && welcomeMedia.width > 0 && welcomeMedia.height > 0 ? (
+                  <MediaImage
+                    data={{ ...welcomeMedia, alt: welcomeMedia.alt || WELCOME_FALLBACK_ALT }}
+                    sizes={WELCOME_SIZES}
+                  />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+                  <img
+                    src={welcomeMedia?.url || WELCOME_FALLBACK_IMG}
+                    alt={welcomeMedia?.alt || WELCOME_FALLBACK_ALT}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )
+              }
+            />
+          </Reveal>
+        </div>
+      </section>
       <div className="mk" data-page="guests">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <noscript>
           <style
             dangerouslySetInnerHTML={{
-              // `[data-reveal]` too: the `Reveal`-wrapped teaser grids and dual CTA
+              // `[data-reveal]` too: the `Reveal`-wrapped welcome, teaser grids and dual CTA
               // render hidden server-side and only un-hide via JS (same fix as Real Estate).
               __html: `.mk[data-page="guests"] .pre-reveal,[data-reveal]{opacity:1!important;transform:none!important}`,
             }}
           />
         </noscript>
         <ScrollReveal page="guests" />
-        <div dangerouslySetInnerHTML={{ __html: bodyTop(content, media, locale) }} />
+        <div dangerouslySetInnerHTML={{ __html: bodyTop(content, locale) }} />
       </div>
 
       {/* Featured properties — cards from the buildings slice, headings from `guest.portfolio`. */}
