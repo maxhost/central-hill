@@ -1,6 +1,8 @@
 /**
- * Service detail content — the rich, service-specific sections of `/services/<slug>`
- * (highlights, itinerary, option groups, pricing table, extras, partners, notes).
+ * Service detail content — everything on `/services/<slug>` beyond the plain columns:
+ * the fixed skeleton's copy (badges, key facts, about/included headings, booking-card note +
+ * rows, good-to-know columns, highlights) and the per-service **variable module** (itinerary,
+ * option groups, pricing table, extras, partners). Layout: `mock/service-detail.html`.
  *
  * Stored like the blog post body (ADR 0013): the whole object is ONE translatable field,
  * `translation(entity_type='service', field='detail')`, as portable JSON — so it rides the
@@ -12,7 +14,7 @@
  * See docs/data-model.md → Slice services.
  */
 import { z } from "zod";
-import { url } from "@core/validation/primitives";
+import { mediaId, url } from "@core/validation/primitives";
 
 const line = (max: number) => z.string().trim().min(1).max(max);
 
@@ -20,6 +22,8 @@ export const itineraryStep = z.object({
   time: line(40),
   title: line(120),
   text: line(600),
+  /** Optional thumbnail (→ media_asset.id); the step shows its number when absent. */
+  media_id: mediaId.optional(),
 });
 export type ItineraryStep = z.infer<typeof itineraryStep>;
 
@@ -76,7 +80,46 @@ export const partner = z.object({
 });
 export type Partner = z.infer<typeof partner>;
 
+/** Closed icon set for the key-facts row (rendered as inline SVG by the page). */
+export const FACT_ICONS = ["clock", "group", "language", "pin", "car", "home", "calendar", "star"] as const;
+export type FactIcon = (typeof FACT_ICONS)[number];
+
+export const keyFact = z.object({
+  icon: z.enum(FACT_ICONS),
+  title: line(80),
+  note: line(160).optional(),
+});
+export type KeyFact = z.infer<typeof keyFact>;
+
+/** A label/value row of the sticky booking card (e.g. "Group" → "Private, up to 25"). */
+export const bookingRow = z.object({
+  label: line(40),
+  value: line(80),
+});
+export type BookingRow = z.infer<typeof bookingRow>;
+
+/** "Good to know", in three fixed columns. Legacy `notes` render as `practical`. */
+export const goodToKnow = z.object({
+  included: z.array(line(300)).max(10).default([]),
+  cancellation: z.array(line(300)).max(6).default([]),
+  practical: z.array(line(300)).max(10).default([]),
+});
+export type GoodToKnow = z.infer<typeof goodToKnow>;
+
 export const serviceDetailContent = z.object({
+  /** Up to 3 short trust tags in the title block ("Free cancellation · 24h", "Private group"). */
+  badges: z.array(line(48)).max(3).default([]),
+  /** Key facts row (icon + bold title + optional note), 0–4. */
+  facts: z.array(keyFact).max(4).default([]),
+  /** Heading of the "About" block; the page falls back to a generic heading. */
+  about_title: line(120).optional(),
+  /** Heading of the "What's included" block (the `highlights` list). */
+  included_title: line(120).optional(),
+  /** Line under the price in the booking card ("€480 total for a private group of 1–5"). */
+  price_note: line(160).optional(),
+  /** Label/value rows of the booking card, 0–4. */
+  booking_rows: z.array(bookingRow).max(4).default([]),
+  good_to_know: goodToKnow.default({ included: [], cancellation: [], practical: [] }),
   highlights: z.array(line(300)).max(12).default([]),
   itinerary: z.array(itineraryStep).max(20).default([]),
   option_groups: z.array(optionGroup).max(8).default([]),
@@ -88,6 +131,10 @@ export const serviceDetailContent = z.object({
 export type ServiceDetailContent = z.infer<typeof serviceDetailContent>;
 
 export const EMPTY_DETAIL: ServiceDetailContent = {
+  badges: [],
+  facts: [],
+  booking_rows: [],
+  good_to_know: { included: [], cancellation: [], practical: [] },
   highlights: [],
   itinerary: [],
   option_groups: [],
@@ -100,6 +147,15 @@ export const EMPTY_DETAIL: ServiceDetailContent = {
 /** True when no section has content — the admin then clears the field instead of storing `{}`. */
 export function isEmptyDetail(d: ServiceDetailContent): boolean {
   return (
+    !d.badges.length &&
+    !d.facts.length &&
+    !d.about_title &&
+    !d.included_title &&
+    !d.price_note &&
+    !d.booking_rows.length &&
+    !d.good_to_know.included.length &&
+    !d.good_to_know.cancellation.length &&
+    !d.good_to_know.practical.length &&
     !d.highlights.length &&
     !d.itinerary.length &&
     !d.option_groups.length &&

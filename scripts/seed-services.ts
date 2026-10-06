@@ -13,8 +13,9 @@
  * path. Source locale (`en`) only; other locales fall back to it until translated.
  *
  * The first seven services carry the real centralhill.pt detail copy — the `detail` [T]
- * JSON (highlights, itinerary, options, pricing, extras, partners, notes) plus a gallery
- * (Unsplash/Wikimedia, uploaded the same way and reused by `media_asset.credit`).
+ * JSON (variable module: itinerary, options, pricing, extras, partners) plus a gallery
+ * (Unsplash/Wikimedia, uploaded the same way and reused by `media_asset.credit`). Every
+ * service also gets the fixed-skeleton copy from `SKELETON` (`mock/service-detail.html`).
  *
  * **Idempotent by slug.** A category or service whose slug already exists is updated in
  * place, and its cover is only re-fetched when the seed names a *different* photo than the
@@ -110,16 +111,6 @@ const CATEGORIES: CategorySeed[] = [
   { slug: "experiences", icon: "binocular", name: "Experiences" },
 ];
 
-const BOOK_DISCLAIMER =
-  "Arranged through your dedicated guest contact — send an enquiry and we'll confirm availability, price and payment.";
-
-const TOUR_NOTES = [
-  "Monument tickets and meals are not included.",
-  "Free cancellation up to 24 hours before the tour.",
-  "Guide available in Portuguese, English or Spanish; a dedicated driver joins for groups over 8.",
-  BOOK_DISCLAIMER,
-];
-
 /**
  * The first seven services carry the real centralhill.pt copy (prices, itineraries, menus,
  * conditions) that used to live in the static `ui/service-detail-content.ts`; the other three
@@ -157,12 +148,6 @@ const SERVICES: ServiceSeed[] = [
           { label: "25+ passengers", cells: ["On request", "On request"] },
         ],
       },
-      notes: [
-        "Extra luggage beyond the included allowance may require a larger vehicle (+€25).",
-        "A waiting-time charge of €40 applies from 1h30 after landing.",
-        "Free cancellation up to 24 hours before the transfer.",
-        BOOK_DISCLAIMER,
-      ],
     },
   },
   {
@@ -195,10 +180,6 @@ const SERVICES: ServiceSeed[] = [
           cta_label: "Book with 10% off",
           url: "https://luggit.app",
         },
-      ],
-      notes: [
-        "Luggit is a pickup-and-delivery service — book at least 24 hours ahead.",
-        "Request your Luggit pickup before the 11:00 check-out time.",
       ],
     },
   },
@@ -247,11 +228,6 @@ const SERVICES: ServiceSeed[] = [
         },
       ],
       pricing: { columns: ["Price"], rows: [{ label: "Per person", cells: ["€35"] }] },
-      notes: [
-        "Includes one bottle of wine (red or white) for every four guests, plus bread.",
-        "A vegetarian adaptation is available on request.",
-        BOOK_DISCLAIMER,
-      ],
     },
     gallery: [
       {
@@ -331,18 +307,18 @@ const SERVICES: ServiceSeed[] = [
         {
           time: "08:30 – 12:30",
           title: "Sintra",
-          text: "Explore the National Palace and either Pena Palace or Quinta da Regaleira — we suggest choosing one; Sintra rewards an unhurried visit.",
+          text: "Explore the National Palace and either Pena Palace or Quinta da Regaleira — we suggest choosing one; Sintra rewards an unhurried visit.", media: "gallery:0",
         },
         { time: "12:30 – 13:30", title: "Lunch", text: "A stop to enjoy a local meal (not included)." },
         {
           time: "13:30 – 14:30",
           title: "Cabo da Roca",
-          text: "Stand at the westernmost point of continental Europe.",
+          text: "Stand at the westernmost point of continental Europe.", media: "gallery:1",
         },
         {
           time: "14:30 – 16:00",
           title: "Cascais",
-          text: "A walk along the seafront promenade and marina.",
+          text: "A walk along the seafront promenade and marina.", media: "gallery:2",
         },
         { time: "16:00 – 17:00", title: "Return", text: "Back in Lisbon by early evening." },
       ],
@@ -354,7 +330,6 @@ const SERVICES: ServiceSeed[] = [
           { label: "25+ guests", cells: ["On request"] },
         ],
       },
-      notes: TOUR_NOTES,
     },
     gallery: [
       {
@@ -403,15 +378,15 @@ const SERVICES: ServiceSeed[] = [
         {
           time: "08:30 – 12:00",
           title: "Fátima",
-          text: "Free time at the Sanctuary and the Basilica of the Most Holy Trinity.",
+          text: "Free time at the Sanctuary and the Basilica of the Most Holy Trinity.", media: "cover",
         },
         {
           time: "12:00 – 14:00",
           title: "Batalha",
-          text: "Visit the Monastery of Batalha and stop for lunch (not included).",
+          text: "Visit the Monastery of Batalha and stop for lunch (not included).", media: "gallery:0",
         },
-        { time: "14:00 – 15:00", title: "Nazaré", text: "See the Guinness World Record waves from the clifftop." },
-        { time: "15:00 – 16:30", title: "Óbidos", text: "Wander the medieval walled village." },
+        { time: "14:00 – 15:00", title: "Nazaré", text: "See the Guinness World Record waves from the clifftop.", media: "gallery:1" },
+        { time: "15:00 – 16:30", title: "Óbidos", text: "Wander the medieval walled village.", media: "gallery:2" },
         { time: "16:30 – 17:30", title: "Return", text: "Back in Lisbon by early evening." },
       ],
       pricing: {
@@ -422,7 +397,6 @@ const SERVICES: ServiceSeed[] = [
           { label: "25+ guests", cells: ["On request"] },
         ],
       },
-      notes: TOUR_NOTES,
     },
     gallery: [
       {
@@ -503,7 +477,6 @@ const SERVICES: ServiceSeed[] = [
           desc: "Unlimited beer, white wine, soft drinks and water (subject to the boat's safety rules).",
         },
       ],
-      notes: [BOOK_DISCLAIMER],
     },
   },
   {
@@ -529,14 +502,257 @@ const SERVICES: ServiceSeed[] = [
         "Contact available around the clock",
       ],
       pricing: { columns: ["Price"], rows: [{ label: "Per person", cells: ["€40"] }] },
-      notes: [
-        "Free cancellation up to 24 hours before the lesson.",
-        "In case of bad weather the lesson may be relocated, postponed or cancelled — the surf school makes the final call on conditions, with a full refund if it can't be rescheduled.",
-        BOOK_DISCLAIMER,
-      ],
     },
   },
 ];
+
+const FREE_24H = "Free cancellation up to 24 hours before.";
+
+/**
+ * The fixed-skeleton copy of every detail page (`mock/service-detail.html`): trust badges,
+ * key facts, block headings, booking-card note + rows and the three "Good to know" columns.
+ * Merged into each service's `detail` at write time — the variable module (itinerary,
+ * options, pricing, extras, partners) stays on the service entry above.
+ */
+const SKELETON: Record<string, Record<string, unknown>> = {
+  "private-airport-transfer": {
+    badges: ["Free cancellation · 24h", "Live flight tracking"],
+    facts: [
+      { icon: "clock", title: "Available 24/7", note: "Any arrival or departure time" },
+      { icon: "group", title: "1–25+ passengers", note: "Vehicle sized to your group" },
+      { icon: "car", title: "Door to door", note: "Arrivals hall ↔ your apartment" },
+      { icon: "language", title: "English-speaking driver", note: "Waiting with your name on a board" },
+    ],
+    about_title: "Land, walk out, and you're on your way",
+    included_title: "Every transfer includes",
+    price_note: "One way for 1–6 passengers · €144 round trip",
+    booking_rows: [
+      { label: "Availability", value: "24/7" },
+      { label: "Passengers", value: "1–25+" },
+      { label: "Cancellation", value: "Free up to 24h" },
+    ],
+    good_to_know: {
+      included: ["One large check-in bag or two cabin bags per person", "Tolls and flight tracking"],
+      cancellation: ["Free cancellation up to 24 hours before the transfer."],
+      practical: [
+        "Extra luggage beyond the included allowance may require a larger vehicle (+€25).",
+        "A waiting-time charge of €40 applies from 1h30 after landing.",
+      ],
+    },
+  },
+  "luggage-storage": {
+    badges: ["Central Hill guests save 10% with Luggit"],
+    facts: [
+      { icon: "pin", title: "Across the city", note: "Secure partner locations near every apartment" },
+      { icon: "car", title: "Pickup & delivery", note: "Including straight to the airport" },
+    ],
+    about_title: "Enjoy Lisbon right up to your flight",
+    booking_rows: [
+      { label: "Partners", value: "Bounce · Luggit" },
+      { label: "Book", value: "Directly with the partner" },
+    ],
+    good_to_know: {
+      practical: [
+        "Luggit is a pickup-and-delivery service — book at least 24 hours ahead.",
+        "Request your Luggit pickup before the 11:00 check-out time.",
+      ],
+    },
+  },
+  "chef-at-home": {
+    badges: ["Cooks over 55 · with 55+", "Vegetarian on request"],
+    facts: [
+      { icon: "home", title: "In your apartment", note: "The chef shops, cooks, serves and clears" },
+      { icon: "clock", title: "One evening", note: "Starter, main, dessert, wine and bread" },
+      { icon: "group", title: "From 2 guests", note: "One bottle of wine per four guests" },
+    ],
+    about_title: "Portuguese home cooking, at your own table",
+    price_note: "Three courses, wine and bread included",
+    booking_rows: [
+      { label: "Where", value: "Your apartment" },
+      { label: "Menu", value: "3 courses, chosen ahead" },
+      { label: "Cancellation", value: "Free up to 24h" },
+    ],
+    good_to_know: {
+      included: ["One bottle of wine (red or white) for every four guests, plus bread"],
+      cancellation: [FREE_24H],
+      practical: ["A vegetarian adaptation is available on request.", "Choose your menu when you book."],
+    },
+  },
+  "grocery-pre-stocking": {
+    badges: ["No markup on the shopping"],
+    facts: [
+      { icon: "calendar", title: "Order 48h ahead", note: "Send your list before you travel" },
+      { icon: "home", title: "Put away before you arrive", note: "Cold things in the fridge" },
+    ],
+    about_title: "Arrive to a stocked fridge",
+    included_title: "What we take care of",
+    price_note: "Flat service fee + the receipt",
+    booking_rows: [
+      { label: "Lead time", value: "48 hours" },
+      { label: "Where", value: "Your apartment" },
+    ],
+    highlights: [
+      "Shopped from your own list",
+      "Fresh bread, pastries, coffee and fruit",
+      "Everything put away before check-in",
+      "You pay the receipt — no markup",
+    ],
+    good_to_know: {
+      included: ["Shopping, delivery and putting everything away"],
+      cancellation: ["Free cancellation up to 48 hours before arrival."],
+      practical: ["Send dietary needs or brand preferences with your list."],
+    },
+  },
+  babysitting: {
+    badges: ["Background-checked sitters"],
+    facts: [
+      { icon: "clock", title: "Per hour · minimum 3h", note: "Evenings, or daytime cover on request" },
+      { icon: "group", title: "Up to 3 children", note: "One sitter per family" },
+      { icon: "language", title: "English, French, Spanish", note: "Depending on availability" },
+      { icon: "home", title: "At your apartment", note: "Following your bath and bedtime routine" },
+    ],
+    about_title: "An evening to yourselves, without the guesswork",
+    included_title: "Peace of mind, built in",
+    price_note: "Minimum 3 hours per booking",
+    booking_rows: [
+      { label: "Where", value: "Your apartment" },
+      { label: "Availability", value: "Evenings & daytime" },
+      { label: "Cancellation", value: "Free up to 24h" },
+    ],
+    highlights: [
+      "Background-checked, first-aid trained sitter",
+      "Message when the children are asleep",
+      "Your routine, followed to the letter",
+      "Single evenings or recurring slots",
+    ],
+    good_to_know: {
+      included: ["Sitter's travel to and from the apartment"],
+      cancellation: [FREE_24H],
+      practical: ["Book at least 24 hours ahead; same-day on request."],
+    },
+  },
+  "mid-stay-housekeeping": {
+    badges: ["Same team that prepares your apartment"],
+    facts: [
+      { icon: "clock", title: "About 2 hours", note: "You're welcome to be out" },
+      { icon: "home", title: "Full apartment reset", note: "Linen, towels, kitchen and bathrooms" },
+    ],
+    about_title: "One reset, and the apartment feels new again",
+    included_title: "Every clean includes",
+    booking_rows: [
+      { label: "Duration", value: "About 2 hours" },
+      { label: "Cancellation", value: "Free up to 24h" },
+    ],
+    highlights: [
+      "Full clean of every room",
+      "Fresh bed linen and towels",
+      "Kitchen and bathrooms done properly",
+      "Bins out",
+    ],
+    good_to_know: {
+      cancellation: [FREE_24H],
+      practical: ["Add laundry to the same visit — it comes back washed and folded the next day."],
+    },
+  },
+  "sintra-day-tour": {
+    badges: ["Free cancellation · 24h", "Private group"],
+    facts: [
+      { icon: "clock", title: "Full day · ~8 hours", note: "08:30 – 17:00, back by early evening" },
+      { icon: "group", title: "Up to 25 guests", note: "Private — never shared with strangers" },
+      { icon: "language", title: "Portuguese, English, Spanish", note: "Your driver-guide's languages" },
+      { icon: "car", title: "Pickup at your apartment", note: "Door to door, anywhere in Lisbon" },
+    ],
+    about_title: "Palaces, cliffs and coastline in one day",
+    price_note: "€320 total for a private group of 1–5",
+    booking_rows: [
+      { label: "Duration", value: "Full day · ~8 h" },
+      { label: "Group", value: "Private, up to 25" },
+      { label: "Cancellation", value: "Free up to 24h" },
+    ],
+    good_to_know: {
+      included: [
+        "Private driver-guide and vehicle",
+        "Pickup and drop-off at your apartment",
+        "Not included: monument tickets and meals",
+      ],
+      cancellation: ["Free cancellation up to 24 hours before the tour."],
+      practical: [
+        "A dedicated driver joins for groups over 8.",
+        "Comfortable shoes recommended — Sintra is hilly.",
+      ],
+    },
+  },
+  "fatima-tour": {
+    badges: ["Free cancellation · 24h", "Private group"],
+    facts: [
+      { icon: "clock", title: "Full day · ~9 hours", note: "08:30 – 17:30, back in Lisbon by early evening" },
+      { icon: "group", title: "Up to 25 guests", note: "Private — never shared with strangers" },
+      { icon: "language", title: "Portuguese, English, Spanish", note: "Your driver-guide's languages" },
+      { icon: "car", title: "Pickup at your apartment", note: "Door to door, anywhere in Lisbon" },
+    ],
+    about_title: "The spiritual heart of Portugal, in one unhurried day",
+    price_note: "€480 total for a private group of 1–5",
+    booking_rows: [
+      { label: "Duration", value: "Full day · ~9 h" },
+      { label: "Group", value: "Private, up to 25" },
+      { label: "Cancellation", value: "Free up to 24h" },
+    ],
+    good_to_know: {
+      included: [
+        "Private driver-guide and vehicle",
+        "Pickup and drop-off at your apartment",
+        "Not included: monument tickets and meals",
+      ],
+      cancellation: ["Free cancellation up to 24 hours before the tour."],
+      practical: [
+        "A dedicated driver joins for groups over 8.",
+        "Comfortable shoes recommended — Óbidos is cobbled.",
+      ],
+    },
+  },
+  "tagus-sunset-sailing": {
+    badges: ["Private charter", "Barbecue & open bar add-ons"],
+    facts: [
+      { icon: "clock", title: "2–8 hours", note: "Choose your route and duration" },
+      { icon: "group", title: "Up to 18 guests", note: "Depending on the boat" },
+      { icon: "pin", title: "Departs from Lisbon", note: "Past Belém, Alfama or out to Cascais" },
+    ],
+    about_title: "See Lisbon the way it was meant to be seen",
+    price_note: "2 hours on the Sailing Boat Fado, up to 6 guests",
+    booking_rows: [
+      { label: "Duration", value: "2–8 hours" },
+      { label: "Group", value: "Private, up to 18" },
+    ],
+    good_to_know: {
+      included: ["Skipper and fuel", "Add-ons: barbecue (€14 / person), open bar (€8 / person)"],
+      practical: ["Swimming stops on the 4h and 8h routes in the summer months."],
+    },
+  },
+  "surf-lesson": {
+    badges: ["All levels", "Board & wetsuit included"],
+    facts: [
+      { icon: "clock", title: "~2.5 hours", note: "Basics on the sand, then into the water" },
+      { icon: "group", title: "Up to 6 per instructor", note: "Small groups, split by ability" },
+      { icon: "language", title: "English-speaking instructor", note: "Certified surf school" },
+      { icon: "pin", title: "Carcavelos beach", note: "Moved to a better beach if needed" },
+    ],
+    about_title: "Your first waves, on Lisbon's coast",
+    included_title: "Every lesson includes",
+    booking_rows: [
+      { label: "Duration", value: "~2.5 hours" },
+      { label: "Group", value: "Up to 6" },
+      { label: "Cancellation", value: "Free up to 24h" },
+    ],
+    good_to_know: {
+      included: ["Board, wetsuit and insurance"],
+      cancellation: [
+        "Free cancellation up to 24 hours before the lesson.",
+        "Bad weather: relocated, postponed or fully refunded.",
+      ],
+      practical: ["The surf school makes the final call on conditions."],
+    },
+  },
+};
 
 const sameSlugAllLocales = (value: string) => ({ en: value, pt: value, es: value, fr: value });
 
@@ -590,7 +806,10 @@ const ingestPhoto = (seed: ServiceSeed) =>
  * same credit (so a re-run uploads nothing), then replace the service's `service_media`
  * rows. Seed-owned gallery assets the service no longer references are deleted.
  */
-async function syncGallery(serviceId: string, seed: ServiceSeed): Promise<string> {
+async function syncGallery(
+  serviceId: string,
+  seed: ServiceSeed,
+): Promise<{ ids: string[]; summary: string }> {
   const wanted = seed.gallery ?? [];
   const current = await db
     .select({ media_id: service_media.media_id, credit: media_asset.credit })
@@ -630,7 +849,10 @@ async function syncGallery(serviceId: string, seed: ServiceSeed): Promise<string
       removed++;
     }
   }
-  return `gallery ${ids.length} (${uploaded} uploaded${removed ? `, ${removed} removed` : ""})`;
+  return {
+    ids,
+    summary: `gallery ${ids.length} (${uploaded} uploaded${removed ? `, ${removed} removed` : ""})`,
+  };
 }
 
 /**
@@ -729,9 +951,24 @@ async function upsertServices(categoryIds: Map<string, string>): Promise<void> {
       id = ins!.id;
     }
 
+    // A seed without a gallery leaves whatever staff attached in /admin/services alone.
+    const gallery = seed.gallery
+      ? await syncGallery(id, seed)
+      : { ids: [] as string[], summary: "gallery untouched" };
+
     // Same shape the admin editor saves: the validated object as one [T] JSON field,
-    // cleared when every section is empty.
-    const detail = serviceDetailContent.parse(seed.detail ?? {});
+    // cleared when every section is empty. Itinerary `media` refs ("cover", "gallery:<i>")
+    // become the uploaded assets' ids.
+    const raw = { ...seed.detail, ...SKELETON[seed.slug] } as Record<string, unknown>;
+    if (Array.isArray(raw.itinerary)) {
+      raw.itinerary = (raw.itinerary as Array<Record<string, unknown>>).map(({ media, ...step }) => {
+        if (typeof media !== "string") return step;
+        const mediaId = media === "cover" ? coverId : gallery.ids[Number(media.split(":")[1])];
+        if (!mediaId) throw new Error(`${seed.slug}: itinerary media "${media}" not found`);
+        return { ...step, media_id: mediaId };
+      });
+    }
+    const detail = serviceDetailContent.parse(raw);
 
     await setSlugs(SERVICE, id, sameSlugAllLocales(seed.slug));
     await setSourceContent(SERVICE, id, {
@@ -743,10 +980,8 @@ async function upsertServices(categoryIds: Map<string, string>): Promise<void> {
       cta_label: seed.ctaLabel,
       detail: isEmptyDetail(detail) ? null : JSON.stringify(detail),
     });
-    // A seed without a gallery leaves whatever staff attached in /admin/services alone.
-    const gallery = seed.gallery ? await syncGallery(id, seed) : "gallery untouched";
     console.log(
-      `  service  ${existing ? "updated" : "created"}  ${seed.slug} (cover ${action}, ${gallery})`,
+      `  service  ${existing ? "updated" : "created"}  ${seed.slug} (cover ${action}, ${gallery.summary})`,
     );
   }
 }

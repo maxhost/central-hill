@@ -59,6 +59,8 @@ export interface ServiceDetail extends ServiceSummary {
    * notes), locale-resolved; every section empty when the service has none (`./detail`).
    */
   detail: ServiceDetailContent;
+  /** Resolved itinerary thumbnails, keyed by the step's `media_id` (steps without one show their number). */
+  stepImages: Record<string, MediaImageData>;
   /** Ordered gallery images (excludes the cover). */
   gallery: MediaImageData[];
   /** Resolved CTA when one applies (external link / enquiry target). */
@@ -79,7 +81,12 @@ export {
 
 export {
   EMPTY_DETAIL,
+  FACT_ICONS,
   serviceDetailContent,
+  type BookingRow as DetailBookingRow,
+  type FactIcon as DetailFactIcon,
+  type GoodToKnow as DetailGoodToKnow,
+  type KeyFact as DetailKeyFact,
   type ExtraOption as DetailExtraOption,
   type ItineraryStep as DetailItineraryStep,
   type OptionGroup as DetailOptionGroup,

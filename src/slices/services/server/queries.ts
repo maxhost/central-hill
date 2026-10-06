@@ -261,11 +261,35 @@ async function _getServiceBySlug(locale: Locale, slugValue: string): Promise<Ser
     const source = await loadContent([{ type: SERVICE, id }], "en");
     detail = parseDetail(source.get(SERVICE, id, "detail"));
   }
+  detail ??= EMPTY_DETAIL;
+  // Legacy flat `notes` (written before the grouped good-to-know) render as "practical".
+  const gtk = detail.good_to_know;
+  if (detail.notes.length && !gtk.included.length && !gtk.cancellation.length && !gtk.practical.length) {
+    detail = { ...detail, good_to_know: { ...gtk, practical: detail.notes } };
+  }
+
+  // Itinerary thumbnails (optional per step), keyed by media id.
+  const stepIds = [...new Set(detail.itinerary.flatMap((s) => (s.media_id ? [s.media_id] : [])))];
+  const stepImages: Record<string, MediaImageData> = {};
+  if (stepIds.length) {
+    const [stepMedia, stepAlt] = await Promise.all([
+      loadMedia(stepIds),
+      loadContent(
+        stepIds.map((mid) => ({ type: "media_asset", id: mid })),
+        locale,
+      ),
+    ]);
+    for (const mid of stepIds) {
+      const img = toImageData(stepMedia.get(mid), stepAlt.get("media_asset", mid, "alt") ?? "");
+      if (img) stepImages[mid] = img;
+    }
+  }
 
   return {
     ...summary,
     body: ctx.content.get(SERVICE, id, "body") ?? "",
-    detail: detail ?? EMPTY_DETAIL,
+    detail,
+    stepImages,
     gallery,
     cta,
     metaTitle: ctx.content.get(SERVICE, id, "meta_title") ?? undefined,
@@ -276,9 +300,11 @@ async function _getServiceBySlug(locale: Locale, slugValue: string): Promise<Ser
 }
 
 export function getServiceBySlug(locale: Locale, slugValue: string): Promise<ServiceDetail | null> {
+  // Bump the key version whenever the ServiceDetail shape changes, so a cached entry of the
+  // old shape is never served to the new renderer.
   return unstable_cache(
     () => _getServiceBySlug(locale, slugValue),
-    ["services:getServiceBySlug", locale, slugValue],
+    ["services:getServiceBySlug:v2", locale, slugValue],
     { tags: [SERVICE_TAGS.list] },
   )();
 }
