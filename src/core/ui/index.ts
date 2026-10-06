@@ -32,6 +32,8 @@ export type { StepGalleryItem } from "./step-gallery";
 export { DualCtaPanels, type DualCtaPanel } from "./dual-cta-panels";
 /** Dark "feature band" closing CTA: photo one side, eyebrow/headline/body/CTA/contact-line the other. */
 export { FeatureCtaBand } from "./feature-cta-band";
+/** Dark "feature band" closing CTA, centred and photo-less: eyebrow/headline/body/CTA/contact-line. */
+export { CenteredCtaBand } from "./centered-cta-band";
 /** A single bordered, solid dark "feature band" panel: eyebrow/title/body/CTA/contact-line, no image. */
 export { FeaturePanel } from "./feature-panel";
 /** Site-wide header chrome (sticky bar + hover-dropdown mechanics) — see `nav-bar.tsx`. */

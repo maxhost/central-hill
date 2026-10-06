@@ -1,131 +1,51 @@
 import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { mediaImgTag } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { ChipBar } from "@core/ui";
-import type { GuideCityGroup, GuidePageSummary, GuideTemplate } from "../contract";
+import { CenteredCtaBand, ChipBar, Hero, SectionHead } from "@core/ui";
 import { listGuideCityGroups } from "../contract";
+import { GuideCard } from "./components/guide-card";
 
 /**
- * Guides index ("What to Do in Lisbon") — the approved `mock/what-to-do.html` embedded
- * 1:1 inside the live app shell, now **DB-driven** like `buildings-listing.tsx`: the
- * surrounding chrome (hero, city bar, "Top Recommendations", closing CTA band) is the
- * mock's static markup verbatim, but the "Explore the City" card grid is generated from
- * the published `guide_page` rows (`listGuideCityGroups`, ISR-cached + tagged
- * `guide-list`/`city-list` → a guides or geography publish busts it). Page styles stay
- * scoped under `.mk` (see `src/app/mock.css`) so nothing leaks to Home/admin. Cards link
- * to each guide's real per-locale detail slug (`/[locale]/guides/[city]/[slug]`).
+ * Guides index ("What to Do in Lisbon") — the approved `mock/what-to-do.html`, being ported
+ * to components. The "Explore the City" card grids are **DB-driven** like
+ * `buildings-listing.tsx`, generated from the published `guide_page` rows (`listGuideCityGroups`, ISR-cached + tagged
+ * `guide-list`/`city-list` → a guides or geography publish busts it). Cards link to each
+ * guide's real per-locale detail slug (`/[locale]/guides/[city]/[slug]`).
  *
- * The **city bar is real JSX** — `core/ui`'s new `ChipBar` (see that component's docstring
- * for why it's a new primitive rather than reusing an existing one, and why it's
- * presentational-only). It renders **between** two separate `.mk` blocks instead of nested
- * inside one (required — `.mk * { margin:0; padding:0 }` is un-layered CSS in `mock.css`
- * and always beats a layered Tailwind utility, so a `.mk`-nested instance would silently
- * lose its own padding/gap; see `ChipBar`'s docstring). Chip copy ("Choose your city",
- * city names, "Soon", the closing note) now goes through `t()` like the rest of the page
- * chrome, rather than staying hardcoded English — the one other change from the raw mock.
- * Still no real city filter behind it: `listGuideCityGroups` renders every published city
- * unconditionally (see the component's docstring).
- *
- * "Top Recommendations" picks and the closing stats band stay the mock's static decorative
- * markup for now (content brief 4.2 scopes only the guide pages themselves to the DB in
- * this pass).
+ * Now JSX: the **hero** (`core/ui`'s `Hero`, Buildings listing configuration), the **city
+ * bar** (`ChipBar`; still no real filter behind it — `listGuideCityGroups` renders every
+ * published city), every section **shell + head** (standard page shell, `SectionHead`), and
+ * the city **guide-card grids** (the slice's own `GuideCard` — the `.pcard.gcard` port — in
+ * the Buildings listing's grid). Still raw, in its own small `.mk` block (styles scoped under
+ * `.mk`, see `src/app/mock.css`, so nothing leaks to Home/admin): only the "Top
+ * Recommendations" card grid (static decorative picks; content brief 4.2 scopes only the guide
+ * pages themselves to the DB in this pass). The closing band is `core/ui`'s `CenteredCtaBand`
+ * (its copy is still a hardcoded English literal, as before). `SectionHead`s and
+ * `ChipBar` stay outside `.mk` (`.mk * { margin:0; padding:0 }` is un-layered CSS and beats
+ * layered Tailwind utilities; see `ChipBar`'s docstring). `PAGE_STYLE` only holds the `.mk`-scoped
+ * Top Recommendations card rules, so its `<style>` can sit anywhere in the page.
  */
 
-/** HTML-escape DB content before interpolating into the `.mk` markup string. */
-function esc(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-/** Iconoir glyph per editorial template — matches the mock's original per-card icon. */
-const TEMPLATE_ICON: Record<GuideTemplate, string> = {
-  landing: "iconoir-bank",
-  eat: "iconoir-pizza-slice",
-  beaches: "iconoir-sea-waves",
-  events: "iconoir-music-double-note",
-  secrets: "iconoir-binocular",
-  families: "iconoir-group",
-  groups: "iconoir-community",
-  travellers: "iconoir-compass",
-  custom: "iconoir-compass",
-};
-
-const CARD_SIZES = "(max-width: 680px) 100vw, (max-width: 980px) 50vw, 420px";
-
-function guideCardHtml(guide: GuidePageSummary, locale: Locale, viewLabel: string): string {
-  const imgTag = mediaImgTag({
-    data: guide.hero,
-    fallbackAlt: guide.title,
-    sizes: CARD_SIZES,
-  });
-  const icon = TEMPLATE_ICON[guide.template];
-  return `
-      <a class="pcard gcard" href="/${locale}/guides/${esc(guide.city.slug)}/${esc(guide.slug)}">
-        <div class="ph">${imgTag}</div>
-        <div class="pbody">
-          <i class="${icon} g-ico" aria-hidden="true"></i>
-          <h3>${esc(guide.title)}</h3>
-          ${guide.intro ? `<p class="g-teaser">${esc(guide.intro)}</p>` : ""}
-          <div class="view">${esc(viewLabel)} →</div>
-        </div>
-      </a>`;
-}
-
 const PAGE_STYLE = `
-.mk .gcard .ph::after{content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(18,16,13,0) 38%,rgba(18,16,13,.42) 100%)}
-.mk .gcard .g-ico{font-size:28px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:14px}
-.mk .gcard .pbody h3{font-size:22px}
-.mk .gcard .g-teaser{font-size:14.5px;color:var(--ink-soft);margin-top:10px;line-height:1.55}
-
 .mk .rec-loc{display:inline-flex;align-items:center;gap:6px;margin-top:14px;
   font-size:12.5px;letter-spacing:.04em;color:var(--ink-soft)}
 .mk .rec-loc i{font-size:15px;color:var(--accent-deep)}
 .mk .rec-type{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);font-weight:600}
 `;
 
-function cityGroupHtml(group: GuideCityGroup, locale: Locale, labels: { guidesIn: (city: string) => string; view: string }): string {
-  return `
-<section>
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">Explore the City</span>
-      <h2 class="section-title">${esc(labels.guidesIn(group.city.name))}</h2>
-    </div>
+const HERO_IMG =
+  "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70";
+const HERO_ALT = "Sunlit rooftops, tiled façades and the Tagus river across Lisbon's historic centre";
 
-    <div class="pf-grid reveal">${group.guides.map((g) => guideCardHtml(g, locale, labels.view)).join("")}
-    </div>
-  </div>
-</section>`;
-}
+// Standard page shell (Real Estate, Guests): padding, 84px scroll margin, 1240px/28px column,
+// and the warm `alt` band.
+const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
+const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
+const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
 
-function HERO(locale: Locale, eyebrow: string, title: string, intro: string): string {
-  return `
-<section class="hero compact" style="padding:0">
-  <img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70" alt="Sunlit rooftops, tiled façades and the Tagus river across Lisbon's historic centre">
-  <div class="wrap">
-    <span class="eyebrow">${esc(eyebrow)}</span>
-    <h1>${esc(title)}</h1>
-    <p>${esc(intro)}</p>
-  </div>
-</section>`;
-}
-
-function TAIL(locale: Locale): string {
-  return `
-<section class="alt">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow">Local Favourites</span>
-      <h2 class="section-title">Top Recommendations</h2>
-      <p class="lede" style="margin-top:16px">A taste of what's inside the guides — a table, a viewpoint and a beach our team returns to again and again.</p>
-    </div>
-
-    <div class="pf-grid reveal">
+/** The still-raw "Top Recommendations" card grid (static picks; the shell and head are JSX). */
+const RECOMMENDATIONS_HTML = `
+    <div class="pf-grid">
 
       <a class="pcard" href="#">
         <div class="ph"><img src="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=900&q=70" alt="Plated seafood and wine at a traditional Lisbon restaurant"></div>
@@ -157,48 +77,33 @@ function TAIL(locale: Locale): string {
         </div>
       </a>
 
-    </div>
-  </div>
-</section>
-
-<section class="stats" style="padding:var(--section-y) 0">
-  <div class="wrap" style="text-align:center;max-width:760px">
-    <span class="eyebrow" style="color:var(--feature-accent)">Your Base in the City</span>
-    <h2 class="section-title" style="color:#fff;margin-top:14px">Make It a Stay to Remember</h2>
-    <p style="color:var(--on-feature-soft);font-size:18px;margin:18px auto 0;max-width:60ch">Explore Lisbon by day, then come home to a design-led apartment in one of the city's most storied neighbourhoods — professionally managed, ready when you are.</p>
-    <div style="margin-top:34px">
-      <a class="btn btn-accent" href="/${locale}/buildings">Browse Our Apartments →</a>
-    </div>
-  </div>
-</section>`;
-}
+    </div>`;
 
 export async function GuidesListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
   const [groups, t] = await Promise.all([listGuideCityGroups(locale), getTranslations("guides")]);
 
-  const bodyHtml = groups.length
-    ? groups.map((g) => cityGroupHtml(g, locale, { guidesIn: (city) => t("guidesIn", { city }), view: t("viewGuide") })).join("")
-    : `
-<section>
-  <div class="wrap">
-    <p class="reveal" style="color:var(--ink-soft)">${esc(t("empty"))}</p>
-  </div>
-</section>`;
-
   return (
     <Fragment>
-      <div className="mk" data-page="guides">
-        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-        <div dangerouslySetInnerHTML={{ __html: HERO(locale, t("eyebrow"), t("title"), t("intro")) }} />
-      </div>
-      {/*
-       * Real JSX — `core/ui`'s `ChipBar` (see its docstring + this file's top docstring).
-       * Rendered outside `.mk` on purpose (the margin/padding reset trap), between the hero's
-       * `.mk` block and the city-sections/TAIL `.mk` block below — CSS selectors don't care
-       * about DOM proximity, so `PAGE_STYLE`'s `<style>` tag above still reaches `.mk`
-       * elements in the second block.
-       */}
+      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+      {/* Hero: Buildings listing's exact `Hero` configuration (as on Guests and Real Estate). */}
+      <Hero
+        background={
+          // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+          <img src={HERO_IMG} alt={HERO_ALT} className="absolute inset-0 -z-10 h-full w-full object-cover" />
+        }
+        compact
+        align="center"
+        overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.5)_0%,rgba(18,16,13,0.46)_45%,rgba(18,16,13,0.88)_100%)]"
+        wrapClassName="mx-auto max-w-[1600px] p-10"
+        copyClassName="max-w-none"
+        headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
+        subtitleClassName="mt-5 max-w-[60ch] text-lg"
+        eyebrow={t("eyebrow")}
+        headline={t("title")}
+        subtitle={t("intro")}
+      />
+      {/* Real JSX — `core/ui`'s `ChipBar` (see its docstring + this file's top docstring). */}
       <ChipBar
         label={t("chooseCity")}
         items={[
@@ -208,9 +113,58 @@ export async function GuidesListing({ locale }: { locale: Locale }) {
         ]}
         note={t("cityNote")}
       />
-      <div className="mk" data-page="guides">
-        <div dangerouslySetInnerHTML={{ __html: bodyHtml + TAIL(locale) }} />
-      </div>
+      {/*
+       * One section per city: JSX shell + `SectionHead` + a grid of `GuideCard`s (the Buildings
+       * listing's grid: 3/2/1 columns at `mock.css`'s `.pf-grid` 980/680px breakpoints, 26px
+       * gap). Static, like the original (its `.reveal` was neutralised by `mock.css`). The first
+       * city's first row (3 cards) gets `priority`.
+       */}
+      {groups.length ? (
+        groups.map((g, gi) => (
+          <section key={g.city.slug} className={SECTION_SHELL}>
+            <div className={SECTION_WRAP}>
+              <SectionHead eyebrow="Explore the City" headline={t("guidesIn", { city: g.city.name })} />
+              <div className="grid grid-cols-1 gap-[26px] min-[681px]:grid-cols-2 min-[981px]:grid-cols-3">
+                {g.guides.map((guide, i) => (
+                  <GuideCard
+                    key={guide.id}
+                    guide={guide}
+                    locale={locale}
+                    viewLabel={t("viewGuide")}
+                    priority={gi === 0 && i < 3}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        ))
+      ) : (
+        <section className={SECTION_SHELL}>
+          <div className={SECTION_WRAP}>
+            <p className="text-ink-soft">{t("empty")}</p>
+          </div>
+        </section>
+      )}
+      {/* "Top Recommendations": JSX shell on the `alt` band + `SectionHead`; cards still raw. */}
+      <section className={`${SECTION_SHELL} ${ALT_BAND}`}>
+        <div className={SECTION_WRAP}>
+          <SectionHead
+            eyebrow="Local Favourites"
+            headline="Top Recommendations"
+            intro="A taste of what's inside the guides — a table, a viewpoint and a beach our team returns to again and again."
+          />
+          <div className="mk" data-page="guides">
+            <div dangerouslySetInnerHTML={{ __html: RECOMMENDATIONS_HTML }} />
+          </div>
+        </div>
+      </section>
+      {/* Closing CTA: `core/ui`'s `CenteredCtaBand` (the mock's centred dark `.stats` band). */}
+      <CenteredCtaBand
+        eyebrow="Your Base in the City"
+        headline="Make It a Stay to Remember"
+        body="Explore Lisbon by day, then come home to a design-led apartment in one of the city's most storied neighbourhoods — professionally managed, ready when you are."
+        cta={{ href: `/${locale}/buildings`, label: "Browse Our Apartments →" }}
+      />
     </Fragment>
   );
 }
