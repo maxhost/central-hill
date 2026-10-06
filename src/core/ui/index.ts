@@ -78,8 +78,8 @@ export { AmenityGrid, type AmenityGridItem } from "./amenity-grid";
 export { CertificationCards, type CertificationCardItem } from "./certification-cards";
 /** Grid (3→1 cols) of bordered option cards: serif title + uppercase tagline + hairline checklist, hover lift, optional featured card w/ floating pill badge. */
 export { ChecklistCards, type ChecklistCard } from "./checklist-cards";
-/** Borderless rounded photo mosaic (`2fr 1fr 1fr`, first photo a 2-row lead tile; 2 cols ≤680px) — caller-built images. */
-export { MosaicGallery } from "./mosaic-gallery";
+/** Borderless rounded photo mosaic (`2fr 1fr 1fr`, first photo a 2-row lead tile; 2 cols ≤680px) — caller-built images; `adaptive` = count-aware 1/2/3/4/5+ layouts at fixed heights + bottom-right `overlay` slot. */
+export { MosaicGallery, MOSAIC_ADAPTIVE_MAX } from "./mosaic-gallery";
 /** Hairline grid of 1–2 solid CTA panels (light `surface` / dark `feature`): eyebrow, serif title, body, ink or accent button, contact line. */
 export { SplitCtaPanels, type SplitCtaPanel } from "./split-cta-panels";
 /** Editorial intro split: serif headline + lede + paragraphs + optional inline accent badge (caller icon) beside one full-height cover image (1.05fr/.95fr → 1 col ≤880px). */
@@ -117,3 +117,13 @@ export { ContactSplit, type ContactSplitRow } from "./contact-split";
 export { PageHead } from "./page-head";
 /** Pill search field for `PageHead`'s slot: `<form role="search">` + `<input name="q">`; inert (GET to the current URL) until search lands. */
 export { PageHeadSearch } from "./page-head";
+/** Left-aligned detail-page title block: breadcrumb, eyebrow, serif `<h1>`, tagline, dot-separated meta line (caller nodes). */
+export { DetailTitle, type DetailTitleCrumb } from "./detail-title";
+/** Key-facts grid (2 → 1 cols ≤560px): 44px round hairline icon disc (caller svg) + bold title + optional note. */
+export { IconFactGrid, type IconFactItem } from "./icon-fact-grid";
+/** Detail-page body grid: content column beside a fixed 380px aside (`minmax(0,1fr) 380px` → 1 col ≤980px), standard column + vertical padding. */
+export { DetailLayout } from "./detail-layout";
+/** Sticky (≥981px, `top:96px`) raised hairline card shell for a detail page's aside column — caller content. */
+export { StickyAside } from "./sticky-aside";
+/** Content-column block: optional eyebrow + serif `<h2>` + body, 40px padding, hairline top border between blocks (first drops it). */
+export { ContentBlock } from "./content-block";

@@ -34,6 +34,10 @@ export type EnquiryContactLine = {
  * trigger independently (each at 15% of its own height in view). Off by default (static), same
  * convention as the other `core/ui` sections, whose callers opt in at the call site.
  *
+ * `eyebrow` (additive, service detail): an optional `SectionHead` eyebrow above the title, for the
+ * service page's "Add this to your stay" label (`mock/service-detail.html` `.enq`). Omitted →
+ * the head renders exactly as before.
+ *
  * Purely presentational: no i18n, no fetching — every string arrives pre-translated. `id` lands
  * on the `<section>` (in-page CTAs anchor to it; `scroll-mt-[84px]` clears the fixed nav). Sets
  * `line-height:1.6` on the section, which the lede, contact block (overridden to 1.9) and the
@@ -42,6 +46,7 @@ export type EnquiryContactLine = {
  */
 export function EnquirySplit({
   id,
+  eyebrow,
   title,
   lede,
   contact,
@@ -49,6 +54,8 @@ export function EnquirySplit({
   children,
 }: {
   id?: string;
+  /** Optional uppercase label above the title (additive; passed to `SectionHead`'s `eyebrow`). */
+  eyebrow?: string;
   title: string;
   lede?: string;
   contact?: { title: string; lines: readonly EnquiryContactLine[] };
@@ -62,7 +69,7 @@ export function EnquirySplit({
       <div className="mx-auto max-w-[1240px] px-[28px]">
         <div className="grid grid-cols-1 gap-[34px] [align-items:start] min-[981px]:grid-cols-[.85fr_1.15fr] min-[981px]:gap-[56px]">
           <Col>
-            <SectionHead flush headline={title} intro={lede || undefined} />
+            <SectionHead flush eyebrow={eyebrow || undefined} headline={title} intro={lede || undefined} />
             {contact ? (
               <div className="mt-[34px] border-t border-t-line pt-[26px] text-[14.5px] leading-[1.9] text-ink-soft">
                 <b className="mb-[10px] block text-[12px] uppercase tracking-[0.14em] text-ink">{contact.title}</b>
