@@ -18,7 +18,19 @@
  * image is only re-fetched when the seed names a different photo than the one on the row
  * (tracked via `media_asset.credit`). Sections and places are fully replaced on every run
  * (delete + reinsert under the parent) since they have no public slug of their own to key on —
- * safe because nothing external links to a section/place id yet.
+ * safe because nothing external links to a section/place id yet (so their ids change per run).
+ *
+ * **Images survive the rebuild.** Section header photos and the optional per-place photos
+ * (`PlaceSeed.image` → `guide_place.media_id`; given to every eat/beach place and the
+ * viewpoints — all candidates for the index's Top Recommendations) go through a per-page
+ * reuse pool keyed by credit: before the subtree is deleted, the seed-owned assets it
+ * referenced are indexed by credit, and the new rows claim from that pool before uploading
+ * anything. A re-run with no photo change therefore uploads nothing; an asset the seed no
+ * longer claims is deleted (R2 object + row + alt). Assets a person uploaded (other/no
+ * credit) are never reused or deleted. The run prints `uploaded / reused / stale removed`.
+ *
+ * Env: run with `--env-file=.env.local` (Node's loader never overrides a variable that is
+ * already set, so a one-off `R2_S3_ENDPOINT=… pnpm tsx …` prefix wins over the file).
  *
  *   pnpm tsx --env-file=.env.local --tsconfig scripts/tsconfig.json scripts/seed-guides.ts
  *   DRY=1 pnpm tsx --env-file=.env.local --tsconfig scripts/tsconfig.json scripts/seed-guides.ts   # report only
@@ -56,14 +68,22 @@ const SEED_CREDIT_PREFIXES = ["Pexels · photo-", "Unsplash · photo-", "Wikimed
 const isSeedOwnedCredit = (credit: string | null | undefined) =>
   Boolean(credit) && SEED_CREDIT_PREFIXES.some((p) => credit!.startsWith(p));
 
+/** 4:3 place photo (the `PlaceCard` / Top Recommendations tile ratio). */
+const placeImage = (id: string, alt: string) => pexelsImage(id, alt, 1600, 1200);
+
 interface PlaceSeed {
   name: string;
   description?: string;
+  /** Free-text type label shown on the card ("Restaurant", "Viewpoint", "Beach", …). The
+   *  guides index's Top Recommendations match it case-insensitively (`listTopRecommendations`). */
   category?: string;
   address?: string;
   phone?: string;
   priceTier?: "budget" | "mid" | "premium";
   openingHours?: string;
+  /** Optional photo → `guide_place.media_id`. Each was checked visually against the place's
+   *  subject; the alt describes what is actually in the frame, not the venue's name. */
+  image?: ImageSeed;
 }
 
 interface SectionSeed {
@@ -135,10 +155,26 @@ const GUIDES: GuidePageSeed[] = [
           1200,
         ),
         places: [
-          { name: "Miradouro da Graça", category: "Viewpoint" },
-          { name: "São Pedro de Alcântara", category: "Viewpoint" },
-          { name: "Portas do Sol", category: "Viewpoint" },
-          { name: "Nossa Senhora do Monte", category: "Viewpoint" },
+          {
+            name: "Miradouro da Graça",
+            category: "Viewpoint",
+            image: placeImage("19952255", "Lisbon's tiled rooftops and the São Vicente de Fora monastery seen from a hilltop viewpoint"),
+          },
+          {
+            name: "São Pedro de Alcântara",
+            category: "Viewpoint",
+            image: placeImage("34452546", "Terracotta rooftops of the Baixa and Rossio seen from a viewpoint above the city"),
+          },
+          {
+            name: "Portas do Sol",
+            category: "Viewpoint",
+            image: placeImage("5069524", "White houses and red roofs of Alfama below the São Vicente de Fora monastery"),
+          },
+          {
+            name: "Nossa Senhora do Monte",
+            category: "Viewpoint",
+            image: placeImage("16343720", "A sweeping panorama of Lisbon's rooftops to the river under a clear blue sky"),
+          },
           { name: "Topo Martim Moniz", category: "Rooftop Bar" },
           { name: "Park Rooftop", category: "Rooftop Bar" },
         ],
@@ -229,27 +265,33 @@ const GUIDES: GuidePageSeed[] = [
         places: [
           {
             name: "A Provinciana",
+            category: "Tasca",
             description:
               "Different daily dishes with grandma's-food quality. Cabidela and polvo à lagareiro are specialties.",
             address: "Travessa do Forno, 23/25",
             phone: "+351 21 346 4704",
             priceTier: "budget",
+            image: placeImage("921361", "Grilled octopus with potatoes, herbs and olive oil on a white plate"),
           },
           {
             name: "Cantinho do Bem Estar",
+            category: "Tasca",
             description:
               "The best of Alentejo cuisine in a cosy room. Try the migas à alentejana or vitela com molho de coentros.",
             address: "Rua do Norte 46",
             phone: "+351 21 346 4265",
             priceTier: "mid",
+            image: placeImage("4344576", "Sliced grilled steak with roast potatoes, salad and a glass of red wine"),
           },
           {
             name: "Solar dos Presuntos",
+            category: "Portuguese Cuisine",
             description:
               "Start with presunto, then arroz de lagosta e gambas or cozido à portuguesa — a Lisbon favourite.",
             address: "Rua das Portas de Santo Antão 150",
             phone: "+351 21 342 4253",
             priceTier: "premium",
+            image: placeImage("16743489", "A pan of seafood rice with lobster, prawns and mussels"),
           },
         ],
       },
@@ -260,25 +302,31 @@ const GUIDES: GuidePageSeed[] = [
         places: [
           {
             name: "Ramiro",
+            category: "Restaurant",
             description: "The freshest seafood in every variety — leave room for the famous prego at the end.",
             address: "Avenida Almirante Reis, 1",
             phone: "+351 21 885 1024",
             priceTier: "premium",
+            image: placeImage("4869334", "A platter of grilled crab, prawns and shellfish with fries and salad"),
           },
           {
             name: "Cervejaria Quintada",
+            category: "Seafood",
             description: "Choose your fish from the counter, then try ameijoas à bulhão pato while it grills.",
             address: "Av. Eng. Bonneville Franco, 8",
             phone: "+351 21 443 5366",
             priceTier: "mid",
+            image: placeImage("2233733", "Whole fish grilling over open flames on a charcoal grill"),
           },
           {
             name: "Ponto Final",
+            category: "Restaurant",
             description:
               "Across the river in Cacilhas, reachable by ferry. Pataniscas or arroz de tamboril with an unbeatable view.",
             address: "Cais do Ginjal 72, Almada",
             phone: "+351 212 760 743",
             priceTier: "mid",
+            image: placeImage("8694616", "Grilled prawns and a bowl of mussels served with a cold beer"),
           },
         ],
       },
@@ -289,25 +337,31 @@ const GUIDES: GuidePageSeed[] = [
         places: [
           {
             name: "Adega do Tagarro",
+            category: "Tavern",
             description: "In the middle of Bairro Alto. Ask for the group menu — appetiser, main, drinks and dessert.",
             address: "Rua Luz Soriano, 21",
             phone: "+351 21 346 4620",
             priceTier: "budget",
+            image: placeImage("6760878", "Friends sharing wine and food at a table on a Lisbon terrace"),
           },
           {
             name: "Cervejaria Trindade",
+            category: "Beer Hall",
             description:
               "A former convent with room to match. Seafood, beer and their signature steak are the specialities.",
             address: "Rua Nova da Trindade, 20C",
             phone: "+351 21 342 3506",
             priceTier: "mid",
+            image: placeImage("260922", "A large, warmly lit beer hall and restaurant interior"),
           },
           {
             name: "Príncipe do Calhariz",
+            category: "Restaurant",
             description: "A familiar, welcoming atmosphere — veal grenadines, roasted chicken and tuna steak.",
             address: "Calçada do Combro, 28",
             phone: "+351 21 342 0971",
             priceTier: "mid",
+            image: placeImage("7627420", "A plated grilled meat dish with fresh vegetables and a glass of wine"),
           },
         ],
       },
@@ -318,24 +372,30 @@ const GUIDES: GuidePageSeed[] = [
         places: [
           {
             name: "Time Out Market",
+            category: "Food Hall",
             description: "A food hall of its own invention — chef's signature dishes under one roof.",
             address: "Av. 24 de Julho 49",
             phone: "+351 21 395 1274",
             priceTier: "budget",
+            image: placeImage("3570077", "People eating at tables between food stalls in an indoor food hall"),
           },
           {
             name: "Seen",
+            category: "Restaurant",
             description: "Atop the Tivoli Hotel — incredible decor, breathtaking views and a wagyu steak worth the trip.",
             address: "Av. da Liberdade 185, 9º floor",
             phone: "+351 914 673 356",
             priceTier: "premium",
+            image: placeImage("8697542", "A gourmet steak with berries and a vivid red sauce on a white plate"),
           },
           {
             name: "Guilty",
+            category: "Restaurant & Bar",
             description: "Burgers, pizzas and steaks with a modern touch — turns into a dance bar after dinner.",
             address: "Rua Barata Salgueiro, 28",
             phone: "+351 21 191 3590",
             priceTier: "mid",
+            image: placeImage("27998840", "A burger with a fried egg and a side of fries on a restaurant table"),
           },
         ],
       },
@@ -346,24 +406,30 @@ const GUIDES: GuidePageSeed[] = [
         places: [
           {
             name: "The Insólito",
+            category: "Restaurant",
             description: "Super creative cuisine, in the dishes and the drinks — come with an open mind.",
             address: "Rua de São Pedro de Alcântara, 83",
             phone: "+351 21 130 3306",
             priceTier: "mid",
+            image: placeImage("19295070", "A rooftop restaurant terrace with tables under white pergolas above Lisbon"),
           },
           {
             name: "Madame Petisca",
+            category: "Petiscos",
             description: "An amazing river and bridge view. Try the lombinho de porco em ginja.",
             address: "Rua de Santa Catarina (Bica), 17, 3º",
             phone: "+351 91 515 0860",
             priceTier: "budget",
+            image: placeImage("17831963", "Lisbon rooftops stretching to the 25 de Abril Bridge and Cristo Rei"),
           },
           {
             name: "Noobai",
+            category: "Café-Bar",
             description: "Right by the Adamastor viewpoint — try the chilli basmati or mango with prawns.",
             address: "Miradouro de Santa Catarina",
             phone: "+351 21 346 5014",
             priceTier: "mid",
+            image: placeImage("5935182", "Friends clinking bottles on a sunny terrace"),
           },
         ],
       },
@@ -374,24 +440,30 @@ const GUIDES: GuidePageSeed[] = [
         places: [
           {
             name: "Belcanto",
+            category: "Fine Dining",
             description: "Chef José Avillez's two-star kitchen — luxurious Portuguese ingredients, technically flawless.",
             address: "Rua Serpa Pinto 10A",
             phone: "+351 21 342 0607",
             priceTier: "premium",
+            image: placeImage("30469688", "An array of artfully plated fine-dining courses on a stone table"),
           },
           {
             name: "100 Maneiras",
+            category: "Fine Dining",
             description: "Chef Ljubomir Stanišić tells his life story through three tasting-menu options.",
             address: "Rua do Teixeira, 39",
             phone: "+351 910 918 181",
             priceTier: "premium",
+            image: placeImage("2977514", "A chef plating a row of refined dishes in a professional kitchen"),
           },
           {
             name: "Alma",
+            category: "Fine Dining",
             description: "Chef Henrique Sá Pessoa's best-of tasting menu — ask for the 'Alma menu'.",
             address: "Rua da Anchieta, 15",
             phone: "+351 21 347 0650",
             priceTier: "premium",
+            image: placeImage("29145279", "A chef finishing a plated dish of grilled vegetables by hand"),
           },
         ],
       },
@@ -402,24 +474,30 @@ const GUIDES: GuidePageSeed[] = [
         places: [
           {
             name: "Nicolau",
+            category: "Brunch",
             description: "Right in downtown Lisbon. Green juice, açaí and locust bean cake are the house picks.",
             address: "Rua de São Nicolau, 15",
             phone: "+351 21 886 0312",
             priceTier: "mid",
+            image: placeImage("803897", "A brunch spread of bread, muffins, fresh fruit and spreads on a café table"),
           },
           {
             name: "Heim",
+            category: "Brunch",
             description: "Just three menus — yellow, green or red — and all of them good.",
             address: "Rua de Santos-O-Velho, 2",
             phone: "+351 21 248 0763",
             priceTier: "budget",
+            image: placeImage("3838632", "Latte art coffees, eggs with bacon and a fruit bowl at a café table"),
           },
           {
             name: "Zenith",
+            category: "Brunch",
             description: "Lisbon's top-rated brunch spot — don't miss the smoothie bowls and banana bread.",
             address: "Rua do Telhal, 4A",
             phone: "+351 21 152 7583",
             priceTier: "mid",
+            image: placeImage("8230033", "A smoothie bowl topped with banana, mango, berries and almonds"),
           },
         ],
       },
@@ -429,25 +507,31 @@ const GUIDES: GuidePageSeed[] = [
         image: pexelsImage("2531184", "Assorted colourful cocktails on a sunset terrace", 1600, 1200),
         places: [
           {
-            name: "Adamastor",
+            name: "Miradouro do Adamastor",
+            category: "Viewpoint",
             description: "A Lisbon late-afternoon institution — bring your own beer and watch the sunset.",
             address: "Miradouro de Santa Catarina",
             phone: "+351 21 343 0582",
             priceTier: "budget",
+            image: placeImage("30775136", "The 25 de Abril Bridge silhouetted against a pink sunset sky over the Tagus"),
           },
           {
             name: "Ribeira das Naus",
+            category: "Terrace",
             description: "Right on the river — sun loungers, a drink, and an unbeatable sunset.",
             address: "Avenida Ribeira das Naus",
             phone: "+351 21 408 8889",
             priceTier: "budget",
+            image: placeImage("9787527", "Wicker chairs and café tables on a sunny outdoor terrace"),
           },
           {
             name: "Jardim do Príncipe Real",
+            category: "Garden Terrace",
             description: "The garden terrace of Lisbon's trendiest neighbourhood — the after-work spot, Monday to Friday.",
             address: "Praça do Príncipe Real",
             phone: "+351 21 342 8334",
             priceTier: "budget",
+            image: placeImage("601169", "Wooden tables and chairs on a stone terrace surrounded by greenery"),
           },
         ],
       },
@@ -458,24 +542,30 @@ const GUIDES: GuidePageSeed[] = [
         places: [
           {
             name: "AO 26 – Vegan Food Project",
+            category: "Vegan",
             description: "Creative, gourmet vegan takes on Portuguese classics, including a vegan francesinha.",
             address: "Rua Vítor Cordon 26",
             phone: "+351 967 281 937",
             priceTier: "mid",
+            image: placeImage("17597408", "A vegan bowl of roasted squash, chickpeas, avocado and greens"),
           },
           {
             name: "Orteá – Vegan Collective",
+            category: "Vegan",
             description: "House-made cheeses and fermented drinks, plus a pastry shop and natural grocery on site.",
             address: "Rua Dom Luís I, 19 (Cais do Sodré)",
             phone: "+351 913 491 570",
             priceTier: "premium",
+            image: placeImage("6065181", "Colourful plant-based bowls with beans, corn, avocado and greens"),
           },
           {
             name: "The Green Affair",
+            category: "Vegan",
             description: "Stylish, fully vegan dining — the vegan sushi and mushroom risotto are standouts.",
             address: "Avenida Duque de Ávila 30A (Saldanha)",
             phone: "+351 211 374 984",
             priceTier: "mid",
+            image: placeImage("327172", "Close-up of a vegetable sushi roll beside chopsticks"),
           },
         ],
       },
@@ -486,24 +576,30 @@ const GUIDES: GuidePageSeed[] = [
         places: [
           {
             name: "PSI",
+            category: "Vegetarian",
             description: "One of Lisbon's oldest vegetarian restaurants, set in a peaceful garden.",
             address: "Alameda Santo António dos Capuchos",
             phone: "+351 213 591 053",
             priceTier: "mid",
+            image: placeImage("6823336", "A vegetarian bowl of eggs, mushrooms, cucumber and grains"),
           },
           {
             name: "Jardim dos Sentidos",
+            category: "Vegetarian",
             description: "A calm, romantic garden setting — try the lasagna verde or tofu feijoada.",
             address: "Rua da Mãe d'Água 3",
             phone: "+351 213 142 038",
             priceTier: "mid",
+            image: placeImage("3026808", "Two bowls of noodles with tofu, mushrooms and fresh herbs"),
           },
           {
             name: "Os Tibetanos",
+            category: "Vegetarian",
             description: "Tibetan and Indian-inspired dishes in a charming courtyard — the tofu momo dumplings are a highlight.",
             address: "Rua do Salitre 117",
             phone: "+351 213 142 038",
             priceTier: "mid",
+            image: placeImage("5409010", "Steamed dumplings garnished with microgreens on a black plate"),
           },
         ],
       },
@@ -528,9 +624,27 @@ const GUIDES: GuidePageSeed[] = [
         localTip: "Irmão, Leblon and Clássico beach bars are excellent for sunset drinks.",
         image: pexelsImage("30352308", "Serene sunset over a wide Portuguese beach", 1600, 1200),
         places: [
-          { name: "São João Beach", category: "Families" },
-          { name: "Castelo Beach", category: "Groups & Friends" },
-          { name: "Cova do Vapor", category: "Surfers" },
+          {
+            name: "São João Beach",
+            category: "Beach",
+            description: "Best for families — wide, gentle sand with lifeguards and beach bars all summer.",
+            address: "Almada · near Lisbon",
+            image: placeImage("20079503", "Waves rolling onto a wide Atlantic beach under a soft evening sky"),
+          },
+          {
+            name: "Castelo Beach",
+            category: "Beach",
+            description: "Best for groups and friends — lively beach bars right on the sand.",
+            address: "Almada · near Lisbon",
+            image: placeImage("36527888", "Two surfers carrying boards along a sandy Atlantic beach"),
+          },
+          {
+            name: "Cova do Vapor",
+            category: "Beach",
+            description: "Best for surfers — consistent breaks at the mouth of the Tagus.",
+            address: "Trafaria, Almada",
+            image: placeImage("7659108", "Surfers in wetsuits wading into the Atlantic surf with their boards"),
+          },
         ],
       },
       {
@@ -541,8 +655,20 @@ const GUIDES: GuidePageSeed[] = [
         localTip: "We can book your surf lesson at Carcavelos directly — just ask your guest contact.",
         image: pexelsImage("4846528", "Crowded beach with sunbeds and parasols", 1600, 1200),
         places: [
-          { name: "Carcavelos Beach", category: "Surfers & Groups" },
-          { name: "Santo Amaro Beach", category: "Families" },
+          {
+            name: "Carcavelos Beach",
+            category: "Beach",
+            description: "Best for surfers and groups — surf schools, beach bars and a direct train from Cais do Sodré.",
+            address: "Carcavelos, Cascais",
+            image: placeImage("13062245", "A lone figure walking along the shoreline at golden hour"),
+          },
+          {
+            name: "Santo Amaro Beach",
+            category: "Beach",
+            description: "Best for families — calm water and a promenade lined with cafés.",
+            address: "Oeiras",
+            image: placeImage("4321802", "Aerial view of turquoise surf washing over pale golden sand"),
+          },
         ],
       },
       {
@@ -552,8 +678,20 @@ const GUIDES: GuidePageSeed[] = [
         ],
         image: pexelsImage("19328006", "A quiet beach at sunset", 1600, 1200),
         places: [
-          { name: "Praia da Poça", category: "Families" },
-          { name: "Praia da Conceição", category: "Families" },
+          {
+            name: "Praia da Poça",
+            category: "Beach",
+            description: "Best for families — a small, sheltered beach on the Estoril promenade.",
+            address: "Estoril, Cascais",
+            image: placeImage("34193707", "Sunbathers on a sheltered sandy cove with clear turquoise water"),
+          },
+          {
+            name: "Praia da Conceição",
+            category: "Beach",
+            description: "Best for families — calm water steps from Cascais town centre.",
+            address: "Cascais",
+            image: placeImage("29820651", "The blue-and-white Santa Marta lighthouse on the rocky Cascais shoreline"),
+          },
         ],
       },
       {
@@ -571,8 +709,20 @@ const GUIDES: GuidePageSeed[] = [
         localTip: "Parking is scarce here — booking a transfer is worth it.",
         image: pexelsImage("31934689", "Scenic beach cove with turquoise waters", 1600, 1200),
         places: [
-          { name: "Praia da Figueirinha", category: "Families" },
-          { name: "Galapinhos", category: "Hidden Gem" },
+          {
+            name: "Praia da Figueirinha",
+            category: "Beach",
+            description: "Best for families — shallow, crystal-clear water with restaurants nearby.",
+            address: "Arrábida, Setúbal",
+            image: placeImage("11670749", "A long, wild beach with turquoise water curving below green hills"),
+          },
+          {
+            name: "Galapinhos",
+            category: "Beach",
+            description: "A hidden gem — harder to reach, but one of the most beautiful coves on the coast.",
+            address: "Arrábida, Setúbal",
+            image: placeImage("26082688", "Clear blue-green water lapping at a rocky cove"),
+          },
         ],
       },
       {
@@ -1182,34 +1332,64 @@ async function writeGuidePage(cityId: string, position: number, seed: GuidePageS
     .from(guide_section)
     .where(eq(guide_section.guide_page_id, pageId));
   const oldSectionIds = oldSections.map((s) => s.id);
+  const oldPlaces = oldSectionIds.length
+    ? await db
+        .select({ id: guide_place.id, media_id: guide_place.media_id })
+        .from(guide_place)
+        .where(inArray(guide_place.guide_section_id, oldSectionIds))
+    : [];
+
+  // Image reuse pool. The rows are about to be replaced, but their *images* needn't be:
+  // every asset the old subtree pointed at that this script uploaded is indexed by its
+  // credit (= the photo it holds), and the new subtree takes from the pool before
+  // uploading. Only seed-owned assets enter the pool, so an image a person attached is
+  // never reused nor deleted (it simply loses its reference, like before). Assets left
+  // unclaimed after the rebuild — the seed dropped or changed that photo — are deleted
+  // (R2 object + row + alt), so re-runs neither re-upload nor leak orphans. Section
+  // header and place images share the pool; it is per guide page (each asset was uploaded
+  // for, and is only referenced from, this page's subtree), so deleting from it is safe.
+  const oldMediaIds = [
+    ...new Set(
+      [...oldSections.map((s) => s.header_media_id), ...oldPlaces.map((p) => p.media_id)].filter(
+        (id): id is string => Boolean(id),
+      ),
+    ),
+  ];
+  const pool = new Map<string, string>(); // credit → media_asset.id
+  if (oldMediaIds.length) {
+    const assets = await db
+      .select({ id: media_asset.id, credit: media_asset.credit })
+      .from(media_asset)
+      .where(inArray(media_asset.id, oldMediaIds));
+    for (const a of assets) {
+      if (isSeedOwnedCredit(a.credit) && !pool.has(a.credit!)) pool.set(a.credit!, a.id);
+    }
+  }
+  const claimed = new Set<string>();
+  const acquire = async (img: ImageSeed): Promise<string> => {
+    const existingId = pool.get(img.credit);
+    if (existingId) {
+      if (!claimed.has(existingId)) stats.reused++;
+      claimed.add(existingId);
+      // Keep the [T] alt in step with the seed (a no-op when unchanged).
+      await setSourceContent("media_asset", existingId, { alt: img.alt });
+      return existingId;
+    }
+    const id = await ingestImage(img);
+    stats.uploaded++;
+    pool.set(img.credit, id); // a second use of the same photo in this page shares it
+    claimed.add(id);
+    return id;
+  };
+
   if (oldSectionIds.length) {
-    const oldPlaces = await db
-      .select({ id: guide_place.id })
-      .from(guide_place)
-      .where(inArray(guide_place.guide_section_id, oldSectionIds));
     for (const p of oldPlaces) await deleteContent(GUIDE_PLACE, p.id);
     for (const s of oldSectionIds) await deleteContent(GUIDE_SECTION, s);
     await db.delete(guide_section).where(eq(guide_section.guide_page_id, pageId)); // cascades places
-
-    // Section header images have no identity to diff against (sections are replaced
-    // wholesale above), so without this every re-run would leave the previous run's R2
-    // object + media_asset row behind. Only ever deletes assets this script uploaded.
-    for (const s of oldSections) {
-      if (!s.header_media_id) continue;
-      const [asset] = await db
-        .select({ credit: media_asset.credit })
-        .from(media_asset)
-        .where(eq(media_asset.id, s.header_media_id))
-        .limit(1);
-      if (isSeedOwnedCredit(asset?.credit)) {
-        await deleteMedia(s.header_media_id);
-        await deleteContent("media_asset", s.header_media_id);
-      }
-    }
   }
 
   for (const [i, section] of seed.sections.entries()) {
-    const headerId = section.image ? await ingestImage(section.image) : null;
+    const headerId = section.image ? await acquire(section.image) : null;
     const [sectionRow] = await db
       .insert(guide_section)
       .values({
@@ -1228,6 +1408,7 @@ async function writeGuidePage(cityId: string, position: number, seed: GuidePageS
     });
 
     for (const [pi, place] of (section.places ?? []).entries()) {
+      const mediaId = place.image ? await acquire(place.image) : null;
       const [placeRow] = await db
         .insert(guide_place)
         .values({
@@ -1238,6 +1419,7 @@ async function writeGuidePage(cityId: string, position: number, seed: GuidePageS
           phone: place.phone ?? null,
           price_tier: place.priceTier ?? null,
           opening_hours: place.openingHours ?? null,
+          media_id: mediaId,
         })
         .returning({ id: guide_place.id });
       await setSourceContent(GUIDE_PLACE, placeRow!.id, {
@@ -1247,10 +1429,28 @@ async function writeGuidePage(cityId: string, position: number, seed: GuidePageS
     }
   }
 
+  // Drop the previous run's seed-owned images the new subtree didn't claim (photo removed
+  // or changed in the seed). Nothing references them any more: the old rows are gone.
+  let removed = 0;
+  for (const id of new Set(pool.values())) {
+    if (claimed.has(id)) continue;
+    await deleteMedia(id);
+    await deleteContent("media_asset", id);
+    removed++;
+  }
+  stats.removed += removed;
+  if (action === "uploaded" || action === "replaced") stats.uploaded++;
+  if (action === "kept") stats.reused++;
+
+  const placeCount = seed.sections.reduce((n, s) => n + (s.places?.length ?? 0), 0);
+  const placeImages = seed.sections.reduce((n, s) => n + (s.places ?? []).filter((p) => p.image).length, 0);
   console.log(
-    `  guide    ${existing ? "updated" : "created"}  ${seed.slug} (hero ${action}, ${seed.sections.length} sections, ${seed.sections.reduce((n, s) => n + (s.places?.length ?? 0), 0)} places)`,
+    `  guide    ${existing ? "updated" : "created"}  ${seed.slug} (hero ${action}, ${seed.sections.length} sections, ${placeCount} places / ${placeImages} with image, ${removed} stale image(s) removed)`,
   );
 }
+
+/** Run-wide image counters (hero + section headers + place photos). */
+const stats = { uploaded: 0, reused: 0, removed: 0 };
 
 async function main() {
   // Read the `city` row directly (matching scripts/seed-demo.ts): the geography
@@ -1276,7 +1476,9 @@ async function main() {
   for (const [i, seed] of GUIDES.entries()) {
     await writeGuidePage(lisbon.id, i, seed);
   }
-  console.log(`\n✓ ${GUIDES.length} published guide pages.\n  Next: /${"en"}/guides → the city's guide cards.`);
+  console.log(
+    `\n✓ ${GUIDES.length} published guide pages. Images: ${stats.uploaded} uploaded, ${stats.reused} reused, ${stats.removed} stale removed.\n  Next: /${"en"}/guides → the city's guide cards.`,
+  );
 }
 
 main().catch((err) => {
