@@ -1,70 +1,44 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { NumberedFeatureGrid, Reveal } from "@core/ui";
+import {
+  Hero,
+  IntroSplit,
+  NumberedFeatureGrid,
+  PhotoFeatureGrid,
+  Reveal,
+  SectionHead,
+  StatBand,
+  TwoColumnShowcase,
+} from "@core/ui";
 import { getAboutPage } from "../contract";
 import { FaqSection } from "./components/faq-section";
-import { OwnerStatsCounter } from "./components/owner-stats-counter";
 import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
- * About page — the approved `mock/about.html` embedded 1:1 inside the live app shell.
- * The mock's body markup is rendered verbatim; its page styles are scoped under `.mk`
- * (see `src/app/mock.css` for the shared design system) so nothing leaks to Home/admin.
- * No database is read here — content is static, matching the mock exactly. The real
- * header/footer + i18n come from the app layout. (The contact form is the mock's static
- * markup for now; wiring it to the leads action is a follow-up.)
- */
+ * About page (`mock/about.html`), being ported to components. Content is static (no
+ * `page_content` row backs About beyond `faq_group_key`), so every string is a literal, as in the
+ * original markup. The header/footer and i18n come from the app layout.
+ *
+ * Now JSX, with existing `core/ui` components (consistency over mock fidelity):
+ * - Hero: `Hero` with the Buildings listing configuration (as on Guests and Real Estate).
+ * - "How We Started" and "Giving Back…": `IntroSplit` (`imagePosition="left"`, `eyebrow`).
+ * - Company numbers: `StatBand` (`columns={5}`), whose `CountUp` replaces the page's old
+ *   `OwnerStatsCounter`.
+ * - "One Platform. Three Audiences.": `SectionHead` + `PhotoFeatureGrid`.
+ * - "What Guides Us": `SectionHead` + `NumberedFeatureGrid`.
+ * - "How We Are Organised": `TwoColumnShowcase` with Owners' showcase configuration.
+ * - FAQ: the shared `FaqSection` (only when `faq_group_key` is set).
+ * Every section uses the standard page shell and `SectionHead`; entrance motion is `Reveal`.
+ *
+ * Still raw, each in a small `.mk` block under a JSX `SectionHead`: the certification cards, the
+ * "Let's Start a Conversation" link cards and the office + contact form (static, not wired to
+ * leads yet). Those raw blocks keep the page's own `.pre-reveal` entrance motion
+ * (`ScrollReveal`), and `PAGE_STYLE` now only holds their rules.
+  */
 
 const PAGE_STYLE = `
-/* Hero: vertically centre the text (the base mock anchors it to the bottom, which
-   reads too tall here). The base mock's h1/p are capped at 15ch/46ch — far narrower
-   than the .wrap column itself — so widening .wrap alone does nothing: the actual
-   fix is widening h1/p so each line holds more text, shortening the block. .wrap
-   stays centred (just a wider cap + tighter side padding than the base mock's
-   1240px/28px) so the block doesn't shift flush-left. The overlay is strengthened
-   and evened out (vs. the base mock's bottom-heavy gradient) since centring the
-   text puts it over the gradient's lightest band. Scoped to this page only via the
-   [data-page] hook. */
-.mk[data-page="about"] .hero{align-items:center}
-.mk[data-page="about"] .hero .wrap{max-width:1600px;margin:0 auto;padding-top:40px;padding-bottom:40px;padding-left:40px;padding-right:40px}
-.mk[data-page="about"] .hero h1{max-width:26ch}
-.mk[data-page="about"] .hero p{max-width:60ch}
-.mk[data-page="about"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.46) 0%,rgba(18,16,13,.36) 45%,rgba(18,16,13,.8) 100%)}
-
-/* "How We Started" sits directly under the hero, so the kernel's generic section
-   top padding (clamp(72px,10vw,150px)) reads as a huge, disconnected gap right
-   after the hero's own bottom padding. Trimmed to a fixed, tighter value. */
-.mk[data-page="about"] #story{padding-top:50px}
-
+/* Iconoir glyphs in the still-raw certification and contact cards. */
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
-/* "What Guides Us" values grid is real JSX now — core/ui's NumberedFeatureGrid, rendered
-   outside .mk (see that component's docstring). Its old .val-grid/.val/.vnum rules
-   (plus the hover motion below, under "#values .val:hover") were here; removed in favour of
-   the component's own Tailwind. */
-/* "Our Structure": redesigned to match the Owners page's "Everything handled. Nothing
-   overlooked." showcase — a two-column text+icon-list / image+floating-badge layout,
-   in place of the previous flat 3-col icon-grid. Page-scoped (own class names, not the
-   Owners page's unscoped .owner-showcase/.sh-* rules — those only exist on that page's
-   own injected stylesheet) so it can't collide with or depend on another page. */
-.mk[data-page="about"] #organised .org-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
-.mk[data-page="about"] #organised .org-text h2{font-size:clamp(28px,3.4vw,44px);margin:14px 0 0}
-.mk[data-page="about"] #organised .org-list{list-style:none;margin:32px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:22px 32px}
-.mk[data-page="about"] #organised .org-list li{display:flex;gap:14px}
-.mk[data-page="about"] #organised .org-list .ico{font-size:24px;margin:1px 0 0}
-.mk[data-page="about"] #organised .org-list h3{font-size:17px;margin:0 0 5px;color:var(--ink)}
-.mk[data-page="about"] #organised .org-list p{font-size:14px;line-height:1.55;color:var(--ink-soft);margin:0}
-.mk[data-page="about"] #organised .org-media{position:relative}
-.mk[data-page="about"] #organised .org-media img{aspect-ratio:4/5;width:100%;object-fit:cover;border-radius:3px;display:block}
-.mk[data-page="about"] #organised .org-badge{position:absolute;bottom:-20px;left:-16px;display:flex;align-items:flex-start;gap:10px;max-width:15rem;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:16px 20px;box-shadow:0 24px 50px -20px rgba(0,0,0,.4)}
-.mk[data-page="about"] #organised .org-badge .ico{font-size:20px;margin:0;color:var(--accent-deep)}
-.mk[data-page="about"] #organised .org-badge span{font-size:14px;line-height:1.4;color:var(--ink)}
-@media(max-width:980px){
-  .mk[data-page="about"] #organised .org-grid{grid-template-columns:1fr;gap:36px}
-  .mk[data-page="about"] #organised .org-media{order:-1}
-  .mk[data-page="about"] #organised .org-badge{left:0}
-}
-@media(max-width:680px){.mk[data-page="about"] #organised .org-list{grid-template-columns:1fr}}
-
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll
    for the rest, via <ScrollReveal page="about">/scroll-reveal.tsx) + hover motion
    (client feedback: the page read too static, wanted a more premium feel). The hidden
@@ -75,14 +49,6 @@ const PAGE_STYLE = `
    rule in mock.css or any other page/section. */
 .mk[data-page="about"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .mk[data-page="about"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
-.mk[data-page="about"] #serve .bcard{position:relative;isolation:isolate;overflow:hidden;min-height:300px;display:flex;flex-direction:column;justify-content:flex-end;background-size:cover;background-position:center;transition:transform .35s var(--ease)}
-.mk[data-page="about"] #serve .bcard::before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(12,10,8,.15) 0%,rgba(12,10,8,.55) 60%,rgba(12,10,8,.85) 100%)}
-.mk[data-page="about"] #serve .bcard>*{position:relative;z-index:1}
-.mk[data-page="about"] #serve .bcard:hover{transform:translateY(-4px)}
-.mk[data-page="about"] #serve .bcard .ico{color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4));transition:transform .35s var(--ease)}
-.mk[data-page="about"] #serve .bcard:hover .ico{transform:translateY(-3px) scale(1.1)}
-.mk[data-page="about"] #serve .bcard h3{color:#fff}
-.mk[data-page="about"] #serve .bcard p{color:rgba(255,255,255,.88)}
 .mk .cert-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
 .mk .cert{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:38px 32px;text-align:center;transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
 .mk .cert:hover{transform:translateY(-4px);box-shadow:0 16px 28px -20px rgba(0,0,0,.35)}
@@ -94,10 +60,6 @@ const PAGE_STYLE = `
 .mk .cert h3{font-size:22px;margin-bottom:6px}
 .mk .cert .cert-body{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-deep);font-weight:600;margin-bottom:14px}
 .mk .cert p{font-size:14px;color:var(--ink-soft)}
-.mk .comm{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center}
-.mk .comm img{aspect-ratio:4/5;object-fit:cover;width:100%;border-radius:4px}
-.mk .comm h2{font-size:clamp(28px,3.4vw,44px);margin:14px 0 18px}
-.mk .comm p{color:var(--ink-soft);margin-bottom:16px}
 .mk .touch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
 .mk .touch{background:var(--surface);padding:40px 34px;display:flex;flex-direction:column;transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
 .mk .touch:hover{transform:translateY(-4px);box-shadow:0 16px 28px -20px rgba(0,0,0,.35);z-index:1}
@@ -126,7 +88,6 @@ const PAGE_STYLE = `
 .mk .cform .btn{justify-content:center}
 @media(max-width:980px){
   .mk .cert-grid,.mk .touch-grid{grid-template-columns:1fr 1fr}
-  .mk .comm{grid-template-columns:1fr;gap:32px}
   .mk .contact-split{grid-template-columns:1fr}
 }
 @media(max-width:680px){
@@ -135,92 +96,63 @@ const PAGE_STYLE = `
 }
 `;
 
-// An optional, editable <FaqSection> island is rendered before the contact section (outside
-// `.mk` to avoid mock.css leak), chosen per page via `faq_group_key`. The static body is split
-// here around it.
-// Split around "What Guides Us" (`#values`): its `.val-grid` is real JSX now (`core/ui`'s
-// `NumberedFeatureGrid`, rendered outside `.mk` — see that component's docstring for the
-// `.mk * {margin:0;padding:0}` layering trap). The section's `sec-head` (eyebrow/title/lede)
-// is untouched raw markup (not this task's target), given its own small `.mk` wrapper; the
-// `<section>` element itself and its `.wrap`-equivalent container are now real JSX too, since
-// a raw-HTML fragment can't open a tag that a JSX sibling closes — see `AboutPage` below.
-const BODY_TOP_A = `
-<section id="who-we-are" class="hero compact" aria-label="Who We Are">
-  <img src="https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70" alt="Rooftops and historic streets of Lisbon at golden hour">
-  <div class="wrap">
-    <span class="eyebrow">Who We Are</span>
-    <h1>Portugal's Hospitality Management Company.</h1>
-    <p>Since 2012, Central Hill Apartments has been turning properties into high-performing hospitality assets — and turning guests into people who feel genuinely at home. We manage short-term, mid-term, and corporate rentals across Portugal's most sought-after locations, combining deep local knowledge with AI-driven technology and an uncompromising commitment to quality.</p>
-  </div>
-</section>
+// Fixed media for the JSX sections (no `page_content` row backs About; every string below is a
+// literal, same as the original markup).
+const HERO_IMG =
+  "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70";
+const HERO_ALT = "Rooftops and historic streets of Lisbon at golden hour";
+const STORY_IMG =
+  "https://images.pexels.com/photos/19295144/pexels-photo-19295144.jpeg?auto=compress&cs=tinysrgb&w=1200";
+const STORY_ALT = "Traditional tiled façades along a historic Lisbon street";
+const ORGANISED_IMG =
+  "https://images.pexels.com/photos/5324937/pexels-photo-5324937.jpeg?auto=compress&cs=tinysrgb&w=1200";
+const ORGANISED_ALT = "Team reviewing property performance documents together";
+const COMMUNITY_IMG =
+  "https://images.unsplash.com/photo-1591825729269-caeb344f6df2?auto=format&fit=crop&w=900&q=70";
+const COMMUNITY_ALT = "People sharing a meal together at a community table in Lisbon";
 
-<section id="story">
-  <div class="wrap">
-    <div class="comm reveal reveal-io pre-reveal">
-      <img src="https://images.pexels.com/photos/19295144/pexels-photo-19295144.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200" alt="Traditional tiled façades along a historic Lisbon street">
-      <div>
-        <span class="eyebrow">How We Started</span>
-        <h2>From a Clear Vision to a Growing Platform</h2>
-        <p>Central Hill Apartments was founded in 2012, identifying Lisbon as a city of exceptional hospitality opportunity — a destination where guests wanted more than a hotel room; they wanted to feel genuinely part of the city. We started with that conviction and a clear operational model: that professional, data-driven management of well-located residential assets could consistently outperform the market while delivering an experience worth returning to.</p>
-        <p>Over more than a decade, that process has produced one of Portugal's most established hospitality management platforms. We have built the operational infrastructure, the technology stack, and the institutional relationships needed to manage assets at scale — from individual apartments to full buildings, corporate housing programmes, and strategic real estate partnerships.</p>
-        <p>Today, Central Hill operates across Portugal's most in-demand urban markets, delivering consistent above-market returns for property owners, dependable occupancy for corporate clients, and institutional-grade performance for investment partners. The company we are now is the direct result of the discipline, systems, and expertise built over twelve years of active asset management.</p>
-      </div>
-    </div>
-  </div>
-</section>
+// Standard page shell (Real Estate, Guests): padding, 84px scroll margin, 1240px/28px column,
+// and the warm `alt` band.
+const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
+const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
+const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
 
-<section class="stats" style="padding:0" aria-label="Central Hill in numbers">
-  <div class="wrap" style="padding-top:58px;padding-bottom:58px">
-    <div class="stats-grid reveal reveal-io reveal-stagger pre-reveal" style="grid-template-columns:repeat(5,1fr)">
-      <div class="stat"><div class="num" data-count data-to="2012">2012</div><div class="lbl">Year Founded</div></div>
-      <div class="stat"><div class="num" data-count data-to="40" data-suffix="+">40+</div><div class="lbl">Apartments Managed</div></div>
-      <div class="stat"><div class="num" data-count data-to="14">14</div><div class="lbl">Buildings in Prime Locations</div></div>
-      <div class="stat"><div class="num" data-count data-to="60000" data-suffix="+" data-group="true">60,000+</div><div class="lbl">Guests Hosted Worldwide</div></div>
-      <div class="stat"><div class="num" data-count data-to="6000" data-suffix="+" data-group="true">6,000+</div><div class="lbl">Reservations per Year</div></div>
-    </div>
-  </div>
-</section>
+/** Iconoir glyph for a `TwoColumnShowcase` bullet, sized like Owners' showcase bullet icons. */
+const bulletIcon = (name: string) => (
+  <i className={`iconoir-${name} mt-0.5 flex-none text-[26px] leading-none text-accent-deep`} aria-hidden="true" />
+);
 
-<section id="serve" class="alt">
-  <div class="wrap">
-    <div class="sec-head reveal reveal-io pre-reveal">
-      <span class="eyebrow">Our Platform</span>
-      <h2 class="section-title">One Platform. Three Audiences.</h2>
-      <p class="lede" style="margin-top:18px">Central Hill Apartments operates across three interconnected service lines, each supporting the others. Whether you are a guest looking for a home away from home, a property owner seeking to maximise your asset's potential, or an institutional partner exploring a management agreement — this is your platform.</p>
-    </div>
-    <div class="grid-3 reveal reveal-io reveal-stagger pre-reveal">
-      <div class="bcard" style="background-image:url('https://images.pexels.com/photos/39205181/pexels-photo-39205181.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200')">
-        <i class="iconoir-suitcase ico" aria-hidden="true"></i>
-        <h3>For Guests</h3>
-        <p>Professionally managed, fully equipped apartments in Portugal's most desirable locations. Every property is quality-checked, consistently maintained, and backed by 24/7 support — so every stay is exactly what it should be.</p>
-      </div>
-      <div class="bcard" style="background-image:url('https://images.pexels.com/photos/7415097/pexels-photo-7415097.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200')">
-        <i class="iconoir-home ico" aria-hidden="true"></i>
-        <h3>For Property Owners</h3>
-        <p>Full-service property management that removes every burden and maximises every opportunity. AI-driven dynamic pricing, professional photography, 24/7 guest management, maintenance, and a real-time performance dashboard — all included.</p>
-      </div>
-      <div class="bcard" style="background-image:url('https://images.pexels.com/photos/36733412/pexels-photo-36733412.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200')">
-        <i class="iconoir-bank ico" aria-hidden="true"></i>
-        <h3>For Institutional Partners</h3>
-        <p>Flexible management structures designed for investment funds, developers, and large-scale operators. Fixed rent, management commission, or hybrid models — with full operational management, transparent reporting, and institutional-grade governance.</p>
-      </div>
-    </div>
-  </div>
-</section>
-`;
+const STATS = [
+  { value: "2012", label: "Year Founded" },
+  { value: "40+", label: "Apartments Managed" },
+  { value: "14", label: "Buildings in Prime Locations" },
+  { value: "60,000+", label: "Guests Hosted Worldwide" },
+  { value: "6,000+", label: "Reservations per Year" },
+];
 
-// "What Guides Us" section head only (eyebrow/title/lede) — untouched raw markup, given its
-// own small `.mk` wrapper at the `AboutPage` call site (see the `BODY_TOP_A`/`BODY_TOP_B`
-// split comment above). Its `reveal reveal-io pre-reveal` classes still drive the page's
-// `ScrollReveal` entrance motion (scoped to `.mk[data-page="about"] .pre-reveal`) since this
-// fragment stays inside that subtree.
-const VALUES_SEC_HEAD_HTML = `
-<div class="sec-head reveal reveal-io pre-reveal">
-  <span class="eyebrow">What We Stand For</span>
-  <h2 class="section-title">What Guides Us</h2>
-  <p class="lede" style="margin-top:18px">Our values are not statements on a wall. They are the criteria by which we select properties, build partnerships, and measure success. They have remained constant since 2012.</p>
-</div>
-`;
+const SERVE_ITEMS = [
+  {
+    icon: <i className="iconoir-suitcase" aria-hidden="true" />,
+    title: "For Guests",
+    description:
+      "Professionally managed, fully equipped apartments in Portugal's most desirable locations. Every property is quality-checked, consistently maintained, and backed by 24/7 support — so every stay is exactly what it should be.",
+    image: "https://images.pexels.com/photos/39205181/pexels-photo-39205181.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  },
+  {
+    icon: <i className="iconoir-home" aria-hidden="true" />,
+    title: "For Property Owners",
+    description:
+      "Full-service property management that removes every burden and maximises every opportunity. AI-driven dynamic pricing, professional photography, 24/7 guest management, maintenance, and a real-time performance dashboard — all included.",
+    image: "https://images.pexels.com/photos/7415097/pexels-photo-7415097.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  },
+  {
+    icon: <i className="iconoir-bank" aria-hidden="true" />,
+    title: "For Institutional Partners",
+    description:
+      "Flexible management structures designed for investment funds, developers, and large-scale operators. Fixed rent, management commission, or hybrid models — with full operational management, transparent reporting, and institutional-grade governance.",
+    image: "https://images.pexels.com/photos/36733412/pexels-photo-36733412.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  },
+];
 
 // Content for `core/ui`'s `NumberedFeatureGrid` — ported 1:1 from the mock's 4 `.val` cards.
 const VALUES_ITEMS = [
@@ -242,57 +174,41 @@ const VALUES_ITEMS = [
   },
 ];
 
-const BODY_TOP_B = `
-<section id="organised" class="alt">
-  <div class="wrap org-grid">
-    <div class="org-text reveal reveal-io pre-reveal">
-      <span class="eyebrow">Our Structure</span>
-      <h2>How We Are Organised</h2>
-      <p class="lede" style="margin-top:18px">Behind every well-managed property is a team of specialists working in close coordination. Central Hill Apartments is structured around six areas of expertise, each essential to the performance of every asset we manage.</p>
-      <ul class="org-list">
-        <li>
-          <i class="iconoir-settings ico" aria-hidden="true"></i>
-          <div><h3>Operations &amp; Property Management</h3><p>Manages day-to-day property performance, housekeeping, maintenance, and quality inspections across all buildings.</p></div>
-        </li>
-        <li>
-          <i class="iconoir-bell ico" aria-hidden="true"></i>
-          <div><h3>Guest Experience &amp; Support</h3><p>Available 24/7, ensuring every guest interaction — from pre-arrival to post-checkout — is handled with care and professionalism.</p></div>
-        </li>
-        <li>
-          <i class="iconoir-peace-hand ico" aria-hidden="true"></i>
-          <div><h3>Owner Relations &amp; Partnerships</h3><p>The dedicated point of contact for property owners, institutional partners, and corporate clients throughout the management relationship.</p></div>
-        </li>
-        <li>
-          <i class="iconoir-graph-up ico" aria-hidden="true"></i>
-          <div><h3>Revenue &amp; Pricing Technology</h3><p>Combines AI-powered dynamic pricing with hands-on revenue strategy to optimise nightly rates and occupancy across all platforms.</p></div>
-        </li>
-        <li>
-          <i class="iconoir-wrench ico" aria-hidden="true"></i>
-          <div><h3>Maintenance &amp; Asset Protection</h3><p>Proactive inspections and rapid-response maintenance protect the long-term value of every asset under our management.</p></div>
-        </li>
-        <li>
-          <i class="iconoir-clipboard-check ico" aria-hidden="true"></i>
-          <div><h3>Finance &amp; Compliance</h3><p>Manages owner payouts, financial reporting, regulatory filings, and certification maintenance with full transparency.</p></div>
-        </li>
-      </ul>
-    </div>
-    <div class="org-media reveal reveal-io pre-reveal">
-      <img src="https://images.pexels.com/photos/5324937/pexels-photo-5324937.jpeg?auto=compress&amp;cs=tinysrgb&amp;w=1200" alt="Team reviewing property performance documents together">
-      <div class="org-badge">
-        <i class="iconoir-check-circle ico" aria-hidden="true"></i>
-        <span>Six departments. One coordinated platform.</span>
-      </div>
-    </div>
-  </div>
-</section>
+const ORGANISED_BULLETS = [
+  {
+    icon: bulletIcon("settings"),
+    title: "Operations & Property Management",
+    description: "Manages day-to-day property performance, housekeeping, maintenance, and quality inspections across all buildings.",
+  },
+  {
+    icon: bulletIcon("bell"),
+    title: "Guest Experience & Support",
+    description: "Available 24/7, ensuring every guest interaction — from pre-arrival to post-checkout — is handled with care and professionalism.",
+  },
+  {
+    icon: bulletIcon("peace-hand"),
+    title: "Owner Relations & Partnerships",
+    description: "The dedicated point of contact for property owners, institutional partners, and corporate clients throughout the management relationship.",
+  },
+  {
+    icon: bulletIcon("graph-up"),
+    title: "Revenue & Pricing Technology",
+    description: "Combines AI-powered dynamic pricing with hands-on revenue strategy to optimise nightly rates and occupancy across all platforms.",
+  },
+  {
+    icon: bulletIcon("wrench"),
+    title: "Maintenance & Asset Protection",
+    description: "Proactive inspections and rapid-response maintenance protect the long-term value of every asset under our management.",
+  },
+  {
+    icon: bulletIcon("clipboard-check"),
+    title: "Finance & Compliance",
+    description: "Manages owner payouts, financial reporting, regulatory filings, and certification maintenance with full transparency.",
+  },
+];
 
-<section id="certifications">
-  <div class="wrap">
-    <div class="sec-head reveal reveal-io pre-reveal">
-      <span class="eyebrow">What We Stand For</span>
-      <h2 class="section-title">Independently Verified</h2>
-      <p class="lede" style="margin-top:18px">Our certifications and memberships represent a commitment to operating to the highest standards — verified by recognised independent bodies in Portugal and internationally.</p>
-    </div>
+/** The still-raw certification cards (the section shell and head are JSX). */
+const CERT_GRID_HTML = `
     <div class="cert-grid reveal reveal-io reveal-stagger pre-reveal">
       <div class="cert">
         <img class="cert-logo" src="https://d11n7da8rpqbjy.cloudfront.net/alep/19726083_1621536323PF6Ativo_12.png" alt="ALEP — Associação do Alojamento Local em Portugal logo">
@@ -313,32 +229,10 @@ const BODY_TOP_B = `
         <p>International certification body verifying vacation rental operators worldwide, assuring guests and partners of our professional standards.</p>
       </div>
     </div>
-  </div>
-</section>
-
-<section id="community" class="alt">
-  <div class="wrap">
-    <div class="comm reveal reveal-io pre-reveal">
-      <img src="https://images.unsplash.com/photo-1591825729269-caeb344f6df2?auto=format&fit=crop&w=900&q=70" alt="People sharing a meal together at a community table in Lisbon">
-      <div>
-        <span class="eyebrow">Our Responsibility</span>
-        <h2>Giving Back to the Communities We Call Home</h2>
-        <p>Central Hill Apartments is a business rooted in Lisbon, and we take our responsibility to the city and its communities seriously. We are proud partners of 55+ — a Lisbon-based social organisation that empowers people over 55 to remain active and fulfilled — through which we offer guests authentic experiences including Chef at Home services delivered by 55+ members. We also actively support Movimento Famílias Solidárias, a volunteer-led initiative that provides monthly essential goods baskets to families in need across Lisbon.</p>
-        <p>We additionally work with Santa Casa da Misericórdia de Lisboa, donating items and furniture to support their social care programmes, and maintain ongoing engagement with a number of other local Lisbon organisations through in-kind support, volunteering, and donations.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
 `;
 
-const BODY_BOTTOM = (locale: Locale) => `
-<section id="contact">
-  <div class="wrap">
-    <div class="sec-head reveal reveal-io pre-reveal">
-      <span class="eyebrow">Get in Touch</span>
-      <h2 class="section-title">Let's Start a Conversation</h2>
-    </div>
+/** The still-raw contact cards + office/form split (the section shell and head are JSX). */
+const CONTACT_BODY_HTML = (locale: Locale) => `
     <div class="touch-grid reveal reveal-io reveal-stagger pre-reveal">
       <a class="touch" href="/${locale}/buildings">
         <i class="iconoir-suitcase ico" aria-hidden="true"></i>
@@ -413,8 +307,6 @@ const BODY_BOTTOM = (locale: Locale) => `
         <button type="submit" class="btn btn-accent">Send Message <i class="iconoir-send-diagonal" aria-hidden="true"></i></button>
       </form>
     </div>
-  </div>
-</section>
 `;
 
 export async function AboutPage({ locale }: { locale: Locale }) {
@@ -424,59 +316,178 @@ export async function AboutPage({ locale }: { locale: Locale }) {
 
   return (
     <>
-      <div className="mk" data-page="about">
-        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-        <noscript>
-          <style
-            dangerouslySetInnerHTML={{
-              __html: `.mk[data-page="about"] .pre-reveal{opacity:1!important;transform:none!important}`,
-            }}
-          />
-        </noscript>
-        <ScrollReveal page="about" />
-        <OwnerStatsCounter durationMs={5000} />
-        <div dangerouslySetInnerHTML={{ __html: BODY_TOP_A }} />
-      </div>
+      {/* `.mk`-scoped rules for the still-raw cards; selectors don't depend on DOM position. */}
+      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
       {/*
-       * "What Guides Us" (`#values`) — real JSX section now. The `<section>` element and its
-       * `.wrap`-equivalent container are reproduced with the exact mock metrics (`.mk section`'s
-       * `padding:clamp(72px,10vw,150px) 0;scroll-margin-top:84px` and `.mk .wrap`'s
-       * `max-width:1240px;margin:0 auto;padding:0 28px` — not `core/ui`'s generic `Section`/
-       * `Container`, which use different values and would misalign this grid's edges against
-       * the raw `sec-head` markup directly above it). `sec-head` stays untouched raw markup in
-       * its own `.mk` wrapper; the grid is `core/ui`'s `NumberedFeatureGrid`. Wrapped in
-       * `core/ui`'s `Reveal` (a real-React equivalent of the page's `ScrollReveal`/`.pre-reveal`
-       * pattern, which can't reach this subtree since it's outside `.mk[data-page="about"]` —
-       * required, see `NumberedFeatureGrid`'s docstring) so the section still fades/slides in
-       * once on scroll like its neighbours; the original's per-card stagger (`.reveal-stagger`)
-       * isn't reproduced — `Reveal` animates its subtree as one unit, and building a staggered
-       * variant was out of scope for this extraction.
+       * JS-off fallbacks: `Reveal` (JSX sections) and the page's own `.pre-reveal` (the
+       * still-raw certification/contact blocks, animated by `ScrollReveal`).
        */}
-      <section id="values" className="py-[clamp(72px,10vw,150px)] scroll-mt-[84px]">
-        <div className="mx-auto max-w-[1240px] px-[28px]">
-          <div className="mk" data-page="about">
-            <div dangerouslySetInnerHTML={{ __html: VALUES_SEC_HEAD_HTML }} />
-          </div>
+      <noscript>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `[data-reveal]{opacity:1!important;transform:none!important}.mk[data-page="about"] .pre-reveal{opacity:1!important;transform:none!important}`,
+          }}
+        />
+      </noscript>
+      <ScrollReveal page="about" />
+
+      {/* Hero: Buildings listing's exact `Hero` configuration (as on Guests and Real Estate). */}
+      <Hero
+        id="who-we-are"
+        background={
+          // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+          <img src={HERO_IMG} alt={HERO_ALT} className="absolute inset-0 -z-10 h-full w-full object-cover" />
+        }
+        compact
+        align="center"
+        overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.5)_0%,rgba(18,16,13,0.46)_45%,rgba(18,16,13,0.88)_100%)]"
+        wrapClassName="mx-auto max-w-[1600px] p-10"
+        copyClassName="max-w-none"
+        headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
+        subtitleClassName="mt-5 max-w-[60ch] text-lg"
+        eyebrow="Who We Are"
+        headline="Portugal's Hospitality Management Company."
+        subtitle="Since 2012, Central Hill Apartments has been turning properties into high-performing hospitality assets — and turning guests into people who feel genuinely at home. We manage short-term, mid-term, and corporate rentals across Portugal's most sought-after locations, combining deep local knowledge with AI-driven technology and an uncompromising commitment to quality."
+      />
+
+      {/*
+       * "How We Started": `IntroSplit` with the image on the left. The tighter top padding
+       * (50px, it sits right under the hero) is the client tweak the old `#story` rule carried.
+       */}
+      <section id="story" className="scroll-mt-[84px] pt-[50px] pb-[clamp(72px,10vw,150px)]">
+        <div className={SECTION_WRAP}>
+          <Reveal label="about-story">
+            <IntroSplit
+              imagePosition="left"
+              eyebrow="How We Started"
+              headline="From a Clear Vision to a Growing Platform"
+              paragraphs={[
+                "Central Hill Apartments was founded in 2012, identifying Lisbon as a city of exceptional hospitality opportunity — a destination where guests wanted more than a hotel room; they wanted to feel genuinely part of the city. We started with that conviction and a clear operational model: that professional, data-driven management of well-located residential assets could consistently outperform the market while delivering an experience worth returning to.",
+                "Over more than a decade, that process has produced one of Portugal's most established hospitality management platforms. We have built the operational infrastructure, the technology stack, and the institutional relationships needed to manage assets at scale — from individual apartments to full buildings, corporate housing programmes, and strategic real estate partnerships.",
+                "Today, Central Hill operates across Portugal's most in-demand urban markets, delivering consistent above-market returns for property owners, dependable occupancy for corporate clients, and institutional-grade performance for investment partners. The company we are now is the direct result of the discipline, systems, and expertise built over twelve years of active asset management.",
+              ]}
+              image={
+                // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+                <img src={STORY_IMG} alt={STORY_ALT} loading="lazy" decoding="async" />
+              }
+            />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Company numbers: the same `StatBand` as Home/Owners/Buildings, five columns. */}
+      <Reveal label="about-stats">
+        <StatBand cells={STATS} columns={5} />
+      </Reveal>
+
+      {/* "One Platform. Three Audiences.": `SectionHead` + `PhotoFeatureGrid` (Guests' teasers). */}
+      <section id="serve" className={`${SECTION_SHELL} ${ALT_BAND}`}>
+        <div className={SECTION_WRAP}>
+          <Reveal>
+            <SectionHead
+              eyebrow="Our Platform"
+              headline="One Platform. Three Audiences."
+              intro="Central Hill Apartments operates across three interconnected service lines, each supporting the others. Whether you are a guest looking for a home away from home, a property owner seeking to maximise your asset's potential, or an institutional partner exploring a management agreement — this is your platform."
+            />
+          </Reveal>
+          <Reveal label="about-serve">
+            <PhotoFeatureGrid items={SERVE_ITEMS} />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* "What Guides Us": `SectionHead` + `NumberedFeatureGrid`. */}
+      <section id="values" className={SECTION_SHELL}>
+        <div className={SECTION_WRAP}>
+          <Reveal>
+            <SectionHead
+              eyebrow="What We Stand For"
+              headline="What Guides Us"
+              intro="Our values are not statements on a wall. They are the criteria by which we select properties, build partnerships, and measure success. They have remained constant since 2012."
+            />
+          </Reveal>
           <Reveal>
             <NumberedFeatureGrid items={VALUES_ITEMS} />
           </Reveal>
         </div>
       </section>
-      <div className="mk" data-page="about">
-        <div dangerouslySetInnerHTML={{ __html: BODY_TOP_B }} />
-      </div>
-      {faqGroupKey ? (
-        <div id="faq" style={{ scrollMarginTop: 130 }}>
-          <FaqSection
-            locale={locale}
-            groupKey={faqGroupKey}
-            title={t("faqTitle")}
+
+      {/*
+       * "How We Are Organised": `TwoColumnShowcase` with Owners' showcase configuration (the
+       * original was already a page-scoped copy of it), on the `alt` band, no CTA.
+       */}
+      <div id="organised" className="scroll-mt-[84px]">
+        <Reveal label="about-organised">
+          <TwoColumnShowcase
+            eyebrow="Our Structure"
+            headline="How We Are Organised"
+            body="Behind every well-managed property is a team of specialists working in close coordination. Central Hill Apartments is structured around six areas of expertise, each essential to the performance of every asset we manage."
+            bullets={ORGANISED_BULLETS}
+            badge="Six departments. One coordinated platform."
+            tone="alt"
+            imagePosition="right"
+            image={
+              // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+              <img src={ORGANISED_IMG} alt={ORGANISED_ALT} className="aspect-[4/5] w-full rounded-sm object-cover" />
+            }
           />
+        </Reveal>
+      </div>
+
+      {/* "Independently Verified": JSX shell + `SectionHead`; the certification cards stay raw. */}
+      <section id="certifications" className={SECTION_SHELL}>
+        <div className={SECTION_WRAP}>
+          <Reveal>
+            <SectionHead
+              eyebrow="What We Stand For"
+              headline="Independently Verified"
+              intro="Our certifications and memberships represent a commitment to operating to the highest standards — verified by recognised independent bodies in Portugal and internationally."
+            />
+          </Reveal>
+          <div className="mk" data-page="about">
+            <div dangerouslySetInnerHTML={{ __html: CERT_GRID_HTML }} />
+          </div>
+        </div>
+      </section>
+
+      {/* "Giving Back…": the same `IntroSplit` (image left) as "How We Started", on the `alt` band. */}
+      <section id="community" className={`${SECTION_SHELL} ${ALT_BAND}`}>
+        <div className={SECTION_WRAP}>
+          <Reveal label="about-community">
+            <IntroSplit
+              imagePosition="left"
+              eyebrow="Our Responsibility"
+              headline="Giving Back to the Communities We Call Home"
+              paragraphs={[
+                "Central Hill Apartments is a business rooted in Lisbon, and we take our responsibility to the city and its communities seriously. We are proud partners of 55+ — a Lisbon-based social organisation that empowers people over 55 to remain active and fulfilled — through which we offer guests authentic experiences including Chef at Home services delivered by 55+ members. We also actively support Movimento Famílias Solidárias, a volunteer-led initiative that provides monthly essential goods baskets to families in need across Lisbon.",
+                "We additionally work with Santa Casa da Misericórdia de Lisboa, donating items and furniture to support their social care programmes, and maintain ongoing engagement with a number of other local Lisbon organisations through in-kind support, volunteering, and donations.",
+              ]}
+              image={
+                // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+                <img src={COMMUNITY_IMG} alt={COMMUNITY_ALT} loading="lazy" decoding="async" />
+              }
+            />
+          </Reveal>
+        </div>
+      </section>
+
+      {faqGroupKey ? (
+        <div id="faq" className="scroll-mt-[84px]">
+          <FaqSection locale={locale} groupKey={faqGroupKey} title={t("faqTitle")} />
         </div>
       ) : null}
-      <div className="mk" data-page="about">
-        <div dangerouslySetInnerHTML={{ __html: BODY_BOTTOM(locale) }} />
-      </div>
+
+      {/* "Let's Start a Conversation": JSX shell + `SectionHead`; cards and office/form stay raw. */}
+      <section id="contact" className={SECTION_SHELL}>
+        <div className={SECTION_WRAP}>
+          <Reveal>
+            <SectionHead eyebrow="Get in Touch" headline="Let's Start a Conversation" />
+          </Reveal>
+          <div className="mk" data-page="about">
+            <div dangerouslySetInnerHTML={{ __html: CONTACT_BODY_HTML(locale) }} />
+          </div>
+        </div>
+      </section>
     </>
   );
 }

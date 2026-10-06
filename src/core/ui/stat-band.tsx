@@ -28,8 +28,9 @@ export function StatBand({
   /** Centred heading in the band; omitted entirely renders a bare proof band (Owners-style). */
   title?: string;
   cells: { value: string; label: string; description?: string }[];
-  /** Desktop column count (`lg:grid-cols-N`); mobile stays a fixed 2-up either way. */
-  columns?: 3 | 4;
+  /** Desktop column count (`lg:grid-cols-N`); mobile stays a fixed 2-up either way. `5` is
+   *  About's founding/apartments/buildings/guests/reservations band. */
+  columns?: 3 | 4 | 5;
 }) {
   return (
     <section className="bg-feature py-[clamp(56px,8vw,104px)]">
@@ -41,7 +42,7 @@ export function StatBand({
         ) : null}
         <dl
           className={`grid grid-cols-2 gap-x-8 gap-y-10 text-center ${
-            columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
+            columns === 3 ? "lg:grid-cols-3" : columns === 5 ? "lg:grid-cols-5" : "lg:grid-cols-4"
           } ${title ? "mt-[clamp(40px,6vw,72px)]" : ""}`}
         >
           {cells.map((s) => (

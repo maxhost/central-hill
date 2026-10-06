@@ -41,7 +41,8 @@ export type IntroSplitBadge = {
  * its line box keeps the same trailing baseline space under it. Font-size is the literal
  * `text-[16px]` (not `text-base`, which would also set a 1.5 line-height).
  *
- * Bare (no own `Section`/`Container`/eyebrow — the caller owns the section shell and the
+ * Optional `eyebrow` and `imagePosition` were added for About (see the props). Bare (no own
+ * `Section`/`Container` — the caller owns the section shell and the
  * entrance reveal, same as `StatTiles`/`ChecklistCards`/`SplitCtaPanels`): Guests' still-raw
  * `.wrap`-based neighbours use `1240px/28px` + `clamp(72px,10vw,150px)`, which differ from the
  * kernel `Section`/`Container` tokens, so the shell is reproduced at the call site. MUST be
@@ -51,13 +52,17 @@ export type IntroSplitBadge = {
  * admin-authored strings.
  */
 export function IntroSplit({
+  eyebrow,
   headline,
   lede,
   paragraphs,
   badge,
   image,
+  imagePosition = "right",
   className,
 }: {
+  /** Small uppercase label above the headline (`SectionHead`'s eyebrow); omitted when absent. */
+  eyebrow?: string;
   headline: string;
   /** Larger intro line under the headline (18px, max 62ch). */
   lede?: string;
@@ -67,17 +72,25 @@ export function IntroSplit({
   badge?: IntroSplitBadge;
   /** Caller's own `<MediaImage>`/`<img>`; sized to cover its full-height cell (see above). */
   image: ReactNode;
+  /**
+   * `"right"` (default, Guests): copy then image, text first when stacked. `"left"` (About's
+   * "How We Started"/"Giving Back"): the columns mirror (image `.95fr`, copy `1.05fr`) and the
+   * image also comes first when stacked, as in that page's original `.comm` markup.
+   */
+  imagePosition?: "left" | "right";
   className?: string;
 }) {
+  const imageLeft = imagePosition === "left";
   return (
     <div
       className={cn(
-        "grid grid-cols-[1fr] items-center gap-8 leading-[1.6] min-[881px]:grid-cols-[1.05fr_.95fr] min-[881px]:gap-14",
+        "grid grid-cols-[1fr] items-center gap-8 leading-[1.6] min-[881px]:gap-14",
+        imageLeft ? "min-[881px]:grid-cols-[.95fr_1.05fr]" : "min-[881px]:grid-cols-[1.05fr_.95fr]",
         className,
       )}
     >
-      <div>
-        <SectionHead flush headline={headline} intro={lede || undefined} />
+      <div className={imageLeft ? "order-last" : undefined}>
+        <SectionHead flush eyebrow={eyebrow || undefined} headline={headline} intro={lede || undefined} />
         {paragraphs
           ?.filter(Boolean)
           .map((p, i) => (
