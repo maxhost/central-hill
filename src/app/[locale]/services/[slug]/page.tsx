@@ -1,21 +1,20 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
-import { getServiceContent, listServiceSlugs } from "@slices/services/contract";
+import { getServiceBySlug, listServiceParams } from "@slices/services/contract";
 import { ServiceDetail } from "@slices/services/ui/service-detail";
-import "../../../mock.css";
 
-/**
- * Static per (locale, slug) — content is the embedded static catalogue (no DB), same slug
- * across every locale for now (see `service-detail-content.ts`).
- */
+/** ISR per service, per locale. Content is DB-driven (`getServiceBySlug`, tagged
+ *  `service-list` → a publish busts it); the published per-locale slugs are prerendered,
+ *  unknown slugs render on-demand → notFound. */
 export const revalidate = 3600;
 
-export function generateStaticParams() {
-  const slugs = listServiceSlugs();
-  return routing.locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
+export async function generateStaticParams() {
+  return listServiceParams();
 }
 
 export async function generateMetadata({
@@ -25,21 +24,30 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale, slug } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
+  setRequestLocale(locale);
 
-  const svc = getServiceContent(slug);
+  const svc = await getServiceBySlug(locale, slug);
   if (!svc) return {};
 
-  const languages: Partial<Record<(typeof routing.locales)[number] | "x-default", string>> = {
-    "x-default": `/services/${slug}`,
+  // hreflang: each locale's own slug (falls back to this one if a translation's slug is
+  // missing) + x-default on the source-locale path.
+  const languages: Partial<Record<Locale | "x-default", string>> = {
+    "x-default": `/services/${svc.alternateSlugs[routing.defaultLocale] ?? slug}`,
   };
-  for (const l of routing.locales) languages[l] = `/${l}/services/${slug}`;
+  for (const l of routing.locales) {
+    languages[l] = `/${l}/services/${svc.alternateSlugs[l] ?? slug}`;
+  }
+
+  const ogImage = svc.ogImage ?? svc.cover;
 
   return buildMetadata({
-    title: `${svc.name} — Central Hill`,
-    description: svc.tagline,
+    title: svc.metaTitle ?? `${svc.name} — Central Hill`,
+    description: svc.metaDescription ?? svc.excerpt,
     canonicalPath: `/${locale}/services/${slug}`,
     languages,
-    images: [{ url: svc.heroImage.src, width: 1900, height: 1080, alt: svc.heroImage.alt }],
+    images: ogImage
+      ? [{ url: ogImage.url, width: ogImage.width, height: ogImage.height, alt: ogImage.alt }]
+      : undefined,
   });
 }
 

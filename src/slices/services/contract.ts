@@ -91,28 +91,6 @@ export {
 } from "./detail";
 
 /**
- * Interim static-content read for the 7 real guest services with a premium detail page
- * today (`ui/service-detail-content.ts` — Airport Transfer, Sintra Tour, Fátima Tour, Boat
- * Tour, Surf Experience, Chef at Home, Luggage Storage). Source content lives in code, not
- * the `service` table, until the backoffice can create/edit this richer shape (pricing
- * tables, itineraries, menus, partner cards) — see README → Deferred. `getServiceContent`/
- * `listServiceSlugs` are what `/[locale]/services/[slug]/page.tsx` renders from; the
- * DB-backed reads above remain for the demo catalogue and other consumers.
- */
-export { getServiceContent, listServiceSlugs } from "./ui/service-detail-content";
-export type {
-  ServiceContent,
-  ExtraOption,
-  GalleryImage,
-  ItineraryStep,
-  OptionGroup,
-  OptionItem,
-  Partner,
-  PriceRow,
-  PriceTable,
-} from "./ui/service-detail-content";
-
-/**
  * Backoffice contribution (S12). `servicesAdminScreens` is spread into
  * `composeAdminNav` by the admin panel layout; the category manager + service list +
  * editors mount under `app/(admin)/admin/(panel)/{service-categories,services}/…`.
