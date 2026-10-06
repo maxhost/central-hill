@@ -330,8 +330,8 @@ hard-wired `#deal-enquiry` anchor, the badge is the CTA note. The `.asset-showca
 `PAGE_STYLE` only for `#capabilities` until it is ported the same way.
 
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
-`docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyActivitiesTeaser` (the old `bodyBottom`
-is gone — see the dual CTA below) interpolate the resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`.
+`docs/specs/guest-page-db-wiring.md`): `bodyTop` (plus the two teasers' raw `sec-head` helpers;
+the old `bodyBottom` and `bodyActivitiesTeaser` are gone — see below) interpolate the resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`.
 Its nine sections split as follows — hero, welcome, why, services teaser and activities teaser
 come from `page_content`; the featured portfolio comes from **buildings**, the reviews from
 **testimonials** (`audience='guest'`, managed in `/admin/testimonials` — the page schema owns no
@@ -344,8 +344,7 @@ is loaded globally by `mock.css`), with `iconoir-sparks` as the fallback for unk
 The "Make the Most of Your Stay" **services teaser is real JSX now**: `core/ui`'s new
 `PhotoFeatureGrid` (a bordered grid of full-bleed photo cards — icon/title/description in white
 over a dark scrim — plus an optional CTA row), ported 1:1 from the old combined `bodyMid`'s
-`.feat-grid`/`.feat`/`.cta-row` CSS (now split out as `servicesTeaserSecHead` +
-`bodyActivitiesTeaser`, see below). Rendered **outside** `.mk` (Lesson 1: `.mk *{margin:0;
+`.feat-grid`/`.feat`/`.cta-row` CSS (its `sec-head` now split out as `servicesTeaserSecHead`). Rendered **outside** `.mk` (Lesson 1: `.mk *{margin:0;
 padding:0}` is unlayered CSS and always beats a `@layer`-wrapped Tailwind utility); its
 `sec-head` (eyebrow/headline/intro — still DB content) stays raw markup through the existing
 `secHead()` helper, in its own small `.mk[data-page="guests"]` wrapper so it keeps picking up
@@ -360,12 +359,23 @@ deviation it ports: the *approved static* `mock/guest.html` baseline defines `.f
 `surface`-background card, but the *live* `guest-page.tsx` had already (pre-dating this
 extraction) shipped a photo-background + gradient-scrim + white-text treatment instead, per an
 explicit in-code "client feedback: premium look for Services/What-to-do" comment — ported as
-shipped, flagged rather than silently resolved. The immediately adjacent "What to Do" teaser is
-**unchanged** — still raw markup (same `.feat-grid`/`.feat`/`.cta-row` CSS, still in `PAGE_STYLE`
-since this section needs it), now in its own small `.mk` wrapper (`bodyActivitiesTeaser`) since
-it no longer shares a markup string with the services teaser. A likely future second consumer of
-`PhotoFeatureGrid`: that "What to Do" teaser itself, once it's its own extraction task (just
-needs `cta.variant="ghost"`).
+shipped, flagged rather than silently resolved.
+
+The immediately adjacent "The Best of Portugal" **what-to-do teaser is real JSX now** too —
+`PhotoFeatureGrid`'s second consumer, wired with exactly the services teaser's configuration
+(consistency over mock fidelity): same section/wrap shell at the mock metrics, its `sec-head`
+kept raw through `secHead()` (`activitiesTeaserSecHead`) in its own small
+`.mk[data-page="guests"]` wrapper, one `Reveal` around grid + CTA, all outside `.mk`. Items are
+still `activities_teaser.items` (icon/title/description, Iconoir via `iconClass`) with
+`ACTIVITIES_TEASER_BG` photos by position; the CTA still goes through `localizeUrl`. Only two
+differences from the services call site, both carried over from the original markup: no `.alt`
+tint (the original was a plain `<section>`, keeping the page's alternating bands) and
+`cta.variant: "ghost"` (the original `btn-ghost`). The old `bodyActivitiesTeaser()` string, its
+`.mk` wrapper and the now-dead `.feat-grid`/`.feat*` `PAGE_STYLE` rules are deleted;
+`iconCards()`/`ctaRow()` survive for Why book directly only (narrowed to `.bcard` / accent). As
+with the services teaser, the original per-card `.reveal-stagger` becomes one `Reveal` fade for
+the whole grid + CTA, and the CTA is `ButtonLink`'s ghost variant rather than the mock's raw
+`.btn-ghost` (see `PhotoFeatureGrid`'s docstring for `ButtonLink`'s small inherited deviations).
 
 The closing guest/owner **dual CTA is real JSX now** too: `core/ui`'s new `SplitCtaPanels` (a
 hairline grid — 1px `line` gap + 1px outer `line` border — of one or two solid panels, `light`

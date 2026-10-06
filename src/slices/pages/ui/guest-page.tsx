@@ -36,8 +36,14 @@ import { TestimonialsRow } from "./components/testimonials-row";
  * `data-page`-scoped, not bare `.mk`, so it still picks up `<ScrollReveal page="guests">`'s
  * `document.querySelectorAll('.mk[data-page="guests"] .pre-reveal')` sweep and keeps its
  * scroll-fade-in, unlike About's bare-`.mk` precedent for the same split which loses it).
- * The immediately adjacent "What to Do" teaser is unaffected — still raw markup, now in its
- * own small `.mk` wrapper (`bodyActivitiesTeaser`, split out of the old combined `bodyMid`).
+ *
+ * The immediately adjacent "The Best of Portugal" what-to-do teaser is real JSX too, ported the
+ * same way with the same `PhotoFeatureGrid` configuration (the old `bodyActivitiesTeaser()` HTML
+ * string, its `.mk` wrapper and the `.feat-grid`/`.feat` `PAGE_STYLE` rules are gone): its
+ * `sec-head` stays raw (`activitiesTeaserSecHead()`) in its own small `.mk[data-page="guests"]`
+ * wrapper, grid + CTA in one `Reveal` outside `.mk`. Only two differences from the services call
+ * site, both carried over from the original markup: no `.alt` tint on its `<section>`, and the
+ * CTA is `variant: "ghost"` (the original `btn-ghost`).
  *
  * The closing guest/owner dual CTA is real JSX too: `core/ui`'s `SplitCtaPanels` (the old
  * `bodyBottom()` HTML string + its trailing `.mk` wrapper are gone), with its section/wrap
@@ -123,20 +129,17 @@ type IconCard = { icon_key: string; title: string; description: string };
 type Cta = { label: string; url: string; note?: string };
 
 /**
- * The mock's icon card, in either of its two wrappers (`.bcard` for Why, `.feat` for
- * teasers). `.feat` cards optionally render on a photo background (`bg`, by position) with
- * a dark gradient overlay so the white icon/title/copy stay legible (client feedback:
- * premium look for Services/What-to-do).
+ * The mock's `.bcard` icon card (Why book directly). The photo-backed `.feat` wrapper the two
+ * teasers used to share is gone — both teasers are `core/ui`'s `PhotoFeatureGrid` now, whose
+ * photos are passed per item (`SERVICES_TEASER_BG` / `ACTIVITIES_TEASER_BG`, by position).
  */
-const iconCards = (items: IconCard[], wrapper: "bcard" | "feat", bg?: string[]): string =>
+const iconCards = (items: IconCard[]): string =>
   items
-    .map((c, i) => {
-      const style = bg?.[i] ? ` style="background-image:url('${escAttr(bg[i]!)}')"` : "";
-      return (
-        `<div class="${wrapper}"${style}><i class="ico ${iconClass(c.icon_key)}" aria-hidden="true"></i>` +
-        `<h3>${esc(c.title)}</h3><p>${esc(c.description)}</p></div>`
-      );
-    })
+    .map(
+      (c) =>
+        `<div class="bcard"><i class="ico ${iconClass(c.icon_key)}" aria-hidden="true"></i>` +
+        `<h3>${esc(c.title)}</h3><p>${esc(c.description)}</p></div>`,
+    )
     .join("");
 
 /** The mock's centred section header (eyebrow + title + lede); optional parts are omitted. */
@@ -147,10 +150,10 @@ const secHead = (opts: { eyebrow?: string; headline: string; intro?: string }): 
       ${opts.intro ? `<p class="lede" style="margin:16px auto 0">${esc(opts.intro)}</p>` : ""}
     </div>`;
 
-/** The mock's centred CTA row (button + optional helper note). */
-const ctaRow = (cta: Cta, locale: Locale, variant: "accent" | "ghost"): string =>
+/** The mock's centred CTA row (accent button + optional helper note) — Why book directly only. */
+const ctaRow = (cta: Cta, locale: Locale): string =>
   `<div class="cta-row reveal" style="justify-content:center">` +
-  `<a class="btn btn-${variant}" href="${escAttr(localizeUrl(cta.url, locale))}">${esc(cta.label)} →</a>` +
+  `<a class="btn btn-accent" href="${escAttr(localizeUrl(cta.url, locale))}">${esc(cta.label)} →</a>` +
   `${cta.note ? `<span class="cta-note">${esc(cta.note)}</span>` : ""}</div>`;
 
 const PAGE_STYLE = `
@@ -174,21 +177,11 @@ const PAGE_STYLE = `
 .mk .welcome img{width:100%;height:100%;object-fit:cover;min-height:380px}
 .mk .welcome .guarantee{margin-top:22px;font-weight:600;color:var(--accent-deep);font-size:16px;display:inline-flex;align-items:center;gap:10px}
 .mk .welcome .guarantee i{font-size:22px}
-.mk .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
-.mk .feat{position:relative;isolation:isolate;overflow:hidden;border:1px solid var(--line);padding:34px 30px;min-height:260px;display:flex;flex-direction:column;justify-content:flex-end;background-size:cover;background-position:center;transition:transform .35s var(--ease)}
-.mk .feat::before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(12,10,8,.15) 0%,rgba(12,10,8,.55) 60%,rgba(12,10,8,.82) 100%)}
-.mk .feat>*{position:relative;z-index:1}
-.mk .feat:hover{transform:translateY(-4px)}
-.mk .feat .ico{color:#fff;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4));transition:transform .35s var(--ease)}
-.mk .feat:hover .ico{transform:translateY(-3px) scale(1.1)}
-.mk .feat h3{font-size:20px;margin-bottom:8px;color:#fff}
-.mk .feat p{font-size:14.5px;color:rgba(255,255,255,.88)}
 .mk[data-page="guests"] .bcard{transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
 .mk[data-page="guests"] .bcard:hover{transform:translateY(-4px);box-shadow:0 16px 28px -20px rgba(0,0,0,.35)}
 .mk[data-page="guests"] .bcard .ico{transition:transform .35s var(--ease),color .35s var(--ease)}
 .mk[data-page="guests"] .bcard:hover .ico{transform:translateY(-3px) scale(1.1);color:var(--accent)}
-@media(max-width:880px){.mk .welcome{grid-template-columns:1fr;gap:32px}.mk .welcome img{min-height:280px}.mk .feat-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.mk .feat-grid{grid-template-columns:1fr}}
+@media(max-width:880px){.mk .welcome{grid-template-columns:1fr;gap:32px}.mk .welcome img{min-height:280px}}
 
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
    the rest, via <ScrollReveal page="guests">/scroll-reveal.tsx) + hover motion — same
@@ -256,9 +249,9 @@ function bodyTop(
   <div class="wrap">
     ${secHead({ eyebrow: why.eyebrow, headline: why.headline, intro: why.intro })}
     <div class="grid-3 reveal reveal-io reveal-stagger pre-reveal" style="grid-template-columns:repeat(4,1fr)">
-      ${iconCards(why.benefits, "bcard")}
+      ${iconCards(why.benefits)}
     </div>
-    ${ctaRow(why.cta, locale, "accent")}
+    ${ctaRow(why.cta, locale)}
   </div>
 </section>
 `;
@@ -277,27 +270,14 @@ function servicesTeaserSecHead(content: GuestContent): string {
 }
 
 /**
- * What-to-do teaser — still fully raw markup (out of scope for the services-teaser extraction
- * above; same `.feat-grid`/`.feat`/`.cta-row` CSS, still declared in `PAGE_STYLE` since this
- * section depends on it). Split out of the old combined `bodyMid` so it can get its own small
- * `.mk` wrapper at the `GuestPage` call site, now that the services teaser sits beside it as
- * real JSX instead of a markup sibling in the same string.
+ * What-to-do teaser's `sec-head` only (eyebrow/headline/intro) — the grid + CTA are real JSX now
+ * (`core/ui`'s `PhotoFeatureGrid`, wired at the `GuestPage` call site), exactly the same split as
+ * `servicesTeaserSecHead` above: still raw markup in its own small `.mk[data-page="guests"]`
+ * wrapper so it keeps `<ScrollReveal page="guests">`'s scroll fade-in.
  */
-function bodyActivitiesTeaser(content: GuestContent, locale: Locale): string {
+function activitiesTeaserSecHead(content: GuestContent): string {
   const { activities_teaser: activities } = content;
-
-  return `
-<!-- WHAT TO DO TEASER -->
-<section>
-  <div class="wrap">
-    ${secHead({ eyebrow: activities.eyebrow, headline: activities.headline, intro: activities.intro })}
-    <div class="feat-grid reveal reveal-io reveal-stagger pre-reveal">
-      ${iconCards(activities.items, "feat", ACTIVITIES_TEASER_BG)}
-    </div>
-    ${ctaRow(activities.cta, locale, "ghost")}
-  </div>
-</section>
-`;
+  return secHead({ eyebrow: activities.eyebrow, headline: activities.headline, intro: activities.intro });
 }
 
 /**
@@ -340,6 +320,12 @@ export async function GuestPage({ locale }: { locale: Locale }) {
     description: item.description,
     image: SERVICES_TEASER_BG[i],
   }));
+  const activitiesTeaserItems = content.activities_teaser.items.map((item, i) => ({
+    icon: <i className={iconClass(item.icon_key)} aria-hidden="true" />,
+    title: item.title,
+    description: item.description,
+    image: ACTIVITIES_TEASER_BG[i],
+  }));
 
   return (
     <>
@@ -348,7 +334,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
         <noscript>
           <style
             dangerouslySetInnerHTML={{
-              // `[data-reveal]` too: the `Reveal`-wrapped services-teaser grid and dual CTA
+              // `[data-reveal]` too: the `Reveal`-wrapped teaser grids and dual CTA
               // render hidden server-side and only un-hide via JS (same fix as Real Estate).
               __html: `.mk[data-page="guests"] .pre-reveal,[data-reveal]{opacity:1!important;transform:none!important}`,
             }}
@@ -403,9 +389,32 @@ export async function GuestPage({ locale }: { locale: Locale }) {
         </div>
       </section>
 
-      <div className="mk" data-page="guests">
-        <div dangerouslySetInnerHTML={{ __html: bodyActivitiesTeaser(content, locale) }} />
-      </div>
+      {/*
+       * "The Best of Portugal" what-to-do teaser — real JSX now, the same `PhotoFeatureGrid`
+       * configuration as the services teaser above: same section/wrap shell at the mock metrics,
+       * raw `sec-head` in its own `data-page`-scoped `.mk` wrapper, one `Reveal` around grid+CTA,
+       * all outside `.mk` (Lesson 1). Two differences, both carried over from the original
+       * markup: the `<section>` has no `.alt` tint (the original was a plain `<section>`, so the
+       * page's alternating bands are kept), and the CTA is `variant: "ghost"` (`btn-ghost`).
+       */}
+      <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
+        <div className="mx-auto max-w-[1240px] px-[28px]">
+          <div className="mk" data-page="guests">
+            <div dangerouslySetInnerHTML={{ __html: activitiesTeaserSecHead(content) }} />
+          </div>
+          <Reveal label="guests-activities-teaser">
+            <PhotoFeatureGrid
+              items={activitiesTeaserItems}
+              cta={{
+                href: localizeUrl(content.activities_teaser.cta.url, locale),
+                label: `${content.activities_teaser.cta.label} →`,
+                note: content.activities_teaser.cta.note,
+                variant: "ghost",
+              }}
+            />
+          </Reveal>
+        </div>
+      </section>
 
       {/* Guest reviews — the same shared marquee as Home/Owners, filtered to `audience='guest'`. */}
       <div id="testimonials" style={{ scrollMarginTop: 130 }}>
