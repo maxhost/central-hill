@@ -9,9 +9,10 @@ import { BlogListing } from "@slices/blog/ui/blog-listing";
 import "../../mock.css";
 
 /**
- * Static per locale (ISR). The category chips (`listCategories`) and the Featured post
- * (`getFeaturedPost`) come from the DB, revalidated by the blog admin publish flow; the rest of
- * the page body (card grid, Load More, newsletter) is still the static mock.
+ * Static per locale (ISR). The category chips (`listCategories`), the Featured post
+ * (`getFeaturedPost`) and the "From the Journal" grid (`listPosts`, minus the featured post)
+ * come from the DB, revalidated by the blog admin publish flow; chip filtering and "Load more"
+ * are client-side (no `searchParams`). Only the newsletter is still the static mock.
  */
 export const revalidate = 3600;
 

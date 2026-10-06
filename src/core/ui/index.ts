@@ -7,7 +7,7 @@ export { cn } from "./cn";
 export { Container } from "./container";
 export { Section } from "./section";
 export { Eyebrow } from "./eyebrow";
-export { ButtonLink } from "./button";
+export { ButtonLink, buttonClassName } from "./button";
 /** Scroll-reveal wrapper (fade/slide-in once, IntersectionObserver-based). */
 export { Reveal } from "./motion/reveal";
 /** Animated count-up for headline figures, parses a display string and counts to it. */

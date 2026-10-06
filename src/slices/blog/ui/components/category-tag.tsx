@@ -5,8 +5,8 @@ import { safeSwatch } from "./category-color";
 /**
  * Blog category tag — the mock's `.ctag` (`mock/blog.html`): a small solid label, `11px/600`
  * uppercase with `.13em` tracking, white text, `5px 11px` padding, `3px` radius, ported 1:1
- * into Tailwind. Used by the listing's `FeaturedPost`, and meant for the "From the Journal"
- * cards once they are JSX (the grid adds its own `mb-[14px]` via `className`).
+ * into Tailwind. Used by the listing's `FeaturedPost` and the "From the Journal" `JournalCard`
+ * (which adds its own `mb-[14px]` via `className`).
  *
  * **Colour from the DB.** The mock hardcodes one background per category (`.ctag.pt-regs` …);
  * here it is the admin-entered `category.color`, passed through `safeSwatch` (the same `#hex`

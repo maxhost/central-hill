@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { postBody } from "../body";
+import { ALL_CATEGORIES, hasMoreItems, isFilterItemHidden } from "../ui/components/category-filter-logic";
 
 /**
  * Slice `blog` unit tests — the portable-JSON body block set (ADR 0013). Pure,
@@ -47,4 +48,25 @@ test("image block requires a uuid media_id (never a raw url)", () => {
 test("rejects an empty list (min 1 item)", () => {
   const result = postBody.safeParse([{ type: "list", ordered: true, items: [] }]);
   assert.equal(result.success, false);
+});
+
+// ── Listing: client-side category filter + "Load more" visibility rules ─────────
+test("filter: 'All' pages by index; a category shows all its cards and hides the rest", () => {
+  const hidden = (active: string, category: string, index: number, limit?: number) =>
+    isFilterItemHidden({ active, category, index, limit });
+  assert.equal(hidden(ALL_CATEGORIES, "owner-guides", 0, 9), false);
+  assert.equal(hidden(ALL_CATEGORIES, "owner-guides", 8, 9), false);
+  assert.equal(hidden(ALL_CATEGORIES, "owner-guides", 9, 9), true);
+  assert.equal(hidden(ALL_CATEGORIES, "owner-guides", 50), false); // no paging
+  assert.equal(hidden("owner-guides", "owner-guides", 12, 9), false); // filtered view is complete
+  assert.equal(hidden("str-tips", "owner-guides", 0, 9), true);
+});
+
+test("load more: only on 'All' while cards are paged out", () => {
+  assert.equal(hasMoreItems({ active: ALL_CATEGORIES, total: 8, limit: 9 }), false);
+  assert.equal(hasMoreItems({ active: ALL_CATEGORIES, total: 9, limit: 9 }), false);
+  assert.equal(hasMoreItems({ active: ALL_CATEGORIES, total: 10, limit: 9 }), true);
+  assert.equal(hasMoreItems({ active: ALL_CATEGORIES, total: 10, limit: 18 }), false);
+  assert.equal(hasMoreItems({ active: "owner-guides", total: 30, limit: 9 }), false);
+  assert.equal(hasMoreItems({ active: ALL_CATEGORIES, total: 30 }), false);
 });

@@ -25,15 +25,22 @@ Consumed by S9 pages (featured/teasers), S13 seo-geo (URLs), S14 translation-pip
 
 - `app/[locale]/blog/page.tsx` → `ui/blog-listing.tsx` (header · category tabs · featured · grid · newsletter)
   — the category tabs are `ui/components/category-tabs.tsx` (`core/ui` `ChipBar`, fed by
-  `listCategories(locale)`, tagged `blog_post-list`); inert until the card grid is JSX, then
-  switched on via `CategoryFilterProvider` + `CategoryFilterItem` (client-side, page stays ISR).
+  `listCategories(locale)`, tagged `blog_post-list`). They **filter the grid** client-side:
+  `CategoryFilterProvider` wraps tabs + Featured + grid, each grid card sits in a
+  `CategoryFilterItem` (page stays ISR — no `searchParams`). Visibility rules are pure in
+  `category-filter-logic.ts` (unit-tested in `tests/blog.test.ts`).
   — the Featured section is `core/ui` `SectionHead` (eyebrow only) + `ui/components/featured-post.tsx`
   (`FeaturedPost`), fed by `getFeaturedPost(locale)` (tagged `blog_post-list`); omitted when there
-  is no featured post, and never category-filtered. Its pieces are reusable by the card grid:
-  `category-tag.tsx` (`CategoryTag`, the mock `.ctag` with the DB colour), `post-meta.tsx`
-  (`PostMeta` byline · date · reading time + `formatPostMonth`), and `category-color.ts`
-  (`safeSwatch`, the `#hex` check shared with the chips). The grid, Load More and newsletter are
-  still the mock's raw markup.
+  is no featured post, and never category-filtered.
+  — "From the Journal" is `SectionHead` (`blog.latestEyebrow` + `blog.latestTitle`) over a 3/2/1
+  grid of `ui/components/journal-card.tsx` (`JournalCard`, a whole-card link mirroring the Guides
+  listing card), fed by `listPosts(locale)` (published, newest first) **minus the featured post
+  (by id)**. "Load more" (`CategoryLoadMore`, `blog.loadMore`) reveals already-rendered cards
+  `JOURNAL_PAGE_SIZE` (9) at a time on "All" and renders nothing when everything fits; a
+  category chip always shows all its cards. Shared card pieces: `category-tag.tsx`
+  (`CategoryTag`, the mock `.ctag` with the DB colour), `post-meta.tsx` (`PostMeta` byline · date ·
+  reading time + `formatPostMonth`), `category-color.ts` (`safeSwatch`, the `#hex` check shared
+  with the chips). Only the newsletter is still the mock's raw markup.
 - `app/[locale]/blog/[slug]/page.tsx` → `ui/blog-post.tsx` (header · hero · body blocks · CTA · 3 related)
 
 Both: `generateStaticParams` + `generateMetadata` (`core/seo` `buildMetadata`, hreflang from the

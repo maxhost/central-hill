@@ -19,6 +19,14 @@ const variants: Record<Variant, string> = {
 };
 
 /**
+ * The classes of a `ButtonLink` variant, for a native `<button>` that must look identical
+ * (e.g. a client "Load more" toggle). Same `base` + variant strings, so the two never drift.
+ */
+export function buttonClassName(variant: Variant = "primary", className?: string): string {
+  return cn(base, variants[variant], className);
+}
+
+/**
  * Primary action as a link (design-system.md → Components: one clear primary per
  * page, accent fill, specific copy). For interactive form submits use a native
  * `<button>` in the owning client component.
@@ -40,7 +48,7 @@ export function ButtonLink({
   return (
     <Link
       href={href}
-      className={cn(base, variants[variant], className)}
+      className={buttonClassName(variant, className)}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : null)}
     >
       {children}
