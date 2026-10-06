@@ -379,7 +379,8 @@
         "media": "Multimedia",
         "body": "Contenido",
         "booking": "Reserva",
-        "seo": "SEO"
+        "seo": "SEO",
+        "detail": "Secciones de detalle"
       },
       "fields": {
         "status": "Estado",
@@ -405,7 +406,9 @@
         "ctaLabel": "Texto del CTA",
         "ctaUrl": "URL del CTA",
         "metaTitle": "Meta título",
-        "metaDescription": "Meta descripción"
+        "metaDescription": "Meta descripción",
+        "priceSuffix": "Sufijo del precio",
+        "priceSuffixHint": "Se muestra tras el precio, p. ej. “/ persona”."
       },
       "bookingType": {
         "none": "Solo visualización",
@@ -442,6 +445,69 @@
           "iconHint": "Clave Iconoir (kebab-case), p. ej. car.",
           "position": "Posición",
           "positionHint": "Los números más bajos aparecen primero."
+        }
+      },
+      "detail": {
+        "hint": "Secciones opcionales de la página pública del servicio. Las secciones vacías se ocultan.",
+        "empty": "Aún no hay nada.",
+        "sections": {
+          "highlights": "Destacados",
+          "itinerary": "Itinerario",
+          "options": "Opciones",
+          "pricing": "Tabla de precios",
+          "extras": "Extras",
+          "partners": "Socios",
+          "notes": "Notas"
+        },
+        "add": {
+          "highlight": "Añadir destacado",
+          "step": "Añadir paso",
+          "group": "Añadir grupo de opciones",
+          "option": "Añadir opción",
+          "pricing": "Añadir tabla de precios",
+          "column": "Añadir columna",
+          "row": "Añadir fila",
+          "extra": "Añadir extra",
+          "partner": "Añadir socio",
+          "note": "Añadir nota"
+        },
+        "items": {
+          "step": "Paso {n}",
+          "group": "Grupo {n}",
+          "option": "Opción {n}",
+          "column": "Columna {n}",
+          "row": "Fila {n}",
+          "extra": "Extra {n}",
+          "partner": "Socio {n}"
+        },
+        "fields": {
+          "time": "Hora",
+          "title": "Título",
+          "text": "Texto",
+          "groupTitle": "Título del grupo",
+          "groupItems": "Opciones",
+          "name": "Nombre",
+          "optionDesc": "Descripción",
+          "optionDescHint": "Opcional. Con descripciones el grupo se muestra como tarjetas; sin ellas, como etiquetas.",
+          "label": "Etiqueta",
+          "price": "Precio",
+          "priceHint": "Texto mostrado, p. ej. “15 €” o “Bajo consulta”.",
+          "desc": "Descripción",
+          "ctaLabel": "Texto del botón",
+          "url": "URL",
+          "rowLabel": "Etiqueta de la fila",
+          "footnote": "Nota al pie"
+        },
+        "pricing": {
+          "none": "Sin tabla de precios.",
+          "columns": "Columnas",
+          "rows": "Filas",
+          "remove": "Eliminar tabla de precios"
+        },
+        "controls": {
+          "moveUp": "Subir",
+          "moveDown": "Bajar",
+          "remove": "Eliminar"
         }
       }
     }

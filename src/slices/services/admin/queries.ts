@@ -5,6 +5,7 @@ import { type ContentRef, loadContent } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
 import { SERVICE, SERVICE_CATEGORY, type ServiceBookingType } from "../contract";
+import { EMPTY_DETAIL, type ServiceDetailContent, parseDetail } from "../detail";
 import { service, service_category, service_media } from "../schema";
 
 /**
@@ -144,9 +145,12 @@ export interface ServiceEditData {
   excerpt: string;
   body: string;
   duration_label: string | null;
+  price_suffix: string | null;
   cta_label: string | null;
   meta_title: string | null;
   meta_description: string | null;
+  /** Source-locale detail sections; `EMPTY_DETAIL` when none stored (or unparseable). */
+  detail: ServiceDetailContent;
   gallery: string[];
 }
 
@@ -184,9 +188,11 @@ export async function getServiceForEdit(id: string): Promise<ServiceEditBundle |
     excerpt: content.get(SERVICE, id, "excerpt") ?? "",
     body: content.get(SERVICE, id, "body") ?? "",
     duration_label: content.get(SERVICE, id, "duration_label") ?? null,
+    price_suffix: content.get(SERVICE, id, "price_suffix") ?? null,
     cta_label: content.get(SERVICE, id, "cta_label") ?? null,
     meta_title: content.get(SERVICE, id, "meta_title") ?? null,
     meta_description: content.get(SERVICE, id, "meta_description") ?? null,
+    detail: parseDetail(content.get(SERVICE, id, "detail")) ?? EMPTY_DETAIL,
     gallery: galleryRows.map((g) => g.media_id),
   };
 

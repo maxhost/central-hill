@@ -379,7 +379,8 @@
         "media": "Médias",
         "body": "Contenu",
         "booking": "Réservation",
-        "seo": "SEO"
+        "seo": "SEO",
+        "detail": "Sections de détail"
       },
       "fields": {
         "status": "Statut",
@@ -405,7 +406,9 @@
         "ctaLabel": "Libellé du CTA",
         "ctaUrl": "URL du CTA",
         "metaTitle": "Méta-titre",
-        "metaDescription": "Méta-description"
+        "metaDescription": "Méta-description",
+        "priceSuffix": "Suffixe du prix",
+        "priceSuffixHint": "Affiché après le prix, p. ex. « / personne »."
       },
       "bookingType": {
         "none": "Affichage seul",
@@ -442,6 +445,69 @@
           "iconHint": "Clé Iconoir (kebab-case), p. ex. car.",
           "position": "Position",
           "positionHint": "Les numéros les plus bas apparaissent en premier."
+        }
+      },
+      "detail": {
+        "hint": "Sections facultatives de la page publique du service. Les sections vides sont masquées.",
+        "empty": "Rien pour l’instant.",
+        "sections": {
+          "highlights": "Points forts",
+          "itinerary": "Itinéraire",
+          "options": "Options",
+          "pricing": "Grille tarifaire",
+          "extras": "Suppléments",
+          "partners": "Partenaires",
+          "notes": "Remarques"
+        },
+        "add": {
+          "highlight": "Ajouter un point fort",
+          "step": "Ajouter une étape",
+          "group": "Ajouter un groupe d’options",
+          "option": "Ajouter une option",
+          "pricing": "Ajouter une grille tarifaire",
+          "column": "Ajouter une colonne",
+          "row": "Ajouter une ligne",
+          "extra": "Ajouter un supplément",
+          "partner": "Ajouter un partenaire",
+          "note": "Ajouter une remarque"
+        },
+        "items": {
+          "step": "Étape {n}",
+          "group": "Groupe {n}",
+          "option": "Option {n}",
+          "column": "Colonne {n}",
+          "row": "Ligne {n}",
+          "extra": "Supplément {n}",
+          "partner": "Partenaire {n}"
+        },
+        "fields": {
+          "time": "Heure",
+          "title": "Titre",
+          "text": "Texte",
+          "groupTitle": "Titre du groupe",
+          "groupItems": "Options",
+          "name": "Nom",
+          "optionDesc": "Description",
+          "optionDescHint": "Facultatif. Avec descriptions, le groupe s’affiche en cartes ; sans, en étiquettes.",
+          "label": "Libellé",
+          "price": "Prix",
+          "priceHint": "Texte affiché, p. ex. « 15 € » ou « Sur demande ».",
+          "desc": "Description",
+          "ctaLabel": "Libellé du bouton",
+          "url": "URL",
+          "rowLabel": "Libellé de la ligne",
+          "footnote": "Note de bas de page"
+        },
+        "pricing": {
+          "none": "Aucune grille tarifaire.",
+          "columns": "Colonnes",
+          "rows": "Lignes",
+          "remove": "Supprimer la grille tarifaire"
+        },
+        "controls": {
+          "moveUp": "Monter",
+          "moveDown": "Descendre",
+          "remove": "Supprimer"
         }
       }
     }

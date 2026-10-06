@@ -12,6 +12,7 @@ import {
   setSourceContent,
 } from "@core/i18n/content-write";
 import { SERVICE, SERVICE_CATEGORY } from "../contract";
+import { isEmptyDetail } from "../detail";
 import { service, service_category, service_media } from "../schema";
 import { revalidateServices } from "../server/publish";
 import {
@@ -183,9 +184,12 @@ export async function saveService(raw: unknown): Promise<ServiceSaveResult> {
         excerpt: input.excerpt,
         body: input.body,
         duration_label: input.duration_label,
+        price_suffix: input.price_suffix,
         cta_label: input.cta_label,
         meta_title: input.meta_title,
         meta_description: input.meta_description,
+        // Portable JSON like the blog body (ADR 0013); cleared when every section is empty.
+        detail: isEmptyDetail(input.detail) ? null : JSON.stringify(input.detail),
       },
       { updatedBy: staff.userId },
     );

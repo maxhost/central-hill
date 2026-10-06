@@ -379,7 +379,8 @@
         "media": "Media",
         "body": "Body",
         "booking": "Booking",
-        "seo": "SEO"
+        "seo": "SEO",
+        "detail": "Detail sections"
       },
       "fields": {
         "status": "Status",
@@ -405,7 +406,9 @@
         "ctaLabel": "CTA label",
         "ctaUrl": "CTA URL",
         "metaTitle": "Meta title",
-        "metaDescription": "Meta description"
+        "metaDescription": "Meta description",
+        "priceSuffix": "Price suffix",
+        "priceSuffixHint": "Shown after the price, e.g. “/ person”."
       },
       "bookingType": {
         "none": "Display only",
@@ -442,6 +445,69 @@
           "iconHint": "Iconoir key (kebab-case), e.g. car.",
           "position": "Position",
           "positionHint": "Lower numbers appear first."
+        }
+      },
+      "detail": {
+        "hint": "Optional sections of the public service page. Empty sections are hidden.",
+        "empty": "Nothing added yet.",
+        "sections": {
+          "highlights": "Highlights",
+          "itinerary": "Itinerary",
+          "options": "Options",
+          "pricing": "Pricing table",
+          "extras": "Extras",
+          "partners": "Partners",
+          "notes": "Notes"
+        },
+        "add": {
+          "highlight": "Add highlight",
+          "step": "Add step",
+          "group": "Add option group",
+          "option": "Add option",
+          "pricing": "Add pricing table",
+          "column": "Add column",
+          "row": "Add row",
+          "extra": "Add extra",
+          "partner": "Add partner",
+          "note": "Add note"
+        },
+        "items": {
+          "step": "Step {n}",
+          "group": "Group {n}",
+          "option": "Option {n}",
+          "column": "Column {n}",
+          "row": "Row {n}",
+          "extra": "Extra {n}",
+          "partner": "Partner {n}"
+        },
+        "fields": {
+          "time": "Time",
+          "title": "Title",
+          "text": "Text",
+          "groupTitle": "Group title",
+          "groupItems": "Options",
+          "name": "Name",
+          "optionDesc": "Description",
+          "optionDescHint": "Optional. With descriptions the group shows as cards; without, as chips.",
+          "label": "Label",
+          "price": "Price",
+          "priceHint": "Display text, e.g. “€15” or “On request”.",
+          "desc": "Description",
+          "ctaLabel": "Button label",
+          "url": "URL",
+          "rowLabel": "Row label",
+          "footnote": "Footnote"
+        },
+        "pricing": {
+          "none": "No pricing table.",
+          "columns": "Columns",
+          "rows": "Rows",
+          "remove": "Remove pricing table"
+        },
+        "controls": {
+          "moveUp": "Move up",
+          "moveDown": "Move down",
+          "remove": "Remove"
         }
       }
     }

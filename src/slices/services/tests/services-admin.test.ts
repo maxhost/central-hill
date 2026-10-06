@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { draftToDetail, detailToDraft, emptyPricing } from "../admin/detail-draft";
 import { serviceCategorySaveInput, serviceSaveInput } from "../admin/validation";
 
 /**
@@ -30,9 +31,11 @@ function validService(overrides: Record<string, unknown> = {}) {
     excerpt: "Door-to-door from Lisbon airport.",
     body: "A private, fixed-price transfer.",
     duration_label: null,
+    price_suffix: "/ person",
     cta_label: "Book now",
     meta_title: null,
     meta_description: null,
+    detail: {},
     gallery: [],
     ...overrides,
   };
@@ -91,4 +94,81 @@ test("rejects blank required [T] text (name/excerpt/body)", () => {
   assert.equal(serviceSaveInput.safeParse(validService({ name: "" })).success, false);
   assert.equal(serviceSaveInput.safeParse(validService({ excerpt: "" })).success, false);
   assert.equal(serviceSaveInput.safeParse(validService({ body: "" })).success, false);
+});
+
+// ── price_suffix + detail (phase 2: backoffice) ──────────────────────────────
+const FULL_DETAIL = {
+  highlights: ["Private driver", "Fixed price"],
+  itinerary: [{ time: "09:00", title: "Pick-up", text: "We meet you at your apartment." }],
+  option_groups: [
+    { title: "Vehicles", items: [{ name: "Sedan" }, { name: "Van", desc: "Up to 7 guests." }] },
+  ],
+  pricing: {
+    columns: ["1–3 guests", "4–7 guests"],
+    rows: [
+      { label: "Day", cells: ["€45", "€65"] },
+      { label: "Night", cells: ["€55", "€75"] },
+    ],
+    footnote: "Night rate 22:00–06:00.",
+  },
+  extras: [{ label: "Child seat", price: "€5", desc: "Rear-facing or booster." }],
+  partners: [
+    { name: "Partner Co", desc: "Trusted local operator.", cta_label: "Visit", url: "https://partner.example.com" },
+  ],
+  notes: ["Free cancellation up to 24h before."],
+};
+
+test("price_suffix accepts null and a short string; rejects > 40 chars", () => {
+  assert.equal(serviceSaveInput.safeParse(validService({ price_suffix: null })).success, true);
+  assert.equal(serviceSaveInput.safeParse(validService({ price_suffix: "/ person" })).success, true);
+  assert.equal(
+    serviceSaveInput.safeParse(validService({ price_suffix: "x".repeat(41) })).success,
+    false,
+  );
+});
+
+test("accepts a full detail object", () => {
+  const r = serviceSaveInput.safeParse(validService({ detail: FULL_DETAIL }));
+  assert.equal(r.success, true);
+  if (r.success) assert.deepEqual(r.data.detail, FULL_DETAIL);
+});
+
+test("rejects a pricing row with the wrong cell count, keyed by its dotted path", () => {
+  const detail = {
+    ...FULL_DETAIL,
+    pricing: { ...FULL_DETAIL.pricing, rows: [{ label: "Day", cells: ["€45"] }] },
+  };
+  const r = serviceSaveInput.safeParse(validService({ detail }));
+  assert.equal(r.success, false);
+  if (!r.success) {
+    assert.ok(r.error.issues.some((i) => i.path.join(".") === "detail.pricing.rows.0.cells"));
+  }
+});
+
+test("nested detail errors carry their dotted path", () => {
+  const detail = { ...FULL_DETAIL, option_groups: [{ title: "Vehicles", items: [{ name: "" }] }] };
+  const r = serviceSaveInput.safeParse(validService({ detail }));
+  assert.equal(r.success, false);
+  if (!r.success) {
+    assert.ok(r.error.issues.some((i) => i.path.join(".") === "detail.option_groups.0.items.0.name"));
+  }
+});
+
+test("editor draft round-trips and omits empty optional strings", () => {
+  const draft = detailToDraft(serviceSaveInput.parse(validService({ detail: FULL_DETAIL })).detail);
+  assert.deepEqual(draftToDetail(draft), FULL_DETAIL);
+
+  // An option without a description and a blank footnote must be omitted, not sent as "".
+  const pricing = emptyPricing();
+  pricing.columns = ["Price"];
+  pricing.rows = [{ label: "Adult", cells: ["€10"] }];
+  pricing.footnote = "   ";
+  const payload = draftToDetail({
+    ...draft,
+    option_groups: [{ title: "Pick one", items: [{ name: "A", desc: "" }] }],
+    pricing,
+  });
+  assert.deepEqual(payload.option_groups[0]!.items[0], { name: "A" });
+  assert.equal(payload.pricing && "footnote" in payload.pricing, false);
+  assert.equal(serviceSaveInput.safeParse(validService({ detail: payload })).success, true);
 });

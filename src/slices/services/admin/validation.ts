@@ -7,6 +7,7 @@
  */
 import { z } from "zod";
 import { cents, contentStatus, position, slug, tStr } from "@core/validation/primitives";
+import { serviceDetailContent } from "../detail";
 
 export const serviceCategorySaveInput = z.object({
   id: z.uuid().optional(),
@@ -36,9 +37,16 @@ export const serviceSaveInput = z.object({
   excerpt: tStr({ min: 1, max: 400 }),
   body: tStr({ min: 1, max: 6000 }),
   duration_label: tStr({ max: 80 }).nullable(),
+  /** Display suffix after the price, e.g. "/ person". */
+  price_suffix: tStr({ max: 40 }).nullable(),
   cta_label: tStr({ max: 80 }).nullable(),
   meta_title: tStr({ max: 70 }).nullable(),
   meta_description: tStr({ max: 200 }).nullable(),
+  /**
+   * Rich detail sections — ONE [T] field stored as portable JSON (ADR 0013). Errors on
+   * nested paths surface keyed by their dotted path (e.g. `detail.pricing.rows.0.cells`).
+   */
+  detail: serviceDetailContent,
   // Relation:
   gallery: z.array(z.uuid()),
 });

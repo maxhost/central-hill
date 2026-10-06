@@ -19,8 +19,11 @@ import {
   TextInput,
   useMediaQueue,
 } from "@slices/backoffice/contract";
+import { EMPTY_DETAIL } from "../../detail";
 import { deleteService, saveService } from "../actions";
+import { type DetailDraft, detailToDraft, draftToDetail } from "../detail-draft";
 import type { ServiceEditData } from "../queries";
+import { DetailEditor } from "./detail-editor";
 
 /**
  * Service create/edit form (S12) — one client island for `/admin/services/new` and
@@ -43,6 +46,7 @@ interface FormState {
   cover_media_id: string;
   og_image_media_id: string;
   price_from: string;
+  price_suffix: string;
   /** Human-facing score ("4.7"); converted to integer tenths on submit. */
   rating: string;
   booking_type: BookingType;
@@ -54,6 +58,8 @@ interface FormState {
   body: string;
   meta_title: string;
   meta_description: string;
+  /** Rich detail sections, as an editable draft (serialised by `draftToDetail`). */
+  detail: DetailDraft;
   gallery: string[];
 }
 
@@ -69,6 +75,7 @@ function initialState(
     cover_media_id: data?.cover_media_id ?? "",
     og_image_media_id: data?.og_image_media_id ?? "",
     price_from: data?.price_from != null ? String(data.price_from) : "",
+    price_suffix: data?.price_suffix ?? "",
     rating: data?.rating_tenths != null ? String(data.rating_tenths / 10) : "",
     booking_type: data?.booking_type ?? "none",
     cta_url: data?.cta_url ?? "",
@@ -79,6 +86,7 @@ function initialState(
     body: data?.body ?? "",
     meta_title: data?.meta_title ?? "",
     meta_description: data?.meta_description ?? "",
+    detail: detailToDraft(data?.detail ?? EMPTY_DETAIL),
     gallery: data?.gallery ?? [],
   };
 }
@@ -116,6 +124,7 @@ function buildPayload(s: FormState, id: string | undefined) {
     cover_media_id: s.cover_media_id || null,
     og_image_media_id: orNull(s.og_image_media_id),
     price_from: intOrNull(s.price_from),
+    price_suffix: orNull(s.price_suffix),
     rating_tenths: ratingTenths(s.rating),
     booking_type: s.booking_type,
     cta_url: orNull(s.cta_url),
@@ -126,6 +135,7 @@ function buildPayload(s: FormState, id: string | undefined) {
     body: s.body.trim(),
     meta_title: orNull(s.meta_title),
     meta_description: orNull(s.meta_description),
+    detail: draftToDetail(s.detail),
     gallery: s.gallery,
   };
 }
@@ -341,6 +351,14 @@ export function ServiceForm({
         </Field>
       </AdminCard>
 
+      <AdminCard title={t("admin.sections.detail")}>
+        <DetailEditor
+          value={state.detail}
+          onChange={(next) => set("detail", next)}
+          errors={errors}
+        />
+      </AdminCard>
+
       <AdminCard title={t("admin.sections.booking")}>
         <div className="space-y-4">
           <FieldGrid>
@@ -353,6 +371,16 @@ export function ServiceForm({
                 type="number"
                 value={state.price_from}
                 onChange={(e) => set("price_from", e.target.value)}
+              />
+            </Field>
+            <Field
+              label={t("admin.fields.priceSuffix")}
+              hint={t("admin.fields.priceSuffixHint")}
+              error={err("price_suffix")}
+            >
+              <TextInput
+                value={state.price_suffix}
+                onChange={(e) => set("price_suffix", e.target.value)}
               />
             </Field>
             <Field
