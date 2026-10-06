@@ -189,9 +189,11 @@ original's per-card stagger isn't reproduced (`Reveal` animates its subtree as o
 rest of the page (stats grid, `organised`, `certifications`, `community`, `contact`) is
 unaffected — out of scope for this change.
 
-**Real Estate** (`real-estate-page.tsx`) started as the raw-markup `.mk` embed; it is now almost
-entirely real JSX — only the `#deal-structures`/`#market`/`#track-record` sec-heads are still
-raw (see below). Its
+**Real Estate** (`real-estate-page.tsx`) started as the raw-markup `.mk` embed. It is now
+**fully componentised**: no `.mk` wrapper, `dangerouslySetInnerHTML`, `PAGE_STYLE`,
+`ScrollReveal` or `mock.css` import remain (see "Final cleanup" at the end of this entry). The
+paragraphs below record each section's port in order; where they mention a raw sec-head, `esc`
+or the `.mk` wrapper, those were removed later. Its
 `market` ("Portugal: One of Europe's Strongest Hospitality Markets", `#market`) section is real
 JSX now: `core/ui`'s new `StatBento` (an asymmetric 2-row bento — a tall feature cell with a
 title, an embedded 3-up stat strip, and supporting paragraphs, spanning two rows beside a plain
@@ -362,6 +364,24 @@ import and all `.asset-showcase`/`.sh-*`/`.reverse`/`.cap-showcase` CSS (incl. t
 media-query entries) are gone. The first `.mk[data-page="real-estate"]` wrapper stays, now
 markup-less, carrying `PAGE_STYLE`, the `<noscript>` un-hide rule and `ScrollReveal` for the raw
 sec-heads further down.
+
+**Final cleanup (section heads).** The three remaining raw sec-heads (`#deal-structures`, which
+is centred, plus `#market` and `#track-record`) are now `core/ui`'s new `SectionHead` (optional
+eyebrow, serif `<h2>`, optional lede; `align="left" | "center"`; `flush` drops the 54px bottom
+margin). Each head is wrapped in its own call-site `Reveal`, as their `reveal-io pre-reveal`
+hooks were. `SectionHead` uses the same classes as the section heads `core/ui` already has
+(`ProseSection`/`IconFeatureGrid`/`StepGallery`/`PricingCards`). Its docstring maps every raw
+sec-head variant on the other pages onto its props. The data is still DB-driven
+(`headline`/`subheadline`). One visible delta, from choosing consistency: the title's 14px top
+margin now applies only under an eyebrow, as in the sibling components, and these heads have no
+eyebrow. Each head and everything after it in its section therefore sits 14px higher (the page
+is 42px shorter). Nothing else changed: type, colour, widths and lede centring are numerically
+identical at 1440/980/390. With that, the last `.mk` wrappers, `PAGE_STYLE` (including its
+Iconoir `@import`: no `iconoir-*` class renders on this page), `ScrollReveal`, `esc`, the
+sec-head helpers and the route's `import "../../mock.css"` are gone. The FAQ, the enquiry form,
+the header and the footer never depended on `mock.css`: screenshots before and after are
+pixel-identical, with the FAQ open and closed. The `<noscript>` rule is now Home's plain
+`[data-reveal]` un-hide.
 
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
 `docs/specs/guest-page-db-wiring.md`): `bodyTop` (plus the two teasers' raw `sec-head` helpers;

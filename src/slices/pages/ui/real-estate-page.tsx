@@ -8,11 +8,12 @@ import {
   EditorialSplit,
   Hero,
   Reveal,
+  SectionHead,
   StatBento,
   StatTiles,
   TwoColumnShowcase,
 } from "@core/ui";
-import { getRealEstatePage, type RealEstateContent } from "../contract";
+import { getRealEstatePage } from "../contract";
 import {
   defaultCapabilities,
   defaultDealStructures,
@@ -22,79 +23,37 @@ import {
 import { DealEnquirySection } from "./components/deal-enquiry-section";
 import { FaqSection } from "./components/faq-section";
 import { Icon } from "./components/icon";
-import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
- * Real Estate page — the approved `mock/real-estate.html` embedded 1:1 inside the live app
- * shell. The mock's body markup is rendered verbatim; its page styles are scoped under `.mk`
- * (see `src/app/mock.css` for the shared design system) so nothing leaks to Home/admin.
- * Every section is wired to the `real_estate` `page_content` row (text/images/CTA labels come
- * from the DB, resolved for the locale), and all of them except the three sec-heads noted below
- * are now real JSX outside `.mk`. The real
- * header/footer + i18n come from the app layout. The Iconoir CDN stylesheet (used by the
- * mock's `<i class="iconoir-… ico">` glyphs) is imported inside this page's scoped `<style>`.
+ * Real Estate page: the institutional-partnerships landing, built from `mock/real-estate.html`
+ * and now composed entirely from `core/ui` and slice React components. No `.mk` wrapper, raw
+ * HTML strings, page `<style>` or `mock.css` remain. Every section reads the `real_estate`
+ * `page_content` row for the locale. Newer sections fall back to the approved default copy in
+ * `../schemas/real-estate`. The header, footer and i18n come from the app layout.
  *
- * The hero (`#top`, SECTION 1) is now real JSX — `core/ui`'s `<Hero compact align="center">`,
- * rendered outside (before) `.mk` — not raw `dangerouslySetInnerHTML` markup. Still DB-driven
- * exactly as before (`hero.subheadline` → eyebrow, `headline` → h1, `positioning` → p, the two
- * CTA labels → `#deal-enquiry` / the capability-statement asset URL), with the hero image as a
- * `MediaImage` (or the fallback `<img>`) background, still the eager/high-priority LCP element.
- * It uses exactly Buildings' listing-hero configuration (centred copy, 1600px/40px wrap, 26ch
- * h1, 60ch p, `.5/.46/.88` scrim, default eyebrow, `ButtonLink` CTAs) for cross-page
- * consistency; its former `.mk[data-page="real-estate"] .hero` overrides are gone.
+ * Sections, top to bottom:
+ * - `#top`: `Hero` (compact, centred) with Buildings' listing-hero configuration. The hero image
+ *   is the LCP element.
+ * - `#partners` and `#process`: `EditorialSplit` with Owners' `#why` configuration. It has its
+ *   own internal `Reveal`s. `#process` passes zero-padded step numbers through the items' `icon`
+ *   slot.
+ * - `#capabilities` (`tone="alt"`, image left) and `#manage`: `TwoColumnShowcase` with Owners'
+ *   `#technology`/`#services` configuration.
+ * - `#deal-structures` (centred head, warm `alt` band), `#market` and `#track-record` (`alt`
+ *   band): `SectionHead` above `ChecklistCards` (plus the disclaimer note), `StatBento` and
+ *   `StatTiles` respectively. Each sits in a hand-written section shell that keeps the mock's
+ *   metrics (`clamp(72px,10vw,150px)` vertical padding, a 1240px/28px column, 84px scroll
+ *   margin).
+ * - `#faq`: the shared `FaqSection` island, picked by `faq_group_key`.
+ * - `#deal-enquiry`: `DealEnquirySection` (`EnquirySplit` + form-card primitives). Its form does
+ *   not submit yet and its copy is hardcoded English; wiring it to the leads slice is a separate
+ *   task.
  *
- * "Built for Institutional Partners" (`#partners`, SECTION 2) is likewise real JSX — `core/ui`'s
- * `EditorialSplit`, rendered outside (before) `.mk` right after the Hero, with exactly Owners'
- * `#why` configuration (`id` on a wrapping div — with this page's 84px scroll margin, headline/body/items,
- * `→`-suffixed primary CTA → `#deal-enquiry`, ghost secondary → `#deal-structures`, note) and
- * its own internal `Reveal`s. Still DB-driven (`partners.headline`/`subheadline`/`benefits`/CTA
- * labels/note); the positional icons are `<Icon>` keys styled like Owners' `why` icons. Cross-page
- * consistency was chosen over this page's 1240px/28px `.wrap`: it takes `EditorialSplit`'s own
- * Section/Container spacing.
- *
- * "How it works" (`#process`, SECTION 8 — "A Structured Path…") is real JSX too, ported the
- * same way: `core/ui`'s `EditorialSplit` with exactly `#partners`' configuration (wrapping div
- * with the `id` + 84px scroll margin, headline/body/items, `→`-suffixed primary CTA →
- * `#deal-enquiry`), minus the secondary CTA and note, which `process` doesn't have. The
- * zero-padded step numbers (01, 02, …; positional, derived from order) go through the items'
- * `icon` slot as a caller-built serif accent `<span>` (`STEP_NUMBER_CLASS`, the old `.snum` in
- * theme tokens). Still DB-driven (`content.process ?? defaultProcess`). It replaced the raw
- * `bodyTopB`/`processSection` chunk and the `.partner-pitch`/`.process-split`/`.snum` CSS.
- *
- * The "Why Portugal" section (`#market`, `marketSection`'s former home) is now real JSX —
- * `core/ui`'s `StatBento`, wrapped in `Reveal` — not raw `dangerouslySetInnerHTML` markup. Its
- * `sec-head` (title/lede) stays raw mock markup in its own small `.mk[data-page="real-estate"]`
- * wrapper (same convention as the rest of this page). See `StatBento`'s docstring for the full mock-vs-live drift this extraction resolved
- * (`mock/real-estate.html` still shows the old flat `.why-grid`, superseded here by the bento).
- *
- * "Performance You Can Measure" (`#track-record`, SECTION 7) is likewise real JSX — `core/ui`'s
- * `StatTiles` (hairline tile grid, each figure counting up via `CountUp`), wrapped in `Reveal`,
- * with its sec-head kept raw in its own `.mk[data-page="real-estate"]` wrapper, same as
- * `#market`. It replaced the raw `.tiles` markup + the `OwnerStatsCounter` `[data-count]`
- * island (no longer mounted on this page — nothing else here used `[data-count]`).
- *
- * "Deal Structures" (`#deal-structures`, SECTION 5 — the partnership-model cards) is likewise
- * real JSX — `core/ui`'s `ChecklistCards` in `Reveal`, plus its optional disclaimer note as a
- * plain JSX `<p>` — with its centred sec-head kept raw in its own `.mk[data-page="real-estate"]`
- * wrapper.
- *
- * "Institutional-Grade Management" (`#capabilities`, SECTION 3) and "Asset Types" (`#manage`,
- * SECTION 4) are likewise real JSX — `core/ui`'s existing `TwoColumnShowcase` (consistency with
- * Owners over this page's mock), each in `Reveal`, rendered outside `.mk` right after the
- * partners section: `#capabilities` mirrored on the `alt` band exactly like Owners' `#technology`
- * (`imagePosition="left"`), `#manage` with Owners' `#services` configuration. The old
- * `bodyTopA` raw chunk, `showcase()`/`benefitList()` and the `.asset-showcase`/`.cap-showcase`
- * CSS are gone; only an empty `.mk` wrapper carrying `PAGE_STYLE` + `ScrollReveal` remains
- * ahead of them, for the raw sections further down.
- *
- * "Ready to Explore a Partnership?" (`#deal-enquiry`, SECTION 10 — the former `BODY_BOTTOM`) is
- * likewise real JSX — `DealEnquirySection` (`./components/deal-enquiry-section.tsx`), built on
- * `core/ui`'s `EnquirySplit` + form-card primitives, rendered outside `.mk` after the FAQ.
- * Follow-up: that form still submits nothing (`StaticFormCard` cancels the submit, exactly like
- * the mock's `onsubmit="return false"`) and its copy is hardcoded English (not i18n'd, not in
- * `page_content`). Wiring it to the leads slice's deal-enquiry action is a separate task.
- * Organisation-detail fields are `required`; the Asset Details and Additional Information
- * sections are optional and collapsed into `<details>` accordions to shorten the form.
+ * Entrance motion is `core/ui`'s `Reveal` throughout: call-site wrappers, plus
+ * `EditorialSplit`/`EnquirySplit`'s internal ones. The `<noscript>` rule keeps every
+ * `[data-reveal]` visible with JS off, as Home does. Where this page's own mock differed from a
+ * sibling page that uses the same component, the user chose cross-page consistency over mock
+ * fidelity. Each component's docstring records those choices.
  */
 
 // Image fallbacks = the approved mock photo, used 1:1 until a real R2 asset is set in the
@@ -113,9 +72,12 @@ const CAP_FALLBACK_ALT = "Central Hill's management team reviewing portfolio per
 // Owners (`TWO_COL_SHOWCASE_SIZES`) and Home's `guests-section.tsx` use for the same component.
 const TWO_COL_SHOWCASE_SIZES = "(max-width: 1024px) 100vw, 560px";
 
-// Escape admin-authored content before it is interpolated into the static body HTML string.
-const esc = (s: string) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+// Shell shared by `#deal-structures`/`#market`/`#track-record`: the mock's `section` padding and
+// 84px scroll margin, its 1240px/28px `.wrap` column, and its warm `.alt` band (the same
+// `color-mix` formula `TwoColumnShowcase`/`StepGallery` use).
+const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
+const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
+const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
 
 // Positional per-partner icon keys from the locked design — paired by index with the fixed
 // four-item benefit list (funds / developers / operators / corporate). Only the benefit
@@ -186,95 +148,6 @@ const ASSET_ICONS = showcaseIcons([
   ["M4 20l1-4L15 6l3 3L8 19l-4 1z", "M13.5 7.5l3 3"],
   ["M4 20V10M10 20V4M16 20v-7M22 20H2"],
 ]);
-
-/** Render just the "Why Portugal" (`#market`) section head — raw mock markup (title + optional
- * lede), still `.mk`-scoped since it reuses mock.css's generic `.sec-head`/`.section-title`/
- * `.lede` rules. The bento below it (SECTION 6's former body) is now `core/ui`'s `StatBento`,
- * real JSX rendered outside `.mk` — see `RealEstatePage`. All values are admin-authored and
- * escaped. */
-function marketSecHead(market: RealEstateContent["market"]): string {
-  return `
-<!-- SECTION 6 — WHY PORTUGAL (sec-head only; the bento is real JSX, see RealEstatePage) -->
-<div class="sec-head reveal reveal-io pre-reveal">
-  <h2 class="section-title">${esc(market.headline)}</h2>
-  ${market.subheadline ? `<p class="lede" style="margin-top:16px">${esc(market.subheadline)}</p>` : ""}
-</div>
-`;
-}
-
-/** Render just the "Deal Structures" (`#deal-structures`, SECTION 5) centred section head —
- * raw mock markup (title + optional lede), still `.mk`-scoped since it reuses mock.css's generic
- * `.sec-head.center`/`.section-title`/`.lede` rules (same treatment as `marketSecHead`). The
- * partnership-model cards are `core/ui`'s `ChecklistCards` and the disclaimer note is plain JSX,
- * both rendered outside `.mk` — see `RealEstatePage`. All values are admin-authored and
- * escaped. */
-function dealStructuresSecHead(d: RealEstateContent["deal_structures"]): string {
-  return `
-<!-- SECTION 5 — PARTNERSHIP MODELS (sec-head only; the cards are real JSX, see RealEstatePage) -->
-<div class="sec-head center reveal reveal-io pre-reveal">
-  <h2 class="section-title">${esc(d.headline)}</h2>
-  ${d.subheadline ? `<p class="lede" style="margin:16px auto 0">${esc(d.subheadline)}</p>` : ""}
-</div>
-`;
-}
-
-/** Render just the "Performance You Can Measure" (`#track-record`, SECTION 7) section head —
- * raw mock markup (title + optional lede), still `.mk`-scoped since it reuses mock.css's generic
- * `.sec-head`/`.section-title`/`.lede` rules (same treatment as `marketSecHead`). The tiles are
- * `core/ui`'s `StatTiles`, real JSX rendered outside `.mk` — see `RealEstatePage`. All values are
- * admin-authored and escaped. */
-function trackRecordSecHead(t: RealEstateContent["track_record"]): string {
-  return `
-<!-- SECTION 7 — TRACK RECORD (sec-head only; the tiles are real JSX, see RealEstatePage) -->
-<div class="sec-head reveal reveal-io pre-reveal">
-  <h2 class="section-title">${esc(t.headline)}</h2>
-  ${t.subheadline ? `<p class="lede" style="margin-top:16px">${esc(t.subheadline)}</p>` : ""}
-</div>
-`;
-}
-
-const PAGE_STYLE = `
-@import url("https://cdn.jsdelivr.net/npm/iconoir/css/iconoir.css");
-
-/* hero — now real JSX (core/ui's Hero, rendered outside .mk before it); it uses
-   Buildings' listing-hero configuration, so no hero CSS is left here. */
-
-.mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
-
-/* Editorial Split — "Built for Institutional Partners" (#partners) and "How it works"
-   (#process) are both real JSX now (core/ui's EditorialSplit, outside .mk); no CSS left here. */
-
-/* Image Showcases — "Institutional-Grade Management" (#capabilities) and asset types (#manage)
-   are both real JSX now (core/ui's TwoColumnShowcase, outside .mk); no showcase CSS left here. */
-
-/* partnership-model cards — now real JSX (core/ui's ChecklistCards + a JSX note, rendered
-   outside .mk); only their centred .sec-head is still raw mock markup, styled by mock.css's
-   generic .sec-head/.section-title/.lede rules. */
-
-/* why portugal — the asymmetric bento (tall feature stat card + two supporting cells) is now
-   real JSX (core/ui's StatBento, rendered outside .mk); only its .sec-head (title/lede) is
-   still raw mock markup, styled by mock.css's generic .sec-head/.section-title/.lede rules
-   above — no #market-scoped CSS needed here any more. */
-
-/* track-record stat tiles — now real JSX (core/ui's StatTiles, rendered outside .mk); only
-   its .sec-head is still raw mock markup, styled by mock.css's generic rules. */
-
-/* FAQ — the shared <FaqSection> island (Tailwind, outside .mk); no CSS left here. */
-
-/* deal-enquiry — now real JSX (DealEnquirySection: core/ui's EnquirySplit + form-card
-   primitives, rendered outside .mk); no CSS left here. */
-
-/* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
-   the rest, via <ScrollReveal page="real-estate">/scroll-reveal.tsx) — same pattern
-   already applied to About and Guests. This page's card/bento hover states
-   (.mcell, .stat, .thesis li) already existed and are left as-is. The hidden
-   state is baked straight into the server-rendered markup (.pre-reveal, applied on the
-   elements below) so there's no flash of visible-then-hidden; the <noscript> rule keeps
-   content visible with JS off. Scoped to [data-page="real-estate"] so it never touches
-   the shared, neutralised .reveal rule in mock.css or any other page. */
-.mk[data-page="real-estate"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
-.mk[data-page="real-estate"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
-`;
 
 export async function RealEstatePage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
@@ -372,8 +245,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * `EditorialSplit`, configured exactly like Owners' `#why` (same wrapper `id` — but
        * this page's `scroll-mt-[84px]` like its other JSX sections, same props, same `→` on the primary CTA, same icon size/colour)
        * for cross-page consistency, accepting its Container width/spacing over this page's
-       * 1240px/28px `.wrap`. Rendered outside `.mk` (Lesson 1); the entrance animation is
-       * `EditorialSplit`'s own internal `Reveal`s (sticky-safe), so no call-site `Reveal`.
+       * 1240px/28px `.wrap`. The entrance animation is `EditorialSplit`'s own internal `Reveal`s (sticky-safe), so no call-site `Reveal`.
        * `#deal-structures` below is the secondary CTA's target.
        */}
       <div id="partners" className="scroll-mt-[84px]">
@@ -387,27 +259,15 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         />
       </div>
       {/*
-       * Page styles + entrance-motion wiring for the raw sections that remain further down (the
-       * `#deal-structures`/`#market`/`#track-record` sec-heads). No
-       * markup of its own any more — `#capabilities`, its last raw section, is real JSX below —
-       * but kept here, ahead of those sections, so `PAGE_STYLE`'s `.pre-reveal` hidden state is
-       * parsed before the markup it applies to. `ScrollReveal` sweeps the whole document's
-       * `.mk[data-page="real-estate"] .pre-reveal` elements, so its position doesn't matter.
+       * Every `Reveal` (call-site and inside `EditorialSplit`/`EnquirySplit`) renders hidden on
+       * the server and only un-hides via JS, so this keeps all of them visible with JS off — the
+       * same rule as Home's.
        */}
-      <div className="mk" data-page="real-estate">
-        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-        <noscript>
-          <style
-            dangerouslySetInnerHTML={{
-              __html: `.mk[data-page="real-estate"] .pre-reveal,[data-reveal]{opacity:1!important;transform:none!important}`,
-            }}
-          />
-        </noscript>
-        <ScrollReveal page="real-estate" />
-      </div>
+      <noscript>
+        <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
+      </noscript>
       {/*
-       * "Institutional-Grade Management" (`#capabilities`, SECTION 3) — real JSX, rendered
-       * outside `.mk`: the same `TwoColumnShowcase` as `#manage` below, mirrored exactly like
+       * "Institutional-Grade Management" (`#capabilities`, SECTION 3): the same `TwoColumnShowcase` as `#manage` below, mirrored exactly like
        * Owners' `#technology` (`imagePosition="left"`), on the warm `alt` band the raw section had
        * (`class="alt"`). The user's call: consistency over the mock's single-column, 14.5px
        * `.cap-showcase` bullet list — it takes the component's 2-column bullets, and the badge
@@ -460,7 +320,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         </Reveal>
       </div>
       {/*
-       * "Asset Types" (`#manage`, SECTION 4) — real JSX, rendered outside `.mk`: `core/ui`'s
+       * "Asset Types" (`#manage`, SECTION 4): `core/ui`'s
        * existing `TwoColumnShowcase` with Owners' exact `#services` configuration (same role,
        * and the old `.asset-showcase` CSS was byte-identical to Owners' `.owner-showcase`) — the
        * user's call: consistency with Owners over 1:1 fidelity to this page's mock. Wrapped in
@@ -468,7 +328,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * keeps the original hard-wired `#deal-enquiry` anchor, renders only with a label, and the
        * floating badge is the CTA note (shown only when there is one), exactly as before. The
        * wrapper keeps the `id` the header's "What We Manage" link targets, with this page's own
-       * 84px scroll offset (`.mk section`'s `scroll-margin-top`). Its icons share
+       * 84px scroll offset (the mock `section`'s `scroll-margin-top`). Its icons share
        * `#capabilities`' `SHOWCASE_ICON_CLASS`.
        */}
       <div id="manage" className="scroll-mt-[84px]">
@@ -510,28 +370,23 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         </Reveal>
       </div>
       {/*
-       * "Deal Structures" (`#deal-structures`, SECTION 5 — partnership models) — same shell
-       * technique as `#track-record` below: the `<section>`/`.wrap` metrics reproduced exactly
-       * (`.mk section`'s `padding:clamp(72px,10vw,150px) 0; scroll-margin-top:84px`, `.mk .wrap`'s
-       * `max-width:1240px; padding:0 28px`) plus the original's `class="alt"` warm band. The
-       * centred sec-head stays raw markup in its own `.mk[data-page="real-estate"]` wrapper so
-       * `ScrollReveal` still fades it in. The cards are `core/ui`'s `ChecklistCards` in `Reveal`
-       * (the original `.models` was one `reveal-io pre-reveal` unit; its `.reveal-stagger` only set
-       * per-card `transition-delay`s, and since the cards themselves don't change during the
-       * reveal — only the `.models` container fades/slides — no entrance stagger was ever visible;
-       * one `Reveal` is equivalent. The only observable effect of those delays was cards 2–3's
-       * hover lift starting 70/140ms late — an unintended side effect, deliberately not kept). The disclaimer note had no reveal in the original, so it sits
-       * outside `Reveal` (`.model-note`'s exact metrics as Tailwind tokens). `id` is kept — the
-       * partners section's secondary CTA anchors to `#deal-structures`.
+       * "Deal Structures" (`#deal-structures`, partnership models): the shared section shell on
+       * the warm `alt` band, a centred `SectionHead`, then `core/ui`'s `ChecklistCards`. The
+       * head and the cards each have their own `Reveal`, as the raw markup had separate reveal
+       * units. The original `.reveal-stagger` on the cards never produced a visible entrance
+       * stagger, so it is not reproduced. The disclaimer note had no reveal, so it sits outside
+       * `Reveal` (`.model-note`'s metrics in Tailwind). The `id` is the partners section's
+       * secondary-CTA target.
        */}
-      <section
-        id="deal-structures"
-        className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)]"
-      >
-        <div className="mx-auto max-w-[1240px] px-[28px]">
-          <div className="mk" data-page="real-estate">
-            <div dangerouslySetInnerHTML={{ __html: dealStructuresSecHead(dealStructures) }} />
-          </div>
+      <section id="deal-structures" className={`${SECTION_SHELL} ${ALT_BAND}`}>
+        <div className={SECTION_WRAP}>
+          <Reveal>
+            <SectionHead
+              align="center"
+              headline={dealStructures.headline}
+              intro={dealStructures.subheadline || undefined}
+            />
+          </Reveal>
           <Reveal>
             <ChecklistCards
               cards={dealStructures.models.map((m) => ({
@@ -551,25 +406,15 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         </div>
       </section>
       {/*
-       * "Why Portugal" (`#market`) — the `<section>`/`.wrap` shell is reproduced with the
-       * exact mock metrics (`.mk section`'s `padding:clamp(72px,10vw,150px) 0;
-       * scroll-margin-top:84px` and `.mk .wrap`'s `max-width:1240px;margin:0 auto;
-       * padding:0 28px`), same technique as About's `#values` extraction. `sec-head` stays
-       * raw markup in its own small `.mk[data-page="real-estate"]` wrapper (unlike About's
-       * extraction, this one keeps the `data-page` attribute so `ScrollReveal`'s
-       * `.mk[data-page="real-estate"] .pre-reveal` query still matches it — About's omitted
-       * it, which silently opts that fragment out of the fade/slide-in; keeping it here
-       * preserves the original behaviour exactly). The bento is `core/ui`'s `StatBento`,
-       * wrapped in `Reveal` for the same once-on-scroll fade/slide-in the raw markup had
-       * (`.market-bento`'s `reveal reveal-io pre-reveal` classes) — the original's per-cell
-       * stagger (`.reveal-stagger`) isn't reproduced, same accepted trade-off as About's
-       * `NumberedFeatureGrid` extraction.
+       * "Why Portugal" (`#market`): the shared section shell, a `SectionHead`, then `core/ui`'s
+       * `StatBento`, each in its own `Reveal`. The original's per-cell stagger is not
+       * reproduced, the same accepted trade-off as About's `NumberedFeatureGrid`.
        */}
-      <section id="market" className="py-[clamp(72px,10vw,150px)] scroll-mt-[84px]">
-        <div className="mx-auto max-w-[1240px] px-[28px]">
-          <div className="mk" data-page="real-estate">
-            <div dangerouslySetInnerHTML={{ __html: marketSecHead(market) }} />
-          </div>
+      <section id="market" className={SECTION_SHELL}>
+        <div className={SECTION_WRAP}>
+          <Reveal>
+            <SectionHead headline={market.headline} intro={market.subheadline || undefined} />
+          </Reveal>
           <Reveal>
             <StatBento
               feature={{
@@ -586,25 +431,18 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         </div>
       </section>
       {/*
-       * "Performance You Can Measure" (`#track-record`) — same shell technique as `#market`
-       * above: the `<section>`/`.wrap` metrics reproduced exactly (`.mk section`'s
-       * `padding:clamp(72px,10vw,150px) 0; scroll-margin-top:84px`, `.mk .wrap`'s
-       * `max-width:1240px; padding:0 28px`) plus the original's `class="alt"` warm band
-       * (`.mk .alt`'s `color-mix(in srgb, var(--line) 38%, var(--bg))`, same formula
-       * `TwoColumnShowcase`/`StepGallery` use). The sec-head stays raw markup in its own
-       * `.mk[data-page="real-estate"]` wrapper so `ScrollReveal` still fades it in. The tiles
-       * are `core/ui`'s `StatTiles` in `Reveal` (the original `.tiles` was one
-       * `reveal-io pre-reveal` unit — its `.reveal-stagger` delays landed on tiles with no
-       * transition of their own, so they never actually staggered; one `Reveal` is equivalent).
+       * "Performance You Can Measure" (`#track-record`): the shared section shell on the warm
+       * `alt` band, a `SectionHead`, then `core/ui`'s `StatTiles`, which count up on scroll-in.
+       * The head and the tiles each have their own `Reveal`.
        */}
-      <section
-        id="track-record"
-        className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)]"
-      >
-        <div className="mx-auto max-w-[1240px] px-[28px]">
-          <div className="mk" data-page="real-estate">
-            <div dangerouslySetInnerHTML={{ __html: trackRecordSecHead(trackRecord) }} />
-          </div>
+      <section id="track-record" className={`${SECTION_SHELL} ${ALT_BAND}`}>
+        <div className={SECTION_WRAP}>
+          <Reveal>
+            <SectionHead
+              headline={trackRecord.headline}
+              intro={trackRecord.subheadline || undefined}
+            />
+          </Reveal>
           <Reveal>
             <StatTiles tiles={trackRecord.tiles} />
           </Reveal>
@@ -615,8 +453,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * `EditorialSplit`, configured exactly like `#partners` above (wrapper `id` with this
        * page's `scroll-mt-[84px]`, headline/body/items, `→`-suffixed primary CTA →
        * `#deal-enquiry`); `process` has no secondary CTA or note. The zero-padded step numbers
-       * are the items' `icon` (`STEP_NUMBER_CLASS`). Rendered outside `.mk`; the entrance
-       * animation is `EditorialSplit`'s own internal `Reveal`s (sticky-safe), so no call-site
+       * are the items' `icon` (`STEP_NUMBER_CLASS`). The entrance animation is `EditorialSplit`'s own internal `Reveal`s (sticky-safe), so no call-site
        * `Reveal`.
        */}
       <div id="process" className="scroll-mt-[84px]">
@@ -629,8 +466,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
       </div>
       {/*
        * The institutional FAQ (former SECTION 9) — the shared, editable `<FaqSection>` island
-       * chosen per page via `faq_group_key`, rendered outside `.mk` so its Tailwind markup
-       * doesn't pick up mock.css bare-element rules.
+       * chosen per page via `faq_group_key`.
        */}
       {faqGroupKey ? (
         <div id="faq" style={{ scrollMarginTop: 130 }}>
@@ -642,8 +478,8 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         </div>
       ) : null}
       {/*
-       * "Ready to Explore a Partnership?" (`#deal-enquiry`, SECTION 10) — real JSX, rendered
-       * outside `.mk`: `DealEnquirySection` (core/ui's `EnquirySplit` + form-card primitives; the
+       * "Ready to Explore a Partnership?" (`#deal-enquiry`, SECTION 10):
+       * `DealEnquirySection` (core/ui's `EnquirySplit` + form-card primitives; the
        * section shell, 1240px/28px wrap and per-column reveal live in `EnquirySplit`). Replaced the
        * raw `BODY_BOTTOM` markup + its `.enquiry`/`.form-card`/`.ffield`/`.facc` CSS.
        */}
