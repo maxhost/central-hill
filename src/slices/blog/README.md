@@ -24,6 +24,9 @@ Consumed by S9 pages (featured/teasers), S13 seo-geo (URLs), S14 translation-pip
 ## Routes
 
 - `app/[locale]/blog/page.tsx` → `ui/blog-listing.tsx` (hero · featured · category tabs · grid · newsletter)
+  — the category tabs are `ui/components/category-tabs.tsx` (`core/ui` `ChipBar`, fed by
+  `listCategories(locale)`, tagged `blog_post-list`); inert until the card grid is JSX, then
+  switched on via `CategoryFilterProvider` + `CategoryFilterItem` (client-side, page stays ISR).
 - `app/[locale]/blog/[slug]/page.tsx` → `ui/blog-post.tsx` (header · hero · body blocks · CTA · 3 related)
 
 Both: `generateStaticParams` + `generateMetadata` (`core/seo` `buildMetadata`, hreflang from the

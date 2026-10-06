@@ -8,7 +8,10 @@ import { buildMetadata } from "@core/seo";
 import { BlogListing } from "@slices/blog/ui/blog-listing";
 import "../../mock.css";
 
-/** Static per locale. Content is the embedded mock (no DB). */
+/**
+ * Static per locale (ISR). The category chips come from the DB (`listCategories`, revalidated
+ * by the blog admin publish flow); the rest of the page body is still the static mock.
+ */
 export const revalidate = 3600;
 
 export function generateStaticParams() {

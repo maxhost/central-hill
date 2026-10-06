@@ -18,6 +18,13 @@ export interface ChipBarItem {
   /** Small uppercase badge shown at the end of a `soon` chip (e.g. "Soon"). Ignored when
    *  `soon` is false. */
   soonLabel?: ReactNode;
+  /** Optional colour dot (9px circle) rendered before `icon`/`label` — the blog's category
+   *  `.cat-tab .swatch`. Any CSS colour value, applied as an inline `background`: a design
+   *  token (`"var(--color-accent)"`) or admin-entered data such as a category's `#hex`. The
+   *  **caller** validates data-sourced values before passing them (see the blog's
+   *  `CategoryTabs`); React's style object keeps the value inside the one property, so an
+   *  invalid colour is ignored by the browser, never injected. */
+  swatch?: string;
 }
 
 /**
@@ -34,6 +41,21 @@ export interface ChipBarItem {
  * a `<select>` with plain `.chip`s (no icon, no "soon" sub-state) — a different enough
  * shape that forcing both into one generic component now would be speculative; that slice's
  * raw markup is untouched here (golden rule 1 — not this task's directory).
+ *
+ * **Second consumer — the blog's category tabs** (`src/slices/blog/ui/components/
+ * category-tabs.tsx`, mock `blog.html` `.cat-tabs`/`.cat-tab`). Same role (a row of pill
+ * filters with one solid-ink active pill) and the same chip look, so it reuses this component
+ * instead of a near-duplicate. The mock's micro-differences (`.cat-tab` has 18px side padding,
+ * an 8px icon gap and a 10px row gap vs. this chip's 16px/7px/9px) are deliberately **not**
+ * reproduced: cross-page consistency wins over per-mock fidelity. Everything it needed was
+ * added **additively**, with defaults that render the Guides city bar byte-for-byte as before:
+ * `label` is optional; `variant="plain"` drops the full-bleed hairline bar (no border, no tinted
+ * background, no `py-6`) for a bare chip row; `align="center"` centres the chips;
+ * `ChipBarItem.swatch` adds a colour dot; and `onSelect` (passable only from a client
+ * component, since functions can't cross the RSC boundary) wires each chip's `onClick` and
+ * exposes its state as `aria-pressed`. Without `onSelect` the chips stay inert, as on Guides.
+ * The file stays directive-free (no hooks), so Guides renders it as a server component and it
+ * is bundled into the client only where a client component imports it.
  *
  * Deliberately **presentational only** — no internal state, no routing. The guides index
  * doesn't currently filter by city (`listGuideCityGroups` renders every published city's
@@ -86,28 +108,55 @@ export function ChipBar({
   label,
   items,
   note,
+  variant = "bar",
+  align = "start",
+  onSelect,
   className,
 }: {
-  label: ReactNode;
+  /** Eyebrow-style label before the chips (e.g. "Choose your city"); omit for a bare row. */
+  label?: ReactNode;
   items: ChipBarItem[];
   note?: ReactNode;
+  /** `"bar"` (default): full-bleed hairline bar, tinted background, `py-6`. `"plain"`: only the
+   *  1240px/28px column with the chips; the caller owns vertical spacing. */
+  variant?: "bar" | "plain";
+  /** Horizontal placement of the chips inside their group (default `"start"`). */
+  align?: "start" | "center";
+  /** Click handler (receives the item `key`). When set, chips become toggle buttons with
+   *  `aria-pressed`. Client components only; omitted → inert chips (styling only). */
+  onSelect?: (key: string) => void;
   className?: string;
 }) {
+  const bar = variant === "bar";
   return (
     <div
       className={cn(
-        "border-b border-line bg-[color-mix(in_srgb,var(--color-line)_26%,var(--color-bg))]",
+        bar && "border-b border-line bg-[color-mix(in_srgb,var(--color-line)_26%,var(--color-bg))]",
         className,
-      )}
+      ) || undefined}
     >
-      <div className="mx-auto flex w-full max-w-[1240px] flex-wrap items-center gap-4 px-7 py-6">
-        <span className="text-[12px] font-semibold tracking-[0.14em] text-ink-soft uppercase">{label}</span>
-        <div className="flex min-w-[240px] flex-1 flex-wrap gap-[9px]">
+      <div
+        className={cn(
+          "mx-auto flex w-full max-w-[1240px] flex-wrap items-center gap-4 px-7",
+          bar && "py-6",
+        )}
+      >
+        {label ? (
+          <span className="text-[12px] font-semibold tracking-[0.14em] text-ink-soft uppercase">{label}</span>
+        ) : null}
+        <div
+          className={cn(
+            "flex min-w-[240px] flex-1 flex-wrap gap-[9px]",
+            align === "center" && "justify-center",
+          )}
+        >
           {items.map((item) => (
             <button
               key={item.key}
               type="button"
               aria-disabled={item.soon || undefined}
+              aria-pressed={onSelect ? Boolean(item.active) : undefined}
+              onClick={onSelect ? () => onSelect(item.key) : undefined}
               className={cn(
                 "inline-flex items-center gap-[7px] rounded-full border px-4 py-[9px] text-[13px] font-medium tracking-[0.01em] transition-colors duration-200 ease-in-out",
                 item.active
@@ -117,6 +166,13 @@ export function ChipBar({
                     : "cursor-pointer border-line bg-surface text-ink-soft hover:border-ink-soft hover:text-ink",
               )}
             >
+              {item.swatch ? (
+                <span
+                  className="inline-block size-[9px] rounded-full"
+                  style={{ background: item.swatch }}
+                  aria-hidden="true"
+                />
+              ) : null}
               {item.icon ? <i className={item.icon} aria-hidden="true" /> : null}
               {item.label}
               {item.soon && item.soonLabel ? (

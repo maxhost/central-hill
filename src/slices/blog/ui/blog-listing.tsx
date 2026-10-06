@@ -1,26 +1,30 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { PageHead, PageHeadSearch } from "@core/ui";
+import { listCategories } from "../contract";
+import { CategoryTabs } from "./components/category-tabs";
 
 /**
  * Blog listing — the approved `mock/blog.html` inside the live app shell.
  * The header band (eyebrow, `<h1>`, lede, search field) is the `core/ui` `PageHead` +
  * `PageHeadSearch`, rendered as JSX with i18n copy (`blog.eyebrow|title|intro|searchPlaceholder|
- * searchLabel`), outside the `.mk` subtree. The rest of the page is still the mock's body
- * markup rendered verbatim, with its page styles scoped under `.mk` (see `src/app/mock.css` for
- * the shared design system) so nothing leaks to Home/admin; that part is static English copy.
- * No database is read here. The real header/footer come from the app layout. (The search field
- * is inert until blog search lands; the category tabs, "Load More" button and newsletter form
- * are the mock's static markup for now; wiring them up is a follow-up. `.reveal` is
- * neutralised in mock.css so content stays visible.)
+ * searchLabel`), outside the `.mk` subtree. Below it, the **category tabs** are JSX too and
+ * **DB-driven**: the slice's `CategoryTabs` (`core/ui`'s `ChipBar`, plain + centred) fed by
+ * `listCategories(locale)`, which is `unstable_cache`d per locale and tagged `blog_post-list`,
+ * so a category save/delete in the backoffice (`revalidateBlogList`) refreshes the page. "All"
+ * (`blog.all`) + one chip per category, in admin `position` order, with the translated name and
+ * the category colour as the swatch (only if it's a valid `#hex`). The chips are **inert for
+ * now** — the cards below are still raw HTML, so there is nothing to filter yet; see
+ * `category-tabs.tsx` for the provider/item wiring that switches filtering on once the cards
+ * are JSX. The rest of the page is still the mock's body markup rendered verbatim, with its
+ * page styles scoped under `.mk` (see `src/app/mock.css` for the shared design system) so
+ * nothing leaks to Home/admin; that part is static English copy. The real header/footer come
+ * from the app layout. (The search field is inert until blog search lands; the "Load More"
+ * button and newsletter form are the mock's static markup for now; wiring them up is a
+ * follow-up. `.reveal` is neutralised in mock.css so content stays visible.)
  */
 
 const PAGE_STYLE = `
-.mk .cat-tabs{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-.mk .cat-tab{font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:.01em;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:100px;padding:9px 18px;cursor:pointer;transition:.2s var(--ease);display:inline-flex;align-items:center;gap:8px}
-.mk .cat-tab:hover{border-color:var(--ink-soft);color:var(--ink)}
-.mk .cat-tab .swatch{width:9px;height:9px;border-radius:50%;display:inline-block}
-.mk .cat-tab.is-active{background:var(--ink);border-color:var(--ink);color:var(--bg)}
 .mk .ctag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:#fff;padding:5px 11px;border-radius:3px}
 .mk .ctag.owner-guides{background:#0E7C7B}
 .mk .ctag.str-tips{background:#2C6E8F}
@@ -62,19 +66,6 @@ const PAGE_STYLE = `
 `;
 
 const BODY = (locale: Locale) => `
-<section style="padding-top:48px;padding-bottom:0">
-  <div class="wrap reveal">
-    <div class="cat-tabs">
-      <button class="cat-tab is-active"><span class="swatch" style="background:var(--accent)"></span>All</button>
-      <button class="cat-tab"><span class="swatch" style="background:#0E7C7B"></span>Owner Guides</button>
-      <button class="cat-tab"><span class="swatch" style="background:#2C6E8F"></span>Short-Term Rental Tips</button>
-      <button class="cat-tab"><span class="swatch" style="background:#B23A3A"></span>Portugal Regulations</button>
-      <button class="cat-tab"><span class="swatch" style="background:#B08D57"></span>Lisbon</button>
-      <button class="cat-tab"><span class="swatch" style="background:#6B7280"></span>Portugal</button>
-    </div>
-  </div>
-</section>
-
 <section style="padding-top:52px;padding-bottom:0">
   <div class="wrap">
     <div class="sec-head reveal" style="margin-bottom:28px">
@@ -229,18 +220,27 @@ const BODY = (locale: Locale) => `
 `;
 
 /**
- * Blog listing: `PageHead` header (JSX, i18n) + category tabs + featured + card grid +
- * newsletter (static mock embed). The search field is inert: no `action`, and this page never
+ * Blog listing: `PageHead` header (JSX, i18n) + category tabs (JSX, DB) + featured + card grid
+ * + newsletter (static mock embed). The search field is inert: no `action`, and this page never
  * reads `searchParams` (that would make it dynamic), so submitting just reloads `?q=…`.
+ * The tabs section reproduces the mock's `<section style="padding-top:48px;padding-bottom:0">`;
+ * its 1240px/28px column comes from `ChipBar` itself. It sits outside `.mk` (see `ChipBar`'s
+ * docstring for why it must).
  */
 export async function BlogListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const t = await getTranslations("blog");
+  const [t, categories] = await Promise.all([getTranslations("blog"), listCategories(locale)]);
   return (
     <>
       <PageHead eyebrow={t("eyebrow")} headline={t("title")} intro={t("intro")}>
         <PageHeadSearch placeholder={t("searchPlaceholder")} label={t("searchLabel")} />
       </PageHead>
+      <section className="pt-[48px]">
+        <CategoryTabs
+          allLabel={t("all")}
+          categories={categories.map((c) => ({ slug: c.slug, name: c.name, color: c.color }))}
+        />
+      </section>
       <div className="mk" data-page="blog">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <div dangerouslySetInnerHTML={{ __html: BODY(locale) }} />
