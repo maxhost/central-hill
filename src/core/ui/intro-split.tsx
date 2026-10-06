@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "./cn";
+import { SectionHead } from "./section-head";
 
 export type IntroSplitBadge = {
   /** Caller-built icon element (e.g. an Iconoir `<i>` sized by the caller), rendered as-is. */
@@ -16,7 +17,9 @@ export type IntroSplitBadge = {
  * `.guarantee` in its `PAGE_STYLE`, identical to `mock/guest.html`'s CSS, plus `mock.css`'s
  * `h2.section-title`/`.lede`) — ported 1:1 from the live computed styles, including the `.mk`
  * wrapper's inherited `line-height:1.6` (re-applied as `leading-[1.6]` on the root; Tailwind's
- * preflight would otherwise give 1.5) and `h2.section-title`'s `margin-top:14px`.
+ * preflight would otherwise give 1.5). The headline + lede are now `SectionHead` (`flush`), so
+ * the title drops `h2.section-title`'s eyebrow-less `margin-top:14px` and the lede offset is
+ * `16px` instead of `18px`, matching every other section head (consistency over mock fidelity).
  *
  * **Checked against every existing `core/ui` component first** — none fit structurally:
  * `TwoColumnShowcase` (the closest: copy beside one image) has a single `body` string and no
@@ -74,10 +77,7 @@ export function IntroSplit({
       )}
     >
       <div>
-        <h2 className="mt-[14px] font-serif text-[clamp(30px,4vw,50px)] font-medium leading-[1.08] tracking-[-0.015em] text-ink">
-          {headline}
-        </h2>
-        {lede ? <p className="mt-[18px] max-w-[62ch] text-[18px] text-ink-soft">{lede}</p> : null}
+        <SectionHead flush headline={headline} intro={lede || undefined} />
         {paragraphs
           ?.filter(Boolean)
           .map((p, i) => (

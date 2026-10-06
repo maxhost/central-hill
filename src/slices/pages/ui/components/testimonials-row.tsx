@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { Container, Eyebrow } from "@core/ui";
+import { SectionHead } from "@core/ui";
 import { type TestimonialAudience, listTestimonials } from "@slices/testimonials/contract";
 import { altBg } from "./blocks";
 import { type GridItem, TestimonialsMarquee } from "./testimonials-marquee";
@@ -13,7 +13,8 @@ import { type GridItem, TestimonialsMarquee } from "./testimonials-marquee";
  * audience-tagged read model from the testimonials slice; renders nothing when none are
  * published. Subscribes transitively to `testimonial-list`. Presentation is a full-bleed infinite
  * marquee on the light `.alt` band (up to `MAX_CARDS` unique cards, looped) — data is resolved
- * here, the `TestimonialsMarquee` is purely presentational.
+ * here, the `TestimonialsMarquee` is purely presentational. The head is `core/ui`'s centred
+ * `SectionHead` in the standard page shell (see `FeaturedPortfolio`).
  */
 const MAX_CARDS = 10;
 
@@ -49,17 +50,16 @@ export async function TestimonialsRow({
   }));
 
   return (
-    <section className={`${altBg} py-[clamp(64px,10vw,160px)]`}>
-      <Container>
-        <div className="mx-auto max-w-2xl text-center">
-          {eyebrow || showEyebrow ? (
-            <Eyebrow accent>{eyebrow ?? t("reviews.eyebrow")}</Eyebrow>
-          ) : null}
-          <h2 className="mt-3 whitespace-pre-line font-serif text-3xl leading-tight text-ink md:text-4xl">
-            {title ?? t("reviews.title")}
-          </h2>
-        </div>
-      </Container>
+    <section className={`${altBg} scroll-mt-[84px] py-[clamp(72px,10vw,150px)]`}>
+      <div className="mx-auto max-w-[1240px] px-[28px]">
+        {/* `flush`: the marquee carries its own top margin. `\n` in the shared title is a line break. */}
+        <SectionHead
+          align="center"
+          flush
+          eyebrow={eyebrow ?? (showEyebrow ? t("reviews.eyebrow") : undefined)}
+          headline={<span className="whitespace-pre-line">{title ?? t("reviews.title")}</span>}
+        />
+      </div>
       {/* Full-bleed marquee (outside the Container) for the seamless infinite scroll. */}
       <TestimonialsMarquee items={items} />
     </section>

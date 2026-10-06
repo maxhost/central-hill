@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import type { Locale } from "@core/db/columns";
 import { MediaImage } from "@core/media";
-import { Carousel, Container, Eyebrow } from "@core/ui";
+import { Carousel, SectionHead } from "@core/ui";
 import { type ServiceSummary, listServices } from "@slices/services/contract";
 import { Icon } from "./icon";
 
@@ -18,6 +18,10 @@ import { Icon } from "./icon";
  * not-yet-seeded catalogue simply removes the band instead of leaving a bare heading. The
  * card is built here from `ServiceSummary` (no cross-slice UI import). Subscribes
  * transitively to `service-list`, so publishing a service refreshes Home.
+ *
+ * The head is `core/ui`'s left-aligned `SectionHead` (`flush`, since the assurances row spaces
+ * itself) in the standard page shell (`clamp(72px,10vw,150px)` padding, 84px scroll margin,
+ * 1240px/28px column), so its edges line up with `FeaturedPortfolio` directly above it.
  */
 
 /** Cards fed to the track — four are visible at a time, so this is ~3 pages of scroll. */
@@ -54,12 +58,9 @@ export async function ServicesCarousel({
     ));
 
   return (
-    <section className="py-[clamp(56px,8vw,112px)]">
-      <Container>
-        {content.eyebrow ? <Eyebrow accent>{content.eyebrow}</Eyebrow> : null}
-        <h2 className="mt-3 font-serif text-3xl leading-tight text-ink md:text-4xl">
-          {content.headline}
-        </h2>
+    <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
+      <div className="mx-auto max-w-[1240px] px-[28px]">
+        <SectionHead flush eyebrow={content.eyebrow || undefined} headline={content.headline} />
 
         {assurances.length > 0 ? (
           <ul className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-8">
@@ -88,7 +89,7 @@ export async function ServicesCarousel({
             buttonPlacement="overlay"
           />
         </div>
-      </Container>
+      </div>
     </section>
   );
 }

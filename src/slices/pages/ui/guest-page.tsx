@@ -37,8 +37,9 @@ import { TestimonialsRow } from "./components/testimonials-row";
  * - `#testimonials`: `TestimonialsRow`, `audience='guest'`.
  * - `#faq`: the shared `FaqSection` island, picked by `faq_group_key` (only when set).
  * - Closing dual CTA: `SplitCtaPanels`, contact lines from company_settings (`getGlobals`).
- * The hand-written sections share the mock's shell (`clamp(72px,10vw,150px)` vertical padding,
- * 84px scroll margin, a 1240px/28px column).
+ * Every section, including the shared slice ones (portfolio, testimonials, FAQ), uses the same
+ * shell (`clamp(72px,10vw,150px)` vertical padding, 84px scroll margin, a 1240px/28px column)
+ * and `core/ui`'s `SectionHead`.
  *
  * Composed from other slices at render time, so publishing there refreshes this page: buildings
  * (portfolio), testimonials, faq and settings (dual-CTA contact line).
@@ -299,7 +300,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
       </section>
 
       {/* Featured properties — cards from the buildings slice, headings from `guest.portfolio`. */}
-      <div id="portfolio" style={{ scrollMarginTop: 130 }}>
+      <div id="portfolio" className="scroll-mt-[84px]">
         <FeaturedPortfolio
           locale={locale}
           eyebrow={portfolio.eyebrow}
@@ -370,12 +371,12 @@ export async function GuestPage({ locale }: { locale: Locale }) {
       </section>
 
       {/* Guest reviews — the same shared marquee as Home/Owners, filtered to `audience='guest'`. */}
-      <div id="testimonials" style={{ scrollMarginTop: 130 }}>
+      <div id="testimonials" className="scroll-mt-[84px]">
         <TestimonialsRow locale={locale} audience="guest" title={t("reviews.titleGuests")} />
       </div>
 
       {faqGroupKey ? (
-        <div id="faq" style={{ scrollMarginTop: 130 }}>
+        <div id="faq" className="scroll-mt-[84px]">
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}

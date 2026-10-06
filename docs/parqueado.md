@@ -6,6 +6,27 @@ definitivo y se mueve a `docs/decisions/README.md`.
 
 ---
 
+## Título del `StatBand` (banda oscura) fuera del `SectionHead`
+
+**Estado:** **parqueado** el 2026-10-05 (pendiente de decisión del usuario)
+
+### Contexto
+Al unificar los títulos de sección en `core/ui`'s `SectionHead` (Guests, Home, Owners, Buildings,
+Real Estate), el único título que queda con el estilo antiguo (`text-3xl md:text-4xl`, crema) es el
+de `StatBand` (`src/core/ui/stat-band.tsx`): "Numbers That Speak for Themselves" en Home
+(`StatsBand`) y en el listado de Buildings. Owners renderiza `StatBand` sin título.
+
+`SectionHead` solo tiene colores para fondo claro (`text-ink`, eyebrow `accent-deep`). Usarlo sobre
+la banda oscura obligaría a sobrescribir colores desde fuera, que es justo el tipo de workaround que
+la regla de consistencia descarta.
+
+### Cómo se retoma
+Añadir a `SectionHead` una variante para fondo oscuro (p. ej. `tone="dark"`: título
+`text-on-feature`, eyebrow `feature-accent`) y usarla en el título de `StatBand`, quitando su `<h2>`
+propio. Es un cambio en `src/core/ui/`, así que formalmente requiere ADR (regla de oro 3).
+
+---
+
 ## ADR (borrador) 0033: Un único sistema de iconos, editable desde el backoffice
 
 **Estado:** Propuesto · **parqueado** el 2026-10-05 (pendiente de decisión del usuario)

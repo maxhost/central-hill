@@ -1,5 +1,6 @@
 import { Fragment, type ReactNode } from "react";
 import { Reveal } from "./motion/reveal";
+import { SectionHead } from "./section-head";
 
 export type EnquiryContactLine = {
   /** Pre-translated label shown before the link, e.g. "Email:" (a space is added after it). */
@@ -17,7 +18,10 @@ export type EnquiryContactLine = {
  * ported 1:1 from that page's `.mk`-scoped `.enquiry`/`.enquiry-intro`/`.contact-direct` rules
  * (old `PAGE_STYLE`, identical to `mock/real-estate.html`'s) plus `mock.css`'s inherited `.mk`
  * body rhythm (`line-height:1.6`), `section` (`padding:clamp(72px,10vw,150px) 0;
- * scroll-margin-top:84px`), `.wrap` (1240px/28px), `h2` and `.lede`.
+ * scroll-margin-top:84px`), `.wrap` (1240px/28px), `h2` and `.lede`. The title + lede are now
+ * `SectionHead` (`flush`), replacing the original's slightly smaller `clamp(30px,3.6vw,46px)` title
+ * and `18px` lede offset, so the closing head matches every other section head (consistency
+ * over mock fidelity).
  *
  * Not one of the existing two-column primitives: `EditorialSplit` is a sticky copy + CTA column
  * beside a hairline icon list (no slot), `TwoColumnShowcase` is copy beside an image, and
@@ -58,10 +62,7 @@ export function EnquirySplit({
       <div className="mx-auto max-w-[1240px] px-[28px]">
         <div className="grid grid-cols-1 gap-[34px] [align-items:start] min-[981px]:grid-cols-[.85fr_1.15fr] min-[981px]:gap-[56px]">
           <Col>
-            <h2 className="font-serif text-[clamp(30px,3.6vw,46px)] font-medium leading-[1.08] tracking-[-0.015em] text-ink">
-              {title}
-            </h2>
-            {lede ? <p className="mt-[18px] max-w-[62ch] text-[18px] text-ink-soft">{lede}</p> : null}
+            <SectionHead flush headline={title} intro={lede || undefined} />
             {contact ? (
               <div className="mt-[34px] border-t border-t-line pt-[26px] text-[14.5px] leading-[1.9] text-ink-soft">
                 <b className="mb-[10px] block text-[12px] uppercase tracking-[0.14em] text-ink">{contact.title}</b>

@@ -1,9 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { MediaImage } from "@core/media";
-import { ButtonLink, Carousel, Container, PropertyCard } from "@core/ui";
+import { ButtonLink, Carousel, PropertyCard, SectionHead, cn } from "@core/ui";
 import { getFeaturedBuildings } from "@slices/buildings/contract";
-import { SectionHeading } from "./blocks";
 
 /** How many featured buildings feed the carousel (three visible at a time). */
 const CAROUSEL_LIMIT = 9;
@@ -19,6 +18,9 @@ const CAROUSEL_LIMIT = 9;
  * `core/ui` `PropertyCard` (no cross-slice UI import, golden rule 2). Subscribes
  * transitively to `building-list`. The carousel itself is a small client island
  * (`core/ui`'s `Carousel`); cards are server-rendered here and passed in.
+ * The head is `core/ui`'s centred `SectionHead` and the shell is the standard page one
+ * (`clamp(72px,10vw,150px)` padding, 84px scroll margin, 1240px/28px column), so it matches
+ * the hand-written sections around it on every page that renders it.
  */
 export async function FeaturedPortfolio({
   locale,
@@ -87,33 +89,33 @@ export async function FeaturedPortfolio({
 
   return (
     <section
-      className="pt-[clamp(64px,10vw,160px)]"
-      style={tightBottom ? undefined : { paddingBottom: "clamp(64px, 10vw, 160px)" }}
+      className={cn(
+        "scroll-mt-[84px] pt-[clamp(72px,10vw,150px)]",
+        !tightBottom && "pb-[clamp(72px,10vw,150px)]",
+      )}
     >
-      <Container>
-        <SectionHeading
-          center
+      <div className="mx-auto max-w-[1240px] px-[28px]">
+        <SectionHead
+          align="center"
           eyebrow={eyebrow ?? (showEyebrow ? t("portfolio.eyebrow") : undefined)}
-          title={title ?? t("portfolio.title")}
-          intro={intro ?? t("portfolio.intro")}
+          headline={title ?? t("portfolio.title")}
+          intro={(intro ?? t("portfolio.intro")) || undefined}
         />
-        <div className="mt-12">
-          <Carousel
-            slides={slides}
-            prevLabel={t("portfolio.prev")}
-            nextLabel={t("portfolio.next")}
-            gap="lg"
-            basis={{ base: "100%", sm: "calc((100% - 1.75rem) / 2)", lg: "calc((100% - 3.5rem) / 3)" }}
-            buttonPlacement="below"
-          />
-        </div>
+        <Carousel
+          slides={slides}
+          prevLabel={t("portfolio.prev")}
+          nextLabel={t("portfolio.next")}
+          gap="lg"
+          basis={{ base: "100%", sm: "calc((100% - 1.75rem) / 2)", lg: "calc((100% - 3.5rem) / 3)" }}
+          buttonPlacement="below"
+        />
         <div className="mt-12 text-center">
           <ButtonLink href={ctaHref ?? `/${locale}/buildings`} variant="outline">
             {ctaLabel ?? t("portfolio.viewAll")}
           </ButtonLink>
           {ctaNote ? <p className="mt-4 text-sm text-ink-soft">{ctaNote}</p> : null}
         </div>
-      </Container>
+      </div>
     </section>
   );
 }

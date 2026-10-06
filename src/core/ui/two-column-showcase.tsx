@@ -1,9 +1,7 @@
 import type { ReactNode } from "react";
 import { ButtonLink } from "./button";
 import { cn } from "./cn";
-import { Container } from "./container";
-import { Eyebrow } from "./eyebrow";
-import { Section } from "./section";
+import { SectionHead } from "./section-head";
 
 /**
  * Generic "Image Showcase" two-column section (ADR 0033): copy + compact bullet highlights +
@@ -20,6 +18,10 @@ import { Section } from "./section";
  * showcases (`owners-page.tsx`) — `imagePosition="left"` mirrors the layout for `dashboard`,
  * no new component needed. Their floating-badge text differs from the under-CTA caption
  * (unlike Home's guests pitch, where one `cta.note` always served both), hence `badge`.
+ *
+ * The eyebrow, title and body are `SectionHead` (left, `flush`), and the shell is the standard
+ * page one (`clamp(72px,10vw,150px)` padding, 1240px/28px column), so the showcase's head and
+ * edges match every other section head on Home, Owners and Real Estate.
  */
 
 export type TwoColumnShowcaseBullet = {
@@ -42,7 +44,7 @@ export type TwoColumnShowcaseCta = {
 // `core/ui` must have zero imports from any slice (00-overview.md §3).
 const ALT_BG = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
 
-// `compact` override: 10%-tighter vertical rhythm than the kernel `Section`'s standard
+// `compact` override: 10%-tighter vertical rhythm than the original kernel `Section`'s
 // `clamp(64px,10vw,160px)` — a deliberate, documented client-requested deviation for Home's
 // guests pitch, not a new default. Applied as an inline style (never a second Tailwind padding
 // class) so the -10% stays deterministic regardless of utility-class cascade/build order —
@@ -87,15 +89,11 @@ export function TwoColumnShowcase({
   const badgeText = badge ?? cta?.note;
 
   const content = (
-    <Container>
+    <div className="mx-auto max-w-[1240px] px-[28px]">
       {id ? <span id={id} className="block scroll-mt-24" aria-hidden /> : null}
       <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <div>
-          {eyebrow ? <Eyebrow accent>{eyebrow}</Eyebrow> : null}
-          <h2 className={cn("font-serif text-3xl leading-tight text-ink md:text-4xl", eyebrow && "mt-3")}>
-            {headline}
-          </h2>
-          {body ? <p className="mt-5 text-lg leading-relaxed text-ink-soft">{body}</p> : null}
+          <SectionHead flush eyebrow={eyebrow || undefined} headline={headline} intro={body || undefined} />
           {bullets && bullets.length > 0 ? (
             <ul className="mt-8 grid gap-x-8 gap-y-5 sm:grid-cols-2">
               {bullets.map((b, i) => (
@@ -127,7 +125,7 @@ export function TwoColumnShowcase({
           ) : null}
         </div>
       </div>
-    </Container>
+    </div>
   );
 
   if (compact) {
@@ -138,7 +136,7 @@ export function TwoColumnShowcase({
     );
   }
 
-  return <Section className={toneClass}>{content}</Section>;
+  return <section className={cn("py-[clamp(72px,10vw,150px)]", toneClass)}>{content}</section>;
 }
 
 /**
