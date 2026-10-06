@@ -358,6 +358,20 @@ is loaded globally by `mock.css`), with `iconoir-sparks` as the fallback for unk
 `localizeUrl` rewrites the stored absolute `/en/…` CTA links to the active locale, because
 `cta.url` is `z.url()` and relative paths cannot be stored.
 
+Its **hero is real JSX now**: `core/ui`'s `<Hero compact align="center">` with **exactly** the
+Buildings-listing / Real Estate hero configuration (`buildings-listing.tsx`: 1600px/40px wrap,
+`.5/.46/.88` scrim, 26ch h1, 60ch p, default eyebrow, `ButtonLink` primary CTA), rendered
+outside and before `.mk`; `bodyTop` now starts at WELCOME. Its `background` is Home's hero
+`<video>` copied verbatim (autoplay/muted/loop/playsInline, `poster`, `absolute inset-0 -z-10
+h-full w-full object-cover`), so the poster/video load the same way as before. Cross-page
+consistency was chosen over 1:1 fidelity to this page's own mock overrides, which differed by a
+hair (`.46/.36/.8` scrim, `#ecdcc2` 600/.18em eyebrow, 1.08 h1 leading, 19px `#f1ece2` lede).
+Still DB-driven (`hero.eyebrow` → eyebrow, `headline` → h1, `subheadline` → p, `cta` →
+`localizeUrl`, `video_media_id` → the R2 url or `HERO_FALLBACK_VIDEO`); the CTA's stored
+absolute `centralhill.pt` URL now opens in a new tab (`ButtonLink`'s rule, same as the teasers'
+CTAs). The former `.mk[data-page="guests"] .hero` overrides are removed (`escAttr`/`localizeUrl`
+stay — the Why-book-directly `ctaRow` and the other CTAs still use them).
+
 The "Make the Most of Your Stay" **services teaser is real JSX now**: `core/ui`'s new
 `PhotoFeatureGrid` (a bordered grid of full-bleed photo cards — icon/title/description in white
 over a dark scrim — plus an optional CTA row), ported 1:1 from the old combined `bodyMid`'s

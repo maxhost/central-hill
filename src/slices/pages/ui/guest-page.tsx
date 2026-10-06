@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
 import { mediaImgTag, type MediaImageData } from "@core/media";
-import { PhotoFeatureGrid, Reveal, SplitCtaPanels } from "@core/ui";
+import { ButtonLink, Hero, PhotoFeatureGrid, Reveal, SplitCtaPanels } from "@core/ui";
 import { getGlobals } from "@slices/settings/contract";
 import { getGuestPage, type GuestContent } from "../contract";
 import { FaqSection } from "./components/faq-section";
@@ -25,8 +25,17 @@ import { TestimonialsRow } from "./components/testimonials-row";
  * Those three React islands render OUTSIDE the `.mk` wrapper so `mock.css`'s bare-element
  * rules don't leak into their Tailwind markup; the static body is split around them.
  *
- * The hero <video> is the mock's markup (autoplay/muted/loop); no client JS is wired, so
- * `.reveal` is neutralised in mock.css and all content renders immediately.
+ * The hero is real JSX now — `core/ui`'s `<Hero compact align="center">`, rendered outside
+ * (before) `.mk` — not raw `dangerouslySetInnerHTML` markup. It uses exactly the Buildings
+ * listing / Real Estate hero configuration (centred copy, 1600px/40px wrap, 26ch h1, 60ch p,
+ * `.5/.46/.88` scrim, default eyebrow, `ButtonLink` primary CTA) for cross-page consistency —
+ * this page's former `.mk[data-page="guests"] .hero` overrides were the same compact/centred
+ * treatment, differing only by a hair (`.46/.36/.8` scrim, the mock's eyebrow/lede type). The
+ * background is Home's hero `<video>` element verbatim (autoplay/muted/loop/playsInline, the
+ * poster attribute, `absolute inset-0 -z-10 h-full w-full object-cover`), so the poster still
+ * paints first and loading is unchanged. Still DB-driven exactly as before (`hero.eyebrow`,
+ * `headline`, `subheadline`, `cta` → `localizeUrl`, `video_media_id` → R2 url or the fallback
+ * clip). `bodyTop` starts at WELCOME.
  *
  * The "Make the Most of Your Stay" services teaser is real JSX now: `core/ui`'s new
  * `PhotoFeatureGrid` (see that component's docstring for why it's neither `IconFeatureGrid`
@@ -157,20 +166,8 @@ const ctaRow = (cta: Cta, locale: Locale): string =>
   `${cta.note ? `<span class="cta-note">${esc(cta.note)}</span>` : ""}</div>`;
 
 const PAGE_STYLE = `
-/* Hero: vertically centre the text (the base mock anchors it to the bottom, which
-   reads too tall here). The base mock's h1/p are capped at 15ch/46ch — far narrower
-   than the .wrap column itself — so widening .wrap alone does nothing: the actual
-   fix is widening h1/p so each line holds more text, shortening the block (matching
-   About/Real Estate/Buildings). .wrap stays centred (just a wider cap + tighter side
-   padding than the base mock's 1240px/28px) so the block doesn't shift flush-left.
-   The overlay is strengthened and evened out (vs. the base mock's bottom-heavy
-   gradient) since centring the text puts it over the gradient's lightest band.
-   Scoped to this page only via the [data-page] hook. */
-.mk[data-page="guests"] .hero{align-items:center}
-.mk[data-page="guests"] .hero .wrap{max-width:1600px;margin:0 auto;padding-top:40px;padding-bottom:40px;padding-left:40px;padding-right:40px}
-.mk[data-page="guests"] .hero h1{max-width:26ch}
-.mk[data-page="guests"] .hero p{max-width:60ch}
-.mk[data-page="guests"] .hero::after{background:linear-gradient(180deg,rgba(18,16,13,.46) 0%,rgba(18,16,13,.36) 45%,rgba(18,16,13,.8) 100%)}
+/* hero — now real JSX (core/ui's Hero, rendered outside .mk before it); it uses
+   Buildings' listing-hero configuration, so no hero CSS is left here. */
 
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
 .mk .welcome{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
@@ -194,14 +191,16 @@ const PAGE_STYLE = `
 .mk[data-page="guests"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
 `;
 
-/** Hero · Welcome · Why book directly — above the featured-portfolio island. */
+/**
+ * Welcome · Why book directly — above the featured-portfolio island. (The hero above them is
+ * real JSX now, rendered by `GuestPage` before the `.mk` wrapper.)
+ */
 function bodyTop(
   content: GuestContent,
   media: Record<string, MediaImageData>,
   locale: Locale,
 ): string {
-  const { hero, welcome, why } = content;
-  const heroVideo = media[hero.video_media_id ?? ""]?.url ?? HERO_FALLBACK_VIDEO;
+  const { welcome, why } = content;
   const welcomeImgTag = mediaImgTag({
     data: media[welcome.image_media_id ?? ""],
     fallbackSrc: WELCOME_FALLBACK_IMG,
@@ -210,21 +209,6 @@ function bodyTop(
   });
 
   return `
-<!-- HERO -->
-<section class="hero compact" style="padding:0">
-  <video autoplay muted loop playsinline poster="${escAttr(HERO_FALLBACK_POSTER)}">
-    <source src="${escAttr(heroVideo)}" type="video/mp4">
-  </video>
-  <div class="wrap">
-    ${hero.eyebrow ? `<span class="eyebrow">${esc(hero.eyebrow)}</span>` : ""}
-    <h1>${esc(hero.headline)}</h1>
-    ${hero.subheadline ? `<p>${esc(hero.subheadline)}</p>` : ""}
-    <div class="hero-cta">
-      <a class="btn btn-accent" href="${escAttr(localizeUrl(hero.cta.url, locale))}">${esc(hero.cta.label)} →</a>
-    </div>
-  </div>
-</section>
-
 <!-- WELCOME -->
 <section>
   <div class="wrap">
@@ -309,7 +293,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
-  const { portfolio } = content;
+  const { hero, portfolio } = content;
   const faqGroupKey = content.faq_group_key ?? "";
   const dualCta = content.dual_cta;
   const contactLines = dualCtaContactLines(globals);
@@ -329,6 +313,45 @@ export async function GuestPage({ locale }: { locale: Locale }) {
 
   return (
     <>
+      {/*
+       * Hero — real JSX, `core/ui`'s `<Hero compact align="center">`, with exactly the same
+       * configuration as Buildings' listing hero (`buildings-listing.tsx`) and Real Estate's
+       * hero, so the compact page heroes stay consistent — the user's call over 1:1 fidelity to
+       * this page's own mock overrides (`.46/.36/.8` scrim, `#ecdcc2` 600/.18em eyebrow, 1.08 h1
+       * leading, 19px `#f1ece2` lede). The `<video>` background is copied verbatim from Home's
+       * hero (same attributes, poster and classes). CTA is a `ButtonLink` primary.
+       */}
+      <Hero
+        background={
+          <video
+            className="absolute inset-0 -z-10 h-full w-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster={HERO_FALLBACK_POSTER}
+          >
+            <source
+              src={media[hero.video_media_id ?? ""]?.url ?? HERO_FALLBACK_VIDEO}
+              type="video/mp4"
+            />
+          </video>
+        }
+        compact
+        align="center"
+        overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.5)_0%,rgba(18,16,13,0.46)_45%,rgba(18,16,13,0.88)_100%)]"
+        wrapClassName="mx-auto max-w-[1600px] p-10"
+        copyClassName="max-w-none"
+        headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
+        subtitleClassName="mt-5 max-w-[60ch] text-lg"
+        actionsClassName="mt-2"
+        eyebrow={hero.eyebrow || undefined}
+        headline={hero.headline}
+        subtitle={hero.subheadline || undefined}
+        actions={
+          <ButtonLink href={localizeUrl(hero.cta.url, locale)}>{`${hero.cta.label} →`}</ButtonLink>
+        }
+      />
       <div className="mk" data-page="guests">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <noscript>
