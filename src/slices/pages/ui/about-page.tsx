@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import {
+  CertificationCards,
   Hero,
   IntroSplit,
   NumberedFeatureGrid,
@@ -9,6 +10,7 @@ import {
   SectionHead,
   StatBand,
   TwoColumnShowcase,
+  type CertificationCardItem,
 } from "@core/ui";
 import { getAboutPage } from "../contract";
 import { FaqSection } from "./components/faq-section";
@@ -27,17 +29,18 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * - "One Platform. Three Audiences.": `SectionHead` + `PhotoFeatureGrid`.
  * - "What Guides Us": `SectionHead` + `NumberedFeatureGrid`.
  * - "How We Are Organised": `TwoColumnShowcase` with Owners' showcase configuration.
+ * - "Independently Verified": `SectionHead` + `CertificationCards` (the old per-card stagger is
+ *   now one `Reveal` fade).
  * - FAQ: the shared `FaqSection` (only when `faq_group_key` is set).
  * Every section uses the standard page shell and `SectionHead`; entrance motion is `Reveal`.
  *
- * Still raw, each in a small `.mk` block under a JSX `SectionHead`: the certification cards, the
- * "Let's Start a Conversation" link cards and the office + contact form (static, not wired to
- * leads yet). Those raw blocks keep the page's own `.pre-reveal` entrance motion
- * (`ScrollReveal`), and `PAGE_STYLE` now only holds their rules.
+ * Still raw, in a small `.mk` block under a JSX `SectionHead`: the "Let's Start a Conversation"
+ * link cards and the office + contact form (static, not wired to leads yet). That raw block keeps the page's own `.pre-reveal` entrance motion
+ * (`ScrollReveal`), and `PAGE_STYLE` now only holds its rules.
   */
 
 const PAGE_STYLE = `
-/* Iconoir glyphs in the still-raw certification and contact cards. */
+/* Iconoir glyphs in the still-raw contact cards. */
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll
    for the rest, via <ScrollReveal page="about">/scroll-reveal.tsx) + hover motion
@@ -49,17 +52,6 @@ const PAGE_STYLE = `
    rule in mock.css or any other page/section. */
 .mk[data-page="about"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .mk[data-page="about"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
-.mk .cert-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
-.mk .cert{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:38px 32px;text-align:center;transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
-.mk .cert:hover{transform:translateY(-4px);box-shadow:0 16px 28px -20px rgba(0,0,0,.35)}
-.mk .cert .ico{margin-bottom:16px;font-size:38px}
-.mk .cert .cert-logo{height:48px;width:auto;max-width:160px;margin:0 auto 18px;display:block;object-fit:contain;transition:transform .35s var(--ease)}
-.mk .cert .cert-logo--placeholder{height:48px;display:flex;align-items:center;justify-content:center;transition:transform .35s var(--ease)}
-.mk .cert .cert-logo--placeholder .ico{margin:0;font-size:40px}
-.mk .cert:hover .cert-logo,.mk .cert:hover .cert-logo--placeholder{transform:scale(1.08)}
-.mk .cert h3{font-size:22px;margin-bottom:6px}
-.mk .cert .cert-body{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-deep);font-weight:600;margin-bottom:14px}
-.mk .cert p{font-size:14px;color:var(--ink-soft)}
 .mk .touch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
 .mk .touch{background:var(--surface);padding:40px 34px;display:flex;flex-direction:column;transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
 .mk .touch:hover{transform:translateY(-4px);box-shadow:0 16px 28px -20px rgba(0,0,0,.35);z-index:1}
@@ -87,12 +79,10 @@ const PAGE_STYLE = `
 .mk .cform-two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .mk .cform .btn{justify-content:center}
 @media(max-width:980px){
-  .mk .cert-grid,.mk .touch-grid{grid-template-columns:1fr 1fr}
-  .mk .contact-split{grid-template-columns:1fr}
+    .mk .contact-split{grid-template-columns:1fr}
 }
 @media(max-width:680px){
-  .mk .cert-grid,.mk .touch-grid,.mk .cform-two{grid-template-columns:1fr}
-  .mk .office,.mk .cform{padding:36px 28px}
+    .mk .office,.mk .cform{padding:36px 28px}
 }
 `;
 
@@ -207,29 +197,42 @@ const ORGANISED_BULLETS = [
   },
 ];
 
-/** The still-raw certification cards (the section shell and head are JSX). */
-const CERT_GRID_HTML = `
-    <div class="cert-grid reveal reveal-io reveal-stagger pre-reveal">
-      <div class="cert">
-        <img class="cert-logo" src="https://d11n7da8rpqbjy.cloudfront.net/alep/19726083_1621536323PF6Ativo_12.png" alt="ALEP — Associação do Alojamento Local em Portugal logo">
-        <h3>ALEP Member</h3>
-        <div class="cert-body">Associação do Alojamento Local em Portugal</div>
-        <p>National association representing local accommodation operators. Membership signals compliance with industry best practices.</p>
-      </div>
-      <div class="cert">
-        <img class="cert-logo" src="https://www.turismodeportugal.pt/Style%20Library/TPortugal16Branding/img/logotipo_institucional_preto.png" alt="Turismo de Portugal logo">
-        <h3>Clean &amp; Safe Certified</h3>
-        <div class="cert-body">Turismo de Portugal</div>
-        <p>Quality and safety certification awarded by Portugal's national tourism authority, recognising our hygiene and guest safety standards.</p>
-      </div>
-      <div class="cert">
-        <span class="cert-logo cert-logo--placeholder"><i class="iconoir-check-circle ico" aria-hidden="true"></i></span>
-        <h3>I-PRAC Certified</h3>
-        <div class="cert-body">International Property Rental Approval Certification</div>
-        <p>International certification body verifying vacation rental operators worldwide, assuring guests and partners of our professional standards.</p>
-      </div>
-    </div>
-`;
+/** "Independently Verified" certifications (`CertificationCards`). */
+const CERTIFICATIONS: CertificationCardItem[] = [
+  {
+    logo: (
+      // eslint-disable-next-line @next/next/no-img-element -- external issuer logo, not an R2 asset
+      <img
+        src="https://d11n7da8rpqbjy.cloudfront.net/alep/19726083_1621536323PF6Ativo_12.png"
+        alt="ALEP — Associação do Alojamento Local em Portugal logo"
+      />
+    ),
+    name: "ALEP Member",
+    issuer: "Associação do Alojamento Local em Portugal",
+    description:
+      "National association representing local accommodation operators. Membership signals compliance with industry best practices.",
+  },
+  {
+    logo: (
+      // eslint-disable-next-line @next/next/no-img-element -- external issuer logo, not an R2 asset
+      <img
+        src="https://www.turismodeportugal.pt/Style%20Library/TPortugal16Branding/img/logotipo_institucional_preto.png"
+        alt="Turismo de Portugal logo"
+      />
+    ),
+    name: "Clean & Safe Certified",
+    issuer: "Turismo de Portugal",
+    description:
+      "Quality and safety certification awarded by Portugal's national tourism authority, recognising our hygiene and guest safety standards.",
+  },
+  {
+    logo: <i className="iconoir-check-circle text-[40px] leading-none text-accent-deep" aria-hidden />,
+    name: "I-PRAC Certified",
+    issuer: "International Property Rental Approval Certification",
+    description:
+      "International certification body verifying vacation rental operators worldwide, assuring guests and partners of our professional standards.",
+  },
+];
 
 /** The still-raw contact cards + office/form split (the section shell and head are JSX). */
 const CONTACT_BODY_HTML = (locale: Locale) => `
@@ -320,7 +323,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
       <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
       {/*
        * JS-off fallbacks: `Reveal` (JSX sections) and the page's own `.pre-reveal` (the
-       * still-raw certification/contact blocks, animated by `ScrollReveal`).
+       * still-raw contact block, animated by `ScrollReveal`).
        */}
       <noscript>
         <style
@@ -434,7 +437,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
         </Reveal>
       </div>
 
-      {/* "Independently Verified": JSX shell + `SectionHead`; the certification cards stay raw. */}
+      {/* "Independently Verified": `SectionHead` + `CertificationCards`. */}
       <section id="certifications" className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal>
@@ -444,9 +447,9 @@ export async function AboutPage({ locale }: { locale: Locale }) {
               intro="Our certifications and memberships represent a commitment to operating to the highest standards — verified by recognised independent bodies in Portugal and internationally."
             />
           </Reveal>
-          <div className="mk" data-page="about">
-            <div dangerouslySetInnerHTML={{ __html: CERT_GRID_HTML }} />
-          </div>
+          <Reveal label="about-certifications">
+            <CertificationCards items={CERTIFICATIONS} />
+          </Reveal>
         </div>
       </section>
 
