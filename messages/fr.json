@@ -51,6 +51,7 @@
     "breadcrumb": "Blog",
     "related": "Articles liés",
     "readingMinutes": "{minutes} min de lecture",
+    "byAuthor": "Par {name}",
     "newsletter": {
       "eyebrow": "Restez informé",
       "title": "Recevez nos derniers guides par e-mail",

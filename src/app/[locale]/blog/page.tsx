@@ -9,8 +9,9 @@ import { BlogListing } from "@slices/blog/ui/blog-listing";
 import "../../mock.css";
 
 /**
- * Static per locale (ISR). The category chips come from the DB (`listCategories`, revalidated
- * by the blog admin publish flow); the rest of the page body is still the static mock.
+ * Static per locale (ISR). The category chips (`listCategories`) and the Featured post
+ * (`getFeaturedPost`) come from the DB, revalidated by the blog admin publish flow; the rest of
+ * the page body (card grid, Load More, newsletter) is still the static mock.
  */
 export const revalidate = 3600;
 

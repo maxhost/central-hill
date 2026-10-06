@@ -2,6 +2,8 @@
 import { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
 import { ChipBar, type ChipBarItem } from "@core/ui";
+// Shared with `CategoryTag` (a server component), so it lives outside this client module.
+import { safeSwatch } from "./category-color";
 
 /** The slice of `CategoryRef` the tabs need (serialisable across the RSC boundary). */
 export interface TabCategory {
@@ -15,15 +17,6 @@ export interface TabCategory {
 
 /** Sentinel key of the "All" chip (category slugs are kebab-case, so it can't collide). */
 const ALL = "__all";
-
-/** `#rgb`, `#rgba`, `#rrggbb` or `#rrggbbaa`. `blog_category.color` is free text up to 32
- *  chars in the admin validator (`hex` *or* any string), so anything else is dropped rather
- *  than handed to the browser as a style value. */
-const HEX_COLOR = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
-
-function safeSwatch(color: string): string | undefined {
-  return HEX_COLOR.test(color) ? color : undefined;
-}
 
 interface FilterState {
   active: string;

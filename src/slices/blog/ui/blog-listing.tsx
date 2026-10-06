@@ -1,8 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { PageHead, PageHeadSearch } from "@core/ui";
-import { listCategories } from "../contract";
+import { PageHead, PageHeadSearch, SectionHead } from "@core/ui";
+import { getFeaturedPost, listCategories } from "../contract";
 import { CategoryTabs } from "./components/category-tabs";
+import { FeaturedPost } from "./components/featured-post";
 
 /**
  * Blog listing — the approved `mock/blog.html` inside the live app shell.
@@ -16,7 +17,13 @@ import { CategoryTabs } from "./components/category-tabs";
  * the category colour as the swatch (only if it's a valid `#hex`). The chips are **inert for
  * now** — the cards below are still raw HTML, so there is nothing to filter yet; see
  * `category-tabs.tsx` for the provider/item wiring that switches filtering on once the cards
- * are JSX. The rest of the page is still the mock's body markup rendered verbatim, with its
+ * are JSX. Next, the **"Featured" section** is JSX and **DB-driven** as well: `core/ui`'s
+ * `SectionHead` (eyebrow only, `blog.featured`) over the slice's `FeaturedPost` card, fed by
+ * `getFeaturedPost(locale)` (the most recently published post flagged `is_featured`;
+ * `unstable_cache`d per locale, tagged `blog_post-list`, so publishing/unfeaturing a post in the
+ * backoffice refreshes it). No featured post → the whole section is omitted. The rest of the
+ * page ("From the Journal" grid, Load More, newsletter) is still the mock's body markup
+ * rendered verbatim, with its
  * page styles scoped under `.mk` (see `src/app/mock.css` for the shared design system) so
  * nothing leaks to Home/admin; that part is static English copy. The real header/footer come
  * from the app layout. (The search field is inert until blog search lands; the "Load More"
@@ -31,15 +38,9 @@ const PAGE_STYLE = `
 .mk .ctag.pt-regs{background:#B23A3A}
 .mk .ctag.lisbon{background:#B08D57}
 .mk .ctag.portugal{background:#6B7280}
-.mk .featured{display:grid;grid-template-columns:1.15fr .85fr;gap:0;background:var(--surface);border:1px solid var(--line);overflow:hidden}
-.mk .featured .feat-img{position:relative;min-height:340px}
-.mk .featured .feat-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.mk .featured .feat-body{padding:46px 48px;display:flex;flex-direction:column;justify-content:center}
-.mk .featured h3{font-size:clamp(26px,2.6vw,36px);margin:16px 0 14px;line-height:1.12}
-.mk .featured p{font-size:16px;color:var(--ink-soft);margin-bottom:22px}
-.mk .feat-meta,.mk .card-meta{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-soft);flex-wrap:wrap}
-.mk .feat-meta i,.mk .card-meta i{font-size:15px;line-height:1}
-.mk .feat-meta .sep,.mk .card-meta .sep{opacity:.5}
+.mk .card-meta{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink-soft);flex-wrap:wrap}
+.mk .card-meta i{font-size:15px;line-height:1}
+.mk .card-meta .sep{opacity:.5}
 .mk .read-link{margin-top:24px;font-size:14px;font-weight:600;color:var(--accent-deep);display:inline-flex;align-items:center;gap:6px}
 .mk .pcard .pbody{padding:22px 24px 26px}
 .mk .pcard .ctag{margin-bottom:14px}
@@ -58,38 +59,11 @@ const PAGE_STYLE = `
 .mk .nl-form input:focus{outline:none;border-color:var(--feature-accent)}
 .mk .load-more{display:flex;justify-content:center;margin-top:48px}
 @media(max-width:880px){
-  .mk .featured{grid-template-columns:1fr}
-  .mk .featured .feat-img{min-height:240px}
-  .mk .featured .feat-body{padding:34px 30px}
   .mk .nl-form input{min-width:0;width:100%}
 }
 `;
 
 const BODY = (locale: Locale) => `
-<section style="padding-top:52px;padding-bottom:0">
-  <div class="wrap">
-    <div class="sec-head reveal" style="margin-bottom:28px">
-      <span class="eyebrow">Featured</span>
-    </div>
-    <article class="featured reveal">
-      <div class="feat-img">
-        <img src="https://images.unsplash.com/photo-1556155092-490a1ba16284?auto=format&fit=crop&w=1200&q=70" alt="A registration certificate and keys on a table inside a prepared Lisbon apartment">
-      </div>
-      <div class="feat-body">
-        <div><span class="ctag pt-regs">Portugal Regulations</span></div>
-        <h3>Short-Term Rental Registration in Portugal: Everything You Need to Know (2025 Update)</h3>
-        <p>A complete guide to the legal requirements for operating a short-term rental in Portugal — from the AL licence and mandatory signage to fire extinguishers, guest registration, and tourist tax obligations.</p>
-        <div class="feat-meta">
-          <span>By Central Hill Apartments</span><span class="sep">·</span>
-          <span>June 2025</span><span class="sep">·</span>
-          <i class="iconoir-clock" aria-hidden="true"></i><span>8 min read</span>
-        </div>
-        <a class="read-link" href="/${locale}/blog">Read Article →</a>
-      </div>
-    </article>
-  </div>
-</section>
-
 <section>
   <div class="wrap">
     <div class="sec-head reveal" style="margin-bottom:34px">
@@ -220,16 +194,26 @@ const BODY = (locale: Locale) => `
 `;
 
 /**
- * Blog listing: `PageHead` header (JSX, i18n) + category tabs (JSX, DB) + featured + card grid
- * + newsletter (static mock embed). The search field is inert: no `action`, and this page never
- * reads `searchParams` (that would make it dynamic), so submitting just reloads `?q=…`.
+ * Blog listing: `PageHead` header (JSX, i18n) + category tabs (JSX, DB) + featured (JSX, DB) +
+ * card grid + newsletter (static mock embed). The search field is inert: no `action`, and this
+ * page never reads `searchParams` (that would make it dynamic), so submitting just reloads `?q=…`.
  * The tabs section reproduces the mock's `<section style="padding-top:48px;padding-bottom:0">`;
- * its 1240px/28px column comes from `ChipBar` itself. It sits outside `.mk` (see `ChipBar`'s
- * docstring for why it must).
+ * its 1240px/28px column comes from `ChipBar` itself. The featured section reproduces
+ * `<section style="padding-top:52px;padding-bottom:0">` + `.wrap` + a `28px`-gap `.sec-head`
+ * (`SectionHead` `flush` + `mb-[28px]`). Both sit outside `.mk` (see `ChipBar`'s / `SectionHead`'s
+ * docstrings for why they must).
+ *
+ * The featured card is deliberately **not** wrapped in `CategoryFilterItem`: it is the
+ * editor's pick, shown above the filterable "From the Journal" grid, so it stays visible
+ * whatever category chip is selected once filtering is switched on.
  */
 export async function BlogListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const [t, categories] = await Promise.all([getTranslations("blog"), listCategories(locale)]);
+  const [t, categories, featured] = await Promise.all([
+    getTranslations("blog"),
+    listCategories(locale),
+    getFeaturedPost(locale),
+  ]);
   return (
     <>
       <PageHead eyebrow={t("eyebrow")} headline={t("title")} intro={t("intro")}>
@@ -241,6 +225,22 @@ export async function BlogListing({ locale }: { locale: Locale }) {
           categories={categories.map((c) => ({ slug: c.slug, name: c.name, color: c.color }))}
         />
       </section>
+      {featured ? (
+        <section className="pt-[52px]">
+          <div className="mx-auto max-w-[1240px] px-[28px]">
+            <SectionHead eyebrow={t("featured")} flush className="mb-[28px]" />
+            <FeaturedPost
+              post={featured}
+              locale={locale}
+              bylineLabel={t("byAuthor", { name: featured.author.name })}
+              readingTimeLabel={
+                featured.readingMinutes ? t("readingMinutes", { minutes: featured.readingMinutes }) : null
+              }
+              readLabel={t("readArticle")}
+            />
+          </div>
+        </section>
+      ) : null}
       <div className="mk" data-page="blog">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <div dangerouslySetInnerHTML={{ __html: BODY(locale) }} />

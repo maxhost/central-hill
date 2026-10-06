@@ -23,10 +23,17 @@ Consumed by S9 pages (featured/teasers), S13 seo-geo (URLs), S14 translation-pip
 
 ## Routes
 
-- `app/[locale]/blog/page.tsx` → `ui/blog-listing.tsx` (hero · featured · category tabs · grid · newsletter)
+- `app/[locale]/blog/page.tsx` → `ui/blog-listing.tsx` (header · category tabs · featured · grid · newsletter)
   — the category tabs are `ui/components/category-tabs.tsx` (`core/ui` `ChipBar`, fed by
   `listCategories(locale)`, tagged `blog_post-list`); inert until the card grid is JSX, then
   switched on via `CategoryFilterProvider` + `CategoryFilterItem` (client-side, page stays ISR).
+  — the Featured section is `core/ui` `SectionHead` (eyebrow only) + `ui/components/featured-post.tsx`
+  (`FeaturedPost`), fed by `getFeaturedPost(locale)` (tagged `blog_post-list`); omitted when there
+  is no featured post, and never category-filtered. Its pieces are reusable by the card grid:
+  `category-tag.tsx` (`CategoryTag`, the mock `.ctag` with the DB colour), `post-meta.tsx`
+  (`PostMeta` byline · date · reading time + `formatPostMonth`), and `category-color.ts`
+  (`safeSwatch`, the `#hex` check shared with the chips). The grid, Load More and newsletter are
+  still the mock's raw markup.
 - `app/[locale]/blog/[slug]/page.tsx` → `ui/blog-post.tsx` (header · hero · body blocks · CTA · 3 related)
 
 Both: `generateStaticParams` + `generateMetadata` (`core/seo` `buildMetadata`, hreflang from the
