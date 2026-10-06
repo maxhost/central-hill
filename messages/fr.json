@@ -56,9 +56,9 @@
     "readingMinutes": "{minutes} min de lecture",
     "byAuthor": "Par {name}",
     "newsletter": {
-      "eyebrow": "Restez informé",
-      "title": "Recevez nos derniers guides par e-mail",
-      "description": "Des nouvelles occasionnelles et utiles sur l'immobilier et l'hospitalité à Lisbonne. Sans bruit.",
+      "eyebrow": "Newsletter",
+      "title": "Restez informé. Gardez une longueur d'avance.",
+      "description": "Recevez nos derniers articles sur la gestion de locations de courte durée, la réglementation au Portugal et les tendances du marché — directement dans votre boîte mail.",
       "placeholder": "Votre adresse e-mail",
       "button": "S'abonner",
       "success": "Merci — vous êtes inscrit."

@@ -56,9 +56,9 @@
     "readingMinutes": "{minutes} min de lectura",
     "byAuthor": "Por {name}",
     "newsletter": {
-      "eyebrow": "Mantente al día",
-      "title": "Recibe nuestras guías en tu correo",
-      "description": "Actualizaciones ocasionales y útiles sobre inmobiliaria y hospitalidad en Lisboa. Sin ruido.",
+      "eyebrow": "Newsletter",
+      "title": "Mantente informado. Mantente por delante.",
+      "description": "Recibe nuestros últimos artículos sobre gestión de alquiler vacacional, normativa en Portugal y análisis del mercado, directamente en tu bandeja de entrada.",
       "placeholder": "Tu dirección de correo",
       "button": "Suscribirse",
       "success": "Gracias — ya estás en la lista."

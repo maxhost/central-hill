@@ -40,7 +40,12 @@ Consumed by S9 pages (featured/teasers), S13 seo-geo (URLs), S14 translation-pip
   category chip always shows all its cards. Shared card pieces: `category-tag.tsx`
   (`CategoryTag`, the mock `.ctag` with the DB colour), `post-meta.tsx` (`PostMeta` byline · date ·
   reading time + `formatPostMonth`), `category-color.ts` (`safeSwatch`, the `#hex` check shared
-  with the chips). Only the newsletter is still the mock's raw markup.
+  with the chips).
+  — the newsletter band is `ui/components/newsletter-signup.tsx` (`NewsletterSignup`): `core/ui`
+  `CenteredCtaBand` (Guides' closing band; its `children` action slot) wrapping the leads slice's
+  `NewsletterForm` (`theme="dark"`, `source="blog"`; email + consent + submit → a `newsletter`
+  lead), copy from `blog.newsletter.eyebrow|title|description`. The listing is fully
+  componentised (no `.mk` subtree); the route keeps `mock.css` only for the Iconoir icon font.
 - `app/[locale]/blog/[slug]/page.tsx` → `ui/blog-post.tsx` (header · hero · body blocks · CTA · 3 related)
 
 Both: `generateStaticParams` + `generateMetadata` (`core/seo` `buildMetadata`, hreflang from the
@@ -82,8 +87,6 @@ Plugs into the backoffice shell. Contributes three `content`-group screens
 
 ## Deferred
 
-- **Newsletter submit**: `ui/components/newsletter-signup.tsx` is UX-complete but the submit wires
-  to **S10 leads** `submitLead({ kind: "newsletter" })` (ADR 0011/0014) when S10 lands.
 - **Sitemap/llms.txt entries**: produced by **S13** from `listPostParams()` / the contract.
 
 ## Kernel completed alongside (S0 surface, new files only)

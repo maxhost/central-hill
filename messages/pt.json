@@ -56,9 +56,9 @@
     "readingMinutes": "{minutes} min de leitura",
     "byAuthor": "Por {name}",
     "newsletter": {
-      "eyebrow": "Fique a par",
-      "title": "Receba os nossos guias no seu email",
-      "description": "Atualizações ocasionais e úteis sobre imobiliário e hospitalidade em Lisboa. Sem ruído.",
+      "eyebrow": "Newsletter",
+      "title": "Mantenha-se informado. Mantenha-se à frente.",
+      "description": "Receba os nossos artigos mais recentes sobre gestão de alojamento local, regulamentação em Portugal e análises de mercado — diretamente no seu email.",
       "placeholder": "O seu endereço de email",
       "button": "Subscrever",
       "success": "Obrigado — já está na lista."

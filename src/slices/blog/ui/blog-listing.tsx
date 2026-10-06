@@ -5,12 +5,13 @@ import { getFeaturedPost, listCategories, listPosts } from "../contract";
 import { CategoryFilterItem, CategoryFilterProvider, CategoryLoadMore, CategoryTabs } from "./components/category-tabs";
 import { FeaturedPost } from "./components/featured-post";
 import { JournalCard } from "./components/journal-card";
+import { NewsletterSignup } from "./components/newsletter-signup";
 
 /**
  * Blog listing — the approved `mock/blog.html` inside the live app shell.
  * The header band (eyebrow, `<h1>`, lede, search field) is the `core/ui` `PageHead` +
  * `PageHeadSearch`, rendered as JSX with i18n copy (`blog.eyebrow|title|intro|searchPlaceholder|
- * searchLabel`), outside the `.mk` subtree. Below it, the **category tabs** are JSX too and
+ * searchLabel`). Below it, the **category tabs** are JSX too and
  * **DB-driven**: the slice's `CategoryTabs` (`core/ui`'s `ChipBar`, plain + centred) fed by
  * `listCategories(locale)`, which is `unstable_cache`d per locale and tagged `blog_post-list`,
  * so a category save/delete in the backoffice (`revalidateBlogList`) refreshes the page. "All"
@@ -27,43 +28,13 @@ import { JournalCard } from "./components/journal-card";
  * `JournalCard`s, fed by `listPosts(locale)` (published, newest `published_at` first; cached +
  * tagged like the others) minus the featured post, with a client "Load more"
  * (`CategoryLoadMore`, `blog.loadMore`) that only appears when there are more than
- * `JOURNAL_PAGE_SIZE` cards. Only the **newsletter** is still the mock's body markup rendered
- * verbatim, with its page styles scoped under `.mk` (see `src/app/mock.css` for the shared
- * design system) so nothing leaks to Home/admin; that part is static English copy and its form
- * is inert (wiring it is a follow-up). The real header/footer come from the app layout. (The
- * search field is inert until blog search lands. `.reveal` is neutralised in mock.css so
- * content stays visible.)
+ * `JOURNAL_PAGE_SIZE` cards. Last, the **newsletter** band (JSX, i18n, wired): the slice's
+ * `NewsletterSignup` — `core/ui`'s `CenteredCtaBand` with the leads slice's `NewsletterForm`
+ * (`theme="dark"`, `source="blog"`) in its action slot, copy from `blog.newsletter.eyebrow|title|
+ * description` (form labels from `leads.*`); submitting creates a `newsletter` lead. The page is
+ * now **fully componentised** — no `.mk` subtree, no raw mock markup or page styles. The real
+ * header/footer come from the app layout. (The search field is inert until blog search lands.)
  */
-
-/** Newsletter-only page rules (the rest of the mock's page styles are now Tailwind in JSX). */
-const PAGE_STYLE = `
-.mk .newsletter{background:var(--feature);color:var(--on-feature)}
-.mk .newsletter .wrap{text-align:center;max-width:720px}
-.mk .newsletter .eyebrow{color:var(--feature-accent)}
-.mk .newsletter h2{color:#fff;font-size:clamp(28px,3.4vw,44px);margin:14px 0 14px}
-.mk .newsletter p{color:var(--on-feature-soft);font-size:17px;margin:0 auto 30px;max-width:54ch}
-.mk .nl-form{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.mk .nl-form input{font-family:var(--sans);font-size:15px;color:#fff;min-width:300px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.28);border-radius:3px;padding:15px 20px}
-.mk .nl-form input::placeholder{color:var(--on-feature-soft)}
-.mk .nl-form input:focus{outline:none;border-color:var(--feature-accent)}
-@media(max-width:880px){
-  .mk .nl-form input{min-width:0;width:100%}
-}
-`;
-
-const NEWSLETTER = `
-<section class="newsletter">
-  <div class="wrap reveal">
-    <span class="eyebrow">Newsletter</span>
-    <h2>Stay Informed. Stay Ahead.</h2>
-    <p>Get our latest articles on short-term rental management, Portugal regulations, and market insights — delivered to your inbox.</p>
-    <form class="nl-form" onsubmit="return false">
-      <input type="email" placeholder="Your email address" aria-label="Your email address" />
-      <button class="btn btn-accent" type="submit">Subscribe <i class="iconoir-send-diagonal" aria-hidden="true"></i></button>
-    </form>
-  </div>
-</section>
-`;
 
 /**
  * Cards shown on "All" before "Load more" — the mock's 3 full rows of the 3-column grid. All
@@ -79,15 +50,15 @@ const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
 
 /**
  * Blog listing: `PageHead` header (JSX, i18n) + category tabs (JSX, DB) + featured (JSX, DB) +
- * "From the Journal" grid (JSX, DB) + newsletter (static mock embed). The search field is
+ * "From the Journal" grid (JSX, DB) + newsletter band (JSX, i18n, leads form). The search field is
  * inert: no `action`, and this page never reads `searchParams` (that would make it dynamic), so
  * submitting just reloads `?q=…`. The tabs section reproduces the mock's
  * `<section style="padding-top:48px;padding-bottom:0">`; its 1240px/28px column comes from
  * `ChipBar` itself. The featured section reproduces `<section style="padding-top:52px;
  * padding-bottom:0">` + `.wrap` + a `28px`-gap `.sec-head` (`SectionHead` `flush` +
  * `mb-[28px]`); the journal section the default `.mk section` padding + `.wrap` + a `34px`-gap
- * `.sec-head` (`flush` + `mb-[34px]`) over the Guides/Buildings listing grid. All sit outside
- * `.mk` (see `ChipBar`'s / `SectionHead`'s docstrings for why they must).
+ * `.sec-head` (`flush` + `mb-[34px]`) over the Guides/Buildings listing grid. The page has no
+ * `.mk` subtree (see `ChipBar`'s / `SectionHead`'s docstrings for why they must sit outside one).
  *
  * The grid **excludes the featured post by id** (the one `getFeaturedPost` returned), not every
  * `isFeatured` post: if editors flag several, only the newest is shown as Featured, and the
@@ -166,10 +137,12 @@ export async function BlogListing({ locale }: { locale: Locale }) {
           </section>
         )}
       </CategoryFilterProvider>
-      <div className="mk" data-page="blog">
-        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-        <div dangerouslySetInnerHTML={{ __html: NEWSLETTER }} />
-      </div>
+      <NewsletterSignup
+        eyebrow={t("newsletter.eyebrow")}
+        title={t("newsletter.title")}
+        description={t("newsletter.description")}
+        source="blog"
+      />
     </>
   );
 }

@@ -6,13 +6,16 @@ import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
 import { BlogListing } from "@slices/blog/ui/blog-listing";
+// No `.mk` markup left; mock.css is still needed for the Iconoir icon font (`PageHeadSearch`'s
+// search glyph, `PostMeta`'s clock icon).
 import "../../mock.css";
 
 /**
  * Static per locale (ISR). The category chips (`listCategories`), the Featured post
  * (`getFeaturedPost`) and the "From the Journal" grid (`listPosts`, minus the featured post)
  * come from the DB, revalidated by the blog admin publish flow; chip filtering and "Load more"
- * are client-side (no `searchParams`). Only the newsletter is still the static mock.
+ * are client-side (no `searchParams`). The newsletter band is i18n copy + the leads slice's
+ * `NewsletterForm` (a client island; submitting doesn't affect the static render).
  */
 export const revalidate = 3600;
 

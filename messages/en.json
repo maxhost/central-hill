@@ -56,9 +56,9 @@
     "readingMinutes": "{minutes} min read",
     "byAuthor": "By {name}",
     "newsletter": {
-      "eyebrow": "Stay in the loop",
-      "title": "Get our latest guides in your inbox",
-      "description": "Occasional, useful updates on Lisbon property and hospitality. No noise.",
+      "eyebrow": "Newsletter",
+      "title": "Stay Informed. Stay Ahead.",
+      "description": "Get our latest articles on short-term rental management, Portugal regulations, and market insights — delivered to your inbox.",
       "placeholder": "Your email address",
       "button": "Subscribe",
       "success": "Thanks — you're on the list."
