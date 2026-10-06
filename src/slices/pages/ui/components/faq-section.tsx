@@ -1,6 +1,6 @@
 import type { Locale } from "@core/db/columns";
 import { JsonLd, faqPageLd } from "@core/seo";
-import { SectionHead } from "@core/ui";
+import { FaqAccordion, SectionHead } from "@core/ui";
 import { getFaqGroup } from "@slices/faq/contract";
 
 /**
@@ -9,7 +9,9 @@ import { getFaqGroup } from "@slices/faq/contract";
  * to `faq-list`. (Distinct from per-building FAQ, which lives on the building detail.)
  * Emits `FAQPage` JSON-LD via the kernel `core/seo` builder (ADR 0020, resolving the
  * prior escalation note). The head is `core/ui`'s centred `SectionHead` in the standard page
- * shell (see `FeaturedPortfolio`); the accordion keeps its narrower `max-w-3xl` column.
+ * shell (see `FeaturedPortfolio`); the accordion itself is `core/ui`'s `FaqAccordion` (the
+ * one site-wide accordion, narrower `max-w-3xl` column — moved there verbatim from here, also
+ * used by the per-building FAQ), so this component is only data + JSON-LD + shell + head.
  */
 export async function FaqSection({
   locale,
@@ -32,30 +34,7 @@ export async function FaqSection({
       />
       <div className="mx-auto max-w-[1240px] px-[28px]">
         <SectionHead align="center" headline={title} intro={intro || undefined} />
-        <div className="mx-auto max-w-3xl">
-          {/*
-           * Expand/collapse accordion (mirrors `mock/owners.html` `.faq`): native
-           * <details>/<summary> so it stays a server component with zero JS, is keyboard-
-           * accessible, and degrades gracefully. The "+" marker rotates to "×" via the
-           * Tailwind `open:` group variant; the default disclosure triangle is hidden.
-           */}
-          <div className="border-t border-line">
-            {group.items.map((item) => (
-              <details key={item.id} className="group border-b border-line">
-                <summary className="flex cursor-pointer list-none items-start justify-between gap-6 py-6 font-serif text-lg text-ink transition-colors hover:text-accent-deep [&::-webkit-details-marker]:hidden">
-                  {item.question}
-                  <span
-                    aria-hidden
-                    className="mt-1 shrink-0 text-2xl leading-none text-accent transition-transform duration-200 group-open:rotate-45"
-                  >
-                    +
-                  </span>
-                </summary>
-                <p className="max-w-[70ch] pb-6 leading-relaxed text-ink-soft">{item.answer}</p>
-              </details>
-            ))}
-          </div>
-        </div>
+        <FaqAccordion items={group.items} />
       </div>
     </section>
   );

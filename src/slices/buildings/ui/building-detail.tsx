@@ -4,10 +4,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MediaImage, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
+import { JsonLd, faqPageLd } from "@core/seo";
 import {
   ActionBand,
   AmenityGrid,
   Container,
+  FaqAccordion,
   Hero,
   MosaicGallery,
   ProseSection,
@@ -18,16 +20,15 @@ import {
   type UnitCardSpec,
 } from "@core/ui";
 import { type ApartmentSummary, listByBuilding } from "@slices/apartments/contract";
-import type { BuildingDetail as BuildingDetailModel } from "../contract";
 import { getBuildingBySlug } from "../server/queries";
 
 /**
- * Building detail page — the approved `mock/building-detail.html` design embedded 1:1
- * inside the live app shell, now **DB-driven**: most of the page is still the mock's
- * verbatim styling (scoped under `.mk` — see `src/app/mock.css`), generated from the
- * published `building` row (`getBuildingBySlug`) plus its bookable units
- * (`listByBuilding`, the apartments contract — golden rule 2). DB content is HTML-escaped
- * before interpolation; the real header/footer + i18n come from the app layout.
+ * Building detail page — the approved `mock/building-detail.html` design, now **fully
+ * componentised** JSX (`core/ui` primitives, no `.mk`-scoped mock markup, no
+ * `dangerouslySetInnerHTML`, no `mock.css` dependency) and **DB-driven**: the published
+ * `building` row (`getBuildingBySlug`) plus its bookable units (`listByBuilding`, the
+ * apartments contract — golden rule 2). DB content is passed as React text (escaped by React);
+ * the real header/footer + i18n come from the app layout.
  *
  * The **hero is real JSX**: `core/ui`'s `<Hero compact>`, the fourth consumer — needed two
  * more additive props (`breadcrumb`/`eyebrowBadge`, see `hero.tsx`'s docstring) for the
@@ -62,10 +63,9 @@ import { getBuildingBySlug } from "../server/queries";
  * the old `.mk`-scoped `buildingSection` HTML string in `bodyHtml()`. DB-sourced
  * `detail.descriptionIntro`/`descriptionNeighbourhood` are plain text, split into paragraph
  * arrays by `splitParagraphs()` (blank-line/newline split, same rule the old `paragraphs()`
- * HTML-string helper used) and passed as real `<p>` children — React escapes them, so no
- * `esc()` call is needed for this section anymore. Renders **outside** `.mk`, right after the
- * spec strip and before the apartments grid, the amenities grid and the still-raw
- * `.mk`-wrapped remainder (FAQ only; the book band is now `ActionBand`, below) — see `ProseSection`'s own docstring for the full cascade-layers reasoning (same trap
+ * HTML-string helper used) and passed as real `<p>` children — React escapes them. Renders
+ * right after the spec strip and before the apartments grid, the amenities grid, the FAQ and
+ * the book band — see `ProseSection`'s own docstring for the full cascade-layers reasoning (same trap
  * as `SpecStrip`) and for a flagged pre-existing drift between `mock/assets/site.css`'s
  * `--section-y`/`--max` tokens (used here, to stay pixel-identical to the live page) and
  * `core/ui`'s canonical `Section`/`Container` values (ported, not reconciled — see that
@@ -93,18 +93,29 @@ import { getBuildingBySlug } from "../server/queries";
  * right), replacing the old `bookband` string in `bodyHtml()` and the `.mk .bookband*` rules in
  * `PAGE_STYLE`. Not `FeaturePanel`/`FeatureCtaBand`/`CalloutBand`, and its button is a literal
  * `.btn.btn-accent` port rather than `ButtonLink` (see `ActionBand`'s docstring). Rendered
- * **outside** `.mk`, after the still-raw FAQ wrapper (section order unchanged), on
- * every building; static (the old `.reveal` was neutralised). Verified computed-style- and
- * screenshot-identical to the pre-extraction render at 1440/834/390, hover included.
+ * after the FAQ (section order unchanged), on every building; static (the old `.reveal` was
+ * neutralised). Verified computed-style- and screenshot-identical to the pre-extraction render
+ * at 1440/834/390, hover included.
  *
  * **"Amenities" is real JSX** too — the standard page shell + `core/ui`'s `SectionHead` (title
  * only, left) + its new `AmenityGrid` (hairline 4→2→1 grid of icon + label cells), replacing the
  * old amenities string in `bodyHtml()` and the `.mk .am-grid`/`.am` rules in `PAGE_STYLE`. Not
  * `BenefitCards`/`IconFeatureGrid`/`ChipBar` (see `AmenityGrid`'s docstring). The glyph is the
- * same generic check, now a JSX `AMENITY_ICON` (`aria-hidden` added). Rendered **outside** `.mk`,
+ * same generic check, now a JSX `AMENITY_ICON` (`aria-hidden` added). Rendered
  * between the apartments grid and the FAQ (order unchanged); static. One visible change from
  * `SectionHead`: the eyebrow-less title drops `h2.section-title`'s `14px` top margin, so it sits
- * 14px higher (consistency with every other section head). Only the **FAQ** is still raw.
+ * 14px higher (consistency with every other section head).
+ *
+ * **The FAQ is real JSX** too — the last raw piece — on the warm alt band (same shell as the
+ * apartments section), `core/ui`'s centred `SectionHead` and its `FaqAccordion` (the one
+ * site-wide accordion, shared with `pages`' `FaqSection`), plus `FAQPage` JSON-LD via
+ * `core/seo` exactly like `FaqSection`. Replaces the old `bodyHtml()` string, its `.faq` rules
+ * in `PAGE_STYLE`, `esc()` and the `.mk` wrapper. Deliberate visible changes (consistency over
+ * mock fidelity): the head is centred like every other FAQ on the site, and the accordion
+ * takes `FaqAccordion`'s approved metrics (18px serif question, 768px column, 70ch answer,
+ * `accent` "+" top-aligned) instead of the buildings mock's `.faq` (21px, 780px, 64ch,
+ * `accent-deep` "+" centred). Nothing on the page needs `mock.css` anymore, so the route no
+ * longer imports it.
  *
  * Resilient to sparse content (the catalog is filled incrementally via the backoffice):
  * - no R2 cover yet → a Warm-Editorial placeholder SVG is shown (building + per-unit);
@@ -113,15 +124,6 @@ import { getBuildingBySlug } from "../server/queries";
  * The Avantio booking CTA links to a unit's `avantio_url` (or the building's), falling
  * back to the in-page `#book` band when no engine handle is set.
  */
-
-/** Minimal HTML escaper for interpolating DB content into the `.mk` markup string. */
-function esc(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 /** Split source prose into paragraph strings (blank lines or newlines split) for
  *  `ProseSection`'s real `<p>` children — no HTML-escaping needed, React escapes text nodes. */
@@ -258,37 +260,6 @@ function apartmentCover(a: ApartmentSummary) {
   // Asset without usable dimensions → served unoptimised (as `mediaImgTag` did); none → placeholder.
   // eslint-disable-next-line @next/next/no-img-element -- placeholder SVG / dimensionless asset, not optimisable
   return <img src={a.cover?.url || PLACEHOLDER_APARTMENT} alt={a.cover?.alt || a.name} loading="lazy" decoding="async" />;
-}
-
-const PAGE_STYLE = `
-.mk .faq{max-width:780px}
-.mk .faq details{border-bottom:1px solid var(--line)}
-.mk .faq summary{cursor:pointer;list-style:none;padding:24px 0;font-family:var(--serif);font-size:21px;color:var(--ink);display:flex;justify-content:space-between;align-items:center;gap:20px;transition:color .2s}
-.mk .faq summary::-webkit-details-marker{display:none}
-.mk .faq summary:hover{color:var(--accent-deep)}
-.mk .faq summary::after{content:"+";font-family:var(--sans);font-size:24px;color:var(--accent-deep);line-height:1;transition:transform .25s var(--ease)}
-.mk .faq details[open] summary::after{transform:rotate(45deg)}
-.mk .faq details p{color:var(--ink-soft);font-size:16px;padding:0 0 26px;max-width:64ch}
-`;
-
-/** The still-raw `.mk` remainder after the amenities grid: the FAQ only (the amenities before
- *  it and the closing book band after it are real JSX now — `core/ui`'s `AmenityGrid`/`ActionBand`). */
-function bodyHtml(detail: BuildingDetailModel, L: BuildingLabels): string {
-  const faqSection = detail.faq.length
-    ? `
-<section class="alt">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <h2 class="section-title">${esc(L.faq)}</h2>
-    </div>
-    <div class="faq reveal">${detail.faq
-      .map((f) => `<details><summary>${esc(f.question)}</summary><p>${esc(f.answer)}</p></details>`)
-      .join("")}</div>
-  </div>
-</section>`
-    : "";
-
-  return faqSection;
 }
 
 export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: string }) {
@@ -495,16 +466,28 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
           </div>
         </section>
       ) : null}
-      <div className="mk" data-page="building">
-        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-        <div dangerouslySetInnerHTML={{ __html: bodyHtml(detail, L) }} />
-      </div>
+      {/*
+       * Real JSX — the building FAQ: the warm alt band (same shell as the apartments section),
+       * `core/ui`'s centred `SectionHead` (centred like `FaqSection` on every other page) and
+       * `FaqAccordion` (the one site-wide accordion), plus `FAQPage` JSON-LD from `core/seo`,
+       * emitted the same way `FaqSection` does. Replaces the old `.mk`-scoped `bodyHtml()` string
+       * and its `.faq` rules. Static (native `<details>`, zero JS). Omitted when there is no FAQ.
+       */}
+      {detail.faq.length > 0 ? (
+        <section className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)]">
+          <JsonLd data={faqPageLd(detail.faq.map((f) => ({ question: f.question, answer: f.answer })))} />
+          <div className="mx-auto max-w-[1240px] px-[28px]">
+            <SectionHead align="center" headline={L.faq} />
+            <FaqAccordion items={detail.faq.map((f) => ({ id: f.id, question: f.question, answer: f.answer }))} />
+          </div>
+        </section>
+      ) : null}
       {/*
        * Real JSX — the closing "Book an apartment in this building" band, `core/ui`'s new
        * `ActionBand` (see its docstring for why not `FeaturePanel`/`FeatureCtaBand`/`CalloutBand`
        * and why the button isn't `ButtonLink`), replacing the old `.mk` `bookband` string and its
        * `.mk .bookband*` rules. Rendered *outside* `.mk` (cascade-layers trap — see `SpecStrip`'s
-       * docstring), after the still-raw FAQ wrapper so the section order is unchanged.
+       * docstring), after the FAQ so the section order is unchanged.
        * Always rendered. The CTA links to the building's Avantio URL in a new tab, or falls back
        * to the in-page `#book` anchor. Static, like the original (its `.reveal` was neutralised).
        */}

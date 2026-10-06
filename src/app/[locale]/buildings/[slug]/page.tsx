@@ -7,7 +7,6 @@ import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
 import { getBuildingBySlug, listBuildingParams } from "@slices/buildings/contract";
 import { BuildingDetail } from "@slices/buildings/ui/building-detail";
-import "../../../mock.css";
 
 /** ISR per building, per locale. Content is DB-driven (`getBuildingBySlug`); the
  *  published slugs are prerendered, unknown slugs render on-demand → notFound. */
