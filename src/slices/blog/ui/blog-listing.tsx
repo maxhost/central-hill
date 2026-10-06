@@ -1,26 +1,21 @@
-import { setRequestLocale } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
+import { PageHead, PageHeadSearch } from "@core/ui";
 
 /**
- * Blog listing — the approved `mock/blog.html` embedded 1:1 inside the live app shell.
- * The mock's body markup is rendered verbatim; its page styles are scoped under `.mk`
- * (see `src/app/mock.css` for the shared design system) so nothing leaks to Home/admin.
- * No database is read here — content is static, matching the mock exactly. The real
- * header/footer + i18n come from the app layout. (The search input, category tabs,
- * "Load More" button, and newsletter form are the mock's static markup for now; wiring
- * them up is a follow-up. `.reveal` is neutralised in mock.css so content stays visible.)
+ * Blog listing — the approved `mock/blog.html` inside the live app shell.
+ * The header band (eyebrow, `<h1>`, lede, search field) is the `core/ui` `PageHead` +
+ * `PageHeadSearch`, rendered as JSX with i18n copy (`blog.eyebrow|title|intro|searchPlaceholder|
+ * searchLabel`), outside the `.mk` subtree. The rest of the page is still the mock's body
+ * markup rendered verbatim, with its page styles scoped under `.mk` (see `src/app/mock.css` for
+ * the shared design system) so nothing leaks to Home/admin; that part is static English copy.
+ * No database is read here. The real header/footer come from the app layout. (The search field
+ * is inert until blog search lands; the category tabs, "Load More" button and newsletter form
+ * are the mock's static markup for now; wiring them up is a follow-up. `.reveal` is
+ * neutralised in mock.css so content stays visible.)
  */
 
 const PAGE_STYLE = `
-.mk .blog-head{background:color-mix(in srgb,var(--line) 30%,var(--bg));border-bottom:1px solid var(--line)}
-.mk .blog-head .wrap{padding-top:128px;padding-bottom:64px;text-align:center}
-.mk .blog-head h1{font-size:clamp(34px,4.6vw,58px);max-width:18ch;margin:14px auto 18px}
-.mk .blog-head .lede{margin:0 auto;max-width:60ch}
-.mk .blog-search{max-width:560px;margin:34px auto 0;position:relative}
-.mk .blog-search i{position:absolute;left:20px;top:50%;transform:translateY(-50%);font-size:20px;color:var(--ink-soft);line-height:1}
-.mk .blog-search input{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:100px;padding:16px 22px 16px 52px;transition:.2s var(--ease)}
-.mk .blog-search input::placeholder{color:var(--ink-soft)}
-.mk .blog-search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
 .mk .cat-tabs{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .mk .cat-tab{font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:.01em;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:100px;padding:9px 18px;cursor:pointer;transition:.2s var(--ease);display:inline-flex;align-items:center;gap:8px}
 .mk .cat-tab:hover{border-color:var(--ink-soft);color:var(--ink)}
@@ -67,18 +62,6 @@ const PAGE_STYLE = `
 `;
 
 const BODY = (locale: Locale) => `
-<section class="blog-head" style="padding:0">
-  <div class="wrap reveal">
-    <span class="eyebrow">The Central Hill Journal</span>
-    <h1>Insights on Short-Term Rentals, Property Management &amp; Portugal</h1>
-    <p class="lede">Expert guides, practical tips, and local knowledge for property owners, investors, and anyone navigating the Portuguese short-term rental market.</p>
-    <div class="blog-search">
-      <i class="iconoir-search" aria-hidden="true"></i>
-      <input type="search" placeholder="Search articles…" aria-label="Search articles" />
-    </div>
-  </div>
-</section>
-
 <section style="padding-top:48px;padding-bottom:0">
   <div class="wrap reveal">
     <div class="cat-tabs">
@@ -245,13 +228,23 @@ const BODY = (locale: Locale) => `
 </section>
 `;
 
-/** Blog listing: hero + featured + category tabs + card grid + newsletter (static mock embed). */
+/**
+ * Blog listing: `PageHead` header (JSX, i18n) + category tabs + featured + card grid +
+ * newsletter (static mock embed). The search field is inert: no `action`, and this page never
+ * reads `searchParams` (that would make it dynamic), so submitting just reloads `?q=…`.
+ */
 export async function BlogListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
+  const t = await getTranslations("blog");
   return (
-    <div className="mk" data-page="blog">
-      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-      <div dangerouslySetInnerHTML={{ __html: BODY(locale) }} />
-    </div>
+    <>
+      <PageHead eyebrow={t("eyebrow")} headline={t("title")} intro={t("intro")}>
+        <PageHeadSearch placeholder={t("searchPlaceholder")} label={t("searchLabel")} />
+      </PageHead>
+      <div className="mk" data-page="blog">
+        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
+        <div dangerouslySetInnerHTML={{ __html: BODY(locale) }} />
+      </div>
+    </>
   );
 }

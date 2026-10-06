@@ -113,3 +113,7 @@ export {
 } from "./form-card";
 /** Hairline `.9fr/1.1fr` split (→ 1 col ≤980px): dark info panel (title + label/value rows) beside a light panel (title + intro + form slot). */
 export { ContactSplit, type ContactSplitRow } from "./contact-split";
+/** Light, centred page header band (eyebrow + `<h1>` + lede + optional slot), the photo-less counterpart of `Hero`. */
+export { PageHead } from "./page-head";
+/** Pill search field for `PageHead`'s slot: `<form role="search">` + `<input name="q">`; inert (GET to the current URL) until search lands. */
+export { PageHeadSearch } from "./page-head";
