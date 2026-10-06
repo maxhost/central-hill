@@ -6,10 +6,12 @@ import { MediaImage, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import {
   ActionBand,
+  AmenityGrid,
   Container,
   Hero,
   MosaicGallery,
   ProseSection,
+  SectionHead,
   SpecStrip,
   UnitCard,
   UnitCardGrid,
@@ -62,8 +64,8 @@ import { getBuildingBySlug } from "../server/queries";
  * arrays by `splitParagraphs()` (blank-line/newline split, same rule the old `paragraphs()`
  * HTML-string helper used) and passed as real `<p>` children — React escapes them, so no
  * `esc()` call is needed for this section anymore. Renders **outside** `.mk`, right after the
- * spec strip and before the apartments grid + the still-raw `.mk`-wrapped remainder
- * (amenities/FAQ; the book band is now `ActionBand`, below) — see `ProseSection`'s own docstring for the full cascade-layers reasoning (same trap
+ * spec strip and before the apartments grid, the amenities grid and the still-raw
+ * `.mk`-wrapped remainder (FAQ only; the book band is now `ActionBand`, below) — see `ProseSection`'s own docstring for the full cascade-layers reasoning (same trap
  * as `SpecStrip`) and for a flagged pre-existing drift between `mock/assets/site.css`'s
  * `--section-y`/`--max` tokens (used here, to stay pixel-identical to the live page) and
  * `core/ui`'s canonical `Section`/`Container` values (ported, not reconciled — see that
@@ -91,9 +93,18 @@ import { getBuildingBySlug } from "../server/queries";
  * right), replacing the old `bookband` string in `bodyHtml()` and the `.mk .bookband*` rules in
  * `PAGE_STYLE`. Not `FeaturePanel`/`FeatureCtaBand`/`CalloutBand`, and its button is a literal
  * `.btn.btn-accent` port rather than `ButtonLink` (see `ActionBand`'s docstring). Rendered
- * **outside** `.mk`, after the still-raw amenities/FAQ wrapper (section order unchanged), on
+ * **outside** `.mk`, after the still-raw FAQ wrapper (section order unchanged), on
  * every building; static (the old `.reveal` was neutralised). Verified computed-style- and
  * screenshot-identical to the pre-extraction render at 1440/834/390, hover included.
+ *
+ * **"Amenities" is real JSX** too — the standard page shell + `core/ui`'s `SectionHead` (title
+ * only, left) + its new `AmenityGrid` (hairline 4→2→1 grid of icon + label cells), replacing the
+ * old amenities string in `bodyHtml()` and the `.mk .am-grid`/`.am` rules in `PAGE_STYLE`. Not
+ * `BenefitCards`/`IconFeatureGrid`/`ChipBar` (see `AmenityGrid`'s docstring). The glyph is the
+ * same generic check, now a JSX `AMENITY_ICON` (`aria-hidden` added). Rendered **outside** `.mk`,
+ * between the apartments grid and the FAQ (order unchanged); static. One visible change from
+ * `SectionHead`: the eyebrow-less title drops `h2.section-title`'s `14px` top margin, so it sits
+ * 14px higher (consistency with every other section head). Only the **FAQ** is still raw.
  *
  * Resilient to sparse content (the catalog is filled incrementally via the backoffice):
  * - no R2 cover yet → a Warm-Editorial placeholder SVG is shown (building + per-unit);
@@ -135,8 +146,12 @@ const GALLERY_SIZES = "(max-width: 680px) 50vw, 291px";
 
 /** Generic amenity glyph (the DB stores an icon key, but a single check reads cleanly
  *  across the whole grid and degrades gracefully until a per-key icon map is wired). */
-const AMENITY_ICON =
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.4l2.4 2.4 4.6-5"/></svg>';
+const AMENITY_ICON = (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} aria-hidden>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M8.5 12.4l2.4 2.4 4.6-5" />
+  </svg>
+);
 
 /** Apartment-card spec-row glyphs (bedrooms, beds, guests, size) — positional, always
  *  the same four, so plain consts rather than an icon-key map like the amenities grid.
@@ -246,12 +261,6 @@ function apartmentCover(a: ApartmentSummary) {
 }
 
 const PAGE_STYLE = `
-.mk .am-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
-.mk .am{background:var(--surface);display:flex;align-items:center;gap:14px;padding:24px 26px}
-.mk .am svg{width:22px;height:22px;flex:none;color:var(--accent-deep)}
-.mk .am span{font-size:15px;color:var(--ink)}
-@media(max-width:980px){.mk .am-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:680px){.mk .am-grid{grid-template-columns:1fr}}
 .mk .faq{max-width:780px}
 .mk .faq details{border-bottom:1px solid var(--line)}
 .mk .faq summary{cursor:pointer;list-style:none;padding:24px 0;font-family:var(--serif);font-size:21px;color:var(--ink);display:flex;justify-content:space-between;align-items:center;gap:20px;transition:color .2s}
@@ -262,23 +271,9 @@ const PAGE_STYLE = `
 .mk .faq details p{color:var(--ink-soft);font-size:16px;padding:0 0 26px;max-width:64ch}
 `;
 
-/** The still-raw `.mk` remainder after the apartments grid: amenities, FAQ (the closing book
- *  band after them is real JSX now — `core/ui`'s `ActionBand`). */
+/** The still-raw `.mk` remainder after the amenities grid: the FAQ only (the amenities before
+ *  it and the closing book band after it are real JSX now — `core/ui`'s `AmenityGrid`/`ActionBand`). */
 function bodyHtml(detail: BuildingDetailModel, L: BuildingLabels): string {
-  const amenitiesSection = detail.amenities.length
-    ? `
-<section>
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <h2 class="section-title">${esc(L.amenities)}</h2>
-    </div>
-    <div class="am-grid reveal">${detail.amenities
-      .map((am) => `<div class="am">${AMENITY_ICON}<span>${esc(am.label)}</span></div>`)
-      .join("")}</div>
-  </div>
-</section>`
-    : "";
-
   const faqSection = detail.faq.length
     ? `
 <section class="alt">
@@ -293,7 +288,7 @@ function bodyHtml(detail: BuildingDetailModel, L: BuildingLabels): string {
 </section>`
     : "";
 
-  return amenitiesSection + faqSection;
+  return faqSection;
 }
 
 export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: string }) {
@@ -483,6 +478,23 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
           </div>
         </section>
       ) : null}
+      {/*
+       * Real JSX — "Amenities": the standard page shell (`--section-y` rhythm, 1240px/28px
+       * column), `core/ui`'s `SectionHead` (title only, left) and its new `AmenityGrid` (see that
+       * file's docstring for the reuse check), replacing the old `.mk` amenities string in
+       * `bodyHtml()` and the `.mk .am-grid`/`.am` rules in `PAGE_STYLE`. Each cell's glyph is the
+       * generic `AMENITY_ICON` check. Rendered *outside* `.mk` (cascade-layers trap — see
+       * `SpecStrip`'s docstring). No `Reveal` — static, like the apartments section above.
+       * Omitted entirely when the building has no amenities.
+       */}
+      {detail.amenities.length > 0 ? (
+        <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
+          <div className="mx-auto max-w-[1240px] px-[28px]">
+            <SectionHead headline={L.amenities} />
+            <AmenityGrid items={detail.amenities.map((am) => ({ icon: AMENITY_ICON, label: am.label }))} />
+          </div>
+        </section>
+      ) : null}
       <div className="mk" data-page="building">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <div dangerouslySetInnerHTML={{ __html: bodyHtml(detail, L) }} />
@@ -492,7 +504,7 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
        * `ActionBand` (see its docstring for why not `FeaturePanel`/`FeatureCtaBand`/`CalloutBand`
        * and why the button isn't `ButtonLink`), replacing the old `.mk` `bookband` string and its
        * `.mk .bookband*` rules. Rendered *outside* `.mk` (cascade-layers trap — see `SpecStrip`'s
-       * docstring), after the still-raw amenities/FAQ wrapper so the section order is unchanged.
+       * docstring), after the still-raw FAQ wrapper so the section order is unchanged.
        * Always rendered. The CTA links to the building's Avantio URL in a new tab, or falls back
        * to the in-page `#book` anchor. Static, like the original (its `.reveal` was neutralised).
        */}
