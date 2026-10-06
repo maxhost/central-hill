@@ -6,9 +6,10 @@ import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
 import { AboutPage } from "@slices/pages/ui/about-page";
+// No `.mk` left on About; kept only for its global Iconoir stylesheet (`iconoir-*` icons).
 import "../../mock.css";
 
-/** Static per locale. Content is the embedded mock (no DB). */
+/** Static per locale (ISR). Copy is literal; office details come from cached `getGlobals` (tag `globals`). */
 export const revalidate = 3600;
 
 export function generateStaticParams() {

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { ButtonLink } from "./button";
 import { cn } from "./cn";
 
@@ -10,7 +11,16 @@ export type BenefitCardItem = {
   icon?: ReactNode;
   title: string;
   description: string;
+  /** Optional: turns the whole card into a link (`next/link`) — see "Link cards" below. */
+  href?: string;
+  /** The accent-deep line at the foot of a link card (caller includes any arrow, e.g.
+   * `"Browse Apartments →"`, as Guests' CTA label does). Only rendered when `href` is set. */
+  linkLabel?: string;
 };
+
+/** Card chrome shared by plain and link cards (surface, padding, `.mk`'s 1.6 line box, hover lift). */
+const CARD =
+  "group bg-surface px-[34px] py-10 leading-[1.6] transition-[transform,box-shadow] duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:[transform:translateY(-4px)] hover:[box-shadow:0_16px_28px_-20px_rgba(0,0,0,0.35)]";
 
 /**
  * A hairline grid of light benefit cards — each = an icon above a serif title and an ink-soft
@@ -59,6 +69,20 @@ export type BenefitCardItem = {
  * beats a layered Tailwind utility.) `PhotoFeatureGrid`'s plain `block` wrapper lands ~3.6px
  * tighter.
  *
+ * Link cards (added for About's "Let's Start a Conversation" `.touch-grid`/`.touch`, additive —
+ * items without `href` render exactly as before): an item with `href` renders as an `<a>`
+ * (`next/link`) laid out as a flex column — the description takes the free height (`flex:1`) so
+ * the `linkLabel` line (`mt-[18px]`, 14px/600 `accent-deep`) sits at the foot of every card in a
+ * row, and that line nudges 4px right on hover; the hovered card also gets `z-index:1` so its
+ * shadow paints over its neighbours. Card chrome, icon, title, description and hover lift are
+ * the same as a plain card (the About mock's `.touch` rules were identical to `.bcard`'s). Two
+ * consequences of the flex column, both 1:1 with the original `.touch` markup: the icon wrapper
+ * is a (blockified) flex item, so the icon→title gap is the plain 30px + 18px (no inline strut
+ * descent); and it's `self-start`, so its hover scale stays centred on the glyph.
+ *
+ * `columns={3}` (default 4) pins the wide layout to 3 columns from 981px (About's link cards);
+ * the 2 → 1 breakpoints below it are unchanged.
+ *
  * Bare (no own `Section`/`Container`/heading — the caller owns the section shell, sec-head and
  * entrance reveal, same as `PhotoFeatureGrid`/`StatTiles`). MUST be rendered **outside** any
  * `.mk`-scoped subtree: `mock.css`'s un-layered `.mk * { margin:0; padding:0 }` beats
@@ -68,9 +92,12 @@ export type BenefitCardItem = {
 export function BenefitCards({
   items,
   cta,
+  columns = 4,
   className,
 }: {
   items: BenefitCardItem[];
+  /** Columns from 981px up (default 4); 2 at 681–980px, 1 at ≤680px either way. */
+  columns?: 3 | 4;
   cta?: {
     label: string;
     href: string;
@@ -83,28 +110,55 @@ export function BenefitCards({
       <div
         className={cn(
           "grid grid-cols-[1fr] gap-px border border-line bg-line",
-          "min-[681px]:grid-cols-[repeat(2,1fr)] min-[981px]:grid-cols-[repeat(4,1fr)]",
+          "min-[681px]:grid-cols-[repeat(2,1fr)]",
+          columns === 3 ? "min-[981px]:grid-cols-[repeat(3,1fr)]" : "min-[981px]:grid-cols-[repeat(4,1fr)]",
         )}
       >
-        {items.map((item, i) => (
-          <div
-            key={i}
-            className="group bg-surface px-[34px] py-10 leading-[1.6] transition-[transform,box-shadow] duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:[transform:translateY(-4px)] hover:[box-shadow:0_16px_28px_-20px_rgba(0,0,0,0.35)]"
-          >
-            {item.icon ? (
-              <span
-                aria-hidden
-                className="mb-[18px] inline-block h-[1em] overflow-hidden text-[30px] leading-none text-accent-deep transition-[transform,color] duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:text-accent group-hover:[transform:translateY(-3px)_scale(1.1)]"
-              >
-                {item.icon}
-              </span>
-            ) : null}
+        {items.map((item, i) => {
+          const icon = item.icon ? (
+            <span
+              aria-hidden
+              className={cn(
+                "mb-[18px] inline-block h-[1em] overflow-hidden text-[30px] leading-none text-accent-deep transition-[transform,color] duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:text-accent group-hover:[transform:translateY(-3px)_scale(1.1)]",
+                item.href && "self-start",
+              )}
+            >
+              {item.icon}
+            </span>
+          ) : null;
+          const title = (
             <h3 className="mb-[10px] font-serif text-[23px] font-medium leading-[1.08] tracking-[-0.015em] text-ink">
               {item.title}
             </h3>
-            <p className="text-[15px] leading-[1.6] text-ink-soft">{item.description}</p>
-          </div>
-        ))}
+          );
+
+          if (item.href) {
+            return (
+              <Link
+                key={i}
+                href={item.href}
+                className={cn(CARD, "flex flex-col hover:z-[1]")}
+              >
+                {icon}
+                {title}
+                <p className="flex-1 text-[15px] leading-[1.6] text-ink-soft">{item.description}</p>
+                {item.linkLabel ? (
+                  <span className="mt-[18px] text-[14px] font-semibold text-accent-deep transition-transform duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)] group-hover:[transform:translateX(4px)]">
+                    {item.linkLabel}
+                  </span>
+                ) : null}
+              </Link>
+            );
+          }
+
+          return (
+            <div key={i} className={CARD}>
+              {icon}
+              {title}
+              <p className="text-[15px] leading-[1.6] text-ink-soft">{item.description}</p>
+            </div>
+          );
+        })}
       </div>
 
       {cta ? (

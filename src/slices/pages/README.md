@@ -189,6 +189,17 @@ original's per-card stagger isn't reproduced (`Reveal` animates its subtree as o
 rest of the page (stats grid, `organised`, `certifications`, `community`, `contact`) is
 unaffected — out of scope for this change.
 
+**About — final (no `.mk` left).** The last raw block, `#contact`, is now `core/ui`'s
+`BenefitCards` in its new additive link-card mode (`columns={3}`, per-item `href` + `linkLabel`;
+Guests' render verified byte-identical) followed by the new `core/ui` `ContactSplit` (hairline
+`.9fr/1.1fr` dark office panel + light form panel, ported 1:1 from `.contact-split`/`.office`/
+`.cform`). The form is the leads slice's `ContactForm` via its contract (`source="about-contact"`,
+`kind = "contact"`) — the mock's static form now submits real leads. Office rows read
+company_settings (`getGlobals`: address, phone, email, office hours + label); the check-in phone
+and website have no settings field and stay literals. `PAGE_STYLE`, `CONTACT_BODY_HTML`, the
+`.pre-reveal` noscript rule and the pages slice's now-unused `components/scroll-reveal.tsx` are
+deleted; the route keeps `mock.css` only for the Iconoir stylesheet.
+
 **Real Estate** (`real-estate-page.tsx`) started as the raw-markup `.mk` embed. It is now
 **fully componentised**: no `.mk` wrapper, `dangerouslySetInnerHTML`, `PAGE_STYLE`,
 `ScrollReveal` or `mock.css` import remain (see "Final cleanup" at the end of this entry). The

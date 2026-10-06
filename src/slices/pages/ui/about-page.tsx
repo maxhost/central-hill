@@ -1,7 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import {
+  BenefitCards,
   CertificationCards,
+  ContactSplit,
   Hero,
   IntroSplit,
   NumberedFeatureGrid,
@@ -10,18 +12,21 @@ import {
   SectionHead,
   StatBand,
   TwoColumnShowcase,
+  type BenefitCardItem,
   type CertificationCardItem,
+  type ContactSplitRow,
 } from "@core/ui";
+import { ContactForm } from "@slices/leads/contract";
+import { getGlobals, type SiteGlobals } from "@slices/settings/contract";
 import { getAboutPage } from "../contract";
 import { FaqSection } from "./components/faq-section";
-import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
- * About page (`mock/about.html`), being ported to components. Content is static (no
- * `page_content` row backs About beyond `faq_group_key`), so every string is a literal, as in the
- * original markup. The header/footer and i18n come from the app layout.
+ * About page (`mock/about.html`), fully ported to components — no `.mk` block left. Content is
+ * static (no `page_content` row backs About beyond `faq_group_key`), so every string is a
+ * literal, as in the original markup. The header/footer and i18n come from the app layout.
  *
- * Now JSX, with existing `core/ui` components (consistency over mock fidelity):
+ * Every section uses existing `core/ui` components (consistency over mock fidelity):
  * - Hero: `Hero` with the Buildings listing configuration (as on Guests and Real Estate).
  * - "How We Started" and "Giving Back…": `IntroSplit` (`imagePosition="left"`, `eyebrow`).
  * - Company numbers: `StatBand` (`columns={5}`), whose `CountUp` replaces the page's old
@@ -32,59 +37,17 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * - "Independently Verified": `SectionHead` + `CertificationCards` (the old per-card stagger is
  *   now one `Reveal` fade).
  * - FAQ: the shared `FaqSection` (only when `faq_group_key` is set).
+ * - "Let's Start a Conversation": `SectionHead`, then `BenefitCards` as link cards
+ *   (`columns={3}`, per-item `href` + `linkLabel`), then `ContactSplit` — the dark office panel
+ *   (address / bookings phone / email / office hours from company_settings via `getGlobals`,
+ *   so they're edited once in /admin/settings; the check-in phone and website have no settings
+ *   field and stay literals) beside the leads slice's `ContactForm` (`source="about-contact"`,
+ *   `kind = "contact"` — the same form, validation, consent and success/error states as the
+ *   header contact dialog). The mock's form was static (`onsubmit="return false"`); it now
+ *   submits a real lead.
  * Every section uses the standard page shell and `SectionHead`; entrance motion is `Reveal`.
- *
- * Still raw, in a small `.mk` block under a JSX `SectionHead`: the "Let's Start a Conversation"
- * link cards and the office + contact form (static, not wired to leads yet). That raw block keeps the page's own `.pre-reveal` entrance motion
- * (`ScrollReveal`), and `PAGE_STYLE` now only holds its rules.
-  */
+ */
 
-const PAGE_STYLE = `
-/* Iconoir glyphs in the still-raw contact cards. */
-.mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
-/* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll
-   for the rest, via <ScrollReveal page="about">/scroll-reveal.tsx) + hover motion
-   (client feedback: the page read too static, wanted a more premium feel). The hidden
-   state is baked straight into the server-rendered markup (.pre-reveal, applied on the
-   elements below) so there's no flash of visible-then-hidden; the <noscript> rule keeps
-   content visible with JS off. Scoped to [data-page="about"] so it never touches the
-   shared, neutralised .reveal
-   rule in mock.css or any other page/section. */
-.mk[data-page="about"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
-.mk[data-page="about"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
-.mk .touch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
-.mk .touch{background:var(--surface);padding:40px 34px;display:flex;flex-direction:column;transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
-.mk .touch:hover{transform:translateY(-4px);box-shadow:0 16px 28px -20px rgba(0,0,0,.35);z-index:1}
-.mk .touch .ico{transition:transform .35s var(--ease),color .35s var(--ease)}
-.mk .touch:hover .ico{transform:translateY(-3px) scale(1.1);color:var(--accent)}
-.mk .touch h3{font-size:23px;margin-bottom:10px}
-.mk .touch p{font-size:15px;color:var(--ink-soft);flex:1}
-.mk .touch .view{margin-top:18px;font-size:14px;color:var(--accent-deep);font-weight:600;display:inline-block;transition:transform .35s var(--ease)}
-.mk .touch:hover .view{transform:translateX(4px)}
-.mk .contact-split{display:grid;grid-template-columns:.9fr 1.1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:48px}
-.mk .office{background:var(--feature);color:var(--on-feature);padding:48px 44px}
-.mk .office h3{color:#fff;font-size:26px;margin-bottom:22px}
-.mk .office .ofield{margin-bottom:20px}
-.mk .office .olbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--feature-accent);font-weight:600;margin-bottom:6px}
-.mk .office .oval{font-size:15px;color:var(--on-feature-soft);line-height:1.7}
-.mk .office .oval a{color:var(--on-feature)}
-.mk .cform{background:var(--surface);padding:48px 44px}
-.mk .cform h3{font-size:26px;margin-bottom:8px}
-.mk .cform .cform-sub{font-size:14px;color:var(--ink-soft);margin-bottom:24px}
-.mk .cfield{margin-bottom:18px}
-.mk .cfield label{display:block;font-size:12px;letter-spacing:.04em;font-weight:600;color:var(--ink);margin-bottom:7px}
-.mk .cfield input,.mk .cfield textarea{width:100%;font-family:var(--sans);font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:13px 14px;transition:.2s var(--ease)}
-.mk .cfield textarea{resize:vertical;min-height:130px}
-.mk .cfield input:focus,.mk .cfield textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
-.mk .cform-two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.mk .cform .btn{justify-content:center}
-@media(max-width:980px){
-    .mk .contact-split{grid-template-columns:1fr}
-}
-@media(max-width:680px){
-    .mk .office,.mk .cform{padding:36px 28px}
-}
-`;
 
 // Fixed media for the JSX sections (no `page_content` row backs About; every string below is a
 // literal, same as the original markup).
@@ -234,105 +197,76 @@ const CERTIFICATIONS: CertificationCardItem[] = [
   },
 ];
 
-/** The still-raw contact cards + office/form split (the section shell and head are JSX). */
-const CONTACT_BODY_HTML = (locale: Locale) => `
-    <div class="touch-grid reveal reveal-io reveal-stagger pre-reveal">
-      <a class="touch" href="/${locale}/buildings">
-        <i class="iconoir-suitcase ico" aria-hidden="true"></i>
-        <h3>Planning a Stay?</h3>
-        <p>Browse our apartments and book directly for the best price.</p>
-        <span class="view">Browse Apartments →</span>
-      </a>
-      <a class="touch" href="/${locale}/owners">
-        <i class="iconoir-home ico" aria-hidden="true"></i>
-        <h3>Own a Property?</h3>
-        <p>Get a free, no-obligation earnings estimate and find out what your property could achieve.</p>
-        <span class="view">Get My Free Estimate →</span>
-      </a>
-      <a class="touch" href="/${locale}/real-estate">
-        <i class="iconoir-bank ico" aria-hidden="true"></i>
-        <h3>Institutional Partner?</h3>
-        <p>Discuss investment structures, asset management, and partnership models with our team.</p>
-        <span class="view">Discuss a Partnership →</span>
-      </a>
-    </div>
+/** "Let's Start a Conversation" link cards (`BenefitCards`, link variant), one per audience. */
+const touchCards = (locale: Locale): BenefitCardItem[] => [
+  {
+    icon: <i className="iconoir-suitcase" aria-hidden="true" />,
+    title: "Planning a Stay?",
+    description: "Browse our apartments and book directly for the best price.",
+    href: `/${locale}/buildings`,
+    linkLabel: "Browse Apartments →",
+  },
+  {
+    icon: <i className="iconoir-home" aria-hidden="true" />,
+    title: "Own a Property?",
+    description: "Get a free, no-obligation earnings estimate and find out what your property could achieve.",
+    href: `/${locale}/owners`,
+    linkLabel: "Get My Free Estimate →",
+  },
+  {
+    icon: <i className="iconoir-bank" aria-hidden="true" />,
+    title: "Institutional Partner?",
+    description: "Discuss investment structures, asset management, and partnership models with our team.",
+    href: `/${locale}/real-estate`,
+    linkLabel: "Discuss a Partnership →",
+  },
+];
 
-    <div class="contact-split reveal reveal-io pre-reveal">
-      <div class="office">
-        <h3>Our Office</h3>
-        <div class="ofield">
-          <div class="olbl">Address</div>
-          <div class="oval">Rua da Bempostinha 21A<br>1150-065 Lisboa, Portugal</div>
-        </div>
-        <div class="ofield">
-          <div class="olbl">Bookings</div>
-          <div class="oval"><a href="tel:+351910075725">+351 910 075 725</a></div>
-        </div>
-        <div class="ofield">
-          <div class="olbl">Check-in</div>
-          <div class="oval"><a href="tel:+351912310632">+351 912 310 632</a></div>
-        </div>
-        <div class="ofield">
-          <div class="olbl">Email</div>
-          <div class="oval"><a href="mailto:info@centralhill.pt">info@centralhill.pt</a></div>
-        </div>
-        <div class="ofield">
-          <div class="olbl">Website</div>
-          <div class="oval"><a href="https://www.centralhill.pt">www.centralhill.pt</a></div>
-        </div>
-        <div class="ofield">
-          <div class="olbl">Office Hours</div>
-          <div class="oval">Monday – Friday · 09:30 – 18:00</div>
-        </div>
-      </div>
+// Office details company_settings has no field for (or has none set yet) — the mock's literals.
+// Address / bookings phone / email fall back to these only if the settings row is missing.
+const OFFICE_FALLBACK = {
+  address: "Rua da Bempostinha 21A, 1150-065 Lisboa, Portugal",
+  phone: "+351 910 075 725",
+  email: "info@centralhill.pt",
+  hours: "Monday – Friday · 09:30 – 18:00",
+};
+const CHECKIN_PHONE = "+351 912 310 632"; // no settings field
+const WEBSITE = { href: "https://www.centralhill.pt", text: "www.centralhill.pt" }; // no settings field
 
-      <form class="cform" onsubmit="return false">
-        <h3>Send Us a Message</h3>
-        <div class="cform-sub">Tell us how we can help and we'll be in touch shortly.</div>
-        <div class="cform-two">
-          <div class="cfield">
-            <label for="cf-name">Name</label>
-            <input id="cf-name" type="text" name="name" placeholder="Your full name" autocomplete="name">
-          </div>
-          <div class="cfield">
-            <label for="cf-email">Email</label>
-            <input id="cf-email" type="email" name="email" placeholder="you@email.com" autocomplete="email">
-          </div>
-        </div>
-        <div class="cfield">
-          <label for="cf-subject">Subject</label>
-          <input id="cf-subject" type="text" name="subject" placeholder="What is this about?">
-        </div>
-        <div class="cfield">
-          <label for="cf-message">Message</label>
-          <textarea id="cf-message" name="message" placeholder="Write your message…"></textarea>
-        </div>
-        <button type="submit" class="btn btn-accent">Send Message <i class="iconoir-send-diagonal" aria-hidden="true"></i></button>
-      </form>
-    </div>
-`;
+const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;
+
+/** The office panel rows: settings values where company_settings has a field, literals otherwise. */
+function officeRows(globals: SiteGlobals | null): ContactSplitRow[] {
+  const phone = globals?.phone || OFFICE_FALLBACK.phone;
+  const email = globals?.email || OFFICE_FALLBACK.email;
+  return [
+    { label: "Address", value: globals?.officeAddress || OFFICE_FALLBACK.address },
+    { label: "Bookings", value: <a href={telHref(phone)}>{phone}</a> },
+    { label: "Check-in", value: <a href={telHref(CHECKIN_PHONE)}>{CHECKIN_PHONE}</a> },
+    { label: "Email", value: <a href={`mailto:${email}`}>{email}</a> },
+    { label: "Website", value: <a href={WEBSITE.href}>{WEBSITE.text}</a> },
+    {
+      label: globals?.officeHoursLabel || "Office Hours",
+      value: globals?.officeHours || OFFICE_FALLBACK.hours,
+    },
+  ];
+}
 
 export async function AboutPage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const [page, t] = await Promise.all([getAboutPage(locale), getTranslations("pages")]);
+  const [page, globals, t] = await Promise.all([
+    getAboutPage(locale),
+    getGlobals(locale),
+    getTranslations("pages"),
+  ]);
   const faqGroupKey = page?.content.faq_group_key ?? "";
 
   return (
     <>
-      {/* `.mk`-scoped rules for the still-raw cards; selectors don't depend on DOM position. */}
-      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-      {/*
-       * JS-off fallbacks: `Reveal` (JSX sections) and the page's own `.pre-reveal` (the
-       * still-raw contact block, animated by `ScrollReveal`).
-       */}
+      {/* JS-off fallback: `Reveal` renders hidden until it scrolls into view. */}
       <noscript>
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `[data-reveal]{opacity:1!important;transform:none!important}.mk[data-page="about"] .pre-reveal{opacity:1!important;transform:none!important}`,
-          }}
-        />
+        <style dangerouslySetInnerHTML={{ __html: `[data-reveal]{opacity:1!important;transform:none!important}` }} />
       </noscript>
-      <ScrollReveal page="about" />
 
       {/* Hero: Buildings listing's exact `Hero` configuration (as on Guests and Real Estate). */}
       <Hero
@@ -480,15 +414,29 @@ export async function AboutPage({ locale }: { locale: Locale }) {
         </div>
       ) : null}
 
-      {/* "Let's Start a Conversation": JSX shell + `SectionHead`; cards and office/form stay raw. */}
+      {/*
+       * "Let's Start a Conversation": `SectionHead`, `BenefitCards` link cards (3 columns), then
+       * `ContactSplit` — office details (company_settings) beside the leads `ContactForm`.
+       */}
       <section id="contact" className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead eyebrow="Get in Touch" headline="Let's Start a Conversation" />
           </Reveal>
-          <div className="mk" data-page="about">
-            <div dangerouslySetInnerHTML={{ __html: CONTACT_BODY_HTML(locale) }} />
-          </div>
+          <Reveal label="about-touch">
+            <BenefitCards items={touchCards(locale)} columns={3} />
+          </Reveal>
+          <Reveal label="about-contact">
+            <ContactSplit
+              className="mt-[48px]"
+              infoTitle="Our Office"
+              rows={officeRows(globals)}
+              formTitle="Send Us a Message"
+              formIntro="Tell us how we can help and we'll be in touch shortly."
+            >
+              <ContactForm source="about-contact" />
+            </ContactSplit>
+          </Reveal>
         </div>
       </section>
     </>
