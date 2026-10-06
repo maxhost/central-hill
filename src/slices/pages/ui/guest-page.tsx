@@ -9,85 +9,48 @@ import {
   IntroSplit,
   PhotoFeatureGrid,
   Reveal,
+  SectionHead,
   SplitCtaPanels,
 } from "@core/ui";
 import { getGlobals } from "@slices/settings/contract";
-import { getGuestPage, type GuestContent } from "../contract";
+import { getGuestPage } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
-import { ScrollReveal } from "./components/scroll-reveal";
 import { TestimonialsRow } from "./components/testimonials-row";
 
 /**
- * Guests page — the approved `mock/guest.html` layout inside the live app shell, now fully
- * DB-driven (docs/specs/guest-page-db-wiring.md). Every section is real JSX now (`core/ui`
- * components, below); only the three centred `sec-head`s (why / services / activities) are
- * still rendered as scoped HTML strings (page-only styles under `.mk`; the shared design system
- * lives in `src/app/mock.css`), with every text value interpolated from the `guest`
- * `page_content` row, resolved for the locale. Nothing on this page is hard-coded copy.
+ * Guests page: the guest-facing landing, built from `mock/guest.html` and now composed entirely
+ * from `core/ui` and slice React components. No `.mk` wrapper, raw HTML strings or page
+ * `<style>` remain. Every text value comes from the `guest` `page_content` row for the locale
+ * (docs/specs/guest-page-db-wiring.md); nothing here is hard-coded copy. The header, footer and
+ * i18n come from the app layout.
  *
- * Composed from other slices at render time, so publishing there refreshes this page:
- *   - featured portfolio cards → buildings (`FeaturedPortfolio`)
- *   - guest reviews → testimonials, `audience='guest'` (`TestimonialsRow`, /admin/testimonials)
- *   - optional FAQ accordion → faq, chosen per page via `faq_group_key`
- *   - dual-CTA contact line (phone / email / WhatsApp) → company_settings (`getGlobals`)
- * Those three React islands render OUTSIDE the `.mk` wrapper so `mock.css`'s bare-element
- * rules don't leak into their Tailwind markup; the static body is split around them.
+ * Sections, top to bottom:
+ * - Hero: `Hero` (compact, centred) with Buildings' listing-hero configuration, over Home's
+ *   `<video>` background (the poster paints first).
+ * - "Welcome to Central Hill": `IntroSplit` (copy split into paragraphs on blank lines, optional
+ *   guarantee line, R2 `MediaImage` or the approved mock photo).
+ * - "Why Book Directly" (warm `alt` band): a centred `SectionHead`, then `BenefitCards` + CTA.
+ * - `#portfolio`: `FeaturedPortfolio` (cards from the buildings slice).
+ * - Services teaser (`alt` band) and what-to-do teaser (plain, ghost CTA): a centred
+ *   `SectionHead`, then `PhotoFeatureGrid` + CTA.
+ * - `#testimonials`: `TestimonialsRow`, `audience='guest'`.
+ * - `#faq`: the shared `FaqSection` island, picked by `faq_group_key` (only when set).
+ * - Closing dual CTA: `SplitCtaPanels`, contact lines from company_settings (`getGlobals`).
+ * The hand-written sections share the mock's shell (`clamp(72px,10vw,150px)` vertical padding,
+ * 84px scroll margin, a 1240px/28px column).
  *
- * The hero is real JSX now — `core/ui`'s `<Hero compact align="center">`, rendered outside
- * (before) `.mk` — not raw `dangerouslySetInnerHTML` markup. It uses exactly the Buildings
- * listing / Real Estate hero configuration (centred copy, 1600px/40px wrap, 26ch h1, 60ch p,
- * `.5/.46/.88` scrim, default eyebrow, `ButtonLink` primary CTA) for cross-page consistency —
- * this page's former `.mk[data-page="guests"] .hero` overrides were the same compact/centred
- * treatment, differing only by a hair (`.46/.36/.8` scrim, the mock's eyebrow/lede type). The
- * background is Home's hero `<video>` element verbatim (autoplay/muted/loop/playsInline, the
- * poster attribute, `absolute inset-0 -z-10 h-full w-full object-cover`), so the poster still
- * paints first and loading is unchanged. Still DB-driven exactly as before (`hero.eyebrow`,
- * `headline`, `subheadline`, `cta` → `localizeUrl`, `video_media_id` → R2 url or the fallback
- * clip).
+ * Composed from other slices at render time, so publishing there refreshes this page: buildings
+ * (portfolio), testimonials, faq and settings (dual-CTA contact line).
  *
- * The "Welcome to Central Hill" intro right under it is real JSX too: `core/ui`'s new
- * `IntroSplit` (headline + lede + paragraphs + optional inline guarantee line beside one cover
- * image — see its docstring for why `TwoColumnShowcase`, the nearest existing component, doesn't
- * fit structurally), ported 1:1 from the old `.welcome`/`.guarantee` CSS, with the same
- * section/wrap shell + single `Reveal` at the call site as the dual CTA below, rendered outside
- * (before) `.mk`. The old raw `<!-- WELCOME -->` block, its `PAGE_STYLE` rules, the
- * `paragraphs()` helper and the `mediaImgTag` string image are gone; the image is now a
- * `MediaImage` (R2 asset) or the lazy fallback `<img>`, same pattern as Real Estate's `#manage`.
+ * Entrance motion is `core/ui`'s `Reveal` throughout (call-site wrappers, one per head and one
+ * per body). The `<noscript>` rule keeps every `[data-reveal]` visible with JS off, as Home does.
+ * Where this page's mock differed from a sibling page using the same component, the user chose
+ * cross-page consistency over mock fidelity; each component's docstring records those choices.
  *
- * "Why Book Directly With Us?" right after it is real JSX too: `core/ui`'s new `BenefitCards`
- * (hairline 4→2→1 grid of icon/title/description cards + centred `ButtonLink` CTA row — see its
- * docstring for why `NumberedFeatureGrid`, `IconFeatureGrid` and `PhotoFeatureGrid` don't fit),
- * ported 1:1 from the old `.grid-3`/`.bcard`/`.ico`/`.cta-row` CSS, with the services teaser's
- * shell (`.alt`-tinted section, 1240px/28px column), its `sec-head` raw (`whySecHead()`) in its
- * own small `.mk[data-page="guests"]` wrapper, and cards + CTA in one `Reveal` outside `.mk`. One
- * deliberate deviation: the original inline `grid-template-columns:repeat(4,1fr)` kept 4 columns
- * at every width (overflowing at 390px); `BenefitCards` uses `.grid-3`'s own 2/1-column
- * breakpoints instead. `bodyTop`, `iconCards`, `ctaRow`, `escAttr` and the `.bcard`/`.ico` rules
- * are gone; the `.mk` wrapper that held `bodyTop` stays, markup-less, carrying `PAGE_STYLE`/
- * `<noscript>`/`ScrollReveal` for the remaining raw sec-heads.
- *
- * The "Make the Most of Your Stay" services teaser is real JSX now: `core/ui`'s new
- * `PhotoFeatureGrid` (see that component's docstring for why it's neither `IconFeatureGrid`
- * nor `StepGallery`, and for the deliberate mock-vs-live-render chrome deviation it ports).
- * Its `sec-head` (eyebrow/headline/intro) stays raw markup — still DB-content, built through
- * the existing `secHead()` helper — in its own small `.mk[data-page="guests"]` wrapper (kept
- * `data-page`-scoped, not bare `.mk`, so it still picks up `<ScrollReveal page="guests">`'s
- * `document.querySelectorAll('.mk[data-page="guests"] .pre-reveal')` sweep and keeps its
- * scroll-fade-in, unlike About's bare-`.mk` precedent for the same split which loses it).
- *
- * The immediately adjacent "The Best of Portugal" what-to-do teaser is real JSX too, ported the
- * same way with the same `PhotoFeatureGrid` configuration (the old `bodyActivitiesTeaser()` HTML
- * string, its `.mk` wrapper and the `.feat-grid`/`.feat` `PAGE_STYLE` rules are gone): its
- * `sec-head` stays raw (`activitiesTeaserSecHead()`) in its own small `.mk[data-page="guests"]`
- * wrapper, grid + CTA in one `Reveal` outside `.mk`. Only two differences from the services call
- * site, both carried over from the original markup: no `.alt` tint on its `<section>`, and the
- * CTA is `variant: "ghost"` (the original `btn-ghost`).
- *
- * The closing guest/owner dual CTA is real JSX too: `core/ui`'s `SplitCtaPanels` (the old
- * `bodyBottom()` HTML string + its trailing `.mk` wrapper are gone), with its section/wrap
- * shell and single `Reveal` at the call site, outside `.mk`, same technique as the services
- * teaser. Its contact lines are still built here from company_settings (`dualCtaContactLines`).
+ * Icons are Iconoir CSS classes from the admin-editable `icon_key`s (`iconClass`). The Iconoir
+ * stylesheet is only loaded through `src/app/mock.css`'s `@import`, which is why the route file
+ * still imports `mock.css` (no `.mk` markup on this page depends on it any more).
  */
 
 // Media fallbacks = the approved mock assets, used 1:1 until a real R2 asset is set in the
@@ -102,6 +65,13 @@ const WELCOME_FALLBACK_ALT = "Bright, design-led Central Hill apartment interior
 // The welcome photo is the narrower of two columns in the 1240px `.wrap` (.95fr of
 // 1.05fr/.95fr with a 56px gap) and goes full-width at ≤880px — see `core/ui`'s `IntroSplit`.
 const WELCOME_SIZES = "(max-width: 880px) 100vw, 540px";
+
+// Shell shared by the hand-written sections: the mock's `section` padding and 84px scroll
+// margin, its 1240px/28px `.wrap` column, and its warm `.alt` band (the same `color-mix`
+// formula Real Estate, `TwoColumnShowcase` and `StepGallery` use).
+const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
+const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
+const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
 
 // Premium photo backgrounds for the Services/What-to-do teaser cards (Pexels stock, by
 // position — placeholder until these cards get their own admin-managed image field).
@@ -122,13 +92,9 @@ const ACTIVITIES_TEASER_BG = [
   "https://images.pexels.com/photos/16382447/pexels-photo-16382447.jpeg?auto=compress&cs=tinysrgb&w=1200", // Day Trips & Hidden Gems
 ];
 
-// Escape admin-authored content before it is interpolated into the static body HTML string.
-const esc = (s: string) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
 /**
- * Iconoir glyph class for a card's `icon_key`. The font is loaded globally by `mock.css`, so
- * a valid key renders directly. Unknown/legacy keys (e.g. the demo seed's `"spark"`) fall
+ * Iconoir glyph class for a card's `icon_key`. The Iconoir stylesheet is loaded by `mock.css`'s
+ * `@import` (the route still imports it for that alone), so a valid key renders directly. Unknown/legacy keys (e.g. the demo seed's `"spark"`) fall
  * back to the decorative `sparks` glyph rather than rendering an empty box.
  */
 const ICON_FALLBACK = "iconoir-sparks";
@@ -152,64 +118,6 @@ function localizeUrl(raw: string, locale: Locale): string {
   } catch {
     return raw;
   }
-}
-
-/** The mock's centred section header (eyebrow + title + lede); optional parts are omitted. */
-const secHead = (opts: { eyebrow?: string; headline: string; intro?: string }): string =>
-  `<div class="sec-head center reveal reveal-io pre-reveal">
-      ${opts.eyebrow ? `<span class="eyebrow">${esc(opts.eyebrow)}</span>` : ""}
-      <h2 class="section-title">${esc(opts.headline)}</h2>
-      ${opts.intro ? `<p class="lede" style="margin:16px auto 0">${esc(opts.intro)}</p>` : ""}
-    </div>`;
-
-const PAGE_STYLE = `
-/* hero, welcome and why-book-directly — now real JSX (core/ui's Hero / IntroSplit /
-   BenefitCards, rendered outside .mk), so no hero, .welcome/.guarantee or .bcard/.ico CSS is
-   left here; only the raw sec-heads' entrance motion below. */
-
-/* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
-   the rest, via <ScrollReveal page="guests">/scroll-reveal.tsx) — same pattern already
-   applied to the About page. The hidden state is baked straight into the
-   server-rendered markup (.pre-reveal, applied via secHead()) so
-   there's no flash of visible-then-hidden; the <noscript> rule keeps content visible with
-   JS off. Scoped to [data-page="guests"] so it never touches the shared, neutralised
-   .reveal rule in mock.css or any other page. */
-.mk[data-page="guests"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
-.mk[data-page="guests"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
-`;
-
-/**
- * Why book directly's `sec-head` only (eyebrow/headline/intro) — the cards + CTA are real JSX now
- * (`core/ui`'s `BenefitCards`, wired at the `GuestPage` call site), the same split as the two
- * teasers below: still raw markup in its own small `.mk[data-page="guests"]` wrapper so it keeps
- * `<ScrollReveal page="guests">`'s scroll fade-in.
- */
-function whySecHead(content: GuestContent): string {
-  const { why } = content;
-  return secHead({ eyebrow: why.eyebrow, headline: why.headline, intro: why.intro });
-}
-
-/**
- * Services teaser's `sec-head` only (eyebrow/headline/intro) — the grid + CTA are real JSX now
- * (`core/ui`'s `PhotoFeatureGrid`, wired at the `GuestPage` call site). Still raw markup, given
- * its own small `.mk[data-page="guests"]` wrapper there — see `GuestPage`'s own doc comment for
- * why it keeps the `data-page` scope (unlike About's bare-`.mk` precedent for the same kind of
- * split) rather than going bare.
- */
-function servicesTeaserSecHead(content: GuestContent): string {
-  const { services_teaser: services } = content;
-  return secHead({ eyebrow: services.eyebrow, headline: services.headline, intro: services.intro });
-}
-
-/**
- * What-to-do teaser's `sec-head` only (eyebrow/headline/intro) — the grid + CTA are real JSX now
- * (`core/ui`'s `PhotoFeatureGrid`, wired at the `GuestPage` call site), exactly the same split as
- * `servicesTeaserSecHead` above: still raw markup in its own small `.mk[data-page="guests"]`
- * wrapper so it keeps `<ScrollReveal page="guests">`'s scroll fade-in.
- */
-function activitiesTeaserSecHead(content: GuestContent): string {
-  const { activities_teaser: activities } = content;
-  return secHead({ eyebrow: activities.eyebrow, headline: activities.headline, intro: activities.intro });
 }
 
 /**
@@ -307,19 +215,13 @@ export async function GuestPage({ locale }: { locale: Locale }) {
         }
       />
       {/*
-       * "Welcome to Central Hill" — real JSX now, `core/ui`'s new `IntroSplit` (see its docstring
-       * for why `TwoColumnShowcase` doesn't fit: one `body` string, floating check badge). Same
-       * shell technique as the dual CTA below: the original plain `<section>` (`.mk section` →
-       * `padding:clamp(72px,10vw,150px) 0; scroll-margin-top:84px`, no tint) + `.wrap`
-       * (1240px/28px) at the exact mock metrics, and the original single
-       * `.welcome.reveal-io.pre-reveal` fade-in → one `Reveal`. Rendered outside `.mk`
-       * (Lesson 1). Still DB-driven: `welcome.copy` is split into paragraphs on blank lines
-       * (the old `paragraphs()` rule), the guarantee line renders only when set, and the image is
-       * the R2 asset via `MediaImage` or the approved mock photo (lazy), like Real Estate's
-       * `#manage`. The component sizes the image to cover its full-height cell.
+       * "Welcome to Central Hill": `core/ui`'s `IntroSplit` (see its docstring for why
+       * `TwoColumnShowcase` doesn't fit) in the plain section shell, one `Reveal`. The guarantee
+       * line renders only when set; the image is the R2 asset via `MediaImage` or the approved
+       * mock photo (lazy), sized by the component to cover its full-height cell.
        */}
-      <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
-        <div className="mx-auto max-w-[1240px] px-[28px]">
+      <section className={SECTION_SHELL}>
+        <div className={SECTION_WRAP}>
           <Reveal label="guests-welcome">
             <IntroSplit
               headline={welcome.headline}
@@ -359,42 +261,30 @@ export async function GuestPage({ locale }: { locale: Locale }) {
         </div>
       </section>
       {/*
-       * Markup-less `.mk[data-page="guests"]` wrapper (same as Real Estate's first one): it only
-       * carries `PAGE_STYLE`, the `<noscript>` un-hide rule and `ScrollReveal`, ahead of the raw
-       * sec-heads below (why / services / activities) that still rely on them.
+       * Every `Reveal` renders hidden on the server and only un-hides via JS, so this keeps all
+       * of them visible with JS off — the same rule as Home's.
        */}
-      <div className="mk" data-page="guests">
-        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-        <noscript>
-          <style
-            dangerouslySetInnerHTML={{
-              // `[data-reveal]` too: the `Reveal`-wrapped welcome, teaser grids and dual CTA
-              // render hidden server-side and only un-hide via JS (same fix as Real Estate).
-              __html: `.mk[data-page="guests"] .pre-reveal,[data-reveal]{opacity:1!important;transform:none!important}`,
-            }}
-          />
-        </noscript>
-        <ScrollReveal page="guests" />
-      </div>
+      <noscript>
+        <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
+      </noscript>
 
       {/*
-       * "Why Book Directly With Us?" — real JSX now, `core/ui`'s new `BenefitCards` (see its
-       * docstring for why `NumberedFeatureGrid`/`IconFeatureGrid`/`PhotoFeatureGrid` don't fit).
-       * Same shell technique as the services teaser below: the original `<section class="alt">`
-       * (`clamp(72px,10vw,150px)` padding, `scroll-mt-[84px]`, the `.alt` 38% tint) + `.wrap`
-       * (1240px/28px) at the exact mock metrics; `sec-head` stays raw (`whySecHead()`) in its own
-       * small `data-page`-scoped `.mk` wrapper so it keeps its scroll-reveal; cards + CTA in one
-       * `Reveal` (the original per-card `.reveal-stagger` fade becomes one fade, as for the
-       * teasers), all outside `.mk` (Lesson 1). Still DB-driven: `why.benefits` (Iconoir via
-       * `iconClass`), `why.cta` → `localizeUrl`, `cta.note` omitted when empty.
+       * "Why Book Directly With Us?": the section shell on the warm `alt` band, a centred
+       * `SectionHead`, then `core/ui`'s `BenefitCards` + CTA (see its docstring for why
+       * `NumberedFeatureGrid`/`IconFeatureGrid`/`PhotoFeatureGrid` don't fit). The head and the
+       * cards each have their own `Reveal`; the original per-card `.reveal-stagger` becomes one
+       * fade. Icons come from `why.benefits` via `iconClass`; an empty `cta.note` is omitted.
        */}
-      <section
-        className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)]"
-      >
-        <div className="mx-auto max-w-[1240px] px-[28px]">
-          <div className="mk" data-page="guests">
-            <div dangerouslySetInnerHTML={{ __html: whySecHead(content) }} />
-          </div>
+      <section className={`${SECTION_SHELL} ${ALT_BAND}`}>
+        <div className={SECTION_WRAP}>
+          <Reveal>
+            <SectionHead
+              align="center"
+              eyebrow={content.why.eyebrow || undefined}
+              headline={content.why.headline}
+              intro={content.why.intro || undefined}
+            />
+          </Reveal>
           <Reveal label="guests-why">
             <BenefitCards
               items={whyItems}
@@ -421,25 +311,22 @@ export async function GuestPage({ locale }: { locale: Locale }) {
       </div>
 
       {/*
-       * "Make the Most of Your Stay" services teaser — real JSX now, `core/ui`'s new
-       * `PhotoFeatureGrid` (see its docstring + `GuestPage`'s top doc comment for the
-       * IconFeatureGrid/StepGallery comparison and the mock-vs-live deviation it ports).
-       * Section/wrap chrome is reproduced here at the exact mock metrics (`max-width:1240px;
-       * padding:0 28px`, `padding:clamp(72px,10vw,150px) 0`, the `.alt` tint) rather than
-       * `core/ui`'s generic `Section`/`Container` (different values — would misalign this
-       * section's edges against its still-raw `.wrap`-based neighbours above/below), same
-       * reasoning `NumberedFeatureGrid`'s About call site documents for the identical choice.
-       * `sec-head` stays raw markup (still DB content) in its own small, `data-page`-scoped
-       * `.mk` wrapper so it keeps its scroll-reveal; the grid+CTA render outside `.mk` entirely
-       * (Lesson 1 — `.mk *{margin:0;padding:0}` would silently zero their Tailwind spacing).
+       * "Make the Most of Your Stay" services teaser: the section shell on the `alt` band, a
+       * centred `SectionHead`, then `core/ui`'s `PhotoFeatureGrid` + CTA (see its docstring for
+       * the `IconFeatureGrid`/`StepGallery` comparison). The head and the grid each have their
+       * own `Reveal`. The shell keeps the mock's metrics rather than `core/ui`'s generic
+       * `Section`/`Container`, so its edges line up with the neighbouring sections.
        */}
-      <section
-        className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)]"
-      >
-        <div className="mx-auto max-w-[1240px] px-[28px]">
-          <div className="mk" data-page="guests">
-            <div dangerouslySetInnerHTML={{ __html: servicesTeaserSecHead(content) }} />
-          </div>
+      <section className={`${SECTION_SHELL} ${ALT_BAND}`}>
+        <div className={SECTION_WRAP}>
+          <Reveal>
+            <SectionHead
+              align="center"
+              eyebrow={content.services_teaser.eyebrow || undefined}
+              headline={content.services_teaser.headline}
+              intro={content.services_teaser.intro || undefined}
+            />
+          </Reveal>
           <Reveal label="guests-services-teaser">
             <PhotoFeatureGrid
               items={servicesTeaserItems}
@@ -454,18 +341,20 @@ export async function GuestPage({ locale }: { locale: Locale }) {
       </section>
 
       {/*
-       * "The Best of Portugal" what-to-do teaser — real JSX now, the same `PhotoFeatureGrid`
-       * configuration as the services teaser above: same section/wrap shell at the mock metrics,
-       * raw `sec-head` in its own `data-page`-scoped `.mk` wrapper, one `Reveal` around grid+CTA,
-       * all outside `.mk` (Lesson 1). Two differences, both carried over from the original
-       * markup: the `<section>` has no `.alt` tint (the original was a plain `<section>`, so the
-       * page's alternating bands are kept), and the CTA is `variant: "ghost"` (`btn-ghost`).
+       * "The Best of Portugal" what-to-do teaser: the services teaser's configuration, with two
+       * differences carried over from the original markup: no `alt` tint (the page's
+       * alternating bands are kept) and a ghost CTA (`btn-ghost`).
        */}
-      <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
-        <div className="mx-auto max-w-[1240px] px-[28px]">
-          <div className="mk" data-page="guests">
-            <div dangerouslySetInnerHTML={{ __html: activitiesTeaserSecHead(content) }} />
-          </div>
+      <section className={SECTION_SHELL}>
+        <div className={SECTION_WRAP}>
+          <Reveal>
+            <SectionHead
+              align="center"
+              eyebrow={content.activities_teaser.eyebrow || undefined}
+              headline={content.activities_teaser.headline}
+              intro={content.activities_teaser.intro || undefined}
+            />
+          </Reveal>
           <Reveal label="guests-activities-teaser">
             <PhotoFeatureGrid
               items={activitiesTeaserItems}
@@ -496,17 +385,13 @@ export async function GuestPage({ locale }: { locale: Locale }) {
       ) : null}
 
       {/*
-       * Closing guest/owner dual CTA — real JSX now, `core/ui`'s `SplitCtaPanels` (see its
-       * docstring for why it's neither `DualCtaPanels` nor `FeaturePanel`). Same shell technique
-       * as the services teaser above: the original `<section>` (`.mk section` →
-       * `padding:clamp(72px,10vw,150px) 0; scroll-margin-top:84px`, no tint) and `.wrap`
-       * (1240px/28px) reproduced at their exact mock metrics, and the original single
-       * `.dual.reveal-io.pre-reveal` scroll fade-in → one `Reveal` around the grid. Rendered
-       * outside `.mk` entirely (Lesson 1). React escapes the admin copy; CTA urls still go
-       * through `localizeUrl`; an empty contact line is omitted by the component.
+       * Closing guest/owner dual CTA: `core/ui`'s `SplitCtaPanels` (see its docstring for why
+       * it's neither `DualCtaPanels` nor `FeaturePanel`) in the plain section shell, one `Reveal`.
+       * React escapes the admin copy; CTA urls go through `localizeUrl`; an empty contact line
+       * is omitted by the component.
        */}
-      <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
-        <div className="mx-auto max-w-[1240px] px-[28px]">
+      <section className={SECTION_SHELL}>
+        <div className={SECTION_WRAP}>
           <Reveal label="guests-dual-cta">
             <SplitCtaPanels
               panels={[

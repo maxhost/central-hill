@@ -383,17 +383,20 @@ the header and the footer never depended on `mock.css`: screenshots before and a
 pixel-identical, with the FAQ open and closed. The `<noscript>` rule is now Home's plain
 `[data-reveal]` un-hide.
 
-The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
-`docs/specs/guest-page-db-wiring.md`): every section is real JSX now; only the three raw
-`sec-head` helpers (`whySecHead`, `servicesTeaserSecHead`, `activitiesTeaserSecHead`, all via
-`secHead()`) still interpolate the resolved `guest` row into locked markup, escaped through `esc`
-(the old `bodyTop`, `bodyBottom` and `bodyActivitiesTeaser` strings are gone — see below).
+The **Guests** page (`guest-page.tsx`) is **DB-driven** (drizzle 0012 +
+`docs/specs/guest-page-db-wiring.md`) and, like Real Estate, now **fully componentised**: no
+`.mk` wrapper, `dangerouslySetInnerHTML`, `PAGE_STYLE`, `ScrollReveal`, `esc` or raw-HTML
+string builders remain (see "Final
+cleanup" at the end of this entry). The paragraphs below record each section's port in order;
+where they mention a raw sec-head, `secHead()`, `esc`, `PAGE_STYLE`, `ScrollReveal` or the `.mk`
+wrapper, those were removed later. The route still imports `mock.css`, but only for its Iconoir
+`@import` (see "Final cleanup").
 Its nine sections split as follows — hero, welcome, why, services teaser and activities teaser
 come from `page_content`; the featured portfolio comes from **buildings**, the reviews from
 **testimonials** (`audience='guest'`, managed in `/admin/testimonials` — the page schema owns no
 testimonials block), the optional FAQ from **faq**, and the dual-CTA contact line from
-**company_settings**. `icon_key` renders directly as an Iconoir glyph (`iconoir-<key>`; the font
-is loaded globally by `mock.css`), with `iconoir-sparks` as the fallback for unknown keys.
+**company_settings**. `icon_key` renders directly as an Iconoir glyph (`iconoir-<key>`; the
+stylesheet is loaded by `mock.css`'s `@import`), with `iconoir-sparks` as the fallback for unknown keys.
 `localizeUrl` rewrites the stored absolute `/en/…` CTA links to the active locale, because
 `cta.url` is `z.url()` and relative paths cannot be stored.
 
@@ -503,6 +506,26 @@ first, `padding-top:0`) and `mock/buildings.html` (one owner panel, single colum
 different `panels` array / section padding — not wired there. The page's `<noscript>` rule now
 also un-hides `[data-reveal]` (same fix as Real Estate), which the services teaser's `Reveal`
 was already missing — with JS off both sections previously stayed at `opacity:0`.
+
+**Final cleanup (section heads).** The three remaining raw sec-heads (why book directly, the
+services teaser and the what-to-do teaser, all centred eyebrow + title + lede built through
+`secHead()`) are now `core/ui`'s `SectionHead` with `align="center"` (`eyebrow`, `headline`,
+`intro`; an empty eyebrow or intro is omitted, as before), each in its own call-site `Reveal`, as
+Real Estate does. The data is unchanged (`why`/`services_teaser`/`activities_teaser`
+`eyebrow`/`headline`/`intro`), and each section keeps its shell, band and order (now shared as
+`SECTION_SHELL`/`SECTION_WRAP`/`ALT_BAND`, the same classes as before). Real Estate's 14px shift
+does not apply here, because every Guests head has an eyebrow. The one measured delta: the
+head's line box is now the body's `1.5` leading rather than the `.mk` wrapper's inherited `1.6`,
+so the inline eyebrow's line is 24px instead of 25.6px and each head is 1-2px shorter (the page
+is 5px shorter at 1440/980/390). Type, colour, widths and centring are numerically identical.
+With that, `secHead`, the three sec-head helpers, `esc`, `PAGE_STYLE`, every `.mk` wrapper and
+the `ScrollReveal` mount are gone, and the `<noscript>` rule is Home's plain `[data-reveal]`
+un-hide. **`import "../../mock.css"` stays in `src/app/[locale]/guests/page.tsx`**: nothing on
+the page uses `.mk` any more, but the Iconoir stylesheet (welcome guarantee icon, `BenefitCards`
+and both teasers' `iconClass` icons, 17 glyphs) is loaded only by `mock.css`'s `@import`. There
+is no other loader in the repo (fully-ported pages such as Home and Real Estate inline Iconoir
+paths through `components/icon.tsx`, which can't cover arbitrary admin-chosen `icon_key`s).
+Moving that load elsewhere is a separate decision.
 
 **Deploy order matters for this page:** migration 0012 must run before the code ships, otherwise
 prerendering `/[locale]/guests` throws on the missing `portfolio` / `dual_cta` blocks. A stale
