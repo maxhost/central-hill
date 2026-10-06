@@ -10,6 +10,7 @@ import {
   Reveal,
   StatBento,
   StatTiles,
+  TwoColumnShowcase,
 } from "@core/ui";
 import { getRealEstatePage, type RealEstateContent } from "../contract";
 import {
@@ -71,7 +72,11 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * "Deal Structures" (`#deal-structures`, SECTION 5 — the partnership-model cards) is likewise
  * real JSX — `core/ui`'s `ChecklistCards` in `Reveal`, plus its optional disclaimer note as a
  * plain JSX `<p>` — with its centred sec-head kept raw in its own `.mk[data-page="real-estate"]`
- * wrapper. `bodyTopA` now ends after SECTION 4 (asset types).
+ * wrapper. `bodyTopA` now ends after SECTION 3 (`#capabilities`).
+ *
+ * "Asset Types" (`#manage`, SECTION 4) is likewise real JSX — `core/ui`'s existing
+ * `TwoColumnShowcase` with Owners' exact `#services` configuration (consistency over this page's
+ * mock), in `Reveal`, rendered outside `.mk` right after `bodyTopA`.
  *
  * "Ready to Explore a Partnership?" (`#deal-enquiry`, SECTION 10 — the former `BODY_BOTTOM`) is
  * likewise real JSX — `DealEnquirySection` (`./components/deal-enquiry-section.tsx`), built on
@@ -98,6 +103,9 @@ const CAP_FALLBACK_ALT = "Central Hill's management team reviewing portfolio per
 // The showcase image sits in one of two equal columns inside the 1240px `.wrap`
 // (28px padding, 64px gap) and goes full-width under 980px — see `.asset-showcase`.
 const SHOWCASE_SIZES = "(max-width: 980px) 100vw, 560px";
+// `#manage`'s image: one of `TwoColumnShowcase`'s two `lg:` (1024px) columns — the same value
+// Owners (`TWO_COL_SHOWCASE_SIZES`) and Home's `guests-section.tsx` use for the same component.
+const TWO_COL_SHOWCASE_SIZES = "(max-width: 1024px) 100vw, 560px";
 
 // Escape admin-authored content before it is interpolated into the static body HTML string.
 const esc = (s: string) =>
@@ -120,15 +128,44 @@ const CAPABILITY_ICONS = [
 
 // Positional per-asset-type icons (residential / hotels / apart-hotels / corporate /
 // development / portfolio), paired by index with the fixed six-item asset showcase list.
-// Only the text is data-driven.
-const ASSET_ICONS = [
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16"/><path d="M15 9h2a2 2 0 0 1 2 2v10"/><path d="M8 7h2M8 11h2M8 15h2"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l5-3v16"/><path d="M10 21V11l5 2v8"/><path d="M15 21v-6l4 2v4"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M3 20v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1"/><path d="M16 5.5a3 3 0 0 1 0 5.5"/><path d="M19 20v-1a5 5 0 0 0-3-4.5"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L15 6l3 3L8 19l-4 1z"/><path d="M13.5 7.5l3 3"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>`,
+// Only the text is data-driven. JSX (not SVG strings) since `#manage` is real JSX now; the
+// icon box is Owners' exact `TwoColumnShowcase` bullet-icon config (26px, `mt-0.5`, accent-deep).
+const ASSET_ICON_CLASS = "mt-0.5 h-[26px] w-[26px] flex-none text-accent-deep";
+const ASSET_ICON_PATHS: ReadonlyArray<readonly string[]> = [
+  ["M3 10.5L12 3l9 7.5", "M5 9.5V21h14V9.5", "M10 21v-6h4v6"],
+  [
+    "M3 21h18",
+    "M5 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16",
+    "M15 9h2a2 2 0 0 1 2 2v10",
+    "M8 7h2M8 11h2M8 15h2",
+  ],
+  ["M3 21h18", "M5 21V8l5-3v16", "M10 21V11l5 2v8", "M15 21v-6l4 2v4"],
+  [
+    "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
+    "M3 20v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1",
+    "M16 5.5a3 3 0 0 1 0 5.5",
+    "M19 20v-1a5 5 0 0 0-3-4.5",
+  ],
+  ["M4 20l1-4L15 6l3 3L8 19l-4 1z", "M13.5 7.5l3 3"],
+  ["M4 20V10M10 20V4M16 20v-7M22 20H2"],
 ];
+const ASSET_ICONS = ASSET_ICON_PATHS.map((paths, i) => (
+  <svg
+    key={i}
+    className={ASSET_ICON_CLASS}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.5}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
+    {paths.map((d) => (
+      <path key={d} d={d} />
+    ))}
+  </svg>
+));
 
 /** Render just the "Why Portugal" (`#market`) section head — raw mock markup (title + optional
  * lede), still `.mk`-scoped since it reuses mock.css's generic `.sec-head`/`.section-title`/
@@ -301,8 +338,8 @@ const PAGE_STYLE = `
 /* "How it works" reuses the Editorial-Split shell; the step number is the list marker. */
 .mk .process-split .pitch-list .snum{flex:0 0 auto;width:44px;font-family:var(--serif);font-size:30px;line-height:1;color:var(--accent);opacity:.9;margin-top:-2px}
 
-/* asset types — Image Showcase (4:5 image + 4 benefit highlights + CTA badge),
-   mirroring the home guests-pitch / owners services layout. */
+/* Image Showcase (4:5 image + benefit highlights + CTA badge) — now used only by the mirrored
+   #capabilities below; asset types (#manage) is real JSX (core/ui's TwoColumnShowcase, outside .mk). */
 .mk .asset-showcase .wrap{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
 .mk .asset-showcase .sh-text h2{font-size:clamp(28px,3.4vw,44px);line-height:1.12;margin:0;color:var(--ink)}
 .mk .asset-showcase .sh-sub{margin-top:18px;font-size:18px;line-height:1.6;color:var(--ink-soft)}
@@ -390,21 +427,14 @@ const PAGE_STYLE = `
 // body is split here around that island — and, within the first chunk, around the
 // `#deal-structures` cards (real JSX, `core/ui`'s `ChecklistCards`), the `#market` section's
 // bento (now real JSX, `core/ui`'s `StatBento`) and the `#track-record` tiles (real JSX,
-// `core/ui`'s `StatTiles`): `bodyTopA` runs SECTIONS 3–4 (capabilities, asset types — partners,
-// SECTION 2, is now real JSX before it), the
-// `#deal-structures`, `#market` and `#track-record` sections render as real JSX in between, and
-// `bodyTopB` picks back up with SECTION 8 (process).
+// `core/ui`'s `StatTiles`): `bodyTopA` is now only SECTION 3 (`#capabilities`) — partners
+// (SECTION 2) is real JSX before it and `#manage` (SECTION 4, `TwoColumnShowcase`) after it —
+// the `#deal-structures`, `#market` and `#track-record` sections render as real JSX in between,
+// and `bodyTopB` picks back up with SECTION 8 (process).
 function bodyTopA(content: RealEstateContent, media: Record<string, MediaImageData>): string {
-  const { asset_management: assets } = content;
   // `capabilities` is newer than the original seed — fall back to the approved default copy
   // so a `real_estate` row authored before this section existed still renders correctly.
   const capabilities = content.capabilities ?? defaultCapabilities;
-  const assetImgTag = mediaImgTag({
-    data: media[assets.image_media_id ?? ""],
-    fallbackSrc: ASSET_FALLBACK_IMG,
-    fallbackAlt: ASSET_FALLBACK_ALT,
-    sizes: SHOWCASE_SIZES,
-  });
   const capImgTag = mediaImgTag({
     data: media[capabilities.image_media_id ?? ""],
     fallbackSrc: CAP_FALLBACK_IMG,
@@ -420,14 +450,6 @@ ${showcase({
   data: capabilities,
   icons: CAPABILITY_ICONS,
   imgTag: capImgTag,
-})}
-<!-- SECTION 4 — ASSET TYPES (Image Showcase, DB-driven) -->
-${showcase({
-  id: "manage",
-  classes: "asset-showcase",
-  data: assets,
-  icons: ASSET_ICONS,
-  imgTag: assetImgTag,
 })}
 `;
 }
@@ -460,6 +482,8 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
     title: b.title,
     description: b.description,
   }));
+  const assets = content.asset_management;
+  const assetMedia = media[assets.image_media_id ?? ""];
 
   return (
     <>
@@ -543,6 +567,55 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         </noscript>
         <ScrollReveal page="real-estate" />
         <div dangerouslySetInnerHTML={{ __html: bodyTopA(content, media) }} />
+      </div>
+      {/*
+       * "Asset Types" (`#manage`, SECTION 4) — real JSX, rendered outside `.mk`: `core/ui`'s
+       * existing `TwoColumnShowcase` with Owners' exact `#services` configuration (same role,
+       * and the old `.asset-showcase` CSS was byte-identical to Owners' `.owner-showcase`) — the
+       * user's call: consistency with Owners over 1:1 fidelity to this page's mock. Wrapped in
+       * `Reveal` at the call site, same as Owners. Still DB-driven (`asset_management`); the CTA
+       * keeps the original hard-wired `#deal-enquiry` anchor, renders only with a label, and the
+       * floating badge is the CTA note (shown only when there is one), exactly as before. The
+       * wrapper keeps the `id` the header's "What We Manage" link targets, with this page's own
+       * 84px scroll offset (`.mk section`'s `scroll-margin-top`).
+       */}
+      <div id="manage" className="scroll-mt-[84px]">
+        <Reveal label="real-estate-manage">
+          <TwoColumnShowcase
+            headline={assets.headline}
+            body={assets.subheadline || undefined}
+            bullets={assets.benefits.map((b, i) => ({
+              icon: ASSET_ICONS[i],
+              title: b.title,
+              description: b.description,
+            }))}
+            cta={
+              assets.cta.label
+                ? { href: "#deal-enquiry", label: `${assets.cta.label} →`, note: assets.cta.note }
+                : undefined
+            }
+            badge={assets.cta.note || undefined}
+            imagePosition="right"
+            image={
+              assetMedia?.url && assetMedia.width > 0 && assetMedia.height > 0 ? (
+                <MediaImage
+                  data={{ ...assetMedia, alt: assetMedia.alt || ASSET_FALLBACK_ALT }}
+                  className="aspect-[4/5] w-full rounded-sm object-cover"
+                  sizes={TWO_COL_SHOWCASE_SIZES}
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+                <img
+                  src={assetMedia?.url || ASSET_FALLBACK_IMG}
+                  alt={assetMedia?.alt || ASSET_FALLBACK_ALT}
+                  className="aspect-[4/5] w-full rounded-sm object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              )
+            }
+          />
+        </Reveal>
       </div>
       {/*
        * "Deal Structures" (`#deal-structures`, SECTION 5 — partnership models) — same shell

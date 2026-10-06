@@ -316,6 +316,19 @@ live Editorial Split was already the shipped design. The `.partner-pitch` CSS st
 `PAGE_STYLE` because "How it works" (`#process`) still uses it; `benefitList`/`esc` stay for the
 showcases and other raw sections. `bodyTopA` now starts at SECTION 3 (capabilities).
 
+"Asset Types" (`#manage`, SECTION 4) is real JSX too: `core/ui`'s existing `TwoColumnShowcase`
+with **exactly** Owners' `#services` configuration (26px `mt-0.5` accent-deep bullet icons, 4:5
+`rounded-sm` image, `(max-width: 1024px) 100vw, 560px` sizes, `Reveal` at the call site, CTA
+label + ` →`), rendered outside `.mk` right after `bodyTopA` (which now ends after
+`#capabilities`). Same role and the old `.asset-showcase` CSS was byte-identical to Owners'
+`.owner-showcase`, so no new component; consistency with Owners was chosen over 1:1 mock
+fidelity (visible deltas: 36px/400 h2 instead of `clamp(28px,3.4vw,44px)`/500, 16px Inter
+bullet titles instead of 17px Fraunces, `ButtonLink` 44px button, 1280px/40px container instead
+of 1240px/28px, kernel `Section` rhythm, Tailwind `shadow-xl` badge hidden under 640px, 2-col
+→ stacked at 1024px instead of 980px). Still DB-driven (`asset_management`); the CTA keeps the
+hard-wired `#deal-enquiry` anchor, the badge is the CTA note. The `.asset-showcase` CSS stays in
+`PAGE_STYLE` only for `#capabilities` until it is ported the same way.
+
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
 `docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyActivitiesTeaser` (the old `bodyBottom`
 is gone — see the dual CTA below) interpolate the resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`.
