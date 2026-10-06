@@ -6,45 +6,6 @@ definitivo y se mueve a `docs/decisions/README.md`.
 
 ---
 
-## Services: el detalle no lee la base de datos (listado desde la DB aparcado)
-
-**Estado:** **parqueado** el 2026-10-05 (pendiente de decisión del usuario)
-
-### Contexto
-- **El backoffice escribe solo en la DB** (`src/slices/services/admin/actions.ts`): fila `service`,
-  traducciones vía `core/i18n` (nombre, extracto, cuerpo, duración, CTA, SEO), galería en
-  `service_media`, categorías con icono. Publicar invalida el tag `service-list`. Los 9 servicios
-  actuales vienen de `scripts/seed-services.ts`, por esa misma vía. El sitemap ya emite slugs de la DB.
-- **El detalle `/[locale]/services/[slug]` no lee la DB**: usa el catálogo estático
-  `src/slices/services/ui/service-detail-content.ts` (7 servicios, solo inglés). Los slugs no
-  coinciden con la DB: solo `chef-at-home` y `luggage-storage` existen en ambos. Lo que se edita en
-  el admin nunca llega al detalle, y el sitemap anuncia URLs que dan 404.
-- **Contenido del detalle sin sitio en la DB:** destacados, itinerario, menús/opciones, tabla de
-  tarifas, extras con precio, partners con enlace, notas/condiciones, pie de foto de la galería y el
-  sufijo del precio ("/ person"). El README del slice ya propone ampliar el esquema (migración
-  aditiva: tablas nuevas o columna JSON) y cambiar `getServiceContent`/`listServiceSlugs`.
-
-### Trabajo hecho y aparcado
-El listado `/[locale]/services` reescrito con componentes y leyendo la DB está guardado en
-`git stash` como **"parked: services listing from DB (see docs/parqueado.md)"** (`git stash list`;
-se recupera con `git stash apply` sobre ese stash). Incluye:
-- `Hero` con la configuración del listado de Buildings;
-- `SectionHead` + una `ServiceCard` solo para Services (etiqueta = categoría, icono = icono de la
-  categoría), alimentada por `listServices`;
-- `IconFeatureGrid` y `FeatureCtaBand` (configuración de Owners `#start`), con los textos de
-  `services.*` y el contacto de `getGlobals`;
-- metadata traducida.
-No se aplicó porque 7 de las 9 tarjetas llevarían a un 404 hasta que el detalle lea la DB.
-
-### Cómo se retoma
-Elegir entre:
-- **A.** Migración completa: esquema + admin + detalle desde la DB.
-- **B.** Paso intermedio: el detalle lee de la DB lo que ya existe (nombre, cuerpo, galería, precio,
-  duración, CTA) y muestra los bloques sin sitio en la DB solo si hay contenido estático para ese slug.
-Después, aplicar el stash del listado.
-
----
-
 ## Título del `StatBand` (banda oscura) fuera del `SectionHead`
 
 **Estado:** **parqueado** el 2026-10-05 (pendiente de decisión del usuario)
