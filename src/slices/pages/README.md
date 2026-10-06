@@ -190,8 +190,8 @@ rest of the page (stats grid, `organised`, `certifications`, `community`, `conta
 unaffected — out of scope for this change.
 
 **Real Estate** (`real-estate-page.tsx`) started as the raw-markup `.mk` embed; it is now almost
-entirely real JSX — only "How it works" (`#process`, `bodyTopB`) and the `#deal-structures`/
-`#market`/`#track-record` sec-heads are still raw (see below). Its
+entirely real JSX — only the `#deal-structures`/`#market`/`#track-record` sec-heads are still
+raw (see below). Its
 `market` ("Portugal: One of Europe's Strongest Hospitality Markets", `#market`) section is real
 JSX now: `core/ui`'s new `StatBento` (an asymmetric 2-row bento — a tall feature cell with a
 title, an embedded 3-up stat strip, and supporting paragraphs, spanning two rows beside a plain
@@ -210,8 +210,8 @@ query still reaches it and the original fade/slide-in on scroll is preserved exa
 About's `#values`. Wrapped in `core/ui`'s `Reveal`; the original's per-cell stagger
 (`.reveal-stagger`) isn't reproduced, same accepted trade-off as About's `NumberedFeatureGrid`
 extraction. `bodyTop` is now split into `bodyTopA` (sections 1–5, ending after deal structures)
-and `bodyTopB` (now section 8 only, process) around the new JSX in between — same
-split-string pattern as About's `BODY_TOP_A`/`BODY_TOP_B`.
+and `bodyTopB` (section 8, process) around the new JSX in between — same split-string pattern
+as About's `BODY_TOP_A`/`BODY_TOP_B` (both chunks are gone now; see below).
 
 Its `track_record` ("Performance You Can Measure", `#track-record`, SECTION 7) section is real JSX
 too: `core/ui`'s new `StatTiles` (hairline grid — `gap-px` over `bg-line`, `border-line` frame —
@@ -314,9 +314,26 @@ Cross-page consistency was chosen over this page's own styling: `EditorialSplit`
 (the column edge sits 8px left of the neighbouring raw sections at 1440), the benefit `<h3>`s
 are sans (Inter) instead of `.mk`'s serif, the buttons are `ButtonLink` (46px tall, 6px radius)
 instead of the mock's `.btn` (52px, 3px) (the `#partners` anchor keeps this page's 84px offset). `mock/real-estate.html` still shows this slot as an older 4-up partner-type grid — the
-live Editorial Split was already the shipped design. The `.partner-pitch` CSS stays in
-`PAGE_STYLE` because "How it works" (`#process`) still uses it; `esc` stays for the remaining raw
-sections.
+live Editorial Split was already the shipped design. (The `.partner-pitch` CSS was later
+removed with the `#process` port below.)
+
+Its `process` ("How it works" / "A Structured Path from First Conversation to Full Performance",
+`#process`, SECTION 8) section is real JSX too, ported exactly like `#partners`: `core/ui`'s
+`EditorialSplit` in `<div id="process" className="scroll-mt-[84px]">`, `headline`/`body`
+(subheadline)/`items`, primary CTA label + ` →` → `#deal-enquiry`; no secondary CTA and no note
+(the `process` schema has neither). The zero-padded step numbers (01, 02, …; positional, derived
+from order) go through `items[].icon` as a caller-built `<span aria-hidden>` with
+`STEP_NUMBER_CLASS` (`-mt-0.5 w-11 flex-none font-serif text-3xl leading-none text-accent
+opacity-90` — the old `.snum` in theme tokens, computed-identical: 44px box, Fraunces 30px,
+accent, .9 opacity). Rendered outside `.mk` after `#track-record` and before the FAQ; the rendered
+class tree matches `#partners` minus the ghost button and note. Still DB-driven (`content.process
+?? defaultProcess`). Same accepted deltas as `#partners`: Container width/padding instead of the
+1240px/28px `.wrap`, sans step `<h3>`s instead of serif, `ButtonLink` (44px, 6px radius) instead
+of `.btn` (52px, 3px), and the stacked (≤980px) column gap is 64px instead of 36px. `bodyTopB`,
+`processSection` and the `.partner-pitch`/`.process-split`/`.snum` CSS are gone, as are the
+dead `.steps`/`.step` and `.faq` rules (no markup on this page used them; the FAQ is the
+Tailwind `FaqSection` island outside `.mk`) and the now-empty `.mk` wrapper that held
+`bodyTopB`. `esc` stays for the three raw sec-heads.
 
 "Asset Types" (`#manage`, SECTION 4) is real JSX too: `core/ui`'s existing `TwoColumnShowcase`
 with **exactly** Owners' `#services` configuration (26px `mt-0.5` accent-deep bullet icons, 4:5
@@ -344,7 +361,7 @@ to the right; plus the same deltas listed for `#manage`. This was the last raw s
 import and all `.asset-showcase`/`.sh-*`/`.reverse`/`.cap-showcase` CSS (incl. their 980px/680px
 media-query entries) are gone. The first `.mk[data-page="real-estate"]` wrapper stays, now
 markup-less, carrying `PAGE_STYLE`, the `<noscript>` un-hide rule and `ScrollReveal` for the raw
-sec-heads and `#process` further down.
+sec-heads further down.
 
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
 `docs/specs/guest-page-db-wiring.md`): `bodyTop` (plus the two teasers' raw `sec-head` helpers;

@@ -29,14 +29,10 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * shell. The mock's body markup is rendered verbatim; its page styles are scoped under `.mk`
  * (see `src/app/mock.css` for the shared design system) so nothing leaks to Home/admin.
  * Every section is wired to the `real_estate` `page_content` row (text/images/CTA labels come
- * from the DB, resolved for the locale), and all of them except "How it works" (`#process`) and
- * the three sec-heads noted below are now real JSX outside `.mk`. The real
+ * from the DB, resolved for the locale), and all of them except the three sec-heads noted below
+ * are now real JSX outside `.mk`. The real
  * header/footer + i18n come from the app layout. The Iconoir CDN stylesheet (used by the
  * mock's `<i class="iconoir-… ico">` glyphs) is imported inside this page's scoped `<style>`.
- *
- * The "How it works" section ("A Structured Path…") still uses the raw Editorial-Split CSS the
- * partners section used to have (`partner-pitch`), with the step numbers as the hairline-list
- * markers.
  *
  * The hero (`#top`, SECTION 1) is now real JSX — `core/ui`'s `<Hero compact align="center">`,
  * rendered outside (before) `.mk` — not raw `dangerouslySetInnerHTML` markup. Still DB-driven
@@ -55,6 +51,15 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * labels/note); the positional icons are `<Icon>` keys styled like Owners' `why` icons. Cross-page
  * consistency was chosen over this page's 1240px/28px `.wrap`: it takes `EditorialSplit`'s own
  * Section/Container spacing.
+ *
+ * "How it works" (`#process`, SECTION 8 — "A Structured Path…") is real JSX too, ported the
+ * same way: `core/ui`'s `EditorialSplit` with exactly `#partners`' configuration (wrapping div
+ * with the `id` + 84px scroll margin, headline/body/items, `→`-suffixed primary CTA →
+ * `#deal-enquiry`), minus the secondary CTA and note, which `process` doesn't have. The
+ * zero-padded step numbers (01, 02, …; positional, derived from order) go through the items'
+ * `icon` slot as a caller-built serif accent `<span>` (`STEP_NUMBER_CLASS`, the old `.snum` in
+ * theme tokens). Still DB-driven (`content.process ?? defaultProcess`). It replaced the raw
+ * `bodyTopB`/`processSection` chunk and the `.partner-pitch`/`.process-split`/`.snum` CSS.
  *
  * The "Why Portugal" section (`#market`, `marketSection`'s former home) is now real JSX —
  * `core/ui`'s `StatBento`, wrapped in `Reveal` — not raw `dangerouslySetInnerHTML` markup. Its
@@ -117,6 +122,12 @@ const esc = (s: string) =>
 // *text* is data-driven; the glyphs never change. Rendered through the slice's `<Icon>`
 // registry (`./components/icon.tsx`), exactly like Owners' `WHY_ICON_KEYS`.
 const PARTNER_ICON_KEYS = ["landmark", "trowel", "buildings", "send"] as const;
+
+// `#process`'s step-number marker, passed through `EditorialSplit`'s `items[].icon` slot in
+// place of an icon: the old `.mk .process-split .pitch-list .snum` (`flex:0 0 auto; width:44px;
+// font-family:var(--serif); font-size:30px; line-height:1; color:var(--accent); opacity:.9;
+// margin-top:-2px`) in theme tokens only.
+const STEP_NUMBER_CLASS = "-mt-0.5 w-11 flex-none font-serif text-3xl leading-none text-accent opacity-90";
 
 // Bullet-icon box for both `TwoColumnShowcase` sections (`#capabilities`, `#manage`) — Owners'
 // exact `TwoColumnShowcase` bullet-icon config (26px, `mt-0.5`, accent-deep). The glyphs are
@@ -222,40 +233,6 @@ function trackRecordSecHead(t: RealEstateContent["track_record"]): string {
 `;
 }
 
-/** Render the "How it works" onboarding steps (SECTION 8) from the DB-driven `process`
- * content. Reuses the partners Editorial-Split shell (`partner-pitch process-split`); each
- * step's number (01, 02, …) is positional — derived from order, not stored — so only the
- * title/description are data-driven. The single accent CTA anchors to the enquiry form. All
- * values are admin-authored and escaped. */
-function processSection(p: RealEstateContent["process"]): string {
-  const steps = p.steps
-    .map(
-      (s, i) => `
-      <li>
-        <span class="snum">${String(i + 1).padStart(2, "0")}</span>
-        <div><h3>${esc(s.title)}</h3><p>${esc(s.description)}</p></div>
-      </li>`,
-    )
-    .join("");
-
-  return `
-<!-- SECTION 8 — HOW IT WORKS (Editorial Split, mirrors "Built for Institutional Partners", DB-driven) -->
-<section id="process" class="partner-pitch process-split">
-  <div class="wrap">
-    <div class="pitch-text reveal reveal-io pre-reveal">
-      <h2 class="section-title">${esc(p.headline)}</h2>
-      ${p.subheadline ? `<p class="pitch-sub">${esc(p.subheadline)}</p>` : ""}
-      <div class="pitch-cta">
-        <a class="btn btn-accent" href="#deal-enquiry">${esc(p.cta.label)} →</a>
-      </div>
-    </div>
-    <ul class="pitch-list reveal reveal-io pre-reveal">${steps}
-    </ul>
-  </div>
-</section>
-`;
-}
-
 const PAGE_STYLE = `
 @import url("https://cdn.jsdelivr.net/npm/iconoir/css/iconoir.css");
 
@@ -264,21 +241,8 @@ const PAGE_STYLE = `
 
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
 
-/* Editorial Split shell (sticky title + CTAs beside a hairline list), now used only by
-   "How it works" (#process, .partner-pitch.process-split). The partners section itself is
-   real JSX (core/ui's EditorialSplit, rendered outside .mk) and no longer uses these rules. */
-.mk .partner-pitch .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:start}
-.mk .partner-pitch .pitch-text{position:sticky;top:120px}
-.mk .partner-pitch .pitch-sub{margin-top:18px;font-size:18px;line-height:1.6;color:var(--ink-soft)}
-.mk .partner-pitch .pitch-cta{margin-top:28px;display:flex;flex-wrap:wrap;gap:14px}
-.mk .partner-pitch .pitch-note{margin-top:14px;font-size:14px;color:var(--ink-soft)}
-.mk .partner-pitch .pitch-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
-.mk .partner-pitch .pitch-list li{display:flex;gap:20px;padding:24px 0;border-bottom:1px solid var(--line)}
-.mk .partner-pitch .pitch-list .ic{width:28px;height:28px;flex:0 0 auto;margin-top:2px;color:var(--accent-deep)}
-.mk .partner-pitch .pitch-list h3{font-size:19px;margin:0 0 6px}
-.mk .partner-pitch .pitch-list p{font-size:15px;line-height:1.6;color:var(--ink-soft);margin:0}
-/* "How it works" reuses the Editorial-Split shell; the step number is the list marker. */
-.mk .process-split .pitch-list .snum{flex:0 0 auto;width:44px;font-family:var(--serif);font-size:30px;line-height:1;color:var(--accent);opacity:.9;margin-top:-2px}
+/* Editorial Split — "Built for Institutional Partners" (#partners) and "How it works"
+   (#process) are both real JSX now (core/ui's EditorialSplit, outside .mk); no CSS left here. */
 
 /* Image Showcases — "Institutional-Grade Management" (#capabilities) and asset types (#manage)
    are both real JSX now (core/ui's TwoColumnShowcase, outside .mk); no showcase CSS left here. */
@@ -295,34 +259,10 @@ const PAGE_STYLE = `
 /* track-record stat tiles — now real JSX (core/ui's StatTiles, rendered outside .mk); only
    its .sec-head is still raw mock markup, styled by mock.css's generic rules. */
 
-/* numbered process steps */
-.mk .steps{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
-.mk .step{background:var(--surface);padding:36px 28px}
-.mk .step .snum{font-family:var(--serif);font-size:46px;line-height:1;color:var(--accent);opacity:.85;margin-bottom:16px}
-.mk .step h3{font-size:19px;margin-bottom:9px}
-.mk .step p{font-size:14px;color:var(--ink-soft)}
-
-/* FAQ accordions */
-.mk .faq{max-width:820px;margin:0 auto;border-top:1px solid var(--line)}
-.mk .faq details{border-bottom:1px solid var(--line)}
-.mk .faq summary{list-style:none;cursor:pointer;padding:24px 44px 24px 4px;position:relative;font-family:var(--serif);font-size:20px;color:var(--ink);transition:color .2s}
-.mk .faq summary::-webkit-details-marker{display:none}
-.mk .faq summary:hover{color:var(--accent-deep)}
-.mk .faq summary::after{content:"+";position:absolute;right:6px;top:22px;font-family:var(--sans);font-size:24px;color:var(--accent);transition:transform .25s var(--ease)}
-.mk .faq details[open] summary::after{transform:rotate(45deg)}
-.mk .faq .faq-a{padding:0 44px 26px 4px;font-size:15.5px;color:var(--ink-soft);max-width:70ch}
+/* FAQ — the shared <FaqSection> island (Tailwind, outside .mk); no CSS left here. */
 
 /* deal-enquiry — now real JSX (DealEnquirySection: core/ui's EnquirySplit + form-card
    primitives, rendered outside .mk); no CSS left here. */
-
-@media(max-width:980px){
-  .mk .partner-pitch .wrap{grid-template-columns:1fr;gap:36px}
-  .mk .partner-pitch .pitch-text{position:static}
-  .mk .steps{grid-template-columns:1fr 1fr}
-}
-@media(max-width:680px){
-  .mk .steps{grid-template-columns:1fr}
-}
 
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
    the rest, via <ScrollReveal page="real-estate">/scroll-reveal.tsx) — same pattern
@@ -335,20 +275,6 @@ const PAGE_STYLE = `
 .mk[data-page="real-estate"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .mk[data-page="real-estate"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
 `;
-
-// The institutional FAQ (former SECTION 9) is now a shared, editable <FaqSection> island chosen
-// per page via `faq_group_key`, rendered between the process steps and the deal-enquiry form
-// (outside `.mk` so its Tailwind markup doesn't pick up mock.css bare-element rules). Every
-// section before it is real JSX now (hero, partners, `#capabilities`, `#manage`, and the
-// `#deal-structures`/`#market`/`#track-record` bodies — only their sec-heads are still raw, in
-// their own `.mk[data-page="real-estate"]` wrappers); `bodyTopB` is the last raw chunk,
-// SECTION 8 (process).
-function bodyTopB(content: RealEstateContent): string {
-  const process = content.process ?? defaultProcess;
-  return `
-${processSection(process)}
-`;
-}
 
 export async function RealEstatePage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
@@ -370,6 +296,17 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
     icon: <Icon name={PARTNER_ICON_KEYS[i]} className="mt-0.5 h-7 w-7 flex-none text-accent-deep" />,
     title: b.title,
     description: b.description,
+  }));
+  // Same default-copy fallback `#process` always had (`content.process ?? defaultProcess`).
+  const howItWorks = content.process ?? defaultProcess;
+  const processItems = howItWorks.steps.map((s, i) => ({
+    icon: (
+      <span className={STEP_NUMBER_CLASS} aria-hidden>
+        {String(i + 1).padStart(2, "0")}
+      </span>
+    ),
+    title: s.title,
+    description: s.description,
   }));
   // `capabilities` is newer than the original seed — fall back to the approved default copy
   // so a `real_estate` row authored before this section existed still renders correctly.
@@ -451,7 +388,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
       </div>
       {/*
        * Page styles + entrance-motion wiring for the raw sections that remain further down (the
-       * `#deal-structures`/`#market`/`#track-record` sec-heads and `bodyTopB`'s `#process`). No
+       * `#deal-structures`/`#market`/`#track-record` sec-heads). No
        * markup of its own any more — `#capabilities`, its last raw section, is real JSX below —
        * but kept here, ahead of those sections, so `PAGE_STYLE`'s `.pre-reveal` hidden state is
        * parsed before the markup it applies to. `ScrollReveal` sweeps the whole document's
@@ -673,9 +610,28 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
           </Reveal>
         </div>
       </section>
-      <div className="mk" data-page="real-estate">
-        <div dangerouslySetInnerHTML={{ __html: bodyTopB(content) }} />
+      {/*
+       * "How it works" (`#process`, SECTION 8 — "A Structured Path…") — `core/ui`'s
+       * `EditorialSplit`, configured exactly like `#partners` above (wrapper `id` with this
+       * page's `scroll-mt-[84px]`, headline/body/items, `→`-suffixed primary CTA →
+       * `#deal-enquiry`); `process` has no secondary CTA or note. The zero-padded step numbers
+       * are the items' `icon` (`STEP_NUMBER_CLASS`). Rendered outside `.mk`; the entrance
+       * animation is `EditorialSplit`'s own internal `Reveal`s (sticky-safe), so no call-site
+       * `Reveal`.
+       */}
+      <div id="process" className="scroll-mt-[84px]">
+        <EditorialSplit
+          headline={howItWorks.headline}
+          body={howItWorks.subheadline}
+          items={processItems}
+          primaryCta={{ href: "#deal-enquiry", label: `${howItWorks.cta.label} →` }}
+        />
       </div>
+      {/*
+       * The institutional FAQ (former SECTION 9) — the shared, editable `<FaqSection>` island
+       * chosen per page via `faq_group_key`, rendered outside `.mk` so its Tailwind markup
+       * doesn't pick up mock.css bare-element rules.
+       */}
       {faqGroupKey ? (
         <div id="faq" style={{ scrollMarginTop: 130 }}>
           <FaqSection

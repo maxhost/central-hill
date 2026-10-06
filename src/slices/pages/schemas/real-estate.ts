@@ -153,10 +153,10 @@ export const realEstateSchema = z.object({
   }),
   // "A Structured Path from First Conversation to Full Performance" — the onboarding process,
   // rendered as an Editorial Split (sticky headline + lede + a single CTA beside a numbered
-  // step list) that reuses the partners section's `partner-pitch` shell. The step numbers
-  // (01, 02, …) are positional — derived from the step order in the renderer — so only each
-  // step's title + description are data-driven. Fully DB-driven. See
-  // `ui/real-estate-page.tsx` → `processSection`.
+  // step list) with `core/ui`'s `EditorialSplit`, configured like the partners section. The
+  // step numbers (01, 02, …) are positional — derived from the step order in the renderer and
+  // passed as each item's `icon` — so only each step's title + description are data-driven.
+  // Fully DB-driven. See `ui/real-estate-page.tsx` → `RealEstatePage` (`#process`).
   process: z.object({
     headline: tStr({ max: 160 }),
     /** Lede under the section title (blank = none). */
