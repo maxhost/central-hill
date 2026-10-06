@@ -2,7 +2,15 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { MediaImage, mediaImgTag, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
-import { ButtonLink, ChecklistCards, Hero, Reveal, StatBento, StatTiles } from "@core/ui";
+import {
+  ButtonLink,
+  ChecklistCards,
+  EditorialSplit,
+  Hero,
+  Reveal,
+  StatBento,
+  StatTiles,
+} from "@core/ui";
 import { getRealEstatePage, type RealEstateContent } from "../contract";
 import {
   defaultCapabilities,
@@ -12,6 +20,7 @@ import {
 } from "../schemas/real-estate";
 import { DealEnquirySection } from "./components/deal-enquiry-section";
 import { FaqSection } from "./components/faq-section";
+import { Icon } from "./components/icon";
 import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
@@ -24,8 +33,9 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * header/footer + i18n come from the app layout. The Iconoir CDN stylesheet (used by the
  * mock's `<i class="iconoir-… ico">` glyphs) is imported inside this page's scoped `<style>`.
  *
- * The "How it works" section ("A Structured Path…") uses the same Editorial-Split layout as the partners section
- * (`partner-pitch`), with the step numbers as the hairline-list markers.
+ * The "How it works" section ("A Structured Path…") still uses the raw Editorial-Split CSS the
+ * partners section used to have (`partner-pitch`), with the step numbers as the hairline-list
+ * markers.
  *
  * The hero (`#top`, SECTION 1) is now real JSX — `core/ui`'s `<Hero compact align="center">`,
  * rendered outside (before) `.mk` — not raw `dangerouslySetInnerHTML` markup. Still DB-driven
@@ -34,8 +44,16 @@ import { ScrollReveal } from "./components/scroll-reveal";
  * `MediaImage` (or the fallback `<img>`) background, still the eager/high-priority LCP element.
  * It uses exactly Buildings' listing-hero configuration (centred copy, 1600px/40px wrap, 26ch
  * h1, 60ch p, `.5/.46/.88` scrim, default eyebrow, `ButtonLink` CTAs) for cross-page
- * consistency; its former `.mk[data-page="real-estate"] .hero` overrides are gone and
- * `bodyTopA` starts at SECTION 2 (partners).
+ * consistency; its former `.mk[data-page="real-estate"] .hero` overrides are gone.
+ *
+ * "Built for Institutional Partners" (`#partners`, SECTION 2) is likewise real JSX — `core/ui`'s
+ * `EditorialSplit`, rendered outside (before) `.mk` right after the Hero, with exactly Owners'
+ * `#why` configuration (`id` on a wrapping div — with this page's 84px scroll margin, headline/body/items,
+ * `→`-suffixed primary CTA → `#deal-enquiry`, ghost secondary → `#deal-structures`, note) and
+ * its own internal `Reveal`s. Still DB-driven (`partners.headline`/`subheadline`/`benefits`/CTA
+ * labels/note); the positional icons are `<Icon>` keys styled like Owners' `why` icons. Cross-page
+ * consistency was chosen over this page's 1240px/28px `.wrap`: it takes `EditorialSplit`'s own
+ * Section/Container spacing. `bodyTopA` now starts at SECTION 3 (capabilities).
  *
  * The "Why Portugal" section (`#market`, `marketSection`'s former home) is now real JSX —
  * `core/ui`'s `StatBento`, wrapped in `Reveal` — not raw `dangerouslySetInnerHTML` markup. Its
@@ -85,15 +103,11 @@ const SHOWCASE_SIZES = "(max-width: 980px) 100vw, 560px";
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-// Positional per-partner icons from the locked design — paired by index with the fixed
+// Positional per-partner icon keys from the locked design — paired by index with the fixed
 // four-item benefit list (funds / developers / operators / corporate). Only the benefit
-// *text* is data-driven; the SVGs never change (mirrors the Owners `why` section).
-const PARTNER_ICONS = [
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V10M19 21V10M9 21V10M15 21V10"/><path d="M3 10l9-6 9 6"/><path d="M3 10h18"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l3-9 8 8-9 3-2-2z"/><path d="M14 12l6-6"/><path d="M18 2l4 4-3 3-4-4 3-3z"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M4 21V7l8-4v18"/><path d="M12 21V9l8 3v9"/><path d="M7 9h2M7 13h2M16 14h1"/></svg>`,
-  `<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 13.5L21 3"/><path d="M21 3l-6 18-3.5-7.5L4 10l17-7z"/></svg>`,
-];
+// *text* is data-driven; the glyphs never change. Rendered through the slice's `<Icon>`
+// registry (`./components/icon.tsx`), exactly like Owners' `WHY_ICON_KEYS`.
+const PARTNER_ICON_KEYS = ["landmark", "trowel", "buildings", "send"] as const;
 
 // Positional per-capability icons (digital excellence / operational mastery / strategic
 // partnership), paired by index with the fixed three-item capabilities showcase list.
@@ -196,7 +210,7 @@ function processSection(p: RealEstateContent["process"]): string {
 `;
 }
 
-/** Render the partners benefit list (`<li>` = positional SVG + title/description), pairing
+/** Render a showcase benefit list (`<li>` = positional SVG + title/description), pairing
  * each item with its design icon by index. */
 function benefitList(
   items: ReadonlyArray<{ title: string; description: string }>,
@@ -271,8 +285,9 @@ const PAGE_STYLE = `
 
 .mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
 
-/* partners — Editorial Split (sticky title + CTAs beside a hairline benefit list),
-   mirroring the Owners "why" section. */
+/* Editorial Split shell (sticky title + CTAs beside a hairline list), now used only by
+   "How it works" (#process, .partner-pitch.process-split). The partners section itself is
+   real JSX (core/ui's EditorialSplit, rendered outside .mk) and no longer uses these rules. */
 .mk .partner-pitch .wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:start}
 .mk .partner-pitch .pitch-text{position:sticky;top:120px}
 .mk .partner-pitch .pitch-sub{margin-top:18px;font-size:18px;line-height:1.6;color:var(--ink-soft)}
@@ -375,11 +390,12 @@ const PAGE_STYLE = `
 // body is split here around that island — and, within the first chunk, around the
 // `#deal-structures` cards (real JSX, `core/ui`'s `ChecklistCards`), the `#market` section's
 // bento (now real JSX, `core/ui`'s `StatBento`) and the `#track-record` tiles (real JSX,
-// `core/ui`'s `StatTiles`): `bodyTopA` ends after SECTION 4 (asset types), the
+// `core/ui`'s `StatTiles`): `bodyTopA` runs SECTIONS 3–4 (capabilities, asset types — partners,
+// SECTION 2, is now real JSX before it), the
 // `#deal-structures`, `#market` and `#track-record` sections render as real JSX in between, and
 // `bodyTopB` picks back up with SECTION 8 (process).
 function bodyTopA(content: RealEstateContent, media: Record<string, MediaImageData>): string {
-  const { partners, asset_management: assets } = content;
+  const { asset_management: assets } = content;
   // `capabilities` is newer than the original seed — fall back to the approved default copy
   // so a `real_estate` row authored before this section existed still renders correctly.
   const capabilities = content.capabilities ?? defaultCapabilities;
@@ -397,23 +413,6 @@ function bodyTopA(content: RealEstateContent, media: Record<string, MediaImageDa
   });
 
   return `
-<!-- SECTION 2 — WHO WE WORK WITH (Editorial Split, DB-driven) -->
-<section id="partners" class="partner-pitch">
-  <div class="wrap">
-    <div class="pitch-text reveal reveal-io pre-reveal">
-      <h2 class="section-title">${esc(partners.headline)}</h2>
-      ${partners.subheadline ? `<p class="pitch-sub">${esc(partners.subheadline)}</p>` : ""}
-      <div class="pitch-cta">
-        <a class="btn btn-accent" href="#deal-enquiry">${esc(partners.cta_primary.label)} →</a>
-        <a class="btn btn-ghost" href="#deal-structures">${esc(partners.cta_secondary.label)}</a>
-      </div>
-      ${partners.cta_primary.note ? `<p class="pitch-note">${esc(partners.cta_primary.note)}</p>` : ""}
-    </div>
-    <ul class="pitch-list reveal reveal-io pre-reveal">${benefitList(partners.benefits, PARTNER_ICONS)}
-    </ul>
-  </div>
-</section>
-
 <!-- SECTION 3 — INSTITUTIONAL-GRADE MANAGEMENT (Image Showcase, MIRRORED, DB-driven) -->
 ${showcase({
   id: "capabilities",
@@ -455,6 +454,12 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
   // Optional capability-statement asset behind the hero's secondary CTA (e.g. a PDF). If
   // no asset is set, the button keeps the design's in-page anchor.
   const capStmtUrl = media[hero.capability_statement_media_id ?? ""]?.url || "#deal-enquiry";
+  const partners = content.partners;
+  const partnerItems = partners.benefits.map((b, i) => ({
+    icon: <Icon name={PARTNER_ICON_KEYS[i]} className="mt-0.5 h-7 w-7 flex-none text-accent-deep" />,
+    title: b.title,
+    description: b.description,
+  }));
 
   return (
     <>
@@ -508,6 +513,25 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
           </>
         }
       />
+      {/*
+       * "Built for Institutional Partners" (`#partners`, SECTION 2) — `core/ui`'s
+       * `EditorialSplit`, configured exactly like Owners' `#why` (same wrapper `id` — but
+       * this page's `scroll-mt-[84px]` like its other JSX sections, same props, same `→` on the primary CTA, same icon size/colour)
+       * for cross-page consistency, accepting its Container width/spacing over this page's
+       * 1240px/28px `.wrap`. Rendered outside `.mk` (Lesson 1); the entrance animation is
+       * `EditorialSplit`'s own internal `Reveal`s (sticky-safe), so no call-site `Reveal`.
+       * `#deal-structures` below is the secondary CTA's target.
+       */}
+      <div id="partners" className="scroll-mt-[84px]">
+        <EditorialSplit
+          headline={partners.headline}
+          body={partners.subheadline}
+          items={partnerItems}
+          primaryCta={{ href: "#deal-enquiry", label: `${partners.cta_primary.label} →` }}
+          secondaryCta={{ href: "#deal-structures", label: partners.cta_secondary.label }}
+          note={partners.cta_primary.note}
+        />
+      </div>
       <div className="mk" data-page="real-estate">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <noscript>

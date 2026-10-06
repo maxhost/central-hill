@@ -296,6 +296,26 @@ Still DB-driven (`hero.subheadline` → eyebrow, `headline` → h1, `positioning
 background is `MediaImage` (or the fallback `<img>`), still the eager/`fetchpriority=high` LCP
 element. The former `.mk[data-page="real-estate"] .hero` overrides and `escAttr` are removed.
 
+Its `partners` ("Built for Institutional Partners", `#partners`, SECTION 2) section is real JSX
+too: `core/ui`'s `EditorialSplit` with **exactly** Owners' `#why` configuration (wrapping
+`<div id="partners" className="scroll-mt-[84px]">` — this page's anchor offset, not Owners' 130px, `headline`/`body`/`items`, primary CTA
+label suffixed with `→` → `#deal-enquiry`, ghost secondary → `#deal-structures`, `note` from
+`cta_primary.note`; icons as `<Icon className="mt-0.5 h-7 w-7 flex-none text-accent-deep">`),
+rendered outside `.mk` between the Hero and the `.mk` wrapper (whose `<style>`/`<noscript>`/
+`ScrollReveal` still precede the remaining raw sections). The entrance animation is
+`EditorialSplit`'s own internal `Reveal`s (sticky-safe), so there is no call-site `Reveal`; the
+rendered class tree is identical to Owners' `#why`. Still DB-driven exactly as before. The four
+positional `PARTNER_ICONS` SVG strings moved verbatim into the slice `Icon` registry
+(`landmark`/`trowel`/`buildings`/`send`) and are paired by index via `PARTNER_ICON_KEYS`.
+Cross-page consistency was chosen over this page's own styling: `EditorialSplit`'s
+`max-w-7xl`/`px-6 md:px-10` Container and section padding replace the 1240px/28px `.wrap`
+(the column edge sits 8px left of the neighbouring raw sections at 1440), the benefit `<h3>`s
+are sans (Inter) instead of `.mk`'s serif, the buttons are `ButtonLink` (46px tall, 6px radius)
+instead of the mock's `.btn` (52px, 3px) (the `#partners` anchor keeps this page's 84px offset). `mock/real-estate.html` still shows this slot as an older 4-up partner-type grid — the
+live Editorial Split was already the shipped design. The `.partner-pitch` CSS stays in
+`PAGE_STYLE` because "How it works" (`#process`) still uses it; `benefitList`/`esc` stay for the
+showcases and other raw sections. `bodyTopA` now starts at SECTION 3 (capabilities).
+
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
 `docs/specs/guest-page-db-wiring.md`): `bodyTop` / `bodyActivitiesTeaser` (the old `bodyBottom`
 is gone — see the dual CTA below) interpolate the resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`.

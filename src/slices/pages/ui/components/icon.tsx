@@ -53,6 +53,13 @@ const PATHS: Record<string, string> = {
   // reused, to preserve this section's exact pre-existing icon (not a near-enough swap).
   "bell-alt":
     '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
+  // Real Estate "Built for Institutional Partners" (#partners) — the section's former inline
+  // `PARTNER_ICONS` SVGs, moved here verbatim (same 24×24 / 1.5-stroke frame) so the
+  // `EditorialSplit` port renders them through `<Icon>` exactly like Owners' `#why`.
+  landmark: '<path d="M3 21h18"/><path d="M5 21V10M19 21V10M9 21V10M15 21V10"/><path d="M3 10l9-6 9 6"/><path d="M3 10h18"/>',
+  trowel: '<path d="M3 21l3-9 8 8-9 3-2-2z"/><path d="M14 12l6-6"/><path d="M18 2l4 4-3 3-4-4 3-3z"/>',
+  buildings: '<path d="M3 21h18"/><path d="M4 21V7l8-4v18"/><path d="M12 21V9l8 3v9"/><path d="M7 9h2M7 13h2M16 14h1"/>',
+  send: '<path d="M10.5 13.5L21 3"/><path d="M21 3l-6 18-3.5-7.5L4 10l17-7z"/>',
   // Generic decorative fallback (the seed's `"spark"` key)
   spark: SPARKS,
 };
