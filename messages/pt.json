@@ -23,7 +23,15 @@
     "website": "Site",
     "book": "Reservar",
     "directions": "Direções",
-    "backToGuides": "Todos os guias"
+    "backToGuides": "Todos os guias",
+    "recEyebrow": "Favoritos Locais",
+    "recTitle": "As Nossas Recomendações",
+    "recIntro": "Uma amostra do que encontra nos guias — uma mesa, um miradouro e uma praia a que a nossa equipa volta vezes sem conta.",
+    "recType": {
+      "restaurant": "Restaurante",
+      "viewpoint": "Miradouro",
+      "beach": "Praia"
+    }
   },
   "common": {
     "tagline": "Alojamento mobilado premium em Lisboa"

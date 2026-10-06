@@ -105,8 +105,42 @@ export interface GuideCityGroup {
   guides: GuidePageSummary[];
 }
 
+/**
+ * Place types the guides index features under "Top Recommendations", **in display order**.
+ * Matched case-insensitively against `guide_place.category` (free text).
+ */
+export const RECOMMENDATION_TYPES = ["restaurant", "viewpoint", "beach"] as const;
+export type GuideRecommendationType = (typeof RECOMMENDATION_TYPES)[number];
+
+/**
+ * One featured place for the index's "Top Recommendations" (`listTopRecommendations`).
+ * Always complete: a place without an image, category or address is never returned.
+ */
+export interface GuideRecommendation {
+  /** `guide_place.id` (changes when the seed rebuilds — use only as a React key). */
+  id: string;
+  type: GuideRecommendationType;
+  /** Place name ([T], locale-resolved with `en` fallback). */
+  name: string;
+  description: string | null;
+  /** Raw `category` text as authored (e.g. "Restaurant"); not translated. */
+  category: string;
+  address: string;
+  image: MediaImageData;
+  /** Path parts of the guide page the place belongs to: `/${locale}/guides/${citySlug}/${slug}`. */
+  guide: { citySlug: string; slug: string };
+}
+
 export {
   listGuideCityGroups,
   getGuidePage,
   listGuideParams,
+  /**
+   * `listTopRecommendations(locale, limit = 3)` — at most one place per
+   * `RECOMMENDATION_TYPES` entry, in that order: the first published place (guide → section
+   * → place position) whose category matches and that has an image + address. Types with no
+   * match are skipped, so the list may be shorter or empty. `unstable_cache`d per
+   * locale/limit, tagged `GUIDE_TAGS.list` + `GEO_TAGS.list`.
+   */
+  listTopRecommendations,
 } from "./server/queries";

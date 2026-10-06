@@ -23,7 +23,15 @@
     "website": "Web",
     "book": "Reservar",
     "directions": "Cómo llegar",
-    "backToGuides": "Todas las guías"
+    "backToGuides": "Todas las guías",
+    "recEyebrow": "Favoritos Locales",
+    "recTitle": "Nuestras Recomendaciones",
+    "recIntro": "Un anticipo de lo que encontrarás en las guías: una mesa, un mirador y una playa a los que nuestro equipo vuelve una y otra vez.",
+    "recType": {
+      "restaurant": "Restaurante",
+      "viewpoint": "Mirador",
+      "beach": "Playa"
+    }
   },
   "common": {
     "tagline": "Alquileres premium amueblados en Lisboa"

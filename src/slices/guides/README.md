@@ -26,16 +26,13 @@ module, never by querying its table.
 
 ## Routes (App Router, ISR)
 
-- `/[locale]/guides` — index: hero + one section per city with a card grid of its
-  published guide pages (`listGuideCityGroups`). `revalidate = 3600` + tag-revalidated;
-  the surrounding chrome (hero, "Top Recommendations", closing CTA band) is the approved
-  mock's static markup, same `.mk`-embed-with-DB-driven-cards pattern as
-  `buildings/ui/buildings-listing.tsx`. The **"Choose your city" bar is real JSX** —
-  `core/ui`'s new `ChipBar` (`src/core/ui/chip-bar.tsx`), rendered outside `.mk` (the
-  reset-layering trap — see that component's docstring). Still presentational only: no
-  real city filter behind it yet (chip copy now goes through `t()` — `chooseCity`,
-  `cityLisbon`/`cityPorto`/`cityCascais`, `citySoon`, `cityNote` — instead of staying
-  hardcoded English).
+- `/[locale]/guides` — index (`ui/guides-listing.tsx`, fully JSX — no `.mk` block left):
+  hero (`core/ui` `Hero`), the "Choose your city" bar (`core/ui` `ChipBar`; presentational
+  only, no real city filter yet), one section per city with a grid of its published guide
+  pages (`listGuideCityGroups` → `GuideCard`), the **Top Recommendations** grid
+  (`listTopRecommendations` → `RecommendationCard`; the whole section is hidden when the
+  query returns nothing), and the closing `CenteredCtaBand`. `revalidate = 3600` +
+  tag-revalidated. The route imports `mock.css` only for the Iconoir stylesheet.
 - `/[locale]/guides/[city]/[slug]` — guide-page detail: breadcrumb, hero, a stack of
   sections (body, optional header image, "local tip" callout, place grid, optional CTA).
   `generateStaticParams` from `listGuideParams()`; `dynamicParams = true`. The `[city]`
@@ -55,12 +52,38 @@ translated (same accepted gap as `scripts/seed-services.ts`).
 
   pnpm tsx --env-file=.env.local --tsconfig scripts/tsconfig.json scripts/seed-guides.ts
 
+**Place images + categories.** Every `eat` place has a `category` (Tasca, Restaurant,
+Fine Dining, Brunch, Vegan, …) and a photo; the 9 beach places are `category: "Beach"` with
+an address and a photo ("who it suits" moved into the description); the 4 viewpoints in
+*Top Things to Do* have photos (no address in the source, so they are not recommendation
+candidates). Photos are Pexels originals, each checked visually, ingested through the real
+media pipeline like the section/hero images. Sections and places are rebuilt on every run
+(new ids), but their images go through a per-page **reuse pool keyed by `media_asset.credit`**:
+an unchanged photo is re-attached, never re-uploaded; a photo the seed drops is deleted;
+assets a person uploaded (other credit) are never reused or deleted. A no-change re-run
+prints `0 uploaded`.
+
+R2 note: if your `.env.local` `R2_S3_ENDPOINT` ends in `/<bucket>`, override it for the run
+with the bucket-less URL (`R2_S3_ENDPOINT=… pnpm tsx --env-file=.env.local …` — Node's
+`--env-file` never overrides an already-set variable), or uploads land under a
+`<bucket>/` key prefix and 404 publicly.
+
 ## Contract (`contract.ts`)
 
 Types: `GuidePageSummary`, `GuidePageDetail`, `GuideSection`, `GuidePlace`,
 `GuideCityGroup`, `GuideCityRef`, `GuideTemplate`, `GuideLayout`, `GuidePriceTier`.
+`GuideRecommendation`, `GuideRecommendationType`, `RECOMMENDATION_TYPES`.
 Reads: `listGuideCityGroups(locale)`, `getGuidePage(locale, citySlug, pageSlug)`,
-`listGuideParams()`.
+`listGuideParams()`, `listTopRecommendations(locale, limit = 3)`.
+
+**Top Recommendations selection rule** (`listTopRecommendations`; no featured flag — uses
+existing data): candidates are places in a published guide page of a published city that
+have an image, a `category` and a non-blank `address`; the category must equal one of
+`RECOMMENDATION_TYPES` = `restaurant`, `viewpoint`, `beach` (case-insensitive, trimmed).
+Walking guide → section → place `position` order, the first match per type wins; output is
+in that type order, and a type with no match is skipped (result may be shorter or empty).
+With the seed data: Ramiro (Restaurant), Miradouro do Adamastor (Viewpoint), São João Beach
+(Beach). Returns name/description/category/address/image + the guide's `{citySlug, slug}`.
 Cache tags: `GUIDE_TAGS.list` = `guide-list`, `GUIDE_TAGS.page(id)` (reserved for a
 future targeted bust).
 
@@ -77,7 +100,8 @@ guessing.
 
 UI chrome → `guides` namespace in `messages/{en,pt,es,fr}.json` (all 4 authored): hero,
 city bar (`chooseCity`/`cityLisbon`/`cityPorto`/`cityCascais`/`citySoon`/`cityNote`),
-per-city heading, card CTA, breadcrumb, "local tip", place meta labels (address/hours/
+per-city heading, card CTA, Top Recommendations head (`recEyebrow`/`recTitle`/`recIntro`)
+and type labels (`recType.restaurant|viewpoint|beach`; other categories show their raw text), breadcrumb, "local tip", place meta labels (address/hours/
 phone) and outbound link labels (website/book/directions). DB content ([T] fields)
 resolves through `core/i18n` with the source-locale (`en`) fallback + `approved`-only
 gating. Section `body` is plain rich text rendered as paragraphs.

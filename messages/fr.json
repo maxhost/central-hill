@@ -23,7 +23,15 @@
     "website": "Site web",
     "book": "Réserver",
     "directions": "Itinéraire",
-    "backToGuides": "Tous les guides"
+    "backToGuides": "Tous les guides",
+    "recEyebrow": "Coups de Cœur Locaux",
+    "recTitle": "Nos Recommandations",
+    "recIntro": "Un avant-goût de nos guides — une table, un belvédère et une plage où notre équipe revient sans cesse.",
+    "recType": {
+      "restaurant": "Restaurant",
+      "viewpoint": "Belvédère",
+      "beach": "Plage"
+    }
   },
   "common": {
     "tagline": "Locations meublées premium à Lisbonne"

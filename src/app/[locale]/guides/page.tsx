@@ -6,9 +6,10 @@ import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
 import { GuidesListing } from "@slices/guides/ui/guides-listing";
+// Only for the Iconoir stylesheet (ChipBar / GuideCard / RecommendationCard `iconoir-*` glyphs); no `.mk` markup left.
 import "../../mock.css";
 
-/** Static per locale; the card grid is DB-driven (tag-revalidated via `listGuideCityGroups`). */
+/** Static per locale; both card grids are DB-driven (tag-revalidated via `listGuideCityGroups` / `listTopRecommendations`). */
 export const revalidate = 3600;
 
 export function generateStaticParams() {

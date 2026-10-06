@@ -1,6 +1,6 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
 import type { Locale } from "@core/db/columns";
 import {
@@ -17,6 +17,7 @@ import {
   GUIDE_PLACE,
   GUIDE_SECTION,
   GUIDE_TAGS,
+  RECOMMENDATION_TYPES,
   type GuideCityGroup,
   type GuideCityRef,
   type GuideLayout,
@@ -24,6 +25,8 @@ import {
   type GuidePageSummary,
   type GuidePlace,
   type GuidePriceTier,
+  type GuideRecommendation,
+  type GuideRecommendationType,
   type GuideSection,
   type GuideTemplate,
 } from "../contract";
@@ -336,6 +339,107 @@ export function getGuidePage(
   return unstable_cache(
     () => _getGuidePage(locale, citySlug, pageSlug),
     ["guides:getGuidePage", locale, citySlug, pageSlug],
+    { tags: [GUIDE_TAGS.list, GEO_TAGS.list] },
+  )();
+}
+
+// ── Index: "Top Recommendations" (one featured place per type) ───────────────
+/**
+ * Selection rule (deterministic, no featured flag in the schema — uses existing data only):
+ *
+ * 1. Candidates are `guide_place` rows in a **published** guide page of a **published**
+ *    city (via geography's `listCities`) that have an image (`media_id` resolving to an
+ *    asset), a `category` and a non-blank `address` — i.e. everything the card shows.
+ * 2. The category must equal one of `RECOMMENDATION_TYPES` (case-insensitive, trimmed).
+ * 3. Candidates are walked in reading order — guide `position`, then section `position`,
+ *    then place `position` — and the **first** match per type wins.
+ * 4. Output follows `RECOMMENDATION_TYPES` order (Restaurant, Viewpoint, Beach); a type with
+ *    no candidate is skipped (so the result may be shorter than `limit`, or empty).
+ */
+async function _listTopRecommendations(locale: Locale, limit: number): Promise<GuideRecommendation[]> {
+  if (limit <= 0) return [];
+  const rows = await db
+    .select({
+      id: guide_place.id,
+      category: guide_place.category,
+      address: guide_place.address,
+      media_id: guide_place.media_id,
+      page_id: guide_page.id,
+      city_id: guide_page.city_id,
+    })
+    .from(guide_place)
+    .innerJoin(guide_section, eq(guide_place.guide_section_id, guide_section.id))
+    .innerJoin(guide_page, eq(guide_section.guide_page_id, guide_page.id))
+    .where(
+      and(
+        eq(guide_page.status, "published"),
+        isNotNull(guide_place.media_id),
+        isNotNull(guide_place.address),
+        inArray(sql<string>`lower(trim(${guide_place.category}))`, [...RECOMMENDATION_TYPES]),
+      ),
+    )
+    .orderBy(asc(guide_page.position), asc(guide_section.position), asc(guide_place.position));
+  if (rows.length === 0) return [];
+
+  const cities = await listCities(locale);
+  const cityById = new Map(cities.map((c) => [c.id, c]));
+
+  // Candidates per type in reading order (several per type, in case an asset is missing).
+  const byType = new Map<GuideRecommendationType, typeof rows>();
+  for (const r of rows) {
+    if (!cityById.has(r.city_id) || !r.address?.trim()) continue;
+    const type = r.category!.trim().toLowerCase() as GuideRecommendationType;
+    const list = byType.get(type) ?? [];
+    list.push(r);
+    byType.set(type, list);
+  }
+  const candidates = [...byType.values()].flat();
+  if (candidates.length === 0) return [];
+
+  const refs: ContentRef[] = [];
+  const pageIds = [...new Set(candidates.map((r) => r.page_id))];
+  for (const r of candidates) {
+    refs.push({ type: GUIDE_PLACE, id: r.id }, { type: "media_asset", id: r.media_id! });
+  }
+  const [content, media, slugs] = await Promise.all([
+    loadContent(refs, locale),
+    loadMedia(candidates.map((r) => r.media_id!)),
+    loadSlugs(GUIDE_PAGE, pageIds, locale),
+  ]);
+
+  const out: GuideRecommendation[] = [];
+  for (const type of RECOMMENDATION_TYPES) {
+    if (out.length >= limit) break;
+    for (const r of byType.get(type) ?? []) {
+      const guideSlug = slugs.get(r.page_id);
+      const name = content.get(GUIDE_PLACE, r.id, "name") ?? "";
+      const image = toImageData(
+        media.get(r.media_id!),
+        content.get("media_asset", r.media_id!, "alt") ?? name,
+        TILE_W,
+        TILE_H,
+      );
+      if (!guideSlug || !name || !image) continue; // incomplete in this locale → next candidate
+      out.push({
+        id: r.id,
+        type,
+        name,
+        description: content.get(GUIDE_PLACE, r.id, "description") ?? null,
+        category: r.category!.trim(),
+        address: r.address!.trim(),
+        image,
+        guide: { citySlug: cityById.get(r.city_id)!.slug, slug: guideSlug },
+      });
+      break;
+    }
+  }
+  return out;
+}
+
+export function listTopRecommendations(locale: Locale, limit = 3): Promise<GuideRecommendation[]> {
+  return unstable_cache(
+    () => _listTopRecommendations(locale, limit),
+    ["guides:listTopRecommendations", locale, String(limit)],
     { tags: [GUIDE_TAGS.list, GEO_TAGS.list] },
   )();
 }

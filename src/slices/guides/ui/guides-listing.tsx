@@ -2,36 +2,31 @@ import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { CenteredCtaBand, ChipBar, Hero, SectionHead } from "@core/ui";
-import { listGuideCityGroups } from "../contract";
+import { listGuideCityGroups, listTopRecommendations } from "../contract";
 import { GuideCard } from "./components/guide-card";
+import { RecommendationCard } from "./components/recommendation-card";
 
 /**
- * Guides index ("What to Do in Lisbon") — the approved `mock/what-to-do.html`, being ported
- * to components. The "Explore the City" card grids are **DB-driven** like
- * `buildings-listing.tsx`, generated from the published `guide_page` rows (`listGuideCityGroups`, ISR-cached + tagged
- * `guide-list`/`city-list` → a guides or geography publish busts it). Cards link to each
- * guide's real per-locale detail slug (`/[locale]/guides/[city]/[slug]`).
+ * Guides index ("What to Do in Lisbon") — the approved `mock/what-to-do.html`, fully ported
+ * to components (no `.mk` raw-HTML block remains). Both card grids are **DB-driven** and
+ * ISR-cached + tagged `guide-list`/`city-list` (a guides or geography publish busts them):
  *
- * Now JSX: the **hero** (`core/ui`'s `Hero`, Buildings listing configuration), the **city
- * bar** (`ChipBar`; still no real filter behind it — `listGuideCityGroups` renders every
- * published city), every section **shell + head** (standard page shell, `SectionHead`), and
- * the city **guide-card grids** (the slice's own `GuideCard` — the `.pcard.gcard` port — in
- * the Buildings listing's grid). Still raw, in its own small `.mk` block (styles scoped under
- * `.mk`, see `src/app/mock.css`, so nothing leaks to Home/admin): only the "Top
- * Recommendations" card grid (static decorative picks; content brief 4.2 scopes only the guide
- * pages themselves to the DB in this pass). The closing band is `core/ui`'s `CenteredCtaBand`
- * (its copy is still a hardcoded English literal, as before). `SectionHead`s and
- * `ChipBar` stay outside `.mk` (`.mk * { margin:0; padding:0 }` is un-layered CSS and beats
- * layered Tailwind utilities; see `ChipBar`'s docstring). `PAGE_STYLE` only holds the `.mk`-scoped
- * Top Recommendations card rules, so its `<style>` can sit anywhere in the page.
+ * - **"Explore the City"** — one section per city from the published `guide_page` rows
+ *   (`listGuideCityGroups`), each a grid of the slice's `GuideCard` (the `.pcard.gcard` port)
+ *   linking to the guide's per-locale detail slug (`/[locale]/guides/[city]/[slug]`).
+ * - **"Top Recommendations"** — `listTopRecommendations`: one complete place (image +
+ *   category + address) per Restaurant / Viewpoint / Beach, chosen by a documented,
+ *   deterministic rule (see the query), rendered as the slice's `RecommendationCard` (the
+ *   plain `.pcard` + `.rec-type`/`.rec-loc` port) linking to the place's guide. The whole
+ *   section is omitted when no place qualifies.
+ *
+ * Also JSX: the **hero** (`core/ui`'s `Hero`, Buildings listing configuration), the **city
+ * bar** (`ChipBar`; still no real filter behind it — every published city renders), each
+ * section **shell + head** (standard page shell, `SectionHead`; copy via `guides.*`
+ * messages), both grids in the Buildings listing's 3/2/1 grid, and the closing
+ * `CenteredCtaBand` (its copy is still a hardcoded English literal, as before). The route
+ * still imports `mock.css`, but only for the Iconoir stylesheet the cards and `ChipBar` use.
  */
-
-const PAGE_STYLE = `
-.mk .rec-loc{display:inline-flex;align-items:center;gap:6px;margin-top:14px;
-  font-size:12.5px;letter-spacing:.04em;color:var(--ink-soft)}
-.mk .rec-loc i{font-size:15px;color:var(--accent-deep)}
-.mk .rec-type{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);font-weight:600}
-`;
 
 const HERO_IMG =
   "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70";
@@ -43,49 +38,21 @@ const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
 const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
 const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
 
-/** The still-raw "Top Recommendations" card grid (static picks; the shell and head are JSX). */
-const RECOMMENDATIONS_HTML = `
-    <div class="pf-grid">
-
-      <a class="pcard" href="#">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=900&q=70" alt="Plated seafood and wine at a traditional Lisbon restaurant"></div>
-        <div class="pbody">
-          <span class="rec-type">Restaurant</span>
-          <h3 style="margin-top:8px">Ramiro</h3>
-          <p style="font-size:14px;color:var(--ink-soft);margin-top:8px">A Lisbon institution for fresh seafood — work through the shellfish and finish with the famous steak sandwich, just as the locals do.</p>
-          <span class="rec-loc"><i class="iconoir-map-pin" aria-hidden="true"></i>Avenida Almirante Reis</span>
-        </div>
-      </a>
-
-      <a class="pcard" href="#">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=900&q=70" alt="Sweeping sunset view over the Tagus from a hilltop terrace in Lisbon"></div>
-        <div class="pbody">
-          <span class="rec-type">Viewpoint</span>
-          <h3 style="margin-top:8px">Miradouro do Adamastor</h3>
-          <p style="font-size:14px;color:var(--ink-soft);margin-top:8px">A local-favourite kiosk terrace with a cold beer in hand and sunset views over the Tagus and the Cristo Rei statue across the river.</p>
-          <span class="rec-loc"><i class="iconoir-map-pin" aria-hidden="true"></i>Santa Catarina</span>
-        </div>
-      </a>
-
-      <a class="pcard" href="#">
-        <div class="ph"><img src="https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=900&q=70" alt="Wide Atlantic beach with surfers and golden sand near Lisbon"></div>
-        <div class="pbody">
-          <span class="rec-type">Beach</span>
-          <h3 style="margin-top:8px">Costa da Caparica</h3>
-          <p style="font-size:14px;color:var(--ink-soft);margin-top:8px">15km of golden Atlantic sand a short hop across the river — ideal for relaxing, families and surfing, with rental gear and beach bars all summer.</p>
-          <span class="rec-loc"><i class="iconoir-map-pin" aria-hidden="true"></i>Almada · near Lisbon</span>
-        </div>
-      </a>
-
-    </div>`;
-
 export async function GuidesListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const [groups, t] = await Promise.all([listGuideCityGroups(locale), getTranslations("guides")]);
+  const [groups, recommendations, t] = await Promise.all([
+    listGuideCityGroups(locale),
+    listTopRecommendations(locale),
+    getTranslations("guides"),
+  ]);
+  const recTypeLabels = {
+    restaurant: t("recType.restaurant"),
+    viewpoint: t("recType.viewpoint"),
+    beach: t("recType.beach"),
+  };
 
   return (
     <Fragment>
-      <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
       {/* Hero: Buildings listing's exact `Hero` configuration (as on Guests and Real Estate). */}
       <Hero
         background={
@@ -145,19 +112,23 @@ export async function GuidesListing({ locale }: { locale: Locale }) {
           </div>
         </section>
       )}
-      {/* "Top Recommendations": JSX shell on the `alt` band + `SectionHead`; cards still raw. */}
-      <section className={`${SECTION_SHELL} ${ALT_BAND}`}>
-        <div className={SECTION_WRAP}>
-          <SectionHead
-            eyebrow="Local Favourites"
-            headline="Top Recommendations"
-            intro="A taste of what's inside the guides — a table, a viewpoint and a beach our team returns to again and again."
-          />
-          <div className="mk" data-page="guides">
-            <div dangerouslySetInnerHTML={{ __html: RECOMMENDATIONS_HTML }} />
+      {/*
+       * "Top Recommendations": DB-driven (`listTopRecommendations` — one complete place per
+       * Restaurant/Viewpoint/Beach, see its selection rule), on the `alt` band, in the same grid
+       * as the city sections. The whole section is omitted when nothing qualifies.
+       */}
+      {recommendations.length ? (
+        <section className={`${SECTION_SHELL} ${ALT_BAND}`}>
+          <div className={SECTION_WRAP}>
+            <SectionHead eyebrow={t("recEyebrow")} headline={t("recTitle")} intro={t("recIntro")} />
+            <div className="grid grid-cols-1 gap-[26px] min-[681px]:grid-cols-2 min-[981px]:grid-cols-3">
+              {recommendations.map((rec) => (
+                <RecommendationCard key={rec.id} rec={rec} locale={locale} typeLabels={recTypeLabels} />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
       {/* Closing CTA: `core/ui`'s `CenteredCtaBand` (the mock's centred dark `.stats` band). */}
       <CenteredCtaBand
         eyebrow="Your Base in the City"

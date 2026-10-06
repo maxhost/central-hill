@@ -23,7 +23,15 @@
     "website": "Website",
     "book": "Book",
     "directions": "Directions",
-    "backToGuides": "All guides"
+    "backToGuides": "All guides",
+    "recEyebrow": "Local Favourites",
+    "recTitle": "Top Recommendations",
+    "recIntro": "A taste of what's inside the guides — a table, a viewpoint and a beach our team returns to again and again.",
+    "recType": {
+      "restaurant": "Restaurant",
+      "viewpoint": "Viewpoint",
+      "beach": "Beach"
+    }
   },
   "common": {
     "tagline": "Premium furnished rentals in Lisbon"
