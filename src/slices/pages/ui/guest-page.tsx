@@ -2,7 +2,15 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
 import { MediaImage } from "@core/media";
-import { ButtonLink, Hero, IntroSplit, PhotoFeatureGrid, Reveal, SplitCtaPanels } from "@core/ui";
+import {
+  BenefitCards,
+  ButtonLink,
+  Hero,
+  IntroSplit,
+  PhotoFeatureGrid,
+  Reveal,
+  SplitCtaPanels,
+} from "@core/ui";
 import { getGlobals } from "@slices/settings/contract";
 import { getGuestPage, type GuestContent } from "../contract";
 import { FaqSection } from "./components/faq-section";
@@ -12,9 +20,10 @@ import { TestimonialsRow } from "./components/testimonials-row";
 
 /**
  * Guests page — the approved `mock/guest.html` layout inside the live app shell, now fully
- * DB-driven (docs/specs/guest-page-db-wiring.md). The mock's body markup is rendered as a
- * scoped HTML string (page-only styles under `.mk`; the shared design system lives in
- * `src/app/mock.css`) with every text/image value interpolated from the `guest`
+ * DB-driven (docs/specs/guest-page-db-wiring.md). Every section is real JSX now (`core/ui`
+ * components, below); only the three centred `sec-head`s (why / services / activities) are
+ * still rendered as scoped HTML strings (page-only styles under `.mk`; the shared design system
+ * lives in `src/app/mock.css`), with every text value interpolated from the `guest`
  * `page_content` row, resolved for the locale. Nothing on this page is hard-coded copy.
  *
  * Composed from other slices at render time, so publishing there refreshes this page:
@@ -45,7 +54,18 @@ import { TestimonialsRow } from "./components/testimonials-row";
  * (before) `.mk`. The old raw `<!-- WELCOME -->` block, its `PAGE_STYLE` rules, the
  * `paragraphs()` helper and the `mediaImgTag` string image are gone; the image is now a
  * `MediaImage` (R2 asset) or the lazy fallback `<img>`, same pattern as Real Estate's `#manage`.
- * `bodyTop` now starts at WHY BOOK DIRECTLY.
+ *
+ * "Why Book Directly With Us?" right after it is real JSX too: `core/ui`'s new `BenefitCards`
+ * (hairline 4→2→1 grid of icon/title/description cards + centred `ButtonLink` CTA row — see its
+ * docstring for why `NumberedFeatureGrid`, `IconFeatureGrid` and `PhotoFeatureGrid` don't fit),
+ * ported 1:1 from the old `.grid-3`/`.bcard`/`.ico`/`.cta-row` CSS, with the services teaser's
+ * shell (`.alt`-tinted section, 1240px/28px column), its `sec-head` raw (`whySecHead()`) in its
+ * own small `.mk[data-page="guests"]` wrapper, and cards + CTA in one `Reveal` outside `.mk`. One
+ * deliberate deviation: the original inline `grid-template-columns:repeat(4,1fr)` kept 4 columns
+ * at every width (overflowing at 390px); `BenefitCards` uses `.grid-3`'s own 2/1-column
+ * breakpoints instead. `bodyTop`, `iconCards`, `ctaRow`, `escAttr` and the `.bcard`/`.ico` rules
+ * are gone; the `.mk` wrapper that held `bodyTop` stays, markup-less, carrying `PAGE_STYLE`/
+ * `<noscript>`/`ScrollReveal` for the remaining raw sec-heads.
  *
  * The "Make the Most of Your Stay" services teaser is real JSX now: `core/ui`'s new
  * `PhotoFeatureGrid` (see that component's docstring for why it's neither `IconFeatureGrid`
@@ -105,7 +125,6 @@ const ACTIVITIES_TEASER_BG = [
 // Escape admin-authored content before it is interpolated into the static body HTML string.
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-const escAttr = (s: string) => esc(s).replace(/"/g, "&quot;");
 
 /**
  * Iconoir glyph class for a card's `icon_key`. The font is loaded globally by `mock.css`, so
@@ -135,23 +154,6 @@ function localizeUrl(raw: string, locale: Locale): string {
   }
 }
 
-type IconCard = { icon_key: string; title: string; description: string };
-type Cta = { label: string; url: string; note?: string };
-
-/**
- * The mock's `.bcard` icon card (Why book directly). The photo-backed `.feat` wrapper the two
- * teasers used to share is gone — both teasers are `core/ui`'s `PhotoFeatureGrid` now, whose
- * photos are passed per item (`SERVICES_TEASER_BG` / `ACTIVITIES_TEASER_BG`, by position).
- */
-const iconCards = (items: IconCard[]): string =>
-  items
-    .map(
-      (c) =>
-        `<div class="bcard"><i class="ico ${iconClass(c.icon_key)}" aria-hidden="true"></i>` +
-        `<h3>${esc(c.title)}</h3><p>${esc(c.description)}</p></div>`,
-    )
-    .join("");
-
 /** The mock's centred section header (eyebrow + title + lede); optional parts are omitted. */
 const secHead = (opts: { eyebrow?: string; headline: string; intro?: string }): string =>
   `<div class="sec-head center reveal reveal-io pre-reveal">
@@ -160,26 +162,15 @@ const secHead = (opts: { eyebrow?: string; headline: string; intro?: string }): 
       ${opts.intro ? `<p class="lede" style="margin:16px auto 0">${esc(opts.intro)}</p>` : ""}
     </div>`;
 
-/** The mock's centred CTA row (accent button + optional helper note) — Why book directly only. */
-const ctaRow = (cta: Cta, locale: Locale): string =>
-  `<div class="cta-row reveal" style="justify-content:center">` +
-  `<a class="btn btn-accent" href="${escAttr(localizeUrl(cta.url, locale))}">${esc(cta.label)} →</a>` +
-  `${cta.note ? `<span class="cta-note">${esc(cta.note)}</span>` : ""}</div>`;
-
 const PAGE_STYLE = `
-/* hero + welcome — now real JSX (core/ui's Hero / IntroSplit, rendered outside .mk before
-   it), so no hero or .welcome/.guarantee CSS is left here. */
-
-.mk .ico{font-size:30px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:18px}
-.mk[data-page="guests"] .bcard{transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
-.mk[data-page="guests"] .bcard:hover{transform:translateY(-4px);box-shadow:0 16px 28px -20px rgba(0,0,0,.35)}
-.mk[data-page="guests"] .bcard .ico{transition:transform .35s var(--ease),color .35s var(--ease)}
-.mk[data-page="guests"] .bcard:hover .ico{transform:translateY(-3px) scale(1.1);color:var(--accent)}
+/* hero, welcome and why-book-directly — now real JSX (core/ui's Hero / IntroSplit /
+   BenefitCards, rendered outside .mk), so no hero, .welcome/.guarantee or .bcard/.ico CSS is
+   left here; only the raw sec-heads' entrance motion below. */
 
 /* Page-wide entrance motion (immediate on load for above-the-fold content, on scroll for
-   the rest, via <ScrollReveal page="guests">/scroll-reveal.tsx) + hover motion — same
-   pattern already applied to the About page. The hidden state is baked straight into the
-   server-rendered markup (.pre-reveal, applied via secHead()/the sections below) so
+   the rest, via <ScrollReveal page="guests">/scroll-reveal.tsx) — same pattern already
+   applied to the About page. The hidden state is baked straight into the
+   server-rendered markup (.pre-reveal, applied via secHead()) so
    there's no flash of visible-then-hidden; the <noscript> rule keeps content visible with
    JS off. Scoped to [data-page="guests"] so it never touches the shared, neutralised
    .reveal rule in mock.css or any other page. */
@@ -188,24 +179,14 @@ const PAGE_STYLE = `
 `;
 
 /**
- * Why book directly — above the featured-portfolio island. (The hero and the Welcome intro above
- * it are real JSX now, rendered by `GuestPage` before the `.mk` wrapper.)
+ * Why book directly's `sec-head` only (eyebrow/headline/intro) — the cards + CTA are real JSX now
+ * (`core/ui`'s `BenefitCards`, wired at the `GuestPage` call site), the same split as the two
+ * teasers below: still raw markup in its own small `.mk[data-page="guests"]` wrapper so it keeps
+ * `<ScrollReveal page="guests">`'s scroll fade-in.
  */
-function bodyTop(content: GuestContent, locale: Locale): string {
+function whySecHead(content: GuestContent): string {
   const { why } = content;
-
-  return `
-<!-- WHY BOOK DIRECTLY -->
-<section class="alt">
-  <div class="wrap">
-    ${secHead({ eyebrow: why.eyebrow, headline: why.headline, intro: why.intro })}
-    <div class="grid-3 reveal reveal-io reveal-stagger pre-reveal" style="grid-template-columns:repeat(4,1fr)">
-      ${iconCards(why.benefits)}
-    </div>
-    ${ctaRow(why.cta, locale)}
-  </div>
-</section>
-`;
+  return secHead({ eyebrow: why.eyebrow, headline: why.headline, intro: why.intro });
 }
 
 /**
@@ -266,6 +247,11 @@ export async function GuestPage({ locale }: { locale: Locale }) {
   const dualCta = content.dual_cta;
   const contactLines = dualCtaContactLines(globals);
 
+  const whyItems = content.why.benefits.map((item) => ({
+    icon: <i className={iconClass(item.icon_key)} aria-hidden="true" />,
+    title: item.title,
+    description: item.description,
+  }));
   const servicesTeaserItems = content.services_teaser.items.map((item, i) => ({
     icon: <i className={iconClass(item.icon_key)} aria-hidden="true" />,
     title: item.title,
@@ -372,6 +358,11 @@ export async function GuestPage({ locale }: { locale: Locale }) {
           </Reveal>
         </div>
       </section>
+      {/*
+       * Markup-less `.mk[data-page="guests"]` wrapper (same as Real Estate's first one): it only
+       * carries `PAGE_STYLE`, the `<noscript>` un-hide rule and `ScrollReveal`, ahead of the raw
+       * sec-heads below (why / services / activities) that still rely on them.
+       */}
       <div className="mk" data-page="guests">
         <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
         <noscript>
@@ -384,8 +375,38 @@ export async function GuestPage({ locale }: { locale: Locale }) {
           />
         </noscript>
         <ScrollReveal page="guests" />
-        <div dangerouslySetInnerHTML={{ __html: bodyTop(content, locale) }} />
       </div>
+
+      {/*
+       * "Why Book Directly With Us?" — real JSX now, `core/ui`'s new `BenefitCards` (see its
+       * docstring for why `NumberedFeatureGrid`/`IconFeatureGrid`/`PhotoFeatureGrid` don't fit).
+       * Same shell technique as the services teaser below: the original `<section class="alt">`
+       * (`clamp(72px,10vw,150px)` padding, `scroll-mt-[84px]`, the `.alt` 38% tint) + `.wrap`
+       * (1240px/28px) at the exact mock metrics; `sec-head` stays raw (`whySecHead()`) in its own
+       * small `data-page`-scoped `.mk` wrapper so it keeps its scroll-reveal; cards + CTA in one
+       * `Reveal` (the original per-card `.reveal-stagger` fade becomes one fade, as for the
+       * teasers), all outside `.mk` (Lesson 1). Still DB-driven: `why.benefits` (Iconoir via
+       * `iconClass`), `why.cta` → `localizeUrl`, `cta.note` omitted when empty.
+       */}
+      <section
+        className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)]"
+      >
+        <div className="mx-auto max-w-[1240px] px-[28px]">
+          <div className="mk" data-page="guests">
+            <div dangerouslySetInnerHTML={{ __html: whySecHead(content) }} />
+          </div>
+          <Reveal label="guests-why">
+            <BenefitCards
+              items={whyItems}
+              cta={{
+                href: localizeUrl(content.why.cta.url, locale),
+                label: `${content.why.cta.label} →`,
+                note: content.why.cta.note,
+              }}
+            />
+          </Reveal>
+        </div>
+      </section>
 
       {/* Featured properties — cards from the buildings slice, headings from `guest.portfolio`. */}
       <div id="portfolio" style={{ scrollMarginTop: 130 }}>

@@ -62,6 +62,8 @@ export { ProseSection, type ProseSectionSubsection } from "./prose-section";
 export { StatBento, type StatBentoCell, type StatBentoStat } from "./stat-bento";
 /** Bordered grid of full-bleed photo cards (icon/title/description, white-on-scrim) + optional CTA row. */
 export { PhotoFeatureGrid, type PhotoFeatureGridItem } from "./photo-feature-grid";
+/** Hairline grid (4→2→1 cols) of light benefit cards (caller icon above serif title + description, hover lift) + optional centred CTA row. */
+export { BenefitCards, type BenefitCardItem } from "./benefit-cards";
 /** Hairline grid (3→2→1 cols) of light centred stat tiles: count-up serif accent figure + uppercase label + optional caption. */
 export { StatTiles, type StatTile } from "./stat-tiles";
 /** Bookable-unit card (photo w/ hover zoom, badge, icon+value spec chips, underlined CTA) + its 3→2→1-col grid. */

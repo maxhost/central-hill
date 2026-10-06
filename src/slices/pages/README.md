@@ -384,8 +384,10 @@ pixel-identical, with the FAQ open and closed. The `<noscript>` rule is now Home
 `[data-reveal]` un-hide.
 
 The **Guests** page (`guest-page.tsx`) is **DB-driven** (mock embedded 1:1, drizzle 0012 +
-`docs/specs/guest-page-db-wiring.md`): `bodyTop` (plus the two teasers' raw `sec-head` helpers;
-the old `bodyBottom` and `bodyActivitiesTeaser` are gone — see below) interpolate the resolved `guest` row into the locked markup, escaped through `esc`/`escAttr`.
+`docs/specs/guest-page-db-wiring.md`): every section is real JSX now; only the three raw
+`sec-head` helpers (`whySecHead`, `servicesTeaserSecHead`, `activitiesTeaserSecHead`, all via
+`secHead()`) still interpolate the resolved `guest` row into locked markup, escaped through `esc`
+(the old `bodyTop`, `bodyBottom` and `bodyActivitiesTeaser` strings are gone — see below).
 Its nine sections split as follows — hero, welcome, why, services teaser and activities teaser
 come from `page_content`; the featured portfolio comes from **buildings**, the reviews from
 **testimonials** (`audience='guest'`, managed in `/admin/testimonials` — the page schema owns no
@@ -406,8 +408,8 @@ hair (`.46/.36/.8` scrim, `#ecdcc2` 600/.18em eyebrow, 1.08 h1 leading, 19px `#f
 Still DB-driven (`hero.eyebrow` → eyebrow, `headline` → h1, `subheadline` → p, `cta` →
 `localizeUrl`, `video_media_id` → the R2 url or `HERO_FALLBACK_VIDEO`); the CTA's stored
 absolute `centralhill.pt` URL now opens in a new tab (`ButtonLink`'s rule, same as the teasers'
-CTAs). The former `.mk[data-page="guests"] .hero` overrides are removed (`escAttr`/`localizeUrl`
-stay — the Why-book-directly `ctaRow` and the other CTAs still use them).
+CTAs). The former `.mk[data-page="guests"] .hero` overrides are removed (`localizeUrl` stays —
+every CTA on the page still uses it).
 
 The "Welcome to Central Hill" **intro is real JSX now** too: `core/ui`'s new `IntroSplit` (serif
 headline + 18px/62ch lede + ink-soft paragraphs + optional inline accent guarantee line with a
@@ -423,8 +425,30 @@ hero and `.mk` with the same shell as the dual CTA (plain `<section>`, `clamp(72
 into paragraphs on blank lines, `guarantee_label` (line omitted when empty), and
 `image_media_id` → `MediaImage` (R2) or the lazy `WELCOME_FALLBACK_IMG` `<img>`, same pattern as
 Real Estate's `#manage`. The raw `<!-- WELCOME -->` block, its `PAGE_STYLE` rules, the
-`paragraphs()` helper and the `mediaImgTag` import are gone; `bodyTop` now starts at WHY BOOK
-DIRECTLY.
+`paragraphs()` helper and the `mediaImgTag` import are gone.
+
+"Why Book Directly With Us?" right after it is **real JSX now** too: `core/ui`'s new
+`BenefitCards` (a hairline grid — 1px `line` gap + 1px outer `line` border — of `surface` cards,
+each a caller-built icon over a 23px serif title and a 15px ink-soft description, with the old
+hover lift/shadow and icon nudge→`accent`; plus `PhotoFeatureGrid`'s centred `ButtonLink` + note
+CTA row), ported 1:1 from `mock.css`'s `.grid-3`/`.bcard`/`.cta-row`/`.cta-note` plus the page's
+old `.ico`/`.bcard:hover` rules — live geometry identical at 1440 (cards, icon, title, body).
+**Not** `NumberedFeatureGrid` (nearest: same hairline 4→2→1 grid, but a position-derived index
+instead of an icon, different card metrics and hover, no CTA — would need a kernel prop swapping
+its defining index), **not** `IconFeatureGrid` (own band + heading, icon circle beside copy, fixed
+3 cols, no CTA), **not** `PhotoFeatureGrid` (photo cards). Same shell as the services teaser
+(`.alt`-tinted section, 1240px/28px column, outside `.mk`), its `sec-head` raw (`whySecHead()`)
+in its own small `.mk[data-page="guests"]` wrapper, cards + CTA in one `Reveal` (the per-card
+`.reveal-stagger` becomes one fade, as for the teasers). Still DB-driven: `why.benefits`
+(Iconoir via `iconClass`), `why.cta` → `localizeUrl`, `cta.note` omitted when empty. Deliberate
+deviations: (1) columns are 4 → 2 (≤980px) → 1 (≤680px) — the original inline
+`grid-template-columns:repeat(4,1fr)` (also in `mock/guest.html`) overrode `.grid-3`'s media
+queries, keeping 4 ~146px columns at 390px and overflowing the viewport; (2) the CTA is
+`ButtonLink` primary (6px radius, 44px tall vs the raw `.btn-accent`'s 3px/52px, and it opens the
+absolute `centralhill.pt` URL in a new tab), as for the teasers. `bodyTop`, `iconCards`, `ctaRow`,
+`escAttr` and the `.bcard`/`.ico` `PAGE_STYLE` rules are deleted; the `.mk[data-page="guests"]`
+wrapper that held `bodyTop` stays, markup-less (same as Real Estate's first one), carrying
+`PAGE_STYLE`, the `<noscript>` un-hide rule and `ScrollReveal` for the raw sec-heads.
 
 The "Make the Most of Your Stay" **services teaser is real JSX now**: `core/ui`'s new
 `PhotoFeatureGrid` (a bordered grid of full-bleed photo cards — icon/title/description in white
@@ -456,8 +480,7 @@ still `activities_teaser.items` (icon/title/description, Iconoir via `iconClass`
 differences from the services call site, both carried over from the original markup: no `.alt`
 tint (the original was a plain `<section>`, keeping the page's alternating bands) and
 `cta.variant: "ghost"` (the original `btn-ghost`). The old `bodyActivitiesTeaser()` string, its
-`.mk` wrapper and the now-dead `.feat-grid`/`.feat*` `PAGE_STYLE` rules are deleted;
-`iconCards()`/`ctaRow()` survive for Why book directly only (narrowed to `.bcard` / accent). As
+`.mk` wrapper and the now-dead `.feat-grid`/`.feat*` `PAGE_STYLE` rules are deleted. As
 with the services teaser, the original per-card `.reveal-stagger` becomes one `Reveal` fade for
 the whole grid + CTA, and the CTA is `ButtonLink`'s ghost variant rather than the mock's raw
 `.btn-ghost` (see `PhotoFeatureGrid`'s docstring for `ButtonLink`'s small inherited deviations).
