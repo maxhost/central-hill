@@ -7,6 +7,10 @@ import { getTranslations } from "next-intl/server";
  * intentional, scoped exception to the locked "Warm Editorial" palette: it identifies the
  * third-party WhatsApp brand and is confined to this single chrome element.
  *
+ * `--fab-lift` (default 0) raises the button above page-owned fixed bottom chrome — e.g. the
+ * services detail mobile booking bar sets it while that bar is visible — without either side
+ * importing the other.
+ *
  * Number is Central Hill's published line `910 075 725` (Portugal, +351) in the bare
  * international form `wa.me` requires (no `+`, spaces, or dashes).
  */
@@ -24,7 +28,7 @@ export async function WhatsAppFab() {
       rel="noopener noreferrer"
       aria-label={label}
       title={label}
-      className="fixed bottom-5 right-5 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#25d366] text-white shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-transform duration-200 hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25d366] motion-reduce:transition-none sm:bottom-7 sm:right-7 sm:h-16 sm:w-16"
+      className="fixed bottom-[calc(1.25rem_+_var(--fab-lift,0px))] right-5 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#25d366] text-white shadow-[0_8px_24px_rgba(0,0,0,0.22)] transition-transform duration-200 hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25d366] motion-reduce:transition-none sm:bottom-[calc(1.75rem_+_var(--fab-lift,0px))] sm:right-7 sm:h-16 sm:w-16"
     >
       <svg
         viewBox="0 0 24 24"

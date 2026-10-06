@@ -1,35 +1,52 @@
+import { MediaImage, type MediaImageData } from "@core/media";
 import { cn } from "@core/ui";
 import type { DetailItineraryStep } from "../../contract";
 
 /**
- * Vertical day-plan timeline (time · title · text per step) for a tour's itinerary — the old
- * `.mk .itin`/`.itin-step` port: a 2px `line` rule on the left with an `accent` dot per step
- * (ringed in `bg` so it reads as sitting on the rule). No `core/ui` primitive draws a timeline
- * (`NumberedFeatureGrid` numbers cards in a grid; `StepGallery` is photo cards), so it stays
- * slice-local. Bare and presentational; the caller owns the section shell and spacing.
+ * "The day, step by step" — a tour's itinerary as hairline-separated rows: a 108px rounded
+ * square (the step's thumbnail when its `media_id` resolved in `stepImages`, else its 1-based
+ * number in serif 30px `accent-deep` on a warm tint) beside the uppercase time, a serif 21px
+ * title and the step text. 76px squares and a 16px gap ≤560px. Ported 1:1 from
+ * `mock/service-detail.html`'s `.steps`/`.step`/`.thumb`/`.time`. No `core/ui` primitive fits
+ * (`NumberedFeatureGrid` numbers cards in a grid; `StepGallery` is overlaid photo cards), so it
+ * stays slice-local. Bare and presentational; the caller owns the `ContentBlock` and its head.
  */
 export function ServiceItinerary({
   steps,
+  images,
   className,
 }: {
   steps: DetailItineraryStep[];
+  /** Resolved thumbnails keyed by `media_id` (`ServiceDetail.stepImages`). */
+  images: Record<string, MediaImageData>;
   className?: string;
 }) {
   return (
-    <ol className={cn("ml-[6px] max-w-[68ch] border-l-2 border-line", className)}>
-      {steps.map((s, i) => (
-        <li key={i} className="relative pb-[30px] pl-[30px] last:pb-0">
-          <span
-            aria-hidden
-            className="absolute top-1 -left-[7px] size-3 rounded-full border-[3px] border-bg bg-accent"
-          />
-          <span className="block text-[11.5px] font-semibold uppercase tracking-[0.12em] text-accent-deep">
-            {s.time}
-          </span>
-          <h3 className="my-1.5 font-serif text-[19px] font-medium leading-[1.3] text-ink">{s.title}</h3>
-          <p className="text-[14.5px] leading-[1.65] text-ink-soft">{s.text}</p>
-        </li>
-      ))}
+    <ol className={cn("flex flex-col", className)}>
+      {steps.map((s, i) => {
+        const img = s.media_id ? images[s.media_id] : undefined;
+        return (
+          <li
+            key={i}
+            className="grid grid-cols-[76px_minmax(0,1fr)] gap-4 border-b border-line py-5 first:pt-1 last:border-b-0 last:pb-0 min-[561px]:grid-cols-[108px_minmax(0,1fr)] min-[561px]:gap-[22px]"
+          >
+            <div className="grid size-[76px] place-items-center overflow-hidden rounded-[6px] bg-[color-mix(in_srgb,var(--color-line)_55%,var(--color-bg))] font-serif text-[30px] text-accent-deep min-[561px]:size-[108px]">
+              {img ? (
+                <MediaImage data={img} className="h-full w-full object-cover" sizes="(max-width: 560px) 76px, 108px" />
+              ) : (
+                <span aria-hidden>{i + 1}</span>
+              )}
+            </div>
+            <div className="leading-[1.6]">
+              <span className="text-[11.5px] font-semibold uppercase tracking-[0.12em] text-accent-deep">{s.time}</span>
+              <h3 className="my-1.5 font-serif text-[21px] font-medium leading-[1.08] tracking-[-0.015em] text-ink">
+                {s.title}
+              </h3>
+              <p className="text-[15px] leading-[1.6] text-ink-soft">{s.text}</p>
+            </div>
+          </li>
+        );
+      })}
     </ol>
   );
 }

@@ -31,16 +31,26 @@ Slice services.
   component's docstring), which is why `BODY` in `services-listing.tsx` is split into
   `BODY_TOP`/`BODY_BOTTOM` around it. `revalidate = 3600`, static per locale, **no database
   read** (content is hardcoded English, same gap as the detail pages below).
-- `/[locale]/services/[slug]` — detail (`ui/service-detail.tsx`), fully componentised (no
-  `.mk`/`mock.css`) and **DB-driven**: `getServiceBySlug(locale, slug)` → hero (`core/ui`
-  `Hero`, Buildings listing config + breadcrumb), `SpecStrip` facts (duration, "from" price),
-  overview (body + highlights `AmenityGrid` + itinerary + option groups), rates (price table
-  + extras), partners, gallery, notes, "Other Guest Services" (`listServices`), and a closing
-  enquiry (About's `SectionHead` + `ContactSplit` + leads `ContactForm`, `bookingType ===
-  "enquiry"` only) or an `ActionBand` CTA (`external`). Sections render only when non-empty;
-  per-slice pieces live in `ui/components/`. Copy: `services.detail.*` messages.
-  `generateStaticParams` = `listServiceParams()`; unknown slugs 404; `revalidate = 3600`, reads
-  tagged `service-list`.
+- `/[locale]/services/[slug]` — detail (`ui/service-detail.tsx`): the approved
+  `mock/service-detail.html` — ONE fixed skeleton for every service — fully componentised (no
+  `.mk`/`mock.css`) and **DB-driven** via `getServiceBySlug(locale, slug)`:
+  title block (`core/ui` `DetailTitle`: breadcrumb, category eyebrow, name, excerpt, ★ rating +
+  "Guest favourite" ≥ 4.8, badges) → gallery (`core/ui` `MosaicGallery adaptive`, cover +
+  gallery, count-aware 1–5 layouts; "Show all photos" dialog `ServicePhotos` only for 6+) →
+  body grid: content column of `core/ui` `ContentBlock`s (key facts `IconFactGrid`, About,
+  What's included, the **variable module** — itinerary `ServiceItinerary` (thumbnails from
+  `stepImages` or the step number) → option groups `ServiceOptionGroups` (cards / chips) →
+  rates `ServiceRates` (table + footnote + extras) → partners `ServicePartners` — and Good to
+  know `ServiceGoodToKnow`, each only when non-empty) beside the sticky `ServiceBookingCard`
+  (in `core/ui` `StickyAside`; actions by `booking_type`: `enquiry` → "Request…" `#enquire` +
+  "Ask on WhatsApp" + no-payment note, `external` → the CTA in a new tab, `none` → "See
+  partners" when partners exist) → `ServiceMobileBar` (≤980px) → enquiry (`enquiry` only:
+  `core/ui` `EnquirySplit` on the `alt` band + leads `ContactForm`, `source="service:<slug>"`)
+  → "Other guest services" (4 → 2 → 1 grid of the listing's own `ServiceCard`, max 4; the
+  page hoists the Iconoir stylesheet `<link>` for the card's category glyph). Icons are inline
+  SVGs of the mock sprite (`ui/components/service-icons.tsx`, `FACT_ICON` maps the facts enum).
+  Copy: `services.detail.*` messages. `generateStaticParams` = `listServiceParams()`; unknown
+  slugs 404; `revalidate = 3600`, reads tagged `service-list`.
 
 ## Contract (`contract.ts`)
 

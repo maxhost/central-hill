@@ -1,13 +1,19 @@
 import type { DetailExtraOption, DetailPriceTable } from "../../contract";
 
 /**
- * The "Rates" section body: an optional price table (an empty corner cell, one header per
- * column, a label + one serif figure per column per row, optional footnote) and an optional
- * grid of add-on cards (label · price · description, 2 → 1 columns at 680px). Port of the old
- * `.mk .price-table`/`.extras-grid`/`.extra-card`. Every figure is display copy authored in
- * the backoffice ("€65 / person", "On request"), so nothing here formats currency. The table
- * scrolls horizontally inside its wrapper on narrow screens (min 420px) instead of squashing.
- * Bare and presentational; the caller owns the section shell and its `SectionHead`.
+ * The "Rates" block body: an optional price table, then optional add-on cards. The table is
+ * `mock/service-detail.html`'s `.rates`: 11px uppercase `ink-soft` headers over a hairline, one
+ * row per label (15px `ink`) with its figures in serif 19px, **right-aligned** (as the mock's
+ * single `td.num` column; with several columns every figure column is right-aligned so headers
+ * and figures line up), 16px cell padding and hairline rows. The corner header is empty (the
+ * data model has no name for the label column — the mock's "Group size" is per-service copy).
+ * An optional footnote (13px `ink-soft`) follows. The table scrolls horizontally on narrow
+ * screens when it has 3+ columns (min 420px) instead of squashing.
+ *
+ * Add-ons keep the previous `.extras-grid`/`.extra-card` design (label · price · description,
+ * 2 → 1 columns at 680px) — the approved mock has no extras sample. Every figure is display copy
+ * authored in the backoffice ("€65 / person", "On request"), so nothing here formats currency.
+ * Bare and presentational; the caller owns the `ContentBlock` and its head.
  */
 export function ServiceRates({
   pricing,
@@ -16,22 +22,23 @@ export function ServiceRates({
   pricing: DetailPriceTable | null;
   extras: DetailExtraOption[];
 }) {
+  const wide = pricing ? pricing.columns.length > 1 : false;
   return (
     <>
       {pricing ? (
         <div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[420px] border-collapse">
+          <div className={wide ? "overflow-x-auto" : undefined}>
+            <table className={`mt-1 w-full border-collapse ${wide ? "min-w-[420px]" : ""}`}>
               <thead>
                 <tr>
-                  <th className="border-b border-line pr-[18px] pb-[14px]">
+                  <th className="border-b border-line pr-4 pb-3">
                     <span className="sr-only">—</span>
                   </th>
                   {pricing.columns.map((c, i) => (
                     <th
                       key={i}
                       scope="col"
-                      className="border-b border-line pr-[18px] pb-[14px] text-left text-[11px] font-semibold uppercase tracking-[0.12em] whitespace-nowrap text-ink-soft"
+                      className="border-b border-line pr-4 pb-3 text-right text-[11px] font-semibold uppercase tracking-[0.12em] whitespace-nowrap text-ink-soft last:pr-0"
                     >
                       {c}
                     </th>
@@ -43,14 +50,14 @@ export function ServiceRates({
                   <tr key={ri}>
                     <th
                       scope="row"
-                      className="border-b border-line py-[18px] pr-[18px] text-left text-[15px] font-medium text-ink"
+                      className="border-b border-line py-4 pr-4 text-left text-[15px] font-normal text-ink"
                     >
                       {r.label}
                     </th>
                     {r.cells.map((c, ci) => (
                       <td
                         key={ci}
-                        className="border-b border-line py-[18px] pr-[18px] font-serif text-[18px] whitespace-nowrap text-ink"
+                        className="border-b border-line py-4 pr-4 text-right font-serif text-[19px] whitespace-nowrap text-ink last:pr-0"
                       >
                         {c}
                       </td>
