@@ -1389,6 +1389,9 @@ export const ICON_NAMES = [
 
 export type IconName = (typeof ICON_NAMES)[number];
 
+/** Sprite with every icon as `<symbol id="<name>">` (backoffice icon picker only). */
+export const ICON_SPRITE_URL = "/icons/iconoir-7.12.1.svg";
+
 const NAME_SET: ReadonlySet<string> = new Set(ICON_NAMES);
 
 /** True if `name` is a renderable icon (validation + fallback guard). */

@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import { readdirSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { iconKey } from "@core/validation/icon-key";
 import { FALLBACK_ICON, ICON_NAMES, Icon, isIconName, resolveIconName } from "../icon";
+import { ICON_SPRITE_URL } from "../icons/names";
 import { ICON_SVG } from "../icons/svg";
 import { UI_ICON_SVG, type UiIconName } from "../icons/ui-svg";
 import { UiIcon } from "../ui-icon";
@@ -21,6 +22,15 @@ test("generated map matches the pinned iconoir package", () => {
   const files = readdirSync(dir).filter((f) => f.endsWith(".svg")).map((f) => f.slice(0, -4)).sort();
   assert.deepEqual([...ICON_NAMES], files, "re-run `pnpm icons:generate`");
   for (const name of ICON_NAMES) assert.ok(ICON_SVG[name].length > 0, name);
+});
+
+test("picker sprite has every icon as a verbatim symbol", () => {
+  const sprite = readFileSync(path.resolve(process.cwd(), "public", ICON_SPRITE_URL.slice(1)), "utf8");
+  const ids = [...sprite.matchAll(/<symbol id="([^"]+)" viewBox="0 0 24 24">/g)].map((m) => m[1]);
+  assert.deepEqual(ids, [...ICON_NAMES], "re-run `pnpm icons:generate`");
+  for (const name of ICON_NAMES) {
+    assert.ok(sprite.includes(`<symbol id="${name}" viewBox="0 0 24 24">${ICON_SVG[name]}</symbol>`), name);
+  }
 });
 
 test("isIconName / resolveIconName", () => {

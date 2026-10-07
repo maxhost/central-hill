@@ -1117,6 +1117,14 @@
       "preparing": "Preparing…",
       "queuedNote": "Uploads when you save"
     },
+    "icon": {
+      "none": "No icon",
+      "unknown": "Unknown icon",
+      "search": "Search icons (e.g. home, map, star)",
+      "clear": "No icon",
+      "count": "{count, plural, one {# icon} other {# icons}}",
+      "noResults": "No icon matches that search."
+    },
     "actions": {
       "save": "Save",
       "saving": "Saving…",

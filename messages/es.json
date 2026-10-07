@@ -1117,6 +1117,14 @@
       "preparing": "Preparando…",
       "queuedNote": "Se sube al guardar"
     },
+    "icon": {
+      "none": "Sin icono",
+      "unknown": "Icono desconocido",
+      "search": "Buscar iconos (p. ej. home, map, star)",
+      "clear": "Sin icono",
+      "count": "{count, plural, one {# icono} other {# iconos}}",
+      "noResults": "Ningún icono coincide con la búsqueda."
+    },
     "actions": {
       "save": "Guardar",
       "saving": "Guardando…",

@@ -2,23 +2,28 @@
  * Icon map generator (`pnpm icons:generate`), ADR 0034.
  *
  * Reads the pinned `iconoir` package's 24×24 regular SVGs and writes three committed files
- * under `src/core/ui/icons/`:
- *  - `names.ts`: the icon name list + `IconName` type. Has no SVG data, so validation can
- *    use it on the client as well.
+ * under `src/core/ui/icons/`, plus a sprite under `public/icons/`:
+ *  - `names.ts`: the icon name list + `IconName` type + `ICON_SPRITE_URL`. Has no SVG data,
+ *    so validation (and the backoffice icon picker) can use it on the client as well.
  *  - `svg.ts`: name → inner SVG markup, `server-only`. `<Icon>` inlines it into the static HTML.
  *  - `ui-svg.ts`: the small client-safe subset (`UI_ICON_NAMES` below) that `<UiIcon>` draws:
  *    interface defaults of client components (chevrons, close, stepper…), ADR 0034 amendment.
+ *  - `public/icons/iconoir-<version>.svg`: every icon as a `<symbol id="<name>">`, for the
+ *    backoffice icon picker (`<use href>`), ADR 0034 amendment 2. Public pages never load it.
  *
  * The outer `<svg>` is dropped (`<Icon>` renders its own). Children's `stroke-width` of
  * ~1.5 is dropped too, so `<Icon strokeWidth>` (set on the root) applies to the whole
  * icon. Re-run after bumping `iconoir`. The output is deterministic (sorted by name).
  */
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const SRC_DIR = path.resolve(process.cwd(), "node_modules/iconoir/icons/regular");
 const OUT_DIR = path.resolve(process.cwd(), "src/core/ui/icons");
+const SPRITE_DIR = path.resolve(process.cwd(), "public/icons");
 const version = (JSON.parse(readFileSync(path.resolve(process.cwd(), "node_modules/iconoir/package.json"), "utf8")) as { version: string }).version;
+/** Versioned so a package bump never serves a stale cached sprite. */
+const SPRITE_FILE = `iconoir-${version}.svg`;
 
 /** Interface icons client components may draw themselves (`<UiIcon>`). Keep it small: every
  * entry ships in the client JS of any page that uses `<UiIcon>`. */
@@ -69,6 +74,9 @@ export const ICON_NAMES = ${JSON.stringify(icons.map((i) => i.name), null, 2)} a
 
 export type IconName = (typeof ICON_NAMES)[number];
 
+/** Sprite with every icon as \`<symbol id="<name>">\` (backoffice icon picker only). */
+export const ICON_SPRITE_URL = "/icons/${SPRITE_FILE}";
+
 const NAME_SET: ReadonlySet<string> = new Set(ICON_NAMES);
 
 /** True if \`name\` is a renderable icon (validation + fallback guard). */
@@ -105,6 +113,17 @@ ${UI_ICON_NAMES.map((name) => {
 
 export type UiIconName = keyof typeof UI_ICON_SVG;
 `,
+);
+
+mkdirSync(SPRITE_DIR, { recursive: true });
+for (const f of readdirSync(SPRITE_DIR)) {
+  if (/^iconoir-.*\.svg$/.test(f) && f !== SPRITE_FILE) rmSync(path.join(SPRITE_DIR, f));
+}
+writeFileSync(
+  path.join(SPRITE_DIR, SPRITE_FILE),
+  `<svg xmlns="http://www.w3.org/2000/svg">${icons
+    .map((i) => `<symbol id="${i.name}" viewBox="0 0 24 24">${i.inner}</symbol>`)
+    .join("")}</svg>\n`,
 );
 
 console.log(`Wrote ${icons.length} icons from iconoir@${version} (${UI_ICON_NAMES.length} in the UI subset) to ${path.relative(process.cwd(), OUT_DIR)}/`);

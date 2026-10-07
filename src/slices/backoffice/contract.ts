@@ -57,6 +57,12 @@ export {
  */
 export { MediaField, MediaGalleryField } from "./ui/media-field";
 /**
+ * Icon picker for any stored Iconoir name (`icon_key`, ADR 0034 amendment 2): search + grid,
+ * previews from the generated sprite (admin only). Validate the value with the strict
+ * `iconKey` from `@core/validation/icon-key`. `SpriteIcon` draws one sprite icon.
+ */
+export { IconField, SpriteIcon } from "./ui/icon-field";
+/**
  * Deferred media uploads (ADR 0030). `MediaQueueProvider` is mounted once in the panel
  * layout; every form that contains a `MediaField` MUST `await flush()` from
  * `useMediaQueue()` before calling its save action, or it will persist ids whose bytes

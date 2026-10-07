@@ -1117,6 +1117,14 @@
       "preparing": "Préparation…",
       "queuedNote": "Envoyé à l’enregistrement"
     },
+    "icon": {
+      "none": "Aucune icône",
+      "unknown": "Icône inconnue",
+      "search": "Rechercher des icônes (ex. home, map, star)",
+      "clear": "Aucune icône",
+      "count": "{count, plural, one {# icône} other {# icônes}}",
+      "noResults": "Aucune icône ne correspond à cette recherche."
+    },
     "actions": {
       "save": "Enregistrer",
       "saving": "Enregistrement…",
