@@ -15,6 +15,7 @@ import {
   slug,
   tStr,
 } from "@core/validation/primitives";
+import { amenityInput } from "../validation";
 
 /** A FAQ row as the editor posts it; `id` present ⇒ update, absent ⇒ insert. */
 export const buildingFaqForm = z.object({
@@ -55,3 +56,19 @@ export const buildingSaveInput = z.object({
 });
 
 export type BuildingSaveInput = z.infer<typeof buildingSaveInput>;
+
+/**
+ * Amenity taxonomy editor (`/admin/amenities`). Built from the public `amenityInput`
+ * so `slug` and the strict `iconKey` stay in one place, reshaped for what the form
+ * posts: `id?`, a nullable `icon` (blank ⇒ the building page draws `check-circle`),
+ * a nullable `group`, and a required [T] `label` (source locale `en`).
+ */
+export const amenitySaveInput = amenityInput.extend({
+  id: z.uuid().optional(),
+  icon: amenityInput.shape.icon.nullable(),
+  group: z.string().trim().max(64).nullable(),
+  // [T] source value (en):
+  label: tStr({ min: 1, max: 80 }),
+});
+
+export type AmenitySaveInput = z.infer<typeof amenitySaveInput>;

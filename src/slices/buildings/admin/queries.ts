@@ -1,5 +1,5 @@
 import "server-only";
-import { asc, eq } from "drizzle-orm";
+import { asc, count, eq } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { type ContentRef, loadContent } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
@@ -206,6 +206,77 @@ export async function listAmenitiesAdmin(): Promise<AmenityOption[]> {
     label: content.get(AMENITY, a.id, "label") ?? a.slug,
     group: a.group,
   }));
+}
+
+// ── Amenity taxonomy editor (`/admin/amenities`) ──────────────────────────────
+export interface AmenityAdminListItem {
+  id: string;
+  label: string;
+  slug: string;
+  icon: string | null;
+  group: string | null;
+  /** How many buildings list this amenity (deleting it removes it from all of them). */
+  buildings: number;
+}
+
+/** The amenity taxonomy (source labels) for the list screen, grouped then by slug. */
+export async function listAmenitiesForAdminTable(): Promise<AmenityAdminListItem[]> {
+  const rows = await db
+    .select({
+      id: amenity.id,
+      slug: amenity.slug,
+      icon: amenity.icon,
+      group: amenity.group,
+      buildings: count(building_amenity.building_id),
+    })
+    .from(amenity)
+    .leftJoin(building_amenity, eq(building_amenity.amenity_id, amenity.id))
+    .groupBy(amenity.id)
+    .orderBy(asc(amenity.group), asc(amenity.slug));
+  if (rows.length === 0) return [];
+  const content = await loadContent(
+    rows.map((a) => ({ type: AMENITY, id: a.id })),
+    SOURCE,
+  );
+  return rows.map((a) => ({
+    id: a.id,
+    label: content.get(AMENITY, a.id, "label") ?? a.slug,
+    slug: a.slug,
+    icon: a.icon,
+    group: a.group,
+    buildings: a.buildings,
+  }));
+}
+
+export interface AmenityEditData {
+  id: string;
+  slug: string;
+  /** `""` when unset (the building page then draws `check-circle`). */
+  icon: string;
+  group: string;
+  label: string;
+  buildings: number;
+}
+
+/** Full editable record for one amenity (source label), or null. */
+export async function getAmenityForEdit(id: string): Promise<AmenityEditData | null> {
+  const [row] = await db.select().from(amenity).where(eq(amenity.id, id)).limit(1);
+  if (!row) return null;
+  const [content, [usage]] = await Promise.all([
+    loadContent([{ type: AMENITY, id }], SOURCE),
+    db
+      .select({ n: count() })
+      .from(building_amenity)
+      .where(eq(building_amenity.amenity_id, id)),
+  ]);
+  return {
+    id: row.id,
+    slug: row.slug,
+    icon: row.icon ?? "",
+    group: row.group ?? "",
+    label: content.get(AMENITY, id, "label") ?? "",
+    buildings: usage?.n ?? 0,
+  };
 }
 
 /**

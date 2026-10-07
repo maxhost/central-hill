@@ -316,6 +316,37 @@
       "errors": {
         "coverRequired": "Se requiere una imagen de portada.",
         "slugConflict": "Ese slug ya está en uso."
+      },
+      "amenity": {
+        "title": "Comodidades",
+        "subtitle": "Las comodidades que pueden mostrar los edificios, con su icono en la página del edificio.",
+        "newAmenity": "Nueva comodidad",
+        "empty": "Aún no hay comodidades",
+        "emptyHint": "Crea la primera comodidad y márcala después en cada edificio que lo ofrezca.",
+        "editTitle": "Editar comodidad",
+        "newTitle": "Nueva comodidad",
+        "formSubtitle": "La etiqueta se escribe en inglés; los demás idiomas se traducen después.",
+        "backToList": "Volver a las comodidades",
+        "defaultIcon": "Por defecto: check",
+        "confirmDeleteInUse": "¿Eliminar esta comodidad? Se quitará de {count, plural, one {# edificio} other {# edificios}}. No se puede deshacer.",
+        "columns": {
+          "label": "Etiqueta",
+          "slug": "Slug",
+          "icon": "Icono",
+          "group": "Grupo",
+          "buildings": "Edificios"
+        },
+        "sections": {
+          "details": "Detalles"
+        },
+        "fields": {
+          "label": "Etiqueta",
+          "slug": "Slug",
+          "icon": "Icono",
+          "iconHint": "Cualquier icono de Iconoir, junto a la etiqueta en la página del edificio. Déjalo vacío para un check.",
+          "group": "Grupo",
+          "groupHint": "Opcional; ordena la lista y el editor de edificios."
+        }
       }
     },
     "home": "Inicio",
@@ -1081,6 +1112,7 @@
       "leads": "Leads",
       "pages": "Páginas",
       "buildings": "Edificios",
+      "amenities": "Comodidades",
       "apartments": "Apartamentos",
       "testimonials": "Testimonios",
       "faq": "FAQ",

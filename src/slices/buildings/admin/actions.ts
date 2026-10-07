@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
 import {
@@ -11,10 +11,10 @@ import {
   setSlugs,
   setSourceContent,
 } from "@core/i18n/content-write";
-import { BUILDING, BUILDING_FAQ } from "../contract";
-import { building, building_amenity, building_faq, building_media } from "../schema";
-import { revalidateBuilding } from "../server/publish";
-import { type BuildingSaveInput, buildingSaveInput } from "./validation";
+import { AMENITY, BUILDING, BUILDING_FAQ } from "../contract";
+import { amenity, building, building_amenity, building_faq, building_media } from "../schema";
+import { revalidateBuilding, revalidateBuildingList } from "../server/publish";
+import { type BuildingSaveInput, amenitySaveInput, buildingSaveInput } from "./validation";
 
 /**
  * Backoffice write actions for slice `buildings` (S12). Each re-gates with
@@ -156,6 +156,85 @@ export async function deleteBuilding(id: string): Promise<{ ok: boolean }> {
     await deleteSlugs(BUILDING, id);
 
     revalidateBuilding(id, {});
+    revalidatePath("/admin/buildings");
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
+
+// ── Amenity taxonomy (`/admin/amenities`) ────────────────────────────────────
+/**
+ * Create/update one amenity. `slug`/`icon`/`group` are plain columns; the [T] `label`
+ * goes through the write seam (source `en`). The slug has no DB unique index, so a
+ * duplicate is refused here (`slug_conflict`). Every public building read (listing +
+ * detail) carries `BUILDING_TAGS.list`, so `revalidateBuildingList` refreshes the
+ * amenity grids of all buildings that list it.
+ */
+export async function saveAmenity(raw: unknown): Promise<BuildingSaveResult> {
+  const staff = await requireStaff();
+
+  const parsed = amenitySaveInput.safeParse(raw);
+  if (!parsed.success) {
+    return { ok: false, error: "validation", fieldErrors: fieldErrorsFrom(parsed.error.issues) };
+  }
+  const input = parsed.data;
+
+  const coreValues = { slug: input.slug, icon: input.icon, group: input.group };
+
+  try {
+    const [clash] = await db
+      .select({ id: amenity.id })
+      .from(amenity)
+      .where(
+        input.id
+          ? and(eq(amenity.slug, input.slug), ne(amenity.id, input.id))
+          : eq(amenity.slug, input.slug),
+      )
+      .limit(1);
+    if (clash) return { ok: false, error: "slug_conflict" };
+
+    let id = input.id ?? "";
+    if (input.id) {
+      const [exists] = await db
+        .select({ id: amenity.id })
+        .from(amenity)
+        .where(eq(amenity.id, input.id))
+        .limit(1);
+      if (!exists) return { ok: false, error: "not_found" };
+      await db
+        .update(amenity)
+        .set({ ...coreValues, updated_at: new Date() })
+        .where(eq(amenity.id, input.id));
+    } else {
+      const [ins] = await db.insert(amenity).values(coreValues).returning({ id: amenity.id });
+      if (!ins) return { ok: false, error: "server" };
+      id = ins.id;
+    }
+
+    await setSourceContent(AMENITY, id, { label: input.label }, { updatedBy: staff.userId });
+
+    revalidateBuildingList();
+    revalidatePath("/admin/amenities");
+    revalidatePath(`/admin/amenities/${id}`);
+    return { ok: true, id };
+  } catch {
+    return { ok: false, error: "server" };
+  }
+}
+
+/**
+ * Delete one amenity. `building_amenity` rows cascade (it disappears from every
+ * building that listed it); its translations are polymorphic, so they're cleaned here.
+ */
+export async function deleteAmenity(id: string): Promise<{ ok: boolean }> {
+  await requireStaff();
+  try {
+    await db.delete(amenity).where(eq(amenity.id, id));
+    await deleteContent(AMENITY, id);
+
+    revalidateBuildingList();
+    revalidatePath("/admin/amenities");
     revalidatePath("/admin/buildings");
     return { ok: true };
   } catch {

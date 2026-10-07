@@ -316,6 +316,37 @@
       "errors": {
         "coverRequired": "A cover image is required.",
         "slugConflict": "That slug is already in use."
+      },
+      "amenity": {
+        "title": "Amenities",
+        "subtitle": "The amenities buildings can list, with their icon on the building page.",
+        "newAmenity": "New amenity",
+        "empty": "No amenities yet",
+        "emptyHint": "Create your first amenity, then tick it on each building that offers it.",
+        "editTitle": "Edit amenity",
+        "newTitle": "New amenity",
+        "formSubtitle": "The label is authored in English; other languages are translated later.",
+        "backToList": "Back to amenities",
+        "defaultIcon": "Default: check",
+        "confirmDeleteInUse": "Delete this amenity? It will be removed from {count, plural, one {# building} other {# buildings}}. This can’t be undone.",
+        "columns": {
+          "label": "Label",
+          "slug": "Slug",
+          "icon": "Icon",
+          "group": "Group",
+          "buildings": "Buildings"
+        },
+        "sections": {
+          "details": "Details"
+        },
+        "fields": {
+          "label": "Label",
+          "slug": "Slug",
+          "icon": "Icon",
+          "iconHint": "Any Iconoir icon, shown next to the label on the building page. Leave empty for a check.",
+          "group": "Group",
+          "groupHint": "Optional; orders the list and the building editor."
+        }
       }
     },
     "home": "Home",
@@ -1081,6 +1112,7 @@
       "leads": "Leads",
       "pages": "Pages",
       "buildings": "Buildings",
+      "amenities": "Amenities",
       "apartments": "Apartments",
       "testimonials": "Testimonials",
       "faq": "FAQ",

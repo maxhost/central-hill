@@ -231,6 +231,26 @@ list/create/edit routes under `app/(admin)/admin/(panel)/buildings/…`.
 - `admin/ui/` — `list.tsx` (server) + `building-form.tsx` (one client island for new + edit),
   using the backoffice form + media picker primitives (`MediaField` / `MediaGalleryField`).
 
+### Amenity taxonomy editor (`/admin/amenities`)
+
+A second `content`-group screen (`buildings.amenities`, nav key `backoffice.nav.amenities`),
+mirroring the service-category editor: list at `/admin/amenities`, create at `/new`, edit +
+delete at `/[id]` (routes under `app/(admin)/admin/(panel)/amenities/…`).
+
+- Reads: `listAmenitiesForAdminTable` (label, slug, icon, group, how many buildings list it) and
+  `getAmenityForEdit` (source `en` label).
+- Validation: `amenitySaveInput` = the public `amenityInput` extended to the form's post shape
+  (`id?`, nullable `icon` — still the strict `iconKey` when set —, nullable `group`, `min(1)`
+  label). `admin/ui/amenity-payload.ts` maps the form controls to it (blank ⇒ `null`).
+- Actions: `saveAmenity` (refuses a duplicate slug with `slug_conflict`, since the column has no
+  unique index; the [T] `label` goes through the write seam) and `deleteAmenity`
+  (`building_amenity` rows cascade; the polymorphic translations are cleaned). Both call
+  `revalidateBuildingList()`: every public building read carries `BUILDING_TAGS.list`, so this
+  refreshes the amenity grid on every building page.
+- UI: `amenity-list.tsx` (server) + `amenity-form.tsx` (client; `IconField` with `allowEmpty` —
+  a blank icon renders `check-circle` on the building page). Delete asks with the same
+  `window.confirm` as the category form, naming how many buildings will lose the amenity.
+
 `contract.ts` also exports `setBuildingStats(buildingId, stats)` — the write fn the **apartments**
 admin calls to persist recomputed `apartments_count / total_capacity / beds_count` (buildings
 can't read the apartment table — golden rule 2).

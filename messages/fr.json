@@ -316,6 +316,37 @@
       "errors": {
         "coverRequired": "Une image de couverture est requise.",
         "slugConflict": "Ce slug est déjà utilisé."
+      },
+      "amenity": {
+        "title": "Équipements",
+        "subtitle": "Les équipements que les immeubles peuvent afficher, avec leur icône sur la page de l’immeuble.",
+        "newAmenity": "Nouvel équipement",
+        "empty": "Aucun équipement pour l’instant",
+        "emptyHint": "Créez le premier équipement, puis cochez-le sur chaque immeuble qui le propose.",
+        "editTitle": "Modifier l’équipement",
+        "newTitle": "Nouvel équipement",
+        "formSubtitle": "Le libellé est rédigé en anglais ; les autres langues sont traduites ensuite.",
+        "backToList": "Retour aux équipements",
+        "defaultIcon": "Par défaut : coche",
+        "confirmDeleteInUse": "Supprimer cet équipement ? Il sera retiré de {count, plural, one {# immeuble} other {# immeubles}}. Cette action est irréversible.",
+        "columns": {
+          "label": "Libellé",
+          "slug": "Slug",
+          "icon": "Icône",
+          "group": "Groupe",
+          "buildings": "Immeubles"
+        },
+        "sections": {
+          "details": "Détails"
+        },
+        "fields": {
+          "label": "Libellé",
+          "slug": "Slug",
+          "icon": "Icône",
+          "iconHint": "N’importe quelle icône Iconoir, affichée à côté du libellé sur la page de l’immeuble. Laissez vide pour une coche.",
+          "group": "Groupe",
+          "groupHint": "Facultatif ; ordonne la liste et l’éditeur d’immeubles."
+        }
       }
     },
     "home": "Accueil",
@@ -1081,6 +1112,7 @@
       "leads": "Leads",
       "pages": "Pages",
       "buildings": "Immeubles",
+      "amenities": "Équipements",
       "apartments": "Appartements",
       "testimonials": "Témoignages",
       "faq": "FAQ",
