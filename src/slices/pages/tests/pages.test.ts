@@ -4,7 +4,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { translatablePaths } from "@core/validation/primitives";
 import { pageContentSchema } from "../validation";
-import { guestSchema, homeSchema, translatablePathsByPage } from "../schemas";
+import { aboutSchema, guestSchema, homeSchema, translatablePathsByPage } from "../schemas";
+import { defaultAbout } from "../schemas/about";
 import { collectMediaIds, expand, overlayTranslations } from "../server/overlay";
 
 /**
@@ -234,6 +235,23 @@ test("guest rejects a blank CTA url (the migration must backfill real links)", (
 });
 
 // ── pure overlay logic ──────────────────────────────────────────────────────────
+test("about's default copy validates and is what the page renders without a row", () => {
+  assert.equal(aboutSchema.safeParse(defaultAbout).success, true);
+  // The old seed shape (contact CTAs, no stats) is rejected — the backfill replaces it.
+  const old = { ...defaultAbout, contact: { headline: "Get in touch", cta_guests: { label: "x", url: "https://x.pt" } } };
+  assert.equal(aboutSchema.safeParse(old).success, false);
+});
+
+test("about exposes prose leaves as translatable but not icons, media ids or the issuer", () => {
+  const paths = translatablePathsByPage.about;
+  for (const p of ["hero.mission", "stats[].label", "serve.audiences[].title", "organisation.departments[].name", "contact.cards[].link_label"]) {
+    assert.ok(paths.includes(p), `${p} should be translatable`);
+  }
+  for (const p of paths) {
+    assert.ok(!/icon_key|_media_id|issuer|faq_group_key/.test(p), `${p} should not be translatable`);
+  }
+});
+
 test("expand walks fixed-count arrays into concrete numeric paths", () => {
   const data = { guests_pitch: { benefits: [benefit(1), benefit(2)] } };
   const concrete = expand(["guests_pitch", "benefits[]", "title"], data, []);

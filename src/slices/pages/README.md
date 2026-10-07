@@ -557,9 +557,18 @@ Supersedes the `iconClass` / `mock.css` notes above for these three pages. Home'
 render `core/ui` `<Icon>` (inline Iconoir SVG, server-only, sized with `size`). The Guests and
 About routes no longer import `mock.css`. Home's row was backfilled to keep today's glyphs
 (`home` → `home-simple`, `spark` → `sparks`; the old registry drew those shapes under the short
-names) and `seed-demo` matches. About still renders its own fixed icons: none of its copy reads
-`page_content` yet (its `icon_key`s are seed placeholders), so wiring them is part of a future
-About-to-DB move.
+names) and `seed-demo` matches.
+
+### About reads `page_content` (session 3d)
+
+About's whole copy, its 15 `icon_key`s (3 audiences, 6 departments, 3 certifications, 3 contact
+cards) and its images now come from the `about` row (`schemas/about.ts`, rewritten to the page's
+real sections). `defaultAbout` is what the page showed while hard-coded: the seed, the renderer
+fallback (no row, or a row/cache entry not matching the schema) and
+`scripts/backfill-about-content.ts` all use it. Blank images fall back to the mock photos (as on
+Real Estate); a certification without a logo shows the default issuer logo for the first two cards
+and its icon otherwise. Contact card destinations are fixed by position to stay on the visitor's
+locale. The office panel still reads company_settings.
 
 ### Icons on `core/ui` `<Icon>` — Owners and Real Estate (ADR 0034)
 

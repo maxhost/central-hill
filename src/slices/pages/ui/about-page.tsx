@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
+import { MediaImage, type MediaImageData } from "@core/media";
 import {
   BenefitCards,
   CertificationCards,
@@ -20,12 +21,13 @@ import { Icon } from "@core/ui/icon";
 import { ContactForm } from "@slices/leads/contract";
 import { getGlobals, type SiteGlobals } from "@slices/settings/contract";
 import { getAboutPage } from "../contract";
+import { aboutSchema, defaultAbout } from "../schemas/about";
 import { FaqSection } from "./components/faq-section";
 
 /**
- * About page (`mock/about.html`), fully ported to components — no `.mk` block left. Content is
- * static (no `page_content` row backs About beyond `faq_group_key`), so every string is a
- * literal, as in the original markup. The header/footer and i18n come from the app layout.
+ * About page (`mock/about.html`), fully ported to components. Every string, icon and image comes
+ * from the `about` `page_content` row (`schemas/about.ts`; `defaultAbout` while no row exists);
+ * an image left blank falls back to the mock photo. The header/footer come from the app layout.
  *
  * Every section uses existing `core/ui` components (consistency over mock fidelity):
  * - Hero: `Hero` with the Buildings listing configuration (as on Guests and Real Estate).
@@ -39,7 +41,7 @@ import { FaqSection } from "./components/faq-section";
  *   now one `Reveal` fade).
  * - FAQ: the shared `FaqSection` (only when `faq_group_key` is set).
  * - "Let's Start a Conversation": `SectionHead`, then `BenefitCards` as link cards
- *   (`columns={3}`, per-item `href` + `linkLabel`), then `ContactSplit` — the dark office panel
+ *   (`columns={3}`, per-item `href` fixed by position + `linkLabel`), then `ContactSplit` — the dark office panel
  *   (address / bookings phone / email / office hours from company_settings via `getGlobals`,
  *   so they're edited once in /admin/settings; the check-in phone and website have no settings
  *   field and stay literals) beside the leads slice's `ContactForm` (`source="about-contact"`,
@@ -50,20 +52,45 @@ import { FaqSection } from "./components/faq-section";
  */
 
 
-// Fixed media for the JSX sections (no `page_content` row backs About; every string below is a
-// literal, same as the original markup).
-const HERO_IMG =
-  "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70";
-const HERO_ALT = "Rooftops and historic streets of Lisbon at golden hour";
-const STORY_IMG =
-  "https://images.pexels.com/photos/19295144/pexels-photo-19295144.jpeg?auto=compress&cs=tinysrgb&w=1200";
-const STORY_ALT = "Traditional tiled façades along a historic Lisbon street";
-const ORGANISED_IMG =
-  "https://images.pexels.com/photos/5324937/pexels-photo-5324937.jpeg?auto=compress&cs=tinysrgb&w=1200";
-const ORGANISED_ALT = "Team reviewing property performance documents together";
-const COMMUNITY_IMG =
-  "https://images.unsplash.com/photo-1591825729269-caeb344f6df2?auto=format&fit=crop&w=900&q=70";
-const COMMUNITY_ALT = "People sharing a meal together at a community table in Lisbon";
+// Image fallbacks = the approved mock photo, used 1:1 until a real R2 asset is set in the
+// backoffice (an empty `*_media_id` → no resolved media). Same convention as Real Estate.
+const HERO_FALLBACK = {
+  src: "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70",
+  alt: "Rooftops and historic streets of Lisbon at golden hour",
+};
+const STORY_FALLBACK = {
+  src: "https://images.pexels.com/photos/19295144/pexels-photo-19295144.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  alt: "Traditional tiled façades along a historic Lisbon street",
+};
+const ORGANISED_FALLBACK = {
+  src: "https://images.pexels.com/photos/5324937/pexels-photo-5324937.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  alt: "Team reviewing property performance documents together",
+};
+const COMMUNITY_FALLBACK = {
+  src: "https://images.unsplash.com/photo-1591825729269-caeb344f6df2?auto=format&fit=crop&w=900&q=70",
+  alt: "People sharing a meal together at a community table in Lisbon",
+};
+/** `PhotoFeatureGrid` backgrounds, by audience position. */
+const AUDIENCE_FALLBACK_IMGS = [
+  "https://images.pexels.com/photos/39205181/pexels-photo-39205181.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/7415097/pexels-photo-7415097.jpeg?auto=compress&cs=tinysrgb&w=1200",
+  "https://images.pexels.com/photos/36733412/pexels-photo-36733412.jpeg?auto=compress&cs=tinysrgb&w=1200",
+];
+/** Issuer logos by certification position; a card with neither logo nor fallback shows its icon. */
+const CERT_FALLBACK_LOGOS: ({ src: string; alt: string } | undefined)[] = [
+  {
+    src: "https://d11n7da8rpqbjy.cloudfront.net/alep/19726083_1621536323PF6Ativo_12.png",
+    alt: "ALEP — Associação do Alojamento Local em Portugal logo",
+  },
+  {
+    src: "https://www.turismodeportugal.pt/Style%20Library/TPortugal16Branding/img/logotipo_institucional_preto.png",
+    alt: "Turismo de Portugal logo",
+  },
+];
+/** Contact card destinations, by position (guests / owners / partners). */
+const CONTACT_CARD_PATHS = ["/buildings", "/owners", "/real-estate"];
+
+const SPLIT_SIZES = "(max-width: 1024px) 100vw, 600px";
 
 // Standard page shell (Real Estate, Guests): padding, 84px scroll margin, 1240px/28px column,
 // and the warm `alt` band.
@@ -71,157 +98,38 @@ const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
 const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
 const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
 
-/** Iconoir glyph for a `TwoColumnShowcase` bullet, sized like Owners' showcase bullet icons. */
-const bulletIcon = (name: string) => (
-  <Icon name={name} size={26} className="mt-0.5 flex-none text-accent-deep" />
-);
-
-const STATS = [
-  { value: "2012", label: "Year Founded" },
-  { value: "40+", label: "Apartments Managed" },
-  { value: "14", label: "Buildings in Prime Locations" },
-  { value: "60,000+", label: "Guests Hosted Worldwide" },
-  { value: "6,000+", label: "Reservations per Year" },
-];
-
-const SERVE_ITEMS = [
-  {
-    icon: <Icon name="suitcase" size={30} className="block" />,
-    title: "For Guests",
-    description:
-      "Professionally managed, fully equipped apartments in Portugal's most desirable locations. Every property is quality-checked, consistently maintained, and backed by 24/7 support — so every stay is exactly what it should be.",
-    image: "https://images.pexels.com/photos/39205181/pexels-photo-39205181.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  },
-  {
-    icon: <Icon name="home" size={30} className="block" />,
-    title: "For Property Owners",
-    description:
-      "Full-service property management that removes every burden and maximises every opportunity. AI-driven dynamic pricing, professional photography, 24/7 guest management, maintenance, and a real-time performance dashboard — all included.",
-    image: "https://images.pexels.com/photos/7415097/pexels-photo-7415097.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  },
-  {
-    icon: <Icon name="bank" size={30} className="block" />,
-    title: "For Institutional Partners",
-    description:
-      "Flexible management structures designed for investment funds, developers, and large-scale operators. Fixed rent, management commission, or hybrid models — with full operational management, transparent reporting, and institutional-grade governance.",
-    image: "https://images.pexels.com/photos/36733412/pexels-photo-36733412.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  },
-];
-
-// Content for `core/ui`'s `NumberedFeatureGrid` — ported 1:1 from the mock's 4 `.val` cards.
-const VALUES_ITEMS = [
-  {
-    title: "Quality Without Compromise",
-    body: "We apply the same standard of care to every property we manage — in its presentation, its maintenance, and its guest experience.",
-  },
-  {
-    title: "Transparency in Everything",
-    body: "Owners have real-time access to performance data. Partners receive full, accurate reporting. Trust is built through information, not withheld by it.",
-  },
-  {
-    title: "Local Knowledge, Applied",
-    body: "Over a decade learning Portugal's hospitality markets — their rhythms, their regulations, and their opportunities. That knowledge shapes every decision we make.",
-  },
-  {
-    title: "People at the Centre",
-    body: "Great hospitality is ultimately about people. We invest in our team, care for our guests, respect our owners' assets, and take our role in the community seriously.",
-  },
-];
-
-const ORGANISED_BULLETS = [
-  {
-    icon: bulletIcon("settings"),
-    title: "Operations & Property Management",
-    description: "Manages day-to-day property performance, housekeeping, maintenance, and quality inspections across all buildings.",
-  },
-  {
-    icon: bulletIcon("bell"),
-    title: "Guest Experience & Support",
-    description: "Available 24/7, ensuring every guest interaction — from pre-arrival to post-checkout — is handled with care and professionalism.",
-  },
-  {
-    icon: bulletIcon("peace-hand"),
-    title: "Owner Relations & Partnerships",
-    description: "The dedicated point of contact for property owners, institutional partners, and corporate clients throughout the management relationship.",
-  },
-  {
-    icon: bulletIcon("graph-up"),
-    title: "Revenue & Pricing Technology",
-    description: "Combines AI-powered dynamic pricing with hands-on revenue strategy to optimise nightly rates and occupancy across all platforms.",
-  },
-  {
-    icon: bulletIcon("wrench"),
-    title: "Maintenance & Asset Protection",
-    description: "Proactive inspections and rapid-response maintenance protect the long-term value of every asset under our management.",
-  },
-  {
-    icon: bulletIcon("clipboard-check"),
-    title: "Finance & Compliance",
-    description: "Manages owner payouts, financial reporting, regulatory filings, and certification maintenance with full transparency.",
-  },
-];
-
-/** "Independently Verified" certifications (`CertificationCards`). */
-const CERTIFICATIONS: CertificationCardItem[] = [
-  {
-    logo: (
-      // eslint-disable-next-line @next/next/no-img-element -- external issuer logo, not an R2 asset
-      <img
-        src="https://d11n7da8rpqbjy.cloudfront.net/alep/19726083_1621536323PF6Ativo_12.png"
-        alt="ALEP — Associação do Alojamento Local em Portugal logo"
+/**
+ * A section photo: the uploaded asset through `MediaImage`, or the mock photo as a plain `<img>`
+ * (external TEMP fallback) while none is set.
+ */
+function photo(
+  m: MediaImageData | undefined,
+  fallback: { src: string; alt: string },
+  opts: { sizes: string; className?: string; priority?: boolean },
+) {
+  if (m?.url && m.width > 0 && m.height > 0) {
+    return (
+      <MediaImage
+        data={{ ...m, alt: m.alt || fallback.alt }}
+        className={opts.className}
+        sizes={opts.sizes}
+        priority={opts.priority}
       />
-    ),
-    name: "ALEP Member",
-    issuer: "Associação do Alojamento Local em Portugal",
-    description:
-      "National association representing local accommodation operators. Membership signals compliance with industry best practices.",
-  },
-  {
-    logo: (
-      // eslint-disable-next-line @next/next/no-img-element -- external issuer logo, not an R2 asset
-      <img
-        src="https://www.turismodeportugal.pt/Style%20Library/TPortugal16Branding/img/logotipo_institucional_preto.png"
-        alt="Turismo de Portugal logo"
-      />
-    ),
-    name: "Clean & Safe Certified",
-    issuer: "Turismo de Portugal",
-    description:
-      "Quality and safety certification awarded by Portugal's national tourism authority, recognising our hygiene and guest safety standards.",
-  },
-  {
-    logo: <Icon name="check-circle" size={40} className="block text-accent-deep" />,
-    name: "I-PRAC Certified",
-    issuer: "International Property Rental Approval Certification",
-    description:
-      "International certification body verifying vacation rental operators worldwide, assuring guests and partners of our professional standards.",
-  },
-];
-
-/** "Let's Start a Conversation" link cards (`BenefitCards`, link variant), one per audience. */
-const touchCards = (locale: Locale): BenefitCardItem[] => [
-  {
-    icon: <Icon name="suitcase" size={30} className="block" />,
-    title: "Planning a Stay?",
-    description: "Browse our apartments and book directly for the best price.",
-    href: `/${locale}/buildings`,
-    linkLabel: "Browse Apartments →",
-  },
-  {
-    icon: <Icon name="home" size={30} className="block" />,
-    title: "Own a Property?",
-    description: "Get a free, no-obligation earnings estimate and find out what your property could achieve.",
-    href: `/${locale}/owners`,
-    linkLabel: "Get My Free Estimate →",
-  },
-  {
-    icon: <Icon name="bank" size={30} className="block" />,
-    title: "Institutional Partner?",
-    description: "Discuss investment structures, asset management, and partnership models with our team.",
-    href: `/${locale}/real-estate`,
-    linkLabel: "Discuss a Partnership →",
-  },
-];
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+    <img
+      src={m?.url || fallback.src}
+      alt={m?.alt || fallback.alt}
+      className={opts.className}
+      {...(opts.priority
+        ? { loading: "eager" as const, fetchPriority: "high" as const }
+        : { loading: "lazy" as const })}
+      decoding="async"
+    />
+  );
+}
 
 // Office details company_settings has no field for (or has none set yet) — the mock's literals.
 // Address / bookings phone / email fall back to these only if the settings row is missing.
@@ -260,7 +168,47 @@ export async function AboutPage({ locale }: { locale: Locale }) {
     getGlobals(locale),
     getTranslations("pages"),
   ]);
-  const faqGroupKey = page?.content.faq_group_key ?? "";
+  // A row (or a cache entry) still in the pre-3d shape renders the default copy, not a crash.
+  const c = page && aboutSchema.safeParse(page.content).success ? page.content : defaultAbout;
+  const media = page?.media ?? {};
+  const faqGroupKey = c.faq_group_key ?? "";
+
+  const serveItems = c.serve.audiences.map((a, i) => ({
+    icon: <Icon name={a.icon_key} size={30} className="block" />,
+    title: a.title,
+    description: a.description,
+    image: media[a.image_media_id]?.url || AUDIENCE_FALLBACK_IMGS[i],
+  }));
+  const valueItems = c.values.items.map((v) => ({ title: v.title, body: v.description }));
+  // Sized like Owners' showcase bullet icons.
+  const departmentBullets = c.organisation.departments.map((d) => ({
+    icon: <Icon name={d.icon_key} size={26} className="mt-0.5 flex-none text-accent-deep" />,
+    title: d.name,
+    description: d.description,
+  }));
+  const certifications: CertificationCardItem[] = c.certifications.items.map((cert, i) => {
+    const logo = media[cert.logo_media_id];
+    const fallback = CERT_FALLBACK_LOGOS[i];
+    return {
+      logo:
+        logo?.url || fallback ? (
+          // eslint-disable-next-line @next/next/no-img-element -- issuer logo in a fixed 48px slot
+          <img src={logo?.url || fallback?.src} alt={logo?.alt || fallback?.alt || cert.issuer} />
+        ) : (
+          <Icon name={cert.icon_key} size={40} className="block text-accent-deep" />
+        ),
+      name: cert.title,
+      issuer: cert.issuer,
+      description: cert.description,
+    };
+  });
+  const contactCards: BenefitCardItem[] = c.contact.cards.map((card, i) => ({
+    icon: <Icon name={card.icon_key} size={30} className="block" />,
+    title: card.title,
+    description: card.description,
+    href: `/${locale}${CONTACT_CARD_PATHS[i]}`,
+    linkLabel: card.link_label,
+  }));
 
   return (
     <>
@@ -272,10 +220,11 @@ export async function AboutPage({ locale }: { locale: Locale }) {
       {/* Hero: Buildings listing's exact `Hero` configuration (as on Guests and Real Estate). */}
       <Hero
         id="who-we-are"
-        background={
-          // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
-          <img src={HERO_IMG} alt={HERO_ALT} className="absolute inset-0 -z-10 h-full w-full object-cover" />
-        }
+        background={photo(media[c.hero.image_media_id], HERO_FALLBACK, {
+          sizes: "100vw",
+          className: "absolute inset-0 -z-10 h-full w-full object-cover",
+          priority: true, // full-bleed hero — the LCP element on this page
+        })}
         compact
         align="center"
         overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.5)_0%,rgba(18,16,13,0.46)_45%,rgba(18,16,13,0.88)_100%)]"
@@ -283,9 +232,9 @@ export async function AboutPage({ locale }: { locale: Locale }) {
         copyClassName="max-w-none"
         headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
         subtitleClassName="mt-5 max-w-[60ch] text-lg"
-        eyebrow="Who We Are"
-        headline="Portugal's Hospitality Management Company."
-        subtitle="Since 2012, Central Hill Apartments has been turning properties into high-performing hospitality assets — and turning guests into people who feel genuinely at home. We manage short-term, mid-term, and corporate rentals across Portugal's most sought-after locations, combining deep local knowledge with AI-driven technology and an uncompromising commitment to quality."
+        eyebrow={c.hero.eyebrow || undefined}
+        headline={c.hero.headline}
+        subtitle={c.hero.mission}
       />
 
       {/*
@@ -297,17 +246,10 @@ export async function AboutPage({ locale }: { locale: Locale }) {
           <Reveal label="about-story">
             <IntroSplit
               imagePosition="left"
-              eyebrow="How We Started"
-              headline="From a Clear Vision to a Growing Platform"
-              paragraphs={[
-                "Central Hill Apartments was founded in 2012, identifying Lisbon as a city of exceptional hospitality opportunity — a destination where guests wanted more than a hotel room; they wanted to feel genuinely part of the city. We started with that conviction and a clear operational model: that professional, data-driven management of well-located residential assets could consistently outperform the market while delivering an experience worth returning to.",
-                "Over more than a decade, that process has produced one of Portugal's most established hospitality management platforms. We have built the operational infrastructure, the technology stack, and the institutional relationships needed to manage assets at scale — from individual apartments to full buildings, corporate housing programmes, and strategic real estate partnerships.",
-                "Today, Central Hill operates across Portugal's most in-demand urban markets, delivering consistent above-market returns for property owners, dependable occupancy for corporate clients, and institutional-grade performance for investment partners. The company we are now is the direct result of the discipline, systems, and expertise built over twelve years of active asset management.",
-              ]}
-              image={
-                // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
-                <img src={STORY_IMG} alt={STORY_ALT} loading="lazy" decoding="async" />
-              }
+              eyebrow={c.story.eyebrow || undefined}
+              headline={c.story.headline}
+              paragraphs={c.story.narrative}
+              image={photo(media[c.story.image_media_id], STORY_FALLBACK, { sizes: SPLIT_SIZES })}
             />
           </Reveal>
         </div>
@@ -315,7 +257,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
 
       {/* Company numbers: the same `StatBand` as Home/Owners/Buildings, five columns. */}
       <Reveal label="about-stats">
-        <StatBand cells={STATS} columns={5} />
+        <StatBand cells={c.stats} columns={5} />
       </Reveal>
 
       {/* "One Platform. Three Audiences.": `SectionHead` + `PhotoFeatureGrid` (Guests' teasers). */}
@@ -323,13 +265,13 @@ export async function AboutPage({ locale }: { locale: Locale }) {
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
-              eyebrow="Our Platform"
-              headline="One Platform. Three Audiences."
-              intro="Central Hill Apartments operates across three interconnected service lines, each supporting the others. Whether you are a guest looking for a home away from home, a property owner seeking to maximise your asset's potential, or an institutional partner exploring a management agreement — this is your platform."
+              eyebrow={c.serve.eyebrow || undefined}
+              headline={c.serve.headline}
+              intro={c.serve.intro || undefined}
             />
           </Reveal>
           <Reveal label="about-serve">
-            <PhotoFeatureGrid items={SERVE_ITEMS} />
+            <PhotoFeatureGrid items={serveItems} />
           </Reveal>
         </div>
       </section>
@@ -339,13 +281,13 @@ export async function AboutPage({ locale }: { locale: Locale }) {
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
-              eyebrow="What We Stand For"
-              headline="What Guides Us"
-              intro="Our values are not statements on a wall. They are the criteria by which we select properties, build partnerships, and measure success. They have remained constant since 2012."
+              eyebrow={c.values.eyebrow || undefined}
+              headline={c.values.headline}
+              intro={c.values.intro || undefined}
             />
           </Reveal>
           <Reveal>
-            <NumberedFeatureGrid items={VALUES_ITEMS} />
+            <NumberedFeatureGrid items={valueItems} />
           </Reveal>
         </div>
       </section>
@@ -357,17 +299,17 @@ export async function AboutPage({ locale }: { locale: Locale }) {
       <div id="organised" className="scroll-mt-[84px]">
         <Reveal label="about-organised">
           <TwoColumnShowcase
-            eyebrow="Our Structure"
-            headline="How We Are Organised"
-            body="Behind every well-managed property is a team of specialists working in close coordination. Central Hill Apartments is structured around six areas of expertise, each essential to the performance of every asset we manage."
-            bullets={ORGANISED_BULLETS}
-            badge="Six departments. One coordinated platform."
+            eyebrow={c.organisation.eyebrow || undefined}
+            headline={c.organisation.headline}
+            body={c.organisation.intro || undefined}
+            bullets={departmentBullets}
+            badge={c.organisation.badge || undefined}
             tone="alt"
             imagePosition="right"
-            image={
-              // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
-              <img src={ORGANISED_IMG} alt={ORGANISED_ALT} className="aspect-[4/5] w-full rounded-sm object-cover" />
-            }
+            image={photo(media[c.organisation.image_media_id], ORGANISED_FALLBACK, {
+              sizes: "(max-width: 1024px) 100vw, 560px",
+              className: "aspect-[4/5] w-full rounded-sm object-cover",
+            })}
           />
         </Reveal>
       </div>
@@ -377,13 +319,13 @@ export async function AboutPage({ locale }: { locale: Locale }) {
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
-              eyebrow="What We Stand For"
-              headline="Independently Verified"
-              intro="Our certifications and memberships represent a commitment to operating to the highest standards — verified by recognised independent bodies in Portugal and internationally."
+              eyebrow={c.certifications.eyebrow || undefined}
+              headline={c.certifications.headline}
+              intro={c.certifications.intro || undefined}
             />
           </Reveal>
           <Reveal label="about-certifications">
-            <CertificationCards items={CERTIFICATIONS} />
+            <CertificationCards items={certifications} />
           </Reveal>
         </div>
       </section>
@@ -394,16 +336,10 @@ export async function AboutPage({ locale }: { locale: Locale }) {
           <Reveal label="about-community">
             <IntroSplit
               imagePosition="left"
-              eyebrow="Our Responsibility"
-              headline="Giving Back to the Communities We Call Home"
-              paragraphs={[
-                "Central Hill Apartments is a business rooted in Lisbon, and we take our responsibility to the city and its communities seriously. We are proud partners of 55+ — a Lisbon-based social organisation that empowers people over 55 to remain active and fulfilled — through which we offer guests authentic experiences including Chef at Home services delivered by 55+ members. We also actively support Movimento Famílias Solidárias, a volunteer-led initiative that provides monthly essential goods baskets to families in need across Lisbon.",
-                "We additionally work with Santa Casa da Misericórdia de Lisboa, donating items and furniture to support their social care programmes, and maintain ongoing engagement with a number of other local Lisbon organisations through in-kind support, volunteering, and donations.",
-              ]}
-              image={
-                // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
-                <img src={COMMUNITY_IMG} alt={COMMUNITY_ALT} loading="lazy" decoding="async" />
-              }
+              eyebrow={c.community.eyebrow || undefined}
+              headline={c.community.headline}
+              paragraphs={c.community.copy}
+              image={photo(media[c.community.image_media_id], COMMUNITY_FALLBACK, { sizes: SPLIT_SIZES })}
             />
           </Reveal>
         </div>
@@ -422,18 +358,18 @@ export async function AboutPage({ locale }: { locale: Locale }) {
       <section id="contact" className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal>
-            <SectionHead eyebrow="Get in Touch" headline="Let's Start a Conversation" />
+            <SectionHead eyebrow={c.contact.eyebrow || undefined} headline={c.contact.headline} />
           </Reveal>
           <Reveal label="about-touch">
-            <BenefitCards items={touchCards(locale)} columns={3} />
+            <BenefitCards items={contactCards} columns={3} />
           </Reveal>
           <Reveal label="about-contact">
             <ContactSplit
               className="mt-[48px]"
-              infoTitle="Our Office"
+              infoTitle={c.contact.office_title}
               rows={officeRows(globals)}
-              formTitle="Send Us a Message"
-              formIntro="Tell us how we can help and we'll be in touch shortly."
+              formTitle={c.contact.form.headline}
+              formIntro={c.contact.form.subheadline || undefined}
             >
               <ContactForm source="about-contact" />
             </ContactSplit>

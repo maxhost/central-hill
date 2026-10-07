@@ -29,7 +29,7 @@ import { defaultServicesCarousel, homeSchema } from "@slices/pages/schemas/home"
 import { guestSchema } from "@slices/pages/schemas/guest";
 import { ownersSchema } from "@slices/pages/schemas/owners";
 import { realEstateSchema } from "@slices/pages/schemas/real-estate";
-import { aboutSchema } from "@slices/pages/schemas/about";
+import { aboutSchema, defaultAbout } from "@slices/pages/schemas/about";
 
 const SITE = "https://www.centralhill.pt";
 const BOOK = `${SITE}/en/rentals/holidays-rentals-rentals-d0/`;
@@ -817,82 +817,8 @@ function realEstateData() {
 }
 
 function aboutData() {
-  const dep = (name: string, description: string) => ({ icon_key: "spark", name, description });
-  const cert = (title: string, issuer: string, description: string) => ({ icon_key: "spark", title, issuer, description });
-  return {
-    hero: {
-      image_media_id: uid(),
-      eyebrow: "About us",
-      headline: "Portugal's trusted hospitality management company",
-      mission: "We help owners earn more and guests feel at home — pairing hotel-grade hospitality with technology and a hands-on local team.",
-    },
-    story: {
-      eyebrow: "Our story",
-      headline: "Twelve years of Lisbon hospitality",
-      narrative: [
-        "Central Hill began in 2012 with a single apartment and a simple belief: furnished rentals could be run to a hotel standard.",
-        "Today we host hundreds of thousands of guests and manage homes for owners across Portugal's most sought-after locations.",
-        "Our edge is the blend of people and technology — a local team that cares, backed by data that drives results.",
-      ],
-    },
-    serve: {
-      headline: "Who we serve",
-      intro: "Two audiences, one standard of care.",
-      audiences: [
-        ic("Guests", "Memorable, design-led stays with real local support."),
-        ic("Owners", "Hands-off management that maximises returns."),
-        ic("Partners", "Investment-grade operations at scale."),
-      ],
-    },
-    values: {
-      headline: "What we stand for",
-      intro: "The principles behind every decision.",
-      items: [
-        ti("Hospitality first", "We treat every guest like a guest in our own home."),
-        ti("Transparency", "Clear reporting and honest communication, always."),
-        ti("Excellence", "Hotel-grade standards in everything we do."),
-        ti("Partnership", "We win when our owners and partners win."),
-      ],
-    },
-    organisation: {
-      eyebrow: "Our team",
-      headline: "The people behind Central Hill",
-      intro: "Specialist teams working as one.",
-      departments: [
-        dep("Guest experience", "24/7 multilingual support across the journey."),
-        dep("Revenue management", "Pricing and distribution that maximise yield."),
-        dep("Operations", "Housekeeping, maintenance and quality."),
-        dep("Owner relations", "Reporting, advice and partnership."),
-        dep("Marketing", "Photography, content and direct demand."),
-        dep("Compliance", "Licensing, tax and regulation."),
-      ],
-    },
-    certifications: {
-      headline: "Independently verified",
-      intro: "Recognised by the bodies that set the standard.",
-      items: [
-        cert("Registered operator", "Turismo de Portugal", "Licensed and compliant short-stay operation."),
-        cert("ALEP member", "ALEP", "Member of Portugal's local-accommodation association."),
-        cert("Quality assured", "Central Hill", "Rigorous internal quality and safety checks."),
-      ],
-    },
-    community: {
-      eyebrow: "Our community",
-      headline: "Rooted in Lisbon",
-      copy: [
-        "We work with local makers, guides and suppliers to give guests an authentic taste of the city.",
-        "Being a good neighbour matters — we operate responsibly and invest in the communities we host in.",
-      ],
-      image_media_id: uid(),
-    },
-    contact: {
-      headline: "Get in touch",
-      cta_guests: { label: "Book a stay", url: BOOK },
-      cta_owners: { label: "I'm a property owner", url: `${SITE}/en/owners` },
-      cta_partners: { label: "Partner with us", url: `${SITE}/en/real-estate` },
-      form: { headline: "Send us a message", subheadline: "We'll get back to you shortly." },
-    },
-  };
+  // The page's own copy (what it showed while hard-coded); images blank → mock fallbacks.
+  return defaultAbout;
 }
 
 main()
