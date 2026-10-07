@@ -139,14 +139,16 @@ page_content
   schema-driven (client direction — those sections were removed from the editable schema; re-add here
   if one becomes DB-driven). Enquiry form fields
   are fixed in code → `lead.kind='deal_enquiry'`.
-- **about**: `hero{image_media_id, eyebrow, headline, mission}`; `story{eyebrow, headline, narrative[×3]}`;
-  `serve{headline, intro, audiences[×3]{icon_key,title,description}}`; `values{headline, intro, items[×4]{title,description}}`;
-  `organisation{eyebrow, headline, intro, departments[×6]{icon_key,name,description}}`;
-  `certifications{headline, intro, items[×3]{icon_key,title,issuer,description}}`;
-  `community{eyebrow, headline, copy[×2], image_media_id}`;
-  `contact{headline, cta_guests{label,url}, cta_owners{label,url}, cta_partners{label,url}, form{headline,subheadline}}`
-  (form → `lead.kind='contact'`). → Stats band & office block = **company_settings**.
-  Team/departments, partners, certifications, "founded 2012" are **static copy here** — no entities.
+- **about**: `hero{image_media_id?, eyebrow, headline, mission}`; `story{eyebrow, headline, narrative[×3], image_media_id?}`;
+  `stats[×5]{value,label}`; `serve{eyebrow, headline, intro, audiences[×3]{icon_key,title,description,image_media_id?}}`;
+  `values{eyebrow, headline, intro, items[×4]{title,description}}`;
+  `organisation{eyebrow, headline, intro, badge, image_media_id?, departments[×6]{icon_key,name,description}}`;
+  `certifications{eyebrow, headline, intro, items[×3]{icon_key,logo_media_id?,title,issuer,description}}`;
+  `community{eyebrow, headline, copy[×2], image_media_id?}`;
+  `contact{eyebrow, headline, cards[×3]{icon_key,title,description,link_label}, office_title, form{headline,subheadline}}`
+  (card destinations fixed by position: buildings / owners / real estate; form → `lead.kind='contact'`).
+  Blank images fall back to the mock photos. → Office block = **company_settings**.
+  Team/departments, partners, certifications, stats, "founded 2012" are **static copy here** — no entities.
 - **guest**: `hero{video_media_id?, eyebrow, headline, subheadline, cta{label,url}}`;
   `welcome{headline, lede, copy, guarantee_label, image_media_id?}`;
   `why{eyebrow, headline, intro, benefits[×4]{icon_key,title,description}, cta{label,url,note}}`;

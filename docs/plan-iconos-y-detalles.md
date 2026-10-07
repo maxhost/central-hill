@@ -1,6 +1,6 @@
 # Plan por sesiones: iconos (Iconoir) + detalle de blog y de guía
 
-**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–3c hechas; sigue 3d, luego 4). Cada sesión es autocontenida: se puede hacer
+**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–3d hechas; sigue 4). Cada sesión es autocontenida: se puede hacer
 `/compact` o `/clear` entre sesiones. Para retomar, basta con decir "seguimos con la sesión N de
 `docs/plan-iconos-y-detalles.md`".
 
@@ -285,6 +285,27 @@ iconos de rol en Settings y About en una sesión aparte (la 3d).
 - **Modo:** coordinador + agentes por slice (pages, guides, buildings, blog, settings).
 
 ## Sesión 3d: About a `page_content` + amenities + iconos fijos que quedan
+**✅ Hecha el 2026-10-07.** Cambios respecto a lo previsto:
+- **About:** el schema `about` se reescribió con las secciones reales de la página (la fila era
+  el placeholder del seed: nunca editada y sin traducciones). Añade `stats`, eyebrows, `badge`,
+  imágenes opcionales (vacío → la foto del mock), `logo_media_id` en las certificaciones y
+  `contact.cards` (destino fijo por posición). Son 15 `icon_key`, no 12: también los 3 de las
+  tarjetas de contacto.
+  - `defaultAbout` (lo que se veía) alimenta el seed, el fallback del render y
+    `scripts/backfill-about-content.ts`. Backfill aplicado en dev; la copia previa está en el
+    scratchpad. Si la fila (o una entrada de caché) no cumple el schema, se pinta `defaultAbout`.
+  - Verificado: alturas, SVG, imágenes y enlaces idénticos antes/después en en/pt a 1440 y 390.
+- **Amenities:** `/admin/amenities` (lista, alta, edición y borrado con confirmación), con la
+  pantalla de categorías de servicios como modelo. Etiqueta (en), slug único, `IconField` (vacío →
+  `check-circle`) y grupo. Revalida `building-list`. Lo hizo un agente en un worktree.
+- **Iconos fijos → site icons** (su texto vive en mensajes i18n, no en filas):
+  - `search` (blog);
+  - grupo "Services": `services_how_1..3`, `service_included`, `service_badge`, `service_note`,
+    `service_photos` y `know_included/cancellation/practical`.
+  - La clave de caché de `getGlobals` lleva la lista de claves de site icons: sin eso, una entrada
+    cacheada antes de añadir una clave la devolvía `undefined` (se pintaba `sparks`).
+- **Se quedan fijos:** las estrellas de valoración (`star` relleno), el `percentage-circle` de la
+  garantía de Guests y los iconos de interfaz de `UiIcon` (admin y chrome).
 - About: conectar la página a su fila de `page_content` (copy + los 12 `icon_key`), con un
   backfill de lo que se ve hoy.
 - Pantalla de amenities en el admin de buildings (etiqueta + `IconField`).
