@@ -1206,3 +1206,20 @@ rejected:
   The test also checks that the committed map matches the installed package.
 
 **Status:** Accepted (2026-10-06). Supersedes the parked draft "0033" in `docs/parqueado.md`.
+
+**Amendment (2026-10-07): a client-safe interface subset.** Client components still drew their
+interface glyphs by hand (carousel arrows, select chevron, stepper ±, close/menu, toast
+notices) or used text glyphs (`✕`, `☰`, `★`), because they can't import the server-only `<Icon>`.
+- `pnpm icons:generate` also writes `src/core/ui/icons/ui-svg.ts`: a fixed list of 17 interface
+  icons (`UI_ICON_NAMES` in the generator; ~5 KB raw, ~1.2 KB gzip), copied verbatim from the
+  full map.
+- `<UiIcon name>` (`src/core/ui/ui-icon.tsx`, also exported from the `@core/ui` barrel) draws
+  them. It has no `server-only` and no fallback: `name` is typed. It shares the outer `<svg>`
+  (`icons/icon-svg.tsx`) with `<Icon>`, so both render identical markup.
+- Content icons (an `icon_key`) stay on `<Icon>`. A client component whose icon could become
+  editable takes an optional `ReactNode` prop drawn by its server parent and defaults to a
+  `<UiIcon>` (`ContactDialog.icon`, `LocaleSwitcher.icon`, `TwoColumnShowcase.badgeIcon`).
+- Adding a name to the subset is a generator change plus a re-run. The test checks the subset
+  matches the full map. The build check: the full map's paths are still absent from
+  `.next/static`.
+- Only the WhatsApp brand logo stays hand-drawn.
