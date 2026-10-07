@@ -16,6 +16,7 @@ import {
   type CertificationCardItem,
   type ContactSplitRow,
 } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 import { ContactForm } from "@slices/leads/contract";
 import { getGlobals, type SiteGlobals } from "@slices/settings/contract";
 import { getAboutPage } from "../contract";
@@ -72,7 +73,7 @@ const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]"
 
 /** Iconoir glyph for a `TwoColumnShowcase` bullet, sized like Owners' showcase bullet icons. */
 const bulletIcon = (name: string) => (
-  <i className={`iconoir-${name} mt-0.5 flex-none text-[26px] leading-none text-accent-deep`} aria-hidden="true" />
+  <Icon name={name} size={26} className="mt-0.5 flex-none text-accent-deep" />
 );
 
 const STATS = [
@@ -85,21 +86,21 @@ const STATS = [
 
 const SERVE_ITEMS = [
   {
-    icon: <i className="iconoir-suitcase" aria-hidden="true" />,
+    icon: <Icon name="suitcase" size={30} className="block" />,
     title: "For Guests",
     description:
       "Professionally managed, fully equipped apartments in Portugal's most desirable locations. Every property is quality-checked, consistently maintained, and backed by 24/7 support — so every stay is exactly what it should be.",
     image: "https://images.pexels.com/photos/39205181/pexels-photo-39205181.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
-    icon: <i className="iconoir-home" aria-hidden="true" />,
+    icon: <Icon name="home" size={30} className="block" />,
     title: "For Property Owners",
     description:
       "Full-service property management that removes every burden and maximises every opportunity. AI-driven dynamic pricing, professional photography, 24/7 guest management, maintenance, and a real-time performance dashboard — all included.",
     image: "https://images.pexels.com/photos/7415097/pexels-photo-7415097.jpeg?auto=compress&cs=tinysrgb&w=1200",
   },
   {
-    icon: <i className="iconoir-bank" aria-hidden="true" />,
+    icon: <Icon name="bank" size={30} className="block" />,
     title: "For Institutional Partners",
     description:
       "Flexible management structures designed for investment funds, developers, and large-scale operators. Fixed rent, management commission, or hybrid models — with full operational management, transparent reporting, and institutional-grade governance.",
@@ -189,7 +190,7 @@ const CERTIFICATIONS: CertificationCardItem[] = [
       "Quality and safety certification awarded by Portugal's national tourism authority, recognising our hygiene and guest safety standards.",
   },
   {
-    logo: <i className="iconoir-check-circle text-[40px] leading-none text-accent-deep" aria-hidden />,
+    logo: <Icon name="check-circle" size={40} className="block text-accent-deep" />,
     name: "I-PRAC Certified",
     issuer: "International Property Rental Approval Certification",
     description:
@@ -200,21 +201,21 @@ const CERTIFICATIONS: CertificationCardItem[] = [
 /** "Let's Start a Conversation" link cards (`BenefitCards`, link variant), one per audience. */
 const touchCards = (locale: Locale): BenefitCardItem[] => [
   {
-    icon: <i className="iconoir-suitcase" aria-hidden="true" />,
+    icon: <Icon name="suitcase" size={30} className="block" />,
     title: "Planning a Stay?",
     description: "Browse our apartments and book directly for the best price.",
     href: `/${locale}/buildings`,
     linkLabel: "Browse Apartments →",
   },
   {
-    icon: <i className="iconoir-home" aria-hidden="true" />,
+    icon: <Icon name="home" size={30} className="block" />,
     title: "Own a Property?",
     description: "Get a free, no-obligation earnings estimate and find out what your property could achieve.",
     href: `/${locale}/owners`,
     linkLabel: "Get My Free Estimate →",
   },
   {
-    icon: <i className="iconoir-bank" aria-hidden="true" />,
+    icon: <Icon name="bank" size={30} className="block" />,
     title: "Institutional Partner?",
     description: "Discuss investment structures, asset management, and partnership models with our team.",
     href: `/${locale}/real-estate`,
