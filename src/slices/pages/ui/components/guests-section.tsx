@@ -1,7 +1,7 @@
 import { MediaImage, type MediaImageData } from "@core/media";
 import { TwoColumnShowcase } from "@core/ui";
 import type { CtaNote, IconCard } from "./blocks";
-import { Icon } from "./icon";
+import { Icon } from "@core/ui/icon";
 
 /**
  * Home "guests pitch" — **Image Showcase** (the chosen design; ADR 0022): a lifestyle image with a
@@ -61,7 +61,7 @@ export function GuestsSection({
       headline={content.headline}
       body={content.subheadline}
       bullets={content.benefits.slice(0, 4).map((b) => ({
-        icon: <Icon name={b.icon_key} className="mt-0.5 h-6 w-6 shrink-0 text-accent-deep" />,
+        icon: <Icon name={b.icon_key} size={24} className="mt-0.5 shrink-0 text-accent-deep" />,
         title: b.title,
         description: b.description,
       }))}

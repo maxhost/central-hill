@@ -358,8 +358,8 @@ function homeData() {
       subheadline: "Spacious, beautifully designed homes for couples, families and groups — in the heart of the city.",
       benefits: [
         ic("Prime locations", "Steps from Lisbon's best dining, nightlife and landmarks.", "map-pin"),
-        ic("Space for everyone", "From studios to apartments sleeping 25+ for big groups.", "home"),
-        ic("Design-led interiors", "Every home styled for comfort and that wow factor.", "spark"),
+        ic("Space for everyone", "From studios to apartments sleeping 25+ for big groups.", "home-simple"),
+        ic("Design-led interiors", "Every home styled for comfort and that wow factor.", "sparks"),
         ic("Seamless check-in", "Effortless arrival and a local team a message away.", "key"),
       ],
       image_media_id: "",

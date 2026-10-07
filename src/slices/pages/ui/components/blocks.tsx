@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { ButtonLink, Container, Eyebrow, Section, cn } from "@core/ui";
-import { Icon } from "./icon";
+import { Icon } from "@core/ui/icon";
 
 /**
  * Subtle "alternate" section background — the warm off-paper tint used by the mock's
@@ -70,7 +70,7 @@ export function FeatureGrid({
         return (
           <div key={i} className="bg-surface p-8 md:p-10">
             {iconKey ? (
-              <Icon name={iconKey} className="mb-5 h-8 w-8 text-accent-deep" />
+              <Icon name={iconKey} size={32} className="mb-5 text-accent-deep" />
             ) : (
               <span className="mb-5 block h-0.5 w-8 bg-accent" aria-hidden />
             )}

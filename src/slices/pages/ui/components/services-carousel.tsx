@@ -4,7 +4,7 @@ import type { Locale } from "@core/db/columns";
 import { MediaImage } from "@core/media";
 import { Carousel, SectionHead } from "@core/ui";
 import { type ServiceSummary, listServices } from "@slices/services/contract";
-import { Icon } from "./icon";
+import { Icon } from "@core/ui/icon";
 
 /**
  * Services & partners carousel (Home, ADR 0032). Two sources, deliberately split:
@@ -66,7 +66,7 @@ export async function ServicesCarousel({
           <ul className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-8">
             {assurances.map((a, i) => (
               <li key={i} className="flex items-center gap-3">
-                <Icon name={a.icon_key} className="h-6 w-6 shrink-0 text-accent-deep" />
+                <Icon name={a.icon_key} size={24} className="shrink-0 text-accent-deep" />
                 <span className="text-sm font-medium text-ink md:text-base">{a.label}</span>
               </li>
             ))}
