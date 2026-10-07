@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { PageHead, PageHeadSearch, SectionHead } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 import { getFeaturedPost, listCategories, listPosts } from "../contract";
 import { CategoryFilterItem, CategoryFilterProvider, CategoryLoadMore, CategoryTabs } from "./components/category-tabs";
 import { FeaturedPost } from "./components/featured-post";
@@ -83,7 +84,11 @@ export async function BlogListing({ locale }: { locale: Locale }) {
   return (
     <>
       <PageHead eyebrow={t("eyebrow")} headline={t("title")} intro={t("intro")}>
-        <PageHeadSearch placeholder={t("searchPlaceholder")} label={t("searchLabel")} />
+        <PageHeadSearch
+          placeholder={t("searchPlaceholder")}
+          label={t("searchLabel")}
+          icon={<Icon name="search" size={20} />}
+        />
       </PageHead>
       <CategoryFilterProvider pageSize={JOURNAL_PAGE_SIZE}>
         <section className="pt-[48px]">

@@ -32,9 +32,7 @@ import type { ReactNode } from "react";
  *
  * Includes its own full-bleed `<section>` shell (`84px` scroll margin, like the `.mk section`
  * it replaces). Purely presentational: no data, no i18n, no entrance animation (the raw `.reveal`
- * was neutralised by `mock.css`, so it renders statically). Render it **outside** any `.mk`
- * subtree: `mock.css`'s un-layered `.mk * { margin:0; padding:0 }` would zero its margins and
- * padding (see `SpecStrip`'s docstring).
+ * was neutralised by the old `mock.css`, so it renders statically).
  */
 export function PageHead({
   id,
@@ -87,14 +85,15 @@ export function PageHead({
  * `searchParams` to "handle" it, because that would make the ISR page dynamic. When search lands,
  * pass `action` (a results route), or swap in a client island; the markup stays the same.
  *
- * The glyph is an Iconoir CSS icon (`<i class="iconoir-search">`), so the page must load the
- * Iconoir stylesheet (today via `src/app/mock.css`, which every consumer page imports). Same
- * outside-`.mk` rule as `PageHead`.
+ * The glyph comes from the caller as `icon` (a server parent's `<Icon name="search" size={20} />`
+ * from `@core/ui/icon`, ADR 0034: this module is in the client-importable barrel, so it can't
+ * render `<Icon>` itself). Same outside-`.mk` rule as `PageHead`.
  */
 export function PageHeadSearch({
   placeholder,
   label,
   action,
+  icon,
 }: {
   /** Input placeholder (e.g. "Search articles…"). */
   placeholder: string;
@@ -102,13 +101,12 @@ export function PageHeadSearch({
   label: string;
   /** Form `action` (GET). Omit while search is inert: the form then submits to the current URL. */
   action?: string;
+  /** Search glyph (20px, `ink-soft`, decorative), inset on the left of the field. */
+  icon: ReactNode;
 }) {
   return (
     <form role="search" aria-label={label} action={action} className="relative mx-auto mt-[34px] max-w-[560px]">
-      <i
-        className="iconoir-search absolute left-5 top-1/2 -translate-y-1/2 text-xl leading-none text-ink-soft"
-        aria-hidden="true"
-      />
+      <span className="absolute left-5 top-1/2 flex -translate-y-1/2 text-ink-soft">{icon}</span>
       <input
         type="search"
         name="q"

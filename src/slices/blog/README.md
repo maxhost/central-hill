@@ -45,7 +45,7 @@ Consumed by S9 pages (featured/teasers), S13 seo-geo (URLs), S14 translation-pip
   `CenteredCtaBand` (Guides' closing band; its `children` action slot) wrapping the leads slice's
   `NewsletterForm` (`theme="dark"`, `source="blog"`; email + consent + submit → a `newsletter`
   lead), copy from `blog.newsletter.eyebrow|title|description`. The listing is fully
-  componentised (no `.mk` subtree); the route keeps `mock.css` only for the Iconoir icon font.
+  componentised (no `.mk` subtree). Icons are `core/ui` `<Icon>` (ADR 0034); no `mock.css`.
 - `app/[locale]/blog/[slug]/page.tsx` → `ui/blog-post.tsx` (header · hero · body blocks · CTA · 3 related)
 
 Both: `generateStaticParams` + `generateMetadata` (`core/seo` `buildMetadata`, hreflang from the

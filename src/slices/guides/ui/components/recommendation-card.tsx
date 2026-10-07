@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MediaImage } from "@core/media";
+import { Icon } from "@core/ui/icon";
 import type { Locale } from "@core/db/columns";
 import type { GuideRecommendation, GuideRecommendationType } from "../../contract";
 
@@ -30,8 +31,7 @@ const IMG_CLASS =
  *
  * Type label: `typeLabels[type]` (pre-translated `guides.recType.*`), falling back to the
  * raw `category` text. Image: `MediaImage` when the asset has real dimensions; otherwise the
- * same plain `<img>` fallback `GuideCard` uses. The pin is an Iconoir `<i>` — the stylesheet
- * loads via the route's `mock.css` import (parked ADR 0033).
+ * same plain `<img>` fallback `GuideCard` uses. The pin is `core/ui` `<Icon>` (ADR 0034).
  */
 export function RecommendationCard({
   rec,
@@ -66,7 +66,7 @@ export function RecommendationCard({
         </h3>
         {rec.description ? <p className="mt-[8px] text-[14px] text-ink-soft">{rec.description}</p> : null}
         <span className="mt-[14px] inline-flex items-center gap-[6px] text-[12.5px] tracking-[0.04em] text-ink-soft">
-          <i className="iconoir-map-pin text-[15px] text-accent-deep" aria-hidden="true" />
+          <Icon name="map-pin" size={15} className="shrink-0 text-accent-deep" />
           {rec.address}
         </span>
       </div>

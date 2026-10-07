@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import type { ReactNode } from "react";
 import { cn } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 
 /**
  * Month + year of a post's `publishedAt` ("June 2025", "junho de 2025"), as the blog mock
@@ -25,7 +26,7 @@ export function formatPostMonth(iso: string | null, locale: string): string | nu
  * featured block (byline · date · reading time) and the "From the Journal" cards (date ·
  * reading time, no byline); a missing item drops out together with its separator.
  *
- * Presentational and server-safe. The Iconoir stylesheet comes from the route's `mock.css`.
+ * Presentational and server-only (the clock is `core/ui` `<Icon>`, ADR 0034).
  */
 export function PostMeta({
   byline,
@@ -47,7 +48,7 @@ export function PostMeta({
   if (readingTime) {
     items.push(
       <>
-        <i className="iconoir-clock text-[15px] leading-none" aria-hidden="true" />
+        <Icon name="clock" size={15} className="shrink-0" />
         <span>{readingTime}</span>
       </>,
     );

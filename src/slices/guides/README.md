@@ -32,7 +32,7 @@ module, never by querying its table.
   pages (`listGuideCityGroups` → `GuideCard`), the **Top Recommendations** grid
   (`listTopRecommendations` → `RecommendationCard`; the whole section is hidden when the
   query returns nothing), and the closing `CenteredCtaBand`. `revalidate = 3600` +
-  tag-revalidated. The route imports `mock.css` only for the Iconoir stylesheet.
+  tag-revalidated. Icons are `core/ui` `<Icon>` (inline Iconoir SVG, ADR 0034); no `mock.css`.
 - `/[locale]/guides/[city]/[slug]` — guide-page detail: breadcrumb, hero, a stack of
   sections (body, optional header image, "local tip" callout, place grid, optional CTA).
   `generateStaticParams` from `listGuideParams()`; `dynamicParams = true`. The `[city]`

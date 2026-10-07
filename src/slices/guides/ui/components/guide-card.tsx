@@ -1,19 +1,20 @@
 import Link from "next/link";
 import { MediaImage } from "@core/media";
+import { Icon, type IconName } from "@core/ui/icon";
 import type { Locale } from "@core/db/columns";
 import type { GuidePageSummary, GuideTemplate } from "../../contract";
 
-/** Iconoir glyph per editorial template — matches the mock's original per-card icon. */
-const TEMPLATE_ICON: Record<GuideTemplate, string> = {
-  landing: "iconoir-bank",
-  eat: "iconoir-pizza-slice",
-  beaches: "iconoir-sea-waves",
-  events: "iconoir-music-double-note",
-  secrets: "iconoir-binocular",
-  families: "iconoir-group",
-  groups: "iconoir-community",
-  travellers: "iconoir-compass",
-  custom: "iconoir-compass",
+/** Iconoir icon name per editorial template — matches the mock's original per-card icon. */
+const TEMPLATE_ICON: Record<GuideTemplate, IconName> = {
+  landing: "bank",
+  eat: "pizza-slice",
+  beaches: "sea-waves",
+  events: "music-double-note",
+  secrets: "binocular",
+  families: "group",
+  groups: "community",
+  travellers: "compass",
+  custom: "compass",
 };
 
 // One cell of the listing's 3/2/1-column grid (`mock.css`'s `.pf-grid` breakpoints) — the
@@ -45,8 +46,7 @@ const IMG_CLASS =
  * guide title, as `mediaImgTag` did); otherwise the same plain `<img>` `mediaImgTag` emits for
  * missing/dimensionless media (the asset URL or the building placeholder SVG).
  *
- * The template icon is an Iconoir `<i>` — the stylesheet loads via the route's `mock.css`
- * import (single editable icon system: parked ADR 0033).
+ * The template icon is `core/ui` `<Icon>` (inline Iconoir SVG, ADR 0034).
  */
 export function GuideCard({
   guide,
@@ -89,10 +89,7 @@ export function GuideCard({
         />
       </div>
       <div className="px-6 pt-[22px] pb-[26px]">
-        <i
-          className={`${TEMPLATE_ICON[guide.template]} mb-[14px] inline-block text-[28px] leading-none text-accent-deep`}
-          aria-hidden="true"
-        />
+        <Icon name={TEMPLATE_ICON[guide.template]} size={28} className="mb-[14px] inline-block align-baseline text-accent-deep" />
         <h3 className="mb-[6px] font-serif text-[22px] font-medium leading-[1.08] tracking-[-0.015em] text-ink">
           {guide.title}
         </h3>

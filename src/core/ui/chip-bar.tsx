@@ -5,9 +5,10 @@ export interface ChipBarItem {
   /** Stable React key — not rendered. */
   key: string;
   label: ReactNode;
-  /** Iconoir glyph class (e.g. `"iconoir-pin"`), rendered before `label`. The icon font is
-   *  loaded globally by `mock.css` (`@import … iconoir.css`), so it resolves outside `.mk` too. */
-  icon?: string;
+  /** Caller-built icon element rendered before `label`, e.g. a server parent's
+   *  `<Icon name="map-pin" size={13} />` (`@core/ui/icon`, ADR 0034). This module is imported
+   *  by client components, so it can't render `<Icon>` itself. */
+  icon?: ReactNode;
   /** Selected/current chip — solid ink pill, no hover state (matches the mock: an already-
    *  active chip doesn't visually react to hover). */
   active?: boolean;
@@ -64,16 +65,6 @@ export interface ChipBarItem {
  * city-filter/city-switch would decide server-component vs. client-component boundaries at
  * that point (likely a thin client wrapper choosing `active`/`href` per item, or routing
  * through `next/link` here) — out of scope for this pass.
- *
- * MUST be rendered **outside** any `.mk`-scoped subtree: `mock.css`'s `.mk * { margin:0;
- * padding:0 }` reset is an un-layered rule, and `@import "tailwindcss"` wraps every Tailwind
- * utility in a cascade layer — an un-layered rule always wins over a layered one regardless
- * of specificity, so nesting this inside `.mk` would silently zero its own `py-6`/`gap-4`/
- * chip padding (see `SpecStrip`'s docstring for the same trap, first hit on
- * `building-detail.tsx`). `guides-listing.tsx` renders this between two separate `.mk`
- * blocks (hero, then the DB-driven city sections) instead of one continuous one — CSS
- * selectors don't care about DOM proximity, so the shared `<style>` tag in the first block
- * still reaches `.mk` elements in the second.
  *
  * The inner column is a bespoke `max-w-[1240px] px-7` wrap, matching the mock's raw `.wrap`
  * (`max-width:1240px; padding:0 28px`) exactly, **not** `core/ui`'s `<Container>`
@@ -173,7 +164,7 @@ export function ChipBar({
                   aria-hidden="true"
                 />
               ) : null}
-              {item.icon ? <i className={item.icon} aria-hidden="true" /> : null}
+              {item.icon}
               {item.label}
               {item.soon && item.soonLabel ? (
                 <span className="text-[10px] font-semibold tracking-[0.12em] text-accent-deep uppercase">

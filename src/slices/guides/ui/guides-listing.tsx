@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { CenteredCtaBand, ChipBar, Hero, SectionHead } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 import { listGuideCityGroups, listTopRecommendations } from "../contract";
 import { GuideCard } from "./components/guide-card";
 import { RecommendationCard } from "./components/recommendation-card";
@@ -24,8 +25,8 @@ import { RecommendationCard } from "./components/recommendation-card";
  * bar** (`ChipBar`; still no real filter behind it — every published city renders), each
  * section **shell + head** (standard page shell, `SectionHead`; copy via `guides.*`
  * messages), both grids in the Buildings listing's 3/2/1 grid, and the closing
- * `CenteredCtaBand` (its copy is still a hardcoded English literal, as before). The route
- * still imports `mock.css`, but only for the Iconoir stylesheet the cards and `ChipBar` use.
+ * `CenteredCtaBand` (its copy is still a hardcoded English literal, as before). Icons are
+ * `core/ui` `<Icon>` (inline Iconoir SVG, ADR 0034); the route no longer imports `mock.css`.
  */
 
 const HERO_IMG =
@@ -74,7 +75,7 @@ export async function GuidesListing({ locale }: { locale: Locale }) {
       <ChipBar
         label={t("chooseCity")}
         items={[
-          { key: "lisbon", label: t("cityLisbon"), icon: "iconoir-pin", active: true },
+          { key: "lisbon", label: t("cityLisbon"), icon: <Icon name="map-pin" size={13} />, active: true },
           { key: "porto", label: t("cityPorto"), soon: true, soonLabel: t("citySoon") },
           { key: "cascais", label: t("cityCascais"), soon: true, soonLabel: t("citySoon") },
         ]}
