@@ -183,8 +183,15 @@ test("a fact with an unknown icon is rejected at its dotted path", () => {
   if (!r.success) assert.ok(r.error.issues.some((i) => i.path.join(".") === "detail.facts.0.icon"));
 });
 
+test("a legacy `pin` fact icon is read as the Iconoir `map-pin`", () => {
+  const detail = { ...SKELETON_DETAIL, facts: [{ icon: "pin", title: "Lisbon" }] };
+  const r = serviceSaveInput.safeParse(validService({ detail }));
+  assert.equal(r.success, true);
+  if (r.success) assert.equal(r.data.detail.facts[0]?.icon, "map-pin");
+});
+
 test("more than 3 badges, 4 facts or 4 booking rows are rejected", () => {
-  const fact = { icon: "pin", title: "Lisbon" };
+  const fact = { icon: "map-pin", title: "Lisbon" };
   const row = { label: "Group", value: "Private" };
   for (const over of [
     { badges: ["a", "b", "c", "d"] },

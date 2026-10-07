@@ -1,6 +1,5 @@
-import type { ReactNode } from "react";
 import type { DetailGoodToKnow } from "../../contract";
-import { ICONS } from "./service-icons";
+import { Icon } from "@core/ui/icon";
 
 /**
  * "Good to know" — up to three fixed columns (Included ✓ · Cancellation 📅 · Practical ⓘ), each a
@@ -17,10 +16,10 @@ export function ServiceGoodToKnow({
   data: DetailGoodToKnow;
   labels: { included: string; cancellation: string; practical: string };
 }) {
-  const cols: Array<{ key: string; icon: ReactNode; title: string; items: string[] }> = [
-    { key: "included", icon: ICONS.check, title: labels.included, items: data.included },
-    { key: "cancellation", icon: ICONS.cal, title: labels.cancellation, items: data.cancellation },
-    { key: "practical", icon: ICONS.info, title: labels.practical, items: data.practical },
+  const cols: Array<{ key: string; icon: string; title: string; items: string[] }> = [
+    { key: "included", icon: "check-circle", title: labels.included, items: data.included },
+    { key: "cancellation", icon: "calendar", title: labels.cancellation, items: data.cancellation },
+    { key: "practical", icon: "info-circle", title: labels.practical, items: data.practical },
   ].filter((c) => c.items.length);
   if (!cols.length) return null;
   return (
@@ -28,7 +27,7 @@ export function ServiceGoodToKnow({
       {cols.map((c) => (
         <div key={c.key}>
           <h3 className="mb-3 flex items-center gap-2.5 font-sans text-sm font-semibold leading-[1.08] text-ink">
-            <span className="text-accent-deep [&_svg]:block [&_svg]:size-[18px]">{c.icon}</span>
+            <Icon name={c.icon} size={18} className="block text-accent-deep" />
             {c.title}
           </h3>
           <ul>
@@ -50,7 +49,7 @@ export function ServiceIncluded({ items }: { items: string[] }) {
     <ul className="grid grid-cols-1 gap-x-[30px] gap-y-[14px] min-[561px]:grid-cols-2">
       {items.map((it, i) => (
         <li key={i} className="flex items-start gap-3 text-[15px] leading-[1.5] text-ink">
-          <span className="mt-px flex-none text-accent-deep [&_svg]:block [&_svg]:size-[19px]">{ICONS.check}</span>
+          <Icon name="check-circle" size={19} className="mt-px block flex-none text-accent-deep" />
           {it}
         </li>
       ))}

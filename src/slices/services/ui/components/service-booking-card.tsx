@@ -1,6 +1,6 @@
 import { ButtonLink, StickyAside } from "@core/ui";
 import type { DetailBookingRow } from "../../contract";
-import { ICONS } from "./service-icons";
+import { Icon } from "@core/ui/icon";
 
 export type BookingAction = { href: string; label: string };
 
@@ -76,7 +76,7 @@ export function ServiceBookingCard({
       ) : null}
       {note ? (
         <div className="mt-[18px] flex items-start gap-2.5 text-[13px] leading-[1.55] text-ink-soft">
-          <span className="mt-px flex-none text-accent-deep [&_svg]:block [&_svg]:size-[17px]">{ICONS.shield}</span>
+          <Icon name="shield-check" size={17} className="mt-px block flex-none text-accent-deep" />
           <span>{note}</span>
         </div>
       ) : null}

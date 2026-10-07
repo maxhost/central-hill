@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { FeatureCtaBand, Hero, IconFeatureGrid, Reveal, SectionHead } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 import { getGlobals } from "@slices/settings/contract";
 import { listServices } from "../contract";
 import { ServiceCard } from "./components/service-card";
@@ -23,8 +24,8 @@ import { ServiceCard } from "./components/service-card";
  *
  * Every section uses the standard page shell (`clamp(72px,10vw,150px)` padding, 84px scroll
  * margin, 1240px/28px column). Entrance motion is `Reveal`, with the same `<noscript>` rule
- * as Home/Guests. Iconoir glyphs (card icons, How It Works) still need the stylesheet that
- * `mock.css` `@import`s, which is the only reason the route imports it (parked ADR 0033).
+ * as Home/Guests. Icons (card category, How It Works) are `core/ui` `<Icon>` (inline Iconoir
+ * SVG, ADR 0034), so the route needs no icon stylesheet.
  *
  * ISR: `listServices` is cached under `SERVICE_TAGS.list`, which the services admin publish
  * flow revalidates, so publishing a service refreshes this page.
@@ -119,17 +120,17 @@ export async function ServicesListing({ locale }: { locale: Locale }) {
           headline={t("howTitle")}
           items={[
             {
-              icon: <i className="iconoir-chat-bubble" aria-hidden="true" />,
+              icon: <Icon name="chat-bubble" size={24} className="block" />,
               title: t("how1Title"),
               description: t("how1Body"),
             },
             {
-              icon: <i className="iconoir-home-simple" aria-hidden="true" />,
+              icon: <Icon name="home-simple" size={24} className="block" />,
               title: t("how2Title"),
               description: t("how2Body"),
             },
             {
-              icon: <i className="iconoir-headset" aria-hidden="true" />,
+              icon: <Icon name="headset" size={24} className="block" />,
               title: t("how3Title"),
               description: t("how3Body"),
             },

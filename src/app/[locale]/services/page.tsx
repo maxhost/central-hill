@@ -6,9 +6,6 @@ import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
 import { ServicesListing } from "@slices/services/ui/services-listing";
-// Only for the Iconoir stylesheet that `mock.css` `@import`s (card icons, How It Works); no
-// `.mk` markup is left on this page (parked ADR 0033).
-import "../../mock.css";
 
 /**
  * Static per locale (ISR). Copy is the `services.*` messages; the cards are the published

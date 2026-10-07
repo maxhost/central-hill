@@ -543,7 +543,7 @@ const SKELETON: Record<string, Record<string, unknown>> = {
   "luggage-storage": {
     badges: ["Central Hill guests save 10% with Luggit"],
     facts: [
-      { icon: "pin", title: "Across the city", note: "Secure partner locations near every apartment" },
+      { icon: "map-pin", title: "Across the city", note: "Secure partner locations near every apartment" },
       { icon: "car", title: "Pickup & delivery", note: "Including straight to the airport" },
     ],
     about_title: "Enjoy Lisbon right up to your flight",
@@ -715,7 +715,7 @@ const SKELETON: Record<string, Record<string, unknown>> = {
     facts: [
       { icon: "clock", title: "2–8 hours", note: "Choose your route and duration" },
       { icon: "group", title: "Up to 18 guests", note: "Depending on the boat" },
-      { icon: "pin", title: "Departs from Lisbon", note: "Past Belém, Alfama or out to Cascais" },
+      { icon: "map-pin", title: "Departs from Lisbon", note: "Past Belém, Alfama or out to Cascais" },
     ],
     about_title: "See Lisbon the way it was meant to be seen",
     price_note: "2 hours on the Sailing Boat Fado, up to 6 guests",
@@ -734,7 +734,7 @@ const SKELETON: Record<string, Record<string, unknown>> = {
       { icon: "clock", title: "~2.5 hours", note: "Basics on the sand, then into the water" },
       { icon: "group", title: "Up to 6 per instructor", note: "Small groups, split by ability" },
       { icon: "language", title: "English-speaking instructor", note: "Certified surf school" },
-      { icon: "pin", title: "Carcavelos beach", note: "Moved to a better beach if needed" },
+      { icon: "map-pin", title: "Carcavelos beach", note: "Moved to a better beach if needed" },
     ],
     about_title: "Your first waves, on Lisbon's coast",
     included_title: "Every lesson includes",

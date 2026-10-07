@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { MediaImage, type MediaImageData } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import { JsonLd, breadcrumbLd } from "@core/seo";
+import { Icon } from "@core/ui/icon";
 import {
   ContentBlock,
   DetailLayout,
@@ -31,7 +32,6 @@ import {
   ServiceGoodToKnow,
   ServiceIncluded,
 } from "./components/service-good-to-know";
-import { FACT_ICON, ICONS } from "./components/service-icons";
 import { ServiceItinerary } from "./components/service-itinerary";
 import { ServiceMobileBar } from "./components/service-mobile-bar";
 import { ServiceOptionGroups } from "./components/service-option-groups";
@@ -55,8 +55,8 @@ import { formatPrice } from "./format";
  *    layouts); "Show all photos" (`ServicePhotos` dialog) only when there are more photos than
  *    the mosaic shows.
  * 3. Body — `core/ui` `DetailLayout` (`minmax(0,1fr) 380px`, one column ≤980px):
- *    - content column of `core/ui` `ContentBlock`s: key facts (`IconFactGrid`, `FACT_ICON`
- *      glyphs) · About (eyebrow by category: `experiences` → "experience", else "service"; h2 =
+ *    - content column of `core/ui` `ContentBlock`s: key facts (`IconFactGrid`, `fact.icon` is an
+ *      Iconoir name) · About (eyebrow by category: `experiences` → "experience", else "service"; h2 =
  *      `about_title` or a fallback; body paragraphs) · What's included (`highlights`, h2 =
  *      `included_title` or a fallback) · the **variable module**, only the parts that exist:
  *      itinerary → option groups → rates (+ extras) → partners · Good to know (non-empty
@@ -69,9 +69,9 @@ import { formatPrice } from "./format";
  * 4. Enquiry (`enquiry` only) — `core/ui` `EnquirySplit` on the warm `alt` band (eyebrow, title,
  *    lede, guest-team contact lines) with the leads `ContactForm` (`source="service:<slug>"`).
  * 5. More services — `SectionHead` + a 4 → 2 → 1 grid of the listing's own `ServiceCard`
- *    (max 4, current excluded). The card's category-icon glyph is an Iconoir class, so the page
- *    loads the Iconoir stylesheet (hoisted `<link>`, the same CDN file `mock.css` `@import`s
- *    for the listing) instead of importing `mock.css`.
+ *    (max 4, current excluded).
+ *
+ * Every glyph is `core/ui` `<Icon>` (inline Iconoir SVG, ADR 0034): no icon stylesheet.
  *
  * Static (no `Reveal`), like the other DB-driven detail pages.
  */
@@ -79,7 +79,6 @@ import { formatPrice } from "./format";
 const WRAP = "mx-auto max-w-[1240px] px-[28px]";
 const ALT_BAND =
   "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
-const ICONOIR_CSS = "https://cdn.jsdelivr.net/npm/iconoir/css/iconoir.css";
 const MORE_MAX = 4;
 
 // Gallery `sizes`, per adaptive layout (1184px content column; 10px gaps; 780px breakpoint).
@@ -205,7 +204,7 @@ export async function ServiceDetail({
         label={t("detail.showAllPhotos")}
         title={t("detail.allPhotos")}
         closeLabel={t("detail.close")}
-        icon={ICONS.grid}
+        icon={<Icon name="view-grid" />}
       >
         {photos.map((p, i) => (
           <MediaImage
@@ -222,7 +221,7 @@ export async function ServiceDetail({
   if (svc.rating !== null) {
     meta.push(
       <span className="inline-flex items-center gap-1.5 font-semibold [&_svg]:block [&_svg]:size-[15px] [&_svg]:text-accent">
-        {ICONS.star}
+        <Icon name="star" className="[&_path]:fill-current" />
         {svc.rating.toFixed(1)}
         {svc.rating >= 4.8 ? (
           <span className="font-normal text-ink-soft">
@@ -235,7 +234,7 @@ export async function ServiceDetail({
   for (const b of detail.badges) {
     meta.push(
       <span className="inline-flex items-center gap-[7px] text-ink-soft [&_svg]:block [&_svg]:size-4 [&_svg]:text-accent-deep">
-        {ICONS.shield}
+        <Icon name="shield-check" />
         {b}
       </span>,
     );
@@ -256,7 +255,6 @@ export async function ServiceDetail({
   return (
     <>
       <JsonLd data={ld} />
-      <link rel="stylesheet" href={ICONOIR_CSS} precedence="default" />
 
       {/* 1 · title block */}
       <DetailTitle
@@ -287,7 +285,7 @@ export async function ServiceDetail({
               <ContentBlock>
                 <IconFactGrid
                   items={detail.facts.map((f) => ({
-                    icon: FACT_ICON[f.icon],
+                    icon: <Icon name={f.icon} />,
                     title: f.title,
                     note: f.note,
                   }))}

@@ -80,12 +80,18 @@ export const partner = z.object({
 });
 export type Partner = z.infer<typeof partner>;
 
-/** Closed icon set for the key-facts row (rendered as inline SVG by the page). */
-export const FACT_ICONS = ["clock", "group", "language", "pin", "car", "home", "calendar", "star"] as const;
+/**
+ * Closed icon set for the key-facts row. Each value is an Iconoir name, rendered by `core/ui`
+ * `<Icon>` (ADR 0034).
+ */
+export const FACT_ICONS = ["clock", "group", "language", "map-pin", "car", "home", "calendar", "star"] as const;
 export type FactIcon = (typeof FACT_ICONS)[number];
 
+/** Pre-ADR-0034 values still accepted on read and normalised (`pin` was the sprite's map pin). */
+const LEGACY_FACT_ICONS: Record<string, FactIcon> = { pin: "map-pin" };
+
 export const keyFact = z.object({
-  icon: z.enum(FACT_ICONS),
+  icon: z.preprocess((v) => (typeof v === "string" && LEGACY_FACT_ICONS[v]) || v, z.enum(FACT_ICONS)),
   title: line(80),
   note: line(160).optional(),
 });

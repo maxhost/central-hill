@@ -1,18 +1,10 @@
 import Link from "next/link";
 import { MediaImage } from "@core/media";
+import { Icon } from "@core/ui/icon";
 import type { ServiceSummary } from "../../contract";
 
 // The listing grid is 3 columns inside the 1240px/28px column, 2 at 681–980px, 1 at ≤680px.
 const CARD_SIZES = "(max-width: 680px) 100vw, (max-width: 980px) 50vw, 394px";
-
-/**
- * Iconoir glyph class for a category's curated `icon` key. The Iconoir stylesheet is loaded
- * by `mock.css`'s `@import` (the route still imports it for that alone, like Guests). Unknown
- * or missing keys fall back to the decorative `sparks` glyph rather than an empty circle.
- */
-const ICON_FALLBACK = "iconoir-sparks";
-const iconClass = (key: string | null): string =>
-  key && key.length <= 64 && /^[a-z0-9-]+$/.test(key) ? `iconoir-${key}` : ICON_FALLBACK;
 
 /**
  * Services listing card: the locked mock `.pcard` design (`mock/services.html`, the same
@@ -25,7 +17,8 @@ const iconClass = (key: string | null): string =>
  * buildings card lives in the `buildings` slice (golden rule 2 forbids importing it) and
  * `core/ui`'s `PropertyCard` is the smaller featured-portfolio card. Fed from the DB through
  * `ServiceSummary`: the pill is the category name, the icon is the category's curated
- * `icon` key, the body is the excerpt, and the card links to the per-locale detail slug.
+ * `icon` key (an Iconoir name, rendered by `core/ui` `<Icon>`; unknown → `sparks`), the body is
+ * the excerpt, and the card links to the per-locale detail slug.
  * Price/duration aren't shown, as in the mock.
  */
 export function ServiceCard({
@@ -57,8 +50,8 @@ export function ServiceCard({
             priority={priority}
           />
         ) : null}
-        <span className="absolute bottom-4 left-4 z-10 grid h-[46px] w-[46px] place-items-center rounded-full bg-surface text-[24px] text-accent-deep shadow-[0_8px_22px_-12px_rgba(0,0,0,0.5)]">
-          <i className={iconClass(service.category.icon)} aria-hidden="true" />
+        <span className="absolute bottom-4 left-4 z-10 grid h-[46px] w-[46px] place-items-center rounded-full bg-surface text-accent-deep shadow-[0_8px_22px_-12px_rgba(0,0,0,0.5)]">
+          <Icon name={service.category.icon} size={24} />
         </span>
       </div>
       <div className="px-6 pt-[22px] pb-[26px]">

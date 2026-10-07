@@ -46,9 +46,9 @@ Slice services.
   "Ask on WhatsApp" + no-payment note, `external` → the CTA in a new tab, `none` → "See
   partners" when partners exist) → `ServiceMobileBar` (≤980px) → enquiry (`enquiry` only:
   `core/ui` `EnquirySplit` on the `alt` band + leads `ContactForm`, `source="service:<slug>"`)
-  → "Other guest services" (4 → 2 → 1 grid of the listing's own `ServiceCard`, max 4; the
-  page hoists the Iconoir stylesheet `<link>` for the card's category glyph). Icons are inline
-  SVGs of the mock sprite (`ui/components/service-icons.tsx`, `FACT_ICON` maps the facts enum).
+  → "Other guest services" (4 → 2 → 1 grid of the listing's own `ServiceCard`, max 4). Every icon
+  is `core/ui` `<Icon>` (inline Iconoir SVG, ADR 0034); `detail.facts[].icon` is the closed
+  `FACT_ICONS` enum of Iconoir names (legacy `pin` is read as `map-pin`).
   Copy: `services.detail.*` messages. `generateStaticParams` = `listServiceParams()`; unknown
   slugs 404; `revalidate = 3600`, reads tagged `service-list`.
 
@@ -114,9 +114,6 @@ Plugs into the backoffice shell. Contributes two `content`-group screens
 
 ## Deferred
 
-- **Category icons**: `service_category.icon` holds iconoir keys but the icon font is not
-  yet loaded in the app shell; the UI shows category name chips. Render the glyphs once the
-  icon set is wired (kernel/app-shell change → ADR).
 - **Service/Offer JSON-LD**: only `BreadcrumbList` is emitted; a richer `Service`/`Offer`
   builder belongs in `core/seo` (**S13**, ADR — golden rule 3), not hand-written here.
 
