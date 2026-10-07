@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { CenteredCtaBand, ChipBar, Hero, SectionHead } from "@core/ui";
 import { Icon } from "@core/ui/icon";
+import { SITE_ICON_DEFAULTS, getGlobals } from "@slices/settings/contract";
 import { listGuideCityGroups, listTopRecommendations } from "../contract";
 import { GuideCard } from "./components/guide-card";
 import { RecommendationCard } from "./components/recommendation-card";
@@ -41,11 +42,14 @@ const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]"
 
 export async function GuidesListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const [groups, recommendations, t] = await Promise.all([
+  const [groups, recommendations, t, globals] = await Promise.all([
     listGuideCityGroups(locale),
     listTopRecommendations(locale),
     getTranslations("guides"),
+    getGlobals(locale),
   ]);
+  // Site icons (settings → "Site icons", ADR 0034 amendment 2).
+  const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
   const recTypeLabels = {
     restaurant: t("recType.restaurant"),
     viewpoint: t("recType.viewpoint"),
@@ -75,7 +79,7 @@ export async function GuidesListing({ locale }: { locale: Locale }) {
       <ChipBar
         label={t("chooseCity")}
         items={[
-          { key: "lisbon", label: t("cityLisbon"), icon: <Icon name="map-pin" size={13} />, active: true },
+          { key: "lisbon", label: t("cityLisbon"), icon: <Icon name={icons.location} size={13} />, active: true },
           { key: "porto", label: t("cityPorto"), soon: true, soonLabel: t("citySoon") },
           { key: "cascais", label: t("cityCascais"), soon: true, soonLabel: t("citySoon") },
         ]}
@@ -99,6 +103,7 @@ export async function GuidesListing({ locale }: { locale: Locale }) {
                     guide={guide}
                     locale={locale}
                     viewLabel={t("viewGuide")}
+                    icon={icons[`guide_${guide.template}`]}
                     priority={gi === 0 && i < 3}
                   />
                 ))}
@@ -124,7 +129,7 @@ export async function GuidesListing({ locale }: { locale: Locale }) {
             <SectionHead eyebrow={t("recEyebrow")} headline={t("recTitle")} intro={t("recIntro")} />
             <div className="grid grid-cols-1 gap-[26px] min-[681px]:grid-cols-2 min-[981px]:grid-cols-3">
               {recommendations.map((rec) => (
-                <RecommendationCard key={rec.id} rec={rec} locale={locale} typeLabels={recTypeLabels} />
+                <RecommendationCard key={rec.id} rec={rec} locale={locale} typeLabels={recTypeLabels} pinIcon={icons.location} />
               ))}
             </div>
           </div>

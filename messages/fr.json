@@ -669,7 +669,8 @@
           "office": "Bureau",
           "brand": "Marque",
           "avantio": "Avantio",
-          "buildings": "Liste des immeubles"
+          "buildings": "Liste des immeubles",
+          "icons": "Icônes du site"
         },
         "fields": {
           "email": "E-mail",
@@ -702,6 +703,35 @@
           "revenue": "Revenu",
           "buildings": "Immeubles",
           "apartments": "Appartements"
+        },
+        "icons": {
+          "intro": "Icônes ayant un rôle fixe sur le site. Choisissez n’importe quelle icône Iconoir ; les pages publiques se mettent à jour à l’enregistrement.",
+          "default": "Par défaut : {name}",
+          "groups": {
+            "general": "Général",
+            "specs": "Caractéristiques de l’appartement",
+            "guides": "Cartes de guide (par modèle)"
+          },
+          "fields": {
+            "account": "En-tête : compte",
+            "contact": "En-tête : contact",
+            "language": "En-tête : langue",
+            "location": "Repère de lieu (guides)",
+            "reading_time": "Blog : temps de lecture",
+            "spec_bedrooms": "Chambres",
+            "spec_beds": "Lits",
+            "spec_guests": "Voyageurs",
+            "spec_size": "Surface",
+            "guide_landing": "Accueil",
+            "guide_eat": "Manger et boire",
+            "guide_beaches": "Plages",
+            "guide_events": "Événements",
+            "guide_secrets": "Secrets",
+            "guide_families": "Familles",
+            "guide_groups": "Groupes",
+            "guide_travellers": "Voyageurs",
+            "guide_custom": "Personnalisé"
+          }
         }
       },
       "nav": {

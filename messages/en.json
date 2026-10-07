@@ -669,7 +669,8 @@
           "office": "Office",
           "brand": "Brand",
           "avantio": "Avantio",
-          "buildings": "Buildings listing"
+          "buildings": "Buildings listing",
+          "icons": "Site icons"
         },
         "fields": {
           "email": "Email",
@@ -702,6 +703,35 @@
           "revenue": "Revenue",
           "buildings": "Buildings",
           "apartments": "Apartments"
+        },
+        "icons": {
+          "intro": "Icons with a fixed role on the site. Pick any Iconoir icon; the public pages update on save.",
+          "default": "Default: {name}",
+          "groups": {
+            "general": "General",
+            "specs": "Apartment specs",
+            "guides": "Guide cards (per template)"
+          },
+          "fields": {
+            "account": "Header: account",
+            "contact": "Header: contact",
+            "language": "Header: language",
+            "location": "Location pin (guides)",
+            "reading_time": "Blog: reading time",
+            "spec_bedrooms": "Bedrooms",
+            "spec_beds": "Beds",
+            "spec_guests": "Guests",
+            "spec_size": "Size",
+            "guide_landing": "Landing",
+            "guide_eat": "Eat & drink",
+            "guide_beaches": "Beaches",
+            "guide_events": "Events",
+            "guide_secrets": "Secrets",
+            "guide_families": "Families",
+            "guide_groups": "Groups",
+            "guide_travellers": "Travellers",
+            "guide_custom": "Custom"
+          }
         }
       },
       "nav": {

@@ -1,21 +1,8 @@
 import Link from "next/link";
 import { MediaImage } from "@core/media";
-import { Icon, type IconName } from "@core/ui/icon";
+import { Icon } from "@core/ui/icon";
 import type { Locale } from "@core/db/columns";
-import type { GuidePageSummary, GuideTemplate } from "../../contract";
-
-/** Iconoir icon name per editorial template — matches the mock's original per-card icon. */
-const TEMPLATE_ICON: Record<GuideTemplate, IconName> = {
-  landing: "bank",
-  eat: "pizza-slice",
-  beaches: "sea-waves",
-  events: "music-double-note",
-  secrets: "binocular",
-  families: "group",
-  groups: "community",
-  travellers: "compass",
-  custom: "compass",
-};
+import type { GuidePageSummary } from "../../contract";
 
 // One cell of the listing's 3/2/1-column grid (`mock.css`'s `.pf-grid` breakpoints) — the
 // exact `sizes` the old `mediaImgTag` string used, so the browser picks the same candidate.
@@ -40,24 +27,29 @@ const IMG_CLASS =
  * unused look) was replaced by this one.
  *
  * **Guides-only, not a `core/ui` primitive** (user decision): it owns its `GuidePageSummary`
- * coupling and the template → icon mapping, which are guides-domain, not a layout pattern.
+ * coupling, which is guides-domain, not a layout pattern.
  *
  * Image: `MediaImage` when the hero has a URL and real dimensions (alt falls back to the
  * guide title, as `mediaImgTag` did); otherwise the same plain `<img>` `mediaImgTag` emits for
  * missing/dimensionless media (the asset URL or the building placeholder SVG).
  *
- * The template icon is `core/ui` `<Icon>` (inline Iconoir SVG, ADR 0034).
+ * The template icon is `core/ui` `<Icon>` (inline Iconoir SVG, ADR 0034). The caller passes
+ * its name: the guide template's site icon (`settings` `SiteIcons.guide_<template>`, editable
+ * in Settings → "Site icons").
  */
 export function GuideCard({
   guide,
   locale,
   viewLabel,
+  icon,
   priority,
 }: {
   guide: GuidePageSummary;
   locale: Locale;
   /** Pre-translated "View guide" label (the arrow is appended here). */
   viewLabel: string;
+  /** Iconoir name of the template icon. */
+  icon: string;
   priority?: boolean;
 }) {
   const hero = guide.hero;
@@ -89,7 +81,7 @@ export function GuideCard({
         />
       </div>
       <div className="px-6 pt-[22px] pb-[26px]">
-        <Icon name={TEMPLATE_ICON[guide.template]} size={28} className="mb-[14px] inline-block align-baseline text-accent-deep" />
+        <Icon name={icon} size={28} className="mb-[14px] inline-block align-baseline text-accent-deep" />
         <h3 className="mb-[6px] font-serif text-[22px] font-medium leading-[1.08] tracking-[-0.015em] text-ink">
           {guide.title}
         </h3>

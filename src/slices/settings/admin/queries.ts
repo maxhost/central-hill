@@ -7,6 +7,8 @@ import type { AdminMediaPreview } from "@slices/backoffice/contract";
 import { COMPANY_SETTINGS, NAV_ITEM, type NavLocation, type StatKey } from "../contract";
 import { DEFAULT_GLOBALS } from "../defaults";
 import { company_settings, nav_item } from "../schema";
+import type { SiteIcons } from "../site-icons";
+import { resolveSiteIcons } from "../server/site-icons";
 
 /**
  * Backoffice reads for slice `settings` (S12). Not cache-wrapped (admin is dynamic).
@@ -40,6 +42,7 @@ export interface GlobalsEditData {
   avantio_widget_config: string;
   show_building_location: boolean;
   show_building_count: boolean;
+  site_icons: SiteIcons;
 }
 
 export interface GlobalsEditBundle {
@@ -71,6 +74,7 @@ function scaffold(): GlobalsEditBundle {
       avantio_widget_config: "{}",
       show_building_location: DEFAULT_GLOBALS.showBuildingLocation,
       show_building_count: DEFAULT_GLOBALS.showBuildingCount,
+      site_icons: { ...DEFAULT_GLOBALS.icons },
     },
     previews: {},
   };
@@ -116,6 +120,7 @@ export async function getGlobalsForEdit(): Promise<GlobalsEditBundle> {
     avantio_widget_config: JSON.stringify(row.avantio_widget_config ?? {}, null, 2),
     show_building_location: row.show_building_location,
     show_building_count: row.show_building_count,
+    site_icons: resolveSiteIcons(row.site_icons),
   };
 
   const previews = await resolvePreviews([row.default_og_image_media_id]);

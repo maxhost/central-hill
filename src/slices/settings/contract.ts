@@ -10,6 +10,15 @@
  * [T] fields (stat labels, `office_hours_label`, nav `label`) resolve via `core/i18n`.
  */
 import type { MediaImageData } from "@core/media";
+import type { SiteIcons } from "./site-icons";
+
+/** Site icons: keys, defaults and types (client-safe; ADR 0034 amendment 2). */
+export {
+  SITE_ICON_DEFAULTS,
+  SITE_ICON_KEYS,
+  type SiteIconKey,
+  type SiteIcons,
+} from "./site-icons";
 
 /** Entity types used for translation keys and cache tags. */
 export const COMPANY_SETTINGS = "company_settings" as const;
@@ -73,6 +82,8 @@ export interface SiteGlobals {
    */
   showBuildingLocation: boolean;
   showBuildingCount: boolean;
+  /** Site icons (Iconoir names with a fixed role: header account, specs, guide templates…). */
+  icons: SiteIcons;
 }
 
 export type NavLocation = "header" | "footer";

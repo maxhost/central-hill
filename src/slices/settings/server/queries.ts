@@ -16,6 +16,7 @@ import {
   type StatKey,
 } from "../contract";
 import { company_settings, nav_item } from "../schema";
+import { resolveSiteIcons } from "./site-icons";
 
 /**
  * Public read functions for slice `settings` / `globals` (conventions.md → reads go
@@ -93,6 +94,7 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
     avantio: { accountId: row.avantio_account_id, widgetConfig: row.avantio_widget_config },
     showBuildingLocation: row.show_building_location,
     showBuildingCount: row.show_building_count,
+    icons: resolveSiteIcons(row.site_icons),
   };
 }
 

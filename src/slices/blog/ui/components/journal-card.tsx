@@ -47,6 +47,7 @@ export function JournalCard({
   post,
   locale,
   readingTimeLabel,
+  readingTimeIcon,
   readLabel,
   priority,
 }: {
@@ -54,6 +55,8 @@ export function JournalCard({
   locale: Locale;
   /** Pre-translated "{n} min read" (`blog.readingMinutes`), or null when unknown. */
   readingTimeLabel: string | null;
+  /** Iconoir name before the reading time (the `reading_time` site icon). */
+  readingTimeIcon: string;
   /** Pre-translated "Read Article" label (the arrow is appended here). */
   readLabel: string;
   priority?: boolean;
@@ -90,6 +93,7 @@ export function JournalCard({
         <PostMeta
           date={formatPostMonth(post.publishedAt, locale)}
           readingTime={readingTimeLabel}
+          readingTimeIcon={readingTimeIcon}
           className="mb-[14px]"
         />
         <span className="inline-flex items-center gap-[6px] text-[13.5px] font-semibold text-accent-deep">

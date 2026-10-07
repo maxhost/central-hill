@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { PageHead, PageHeadSearch, SectionHead } from "@core/ui";
 import { Icon } from "@core/ui/icon";
+import { SITE_ICON_DEFAULTS, getGlobals } from "@slices/settings/contract";
 import { getFeaturedPost, listCategories, listPosts } from "../contract";
 import { CategoryFilterItem, CategoryFilterProvider, CategoryLoadMore, CategoryTabs } from "./components/category-tabs";
 import { FeaturedPost } from "./components/featured-post";
@@ -72,12 +73,15 @@ const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
  */
 export async function BlogListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const [t, categories, featured, posts] = await Promise.all([
+  const [t, categories, featured, posts, globals] = await Promise.all([
     getTranslations("blog"),
     listCategories(locale),
     getFeaturedPost(locale),
     listPosts(locale),
+    getGlobals(locale),
   ]);
+  // The `reading_time` site icon (Settings → "Site icons", ADR 0034 amendment 2).
+  const readingTimeIcon = (globals?.icons ?? SITE_ICON_DEFAULTS).reading_time;
   // `listPosts` is already newest-first (`published_at desc`). Posts without a slug can't link.
   const journal = posts.filter((p) => p.id !== featured?.id && p.slug);
 
@@ -108,6 +112,7 @@ export async function BlogListing({ locale }: { locale: Locale }) {
                 readingTimeLabel={
                   featured.readingMinutes ? t("readingMinutes", { minutes: featured.readingMinutes }) : null
                 }
+                readingTimeIcon={readingTimeIcon}
                 readLabel={t("readArticle")}
               />
             </div>
@@ -126,6 +131,7 @@ export async function BlogListing({ locale }: { locale: Locale }) {
                       readingTimeLabel={
                         post.readingMinutes ? t("readingMinutes", { minutes: post.readingMinutes }) : null
                       }
+                      readingTimeIcon={readingTimeIcon}
                       readLabel={t("readArticle")}
                     />
                   </CategoryFilterItem>

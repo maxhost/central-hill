@@ -1,4 +1,5 @@
 import type { SiteGlobals } from "./contract";
+import { SITE_ICON_DEFAULTS } from "./site-icons";
 
 /**
  * Pre-seed fallback for the site-wide singleton. Until the backoffice (S12) writes a
@@ -33,4 +34,5 @@ export const DEFAULT_GLOBALS: SiteGlobals = {
   avantio: { accountId: "", widgetConfig: {} },
   showBuildingLocation: false,
   showBuildingCount: false,
+  icons: { ...SITE_ICON_DEFAULTS },
 };

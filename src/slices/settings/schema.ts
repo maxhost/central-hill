@@ -29,6 +29,11 @@ export const company_settings = pgTable("company_settings", {
    */
   show_building_location: boolean().notNull().default(false),
   show_building_count: boolean().notNull().default(false),
+  /**
+   * Site icons (ADR 0034 amendment 2): `SiteIconKey` → Iconoir name, picked in the back
+   * office. Missing/unknown keys read as `SITE_ICON_DEFAULTS` (`../site-icons`).
+   */
+  site_icons: jsonb().$type<Record<string, string>>().notNull().default({}),
   ...timestamps,
 });
 

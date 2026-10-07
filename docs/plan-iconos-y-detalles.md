@@ -1,6 +1,6 @@
 # Plan por sesiones: iconos (Iconoir) + detalle de blog y de guía
 
-**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–3b hechas; sigue 3c, luego 4). Cada sesión es autocontenida: se puede hacer
+**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–3c hechas; sigue 3d, luego 4). Cada sesión es autocontenida: se puede hacer
 `/compact` o `/clear` entre sesiones. Para retomar, basta con decir "seguimos con la sesión N de
 `docs/plan-iconos-y-detalles.md`".
 
@@ -240,6 +240,36 @@ con prefijo se dejan en el bucket (decisión del usuario).
   `core/ui/icon*` y WhatsApp. Las capturas coinciden a 1440 y 390.
 
 ## Sesión 3c: iconos editables desde el backoffice + selector
+**✅ Hecha el 2026-10-07** (enmienda 2 del ADR 0034). Decisiones del usuario: sprite en `/public`,
+iconos de rol en Settings y About en una sesión aparte (la 3d).
+- **Sprite:** `pnpm icons:generate` escribe además `public/icons/iconoir-7.12.1.svg` (un
+  `<symbol>` por icono) y `ICON_SPRITE_URL` en `names.ts`. Solo lo carga el admin; un test
+  comprueba que coincide con el mapa.
+- **Selector:** `IconField` + `SpriteIcon` en `backoffice/ui/icon-field.tsx`, exportados en el
+  contract junto a `MediaField`: buscador + rejilla de los 1.383 iconos. Las claves
+  `backoffice.icon.*` están en los 4 idiomas. Se usa en:
+  - todos los `icon_key` de los esquemas de pages (`form-model`: nodo `icon`; la etiqueta es
+    "Icon");
+  - el `icon` de las categorías de servicios (ahora `iconKey` estricto);
+  - el icono de los key facts de servicios (cualquier nombre; desaparece `FACT_ICONS` con sus
+    claves `factIcons.*`; `pin` se sigue leyendo como `map-pin`).
+- **Site icons:** columna `company_settings.site_icons` (jsonb, migración 0015, aplicada en
+  dev). Los valores por defecto están en `settings/site-icons.ts` y son lo que se veía antes;
+  el read model rellena lo que falte o no sea válido. Se exponen como `SiteGlobals.icons` y se
+  editan en Settings → "Site icons". Son:
+  - header: cuenta, contacto e idioma;
+  - el pin de ubicación (lugares + chip de ciudad);
+  - el reloj del blog;
+  - las 4 specs de apartamento;
+  - un icono por plantilla de guía (sustituye a `TEMPLATE_ICON`).
+- Verificado: los 4 tipos de página pintan los mismos SVG que antes; el sprite se dibuja en
+  Chromium; typecheck y lint limpios; tests de settings, pages, services y core/ui en verde.
+  Los 3 tests desfasados de settings-admin se arreglaron (al fixture le faltaban campos).
+- **No hecho (pasa a la 3d):** los iconos de About, una pantalla de admin para las amenities
+  (el `icon` se guarda y se valida, pero no hay dónde editarlo) y el badge de
+  `TwoColumnShowcase` (ninguna página lo usa).
+
+### Plan original de la 3c
 - **Objetivo:** que todo icono de contenido se pueda elegir en el admin.
 - **Hoy fijos en el código (pasan a `icon_key` en la DB + editor):**
   - About: los 12 `icon_key` existen pero no se leen. Va con conectar About a `page_content`.
@@ -253,6 +283,16 @@ con prefijo se dejan en el bucket (decisión del usuario).
   las amenities.
 - Datos: migraciones aditivas donde haga falta un campo nuevo; backfill con lo que se ve hoy.
 - **Modo:** coordinador + agentes por slice (pages, guides, buildings, blog, settings).
+
+## Sesión 3d: About a `page_content` + amenities + iconos fijos que quedan
+- About: conectar la página a su fila de `page_content` (copy + los 12 `icon_key`), con un
+  backfill de lo que se ve hoy.
+- Pantalla de amenities en el admin de buildings (etiqueta + `IconField`).
+- Iconos que siguen fijos en el código, por decidir si van a site icons o a datos:
+  - services listing (`chat-bubble`/`home-simple`/`headset`);
+  - las columnas de "Good to know" (`check-circle`/`calendar`/`info-circle`);
+  - `view-grid` del detalle de servicio;
+  - la lupa del blog.
 
 ## Sesión 4: mocks del detalle de blog y de guía
 - **Objetivo:** `mock/blog-post.html` y `mock/guide-detail.html`, aprobados por el owner.

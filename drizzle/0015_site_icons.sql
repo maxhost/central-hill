@@ -1,0 +1,1 @@
+ALTER TABLE "company_settings" ADD COLUMN "site_icons" jsonb DEFAULT '{}'::jsonb NOT NULL;

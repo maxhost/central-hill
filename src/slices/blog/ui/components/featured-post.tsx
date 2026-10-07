@@ -42,6 +42,7 @@ export function FeaturedPost({
   locale,
   bylineLabel,
   readingTimeLabel,
+  readingTimeIcon,
   readLabel,
 }: {
   post: PostSummary;
@@ -50,6 +51,8 @@ export function FeaturedPost({
   bylineLabel: string;
   /** Pre-translated "{n} min read" (`blog.readingMinutes`), or null when unknown. */
   readingTimeLabel: string | null;
+  /** Iconoir name before the reading time (the `reading_time` site icon). */
+  readingTimeIcon: string;
   /** Pre-translated "Read Article" label (the arrow is appended here). */
   readLabel: string;
 }) {
@@ -78,6 +81,7 @@ export function FeaturedPost({
           byline={bylineLabel}
           date={formatPostMonth(post.publishedAt, locale)}
           readingTime={readingTimeLabel}
+          readingTimeIcon={readingTimeIcon}
         />
         <Link
           href={`/${locale}/blog/${post.slug}`}

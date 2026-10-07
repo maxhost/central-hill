@@ -37,10 +37,13 @@ export function RecommendationCard({
   rec,
   locale,
   typeLabels,
+  pinIcon,
 }: {
   rec: GuideRecommendation;
   locale: Locale;
   typeLabels: Partial<Record<GuideRecommendationType, string>>;
+  /** Iconoir name of the address pin (the `location` site icon). */
+  pinIcon: string;
 }) {
   const img = rec.image;
   const alt = img.alt || rec.name;
@@ -66,7 +69,7 @@ export function RecommendationCard({
         </h3>
         {rec.description ? <p className="mt-[8px] text-[14px] text-ink-soft">{rec.description}</p> : null}
         <span className="mt-[14px] inline-flex items-center gap-[6px] text-[12.5px] tracking-[0.04em] text-ink-soft">
-          <Icon name="map-pin" size={15} className="shrink-0 text-accent-deep" />
+          <Icon name={pinIcon} size={15} className="shrink-0 text-accent-deep" />
           {rec.address}
         </span>
       </div>

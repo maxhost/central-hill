@@ -12,11 +12,13 @@ import {
   FieldGrid,
   FormActions,
   type AdminMediaPreview,
+  IconField,
   MediaField,
   TextArea,
   TextInput,
   useMediaQueue,
 } from "@slices/backoffice/contract";
+import { SITE_ICON_DEFAULTS, type SiteIconKey } from "../../site-icons";
 import { saveGlobals } from "../actions";
 import type { GlobalsEditData, StatForm } from "../queries";
 
@@ -41,6 +43,26 @@ const STAT_KEYS: StatKey[] = [
   "buildings",
   "apartments",
 ];
+/** Site icons, grouped as the form shows them (ADR 0034 amendment 2). */
+const SITE_ICON_GROUPS: { key: "general" | "specs" | "guides"; icons: SiteIconKey[] }[] = [
+  { key: "general", icons: ["account", "contact", "language", "location", "reading_time"] },
+  { key: "specs", icons: ["spec_bedrooms", "spec_beds", "spec_guests", "spec_size"] },
+  {
+    key: "guides",
+    icons: [
+      "guide_landing",
+      "guide_eat",
+      "guide_beaches",
+      "guide_events",
+      "guide_secrets",
+      "guide_families",
+      "guide_groups",
+      "guide_travellers",
+      "guide_custom",
+    ],
+  },
+];
+
 type SocialKey = "instagram" | "facebook" | "linkedin" | "youtube" | "tiktok";
 const SOCIAL_KEYS: SocialKey[] = [
   "instagram",
@@ -78,6 +100,8 @@ export function GlobalsForm({
     }));
   const setSocial = (key: SocialKey, value: string) =>
     setState((prev) => ({ ...prev, social: { ...prev.social, [key]: value } }));
+  const setIcon = (key: SiteIconKey, value: string) =>
+    setState((prev) => ({ ...prev, site_icons: { ...prev.site_icons, [key]: value } }));
   const err = (key: string) => errors[key];
 
   function onSubmit() {
@@ -126,6 +150,7 @@ export function GlobalsForm({
       avantio_widget_config: widgetConfig,
       show_building_location: state.show_building_location,
       show_building_count: state.show_building_count,
+      site_icons: state.site_icons,
     };
 
     void (async () => {
@@ -333,6 +358,29 @@ export function GlobalsForm({
             checked={state.show_building_count}
             onChange={(e) => set("show_building_count", e.target.checked)}
           />
+        </div>
+      </AdminCard>
+
+      <AdminCard title={t("admin.globals.sections.icons")}>
+        <p className="mb-5 text-sm text-ink-soft">{t("admin.globals.icons.intro")}</p>
+        <div className="space-y-6">
+          {SITE_ICON_GROUPS.map((group) => (
+            <div key={group.key}>
+              <h3 className="mb-3 text-sm font-semibold text-ink">{t(`admin.globals.icons.groups.${group.key}`)}</h3>
+              <FieldGrid>
+                {group.icons.map((key) => (
+                  <Field
+                    key={key}
+                    label={t(`admin.globals.icons.fields.${key}`)}
+                    hint={t("admin.globals.icons.default", { name: SITE_ICON_DEFAULTS[key] })}
+                    error={err(`site_icons.${key}`)}
+                  >
+                    <IconField value={state.site_icons[key]} onChange={(v) => setIcon(key, v)} />
+                  </Field>
+                ))}
+              </FieldGrid>
+            </div>
+          ))}
         </div>
       </AdminCard>
 

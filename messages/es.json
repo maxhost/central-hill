@@ -669,7 +669,8 @@
           "office": "Oficina",
           "brand": "Marca",
           "avantio": "Avantio",
-          "buildings": "Listado de edificios"
+          "buildings": "Listado de edificios",
+          "icons": "Iconos del sitio"
         },
         "fields": {
           "email": "Correo",
@@ -702,6 +703,35 @@
           "revenue": "Ingresos",
           "buildings": "Edificios",
           "apartments": "Apartamentos"
+        },
+        "icons": {
+          "intro": "Iconos con un papel fijo en el sitio. Elige cualquier icono de Iconoir; las páginas públicas se actualizan al guardar.",
+          "default": "Por defecto: {name}",
+          "groups": {
+            "general": "General",
+            "specs": "Características del apartamento",
+            "guides": "Tarjetas de guía (por plantilla)"
+          },
+          "fields": {
+            "account": "Cabecera: cuenta",
+            "contact": "Cabecera: contacto",
+            "language": "Cabecera: idioma",
+            "location": "Pin de ubicación (guías)",
+            "reading_time": "Blog: tiempo de lectura",
+            "spec_bedrooms": "Dormitorios",
+            "spec_beds": "Camas",
+            "spec_guests": "Huéspedes",
+            "spec_size": "Superficie",
+            "guide_landing": "Portada",
+            "guide_eat": "Comer y beber",
+            "guide_beaches": "Playas",
+            "guide_events": "Eventos",
+            "guide_secrets": "Secretos",
+            "guide_families": "Familias",
+            "guide_groups": "Grupos",
+            "guide_travellers": "Viajeros",
+            "guide_custom": "Personalizada"
+          }
         }
       },
       "nav": {

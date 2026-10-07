@@ -6,7 +6,9 @@
  * carry `min(1)` where required. `avantio_widget_config` arrives as a parsed object.
  */
 import { z } from "zod";
+import { iconKey } from "@core/validation/icon-key";
 import { tStr } from "@core/validation/primitives";
+import { SITE_ICON_KEYS, type SiteIconKey } from "../site-icons";
 
 const socialUrl = z.url().nullable();
 
@@ -43,6 +45,10 @@ export const companySettingsSaveInput = z.object({
   avantio_widget_config: z.record(z.string(), z.unknown()),
   show_building_location: z.boolean(),
   show_building_count: z.boolean(),
+  /** Every site icon, as a strict Iconoir name (ADR 0034 amendment 2). */
+  site_icons: z.object(
+    Object.fromEntries(SITE_ICON_KEYS.map((k) => [k, iconKey])) as Record<SiteIconKey, typeof iconKey>,
+  ),
 });
 export type CompanySettingsSaveInput = z.infer<typeof companySettingsSaveInput>;
 

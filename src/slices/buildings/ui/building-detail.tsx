@@ -21,6 +21,7 @@ import {
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import { type ApartmentSummary, listByBuilding } from "@slices/apartments/contract";
+import { SITE_ICON_DEFAULTS, type SiteIcons, getGlobals } from "@slices/settings/contract";
 import { getBuildingBySlug } from "../server/queries";
 
 /**
@@ -152,15 +153,16 @@ const GALLERY_SIZES = "(max-width: 680px) 50vw, 291px";
  *  tints (`accent-deep`) it. */
 const amenityIcon = (icon: string | null) => <Icon name={icon ?? "check-circle"} />;
 
-/** Apartment-card spec-row glyphs (bedrooms, beds, guests, size) — positional, always the
- *  same four, so fixed Iconoir names rather than a DB key. `UnitCard` sizes (16px) and tints
- *  (`accent-deep`) them; each chip's accessible hint is its `title`. */
-const SPEC_ICONS = {
-  bedrooms: <Icon name="house-rooms" />,
-  beds: <Icon name="bed" />,
-  guests: <Icon name="user" />,
-  size: <Icon name="maximize" />,
-} as const;
+/** Apartment-card spec-row glyphs (bedrooms, beds, guests, size): positional, always the
+ *  same four, so they are site icons (`spec_*`, Settings → "Site icons", ADR 0034 amendment 2)
+ *  rather than a per-row key. `UnitCard` sizes (16px) and tints (`accent-deep`) them; each
+ *  chip's accessible hint is its `title`. */
+const specIcons = (icons: SiteIcons) => ({
+  bedrooms: <Icon name={icons.spec_bedrooms} />,
+  beds: <Icon name={icons.spec_beds} />,
+  guests: <Icon name={icons.spec_guests} />,
+  size: <Icon name={icons.spec_size} />,
+});
 
 interface BuildingLabels {
   home: string;
@@ -194,13 +196,17 @@ interface ApartmentLabels {
 }
 
 /** A unit's `UnitCard` spec chips — bedrooms/beds/guests always, size only when `sizeM2` is set. */
-function apartmentSpecs(a: ApartmentSummary, labels: ApartmentLabels): UnitCardSpec[] {
+function apartmentSpecs(
+  a: ApartmentSummary,
+  labels: ApartmentLabels,
+  icons: ReturnType<typeof specIcons>,
+): UnitCardSpec[] {
   const specs: UnitCardSpec[] = [
-    { icon: SPEC_ICONS.bedrooms, value: a.bedrooms, label: labels.bedrooms(a.bedrooms) },
-    { icon: SPEC_ICONS.beds, value: a.bedsCount, label: labels.beds(a.bedsCount) },
-    { icon: SPEC_ICONS.guests, value: a.maxGuests, label: labels.guests(a.maxGuests) },
+    { icon: icons.bedrooms, value: a.bedrooms, label: labels.bedrooms(a.bedrooms) },
+    { icon: icons.beds, value: a.bedsCount, label: labels.beds(a.bedsCount) },
+    { icon: icons.guests, value: a.maxGuests, label: labels.guests(a.maxGuests) },
   ];
-  if (a.sizeM2) specs.push({ icon: SPEC_ICONS.size, value: a.sizeM2, label: labels.size(a.sizeM2) });
+  if (a.sizeM2) specs.push({ icon: icons.size, value: a.sizeM2, label: labels.size(a.sizeM2) });
   return specs;
 }
 
@@ -235,11 +241,13 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
   const detail = await getBuildingBySlug(locale, slug);
   if (!detail) notFound();
 
-  const [apartments, t, ta] = await Promise.all([
+  const [apartments, t, ta, globals] = await Promise.all([
     listByBuilding(locale, detail.id),
     getTranslations("buildings"),
     getTranslations("apartments"),
+    getGlobals(locale),
   ]);
+  const SPEC_ICONS = specIcons(globals?.icons ?? SITE_ICON_DEFAULTS);
 
   const L: BuildingLabels = {
     home: t("home"),
@@ -405,7 +413,7 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
                   image={apartmentCover(a)}
                   name={a.name}
                   badge={a.badge}
-                  specs={apartmentSpecs(a, AL)}
+                  specs={apartmentSpecs(a, AL, SPEC_ICONS)}
                   ctaLabel={AL.checkAvailability}
                 />
               ))}

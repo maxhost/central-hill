@@ -26,12 +26,14 @@ export function formatPostMonth(iso: string | null, locale: string): string | nu
  * featured block (byline · date · reading time) and the "From the Journal" cards (date ·
  * reading time, no byline); a missing item drops out together with its separator.
  *
- * Presentational and server-only (the clock is `core/ui` `<Icon>`, ADR 0034).
+ * Presentational and server-only (the clock is `core/ui` `<Icon>`, ADR 0034; the caller passes
+ * the `reading_time` site icon, editable in Settings → "Site icons").
  */
 export function PostMeta({
   byline,
   date,
   readingTime,
+  readingTimeIcon = "clock",
   className,
 }: {
   /** e.g. "By Central Hill Apartments" (`blog.byAuthor`). */
@@ -40,6 +42,8 @@ export function PostMeta({
   date?: string | null;
   /** e.g. "8 min read" (`blog.readingMinutes`). */
   readingTime?: string | null;
+  /** Iconoir name before the reading time. */
+  readingTimeIcon?: string;
   className?: string;
 }) {
   const items: ReactNode[] = [];
@@ -48,7 +52,7 @@ export function PostMeta({
   if (readingTime) {
     items.push(
       <>
-        <Icon name="clock" size={15} className="shrink-0" />
+        <Icon name={readingTimeIcon} size={15} className="shrink-0" />
         <span>{readingTime}</span>
       </>,
     );

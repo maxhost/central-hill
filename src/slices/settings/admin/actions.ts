@@ -72,6 +72,7 @@ export async function saveGlobals(raw: unknown): Promise<SettingsSaveResult> {
     avantio_widget_config: input.avantio_widget_config,
     show_building_location: input.show_building_location,
     show_building_count: input.show_building_count,
+    site_icons: input.site_icons,
   };
 
   try {

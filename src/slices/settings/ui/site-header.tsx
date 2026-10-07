@@ -4,7 +4,8 @@ import { ButtonLink, MobileDrawer, NavBar, type NavEntry } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import { Link } from "@/i18n/navigation";
 import { AVANTIO_OWNERS_LOGIN_URL } from "../contract";
-import { getNav } from "../server/queries";
+import { SITE_ICON_DEFAULTS } from "../site-icons";
+import { getGlobals, getNav } from "../server/queries";
 import { ContactDialog } from "./components/contact-dialog";
 import { HeaderScroll } from "./components/header-scroll";
 import { LocaleSwitcher } from "./components/locale-switcher";
@@ -112,7 +113,10 @@ const ABOUT_SECTIONS: Array<{ label: string; href: string }> = [
 
 export async function SiteHeader({ locale }: { locale: Locale }) {
   const t = await getTranslations("settings");
-  const items = await getNav(locale, "header");
+  const [items, globals] = await Promise.all([getNav(locale, "header"), getGlobals(locale)]);
+  // Site icons (Settings → "Site icons", ADR 0034 amendment 2). `?? defaults` also covers a
+  // globals entry cached before `icons` existed.
+  const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
 
   const baseLinks: NavEntry[] = items.length
     ? items.map((i) => ({
@@ -188,15 +192,20 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
               data-icon-btn
               className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface hover:text-ink"
             >
-              <Icon name="user" size={20} />
+              <Icon name={icons.account} size={20} />
             </a>
             <ContactDialog
               variant="icon"
               label={t("contact")}
               title={t("contactDialog.title")}
               intro={t("contactDialog.intro")}
+              icon={<Icon name={icons.contact} size={20} />}
             />
-            <LocaleSwitcher current={locale} label={t("language")} />
+            <LocaleSwitcher
+              current={locale}
+              label={t("language")}
+              icon={<Icon name={icons.language} size={18} />}
+            />
           </>
         }
         mobileDrawer={

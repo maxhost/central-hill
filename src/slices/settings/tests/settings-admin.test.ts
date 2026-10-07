@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { companySettingsSaveInput, navigationSaveInput } from "../admin/validation";
+import { SITE_ICON_DEFAULTS } from "../site-icons";
+import { resolveSiteIcons } from "../server/site-icons";
 
 /**
  * Slice `settings` backoffice (S12) — the admin **save** schemas (company globals +
@@ -36,6 +38,9 @@ function validGlobals(overrides: Record<string, unknown> = {}) {
     default_og_image_media_id: null,
     avantio_account_id: "ch-001",
     avantio_widget_config: {},
+    show_building_location: false,
+    show_building_count: false,
+    site_icons: { ...SITE_ICON_DEFAULTS },
     ...overrides,
   };
 }
@@ -99,4 +104,25 @@ test("navigation rejects a blank label or url", () => {
 
 test("navigation accepts empty locations", () => {
   assert.equal(navigationSaveInput.safeParse({ header: [], footer: [] }).success, true);
+});
+
+// ── Site icons (ADR 0034 amendment 2) ──────────────────────────────────────────
+test("site icons must all be real Iconoir names", () => {
+  const icons = (patch: Record<string, string>) => validGlobals({ site_icons: { ...SITE_ICON_DEFAULTS, ...patch } });
+  assert.equal(companySettingsSaveInput.safeParse(icons({ account: "user-circle" })).success, true);
+  const bad = companySettingsSaveInput.safeParse(icons({ spec_beds: "chart" }));
+  assert.equal(bad.success, false);
+  if (!bad.success) assert.ok(bad.error.issues.some((i) => i.path.join(".") === "site_icons.spec_beds"));
+  const missing: Record<string, string> = { ...SITE_ICON_DEFAULTS };
+  delete missing.account;
+  assert.equal(companySettingsSaveInput.safeParse(validGlobals({ site_icons: missing })).success, false);
+});
+
+test("stored site icons fall back to the defaults when missing or unknown", () => {
+  assert.deepEqual(resolveSiteIcons({}), SITE_ICON_DEFAULTS);
+  assert.deepEqual(resolveSiteIcons(null), SITE_ICON_DEFAULTS);
+  const r = resolveSiteIcons({ location: "pin", reading_time: "chart", extra: "star" });
+  assert.equal(r.location, "pin");
+  assert.equal(r.reading_time, SITE_ICON_DEFAULTS.reading_time);
+  assert.equal("extra" in r, false);
 });
