@@ -14,20 +14,16 @@ import {
   StepGallery,
   TwoColumnShowcase,
 } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 import { ContactDialog } from "@slices/settings/contract";
 import { getOwnersPage } from "../contract";
 import { FaqSection } from "./components/faq-section";
-import { Icon } from "./components/icon";
 import { OwnerEstimateForm } from "./components/owner-estimate-form";
 import { TestimonialsRow } from "./components/testimonials-row";
 
-// `why.benefits`/`services.benefits` positional icons (locked design, not each benefit's own
-// `icon_key` — matches the pre-existing behavior this replaces, see
-// `src/slices/pages/ui/components/icon.tsx`).
-const WHY_ICON_KEYS = ["chart", "trophy", "bell", "user", "map-pin", "search"] as const;
-const SERVICES_ICON_KEYS = ["camera", "calendar", "wrench", "trending-up"] as const;
+// Benefit icons are each item's admin-editable `icon_key`, rendered by `core/ui` `<Icon>`
+// (inline Iconoir SVG, ADR 0034).
 const SERVICES_BADGE = "Every detail handled — you stay free.";
-const DASHBOARD_ICON_KEYS = ["dollar-circle", "calendar-lines", "bar-chart", "bell-alt"] as const;
 const DASHBOARD_BADGE = "Real-time data, from anywhere.";
 
 // Image fallbacks = the approved mock photos, used 1:1 until a real R2 asset is set in the
@@ -96,21 +92,21 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
   const { hero, earnings_form, stats, why, services, plans, journey, dashboard } = content;
   const faqGroupKey = content.faq_group_key ?? "";
 
-  const whyItems = why.benefits.map((b, i) => ({
-    icon: <Icon name={WHY_ICON_KEYS[i]} className="mt-0.5 h-7 w-7 flex-none text-accent-deep" />,
+  const whyItems = why.benefits.map((b) => ({
+    icon: <Icon name={b.icon_key} size={28} className="mt-0.5 flex-none text-accent-deep" />,
     title: b.title,
     description: b.description,
   }));
 
-  const servicesBullets = services.benefits.map((b, i) => ({
-    icon: <Icon name={SERVICES_ICON_KEYS[i]} className="mt-0.5 h-[26px] w-[26px] flex-none text-accent-deep" />,
+  const servicesBullets = services.benefits.map((b) => ({
+    icon: <Icon name={b.icon_key} size={26} className="mt-0.5 flex-none text-accent-deep" />,
     title: b.title,
     description: b.description,
   }));
   const servicesMedia = media[services.image_media_id ?? ""];
 
-  const dashboardBullets = dashboard.benefits.map((b, i) => ({
-    icon: <Icon name={DASHBOARD_ICON_KEYS[i]} className="mt-0.5 h-[26px] w-[26px] flex-none text-accent-deep" />,
+  const dashboardBullets = dashboard.benefits.map((b) => ({
+    icon: <Icon name={b.icon_key} size={26} className="mt-0.5 flex-none text-accent-deep" />,
     title: b.title,
     description: b.description,
   }));

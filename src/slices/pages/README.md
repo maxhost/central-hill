@@ -559,8 +559,20 @@ About routes no longer import `mock.css`. Home's row was backfilled to keep toda
 (`home` → `home-simple`, `spark` → `sparks`; the old registry drew those shapes under the short
 names) and `seed-demo` matches. About still renders its own fixed icons: none of its copy reads
 `page_content` yet (its `icon_key`s are seed placeholders), so wiring them is part of a future
-About-to-DB move. Owners and Real Estate still use `components/icon.tsx` (session 3 of
-`docs/plan-iconos-y-detalles.md`).
+About-to-DB move.
+
+### Icons on `core/ui` `<Icon>` — Owners and Real Estate (ADR 0034)
+
+Supersedes the positional-icon notes above (`WHY_ICON_KEYS`, `PARTNER_ICON_KEYS`,
+`CAPABILITY_ICONS`/`ASSET_ICONS`). Every benefit list on both pages now renders **its own
+`icon_key`** through `core/ui` `<Icon>` (28px in the editorial splits, 26px in the showcases).
+Before switching, both rows were backfilled with the Iconoir names closest to what rendered
+(chosen side by side; `seed-demo` and `defaultCapabilities` match): Owners services
+`camera`/`calendar`/`wrench`/`stat-up`, dashboard `dollar-circle`/`calendar`/`stats-up-square`/
+`bell`; Real Estate partners `bank`/`ruler-combine`/`city`/`send`, capabilities `graph-up`/
+`settings`/`shield-check`, assets `home`/`building`/`city`/`group`/`edit-pencil`/
+`stats-up-square`. The hand-drawn registry `components/icon.tsx` is deleted, and the Owners route
+no longer imports `mock.css`.
 
 ### Owners earnings wizard on form-card (style unification)
 

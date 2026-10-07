@@ -6,7 +6,6 @@ import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
 import { OwnersPage } from "@slices/pages/ui/owners-page";
-import "../../mock.css";
 
 /** Static per locale. Content is the embedded mock (no DB). */
 export const revalidate = 3600;

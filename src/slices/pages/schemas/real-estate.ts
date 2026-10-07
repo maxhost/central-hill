@@ -37,8 +37,8 @@ export const realEstateSchema = z.object({
   }),
   // "Built for Institutional Partners" — Editorial Split (sticky headline + subheadline +
   // two CTAs beside a hairline benefit list). Mirrors the Owners `why` section; the four
-  // benefits are the four institutional partner types. Icons are positional in the
-  // renderer (the design SVGs never change) — `icon_key` is stored but not rendered.
+  // benefits are the four institutional partner types. Each benefit's `icon_key` is rendered
+  // (`core/ui` `<Icon>`, ADR 0034).
   partners: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
@@ -50,8 +50,8 @@ export const realEstateSchema = z.object({
   // LEFT, text on the right): headline + subheadline + three capability highlights (single
   // column, longer copy) + CTA beside a 4:5 photo with an optional floating reassurance badge
   // (the CTA note). Same DB-driven shape as `asset_management`; the renderer flips the columns
-  // via the `reverse` modifier. Benefit icons are positional in the renderer; `icon_key` is
-  // stored but not rendered. See `ui/real-estate-page.tsx` → `showcase`.
+  // via the `reverse` modifier. Each benefit's `icon_key` is rendered (`core/ui` `<Icon>`).
+  // See `ui/real-estate-page.tsx`.
   capabilities: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
@@ -61,8 +61,8 @@ export const realEstateSchema = z.object({
   }),
   // "A Management Partner for Every Asset Type" — Image Showcase (the home guests-pitch /
   // owners services layout): headline + subheadline + six benefit highlights (2-col grid) +
-  // CTA beside a 4:5 lifestyle image with a floating reassurance badge (the CTA note). Benefit
-  // icons are positional in the renderer; `icon_key` is stored but not rendered.
+  // CTA beside a 4:5 lifestyle image with a floating reassurance badge (the CTA note). Each
+  // benefit's `icon_key` is rendered (`core/ui` `<Icon>`).
   asset_management: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
@@ -193,7 +193,7 @@ export const defaultCapabilities: RealEstateContent["capabilities"] = {
     "We operate at the intersection of hospitality excellence and real estate performance. Our capabilities cover every dimension of asset management — from technology and distribution to operations and strategic partnership.",
   benefits: [
     {
-      icon_key: "stats-up-square",
+      icon_key: "graph-up",
       title: "Digital Excellence",
       description:
         "Multi-platform distribution across Airbnb, Booking.com, and direct channels. AI-powered dynamic pricing updated daily. Automated financial reporting, occupancy analytics, and a real-time performance dashboard accessible by asset managers and fund controllers.",
@@ -205,7 +205,7 @@ export const defaultCapabilities: RealEstateContent["capabilities"] = {
         "Professional housekeeping and linen services. 24/7 guest concierge. Premium amenities and quality assurance protocols. Regular property inspections. Rapid-response maintenance with preventive asset protection built into every management contract.",
     },
     {
-      icon_key: "peace-hand",
+      icon_key: "shield-check",
       title: "Strategic Partnership",
       description:
         "Project design consultancy at the planning stage. Dedicated account management throughout the contract term. Performance benchmarking against market comparables. Proactive recommendations for yield improvement and capital expenditure prioritisation.",

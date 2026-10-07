@@ -13,6 +13,7 @@ import {
   StatTiles,
   TwoColumnShowcase,
 } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 import { getRealEstatePage } from "../contract";
 import {
   defaultCapabilities,
@@ -22,7 +23,6 @@ import {
 } from "../schemas/real-estate";
 import { DealEnquirySection } from "./components/deal-enquiry-section";
 import { FaqSection } from "./components/faq-section";
-import { Icon } from "./components/icon";
 
 /**
  * Real Estate page: the institutional-partnerships landing, built from `mock/real-estate.html`
@@ -79,75 +79,19 @@ const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
 const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
 const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
 
-// Positional per-partner icon keys from the locked design — paired by index with the fixed
-// four-item benefit list (funds / developers / operators / corporate). Only the benefit
-// *text* is data-driven; the glyphs never change. Rendered through the slice's `<Icon>`
-// registry (`./components/icon.tsx`), exactly like Owners' `WHY_ICON_KEYS`.
-const PARTNER_ICON_KEYS = ["landmark", "trowel", "buildings", "send"] as const;
-
 // `#process`'s step-number marker, passed through `EditorialSplit`'s `items[].icon` slot in
 // place of an icon: the old `.mk .process-split .pitch-list .snum` (`flex:0 0 auto; width:44px;
 // font-family:var(--serif); font-size:30px; line-height:1; color:var(--accent); opacity:.9;
 // margin-top:-2px`) in theme tokens only.
 const STEP_NUMBER_CLASS = "-mt-0.5 w-11 flex-none font-serif text-3xl leading-none text-accent opacity-90";
 
-// Bullet-icon box for both `TwoColumnShowcase` sections (`#capabilities`, `#manage`) — Owners'
-// exact `TwoColumnShowcase` bullet-icon config (26px, `mt-0.5`, accent-deep). The glyphs are
-// JSX (not SVG strings) since both showcases are real JSX now.
-const SHOWCASE_ICON_CLASS = "mt-0.5 h-[26px] w-[26px] flex-none text-accent-deep";
-function showcaseIcons(paths: ReadonlyArray<readonly string[]>) {
-  return paths.map((ds, i) => (
-    <svg
-      key={i}
-      className={SHOWCASE_ICON_CLASS}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      {ds.map((d) => (
-        <path key={d} d={d} />
-      ))}
-    </svg>
-  ));
-}
-
-// Positional per-capability icons (digital excellence / operational mastery / strategic
-// partnership), paired by index with the fixed three-item capabilities showcase list.
-// Only the text is data-driven.
-const CAPABILITY_ICONS = showcaseIcons([
-  ["M3 3v18h18", "M7 15l3-4 3 2 4-6", "M17 7h2v2"],
-  [
-    "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
-    "M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z",
-  ],
-  ["M11 14l2 2 4-4", "M20.5 8.5L13 1 4 5v6c0 5 3.5 8.5 9 11 5.5-2.5 9-6 9-11"],
-]);
-
-// Positional per-asset-type icons (residential / hotels / apart-hotels / corporate /
-// development / portfolio), paired by index with the fixed six-item asset showcase list.
-// Only the text is data-driven.
-const ASSET_ICONS = showcaseIcons([
-  ["M3 10.5L12 3l9 7.5", "M5 9.5V21h14V9.5", "M10 21v-6h4v6"],
-  [
-    "M3 21h18",
-    "M5 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16",
-    "M15 9h2a2 2 0 0 1 2 2v10",
-    "M8 7h2M8 11h2M8 15h2",
-  ],
-  ["M3 21h18", "M5 21V8l5-3v16", "M10 21V11l5 2v8", "M15 21v-6l4 2v4"],
-  [
-    "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z",
-    "M3 20v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1",
-    "M16 5.5a3 3 0 0 1 0 5.5",
-    "M19 20v-1a5 5 0 0 0-3-4.5",
-  ],
-  ["M4 20l1-4L15 6l3 3L8 19l-4 1z", "M13.5 7.5l3 3"],
-  ["M4 20V10M10 20V4M16 20v-7M22 20H2"],
-]);
+// Bullet icons for both `TwoColumnShowcase` sections (`#capabilities`, `#manage`) — Owners'
+// exact `TwoColumnShowcase` bullet-icon config (26px, `mt-0.5`, accent-deep). Like every benefit
+// list on this page, the glyph is the item's admin-editable `icon_key` (`core/ui` `<Icon>`,
+// inline Iconoir SVG, ADR 0034).
+const showcaseIcon = (iconKey: string) => (
+  <Icon name={iconKey} size={26} className="mt-0.5 flex-none text-accent-deep" />
+);
 
 export async function RealEstatePage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
@@ -165,8 +109,8 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
   // no asset is set, the button keeps the design's in-page anchor.
   const capStmtUrl = media[hero.capability_statement_media_id ?? ""]?.url || "#deal-enquiry";
   const partners = content.partners;
-  const partnerItems = partners.benefits.map((b, i) => ({
-    icon: <Icon name={PARTNER_ICON_KEYS[i]} className="mt-0.5 h-7 w-7 flex-none text-accent-deep" />,
+  const partnerItems = partners.benefits.map((b) => ({
+    icon: <Icon name={b.icon_key} size={28} className="mt-0.5 flex-none text-accent-deep" />,
     title: b.title,
     description: b.description,
   }));
@@ -281,8 +225,8 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
           <TwoColumnShowcase
             headline={capabilities.headline}
             body={capabilities.subheadline || undefined}
-            bullets={capabilities.benefits.map((b, i) => ({
-              icon: CAPABILITY_ICONS[i],
+            bullets={capabilities.benefits.map((b) => ({
+              icon: showcaseIcon(b.icon_key),
               title: b.title,
               description: b.description,
             }))}
@@ -329,15 +273,15 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * floating badge is the CTA note (shown only when there is one), exactly as before. The
        * wrapper keeps the `id` the header's "What We Manage" link targets, with this page's own
        * 84px scroll offset (the mock `section`'s `scroll-margin-top`). Its icons share
-       * `#capabilities`' `SHOWCASE_ICON_CLASS`.
+       * `#capabilities`' `showcaseIcon`.
        */}
       <div id="manage" className="scroll-mt-[84px]">
         <Reveal label="real-estate-manage">
           <TwoColumnShowcase
             headline={assets.headline}
             body={assets.subheadline || undefined}
-            bullets={assets.benefits.map((b, i) => ({
-              icon: ASSET_ICONS[i],
+            bullets={assets.benefits.map((b) => ({
+              icon: showcaseIcon(b.icon_key),
               title: b.title,
               description: b.description,
             }))}

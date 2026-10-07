@@ -35,7 +35,8 @@ const SITE = "https://www.centralhill.pt";
 const BOOK = `${SITE}/en/rentals/holidays-rentals-rentals-d0/`;
 const uid = () => randomUUID();
 
-/** iconCard helper — `icon_key` is decorative (not rendered), any kebab key is fine. */
+/** iconCard helper — `icon_key` is an Iconoir name rendered by `core/ui` `<Icon>` (ADR 0034); the
+ *  `spark` default is a placeholder for cards whose page doesn't render icons yet. */
 const ic = (title: string, description: string, icon_key = "spark") => ({ icon_key, title, description });
 const ti = (title: string, description: string) => ({ title, description });
 
@@ -432,10 +433,10 @@ function ownersData() {
       headline: "Everything handled. Nothing overlooked.",
       subheadline: "From the first listing to each guest's departure, we manage every detail so you don't have to.",
       benefits: [
-        ic("Listing & marketing", "Professional photography, copy and multi-channel distribution across Airbnb, Booking.com and direct.", "search"),
-        ic("Reservations & guest care", "24/7 multilingual communication, calendar and seamless check-in/out — every stay runs smoothly.", "bell"),
-        ic("Housekeeping & maintenance", "Hotel-standard cleaning, premium linen and proactive upkeep keep your home guest-ready.", "spark"),
-        ic("Revenue & compliance", "AI-driven pricing, monthly reporting and full Alojamento Local licensing & tax support.", "graph-up"),
+        ic("Listing & marketing", "Professional photography, copy and multi-channel distribution across Airbnb, Booking.com and direct.", "camera"),
+        ic("Reservations & guest care", "24/7 multilingual communication, calendar and seamless check-in/out — every stay runs smoothly.", "calendar"),
+        ic("Housekeeping & maintenance", "Hotel-standard cleaning, premium linen and proactive upkeep keep your home guest-ready.", "wrench"),
+        ic("Revenue & compliance", "AI-driven pricing, monthly reporting and full Alojamento Local licensing & tax support.", "stat-up"),
       ],
       image_media_id: "",
       cta: { label: "See how we manage your home", url: `${SITE}/en/owners`, note: "Fully managed, end to end — you stay informed, we do the work." },
@@ -468,10 +469,10 @@ function ownersData() {
       headline: "Your property, always in sight",
       subheadline: "Our owner dashboard gives you real-time visibility into every aspect of your property's performance — from anywhere in the world.",
       benefits: [
-        ic("Live revenue tracking", "Your earnings and projected monthly income at a glance, updated in real time.", "graph-up"),
-        ic("Booking calendar", "Full visibility of reservations, blocked dates and availability across all platforms.", "bell"),
-        ic("Occupancy & performance", "Track occupancy rates, average nightly rate and review scores over any period.", "search"),
-        ic("Alerts & statements", "Instant alerts for bookings and check-ins, plus downloadable monthly statements anytime.", "key"),
+        ic("Live revenue tracking", "Your earnings and projected monthly income at a glance, updated in real time.", "dollar-circle"),
+        ic("Booking calendar", "Full visibility of reservations, blocked dates and availability across all platforms.", "calendar"),
+        ic("Occupancy & performance", "Track occupancy rates, average nightly rate and review scores over any period.", "stats-up-square"),
+        ic("Alerts & statements", "Instant alerts for bookings and check-ins, plus downloadable monthly statements anytime.", "bell"),
       ],
       image_media_id: "",
       cta: { label: "Explore the owner dashboard", url: `${SITE}/en/owners`, note: "Real-time visibility into your property, 24/7." },
@@ -599,7 +600,7 @@ function realEstateData() {
         ic(
           "Corporate & Relocation Clients",
           "Managed accommodation for relocating employees and international organisations. Consistent standards, direct billing, and dedicated account management for a seamless experience.",
-          "airplane",
+          "send",
         ),
       ],
       cta_primary: {
@@ -617,7 +618,7 @@ function realEstateData() {
         ic(
           "Digital Excellence",
           "Multi-platform distribution across Airbnb, Booking.com, and direct channels. AI-powered dynamic pricing updated daily. Automated financial reporting, occupancy analytics, and a real-time performance dashboard accessible by asset managers and fund controllers.",
-          "stats-up-square",
+          "graph-up",
         ),
         ic(
           "Operational Mastery",
@@ -627,7 +628,7 @@ function realEstateData() {
         ic(
           "Strategic Partnership",
           "Project design consultancy at the planning stage. Dedicated account management throughout the contract term. Performance benchmarking against market comparables. Proactive recommendations for yield improvement and capital expenditure prioritisation.",
-          "peace-hand",
+          "shield-check",
         ),
       ],
       image_media_id: uid(),
@@ -660,17 +661,17 @@ function realEstateData() {
         ic(
           "Corporate Housing",
           "Fully serviced apartments for corporate clients and relocating executives, with flexible terms from 30 days and direct invoicing.",
-          "community",
+          "group",
         ),
         ic(
           "Development Consultancy",
           "Pre-opening services for developers — unit mix, interior direction, FF&E, licensing, platform registration, and operational launch.",
-          "design-pencil",
+          "edit-pencil",
         ),
         ic(
           "Portfolio Management",
           "Multi-building, multi-city portfolio management — consolidated reporting, standard operating procedures, and economies of scale.",
-          "reports",
+          "stats-up-square",
         ),
       ],
       image_media_id: uid(),
