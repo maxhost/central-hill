@@ -1223,3 +1223,37 @@ notices) or used text glyphs (`✕`, `☰`, `★`), because they can't import th
   matches the full map. The build check: the full map's paths are still absent from
   `.next/static`.
 - Only the WhatsApp brand logo stays hand-drawn.
+
+**Amendment 2 (2026-10-07): the backoffice icon picker and site icons.** Every icon must be
+pickable in the admin, but a client-side picker can't import the server-only map, and some
+icons have a fixed role on the site rather than a row of their own (header account, apartment
+specs, guide template icons, reading time…).
+- **Sprite.** `pnpm icons:generate` also writes `public/icons/iconoir-<version>.svg`: every
+  icon as `<symbol id="<name>" viewBox="0 0 24 24">`, copied verbatim from the map (~0.9 MB raw).
+  `names.ts` exports its URL as `ICON_SPRITE_URL`. The file name carries the version, so an
+  upgrade never serves a stale cached sprite; the generator deletes older sprites.
+  - Only the backoffice loads it (`<svg><use href="…#name"/></svg>`), and the browser caches
+    it once. Public pages keep the inline `<Icon>` and never request it.
+  - Rejected: a lazy JS chunk of the map (it would need a guard so public code never imports
+    it) and an admin JSON endpoint (a new route plus its own cache, for the same bytes).
+- **Picker.** `IconField` (+ `SpriteIcon`) in the `backoffice` slice (exported from its
+  contract, next to `MediaField`): a search box and a grid of the 1,383 icons. Its value is the
+  plain Iconoir name the strict `iconKey` validates. It is used by:
+  - every `icon_key` in the page schemas (`form-model`: an `icon_key` key becomes the `icon`
+    node);
+  - the service category `icon` and the services key-fact icon (now any name, no longer the
+    closed `FACT_ICONS` list; `pin` is still read as `map-pin`);
+  - the site icons.
+- **Site icons.** `company_settings.site_icons` (jsonb, migration 0015) maps a
+  `SiteIconKey` to an Iconoir name: header account/contact/language, the location pin,
+  reading time, the four apartment specs and one icon per guide template.
+  - Defaults live in `settings/site-icons.ts` (`SITE_ICON_DEFAULTS`, what the pages drew
+    before), and the read model fills any missing or unknown key from them.
+  - Exposed as `SiteGlobals.icons` through the settings contract. Staff edit them in
+    Settings → "Site icons". A settings save already revalidates every locale's layout tree,
+    so all pages refresh.
+- **Tests.** The `core/ui` icon test checks that the sprite holds every icon verbatim. The
+  settings tests cover strict validation and the fallback to the defaults.
+- **Still fixed:** About's icons (About doesn't read `page_content` yet; that is session 3d),
+  the amenity icons (stored and validated, but there is no amenity admin screen) and the
+  `TwoColumnShowcase` badge (no page uses it).
