@@ -49,9 +49,7 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
 
 - `/{locale}/buildings` — listing (`ui/buildings-listing.tsx`): the approved
   `mock/buildings.html` design, **composed entirely from React/Tailwind components** — no
-  `dangerouslySetInnerHTML` content renders anymore (the only `BODY` string left is the
-  hidden, commented-out filter bar, kept for later DB wiring; the `.mk`/`PAGE_STYLE`/
-  `<ScrollReveal>` scaffold stays only for that dormant markup). The hero is `core/ui`'s
+  `.mk` markup and no `dangerouslySetInnerHTML`. The hero is `core/ui`'s
   `<Hero compact align="center">`,
   single-column (no `aside`), ported 1:1 from the old `.mk`-scoped overrides (now deleted) via
   five additive `Hero` props (`align`/`overlayClassName`/`headlineClassName`/
@@ -60,12 +58,11 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   `./components/building-listing-card.tsx`'s `BuildingListingCard` inside `core/ui`'s
   `Section`/`Container` (one `Reveal`, no per-card stagger) fed from `listBuildings(locale)` —
   the locked `.pcard` design ported to Tailwind, **purpose-built for this grid**: distinct from
-  both `core/ui`'s `PropertyCard` (Home/Guest's smaller featured-portfolio carousel card) and
-  this slice's own `building-card.tsx` (`BuildingCard` — dead code, no real consumer, a third
-  different-again look; left as-is rather than deleted, since it wasn't this task's target).
+  `core/ui`'s `PropertyCard` (Home/Guest's smaller featured-portfolio carousel card).
   Client direction (B6): the city name is omitted from the card meta line (`street ·
-  neighbourhood · N apartments`); the city/neighbourhood filter bar is hidden (kept commented
-  out in source for later DB wiring); a building with no R2 cover yet falls back to
+  neighbourhood · N apartments`); the city/neighbourhood filter bar is hidden (its dead mock
+  markup was removed; rebuild it with `core/ui`'s `ChipBar` when it is wired to the geography
+  taxonomy); a building with no R2 cover yet falls back to
   `public/placeholders/building.svg` so cards never render empty. A building with **booking
   enabled** (admin toggle + an `avantio_url`) makes its whole card link out to that external
   booking URL in a new tab (`target="_blank"`) instead of the internal detail page;
@@ -107,8 +104,7 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   raw wrapper needed; no scroll-reveal — the old `.reveal` was neutralised, section was static).
   One deliberate fix vs. the old render: the badge used to vanish under the zoomed image while
   the card was hovered (paint order); it now stays on top (`z-[1]`). The apartments slice's
-  Tailwind `BuildingApartments`/`ApartmentCard` are a different look, kept for other consumers
-  (same rationale as `BuildingCard` on the listing).
+  Tailwind `BuildingApartments`/`ApartmentCard` are a different look, kept for other consumers.
   The closing **"Book an apartment in this building" band is real JSX**: `core/ui`'s new
   `ActionBand` (full-bleed `bg-feature` band; eyebrow + serif `<h2>` + line on the left, accent
   button + small note on the right, wrapping to two rows when narrow), replacing the old

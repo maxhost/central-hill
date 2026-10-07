@@ -15,8 +15,7 @@ const CARD_SIZES = "(max-width: 680px) 100vw, (max-width: 980px) 50vw, 394px";
  * `mock.css`'s `.pcard`/`.ph`/`.badge`/`.pbody`/`.pmeta`/`.view`), ported 1:1 into Tailwind.
  * **Not** the same component as `core/ui`'s `PropertyCard` (Home/Guest's featured-portfolio
  * carousel — a smaller, simpler card: no separate location line, different aspect ratio/
- * padding) or the slice's own unused `building-card.tsx` (`BuildingCard` — dead code, a
- * third, different-again look with no real consumer). This one is purpose-built for the
+ * padding). This one is purpose-built for the
  * Buildings listing grid specifically and owns its `BuildingSummary` coupling directly
  * (unlike `core/ui`'s cards, which take caller-resolved image/meta `ReactNode`s) — it isn't a
  * `core/ui` primitive because it isn't generic: the booking-out-link behavior and the

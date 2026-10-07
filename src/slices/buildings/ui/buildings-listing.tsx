@@ -6,17 +6,12 @@ import { OwnerEstimateForm } from "@slices/pages/contract";
 import { ContactDialog } from "@slices/settings/contract";
 import { listBuildings } from "../server/queries";
 import { BuildingListingCard } from "./components/building-listing-card";
-import { ScrollReveal } from "./components/scroll-reveal";
 
 /**
- * Buildings listing — the approved `mock/buildings.html` design, now composed entirely from
- * React/Tailwind components: no `dangerouslySetInnerHTML` content renders anymore (the one
- * `BODY` string left is the hidden, commented-out filter bar — see below). The property grid
+ * Buildings listing — the approved `mock/buildings.html` design, composed entirely from
+ * React/Tailwind components (no `.mk` markup, no `dangerouslySetInnerHTML`). The property grid
  * is generated from the published `building` rows (`listBuildings`, ISR-cached + tagged
- * `building-list` → a publish busts it). The `.mk`/`PAGE_STYLE`/`<ScrollReveal>` scaffold is
- * kept only for that dormant filter bar (`src/app/mock.css`'s shared design system still
- * backs it); nothing currently rendered depends on it. The real header/footer + i18n come
- * from the app layout.
+ * `building-list` → a publish busts it). The real header/footer + i18n come from the app layout.
  *
  * The **hero is real JSX**, not interpolated markup: `core/ui`'s `<Hero compact align="center">`
  * (no `aside` — single-column, text + one CTA). This page has no `page_content` row, so every
@@ -25,11 +20,15 @@ import { ScrollReveal } from "./components/scroll-reveal";
  *
  * The **building grid is real JSX** too: `./components/building-listing-card.tsx`'s
  * `BuildingListingCard`, the locked mock `.pcard` design ported 1:1 — purpose-built for this
- * grid (not `core/ui`'s `PropertyCard`, Home/Guest's smaller featured-portfolio card, and not
- * the slice's own unused `building-card.tsx`; see that new file's docstring for why). Client
+ * grid (not `core/ui`'s `PropertyCard`, Home/Guest's smaller featured-portfolio card; see
+ * that file's docstring for why). Client
  * direction (B6):
  * - the city name is NOT shown — the meta line is `street · neighbourhood · N apartments`;
- * - the location filter bar is hidden (kept in source, commented out, not deleted);
+ * - the location filter bar (city select + neighbourhood chips + count) is hidden. Its old
+ *   mock markup was removed with the rest of the dead `.mk` scaffold; when the filter is wired
+ *   to the geography taxonomy, rebuild it with `core/ui`'s `ChipBar` (the Blog/Guides filter
+ *   sibling). The original markup is in git history (`buildings-listing.tsx` before the
+ *   "remove dead .mk scaffold" commit);
  * - when a building has no R2 cover yet (`cover === null`) a Warm-Editorial placeholder
  *   SVG (`/placeholders/building.svg`) is shown so the card never renders empty.
  * Cards link to each building's real per-locale detail slug.
@@ -59,61 +58,6 @@ const HERO_ALT = "Rooftops and the river over Lisbon's historic centre at golden
 const CALC_FALLBACK_IMG =
   "https://images.pexels.com/photos/1571468/pexels-photo-1571468.jpeg?auto=compress&cs=tinysrgb&w=1200";
 const CALC_FALLBACK_ALT = "A bright, professionally staged Central Hill managed apartment";
-
-const PAGE_STYLE = `
-/* Page-only: filter / IA bar (decorative, kernel-variable based) */
-.mk .filterbar{border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--line) 26%,var(--bg))}
-.mk .filterbar .wrap{padding-top:26px;padding-bottom:26px;display:flex;flex-wrap:wrap;align-items:center;gap:18px}
-.mk .fb-city{position:relative}
-.mk .fb-city select{appearance:none;-webkit-appearance:none;font-family:var(--sans);font-size:14px;font-weight:500;
-  color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:3px;
-  padding:11px 38px 11px 16px;cursor:pointer}
-.mk .fb-city::after{content:"▾";position:absolute;right:14px;top:50%;transform:translateY(-50%);
-  color:var(--ink-soft);font-size:12px;pointer-events:none}
-.mk .fb-chips{display:flex;flex-wrap:wrap;gap:9px;flex:1;min-width:240px}
-.mk .chip{font-size:13px;font-weight:500;letter-spacing:.01em;color:var(--ink-soft);background:var(--surface);
-  border:1px solid var(--line);border-radius:100px;padding:9px 16px;cursor:pointer;transition:.2s var(--ease)}
-.mk .chip:hover{border-color:var(--ink-soft);color:var(--ink)}
-.mk .chip.is-active{background:var(--ink);border-color:var(--ink);color:var(--bg)}
-.mk .fb-count{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;white-space:nowrap}
-@media(max-width:680px){.mk .fb-count{width:100%}}
-
-/* Page-wide entrance motion — kept for the filter bar (currently hidden/commented out) and
-   as a harmless no-op once it's restored; every other raw-markup section is gone now (see
-   the top docstring — this page is React/Tailwind end to end), via <ScrollReveal
-   page="buildings">/scroll-reveal.tsx, same pattern already applied to About/Guests/Real
-   Estate. The hidden state is baked straight into the server-rendered markup (.pre-reveal,
-   applied on the elements below) so there's no flash of visible-then-hidden; the <noscript>
-   rule keeps content visible with JS off. Scoped to [data-page="buildings"] so it never
-   touches the shared, neutralised .reveal rule in mock.css or any other page. */
-.mk[data-page="buildings"] .reveal-io{transition:opacity .7s var(--ease),transform .7s var(--ease)}
-.mk[data-page="buildings"] .reveal-io.pre-reveal{opacity:0;transform:translateY(18px)}
-`;
-
-const BODY = `
-<!-- FILTER / IA BAR — hidden per client direction (B6). Kept (commented out) so it can
-     be restored once the city/neighbourhood filter is wired to the DB taxonomy.
-<div class="filterbar">
-  <div class="wrap">
-    <label class="fb-city"><select aria-label="Select city">
-      <option>Lisbon</option>
-      <option>Porto</option>
-      <option>Cascais</option>
-    </select></label>
-    <div class="fb-chips">
-      <button class="chip is-active">All</button>
-      <button class="chip">Bairro Alto</button>
-      <button class="chip">Chiado</button>
-      <button class="chip">Baixa</button>
-      <button class="chip">Alfama</button>
-      <button class="chip">Avenida da Liberdade</button>
-      <button class="chip">Príncipe Real</button>
-    </div>
-    <span class="fb-count">14 Buildings</span>
-  </div>
-</div>
--->
-`;
 
 export async function BuildingsListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
@@ -250,18 +194,6 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
           </Reveal>
         </Container>
       </Section>
-      <div className="mk" data-page="buildings">
-        <style dangerouslySetInnerHTML={{ __html: PAGE_STYLE }} />
-        <noscript>
-          <style
-            dangerouslySetInnerHTML={{
-              __html: `.mk[data-page="buildings"] .pre-reveal{opacity:1!important;transform:none!important}`,
-            }}
-          />
-        </noscript>
-        <ScrollReveal page="buildings" />
-        <div dangerouslySetInnerHTML={{ __html: BODY }} />
-      </div>
     </Fragment>
   );
 }
