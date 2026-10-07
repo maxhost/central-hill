@@ -549,6 +549,19 @@ so the section never renders empty.
 All cross-slice data is read **through contracts only** (golden rule 2) — e.g. the featured
 portfolio builds its own card from `BuildingSummary` rather than importing buildings' UI.
 
+### Icons on `core/ui` `<Icon>` — Home, Guests, About (ADR 0034)
+
+Supersedes the `iconClass` / `mock.css` notes above for these three pages. Home's
+`guests_pitch` bullets, `services_carousel` assurances and the `blocks.tsx` icon cards, Guests'
+`icon_key`s (why benefits, both teasers, the welcome guarantee badge) and About's fixed glyphs all
+render `core/ui` `<Icon>` (inline Iconoir SVG, server-only, sized with `size`). The Guests and
+About routes no longer import `mock.css`. Home's row was backfilled to keep today's glyphs
+(`home` → `home-simple`, `spark` → `sparks`; the old registry drew those shapes under the short
+names) and `seed-demo` matches. About still renders its own fixed icons: none of its copy reads
+`page_content` yet (its `icon_key`s are seed placeholders), so wiring them is part of a future
+About-to-DB move. Owners and Real Estate still use `components/icon.tsx` (session 3 of
+`docs/plan-iconos-y-detalles.md`).
+
 ### Owners earnings wizard on form-card (style unification)
 
 `OwnerEstimateForm` (Owners hero `aside` + Buildings' listing calculator) is built on `core/ui`'s

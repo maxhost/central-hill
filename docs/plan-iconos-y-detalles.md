@@ -1,6 +1,6 @@
 # Plan por sesiones: iconos (Iconoir) + detalle de blog y de guía
 
-**Creado:** 2026-10-06. **Estado:** en curso. Cada sesión es autocontenida: se puede hacer
+**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–2 hechas). Cada sesión es autocontenida: se puede hacer
 `/compact` o `/clear` entre sesiones. Para retomar, basta con decir "seguimos con la sesión N de
 `docs/plan-iconos-y-detalles.md`".
 
@@ -129,6 +129,18 @@ con prefijo se dejan en el bucket (decisión del usuario).
 - **Commits:** ADR · dependencia + generador + componente + validación.
 
 ## Sesión 2: migrar iconos, lote 1 (las páginas con iconos desde la DB)
+**✅ Hecha el 2026-10-06.** Cambios respecto a lo previsto:
+- Hecho por el coordinador solo (sin agentes): eran ~15 ficheros.
+- `service-icons.tsx` se borró ya (nadie más lo usaba). Las rutas de Services, Guests y About
+  ya no importan `mock.css`.
+- `FACT_ICONS`: `pin` → `map-pin`; el schema sigue aceptando `pin` y lo normaliza al leer.
+  Backfill de los 3 `detail` (en) con `pin`, y `seed-services` actualizado.
+- Home: backfill `home` → `home-simple` y `spark` → `sparks` (lo que se veía), y `seed-demo`.
+- **About, paso 5 no hecho:** About no lee `page_content` para nada (todo el copy es fijo) y sus
+  12 `icon_key` son `spark` de relleno. Los iconos fijos pasan a `<Icon>`; conectar About a la
+  DB es otra tarea.
+- Cambios visibles: el hecho "idiomas" pasa del bocadillo al globo de Iconoir `language`; la
+  estrella de la valoración es `star` relleno.
 - **Páginas:** Home (registro B), Guests (A), Services listing + detail (A + sprite C), About (A).
 - **Pasos:**
   1. Reemplazar `iconClass` / `<i class="iconoir-…">` / `<Icon>` del registro / el sprite de
