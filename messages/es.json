@@ -486,7 +486,7 @@
           "name": "Nombre",
           "slug": "Slug",
           "icon": "Icono",
-          "iconHint": "Clave Iconoir (kebab-case), p. ej. car.",
+          "iconHint": "Cualquier icono de Iconoir; se muestra en la página de servicios.",
           "position": "Posición",
           "positionHint": "Los números más bajos aparecen primero."
         }
@@ -579,16 +579,6 @@
           "moveUp": "Subir",
           "moveDown": "Bajar",
           "remove": "Eliminar"
-        },
-        "factIcons": {
-          "clock": "Reloj (duración)",
-          "group": "Grupo (personas)",
-          "language": "Idioma",
-          "pin": "Pin (ubicación)",
-          "car": "Coche (transporte)",
-          "home": "Casa (recogida)",
-          "calendar": "Calendario (disponibilidad)",
-          "star": "Estrella (destacado)"
         },
         "module": {
           "title": "Módulo variable",

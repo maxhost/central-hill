@@ -81,10 +81,9 @@ export {
 
 export {
   EMPTY_DETAIL,
-  FACT_ICONS,
+  DEFAULT_FACT_ICON,
   serviceDetailContent,
   type BookingRow as DetailBookingRow,
-  type FactIcon as DetailFactIcon,
   type GoodToKnow as DetailGoodToKnow,
   type KeyFact as DetailKeyFact,
   type ExtraOption as DetailExtraOption,

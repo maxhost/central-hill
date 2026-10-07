@@ -11,6 +11,7 @@ import {
   Field,
   FieldGrid,
   FormActions,
+  IconField,
   TextInput,
 } from "@slices/backoffice/contract";
 import { deleteServiceCategory, saveServiceCategory } from "../actions";
@@ -164,10 +165,7 @@ export function ServiceCategoryForm({
               hint={t("admin.cat.fields.iconHint")}
               error={err("icon")}
             >
-              <TextInput
-                value={state.icon}
-                onChange={(e) => set("icon", e.target.value)}
-              />
+              <IconField value={state.icon} onChange={(icon) => set("icon", icon)} />
             </Field>
             <Field
               label={t("admin.cat.fields.position")}

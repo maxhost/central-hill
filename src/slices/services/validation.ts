@@ -5,6 +5,7 @@
  * See docs/data-model.md → Slice services.
  */
 import { z } from "zod";
+import { iconKey } from "@core/validation/icon-key";
 import { serviceDetailContent } from "./detail";
 import {
   cents,
@@ -19,7 +20,7 @@ import {
 
 export const serviceCategoryInput = z.object({
   slug,
-  icon: z.string().min(1).max(64),
+  icon: iconKey,
   position,
   // [T]
   name: tStr({ max: 80 }),

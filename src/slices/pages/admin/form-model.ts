@@ -6,7 +6,7 @@ import { z } from "zod";
  * the renderer consumes, and we can scaffold an empty `data` skeleton for a page
  * that has never been authored. Pure (no DB / React) so it's unit-testable.
  *
- * Leaf mapping: `*_media_id` → media picker; ZodBoolean → checkbox; ZodString →
+ * Leaf mapping: `*_media_id` → media picker; `icon_key` → icon picker; ZodBoolean → checkbox; ZodString →
  * text (textarea when its max length is large). Arrays carry their min/max so the
  * editor adds/removes within bounds (fixed-count arrays have min === max).
  */
@@ -15,6 +15,7 @@ export type FieldNode =
   | { kind: "object"; fields: { key: string; node: FieldNode }[] }
   | { kind: "array"; element: FieldNode; min: number; max: number }
   | { kind: "media"; hint?: string }
+  | { kind: "icon"; optional: boolean }
   | {
       kind: "select";
       source: string;
@@ -136,6 +137,9 @@ export function describe(schema: z.ZodType, key = ""): FieldNode {
     return hint ? { ...node, hint } : node;
   }
 
+  // An Iconoir name (strict `iconKey`, ADR 0034) → the backoffice icon picker.
+  if (key === "icon_key") return { kind: "icon", optional };
+
   if (key.endsWith("_media_id")) {
     // A `.describe()` on the media schema becomes uploader guidance in the editor
     // (recommended size/format). Read from the unwrapped base (describe sets it there).
@@ -163,6 +167,7 @@ export function emptyValue(node: FieldNode): unknown {
     case "boolean":
       return false;
     case "media":
+    case "icon":
     case "select":
     case "string":
       return "";
@@ -193,6 +198,7 @@ export function applyDefaults(node: FieldNode, value: unknown): unknown {
     case "boolean":
       return typeof value === "boolean" ? value : false;
     case "media":
+    case "icon":
     case "select":
     case "string":
       return typeof value === "string" ? value : "";
@@ -201,6 +207,6 @@ export function applyDefaults(node: FieldNode, value: unknown): unknown {
 
 /** Human label for a developer field key (`image_media_id` → "Image"). */
 export function humanizeKey(key: string): string {
-  const base = key.replace(/_media_id$/, "").replace(/_/g, " ").trim();
+  const base = key.replace(/_media_id$/, "").replace(/^icon_key$/, "icon").replace(/_/g, " ").trim();
   return base.charAt(0).toUpperCase() + base.slice(1);
 }

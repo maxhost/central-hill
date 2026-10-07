@@ -57,6 +57,15 @@ test("media + string leaves are detected", () => {
   if (copy.kind === "string") assert.equal(copy.multiline, true); // max 600 → textarea
 });
 
+test("icon_key leaves become the icon picker", () => {
+  const benefits = field(field(root, "why"), "benefits");
+  assert.equal(benefits.kind, "array");
+  if (benefits.kind !== "array") return;
+  const icon = field(benefits.element, "icon_key");
+  assert.deepEqual(icon, { kind: "icon", optional: false });
+  assert.equal(emptyValue(icon), "");
+});
+
 test("fixed-count arrays carry min === max", () => {
   const benefits = field(field(root, "why"), "benefits");
   assert.equal(benefits.kind, "array");
@@ -140,4 +149,5 @@ test("humanizeKey makes editor labels", () => {
   assert.equal(humanizeKey("image_media_id"), "Image");
   assert.equal(humanizeKey("cta_label"), "Cta label");
   assert.equal(humanizeKey("headline"), "Headline");
+  assert.equal(humanizeKey("icon_key"), "Icon");
 });

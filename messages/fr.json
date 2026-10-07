@@ -486,7 +486,7 @@
           "name": "Nom",
           "slug": "Slug",
           "icon": "Icône",
-          "iconHint": "Clé Iconoir (kebab-case), p. ex. car.",
+          "iconHint": "N’importe quelle icône Iconoir, affichée sur la page des services.",
           "position": "Position",
           "positionHint": "Les numéros les plus bas apparaissent en premier."
         }
@@ -579,16 +579,6 @@
           "moveUp": "Monter",
           "moveDown": "Descendre",
           "remove": "Supprimer"
-        },
-        "factIcons": {
-          "clock": "Horloge (durée)",
-          "group": "Groupe (personnes)",
-          "language": "Langue",
-          "pin": "Repère (lieu)",
-          "car": "Voiture (transport)",
-          "home": "Maison (prise en charge)",
-          "calendar": "Calendrier (disponibilité)",
-          "star": "Étoile (point fort)"
         },
         "module": {
           "title": "Module variable",

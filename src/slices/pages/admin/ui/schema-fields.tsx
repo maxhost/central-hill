@@ -6,6 +6,7 @@ import {
   type AdminMediaPreview,
   Checkbox,
   Field,
+  IconField,
   MediaField,
   Select,
   TextArea,
@@ -161,6 +162,18 @@ export function NodeField(props: RenderProps) {
           value={id}
           preview={id ? (previews[id] ?? null) : null}
           onChange={(next) => onChange(path, next ?? "")}
+        />
+      </Field>
+    );
+  }
+
+  if (node.kind === "icon") {
+    return (
+      <Field label={label} required={!node.optional} error={errors[errorKey]}>
+        <IconField
+          value={typeof value === "string" ? value : ""}
+          allowEmpty={node.optional}
+          onChange={(next) => onChange(path, next)}
         />
       </Field>
     );

@@ -88,8 +88,8 @@ export type HomeContent = z.infer<typeof homeSchema>;
 /**
  * Canonical copy for the services carousel — used by the demo seed and by
  * `scripts/backfill-home-services-carousel.ts` to fill the section on a `home` row that
- * predates it. Staff can rewrite every word of it in the Home editor; only the three
- * `icon_key`s are code-side (they must exist in the `pages` icon set).
+ * predates it. Staff can rewrite every word of it in the Home editor and pick each
+ * `icon_key` with the icon picker (any Iconoir name, ADR 0034).
  */
 export const defaultServicesCarousel: HomeContent["services_carousel"] = {
   eyebrow: "Partners & Services",

@@ -14,6 +14,7 @@
  * See docs/data-model.md → Slice services.
  */
 import { z } from "zod";
+import { iconKey } from "@core/validation/icon-key";
 import { mediaId, url } from "@core/validation/primitives";
 
 const line = (max: number) => z.string().trim().min(1).max(max);
@@ -80,18 +81,14 @@ export const partner = z.object({
 });
 export type Partner = z.infer<typeof partner>;
 
-/**
- * Closed icon set for the key-facts row. Each value is an Iconoir name, rendered by `core/ui`
- * `<Icon>` (ADR 0034).
- */
-export const FACT_ICONS = ["clock", "group", "language", "map-pin", "car", "home", "calendar", "star"] as const;
-export type FactIcon = (typeof FACT_ICONS)[number];
+/** Key-fact icon picked in the admin when a fact is added (any Iconoir name, ADR 0034). */
+export const DEFAULT_FACT_ICON = "clock";
 
 /** Pre-ADR-0034 values still accepted on read and normalised (`pin` was the sprite's map pin). */
-const LEGACY_FACT_ICONS: Record<string, FactIcon> = { pin: "map-pin" };
+const LEGACY_FACT_ICONS: Record<string, string> = { pin: "map-pin" };
 
 export const keyFact = z.object({
-  icon: z.preprocess((v) => (typeof v === "string" && LEGACY_FACT_ICONS[v]) || v, z.enum(FACT_ICONS)),
+  icon: z.preprocess((v) => (typeof v === "string" && LEGACY_FACT_ICONS[v]) || v, iconKey),
   title: line(80),
   note: line(160).optional(),
 });

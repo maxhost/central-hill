@@ -486,7 +486,7 @@
           "name": "Name",
           "slug": "Slug",
           "icon": "Icon",
-          "iconHint": "Iconoir key (kebab-case), e.g. car.",
+          "iconHint": "Any Iconoir icon, shown on the services page.",
           "position": "Position",
           "positionHint": "Lower numbers appear first."
         }
@@ -579,16 +579,6 @@
           "moveUp": "Move up",
           "moveDown": "Move down",
           "remove": "Remove"
-        },
-        "factIcons": {
-          "clock": "Clock (duration)",
-          "group": "Group (people)",
-          "language": "Language",
-          "pin": "Pin (location)",
-          "car": "Car (transport)",
-          "home": "Home (pick-up)",
-          "calendar": "Calendar (availability)",
-          "star": "Star (highlight)"
         },
         "module": {
           "title": "Variable module",

@@ -8,12 +8,12 @@ import {
   type AdminMediaPreview,
   Field,
   FieldGrid,
+  IconField,
   MediaField,
-  Select,
   TextArea,
   TextInput,
 } from "@slices/backoffice/contract";
-import { FACT_ICONS, type FactIcon } from "../../detail";
+import { DEFAULT_FACT_ICON } from "../../detail";
 import {
   DETAIL_LIMITS as L,
   type DetailDraft,
@@ -148,22 +148,13 @@ export function DetailEditor({
           heading={(i) => d("items.fact", { n: i + 1 })}
           addLabel={d("add.fact")}
           emptyLabel={d("empty")}
-          blank={(): DraftFact => ({ icon: FACT_ICONS[0], title: "", note: "" })}
+          blank={(): DraftFact => ({ icon: DEFAULT_FACT_ICON, title: "", note: "" })}
           controlsLabels={controlsLabels(d)}
           render={(fact, i, update) => (
             <div className="space-y-3">
               <FieldGrid>
                 <Field label={d("fields.icon")} required error={err("facts", i, "icon")}>
-                  <Select
-                    value={fact.icon}
-                    onChange={(e) => update({ ...fact, icon: e.target.value as FactIcon })}
-                  >
-                    {FACT_ICONS.map((ic) => (
-                      <option key={ic} value={ic}>
-                        {d(`factIcons.${ic}`)}
-                      </option>
-                    ))}
-                  </Select>
+                  <IconField value={fact.icon} onChange={(icon) => update({ ...fact, icon })} />
                 </Field>
                 <Field label={d("fields.title")} required error={err("facts", i, "title")}>
                   <TextInput

@@ -177,7 +177,7 @@ test("accepts every new skeleton field and keeps it as given", () => {
 });
 
 test("a fact with an unknown icon is rejected at its dotted path", () => {
-  const detail = { ...SKELETON_DETAIL, facts: [{ icon: "rocket", title: "Fast" }] };
+  const detail = { ...SKELETON_DETAIL, facts: [{ icon: "not-an-icon", title: "Fast" }] };
   const r = serviceSaveInput.safeParse(validService({ detail }));
   assert.equal(r.success, false);
   if (!r.success) assert.ok(r.error.issues.some((i) => i.path.join(".") === "detail.facts.0.icon"));

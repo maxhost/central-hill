@@ -6,13 +6,14 @@
  * integer cents (no floats). Category `slug` is a plain column (not the slug table).
  */
 import { z } from "zod";
+import { iconKey } from "@core/validation/icon-key";
 import { cents, contentStatus, position, slug, tStr } from "@core/validation/primitives";
 import { serviceDetailContent } from "../detail";
 
 export const serviceCategorySaveInput = z.object({
   id: z.uuid().optional(),
   slug,
-  icon: z.string().min(1).max(64),
+  icon: iconKey,
   position,
   // [T] source value (en):
   name: tStr({ min: 1, max: 80 }),

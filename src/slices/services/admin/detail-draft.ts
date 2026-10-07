@@ -1,4 +1,4 @@
-import type { FactIcon, ServiceDetailContent } from "../detail";
+import type { ServiceDetailContent } from "../detail";
 
 /**
  * Editor-side model of the service `detail` sections (see `../detail`). The backoffice
@@ -19,7 +19,8 @@ export interface DraftItinerary {
   media_id: string;
 }
 export interface DraftFact {
-  icon: FactIcon;
+  /** Iconoir name (strict `iconKey`). */
+  icon: string;
   title: string;
   note: string;
 }

@@ -486,7 +486,7 @@
           "name": "Nome",
           "slug": "Slug",
           "icon": "Ícone",
-          "iconHint": "Chave Iconoir (kebab-case), ex.: car.",
+          "iconHint": "Qualquer ícone Iconoir, mostrado na página de serviços.",
           "position": "Posição",
           "positionHint": "Números menores aparecem primeiro."
         }
@@ -579,16 +579,6 @@
           "moveUp": "Mover para cima",
           "moveDown": "Mover para baixo",
           "remove": "Remover"
-        },
-        "factIcons": {
-          "clock": "Relógio (duração)",
-          "group": "Grupo (pessoas)",
-          "language": "Idioma",
-          "pin": "Pin (local)",
-          "car": "Carro (transporte)",
-          "home": "Casa (recolha)",
-          "calendar": "Calendário (disponibilidade)",
-          "star": "Estrela (destaque)"
         },
         "module": {
           "title": "Módulo variável",
