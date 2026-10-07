@@ -67,7 +67,7 @@ of it was removed or changed during GLaDOS onboarding. Classification only.
   repository, so their role cannot be determined from it.
 - `docs/mock-audit.md`: a historical audit (2026-06-08). Its current relevance is unclear.
 
-## Quality baseline (run on `main` @ `ea0863d`, 2026-10-06, clean tree)
+## Quality baseline (run on `main` @ `ea0863d`, 2026-10-06, clean tree, **Node 24.20.0**)
 
 | Command | Result | Notes |
 |---|---|---|
@@ -78,5 +78,12 @@ of it was removed or changed during GLaDOS onboarding. Classification only.
 | `pnpm db:check` (not in profile) | PASS | 1 warning: `0008` lacks statement-breakpoint markers |
 | `git diff --check` | PASS | |
 
-Note: `package.json` declares `engines.node: 22.x`; the baseline ran on a newer Node, and pnpm
-warns "Unsupported engine".
+**Environment mismatch:** the repo requires Node 22.x (`package.json` engines, `netlify.toml`),
+but the baseline terminal ran Node 24.20.0, and no Node 22 was installed to re-run it. This is an
+environment mismatch, not an application failure. typecheck, lint and build passed anyway. The 16
+unit failures were sampled to a fixture/schema mismatch (Zod validation), which is not
+Node-version-related, but they have not been re-run on Node 22.
+
+`pnpm test` is **not** a test suite (`echo "(no test runner wired yet)" && exit 0`), so it is not
+in the profile. The `unit` check uses the per-slice `tsx --test` command the slice READMEs
+document.

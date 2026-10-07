@@ -19,8 +19,10 @@ multilingual (EN / PT / ES / FR). Sources: `CLAUDE.md`, `docs/architecture.md`.
 
 ## Stack
 
-- Next.js 16 (App Router, RSC, ISR) + React 19 + TypeScript (strict), pnpm 10, Node 22
-  (`package.json` engines).
+- Next.js 16 (App Router, RSC, ISR) + React 19 + TypeScript (strict), pnpm 10.
+- **Node 22.x is required** (`package.json` `engines.node: 22.x`; `netlify.toml`
+  `NODE_VERSION = "22"`). Running another major (e.g. 24.x) is an environment mismatch: pnpm
+  warns "Unsupported engine".
 - Tailwind CSS v4 + in-repo design system `src/core/ui` (palette locked to "Warm Editorial",
   ADR 0022).
 - Postgres on **Neon** via **Drizzle ORM** + drizzle-kit migrations (`drizzle/`).
@@ -54,7 +56,8 @@ provider.
 ## Verification
 
 `pnpm typecheck`, `pnpm lint`, the slice unit suites (`npx tsx --test …`, see
-`project.yaml`), `pnpm build`. `pnpm db:check` validates the migration journal (filesystem
+`project.yaml`; **not** `pnpm test`, which is an `echo` placeholder), `pnpm build`. Use
+Node 22.x. `pnpm db:check` validates the migration journal (filesystem
 only). There is **no CI config** in the repo, and `pnpm test` / `pnpm boundary:check` are
 placeholders. Baseline: `architecture/existing-harness.md`.
 

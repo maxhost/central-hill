@@ -2,6 +2,8 @@
 # Schema: GlaDOS packages/core/src/project-quality-profile.ts (version 1).
 # Every command below exists in this repo and was run on 2026-10-06 (see
 # .glados/architecture/existing-harness.md → Quality baseline).
+# Runtime: the repo requires Node 22.x (package.json engines, netlify.toml NODE_VERSION).
+# The 2026-10-06 baseline ran on Node 24.20.0 (environment mismatch, not an app failure).
 version: 1
 
 quality:
@@ -9,9 +11,10 @@ quality:
     command: pnpm typecheck
   lint:
     command: pnpm lint
-  # `pnpm test` is a placeholder (`echo … && exit 0`) and is deliberately NOT used.
-  # This runs every slice suite with the per-slice command each slice README documents
-  # (`npx tsx --test src/slices/<slice>/tests/*.test.ts`), aggregated.
+  # NOT `pnpm test`: that script is a placeholder (`echo "(no test runner wired yet)" && exit 0`)
+  # and verifies nothing. This is the repo's real test command, documented in every slice
+  # README as `npx tsx --test src/slices/<slice>/tests/*.test.ts`, applied to all 24 test files
+  # (225 node:test cases) in one run.
   # BASELINE: 16/225 failing on 2026-10-06, pre-existing (same 16 at 3f3c5c5) —
   # stale test fixtures vs. admin save schemas (e.g. buildings `booking_enabled`).
   unit:
