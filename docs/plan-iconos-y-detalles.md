@@ -1,6 +1,6 @@
 # Plan por sesiones: iconos (Iconoir) + detalle de blog y de guía
 
-**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–2 hechas). Cada sesión es autocontenida: se puede hacer
+**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–3 hechas; siguen 3b y 3c, luego 4). Cada sesión es autocontenida: se puede hacer
 `/compact` o `/clear` entre sesiones. Para retomar, basta con decir "seguimos con la sesión N de
 `docs/plan-iconos-y-detalles.md`".
 
@@ -155,6 +155,30 @@ con prefijo se dejan en el bucket (decisión del usuario).
 - **Commits:** uno por página.
 
 ## Sesión 3: migrar iconos, lote 2 + datos + adiós a `mock.css`
+**✅ Hecha el 2026-10-06.** Cambios respecto a lo previsto:
+- Hecho por el coordinador, con un agente solo para los docstrings de `core/ui` (solo comentarios).
+- Mapeos elegidos a ojo con una hoja de comparación (glifo antiguo vs candidatos):
+  - Owners: services `camera`/`calendar`/`wrench`/`stat-up`; dashboard `dollar-circle`/
+    `calendar`/`stats-up-square`/`bell`. `why` ya coincidía.
+  - Real Estate: partners `bank`/`ruler-combine`/`city`/`send`; capabilities `graph-up`/
+    `settings`/`shield-check`; assets `home`/`building`/`city`/`group`/`edit-pencil`/
+    `stats-up-square`.
+  - Buildings specs: `house-rooms` (dormitorios), `bed`, `user`, `maximize` (tamaño).
+- Backfill en la DB de `owners` y `real_estate` con esos nombres (copia previa en el
+  scratchpad); `seed-demo` y `defaultCapabilities` igual.
+- Amenities: tenían `icon` nulo. Backfill de las 8 (`wifi`, `air-conditioner`, `elevator`,
+  `cutlery`, `washing-machine`, `tv`, `key`, `city`); sin `icon` se pinta `check-circle`.
+  `amenityInput.icon` pasa al `iconKey` estricto (+ test).
+- `ChipBar.icon` y `PageHeadSearch.icon` son `ReactNode` (el padre server pasa `<Icon>`).
+  El chip "Lisbon" pasa de `pin` (chincheta) a `map-pin`, como en la sesión 2.
+- `GuideCard`: el `<Icon>` necesita `align-baseline` (el preflight de Tailwind pone
+  `vertical-align: middle` a los `svg`); sin eso la tarjeta quedaba 7,6 px más baja.
+- Todos los nombres de icono de la DB son válidos.
+- Verificado: alturas de página idénticas antes/después a 1440 y 390 en las 7 páginas.
+- **No hecho:** el chrome (carousel, form-card, two-column-showcase, settings) y el selector de
+  iconos del admin: pasan a las sesiones 3b y 3c.
+- Hay que reiniciar `pnpm dev` borrando `.next/dev/cache/fetch-cache` tras un backfill por SQL:
+  las consultas van con `unstable_cache` y no hay endpoint de revalidación.
 - **Páginas:**
   - Owners y Real Estate (leer `icon_key` de la DB; backfill previo con los nombres actuales).
   - Buildings detail (`amenity.icon` + specs).
@@ -175,6 +199,43 @@ con prefijo se dejan en el bucket (decisión del usuario).
 - **Hecho cuando:** `grep -r "iconoir-" src` solo encuentra el generador y el mapa, no hay CDN y
   ninguna ruta importa `mock.css`.
 - **Commits:** uno por página/bloque + la limpieza.
+
+## Sesión 3b: iconos de interfaz en Iconoir (enmienda al ADR 0034)
+- **Por qué:** todo icono debe ser de Iconoir para que luego se pueda elegir desde el admin.
+  Lo que queda dibujado a mano es interfaz, y varias piezas son componentes cliente, que no
+  pueden importar `<Icon>` (server-only).
+- **Decisión (OK del usuario, 2026-10-06):**
+  - Enmienda al ADR 0034: un subconjunto **cliente** generado desde Iconoir con los iconos de
+    interfaz por defecto (~15, ~5 KB): chevrons, plus/minus, xmark, user, mail, language,
+    check, star y los de aviso del toast.
+  - Cada componente cliente acepta además un icono opcional por prop (un `ReactNode` que dibuja
+    el server). Así un icono elegido en el admin llega dibujado y el cliente no carga los 1.383.
+- **Reemplazar:**
+  - `core/ui`: carousel (flechas), form-card (chevron del select, +/− del stepper),
+    `TwoColumnShowcase` (check de los bullets), `mobile-drawer` (`✕`/`☰`).
+  - settings: header (user), contact-dialog (mail, `✕`), locale-switcher (globo, chevron),
+    footer-newsletter (`✕`).
+  - pages: owner-estimate-form (check final), services-carousel (estrella de la valoración).
+  - backoffice: toast (4 avisos + cerrar), nav-form (`✕`).
+  - Los `★` de texto ("New", "Featured") de hero, buildings y property-card.
+  - Se queda el logo de WhatsApp (marca).
+- **Hecho cuando:** no queda ningún `<svg>` a mano ni glifo de texto como icono fuera de
+  `core/ui/icon*` y WhatsApp. Las capturas coinciden a 1440 y 390.
+
+## Sesión 3c: iconos editables desde el backoffice + selector
+- **Objetivo:** que todo icono de contenido se pueda elegir en el admin.
+- **Hoy fijos en el código (pasan a `icon_key` en la DB + editor):**
+  - About: los 12 `icon_key` existen pero no se leen. Va con conectar About a `page_content`.
+  - Guides: el icono por plantilla (`TEMPLATE_ICON`) y el pin de los lugares.
+  - Buildings: las specs de las tarjetas de apartamento.
+  - Blog: el reloj de `PostMeta`.
+  - `TwoColumnShowcase`: el check de los bullets sin icono.
+  - Interfaz que tenga sentido editar (p. ej. el header, en settings).
+- **Selector de iconos** con buscador y vista previa, en `core/ui` del admin. Lo usan
+  `category-form`, los campos `icon_key` de los esquemas de pages, el editor de servicios y
+  las amenities.
+- Datos: migraciones aditivas donde haga falta un campo nuevo; backfill con lo que se ve hoy.
+- **Modo:** coordinador + agentes por slice (pages, guides, buildings, blog, settings).
 
 ## Sesión 4: mocks del detalle de blog y de guía
 - **Objetivo:** `mock/blog-post.html` y `mock/guide-detail.html`, aprobados por el owner.
