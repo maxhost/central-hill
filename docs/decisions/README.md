@@ -39,6 +39,8 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0030 — Media uploads happen on save, not on pick](#0030)
 - [0031 — Home reduced to a guest-facing funnel](#0031)
 - [0032 — Home gains a services & partners carousel, composed from the services catalogue](#0032)
+- [0033 — Home's section components move into `core/ui` as a reusable library](#0033)
+- [0034 — One icon system: server-rendered inline Iconoir SVG via `core/ui` `<Icon>`](#0034)
 
 ---
 
@@ -1141,3 +1143,66 @@ exists. Implementation proceeds component-by-component per
 typecheck/lint/test-green and visually verified before the next lands.
 
 **Status:** Accepted (2026-10-03).
+
+---
+
+## 0034 — One icon system: server-rendered inline Iconoir SVG via `core/ui` `<Icon>` <a id="0034"></a>
+**Context:** The site draws icons three different ways, all from Iconoir (survey in
+`docs/plan-iconos-y-detalles.md`, draft in `docs/parqueado.md`):
+- **(A)** `<i class="iconoir-*">` classes from an unpinned jsDelivr stylesheet, pulled in by the
+  `@import` in `src/app/mock.css` and by a `<link>` in the services detail.
+- **(B)** A hand-copied registry of ~27 SVGs (`pages/ui/components/icon.tsx`) that falls back
+  to `sparks` for any other name.
+- **(C)** Hand-written per-page SVGs that ignore the `icon_key` stored in the DB (Real Estate,
+  Owners, building amenities, the services fact sprite).
+
+So the client edits an `icon_key` in the backoffice and often sees no change. Two pages can't
+drop `mock.css`. `iconKey` only checks the kebab-case format. The measured alternatives were
+rejected:
+- **Global Iconoir CSS:** 2.2–2.9 MB raw / 167–250 KB gzip and render-blocking on every page.
+  It has no `@layer`, so it overrides Tailwind utilities. An unknown key paints a filled square.
+- **`iconoir-react`:** every icon is a `"use client"` module, and lookup by DB name pulls all
+  1,383 icons into the client.
+
+**Decision:**
+- **Component.** One server-only component, `src/core/ui/icon.tsx`:
+  `<Icon name size? strokeWidth? className? title? />`. It inlines the icon's SVG into the
+  RSC/ISR HTML, with no CSS, no client JS and no CDN. It is decorative (`aria-hidden`) unless
+  `title` is given, and an unknown name renders `sparks` (`console.warn` in dev).
+  - Import it from `@core/ui/icon`, **not** the `@core/ui` barrel, because client components
+    import the barrel.
+  - Client components receive icons as a `ReactNode` from their server parent.
+- **Source.** The `iconoir` package, pinned exactly (7.12.1, devDependency).
+  `pnpm icons:generate` (`scripts/generate-icons.ts`) writes two **committed** files under
+  `src/core/ui/icons/`:
+  - `names.ts`: the 1,383 names, `IconName` and `isIconName`.
+  - `svg.ts`: `server-only`, name → inner SVG (~0.9 MB raw, ~145 KB gzip).
+
+  The map is committed rather than generated at build time, so typecheck, tests and the
+  build need no extra step, and an icon change shows up as a reviewable diff on an upgrade.
+  The generator drops the paths' own ~1.5 `stroke-width`, so the `strokeWidth` prop applies
+  to the whole icon.
+- **Validation.** The strict `iconKey` (the name must exist in `ICON_NAMES`) moves to
+  `core/validation/icon-key.ts`.
+  - It stays out of `primitives.ts` because that module is in the client bundle of every
+    public page (the lead forms). The name list would add ~7 KB gzip of JS there; the build
+    confirmed it.
+  - Schemas that store an icon import it from `icon-key`.
+- **Rollout.** Pages migrate in later sessions of `docs/plan-iconos-y-detalles.md`. Pages that
+  ignore the DB start reading `icon_key` only after a backfill to the names they show today.
+  Systems A–C, the `mock.css` import of Iconoir and the hand registry are deleted once nothing
+  uses them.
+
+**Consequences:**
+- Any of the 1,383 Iconoir icons can be chosen from the backoffice, and pages render it.
+- Each icon costs ~0.3–0.7 KB in the static HTML, and nothing on the client. The build check:
+  no client chunk contains SVG path data or the name list.
+- The server chunk of any route that renders `<Icon>` carries the full map (~0.9 MB raw).
+  That is acceptable for the server bundle; revisit it if function size becomes a constraint.
+- Stored keys must be real Iconoir names: `chart` becomes `graph-up` (seed and the Owners
+  data, via a backfill rather than by editing past migrations). Legacy values still render,
+  as `sparks`.
+- Tests: `npx tsx --tsconfig src/core/ui/tests/tsconfig.json --test src/core/ui/tests/icon.test.ts`.
+  The test also checks that the committed map matches the installed package.
+
+**Status:** Accepted (2026-10-06). Supersedes the parked draft "0033" in `docs/parqueado.md`.
