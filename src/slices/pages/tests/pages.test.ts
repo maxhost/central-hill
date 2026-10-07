@@ -22,7 +22,7 @@ const assurance = (n: number) => ({
 });
 
 const benefit = (n: number) => ({
-  icon_key: "chart",
+  icon_key: "graph-up",
   title: `Benefit ${n}`,
   description: `Why benefit ${n} matters for you and your stay.`,
 });

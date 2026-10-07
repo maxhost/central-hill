@@ -418,7 +418,7 @@ function ownersData() {
       headline: "Why property owners trust Central Hill Apartments",
       subheadline: "We turn your property into a high-performing asset — fully managed, transparent, and optimised for maximum returns.",
       benefits: [
-        ic("AI-powered pricing", "Our dynamic pricing engine analyses market data in real time, adjusting your rates daily for maximum occupancy at the best possible price.", "chart"),
+        ic("AI-powered pricing", "Our dynamic pricing engine analyses market data in real time, adjusting your rates daily for maximum occupancy at the best possible price.", "graph-up"),
         ic("Profit-first management", "Every decision is guided by one goal: maximising your returns — from listing optimisation to upsell strategies, we leave no revenue on the table.", "trophy"),
         ic("24/7 owner dashboard", "Monitor your property's performance in real time — bookings, revenue, occupancy and guest reviews — from anywhere in the world.", "bell"),
         ic("Dedicated account manager", "A named point of contact who knows your property personally. No call centres, no uncertainty — just reliable, expert support.", "user"),
@@ -435,7 +435,7 @@ function ownersData() {
         ic("Listing & marketing", "Professional photography, copy and multi-channel distribution across Airbnb, Booking.com and direct.", "search"),
         ic("Reservations & guest care", "24/7 multilingual communication, calendar and seamless check-in/out — every stay runs smoothly.", "bell"),
         ic("Housekeeping & maintenance", "Hotel-standard cleaning, premium linen and proactive upkeep keep your home guest-ready.", "spark"),
-        ic("Revenue & compliance", "AI-driven pricing, monthly reporting and full Alojamento Local licensing & tax support.", "chart"),
+        ic("Revenue & compliance", "AI-driven pricing, monthly reporting and full Alojamento Local licensing & tax support.", "graph-up"),
       ],
       image_media_id: "",
       cta: { label: "See how we manage your home", url: `${SITE}/en/owners`, note: "Fully managed, end to end — you stay informed, we do the work." },
@@ -468,7 +468,7 @@ function ownersData() {
       headline: "Your property, always in sight",
       subheadline: "Our owner dashboard gives you real-time visibility into every aspect of your property's performance — from anywhere in the world.",
       benefits: [
-        ic("Live revenue tracking", "Your earnings and projected monthly income at a glance, updated in real time.", "chart"),
+        ic("Live revenue tracking", "Your earnings and projected monthly income at a glance, updated in real time.", "graph-up"),
         ic("Booking calendar", "Full visibility of reservations, blocked dates and availability across all platforms.", "bell"),
         ic("Occupancy & performance", "Track occupancy rates, average nightly rate and review scores over any period.", "search"),
         ic("Alerts & statements", "Instant alerts for bookings and check-ins, plus downloadable monthly statements anytime.", "key"),

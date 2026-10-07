@@ -1,0 +1,13 @@
+{
+  "extends": "../../../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["../../../*"],
+      "@core/*": ["../../*"],
+      "@slices/*": ["../../../slices/*"],
+      "server-only": ["../../../../scripts/shims/server-only.ts"]
+    }
+  },
+  "include": ["../**/*.ts", "../**/*.tsx"]
+}

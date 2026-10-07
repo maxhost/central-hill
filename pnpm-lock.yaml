@@ -75,6 +75,9 @@ importers:
       eslint-config-next:
         specifier: ^16.2.9
         version: 16.2.9(@typescript-eslint/parser@8.61.0(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.4(jiti@2.7.0))(typescript@6.0.3)
+      iconoir:
+        specifier: 7.12.1
+        version: 7.12.1
       playwright:
         specifier: ^1.63.0
         version: 1.63.0
@@ -2511,6 +2514,9 @@ packages:
 
   hermes-parser@0.25.1:
     resolution: {integrity: sha512-6pEjquH3rqaI6cYAXYPcz9MS4rY6R4ngRgrgfDshRptUZIc3lw0MCIJIGDj9++mfySOuPTHB4nrSW99BCvOPIA==}
+
+  iconoir@7.12.1:
+    resolution: {integrity: sha512-7ei4jd1bss0Ukyz/bbM9Zc96aLfZuwTEkSW8u5fx5h3X9912MsnmWwPw9LyTUtcf0ShfTzQeQ9oG7IslW3hrLg==}
 
   icu-minify@4.13.0:
     resolution: {integrity: sha512-SIFMeUHZJjzS5RvIGvybKvWoHjDm9cGVEs2EpJ8PmywOdJLWyblPm7TdPLLoUtkJtwQD7iGhl2WMptZ+N0on+w==}
@@ -5624,6 +5630,8 @@ snapshots:
   hermes-parser@0.25.1:
     dependencies:
       hermes-estree: 0.25.1
+
+  iconoir@7.12.1: {}
 
   icu-minify@4.13.0:
     dependencies:

@@ -83,6 +83,8 @@ sin equivalente claro · dormitorios (puerta) sin equivalente · `lang` (bocadil
 ---
 
 ## Sesión 0: arreglar las 67 imágenes rotas de R2 *(requiere OK: escribe en el bucket)*
+**✅ Hecha el 2026-10-06.** Se copiaron los 67 objetos y los 151 assets dan 200. Las 75 copias
+con prefijo se dejan en el bucket (decisión del usuario).
 - **Objetivo:** que todas las `media_asset` respondan 200 en su URL pública.
 - **Pasos:**
   1. Script de un solo uso (en el scratchpad, no en el repo), con `CopyObject` de
@@ -94,6 +96,15 @@ sin equivalente claro · dormitorios (puerta) sin equivalente · `lang` (bocadil
 - **Commit:** ninguno (es una operación de datos). Anotarlo en la memoria.
 
 ## Sesión 1: ADR 0033 + componente `<Icon>` en `core/ui` (kernel)
+**✅ Hecha el 2026-10-06** (ver ADR 0034). Cambios respecto a lo previsto:
+- `iconoir` va en devDependencies y el mapa generado se commitea.
+- `<Icon>` se importa desde `@core/ui/icon`, no desde el barrel (los componentes cliente lo
+  importan).
+- El `iconKey` estricto vive en `core/validation/icon-key.ts`: en `primitives.ts` metía la
+  lista de nombres (~7 KB gzip) en el JS de todas las páginas públicas.
+- `chart` pasó a `graph-up` en `seed-demo.ts` y en el test de `pages`.
+- Backfill hecho en la DB: la fila `owners` tenía 3 `chart` y ahora tiene `graph-up`. Las 5
+  páginas pasan el schema estricto.
 - **Objetivo:** dejar listo el sistema único, sin migrar páginas todavía.
 - **Pasos:**
   1. Pasar el borrador de `docs/parqueado.md` a `docs/decisions/README.md`.

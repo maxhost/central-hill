@@ -78,12 +78,8 @@ export const ctaWithNote = z.object({
   note: tStrOpt({ max: 160 }),
 });
 
-/** Curated icon set (iconoir names), shipped in code — no icon table. */
-export const iconKey = z
-  .string()
-  .min(1)
-  .max(64)
-  .regex(/^[a-z0-9-]+$/, "iconoir icon key (kebab-case)");
+// `iconKey` lives in `./icon-key` (ADR 0034): it pulls in the icon name list, which must not
+// reach the client bundles that import this module (the public lead forms).
 
 /**
  * Per-entity SEO override fields (translatable). hreflang/canonical/JSON-LD are

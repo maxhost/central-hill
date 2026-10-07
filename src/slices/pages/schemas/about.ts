@@ -7,7 +7,8 @@
  * See docs/data-model.md → Page content model → about.
  */
 import { z } from "zod";
-import { cta, iconKey, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
+import { iconKey } from "@core/validation/icon-key";
+import { cta, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
 import { faqGroupKey, fixed, iconCard, titledItem } from "./_shared";
 
 /** An org department/team unit (uses `name`, not `title`). */
