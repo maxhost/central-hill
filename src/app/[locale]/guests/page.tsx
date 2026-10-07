@@ -6,7 +6,6 @@ import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
 import { GuestPage } from "@slices/pages/ui/guest-page";
-import "../../mock.css";
 
 /**
  * Static per locale (ISR). Content is the `guest` page_content row plus the buildings,

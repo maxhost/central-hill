@@ -12,6 +12,7 @@ import {
   SectionHead,
   SplitCtaPanels,
 } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 import { getGlobals } from "@slices/settings/contract";
 import { getGuestPage } from "../contract";
 import { FaqSection } from "./components/faq-section";
@@ -49,9 +50,8 @@ import { TestimonialsRow } from "./components/testimonials-row";
  * Where this page's mock differed from a sibling page using the same component, the user chose
  * cross-page consistency over mock fidelity; each component's docstring records those choices.
  *
- * Icons are Iconoir CSS classes from the admin-editable `icon_key`s (`iconClass`). The Iconoir
- * stylesheet is only loaded through `src/app/mock.css`'s `@import`, which is why the route file
- * still imports `mock.css` (no `.mk` markup on this page depends on it any more).
+ * Icons are `core/ui` `<Icon>` (inline Iconoir SVG, ADR 0034) from the admin-editable
+ * `icon_key`s; an unknown key renders the `sparks` fallback.
  */
 
 // Media fallbacks = the approved mock assets, used 1:1 until a real R2 asset is set in the
@@ -92,17 +92,6 @@ const ACTIVITIES_TEASER_BG = [
   "https://images.pexels.com/photos/25016471/pexels-photo-25016471.jpeg?auto=compress&cs=tinysrgb&w=1200", // Music & Festivals
   "https://images.pexels.com/photos/16382447/pexels-photo-16382447.jpeg?auto=compress&cs=tinysrgb&w=1200", // Day Trips & Hidden Gems
 ];
-
-/**
- * Iconoir glyph class for a card's `icon_key`. The Iconoir stylesheet is loaded by `mock.css`'s
- * `@import` (the route still imports it for that alone), so a valid key renders directly. Unknown/legacy keys (e.g. the demo seed's `"spark"`) fall
- * back to the decorative `sparks` glyph rather than rendering an empty box.
- */
-const ICON_FALLBACK = "iconoir-sparks";
-const iconClass = (key: string): string =>
-  key.length > 0 && key.length <= 64 && /^[a-z0-9-]+$/.test(key)
-    ? `iconoir-${key}`
-    : ICON_FALLBACK;
 
 /**
  * Rewrite an own-site `/en/…` CTA link to the active locale. Stored CTA urls must be absolute
@@ -157,18 +146,18 @@ export async function GuestPage({ locale }: { locale: Locale }) {
   const contactLines = dualCtaContactLines(globals);
 
   const whyItems = content.why.benefits.map((item) => ({
-    icon: <i className={iconClass(item.icon_key)} aria-hidden="true" />,
+    icon: <Icon name={item.icon_key} size={30} className="block" />,
     title: item.title,
     description: item.description,
   }));
   const servicesTeaserItems = content.services_teaser.items.map((item, i) => ({
-    icon: <i className={iconClass(item.icon_key)} aria-hidden="true" />,
+    icon: <Icon name={item.icon_key} size={30} className="block" />,
     title: item.title,
     description: item.description,
     image: SERVICES_TEASER_BG[i],
   }));
   const activitiesTeaserItems = content.activities_teaser.items.map((item, i) => ({
-    icon: <i className={iconClass(item.icon_key)} aria-hidden="true" />,
+    icon: <Icon name={item.icon_key} size={30} className="block" />,
     title: item.title,
     description: item.description,
     image: ACTIVITIES_TEASER_BG[i],
@@ -235,7 +224,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
                 welcome.guarantee_label
                   ? {
                       icon: (
-                        <i className="iconoir-percentage-circle text-[22px]" aria-hidden="true" />
+                        <Icon name="percentage-circle" size={22} />
                       ),
                       label: welcome.guarantee_label,
                     }
@@ -274,7 +263,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
        * `SectionHead`, then `core/ui`'s `BenefitCards` + CTA (see its docstring for why
        * `NumberedFeatureGrid`/`IconFeatureGrid`/`PhotoFeatureGrid` don't fit). The head and the
        * cards each have their own `Reveal`; the original per-card `.reveal-stagger` becomes one
-       * fade. Icons come from `why.benefits` via `iconClass`; an empty `cta.note` is omitted.
+       * fade. Icons come from `why.benefits`' `icon_key`s; an empty `cta.note` is omitted.
        */}
       <section className={`${SECTION_SHELL} ${ALT_BAND}`}>
         <div className={SECTION_WRAP}>
