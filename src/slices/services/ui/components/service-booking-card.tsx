@@ -9,8 +9,8 @@ export type BookingAction = { href: string; label: string };
  * content inside `core/ui`'s `StickyAside` shell: a "From" label, the serif 40px price with its
  * 15px suffix (or the "On request" line, without "From", when the service is unpriced), the
  * optional `price_note`, the hairline label/value `booking_rows`, then the actions — a full-width
- * primary `ButtonLink` and an optional full-width `ghost` one 10px below — and an optional shield
- * note. Which actions exist is the page's call (booking type → enquiry / external / none).
+ * primary `ButtonLink` and an optional full-width `ghost` one 10px below — and an optional note
+ * with the `service_note` site icon (a shield by default). Which actions exist is the page's call (booking type → enquiry / external / none).
  * Buttons are `core/ui` `ButtonLink` as on every other page (not the mock's 14px/3px `.btn`).
  */
 export function ServiceBookingCard({
@@ -24,6 +24,7 @@ export function ServiceBookingCard({
   primary,
   secondary,
   note,
+  noteIcon = "shield-check",
 }: {
   /** Accessible name of the aside landmark. */
   label: string;
@@ -37,6 +38,8 @@ export function ServiceBookingCard({
   primary?: BookingAction;
   secondary?: BookingAction;
   note?: string;
+  /** Iconoir name drawn before the note (the `service_note` site icon). */
+  noteIcon?: string;
 }) {
   return (
     <StickyAside label={label}>
@@ -76,7 +79,7 @@ export function ServiceBookingCard({
       ) : null}
       {note ? (
         <div className="mt-[18px] flex items-start gap-2.5 text-[13px] leading-[1.55] text-ink-soft">
-          <Icon name="shield-check" size={17} className="mt-px block flex-none text-accent-deep" />
+          <Icon name={noteIcon} size={17} className="mt-px block flex-none text-accent-deep" />
           <span>{note}</span>
         </div>
       ) : null}

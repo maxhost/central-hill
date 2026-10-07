@@ -16,6 +16,7 @@ import {
   type StatKey,
 } from "../contract";
 import { company_settings, nav_item } from "../schema";
+import { SITE_ICON_KEYS } from "../site-icons";
 import { resolveSiteIcons } from "./site-icons";
 
 /**
@@ -98,8 +99,12 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
   };
 }
 
+// The site icon key list is part of the cache key: adding a site icon must not serve an entry
+// cached before the key existed (its `icons` would lack it).
+const SITE_ICONS_SHAPE = SITE_ICON_KEYS.join(",");
+
 export function getGlobals(locale: Locale): Promise<SiteGlobals | null> {
-  return unstable_cache(() => _getGlobals(locale), ["settings:getGlobals", locale], {
+  return unstable_cache(() => _getGlobals(locale), ["settings:getGlobals", locale, SITE_ICONS_SHAPE], {
     tags: [SETTINGS_TAGS.globals],
   })();
 }

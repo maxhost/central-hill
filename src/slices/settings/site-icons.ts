@@ -18,11 +18,26 @@ export const SITE_ICON_DEFAULTS = {
   location: "map-pin",
   /** Reading time in the blog post meta. */
   reading_time: "clock",
+  /** Search box in a page head (blog). */
+  search: "search",
   /** Apartment card specs (building detail). */
   spec_bedrooms: "house-rooms",
   spec_beds: "bed",
   spec_guests: "user",
   spec_size: "maximize",
+  /** Services listing: the three "how it works" steps. */
+  services_how_1: "chat-bubble",
+  services_how_2: "home-simple",
+  services_how_3: "headset",
+  /** Service detail: "What's included" lines, title badges, booking-card note, "Show all photos". */
+  service_included: "check-circle",
+  service_badge: "shield-check",
+  service_note: "shield-check",
+  service_photos: "view-grid",
+  /** Service detail "Good to know" columns. */
+  know_included: "check-circle",
+  know_cancellation: "calendar",
+  know_practical: "info-circle",
   /** Guide card icon, per editorial template. */
   guide_landing: "bank",
   guide_eat: "pizza-slice",
@@ -34,7 +49,11 @@ export const SITE_ICON_DEFAULTS = {
   guide_travellers: "compass",
   guide_custom: "compass",
 } as const satisfies Record<
-  "account" | "contact" | "language" | "location" | "reading_time" | `spec_${"bedrooms" | "beds" | "guests" | "size"}` | `guide_${GuideTemplate}`,
+  | "account" | "contact" | "language" | "location" | "reading_time" | "search"
+  | `services_how_${1 | 2 | 3}`
+  | `service_${"included" | "badge" | "note" | "photos"}`
+  | `know_${"included" | "cancellation" | "practical"}`
+  | `spec_${"bedrooms" | "beds" | "guests" | "size"}` | `guide_${GuideTemplate}`,
   IconName
 >;
 

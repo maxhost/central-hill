@@ -17,7 +17,7 @@ import {
   type EnquiryContactLine,
 } from "@core/ui";
 import { ContactForm } from "@slices/leads/contract";
-import { getGlobals, type SiteGlobals } from "@slices/settings/contract";
+import { SITE_ICON_DEFAULTS, getGlobals, type SiteGlobals } from "@slices/settings/contract";
 import {
   getServiceBySlug,
   listServices,
@@ -151,11 +151,13 @@ export async function ServiceDetail({
   const enquiry = svc.bookingType === "enquiry";
   const [all, globals, t] = await Promise.all([
     listServices(locale),
-    enquiry ? getGlobals(locale) : Promise.resolve(null),
+    getGlobals(locale), // site icons; enquiry pages also use the contact details
     getTranslations("services"),
   ]);
 
   const { detail } = svc;
+  // Site icons (Settings → "Site icons", ADR 0034 amendment 2).
+  const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
   const paragraphs = splitParagraphs(svc.body);
   const price = formatPrice(svc.priceFrom, locale);
   const experience = svc.category.slug === "experiences";
@@ -204,7 +206,7 @@ export async function ServiceDetail({
         label={t("detail.showAllPhotos")}
         title={t("detail.allPhotos")}
         closeLabel={t("detail.close")}
-        icon={<Icon name="view-grid" />}
+        icon={<Icon name={icons.service_photos} />}
       >
         {photos.map((p, i) => (
           <MediaImage
@@ -234,7 +236,7 @@ export async function ServiceDetail({
   for (const b of detail.badges) {
     meta.push(
       <span className="inline-flex items-center gap-[7px] text-ink-soft [&_svg]:block [&_svg]:size-4 [&_svg]:text-accent-deep">
-        <Icon name="shield-check" />
+        <Icon name={icons.service_badge} />
         {b}
       </span>,
     );
@@ -324,7 +326,7 @@ export async function ServiceDetail({
                 eyebrow={t("detail.includedEyebrow")}
                 title={detail.included_title ?? t("detail.includedTitle")}
               >
-                <ServiceIncluded items={detail.highlights} />
+                <ServiceIncluded items={detail.highlights} icon={icons.service_included} />
               </ContentBlock>
             ) : null}
 
@@ -378,6 +380,11 @@ export async function ServiceDetail({
               >
                 <ServiceGoodToKnow
                   data={gtk}
+                  icons={{
+                    included: icons.know_included,
+                    cancellation: icons.know_cancellation,
+                    practical: icons.know_practical,
+                  }}
                   labels={{
                     included: t("detail.knowIncluded"),
                     cancellation: t("detail.knowCancellation"),
@@ -400,6 +407,7 @@ export async function ServiceDetail({
             primary={primary}
             secondary={secondary}
             note={enquiry ? t("detail.noPayment") : undefined}
+            noteIcon={icons.service_note}
           />
         }
       />

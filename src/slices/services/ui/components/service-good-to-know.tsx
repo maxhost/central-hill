@@ -2,7 +2,8 @@ import type { DetailGoodToKnow } from "../../contract";
 import { Icon } from "@core/ui/icon";
 
 /**
- * "Good to know" — up to three fixed columns (Included ✓ · Cancellation 📅 · Practical ⓘ), each a
+ * "Good to know" — up to three fixed columns (Included · Cancellation · Practical; their icons are
+ * site icons, passed by the page), each a
  * 14px/600 sans heading with an 18px `accent-deep` glyph over a list of 14px `ink-soft` lines.
  * Only non-empty columns render; the grid keeps three equal tracks (30px gap) so a lone column
  * keeps the mock's width rather than stretching; one column ≤760px. Ported 1:1 from
@@ -12,14 +13,16 @@ import { Icon } from "@core/ui/icon";
 export function ServiceGoodToKnow({
   data,
   labels,
+  icons,
 }: {
   data: DetailGoodToKnow;
   labels: { included: string; cancellation: string; practical: string };
+  icons: { included: string; cancellation: string; practical: string };
 }) {
   const cols: Array<{ key: string; icon: string; title: string; items: string[] }> = [
-    { key: "included", icon: "check-circle", title: labels.included, items: data.included },
-    { key: "cancellation", icon: "calendar", title: labels.cancellation, items: data.cancellation },
-    { key: "practical", icon: "info-circle", title: labels.practical, items: data.practical },
+    { key: "included", icon: icons.included, title: labels.included, items: data.included },
+    { key: "cancellation", icon: icons.cancellation, title: labels.cancellation, items: data.cancellation },
+    { key: "practical", icon: icons.practical, title: labels.practical, items: data.practical },
   ].filter((c) => c.items.length);
   if (!cols.length) return null;
   return (
@@ -43,13 +46,13 @@ export function ServiceGoodToKnow({
   );
 }
 
-/** "What's included" — 2 → 1 columns (≤560px) of ✓ lines, 15px `ink` (mock `.incl`). */
-export function ServiceIncluded({ items }: { items: string[] }) {
+/** "What's included" — 2 → 1 columns (≤560px) of icon lines, 15px `ink` (mock `.incl`). */
+export function ServiceIncluded({ items, icon }: { items: string[]; icon: string }) {
   return (
     <ul className="grid grid-cols-1 gap-x-[30px] gap-y-[14px] min-[561px]:grid-cols-2">
       {items.map((it, i) => (
         <li key={i} className="flex items-start gap-3 text-[15px] leading-[1.5] text-ink">
-          <Icon name="check-circle" size={19} className="mt-px block flex-none text-accent-deep" />
+          <Icon name={icon} size={19} className="mt-px block flex-none text-accent-deep" />
           {it}
         </li>
       ))}

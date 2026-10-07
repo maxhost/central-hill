@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { FeatureCtaBand, Hero, IconFeatureGrid, Reveal, SectionHead } from "@core/ui";
 import { Icon } from "@core/ui/icon";
-import { getGlobals } from "@slices/settings/contract";
+import { SITE_ICON_DEFAULTS, getGlobals } from "@slices/settings/contract";
 import { listServices } from "../contract";
 import { ServiceCard } from "./components/service-card";
 
@@ -49,6 +49,8 @@ export async function ServicesListing({ locale }: { locale: Locale }) {
     getGlobals(locale),
     getTranslations("services"),
   ]);
+  // Site icons (Settings → "Site icons", ADR 0034 amendment 2).
+  const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
 
   // The message ends in a full stop; drop it so the joined line reads "… team · email · …".
   const contactLine = [
@@ -120,17 +122,17 @@ export async function ServicesListing({ locale }: { locale: Locale }) {
           headline={t("howTitle")}
           items={[
             {
-              icon: <Icon name="chat-bubble" size={24} className="block" />,
+              icon: <Icon name={icons.services_how_1} size={24} className="block" />,
               title: t("how1Title"),
               description: t("how1Body"),
             },
             {
-              icon: <Icon name="home-simple" size={24} className="block" />,
+              icon: <Icon name={icons.services_how_2} size={24} className="block" />,
               title: t("how2Title"),
               description: t("how2Body"),
             },
             {
-              icon: <Icon name="headset" size={24} className="block" />,
+              icon: <Icon name={icons.services_how_3} size={24} className="block" />,
               title: t("how3Title"),
               description: t("how3Body"),
             },

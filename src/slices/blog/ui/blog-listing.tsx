@@ -80,8 +80,9 @@ export async function BlogListing({ locale }: { locale: Locale }) {
     listPosts(locale),
     getGlobals(locale),
   ]);
-  // The `reading_time` site icon (Settings → "Site icons", ADR 0034 amendment 2).
-  const readingTimeIcon = (globals?.icons ?? SITE_ICON_DEFAULTS).reading_time;
+  // Site icons (Settings → "Site icons", ADR 0034 amendment 2).
+  const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
+  const readingTimeIcon = icons.reading_time;
   // `listPosts` is already newest-first (`published_at desc`). Posts without a slug can't link.
   const journal = posts.filter((p) => p.id !== featured?.id && p.slug);
 
@@ -91,7 +92,7 @@ export async function BlogListing({ locale }: { locale: Locale }) {
         <PageHeadSearch
           placeholder={t("searchPlaceholder")}
           label={t("searchLabel")}
-          icon={<Icon name="search" size={20} />}
+          icon={<Icon name={icons.search} size={20} />}
         />
       </PageHead>
       <CategoryFilterProvider pageSize={JOURNAL_PAGE_SIZE}>
