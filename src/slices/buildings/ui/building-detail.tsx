@@ -19,6 +19,7 @@ import {
   UnitCardGrid,
   type UnitCardSpec,
 } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 import { type ApartmentSummary, listByBuilding } from "@slices/apartments/contract";
 import { getBuildingBySlug } from "../server/queries";
 
@@ -101,7 +102,7 @@ import { getBuildingBySlug } from "../server/queries";
  * only, left) + its new `AmenityGrid` (hairline 4→2→1 grid of icon + label cells), replacing the
  * old amenities string in `bodyHtml()` and the `.mk .am-grid`/`.am` rules in `PAGE_STYLE`. Not
  * `BenefitCards`/`IconFeatureGrid`/`ChipBar` (see `AmenityGrid`'s docstring). The glyph is the
- * same generic check, now a JSX `AMENITY_ICON` (`aria-hidden` added). Rendered
+ * amenity's own `icon` via `core/ui` `<Icon>` (`amenityIcon`; `check-circle` if unset). Rendered
  * between the apartments grid and the FAQ (order unchanged); static. One visible change from
  * `SectionHead`: the eyebrow-less title drops `h2.section-title`'s `14px` top margin, so it sits
  * 14px higher (consistency with every other section head).
@@ -146,53 +147,19 @@ const CARD_SIZES = "(max-width: 680px) 100vw, (max-width: 980px) 50vw, 394px";
 const GALLERY_LEAD_SIZES = "(max-width: 680px) 100vw, 582px";
 const GALLERY_SIZES = "(max-width: 680px) 50vw, 291px";
 
-/** Generic amenity glyph (the DB stores an icon key, but a single check reads cleanly
- *  across the whole grid and degrades gracefully until a per-key icon map is wired). */
-const AMENITY_ICON = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} aria-hidden>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M8.5 12.4l2.4 2.4 4.6-5" />
-  </svg>
-);
+/** Amenity glyph: the amenity's own `icon` (an Iconoir name, `core/ui` `<Icon>`, ADR 0034);
+ *  an amenity without one keeps the generic `check-circle`. `AmenityGrid` sizes (22px) and
+ *  tints (`accent-deep`) it. */
+const amenityIcon = (icon: string | null) => <Icon name={icon ?? "check-circle"} />;
 
-/** Apartment-card spec-row glyphs (bedrooms, beds, guests, size) — positional, always
- *  the same four, so plain consts rather than an icon-key map like the amenities grid.
- *  `UnitCard` sizes (16px) and tints (`accent-deep`) them. Same paths/attributes as the old
- *  HTML-string glyphs; no a11y attributes added (the old markup had none either — each
- *  chip's accessible hint is its `title`). */
-const SPEC_SVG = {
-  viewBox: "0 0 24 24",
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 1.6,
-  strokeLinecap: "round",
-  strokeLinejoin: "round",
-} as const;
+/** Apartment-card spec-row glyphs (bedrooms, beds, guests, size) — positional, always the
+ *  same four, so fixed Iconoir names rather than a DB key. `UnitCard` sizes (16px) and tints
+ *  (`accent-deep`) them; each chip's accessible hint is its `title`. */
 const SPEC_ICONS = {
-  bedrooms: (
-    <svg {...SPEC_SVG}>
-      <rect x="5" y="3" width="12" height="18" rx="1" />
-      <path d="M14 12v.01" />
-    </svg>
-  ),
-  beds: (
-    <svg {...SPEC_SVG}>
-      <path d="M3 19v-7a2 2 0 012-2h14a2 2 0 012 2v7" />
-      <path d="M3 19h18M3 17v2M21 17v2" />
-      <path d="M7 10V7a1 1 0 011-1h3a1 1 0 011 1v3" />
-    </svg>
-  ),
-  guests: (
-    <svg {...SPEC_SVG}>
-      <circle cx="12" cy="8" r="3.2" />
-      <path d="M5 20c0-3.6 3.1-6.5 7-6.5s7 2.9 7 6.5" />
-    </svg>
-  ),
-  size: (
-    <svg {...SPEC_SVG}>
-      <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" />
-    </svg>
-  ),
+  bedrooms: <Icon name="house-rooms" />,
+  beds: <Icon name="bed" />,
+  guests: <Icon name="user" />,
+  size: <Icon name="maximize" />,
 } as const;
 
 interface BuildingLabels {
@@ -454,7 +421,7 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
        * column), `core/ui`'s `SectionHead` (title only, left) and its new `AmenityGrid` (see that
        * file's docstring for the reuse check), replacing the old `.mk` amenities string in
        * `bodyHtml()` and the `.mk .am-grid`/`.am` rules in `PAGE_STYLE`. Each cell's glyph is the
-       * generic `AMENITY_ICON` check. Rendered *outside* `.mk` (cascade-layers trap — see
+       * amenity's `icon` (`amenityIcon`). Rendered *outside* `.mk` (cascade-layers trap — see
        * `SpecStrip`'s docstring). No `Reveal` — static, like the apartments section above.
        * Omitted entirely when the building has no amenities.
        */}
@@ -462,7 +429,7 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
         <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
           <div className="mx-auto max-w-[1240px] px-[28px]">
             <SectionHead headline={L.amenities} />
-            <AmenityGrid items={detail.amenities.map((am) => ({ icon: AMENITY_ICON, label: am.label }))} />
+            <AmenityGrid items={detail.amenities.map((am) => ({ icon: amenityIcon(am.icon), label: am.label }))} />
           </div>
         </section>
       ) : null}

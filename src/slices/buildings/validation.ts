@@ -6,6 +6,7 @@
  * See docs/data-model.md → Slice buildings.
  */
 import { z } from "zod";
+import { iconKey } from "@core/validation/icon-key";
 import {
   contentStatus,
   latitude,
@@ -65,10 +66,11 @@ export const buildingFaqInput = z.object({
 });
 export type BuildingFaqInput = z.infer<typeof buildingFaqInput>;
 
-/** Amenity taxonomy (seeded set). */
+/** Amenity taxonomy (seeded set). `icon` is an Iconoir name (ADR 0034), rendered by the
+ *  building page's amenity grid. */
 export const amenityInput = z.object({
   slug,
-  icon: z.string().min(1).max(64),
+  icon: iconKey,
   group: z.string().max(64).optional(),
   // [T]
   label: tStr({ max: 80 }),

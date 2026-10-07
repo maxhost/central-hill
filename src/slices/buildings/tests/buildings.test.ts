@@ -91,6 +91,11 @@ test("accepts a valid amenity", () => {
   assert.equal(result.success, true);
 });
 
+test("rejects an amenity icon that is not an Iconoir name", () => {
+  const result = amenityInput.safeParse({ slug: "wifi", icon: "wifi-strong", label: "Wi-Fi" });
+  assert.equal(result.success, false);
+});
+
 test("accepts a valid building FAQ entry", () => {
   const result = buildingFaqInput.safeParse({
     building_id: CITY_ID,

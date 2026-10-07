@@ -183,6 +183,15 @@ prebuilt, `dynamicParams = true`) + `generateMetadata` with hreflang alternates.
 publish busts the listing via `revalidateBuildingList` (tag `building-list` + the localized
 `/buildings` paths).
 
+### Icons on `core/ui` `<Icon>` (ADR 0034)
+
+The detail page's amenity grid renders each amenity's own `icon` (an Iconoir name, now
+validated by the strict `iconKey` in `amenityInput`; `check-circle` when unset). The 8 seeded
+amenities were backfilled (`wifi`, `air-conditioner`, `elevator`, `cutlery`, `washing-machine`,
+`tv`, `key`, `city`). The apartment-card spec chips use fixed Iconoir names: `house-rooms`
+(bedrooms), `bed`, `user` (guests) and `maximize` (size). No route of this slice imports
+`mock.css` anymore.
+
 ## i18n
 
 UI chrome → `buildings` namespace in `messages/{en,pt,es,fr}.json` (all 4 authored).
