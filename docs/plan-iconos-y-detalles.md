@@ -1,0 +1,216 @@
+# Plan por sesiones: iconos (Iconoir) + detalle de blog y de guía
+
+**Creado:** 2026-10-06. **Estado:** en curso. Cada sesión es autocontenida: se puede hacer
+`/compact` o `/clear` entre sesiones. Para retomar, basta con decir "seguimos con la sesión N de
+`docs/plan-iconos-y-detalles.md`".
+
+Reglas que aplican a todas las sesiones (ver `CLAUDE.md` y la memoria del proyecto):
+- Sin commits ni push sin OK explícito; un commit por bloque.
+- Consistencia > fidelidad al mock: si un componente de `core/ui` ya cumple ese rol en otra
+  página, se copia su configuración.
+- Modo coordinador cuando convenga: agentes en worktree que **nunca** commitean, máximo 2–4 a la
+  vez; el coordinador junta, verifica, reinicia `pnpm dev -p 3011` y pide revisión.
+- Verificación: `pnpm typecheck`, `pnpm lint`, tests del slice (`npx tsx --test …`), capturas
+  Playwright a 1440 y 390 px contra la referencia (mock o "antes").
+- Node 22.x es el runtime del repo (en local hoy hay 24.20.0; es una diferencia de entorno).
+
+---
+
+## Contexto (resultado de la investigación del 2026-10-06)
+
+### Imágenes rotas en R2
+67 de 151 `media_asset` (todos creados el **2026-10-03**, las fotos Pexels de las guías) dan 404
+en `R2_PUBLIC_BASE_URL/<r2_key>`. Existen en el bucket bajo `central-hill-media/<r2_key>`: se
+subieron cuando el endpoint local llevaba ese sufijo. Se ve, por ejemplo, en
+`/en/guides/lisbon/beaches-near-lisbon` (hero y cabeceras de sección vacías).
+
+### Iconos: situación actual (tres sistemas)
+- **A. Clases `iconoir-*`** desde el CDN (jsDelivr, sin versión fija), cargadas vía el
+  `@import` de `src/app/mock.css` (lo importan 7 rutas: about, blog, buildings, guests, guides,
+  owners, services) y vía un `<link>` en `services/ui/service-detail.tsx`.
+  - Nombre desde la DB: `guest-page.tsx` (`iconClass(icon_key)`); `service-card.tsx`
+    (`service_category.icon`).
+  - Nombre fijo en el código: `about-page.tsx` (ignora el `icon_key` de `audiences`),
+    `services-listing.tsx`, `guide-card.tsx`, `guides-listing.tsx`, `recommendation-card.tsx`,
+    `blog/.../post-meta.tsx`.
+  - En `core/ui`: `page-head.tsx` (`iconoir-search` fijo); `chip-bar.tsx` (`icon` es un
+    **string** de clase). `BenefitCards`, `PhotoFeatureGrid`, `IconFeatureGrid` y
+    `CertificationCards` reciben un `ReactNode`.
+- **B. Registro SVG** `src/slices/pages/ui/components/icon.tsx`: 27 claves, fallback `sparks`;
+  12 de ellas no son de Iconoir (dibujadas a mano).
+  - Nombre desde la DB: los benefits de Home (`blocks.tsx`), las assurances
+    (`services-carousel.tsx`), `guests-section.tsx`.
+  - Fijo por posición, **ignorando la DB**: `owners-page.tsx` (`WHY/SERVICES/DASHBOARD_ICON_KEYS`)
+    y `real-estate-page.tsx` (`PARTNER_ICON_KEYS`).
+- **C. SVG escritos a mano en el código**:
+  - Real Estate: `CAPABILITY_ICONS` / `ASSET_ICONS`, que ignoran el `icon_key` de la DB.
+  - Sprite de servicios: `service-icons.tsx` (`FACT_ICONS`, trazo 1.6).
+  - Buildings: `building-detail.tsx`, con un check genérico para las amenities (ignora
+    `amenity.icon`) más 4 `SPEC_ICONS`.
+  - Chrome: carousel, form-card, two-column-showcase, header, locale switcher, contact dialog,
+    owner-estimate-form, toast del admin.
+  - El de WhatsApp se queda: es el logo de la marca.
+
+### Opciones medidas
+- **CSS global de Iconoir en `globals.css`:** 2,2–2,9 MB sin comprimir (167–250 KB gzip). Se
+  cargaría en **todas** las páginas y en el admin, y bloquea el render. No tiene `@layer`, así
+  que pisa `hidden`/`flex` de Tailwind. Una clave que no existe pinta un cuadrado relleno.
+  **Descartado** por rendimiento.
+- **`iconoir-react`:** cada icono es un `"use client"`. Buscar por nombre (claves de la DB)
+  mete los 1.385 iconos en el cliente. **Descartado.**
+- **Elegido (pendiente de aceptar el ADR):** componente `core/ui/icon.tsx`,
+  `<Icon name="…" />`, server-only, generado desde los SVG de `iconoir/icons/regular`
+  (1.383 iconos 24×24, trazo 1.5, ~734 B por icono). El SVG va inline en el HTML estático.
+  Sin CSS, sin JS ni CDN. Unos 2–3 KB gzip por página. Valida el nombre y usa un fallback.
+  Los componentes cliente reciben el icono como `ReactNode`.
+
+### Datos que hay que corregir
+- `chart` no existe en Iconoir: pasa a `graph-up` (`seed-demo`, migraciones 0005–0007 de
+  Owners). Se arregla con datos o backfill; **no se editan migraciones**.
+- `spark` existe, pero es otro dibujo distinto de `sparks` (el que se ve hoy).
+- `pin` (de `FACT_ICONS`) es una chincheta: pasa a `map-pin`.
+- `home` del registro dibuja `home-simple`.
+- Owners y Real Estate empezarán a mostrar el `icon_key` de la DB: antes de activarlo, hacer
+  un backfill con los nombres que se ven hoy.
+
+### Mapeo de iconos sin equivalente exacto (a elegir a ojo)
+`trending-up` → `stat-up`/`graph-up` · `calendar-lines` → `calendar` · `bar-chart` →
+`stats-report` · `bell-alt` → `bell-notification` · `landmark` → `bank` · `trowel` → sin
+equivalente (`tools`/`hammer`) · `buildings` → `city` · Real Estate `development`/`portfolio`
+sin equivalente claro · dormitorios (puerta) sin equivalente · `lang` (bocadillo) →
+`language`/`chat-lines`.
+
+---
+
+## Sesión 0: arreglar las 67 imágenes rotas de R2 *(requiere OK: escribe en el bucket)*
+- **Objetivo:** que todas las `media_asset` respondan 200 en su URL pública.
+- **Pasos:**
+  1. Script de un solo uso (en el scratchpad, no en el repo), con `CopyObject` de
+     `central-hill-media/<key>` a `<key>` para los 67. No toca la DB.
+  2. Verificar con HEAD que los 151 assets dan 200.
+  3. Borrar las copias con prefijo (opcional, OK aparte). Incluye las 8 antiguas de
+     bairro-alto-view.
+- **Hecho cuando:** la guía `beaches-near-lisbon` muestra el hero y las cabeceras.
+- **Commit:** ninguno (es una operación de datos). Anotarlo en la memoria.
+
+## Sesión 1: ADR 0033 + componente `<Icon>` en `core/ui` (kernel)
+- **Objetivo:** dejar listo el sistema único, sin migrar páginas todavía.
+- **Pasos:**
+  1. Pasar el borrador de `docs/parqueado.md` a `docs/decisions/README.md`.
+     - **Número nuevo: 0034**, porque la 0033 ya está tomada ("Home's section components →
+       core/ui").
+     - Opción B (SVG inline en el servidor desde el paquete `iconoir`).
+     - Arreglar de paso el índice del README, al que le falta la 0033.
+  2. `pnpm add iconoir` (fijar versión; la investigada es 7.12.1).
+  3. Script `scripts/generate-icons.ts` que genera `src/core/ui/icons/iconoir-map.ts`
+     (`import "server-only"`; nombre → contenido SVG). Commitear el mapa generado o generarlo
+     en el build: decidirlo en el ADR.
+  4. `src/core/ui/icon.tsx`:
+     - API `<Icon name size? strokeWidth? className? title? />`, con `aria-hidden` por defecto;
+     - nombre inválido → `sparks` + `console.warn` en dev;
+     - exportar `ICON_NAMES` / `isIconName`.
+  5. `core/validation/primitives.ts` `iconKey`: validar contra `ICON_NAMES`.
+  6. Tests: nombres válidos/inválidos y fallback.
+  7. Verificar que el mapa **no** llega al cliente: `pnpm build` y grep de un path de icono en
+     `.next/static`. Medir el tamaño del bundle del servidor.
+- **Hecho cuando:** `<Icon name="sparks" />` se renderiza en una página de prueba y el mapa no
+  aparece en los chunks del cliente.
+- **Commits:** ADR · dependencia + generador + componente + validación.
+
+## Sesión 2: migrar iconos, lote 1 (las páginas con iconos desde la DB)
+- **Páginas:** Home (registro B), Guests (A), Services listing + detail (A + sprite C), About (A).
+- **Pasos:**
+  1. Reemplazar `iconClass` / `<i class="iconoir-…">` / `<Icon>` del registro / el sprite de
+     servicios por `core/ui` `<Icon>`.
+  2. Fijar el tamaño con `size` (no `text-*`).
+  3. Quitar el `<link>` de Iconoir de `service-detail.tsx` y el `ICONOIR_CSS`.
+  4. `FACT_ICONS`: mapear a nombres de Iconoir. `pin` → `map-pin`: migración de datos en el
+     seed y en el JSON `detail`.
+  5. About: leer el `icon_key` de `audiences` en vez de los fijos.
+  6. Capturas antes/después a 1440, 980 y 390 px. Revisar el trazo (1.5) y el tamaño.
+- **Modo:** se puede repartir en 2 agentes en worktree (pages / services).
+- **Commits:** uno por página.
+
+## Sesión 3: migrar iconos, lote 2 + datos + adiós a `mock.css`
+- **Páginas:**
+  - Owners y Real Estate (leer `icon_key` de la DB; backfill previo con los nombres actuales).
+  - Buildings detail (`amenity.icon` + specs).
+  - Blog (`post-meta`), Guides (`guide-card`, `recommendation-card`, listing).
+  - `core/ui` `ChipBar` (`icon` pasa de string a `ReactNode`, ajustar los callers) y
+    `PageHead` (search).
+  - El chrome opcional: carousel, form-card, two-column-showcase, settings.
+- **Datos:**
+  - Backfill de `chart` → `graph-up`, `spark` → `sparks` donde corresponda.
+  - Revisar que todo `icon_key` de la DB sea válido antes de activar la validación estricta.
+- **Limpieza:**
+  - Quitar los 7 `import "../../mock.css"` de las rutas.
+  - Borrar `src/app/mock.css` cuando nada lo use.
+  - Borrar el registro `pages/ui/components/icon.tsx` y `service-icons.tsx`.
+  - Actualizar los docstrings de `core/ui` que mencionan `mock.css`.
+- **Admin (opcional, puede ir en sesión aparte):** selector de iconos con vista previa en
+  `category-form`, en los campos de los esquemas de pages y en el editor de servicios.
+- **Hecho cuando:** `grep -r "iconoir-" src` solo encuentra el generador y el mapa, no hay CDN y
+  ninguna ruta importa `mock.css`.
+- **Commits:** uno por página/bloque + la limpieza.
+
+## Sesión 4: mocks del detalle de blog y de guía
+- **Objetivo:** `mock/blog-post.html` y `mock/guide-detail.html`, aprobados por el owner.
+- **Base:** los estilos y bloques de `mock/service-detail.html` (mismo esqueleto: título,
+  galería, dos columnas con lateral fijo, bloques, cierre, relacionados). Los iconos son de
+  Iconoir.
+- **Blog post:**
+  - `DetailTitle`: breadcrumb Home/Blog/Categoría, eyebrow = categoría, h1, tagline = extracto,
+    meta = autor · fecha · lectura.
+  - Portada con una foto (mosaic `n1`).
+  - Dos columnas: a la izquierda el artículo (prosa de 68ch, encabezados con la tipografía de
+    los bloques); a la derecha, un lateral fijo con "En este artículo" (índice de los h2/h3
+    del body) + el CTA del post.
+  - Cierre con `NewsletterSignup` (igual que el listado).
+  - Relacionados con `SectionHead` + `JournalCard` (la tarjeta del listado).
+- **Guía:**
+  - `DetailTitle`: breadcrumb Home/Guides/Ciudad, eyebrow = ciudad, h1, intro.
+  - Mosaic con el hero + las imágenes de sección.
+  - Dos columnas: a la izquierda un bloque por sección (texto, imagen, "Local tip" como
+    callout, rejilla de lugares con la tarjeta del listado `RecommendationCard`); a la derecha,
+    un lateral fijo con "En esta guía" (índice de secciones con anclas) + un CTA de
+    alojamiento (buildings).
+  - Cierre con "Otras guías de {ciudad}" usando `GuideCard`.
+- **Decidir en la revisión:** el contenido exacto de cada lateral, el comportamiento del
+  índice en móvil y el texto de los CTA.
+- **Commit:** los mocks aprobados.
+
+## Sesión 5: componentes compartidos + montaje de los dos detalles
+- **Pasos:**
+  1. **El coordinador, primero, para evitar conflictos:**
+     - `core/ui` `TocList` (índice con anclas, resalta la sección activa, sticky dentro de
+       `StickyAside`);
+     - `core/ui` `Callout` (tip/nota; unifica el "Local tip" y el bloque `callout` del blog);
+     - ambos presentacionales, sin i18n.
+  2. **Dos agentes en worktree en paralelo:**
+     - **blog:** `blog-post.tsx` + restilizar `BodyRenderer` (ids en los headings para el
+       índice);
+     - **guía:** `guide-page.tsx` + la unificación `PlaceCard` → `RecommendationCard`.
+     - Ambos con `DetailTitle`, `MosaicGallery adaptive`, `DetailLayout`, `StickyAside`,
+       `ContentBlock`, i18n en los 4 idiomas y comparación con capturas contra su mock.
+  3. **El coordinador:** juntar, verificar, reiniciar dev y pedir revisión.
+- **Commits:** core/ui · blog · guía.
+
+## Sesión 6: limpieza final y docs
+- Borrar el código muerto detectado:
+  - `apartments/ui/building-apartments.tsx` + `components/apartment-card.tsx` (nadie los usa);
+  - `PostCard` / `PlaceCard` si quedan sin uso tras la sesión 5.
+- Actualizar `docs/parqueado.md` (quitar el borrador de iconos), la memoria de progreso y
+  `.glados/architecture/*`:
+  - ambigüedad de los iconos resuelta;
+  - `mock.css` eliminado;
+  - las páginas de detalle con componentes.
+- Revisar de nuevo todas las rutas públicas buscando restos del mock (el mismo método que la
+  auditoría del 2026-10-06).
+
+---
+
+## Fuera de este plan (anotado)
+- 16 tests unitarios desfasados respecto a los esquemas del admin (tarea recomendada para
+  GLaDOS).
+- Formulario de consulta de servicios sin fecha/huéspedes (slice leads).
+- Fátima sin rating; Babysitting sin "/ hour".
