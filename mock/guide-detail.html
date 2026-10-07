@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Central Hill — Guide Detail (design preview)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/iconoir/css/iconoir.css">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+  /* =====================================================================
+     Guide detail — the service-detail skeleton (mock/service-detail.html)
+     applied to a city guide. Fixed blocks, in order:
+       1 title block (DetailTitle) · 2 gallery (MosaicGallery adaptive, n4:
+         hero + section images)
+       3 [one block per guide section | sticky aside: "In this guide" TOC
+         + accommodation CTA]
+         section: eyebrow nº · h2 · body · image · Local tip (Callout)
+                  · places (RecommendationCard grid) · optional CTA
+       4 other guides in the city (SectionHead + GuideCard, as on the listing)
+     Every rule from service-detail keeps its values; new rules are marked NEW.
+     All colours are kernel variables — no raw palette values.
+     ===================================================================== */
+
+  /* 1 · title block — = service-detail .svc-top */
+  .svc-top{padding-top:34px;padding-bottom:28px}
+  .crumbs{font-size:13px;color:var(--ink-soft);margin-bottom:26px}
+  .crumbs a:hover{color:var(--accent-deep);text-decoration:underline}
+  .crumbs span{margin:0 8px;opacity:.55}
+  .svc-top .eyebrow{display:block;margin-bottom:12px}
+  .svc-top h1{font-size:clamp(36px,5vw,60px);line-height:1.04;max-width:20ch}
+  .svc-top .tagline{font-size:18px;color:var(--ink-soft);max-width:60ch;margin-top:16px;line-height:1.6}
+  .meta-line{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;margin-top:22px;font-size:14px;color:var(--ink)}
+  .meta-line .dot{width:3px;height:3px;border-radius:50%;background:var(--ink-soft);opacity:.6}
+  .meta-line .tag{display:inline-flex;align-items:center;gap:7px;color:var(--ink-soft)}
+  .meta-line .tag i{font-size:16px;color:var(--accent-deep)}
+
+  /* 2 · gallery — = service-detail .svc-gallery.n4 */
+  .svc-gallery{position:relative;display:grid;gap:10px;border-radius:6px;overflow:hidden}
+  .svc-gallery img{width:100%;height:100%;object-fit:cover;display:block}
+  .svc-gallery.n4{grid-template-columns:2fr 1fr 1fr;grid-template-rows:260px 260px}
+  .svc-gallery.n4 .g0{grid-row:1/3}
+  .svc-gallery.n4 .g1{grid-column:2/4}
+  @media(max-width:780px){.svc-gallery.n4{grid-template-columns:1fr 1fr;grid-template-rows:240px 140px 140px}
+    .svc-gallery.n4 .g0{grid-row:auto;grid-column:1/3}.svc-gallery.n4 .g1{grid-column:auto}}
+
+  /* 3 · two-column body — = service-detail .svc-body / .block */
+  .svc-body{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:clamp(40px,6vw,90px);
+    padding-top:clamp(48px,6vw,80px);padding-bottom:clamp(72px,8vw,110px);align-items:start}
+  @media(max-width:980px){.svc-body{grid-template-columns:1fr}}
+  .block{padding:40px 0;border-top:1px solid var(--line);scroll-margin-top:96px}
+  .block:first-child{padding-top:0;border-top:0}
+  .block > .eyebrow{display:block;margin-bottom:10px}
+  .block h2{font-size:clamp(26px,3vw,34px);line-height:1.15;margin-bottom:22px}
+  .prose p{color:var(--ink-soft);font-size:17px;line-height:1.7;margin-bottom:16px;max-width:66ch}
+  .prose p:last-child{margin-bottom:0}
+
+  /* NEW · section image (ContentBlock media) */
+  .sec-img{margin-top:26px;border-radius:6px;overflow:hidden;aspect-ratio:16/9}
+  .sec-img img{width:100%;height:100%;object-fit:cover;display:block}
+
+  /* NEW · Callout (core/ui) — the guide "Local tip" AND the blog `callout` block */
+  .callout{display:flex;gap:14px;align-items:flex-start;background:color-mix(in srgb,var(--line) 30%,var(--bg));
+    border-left:2px solid var(--accent);border-radius:0 6px 6px 0;padding:20px 22px;margin-top:26px}
+  .callout > i{flex:none;font-size:20px;color:var(--accent-deep);margin-top:2px}
+  .callout b{display:block;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-deep);font-weight:600;margin-bottom:4px}
+  .callout p{font-size:15.5px;line-height:1.6;color:var(--ink)}
+
+  /* places — RecommendationCard (= what-to-do.html .pcard + .rec-type/.rec-loc), 2 columns */
+  .places{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin-top:30px}
+  @media(max-width:560px){.places{grid-template-columns:1fr}}
+  .rec-type{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-deep);font-weight:600}
+  .rec-type .price{color:var(--ink-soft);letter-spacing:.04em;margin-left:6px}
+  .pcard .pbody h3{margin-top:8px}
+  .pcard .pbody p{font-size:14px;color:var(--ink-soft);margin-top:8px}
+  .rec-loc{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-size:12.5px;letter-spacing:.04em;color:var(--ink-soft)}
+  .rec-loc i{font-size:15px;color:var(--accent-deep)}
+  /* NEW · footer row of the place card in the detail (phone + directions) */
+  .rec-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;padding-top:14px;
+    border-top:1px solid var(--line);font-size:13px;color:var(--ink-soft)}
+  .rec-foot .dir{font-weight:600;color:var(--accent-deep)}
+
+  .sec-cta{margin-top:30px}
+
+  /* sticky aside — = service-detail .book shell (StickyAside) */
+  .book{position:sticky;top:108px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:30px}
+  @media(max-width:980px){.book{position:static}}
+
+  /* NEW · TocList (core/ui) — same as the blog post */
+  .toc-h{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:600;
+    display:flex;align-items:center;gap:8px}
+  .toc-h i{font-size:16px;color:var(--accent-deep)}
+  .toc{list-style:none;margin-top:16px;border-left:1px solid var(--line)}
+  .toc a{display:flex;gap:10px;padding:8px 0 8px 18px;margin-left:-1px;border-left:2px solid transparent;
+    font-size:14.5px;line-height:1.45;color:var(--ink-soft);transition:.2s var(--ease)}
+  .toc a .n{font-family:var(--serif);color:var(--accent-deep);min-width:20px}
+  .toc a:hover{color:var(--ink)}
+  .toc a.is-active{color:var(--ink);font-weight:600;border-left-color:var(--accent)}
+
+  /* NEW · accommodation CTA under the TOC */
+  .aside-cta{margin-top:26px;padding-top:24px;border-top:1px solid var(--line)}
+  .aside-cta .ph{aspect-ratio:16/10;border-radius:6px;overflow:hidden;margin-bottom:18px}
+  .aside-cta .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .aside-cta .eyebrow{display:block;margin-bottom:8px}
+  .aside-cta h3{font-size:22px;font-weight:500;line-height:1.2}
+  .aside-cta p{font-size:14px;color:var(--ink-soft);line-height:1.55;margin-top:8px}
+  .aside-cta .btn{width:100%;justify-content:center;margin-top:18px}
+
+  /* NEW · mobile TOC — a collapsed disclosure above the sections (≤980px) */
+  .toc-m{display:none}
+  @media(max-width:980px){
+    .toc-m{display:block;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-bottom:34px}
+    .toc-m summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+    .toc-m summary::-webkit-details-marker{display:none}
+    .toc-m summary i.chev{font-size:18px;color:var(--ink-soft);transition:transform .2s var(--ease)}
+    .toc-m[open] summary i.chev{transform:rotate(180deg)}
+    .toc-m .toc{margin:0 20px 18px}
+    .book .toc-h,.book .toc{display:none}
+    .book .aside-cta{margin-top:0;padding-top:0;border-top:0}
+  }
+
+  /* 4 · other guides — = what-to-do.html .pcard.gcard (GuideCard) */
+  .gcard .ph::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(18,16,13,0) 38%,rgba(18,16,13,.42) 100%)}
+  .gcard .g-ico{font-size:28px;line-height:1;color:var(--accent-deep);display:inline-block;margin-bottom:14px}
+  .gcard .pbody h3{font-size:22px;margin-top:0}
+  .gcard .g-teaser{font-size:14.5px;color:var(--ink-soft);margin-top:10px;line-height:1.55}
+  .more-foot{margin-top:40px;text-align:center}
+
+  /* annotations — preview only */
+  .new{display:inline-block;margin-left:8px;font:600 9.5px var(--sans);letter-spacing:.12em;text-transform:uppercase;
+    color:var(--accent);border:1px dashed var(--accent);border-radius:3px;padding:2px 5px;vertical-align:middle}
+  i.new{font-size:9.5px !important;color:var(--accent) !important;font-style:normal}
+  body.clean .new{display:none}
+  .pv{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:60;display:flex;gap:4px;
+    background:var(--feature);padding:5px;border-radius:100px;box-shadow:0 10px 30px -12px rgba(0,0,0,.5)}
+  .pv button{border:0;background:transparent;color:var(--on-feature-soft);font:500 12.5px var(--sans);
+    padding:8px 16px;border-radius:100px;cursor:pointer}
+  .pv button[aria-pressed="true"]{background:var(--feature-accent);color:var(--feature)}
+</style>
+</head>
+<body data-theme="warm-editorial" data-page="Guide detail" data-nav="solid">
+
+<!-- NAV -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="home.html">Central<span>Hill</span></a>
+    <nav class="links">
+      <a href="owners.html">Owners</a><a href="buildings.html">Buildings</a><a href="real-estate.html">Real Estate</a>
+      <a href="guest.html">Guests</a><a href="about.html">About Us</a><a href="blog.html">Blog</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="buildings.html">Book Now</a>
+      <a class="btn btn-solid" href="owners.html">List Your Property →</a>
+    </div>
+    <button class="menu-btn" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<main>
+  <!-- 1 · TITLE BLOCK (DetailTitle) -->
+  <div class="wrap svc-top">
+    <div class="crumbs"><a href="home.html">Home</a><span>/</span><a href="what-to-do.html">Guides</a><span>/</span><a href="what-to-do.html">Lisbon</a></div>
+    <span class="eyebrow">Lisbon</span>
+    <h1>Beaches Near Lisbon</h1>
+    <p class="tagline">Portugal has more than 900km of coastline and around 300 sunny days a year — perfect whether you're chasing waves or doing absolutely nothing at all. Here's which stretch of sand suits which kind of day.</p>
+    <div class="meta-line">
+      <span class="tag"><i class="iconoir-sea-waves" aria-hidden="true"></i>6 areas</span>
+      <span class="dot"></span>
+      <span class="tag"><i class="iconoir-map-pin" aria-hidden="true"></i>11 places <i class="new">decide</i></span>
+    </div>
+  </div>
+
+  <!-- 2 · GALLERY (MosaicGallery adaptive, 4 photos: hero + 3 section images) -->
+  <div class="wrap">
+    <div class="svc-gallery n4">
+      <img class="g0" src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/f197c716-40c1-47a1-a7ab-e553bf7ad6ea/pexels-12228108.jpg" alt="A wide sandy beach on the coast near Lisbon">
+      <img class="g1" src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/10dc3618-ec82-44a6-87f9-3b661945dc1d/pexels-33987116.jpg" alt="Guincho beach and the Sintra hills">
+      <img class="g2" src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/e5bbf10c-a923-455a-8199-dd0c6af060c7/pexels-4846528.jpg" alt="Carcavelos beach">
+      <img class="g3" src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/bb05cf84-a057-4d5c-8416-08529b4fd820/pexels-31934689.jpg" alt="Clear water in the Arrábida natural park">
+    </div>
+  </div>
+
+  <!-- 3 · BODY: sections + sticky aside -->
+  <div class="wrap svc-body">
+    <div>
+      <!-- mobile only: collapsed TOC above the sections -->
+      <details class="toc-m">
+        <summary><span class="toc-h"><i class="iconoir-list" aria-hidden="true"></i>In this guide <i class="new">decide</i></span><i class="iconoir-nav-arrow-down chev" aria-hidden="true"></i></summary>
+        <ol class="toc">
+          <li><a href="#costa-da-caparica"><span class="n">01</span>Costa da Caparica</a></li>
+          <li><a href="#carcavelos"><span class="n">02</span>Carcavelos &amp; Oeiras</a></li>
+          <li><a href="#cascais"><span class="n">03</span>Cascais &amp; Estoril</a></li>
+          <li><a href="#guincho"><span class="n">04</span>Guincho</a></li>
+          <li><a href="#arrabida"><span class="n">05</span>Comporta &amp; Arrábida</a></li>
+          <li><a href="#water-sports"><span class="n">06</span>Water Sports</a></li>
+        </ol>
+      </details>
+
+      <!-- section 1: body + image + tip + places -->
+      <section class="block" id="costa-da-caparica">
+        <span class="eyebrow">01 <i class="new">decide</i></span>
+        <h2>Costa da Caparica</h2>
+        <div class="prose"><p>One of the best-known beach destinations near Lisbon — 15km of sand just across the river. Families head for São João and Rainha, groups for Castelo and Cabana do Pescador, and surfers for Cova do Vapor, CDS and Fonte da Telha.</p></div>
+        <div class="sec-img"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/fec42f59-6ad8-4a5c-b78e-74e9f722c735/pexels-30352308.jpg" alt="Costa da Caparica"></div>
+        <div class="callout"><i class="iconoir-light-bulb" aria-hidden="true"></i><div><b>Local tip</b><p>Irmão, Leblon and Clássico beach bars are excellent for sunset drinks.</p></div></div>
+        <div class="places">
+          <a class="pcard" href="#">
+            <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/880b3798-8de5-400c-8984-72ede3ad68ea/pexels-20079503.jpg" alt=""></div>
+            <div class="pbody">
+              <span class="rec-type">Beach</span>
+              <h3>São João Beach</h3>
+              <p>Best for families — wide, gentle sand with lifeguards and beach bars all summer.</p>
+              <span class="rec-loc"><i class="iconoir-map-pin" aria-hidden="true"></i>Almada · near Lisbon</span>
+              <div class="rec-foot"><span></span><span class="dir">Directions → <i class="new">decide</i></span></div>
+            </div>
+          </a>
+          <a class="pcard" href="#">
+            <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/d6da4935-dcbd-43af-a1d8-a897b7f03674/pexels-36527888.jpg" alt=""></div>
+            <div class="pbody">
+              <span class="rec-type">Beach</span>
+              <h3>Castelo Beach</h3>
+              <p>Best for groups and friends — lively beach bars right on the sand.</p>
+              <span class="rec-loc"><i class="iconoir-map-pin" aria-hidden="true"></i>Almada · near Lisbon</span>
+              <div class="rec-foot"><span></span><span class="dir">Directions →</span></div>
+            </div>
+          </a>
+          <a class="pcard" href="#">
+            <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/33c72fce-09e6-49b4-973f-0418e72b208b/pexels-7659108.jpg" alt=""></div>
+            <div class="pbody">
+              <span class="rec-type">Beach</span>
+              <h3>Cova do Vapor</h3>
+              <p>Best for surfers — consistent breaks at the mouth of the Tagus.</p>
+              <span class="rec-loc"><i class="iconoir-map-pin" aria-hidden="true"></i>Trafaria, Almada</span>
+              <div class="rec-foot"><span></span><span class="dir">Directions →</span></div>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- section 2 -->
+      <section class="block" id="carcavelos">
+        <span class="eyebrow">02</span>
+        <h2>Carcavelos &amp; Oeiras</h2>
+        <div class="prose"><p>The closest urban beaches to Lisbon — easy access, bars and restaurants right on the sand. Santo Amaro, Paço de Arcos and Torre suit families; Carcavelos itself is the pick for groups and surfers, with easy parking and a 20–30 minute train from Cais do Sodré.</p></div>
+        <div class="sec-img"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/e5bbf10c-a923-455a-8199-dd0c6af060c7/pexels-4846528.jpg" alt="Carcavelos"></div>
+        <div class="callout"><i class="iconoir-light-bulb" aria-hidden="true"></i><div><b>Local tip</b><p>We can book your surf lesson at Carcavelos directly — just ask your guest contact.</p></div></div>
+        <div class="places">
+          <a class="pcard" href="#">
+            <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/7210f81e-b214-44bc-a789-1fca5607874c/pexels-13062245.jpg" alt=""></div>
+            <div class="pbody">
+              <span class="rec-type">Beach</span>
+              <h3>Carcavelos Beach</h3>
+              <p>Best for surfers and groups — surf schools, beach bars and a direct train from Cais do Sodré.</p>
+              <span class="rec-loc"><i class="iconoir-map-pin" aria-hidden="true"></i>Carcavelos, Cascais</span>
+              <div class="rec-foot"><span></span><span class="dir">Directions →</span></div>
+            </div>
+          </a>
+          <a class="pcard" href="#">
+            <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/87acc1da-ba64-41b7-8bb8-7f28cc312b02/pexels-4321802.jpg" alt=""></div>
+            <div class="pbody">
+              <span class="rec-type">Beach</span>
+              <h3>Santo Amaro Beach</h3>
+              <p>Best for families — calm water and a promenade lined with cafés.</p>
+              <span class="rec-loc"><i class="iconoir-map-pin" aria-hidden="true"></i>Oeiras</span>
+              <div class="rec-foot"><span></span><span class="dir">Directions →</span></div>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- section 3: places with price tier + phone (as in the Eat guide) -->
+      <section class="block" id="cascais">
+        <span class="eyebrow">03</span>
+        <h2>Cascais &amp; Estoril</h2>
+        <div class="prose"><p>A little further out, quieter and family-friendly, with a seafront promenade linking the two towns. Poça, Rata and Conceição are the pick for families; Cascais marina has fresh fish and seafood, and Boca do Inferno is a dramatic spot for a walk.</p></div>
+        <div class="sec-img"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/4091bc13-83c4-45b6-ab3e-36a2510d0940/pexels-19328006.jpg" alt="Cascais"></div>
+        <div class="places">
+          <a class="pcard" href="#">
+            <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/4f1e1800-e2c2-4b8b-87f6-35d5caf058b8/pexels-34193707.jpg" alt=""></div>
+            <div class="pbody">
+              <span class="rec-type">Beach</span>
+              <h3>Praia da Poça</h3>
+              <p>Best for families — a small, sheltered beach on the Estoril promenade.</p>
+              <span class="rec-loc"><i class="iconoir-map-pin" aria-hidden="true"></i>Estoril, Cascais</span>
+              <div class="rec-foot"><span></span><span class="dir">Directions →</span></div>
+            </div>
+          </a>
+          <a class="pcard" href="#">
+            <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/4a5d77a3-90b0-4959-8c77-c22271bd5dc0/pexels-4869334.jpg" alt=""></div>
+            <div class="pbody">
+              <span class="rec-type">Restaurant<span class="price">· €€€</span> <i class="new">from the Eat guide</i></span>
+              <h3>Ramiro</h3>
+              <p>The freshest seafood in every variety — leave room for the famous prego at the end.</p>
+              <span class="rec-loc"><i class="iconoir-map-pin" aria-hidden="true"></i>Avenida Almirante Reis, 1</span>
+              <div class="rec-foot"><span>+351 21 885 1024</span><span class="dir">Directions →</span></div>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- section 4: text + image only -->
+      <section class="block" id="guincho">
+        <span class="eyebrow">04</span>
+        <h2>Guincho</h2>
+        <div class="prose"><p>Part of the Sintra-Cascais Natural Park, Guincho is for adventure — strong winds make it a famous surf and kitesurf spot. Bar do Guincho is the mythical stop for drinks or a full meal, and Ursa Beach, 11km on, was named one of the most beautiful in the world by the Michelin Guide.</p></div>
+        <div class="sec-img"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/10dc3618-ec82-44a6-87f9-3b661945dc1d/pexels-33987116.jpg" alt="Guincho"></div>
+      </section>
+
+      <!-- section 5 -->
+      <section class="block" id="arrabida">
+        <span class="eyebrow">05</span>
+        <h2>Comporta &amp; Arrábida</h2>
+        <div class="prose"><p>A small paradise a short drive away, with a microclimate, crystal-clear water and striking scenery. Figueirinha and Galapos are easy to reach with restaurants nearby; Galapinhos is harder to get to but exceptionally beautiful. The Tróia peninsula and Comporta add an oasis of quieter, more luxurious beaches.</p></div>
+        <div class="sec-img"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/bb05cf84-a057-4d5c-8416-08529b4fd820/pexels-31934689.jpg" alt="Arrábida"></div>
+        <div class="callout"><i class="iconoir-light-bulb" aria-hidden="true"></i><div><b>Local tip</b><p>Parking is scarce here — booking a transfer is worth it.</p></div></div>
+        <div class="places">
+          <a class="pcard" href="#">
+            <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/54b265bb-34e5-48c6-b7ee-d4051daeadd1/pexels-11670749.jpg" alt=""></div>
+            <div class="pbody">
+              <span class="rec-type">Beach</span>
+              <h3>Praia da Figueirinha</h3>
+              <p>Best for families — shallow, crystal-clear water with restaurants nearby.</p>
+              <span class="rec-loc"><i class="iconoir-map-pin" aria-hidden="true"></i>Arrábida, Setúbal</span>
+              <div class="rec-foot"><span></span><span class="dir">Directions →</span></div>
+            </div>
+          </a>
+          <a class="pcard" href="#">
+            <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/b1fac610-8ecd-41bf-92ff-bfd0a6458f72/pexels-26082688.jpg" alt=""></div>
+            <div class="pbody">
+              <span class="rec-type">Beach</span>
+              <h3>Galapinhos</h3>
+              <p>A hidden gem — harder to reach, but one of the most beautiful coves on the coast.</p>
+              <span class="rec-loc"><i class="iconoir-map-pin" aria-hidden="true"></i>Arrábida, Setúbal</span>
+              <div class="rec-foot"><span></span><span class="dir">Directions →</span></div>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <!-- section 6: tip + section CTA -->
+      <section class="block" id="water-sports">
+        <span class="eyebrow">06</span>
+        <h2>Water Sports</h2>
+        <div class="prose"><p>Carcavelos and Costa da Caparica are the easiest places to learn to surf, with schools for every level; Guincho and Ericeira are for more experienced surfers. For kitesurfing, head to Lagoa de Albufeira or the Fonte da Telha / Americano beaches. Stand-up paddle, bodyboard and jet-ski rentals are widely available too.</p></div>
+        <div class="sec-img"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/5cd92067-ae71-44cc-8a9d-d0856c4bcf0a/pexels-5231795.jpg" alt="Surfing near Lisbon"></div>
+        <div class="callout"><i class="iconoir-light-bulb" aria-hidden="true"></i><div><b>Local tip</b><p>Ask your guest contact to book surf lessons directly with us.</p></div></div>
+        <div class="sec-cta"><a class="btn btn-accent" href="#">Book a surf lesson → <i class="new">section cta</i></a></div>
+      </section>
+    </div>
+
+    <!-- sticky aside: TOC + accommodation CTA -->
+    <aside class="book" aria-label="In this guide">
+      <div class="toc-h"><i class="iconoir-list" aria-hidden="true"></i>In this guide</div>
+      <ol class="toc" data-toc>
+        <li><a href="#costa-da-caparica"><span class="n">01</span>Costa da Caparica</a></li>
+        <li><a href="#carcavelos"><span class="n">02</span>Carcavelos &amp; Oeiras</a></li>
+        <li><a href="#cascais"><span class="n">03</span>Cascais &amp; Estoril</a></li>
+        <li><a href="#guincho"><span class="n">04</span>Guincho</a></li>
+        <li><a href="#arrabida"><span class="n">05</span>Comporta &amp; Arrábida</a></li>
+        <li><a href="#water-sports"><span class="n">06</span>Water Sports</a></li>
+      </ol>
+      <div class="aside-cta">
+        <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/3624d279-e8e8-4ea0-ab9d-a62c632fda66/1.jpg" alt="A furnished Central Hill apartment in Lisbon"></div>
+        <span class="eyebrow">Stay in Lisbon <i class="new">decide</i></span>
+        <h3>Your base for the coast</h3>
+        <p>Furnished apartments in Bairro Alto and Chiado — 20 minutes from the train to the beaches.</p>
+        <a class="btn btn-accent" href="buildings.html">Browse apartments →</a>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 4 · OTHER GUIDES IN THE CITY (SectionHead + GuideCard) -->
+  <section class="alt">
+    <div class="wrap">
+      <div class="sec-head"><span class="eyebrow">Keep exploring</span><h2 class="section-title">More Lisbon guides</h2></div>
+      <div class="pf-grid">
+        <a class="pcard gcard" href="#">
+          <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/c62305d6-f593-4bda-af8d-7fd4515d06c3/pexels-19891046.jpg" alt=""></div>
+          <div class="pbody">
+            <i class="iconoir-bank g-ico" aria-hidden="true"></i>
+            <h3>Top Things to Do in Lisbon</h3>
+            <p class="g-teaser">Lisbon blends traditional heritage with striking modernism and progressive thinking — a rich history, amazing views, buzzing nightlife, beautiful beaches and a glorious year-round climate.</p>
+            <div class="view">View guide →</div>
+          </div>
+        </a>
+        <a class="pcard gcard" href="#">
+          <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/539e9731-4805-4907-9257-91097ab12d79/pexels-35554378.jpg" alt=""></div>
+          <div class="pbody">
+            <i class="iconoir-pizza-slice g-ico" aria-hidden="true"></i>
+            <h3>Where &amp; What to Eat in Lisbon</h3>
+            <p class="g-teaser">Portuguese gastronomy is rich, varied and heavily Mediterranean — the freshest fish and seafood, nature-fed beef, and some of the world's best wine. Here's where our team actually eats.</p>
+            <div class="view">View guide →</div>
+          </div>
+        </a>
+        <a class="pcard gcard" href="#">
+          <div class="ph"><img src="https://pub-9abd9259e8d44b439c0d61c790223db5.r2.dev/76543d9f-e05c-4212-aa9c-59810b3d04b2/pexels-29281154.jpg" alt=""></div>
+          <div class="pbody">
+            <i class="iconoir-binocular g-ico" aria-hidden="true"></i>
+            <h3>Secrets of Lisbon</h3>
+            <p class="g-teaser">Lisbon has become one of Europe's most-visited cities, and most of its best corners are no longer much of a secret. A handful of spots, though, still carry the city's authentic character.</p>
+            <div class="view">View guide →</div>
+          </div>
+        </a>
+      </div>
+      <div class="more-foot"><a class="btn btn-ghost" href="what-to-do.html">All Lisbon guides →</a></div>
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="f-toggle">Are you a guest or an owner? <a href="owners.html">Owner</a> &middot; <a href="guest.html">Guest</a></div>
+    <div class="f-grid">
+      <div>
+        <div class="brand">Central<span style="color:var(--feature-accent)">Hill</span></div>
+        <div class="f-contact">Call +351 910 075 725<br>info@centralhill.pt<br>WhatsApp +351 910 075 725</div>
+        <div class="f-social"><a href="#">f</a><a href="#">in</a><a href="#">ig</a></div>
+      </div>
+      <div><h4>For Owners</h4><ul><li><a href="owners.html">Earnings Estimate</a></li><li><a href="owners.html">Owner Services</a></li><li><a href="#">Owner Dashboard</a></li><li><a href="owners.html">Pricing &amp; Plans</a></li><li><a href="owners.html">List Your Property</a></li><li><a href="owners.html">Owner Testimonials</a></li></ul></div>
+      <div><h4>Guests &amp; Company</h4><ul><li><a href="buildings.html">Browse Apartments</a></li><li><a href="buildings.html">Buildings</a></li><li><a href="about.html">About Us</a></li><li><a href="blog.html">Blog</a></li><li><a href="about.html">Contact</a></li></ul></div>
+    </div>
+    <div class="f-bottom"><span>&copy; 2026 Central Hill Apartments &middot; Lisbon, Portugal</span><span>EN &middot; PT &middot; ES &middot; FR</span></div>
+  </div>
+</footer>
+
+<!-- preview-only: hide the annotations -->
+<div class="pv" role="group" aria-label="Preview">
+  <button data-clean aria-pressed="false">Hide notes</button>
+</div>
+<script>
+(function () {
+  var c = document.querySelector(".pv [data-clean]");
+  c.onclick = function () { c.setAttribute("aria-pressed", String(document.body.classList.toggle("clean"))); };
+  if (new URLSearchParams(location.search).get("clean")) { document.body.classList.add("clean"); c.setAttribute("aria-pressed", "true"); }
+
+  // TocList: highlight the section currently being read (the last one above 30% of the viewport)
+  var links = Array.prototype.slice.call(document.querySelectorAll("[data-toc] a"));
+  var secs = links.map(function (a) { return document.querySelector(a.getAttribute("href")); });
+  function update() {
+    var y = window.innerHeight * 0.3, idx = -1;
+    secs.forEach(function (s, i) { if (s && s.getBoundingClientRect().top <= y) idx = i; });
+    links.forEach(function (a, i) { a.classList.toggle("is-active", i === idx); });
+  }
+  window.addEventListener("scroll", update, { passive: true });
+  update();
+})();
+</script>
+<script src="assets/site.js"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # Plan por sesiones: iconos (Iconoir) + detalle de blog y de guía
 
-**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–3d hechas; sigue 4). Cada sesión es autocontenida: se puede hacer
+**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–4 hechas; sigue 5). Cada sesión es autocontenida: se puede hacer
 `/compact` o `/clear` entre sesiones. Para retomar, basta con decir "seguimos con la sesión N de
 `docs/plan-iconos-y-detalles.md`".
 
@@ -316,6 +316,16 @@ iconos de rol en Settings y About en una sesión aparte (la 3d).
   - la lupa del blog.
 
 ## Sesión 4: mocks del detalle de blog y de guía
+**✅ Aprobada el 2026-10-07:** `mock/blog-post.html` (post "Lisbon's Best
+Neighbourhoods…" + bloques de ejemplo de todos los tipos) y `mock/guide-detail.html` (guía "Beaches Near
+Lisbon"). Las etiquetas `decide` marcan lo que hay que cerrar en la revisión; el botón "Hide notes" las oculta.
+Decisiones de la revisión (todo lo marcado `decide` se queda como está en el mock):
+- CTA del lateral del blog: uno fijo para todos los posts ("See what your apartment could earn → Get a free
+  estimate", a Owners), editable desde el backoffice. Si el post tiene `cta_label`/`cta_url`, manda el del post.
+- CTA de alojamiento de la guía (foto + "Stay in Lisbon" + "Browse apartments →"): se queda, editable desde el
+  backoffice.
+- El resto se queda como en el mock: índice plegable en móvil, línea de teléfono/"Directions" en la tarjeta de
+  lugar, numeración 01…, firma del autor, meta de la guía y galería con las imágenes de sección.
 - **Objetivo:** `mock/blog-post.html` y `mock/guide-detail.html`, aprobados por el owner.
 - **Base:** los estilos y bloques de `mock/service-detail.html` (mismo esqueleto: título,
   galería, dos columnas con lateral fijo, bloques, cierre, relacionados). Los iconos son de
@@ -342,6 +352,8 @@ iconos de rol en Settings y About en una sesión aparte (la 3d).
 - **Commit:** los mocks aprobados.
 
 ## Sesión 5: componentes compartidos + montaje de los dos detalles
+- **Incluye:** los dos CTA de los laterales, editables en el backoffice (dónde guardarlos, p. ej. en settings o
+  en `page_content`, se decide al empezar la sesión, con un ADR si toca el kernel).
 - **Pasos:**
   1. **El coordinador, primero, para evitar conflictos:**
      - `core/ui` `TocList` (índice con anclas, resalta la sección activa, sticky dentro de
