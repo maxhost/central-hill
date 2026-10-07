@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { MediaImage } from "@core/media";
 import type { Locale } from "@core/db/columns";
+import { Icon } from "@core/ui/icon";
 import type { BuildingSummary } from "../../contract";
 
 const PLACEHOLDER_COVER = "/placeholders/building.svg";
@@ -52,7 +53,7 @@ export async function BuildingListingCard({
       <div className="relative aspect-[4/3] overflow-hidden">
         {building.isNew ? (
           <span className="absolute left-[14px] top-[14px] z-10 bg-accent px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-white">
-            ★ {t("new")}
+            <Icon name="star" size="1em" className="inline-block align-[-0.125em] [&_path]:fill-current" /> {t("new")}
           </span>
         ) : null}
         {building.cover ? (

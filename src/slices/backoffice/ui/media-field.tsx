@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { cn } from "@core/ui";
+import { UiIcon, cn } from "@core/ui";
 import type { AdminMediaPreview } from "../server/media-actions";
 import { reserveUpload, useMediaQueue } from "./media-queue";
 
@@ -217,7 +217,7 @@ export function MediaGalleryField({
                     aria-label={t("media.moveUp")}
                     className="rounded px-1.5 py-0.5 text-xs text-ink-soft hover:text-ink disabled:opacity-30"
                   >
-                    ↑
+                    <UiIcon name="arrow-up" size={14} />
                   </button>
                   <button
                     type="button"
@@ -226,7 +226,7 @@ export function MediaGalleryField({
                     aria-label={t("media.moveDown")}
                     className="rounded px-1.5 py-0.5 text-xs text-ink-soft hover:text-ink disabled:opacity-30"
                   >
-                    ↓
+                    <UiIcon name="arrow-down" size={14} />
                   </button>
                   <button
                     type="button"
@@ -235,7 +235,7 @@ export function MediaGalleryField({
                     aria-label={t("media.remove")}
                     className="rounded px-1.5 py-0.5 text-xs text-red-600 hover:text-red-700 disabled:opacity-30"
                   >
-                    ✕
+                    <UiIcon name="xmark" size={14} />
                   </button>
                 </div>
               </div>

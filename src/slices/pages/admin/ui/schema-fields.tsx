@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import { UiIcon } from "@core/ui";
 import {
   type AdminMediaPreview,
   Checkbox,
@@ -94,25 +96,24 @@ export function NodeField(props: RenderProps) {
               </span>
               <div className="flex items-center gap-1">
                 <ArrayBtn
+                  action="up"
                   disabled={i === 0}
                   onClick={() => onChange(path, swap(items, i, i - 1))}
-                  label="↑"
                 />
                 <ArrayBtn
+                  action="down"
                   disabled={i === items.length - 1}
                   onClick={() => onChange(path, swap(items, i, i + 1))}
-                  label="↓"
                 />
                 <ArrayBtn
+                  action="remove"
                   disabled={!canRemove}
-                  tone="danger"
                   onClick={() =>
                     onChange(
                       path,
                       items.filter((_, j) => j !== i),
                     )
                   }
-                  label="✕"
                 />
               </div>
             </div>
@@ -211,29 +212,37 @@ function swap<T>(arr: T[], a: number, b: number): T[] {
   return next;
 }
 
+const ARRAY_BTN = {
+  up: { icon: "arrow-up", label: "media.moveUp" },
+  down: { icon: "arrow-down", label: "media.moveDown" },
+  remove: { icon: "xmark", label: "media.remove" },
+} as const;
+
 function ArrayBtn({
-  label,
+  action,
   onClick,
   disabled,
-  tone,
 }: {
-  label: string;
+  action: keyof typeof ARRAY_BTN;
   onClick: () => void;
   disabled?: boolean;
-  tone?: "danger";
 }) {
+  const tb = useTranslations("backoffice");
+  const { icon, label } = ARRAY_BTN[action];
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
+      aria-label={tb(label)}
+      title={tb(label)}
       className={`rounded px-1.5 py-0.5 text-xs disabled:opacity-30 ${
-        tone === "danger"
+        action === "remove"
           ? "text-red-600 hover:text-red-700"
           : "text-ink-soft hover:text-ink"
       }`}
     >
-      {label}
+      <UiIcon name={icon} size={14} />
     </button>
   );
 }

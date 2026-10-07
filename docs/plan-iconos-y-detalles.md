@@ -1,6 +1,6 @@
 # Plan por sesiones: iconos (Iconoir) + detalle de blog y de guía
 
-**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–3 hechas; siguen 3b y 3c, luego 4). Cada sesión es autocontenida: se puede hacer
+**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–3b hechas; sigue 3c, luego 4). Cada sesión es autocontenida: se puede hacer
 `/compact` o `/clear` entre sesiones. Para retomar, basta con decir "seguimos con la sesión N de
 `docs/plan-iconos-y-detalles.md`".
 
@@ -201,6 +201,23 @@ con prefijo se dejan en el bucket (decisión del usuario).
 - **Commits:** uno por página/bloque + la limpieza.
 
 ## Sesión 3b: iconos de interfaz en Iconoir (enmienda al ADR 0034)
+**✅ Hecha el 2026-10-07** (enmienda en el ADR 0034). Cambios respecto a lo previsto:
+- `<UiIcon>` (`@core/ui`, también en el barrel) con 17 iconos (~1,2 KB gzip). Comparte el
+  `<svg>` exterior con `<Icon>` (`icons/icon-svg.tsx`).
+- En componentes server de las slices se usa `<Icon>` (header `user`, valoración, estrellas de
+  testimonios, "★ New"/"Featured"); `<UiIcon>` solo en cliente y en `core/ui`.
+- Props opcionales de icono: `ContactDialog.icon`, `LocaleSwitcher.icon`,
+  `TwoColumnShowcase.badgeIcon`. `PropertyCard.badge` pasa a `ReactNode`.
+- Admin: además de toast y nav-form, todos los ↑ ↓ ✕ de filas (body-editor, media-field,
+  schema-fields, detail-editor, building-form) y el ✓/✗ de la cola de subidas. Los botones sin
+  nombre accesible reciben `aria-label`/`title` con las claves ya existentes
+  `backoffice.media.moveUp/moveDown/remove` (sin claves nuevas).
+- Tamaños ajustados a ojo para igualar los glifos: cerrar 28 px, menú 20, estrellas de
+  testimonios 0,9 em, valoración 12 px. Alturas idénticas antes/después en 8 páginas a 1440 y 390.
+- Cambios visibles: el usuario del header pasa de relleno a contorno; globo `language`.
+- **Se quedan como texto:** las flechas tipográficas `→`/`←` de CTAs y enlaces "volver"
+  (son parte del texto), las ★ del admin de testimonios (una va dentro de `<option>`) y el
+  `+`→`×` en CSS de `FormAccordion`/`FaqAccordion`. Pasarlos también es decisión aparte.
 - **Por qué:** todo icono debe ser de Iconoir para que luego se pueda elegir desde el admin.
   Lo que queda dibujado a mano es interfaz, y varias piezas son componentes cliente, que no
   pueden importar `<Icon>` (server-only).

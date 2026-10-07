@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { ButtonLink } from "./button";
 import { cn } from "./cn";
 import { SectionHead } from "./section-head";
+import { UiIcon } from "./ui-icon";
 
 /**
  * Generic "Image Showcase" two-column section (ADR 0033): copy + compact bullet highlights +
@@ -58,6 +59,7 @@ export function TwoColumnShowcase({
   bullets,
   cta,
   badge,
+  badgeIcon,
   image,
   imagePosition = "right",
   tone = "default",
@@ -73,6 +75,8 @@ export function TwoColumnShowcase({
   cta?: TwoColumnShowcaseCta;
   /** Image's floating badge text, when it must differ from `cta.note` (defaults to it). */
   badge?: string;
+  /** Badge glyph (e.g. a server-rendered `<Icon>` from an `icon_key`); defaults to Iconoir `check`. */
+  badgeIcon?: ReactNode;
   /** Caller's own `<MediaImage>`/`<img>` (with its own fallback logic already applied). */
   image: ReactNode;
   /** Desktop column order only — mobile always stacks the image first (CSS-only, unchanged). */
@@ -119,7 +123,9 @@ export function TwoColumnShowcase({
           {image}
           {badgeText ? (
             <div className="absolute -bottom-5 -left-4 hidden max-w-[15rem] items-start gap-2.5 rounded-sm border border-line bg-surface px-5 py-4 shadow-xl sm:flex">
-              <CheckIcon className="mt-0.5 h-5 w-5 shrink-0 text-accent-deep" />
+              <span className="mt-0.5 shrink-0 text-accent-deep [&_svg]:h-5 [&_svg]:w-5">
+                {badgeIcon ?? <UiIcon name="check" size={20} />}
+              </span>
               <span className="text-sm leading-snug text-ink">{badgeText}</span>
             </div>
           ) : null}
@@ -137,26 +143,4 @@ export function TwoColumnShowcase({
   }
 
   return <section className={cn("py-[clamp(72px,10vw,150px)]", toneClass)}>{content}</section>;
-}
-
-/**
- * Fixed check glyph for the floating reassurance badge — always the same icon regardless of
- * caller, so it's inlined here rather than depending on any slice's icon registry (Iconoir
- * `check`, same path as the `"check"` entry in `icons/svg.ts`).
- */
-function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <path d="M5 13L9 17L19 7" />
-    </svg>
-  );
 }

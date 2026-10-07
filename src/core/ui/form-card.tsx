@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "./cn";
+import { UiIcon } from "./ui-icon";
 
 /**
  * Editorial "form card" primitives — a raised card `<form>` with hairline-titled field groups,
@@ -240,7 +241,7 @@ export type FormSelectOption = string | { value: string; label: string };
  * - With a `placeholder`: a disabled empty first option, pre-selected unless the caller passes
  *   its own `value`/`defaultValue` (Real Estate's original behaviour).
  * - Without one: just the `options`; the browser selects the first unless told otherwise.
- * - `chevron`: `appearance-none` + an inline-SVG soft-ink chevron at the right (the select
+ * - `chevron`: `appearance-none` + a soft-ink `nav-arrow-down` `<UiIcon>` at the right (the select
  *   keeps the same 52px box as `FormInput`; the native menulist renders ~4px shorter and with an
  *   OS-dependent arrow). Off by default — Real Estate's selects stay native. */
 export function FormSelect({
@@ -278,18 +279,12 @@ export function FormSelect({
   return (
     <div className="relative">
       {select}
-      <svg
-        aria-hidden
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
+      <UiIcon
+        name="nav-arrow-down"
+        size={15}
         strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="pointer-events-none absolute inset-y-0 right-[14px] my-auto h-[15px] w-[15px] text-ink-soft"
-      >
-        <path d="M6 9l6 6 6-6" />
-      </svg>
+        className="pointer-events-none absolute inset-y-0 right-[14px] my-auto text-ink-soft"
+      />
     </div>
   );
 }
@@ -353,25 +348,12 @@ export function FormMessage({
         className,
       )}
     >
-      <svg
-        aria-hidden
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
+      <UiIcon
+        name={kind === "ok" ? "check" : "warning-circle"}
+        size={17}
         strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="mt-[2px] h-[17px] w-[17px] flex-none text-accent in-data-[form-tone=dark]:text-feature-accent"
-      >
-        {kind === "ok" ? (
-          <path d="M20 6L9 17l-5-5" />
-        ) : (
-          <>
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 8v4.5M12 16h.01" />
-          </>
-        )}
-      </svg>
+        className="mt-[2px] flex-none text-accent in-data-[form-tone=dark]:text-feature-accent"
+      />
       <span>{children}</span>
     </p>
   );
@@ -468,9 +450,7 @@ export function FormStepper({
         onClick={() => onChange(clamp(value - 1))}
         className={stepButtonClass}
       >
-        <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-[16px] w-[16px]">
-          <path d="M5 12h14" />
-        </svg>
+        <UiIcon name="minus" size={16} strokeWidth={2} />
       </button>
       <span aria-live="polite" className="flex-1 text-center font-sans text-[15px] font-semibold text-ink">
         {value}
@@ -483,9 +463,7 @@ export function FormStepper({
         onClick={() => onChange(clamp(value + 1))}
         className={stepButtonClass}
       >
-        <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="h-[16px] w-[16px]">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
+        <UiIcon name="plus" size={16} strokeWidth={2} />
       </button>
       {name ? <input type="hidden" id={id} name={name} value={value} readOnly /> : null}
     </div>

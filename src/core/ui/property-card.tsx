@@ -27,8 +27,8 @@ export function PropertyCard({
   name: string;
   /** Pre-joined "X apartments · Y guests" — i18n stays in the composer. */
   meta: string;
-  /** Pre-translated "★ Featured" label — omitted entirely when absent. */
-  badge?: string;
+  /** Pre-translated "Featured" label, optionally led by a star icon — omitted entirely when absent. */
+  badge?: ReactNode;
   /** Pre-translated "View" label. */
   viewLabel: string;
 }) {

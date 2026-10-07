@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { UiIcon } from "@core/ui";
 import {
   AdminButton,
   AdminCard,
@@ -539,14 +540,18 @@ export function BuildingForm({
                   <AdminButton
                     onClick={() => moveFaq(index, -1)}
                     disabled={index === 0}
+                    aria-label={tb("media.moveUp")}
+                    title={tb("media.moveUp")}
                   >
-                    ↑
+                    <UiIcon name="arrow-up" size={16} />
                   </AdminButton>
                   <AdminButton
                     onClick={() => moveFaq(index, 1)}
                     disabled={index === state.faq.length - 1}
+                    aria-label={tb("media.moveDown")}
+                    title={tb("media.moveDown")}
                   >
-                    ↓
+                    <UiIcon name="arrow-down" size={16} />
                   </AdminButton>
                   <AdminButton
                     variant="danger"

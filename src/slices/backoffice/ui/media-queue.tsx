@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { cn } from "@core/ui";
+import { UiIcon, cn } from "@core/ui";
 import { AdminButton } from "./form";
 import type { AdminMediaPreview } from "../server/media-actions";
 import { finalizeAdminUpload, presignAdminUpload } from "../server/media-actions";
@@ -250,13 +250,19 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
                         i.status !== "done" && i.status !== "failed" && "text-ink-soft",
                       )}
                     >
-                      {i.status === "done"
-                        ? `✓ ${t("media.statusDone")}`
-                        : i.status === "failed"
-                          ? `✗ ${t("media.statusFailed")}`
-                          : i.status === "uploading"
-                            ? `${i.progress}%`
-                            : t("media.statusQueued")}
+                      {i.status === "done" ? (
+                        <>
+                          <UiIcon name="check" size={14} className="inline-block align-[-0.125em]" /> {t("media.statusDone")}
+                        </>
+                      ) : i.status === "failed" ? (
+                        <>
+                          <UiIcon name="xmark" size={14} className="inline-block align-[-0.125em]" /> {t("media.statusFailed")}
+                        </>
+                      ) : i.status === "uploading" ? (
+                        `${i.progress}%`
+                      ) : (
+                        t("media.statusQueued")
+                      )}
                     </span>
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { UiIcon } from "@core/ui";
 import {
   AdminButton,
   Field,
@@ -71,6 +72,7 @@ export function BodyEditor({
   onPreview: (preview: AdminMediaPreview | null) => void;
 }) {
   const t = useTranslations("blog");
+  const tb = useTranslations("backoffice");
 
   const update = (i: number, patch: Record<string, unknown>) =>
     onChange(
@@ -105,18 +107,27 @@ export function BodyEditor({
                 variant="ghost"
                 onClick={() => move(i, -1)}
                 disabled={i === 0}
+                aria-label={tb("media.moveUp")}
+                title={tb("media.moveUp")}
               >
-                ↑
+                <UiIcon name="arrow-up" size={16} />
               </AdminButton>
               <AdminButton
                 variant="ghost"
                 onClick={() => move(i, 1)}
                 disabled={i === value.length - 1}
+                aria-label={tb("media.moveDown")}
+                title={tb("media.moveDown")}
               >
-                ↓
+                <UiIcon name="arrow-down" size={16} />
               </AdminButton>
-              <AdminButton variant="danger" onClick={() => remove(i)}>
-                ✕
+              <AdminButton
+                variant="danger"
+                onClick={() => remove(i)}
+                aria-label={tb("media.remove")}
+                title={tb("media.remove")}
+              >
+                <UiIcon name="xmark" size={16} />
               </AdminButton>
             </div>
           </div>
@@ -309,6 +320,7 @@ function ListBlockFields({
   label: string;
   addLabel: string;
 }) {
+  const tb = useTranslations("backoffice");
   return (
     <div className="space-y-3">
       <Checkbox
@@ -331,8 +343,10 @@ function ListBlockFields({
               variant="danger"
               onClick={() => onItems(items.filter((_, idx) => idx !== i))}
               disabled={items.length <= 1}
+              aria-label={tb("media.remove")}
+              title={tb("media.remove")}
             >
-              ✕
+              <UiIcon name="xmark" size={16} />
             </AdminButton>
           </div>
         ))}

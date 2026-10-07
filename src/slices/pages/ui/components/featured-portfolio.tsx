@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { MediaImage } from "@core/media";
 import { ButtonLink, Carousel, PropertyCard, SectionHead, cn } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 import { getFeaturedBuildings } from "@slices/buildings/contract";
 
 /** How many featured buildings feed the carousel (three visible at a time). */
@@ -81,7 +82,13 @@ export async function FeaturedPortfolio({
         }
         name={b.name}
         meta={meta}
-        badge={b.isFeatured ? `★ ${t("portfolio.featured")}` : undefined}
+        badge={
+          b.isFeatured ? (
+            <>
+              <Icon name="star" size="1em" className="inline-block align-[-0.125em] [&_path]:fill-current" /> {t("portfolio.featured")}
+            </>
+          ) : undefined
+        }
         viewLabel={t("portfolio.view")}
       />
     );

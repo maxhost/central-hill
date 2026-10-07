@@ -7,6 +7,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { iconKey } from "@core/validation/icon-key";
 import { FALLBACK_ICON, ICON_NAMES, Icon, isIconName, resolveIconName } from "../icon";
 import { ICON_SVG } from "../icons/svg";
+import { UI_ICON_SVG, type UiIconName } from "../icons/ui-svg";
+import { UiIcon } from "../ui-icon";
 
 /**
  * `core/ui` `<Icon>` + the generated Iconoir map (ADR 0034). Pure, no DB. The local
@@ -60,4 +62,19 @@ test("iconKey accepts only existing iconoir names", () => {
   assert.equal(iconKey.safeParse("graph-up").success, true);
   assert.equal(iconKey.safeParse("chart").success, false);
   assert.equal(iconKey.safeParse("Map-Pin").success, false);
+});
+
+test("UI subset is a verbatim slice of the full map", () => {
+  for (const [name, inner] of Object.entries(UI_ICON_SVG)) {
+    assert.ok(isIconName(name), name);
+    assert.equal(inner, ICON_SVG[name as UiIconName], `re-run \`pnpm icons:generate\` (${name})`);
+  }
+});
+
+test("<UiIcon> renders the same markup as <Icon>", () => {
+  const props = { size: 16, strokeWidth: 2, className: "x" };
+  assert.equal(
+    renderToStaticMarkup(createElement(UiIcon, { name: "xmark", ...props })),
+    renderToStaticMarkup(createElement(Icon, { name: "xmark", ...props })),
+  );
 });

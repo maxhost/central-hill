@@ -2,6 +2,7 @@
 
 import { type ReactNode, useState } from "react";
 import { useTranslations } from "next-intl";
+import { UiIcon } from "@core/ui";
 import {
   AdminButton,
   type AdminMediaPreview,
@@ -695,7 +696,7 @@ function ItemControls({
         onClick={() => onMove(-1)}
         disabled={index === 0}
       >
-        ↑
+        <UiIcon name="arrow-up" size={16} />
       </AdminButton>
       <AdminButton
         variant="ghost"
@@ -704,7 +705,7 @@ function ItemControls({
         onClick={() => onMove(1)}
         disabled={index === count - 1}
       >
-        ↓
+        <UiIcon name="arrow-down" size={16} />
       </AdminButton>
       <AdminButton
         variant="danger"
@@ -713,7 +714,7 @@ function ItemControls({
         onClick={onRemove}
         disabled={!canRemove}
       >
-        ✕
+        <UiIcon name="xmark" size={16} />
       </AdminButton>
     </div>
   );

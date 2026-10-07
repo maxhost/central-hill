@@ -321,7 +321,7 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
         eyebrowBadge={
           detail.isNew ? (
             <span className="mr-3 inline-block bg-accent px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.13em] text-white">
-              ★ {L.new}
+              <Icon name="star" size="1em" className="inline-block align-[-0.125em] [&_path]:fill-current" /> {L.new}
             </span>
           ) : null
         }

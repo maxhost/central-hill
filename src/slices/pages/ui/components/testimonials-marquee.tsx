@@ -1,4 +1,6 @@
 import type { CSSProperties } from "react";
+import { cn } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 import { countryFlag } from "./country-flag";
 
 /**
@@ -96,13 +98,11 @@ function Card({ tm, ariaHidden }: { tm: GridItem; ariaHidden?: boolean }) {
 function Stars({ rating }: { rating: number }) {
   return (
     <span
-      className="my-4 flex gap-1 text-[2.625rem] leading-none text-accent"
+      className="my-4 flex h-[1em] items-center gap-[0.12em] text-[2.625rem] leading-none text-accent"
       aria-label={`${rating} / 5`}
     >
       {Array.from({ length: 5 }).map((_, i) => (
-        <span key={i} aria-hidden className={i < rating ? "" : "text-line"}>
-          ★
-        </span>
+        <Icon key={i} name="star" size="0.9em" className={cn("[&_path]:fill-current", i >= rating && "text-line")} />
       ))}
     </span>
   );

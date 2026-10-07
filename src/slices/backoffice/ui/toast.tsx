@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { cn } from "@core/ui";
+import { UiIcon, cn, type UiIconName } from "@core/ui";
 
 /**
  * Agnostic admin toast system (S12, backoffice slice). A single global
@@ -223,44 +223,19 @@ function ToastItem({
         aria-label="Dismiss"
         className="flex-none rounded p-0.5 text-current opacity-50 transition-opacity hover:opacity-100"
       >
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-        </svg>
+        <UiIcon name="xmark" size={16} strokeWidth={2} />
       </button>
     </div>
   );
 }
 
+const TOAST_ICON = {
+  success: "check-circle",
+  error: "warning-circle",
+  warning: "warning-triangle",
+  info: "info-circle",
+} as const satisfies Record<ToastVariant, UiIconName>;
+
 function ToastIcon({ variant }: { variant: ToastVariant }) {
-  const common = { viewBox: "0 0 24 24", width: 18, height: 18, fill: "none", stroke: "currentColor", strokeWidth: 1.8 } as const;
-  if (variant === "success") {
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M8.5 12.4l2.4 2.4 4.6-5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    );
-  }
-  if (variant === "error") {
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7.5v5.5M12 16.2v.2" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (variant === "warning") {
-    return (
-      <svg {...common}>
-        <path d="M12 4l8.5 15H3.5L12 4z" strokeLinejoin="round" />
-        <path d="M12 10v3.5M12 16.5v.2" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  return (
-    <svg {...common}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 11v5M12 8v.2" strokeLinecap="round" />
-    </svg>
-  );
+  return <UiIcon name={TOAST_ICON[variant]} size={18} strokeWidth={1.8} />;
 }

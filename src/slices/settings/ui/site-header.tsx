@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { ButtonLink, MobileDrawer, NavBar, type NavEntry } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 import { Link } from "@/i18n/navigation";
 import { AVANTIO_OWNERS_LOGIN_URL } from "../contract";
 import { getNav } from "../server/queries";
@@ -187,9 +188,7 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
               data-icon-btn
               className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface hover:text-ink"
             >
-              <svg viewBox="0 0 24 24" aria-hidden className="h-5 w-5 fill-current">
-                <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.42 0-8 2.69-8 6v2h16v-2c0-3.31-3.58-6-8-6z" />
-              </svg>
+              <Icon name="user" size={20} />
             </a>
             <ContactDialog
               variant="icon"

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
-import { cn } from "@core/ui";
+import { UiIcon, cn } from "@core/ui";
 
 /**
  * Language dropdown (header / footer). A compact trigger — globe icon + the *current*
@@ -26,11 +26,14 @@ export function LocaleSwitcher({
   current,
   label,
   tone = "ink",
+  icon,
 }: {
   current: string;
   label: string;
   /** `ink` for the light header, `bg` for the dark footer. */
   tone?: "ink" | "bg";
+  /** Trigger glyph (e.g. a server-rendered `<Icon>`); defaults to Iconoir `language`. */
+  icon?: ReactNode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -67,22 +70,9 @@ export function LocaleSwitcher({
         onClick={() => setOpen((v) => !v)}
         className={cn("inline-flex h-9 items-center gap-1.5 transition-colors", trigger)}
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} className="h-[18px] w-[18px]" aria-hidden>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M3 12h18" />
-          <path d="M12 3c2.8 2.4 4.2 5.5 4.2 9s-1.4 6.6-4.2 9c-2.8-2.4-4.2-5.5-4.2-9S9.2 5.4 12 3z" />
-        </svg>
+        {icon ?? <UiIcon name="language" size={18} />}
         <span className="text-xs font-medium uppercase tracking-[0.1em]">{current.toUpperCase()}</span>
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          aria-hidden
-          className={cn("h-3 w-3 transition-transform", open && "rotate-180")}
-        >
-          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <UiIcon name="nav-arrow-down" size={12} strokeWidth={2} className={cn("transition-transform", open && "rotate-180")} />
       </button>
 
       {open ? (

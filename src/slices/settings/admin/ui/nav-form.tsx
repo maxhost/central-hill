@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { UiIcon } from "@core/ui";
 import {
   AdminButton,
   AdminCard,
@@ -240,8 +241,10 @@ function LocationEditor({
                       variant="danger"
                       onClick={() => removeChild(i, j)}
                       disabled={pending}
+                      aria-label={tb("media.remove")}
+                      title={tb("media.remove")}
                     >
-                      ✕
+                      <UiIcon name="xmark" size={16} />
                     </AdminButton>
                   </div>
                 ))}

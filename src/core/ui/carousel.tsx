@@ -1,6 +1,7 @@
 "use client";
 
 import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { UiIcon } from "./ui-icon";
 
 /** `gap-5` (services' tighter track) or `gap-7` (portfolio's wider track) — literal Tailwind
  * classes so the JIT scanner can see them (never built from the prop value at runtime). */
@@ -143,9 +144,7 @@ export function Carousel({
             aria-label={prevLabel}
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-ink disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:border-line"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-              <path d="M15 6l-6 6 6 6" />
-            </svg>
+            <UiIcon name="nav-arrow-left" size={20} />
           </button>
           <button
             type="button"
@@ -154,9 +153,7 @@ export function Carousel({
             aria-label={nextLabel}
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-ink disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:border-line"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">
-              <path d="M9 6l6 6-6 6" />
-            </svg>
+            <UiIcon name="nav-arrow-right" size={20} />
           </button>
         </div>
       ) : null}
@@ -190,18 +187,7 @@ function TrackButton({
         side === "left" ? "left-3" : "right-3"
       }`}
     >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-5 w-5"
-        aria-hidden="true"
-      >
-        <path d={side === "left" ? "M15 6l-6 6 6 6" : "M9 6l6 6-6 6"} />
-      </svg>
+      <UiIcon name={side === "left" ? "nav-arrow-left" : "nav-arrow-right"} size={20} />
     </button>
   );
 }

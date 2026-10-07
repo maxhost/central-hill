@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { UiIcon } from "@core/ui";
 
 /** Copy for the whole widget — plain props for now (i18n `settings.footer.newsletter.*`);
  *  will move to the backoffice once this section is wired to a real destination. */
@@ -109,9 +110,7 @@ export function FooterNewsletter({ labels }: { labels: FooterNewsletterLabels })
               aria-label={labels.close}
               className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface hover:text-ink"
             >
-              <span aria-hidden className="text-lg leading-none">
-                ✕
-              </span>
+              <UiIcon name="xmark" size={28} />
             </button>
             <h2 className="font-serif text-2xl text-ink">{labels.modalTitle}</h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-soft">{labels.modalIntro}</p>

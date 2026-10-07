@@ -12,6 +12,7 @@ import {
   FormRow,
   FormSelect,
   FormStepper,
+  UiIcon,
 } from "@core/ui";
 
 /**
@@ -89,7 +90,8 @@ export function OwnerEstimateForm({
       <div data-panel="1" hidden={step !== 1}>
         {badge ? (
           <span className="mb-4 inline-flex items-center gap-[0.5em] rounded-full bg-accent px-[18px] py-[9px] text-[13px] leading-[1.5] font-bold uppercase tracking-[0.09em] text-white shadow-[0_10px_24px_-10px_color-mix(in_srgb,var(--color-accent)_75%,transparent)]">
-            ★ {badge}
+            <UiIcon name="star" size="1em" className="[&_path]:fill-current" />
+            {badge}
           </span>
         ) : null}
         <h3 className={headingClass}>{headline}</h3>
@@ -177,18 +179,12 @@ export function OwnerEstimateForm({
 
       <div data-panel="3" hidden={step !== 3}>
         <div className="pt-[18px] pb-1.5 text-center">
-          <svg
-            aria-hidden
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
+          <UiIcon
+            name="check"
+            size={46}
             strokeWidth={1.8}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="mb-[18px] inline-block h-[46px] w-[46px] rounded-full border border-line p-3 text-accent"
-          >
-            <path d="M20 6L9 17l-5-5" />
-          </svg>
+            className="mb-[18px] inline-block rounded-full border border-line p-3 text-accent"
+          />
           <h3 className="mb-2.5 text-[26px] leading-[1.5]">Request received</h3>
           <p className="text-[14.5px] leading-[1.6] text-ink-soft">
             Thank you — our team will review your property and get back to you within 48 hours with your

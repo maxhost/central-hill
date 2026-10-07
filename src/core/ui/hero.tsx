@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Container } from "./container";
 import { cn } from "./cn";
+import { UiIcon } from "./ui-icon";
 
 /**
  * Page hero (S9). A full-width media band with an overlaid editorial headline.
@@ -125,7 +126,7 @@ export function Hero({
       {eyebrow ? (
         eyebrowPill ? (
           <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] text-surface">
-            <span aria-hidden>★</span>
+            <UiIcon name="star" size="1em" className="[&_path]:fill-current" />
             {eyebrow}
           </span>
         ) : (

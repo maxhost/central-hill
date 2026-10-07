@@ -146,12 +146,7 @@ function RatingChip({ locale, rating }: { locale: Locale; rating: number }) {
 
   return (
     <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-surface/95 px-2.5 py-1 text-xs font-semibold text-ink backdrop-blur">
-      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-accent" aria-hidden="true">
-        <path
-          fill="currentColor"
-          d="M12 2.8l2.65 5.37 5.93.86-4.29 4.18 1.01 5.9L12 16.33l-5.3 2.78 1.01-5.9L3.42 9.03l5.93-.86L12 2.8z"
-        />
-      </svg>
+      <Icon name="star" size={12} className="text-accent [&_path]:fill-current" />
       {formatted}
     </span>
   );

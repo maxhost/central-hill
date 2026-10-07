@@ -4,6 +4,8 @@
  * shared chrome. Token values live in `app/globals.css` `@theme`.
  */
 export { cn } from "./cn";
+/** Client-safe interface icon (Iconoir subset: chevrons, close, menu, +/−, check, star…). Content icons (`icon_key`) use the server-only `@core/ui/icon` `<Icon>` (ADR 0034). */
+export { UiIcon, type UiIconName } from "./ui-icon";
 export { Container } from "./container";
 export { Section } from "./section";
 export { Eyebrow } from "./eyebrow";

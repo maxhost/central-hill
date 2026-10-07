@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ContactForm } from "@slices/leads/contract";
-import { cn } from "@core/ui";
+import { UiIcon, cn } from "@core/ui";
 
 /**
  * Contact entry point (client feedback B1). Mirrors LovelyStay: a contact option sits
@@ -25,6 +25,7 @@ export function ContactDialog({
   title,
   intro,
   variant = "link",
+  icon,
   source = "header-contact",
 }: {
   label: string;
@@ -36,6 +37,8 @@ export function ContactDialog({
    * `light` = white hairline pill for use over dark media (e.g. a hero image).
    */
   variant?: "link" | "button" | "icon" | "light";
+  /** `icon` variant's glyph (e.g. a server-rendered `<Icon>`); defaults to Iconoir `mail`. */
+  icon?: ReactNode;
   /** Lead source tag stored with the submission; defaults to the header trigger's own tag. */
   source?: string;
 }) {
@@ -76,17 +79,7 @@ export function ContactDialog({
         )}
       >
         {variant === "icon" ? (
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.6}
-            aria-hidden
-            className="h-5 w-5"
-          >
-            <rect x="3" y="5" width="18" height="14" rx="2" />
-            <path d="m3 7 9 6 9-6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          (icon ?? <UiIcon name="mail" size={20} />)
         ) : (
           label
         )}
@@ -115,9 +108,7 @@ export function ContactDialog({
                   aria-label="Close"
                   className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface hover:text-ink"
                 >
-                  <span aria-hidden className="text-lg leading-none">
-                    ✕
-                  </span>
+                  <UiIcon name="xmark" size={28} />
                 </button>
                 <h2 className="font-serif text-2xl text-ink">{title}</h2>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">{intro}</p>
