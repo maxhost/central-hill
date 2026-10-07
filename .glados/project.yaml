@@ -1,0 +1,197 @@
+# GLaDOS Project Quality Profile — Central Hill
+# Schema: GlaDOS packages/core/src/project-quality-profile.ts (version 1).
+# Every command below exists in this repo and was run on 2026-10-06 (see
+# .glados/architecture/existing-harness.md → Quality baseline).
+version: 1
+
+quality:
+  typecheck:
+    command: pnpm typecheck
+  lint:
+    command: pnpm lint
+  # `pnpm test` is a placeholder (`echo … && exit 0`) and is deliberately NOT used.
+  # This runs every slice suite with the per-slice command each slice README documents
+  # (`npx tsx --test src/slices/<slice>/tests/*.test.ts`), aggregated.
+  # BASELINE: 16/225 failing on 2026-10-06, pre-existing (same 16 at 3f3c5c5) —
+  # stale test fixtures vs. admin save schemas (e.g. buildings `booking_enabled`).
+  unit:
+    command: npx tsx --test 'src/slices/*/tests/*.test.ts'
+    timeoutMs: 300000
+  # Needs .env.local (DATABASE_URL, R2_PUBLIC_BASE_URL is asserted at build) and network
+  # access to Neon: generateStaticParams reads the DB at build time.
+  build:
+    command: pnpm build
+    timeoutMs: 900000
+
+sensitiveAreas:
+  # Authentication / authorization (Better Auth + staff_role RBAC)
+  - src/core/auth
+  - src/app/api/auth
+  - src/app/(admin)/admin/login
+  - src/app/(admin)/admin/forbidden
+  - src/app/(admin)/admin/(panel)/layout.tsx
+  - src/slices/backoffice
+  # Backoffice write paths (requireStaff-gated server actions)
+  - src/slices/*/admin/actions.ts
+  # Database schema & migrations (additive, forward-only — ADR 0010)
+  - drizzle
+  - drizzle.config.ts
+  - src/core/db
+  - src/core/*/schema.ts
+  - src/slices/*/schema.ts
+  - scripts/check-migration-order.ts
+  - scripts/fix-migration-ledger.ts
+  # Scripts that write to the configured database / R2
+  - scripts/create-admin.ts
+  - scripts/seed-*.ts
+  - scripts/backfill-*.ts
+  # Secrets / environment
+  - src/core/env
+  - .env.example
+  # Media storage (R2 presigned uploads, ingest, deletes)
+  - src/core/media/server
+  # Content translation write seam + publish/revalidation
+  - src/core/i18n/content-write.ts
+  - src/core/revalidate
+  # Personal data / GDPR consent (lead capture)
+  - src/slices/leads
+  - src/core/email
+  # Request routing, runtime and deploy configuration
+  - src/proxy.ts
+  - next.config.ts
+  - netlify.toml
+  - vercel.json
+
+architecture:
+  docs:
+    - .glados/project.md
+    - .glados/architecture/system-overview.md
+    - .glados/architecture/domain-map.md
+    - .glados/architecture/existing-harness.md
+    - CLAUDE.md
+    - docs/architecture.md
+    - docs/vertical-slices.md
+    - docs/data-model.md
+    - docs/conventions.md
+    - docs/decisions/README.md
+
+domains:
+  geography:
+    paths:
+      - src/slices/geography
+      - src/app/(admin)/admin/(panel)/cities
+    docs: [src/slices/geography/README.md]
+  buildings:
+    paths:
+      - src/slices/buildings
+      - src/app/[locale]/buildings
+      - src/app/(admin)/admin/(panel)/buildings
+    docs: [src/slices/buildings/README.md]
+  apartments:
+    paths:
+      - src/slices/apartments
+      - src/app/(admin)/admin/(panel)/apartments
+    docs: [src/slices/apartments/README.md]
+  blog:
+    paths:
+      - src/slices/blog
+      - src/app/[locale]/blog
+      - src/app/(admin)/admin/(panel)/posts
+      - src/app/(admin)/admin/(panel)/authors
+      - src/app/(admin)/admin/(panel)/blog-categories
+      - scripts/seed-blog.ts
+    docs: [src/slices/blog/README.md]
+  services:
+    paths:
+      - src/slices/services
+      - src/app/[locale]/services
+      - src/app/(admin)/admin/(panel)/services
+      - src/app/(admin)/admin/(panel)/service-categories
+      - scripts/seed-services.ts
+      - mock/service-detail.html
+      - mock/services.html
+    docs: [src/slices/services/README.md]
+  guides:
+    paths:
+      - src/slices/guides
+      - src/app/[locale]/guides
+      - scripts/seed-guides.ts
+    docs: [src/slices/guides/README.md]
+  testimonials:
+    paths:
+      - src/slices/testimonials
+      - src/app/(admin)/admin/(panel)/testimonials
+    docs: [src/slices/testimonials/README.md]
+  faq:
+    paths:
+      - src/slices/faq
+      - src/app/(admin)/admin/(panel)/faq
+    docs: [src/slices/faq/README.md]
+  pages:
+    paths:
+      - src/slices/pages
+      - src/app/[locale]/page.tsx
+      - src/app/[locale]/owners
+      - src/app/[locale]/real-estate
+      - src/app/[locale]/about
+      - src/app/[locale]/guests
+      - src/app/(admin)/admin/(panel)/pages
+    docs: [src/slices/pages/README.md]
+  leads:
+    paths:
+      - src/slices/leads
+      - src/app/(admin)/admin/(panel)/leads
+      - src/core/email
+    docs: [src/slices/leads/README.md]
+  settings:
+    paths:
+      - src/slices/settings
+      - src/app/(admin)/admin/(panel)/settings
+      - src/app/(admin)/admin/(panel)/navigation
+    docs: [src/slices/settings/README.md]
+  backoffice:
+    paths:
+      - src/slices/backoffice
+      - src/app/(admin)
+      - src/core/auth
+      - src/app/api/auth
+      - scripts/create-admin.ts
+    docs: [src/slices/backoffice/README.md]
+  seo:
+    paths:
+      - src/slices/seo
+      - src/core/seo
+      - src/app/sitemap.xml
+      - src/app/sitemaps
+      - src/app/robots.txt
+      - src/app/llms.txt
+      - src/app/llms-full.txt
+    docs: [src/slices/seo/README.md, docs/seo-i18n.md]
+  translation:
+    paths:
+      - src/slices/translation
+      - src/core/i18n
+      - src/i18n
+      - messages
+      - src/app/(admin)/admin/(panel)/translations
+    docs: [src/slices/translation/README.md, docs/seo-i18n.md]
+  media:
+    paths:
+      - src/core/media
+      - src/slices/media
+    docs: [docs/specs/r2-media-pipeline.md, docs/specs/r2-runbook.md]
+  design-system:
+    paths:
+      - src/core/ui
+      - src/app/globals.css
+      - src/app/mock.css
+      - mock
+    docs: [docs/design-system.md, docs/component-extraction-workflow.md, docs/mock-agent-contract.md]
+  persistence:
+    paths:
+      - src/core/db
+      - drizzle
+      - drizzle.config.ts
+      - scripts/check-migration-order.ts
+      - scripts/fix-migration-ledger.ts
+    docs: [docs/data-model.md, docs/specs/migration-journal-ordering-fix.md]

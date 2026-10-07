@@ -40,7 +40,8 @@ Thumbs.db
 
 # Local agent / workspace tooling (machine-local, may hold local config)
 .claude/
-.glados/
+# .glados/ is NOT ignored: it is versioned project metadata (GLaDOS quality profile +
+# knowledge) that GLaDOS reads from each task's Git base commit. Keep it public-safe.
 
 # Client material — NOT pushed to the public repo
 cliente-docs/
