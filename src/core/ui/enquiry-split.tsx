@@ -16,7 +16,7 @@ export type EnquiryContactLine = {
  * (34px gap) ≤980px. First built extracting Real Estate's "Ready to Explore a Partnership?"
  * (`#deal-enquiry`, SECTION 10 — the former `BODY_BOTTOM` raw markup in `real-estate-page.tsx`),
  * ported 1:1 from that page's `.mk`-scoped `.enquiry`/`.enquiry-intro`/`.contact-direct` rules
- * (old `PAGE_STYLE`, identical to `mock/real-estate.html`'s) plus `mock.css`'s inherited `.mk`
+ * (old `PAGE_STYLE`, identical to `mock/real-estate.html`'s) plus the old `mock.css`'s `.mk`
  * body rhythm (`line-height:1.6`), `section` (`padding:clamp(72px,10vw,150px) 0;
  * scroll-margin-top:84px`), `.wrap` (1240px/28px), `h2` and `.lede`. The title + lede are now
  * `SectionHead` (`flush`), replacing the original's slightly smaller `clamp(30px,3.6vw,46px)` title
@@ -41,8 +41,7 @@ export type EnquiryContactLine = {
  * Purely presentational: no i18n, no fetching — every string arrives pre-translated. `id` lands
  * on the `<section>` (in-page CTAs anchor to it; `scroll-mt-[84px]` clears the fixed nav). Sets
  * `line-height:1.6` on the section, which the lede, contact block (overridden to 1.9) and the
- * form controls inherit. MUST render **outside** any `.mk`-scoped subtree (Lesson 1 in
- * `docs/component-extraction-workflow.md`).
+ * form controls inherit.
  */
 export function EnquirySplit({
   id,

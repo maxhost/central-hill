@@ -9,7 +9,7 @@ import { cn } from "./cn";
  * corner photos). First built extracting the building-detail photo gallery
  * (`galleryGridHtml()` in `slices/buildings/ui/building-detail.tsx`), ported 1:1 from its old
  * `.mk`-scoped `.gallery`/`.gallery img`/`.gallery .g0` rules (that page's `PAGE_STYLE`, now
- * deleted; identical to `mock/building-detail.html`) plus `mock.css`'s `.mk img`
+ * deleted; identical to `mock/building-detail.html`) plus the old `mock.css`'s `.mk img`
  * (`display:block; max-width:100%`) — no new design.
  *
  * **Not `StepGallery`**: that is a full section (heading + body) with a hairline grid of
@@ -36,9 +36,6 @@ import { cn } from "./cn";
  * The 680px breakpoint is mobile-first `min-[681px]:` (≥681px), not `max-[680px]:` — Tailwind
  * v4's `max-*` compiles to `width < 680px`, which would drop exactly 680px from the original
  * `max-width:680px` (≤680px) rule. Same approach as `UnitCardGrid`.
- *
- * MUST be rendered **outside** any `.mk`-scoped subtree (see `SpecStrip`'s docstring: `mock.css`'s
- * un-layered `.mk * { margin:0; padding:0 }` reset beats any `@layer`-wrapped Tailwind utility).
  *
  * **`adaptive` (opt-in, additive — service detail, `mock/service-detail.html` `.svc-gallery`).**
  * Without it the component is byte-identical to the Buildings mosaic above, for any photo count.

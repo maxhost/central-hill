@@ -5,8 +5,8 @@ import { cn } from "./cn";
  * The standard section head: an optional uppercase eyebrow, a serif `<h2>` title and an
  * optional lede/intro paragraph, left-aligned or centred, sitting above a section's body. It is
  * the React port of the mocks' `.sec-head` > `.eyebrow` + `h2.section-title` + `.lede` markup
- * (`src/app/mock.css`), which every `.mk` page still renders as a raw HTML string. First applied
- * on Real Estate (`#deal-structures`, `#market`, `#track-record`).
+ * (the old `src/app/mock.css`), which the `.mk` pages used to render as raw HTML strings. First
+ * applied on Real Estate (`#deal-structures`, `#market`, `#track-record`).
  *
  * **Variants found in the survey** (raw `sec-head`s on Guests, About, Services listing/detail,
  * Blog, Guides, Buildings detail and Real Estate), and how each maps onto the props:
@@ -30,14 +30,14 @@ import { cn } from "./cn";
  * **Look (consistency over mock fidelity).** This matches the section heads that `core/ui`
  * already renders, rather than introducing a new style. The eyebrow, title and lede use the
  * classes of `ProseSection`/`IconFeatureGrid`'s eyebrow and the `h2` and lede shared with
- * `StepGallery`/`PricingCards`. Those are themselves 1:1 ports of `mock.css`: eyebrow
+ * `StepGallery`/`PricingCards`. Those are themselves 1:1 ports of the old `mock.css`: eyebrow
  * `12px/600/.18em` uppercase in `accent-deep`; title `clamp(30px,4vw,50px)`, `1.08` leading and
  * `-0.015em` tracking; lede `18px` in `ink-soft`, capped at `62ch`; head `max-width:720px`
  * (`45rem`) with a `54px` bottom margin. Two deliberate choices:
  * - The title's `14px` top margin applies only when there is an eyebrow above it, as in every
  *   sibling. `mock.css`'s `h2.section-title { margin:14px 0 0 }` kept it even with no eyebrow,
  *   so eyebrow-less heads sit `14px` higher than their raw versions.
- * - The lede sets `leading-[1.6]` explicitly to keep the `.mk` wrapper's inherited
+ * - The lede sets `leading-[1.6]` explicitly to keep the old `.mk` wrapper's inherited
  *   `line-height:1.6` (28.8px), as `EditorialSplit`'s body and `StatTiles` do. Tailwind's `text-lg`
  *   alone would give 28px.
  * It does not reuse `Eyebrow`: that component is `500/.16em` in `accent` (the
@@ -47,10 +47,8 @@ import { cn } from "./cn";
  *
  * Bare and purely presentational: no `Section`/`Container`, no data fetching, no i18n, and no
  * entrance animation. The caller owns the section shell and wraps the head in `Reveal` where the
- * page animates it, as Real Estate does. Pages whose raw `.reveal` is neutralised by `mock.css`
- * (Services, Blog, Guides, Buildings detail) render it statically. It must render **outside** any
- * `.mk` subtree, because `mock.css`'s un-layered `.mk * { margin:0; padding:0 }` would zero its
- * margins (see `SpecStrip`'s docstring).
+ * page animates it, as Real Estate does. Pages whose raw `.reveal` was neutralised by the old
+ * `mock.css` (Services, Blog, Guides, Buildings detail) render it statically.
  */
 export function SectionHead({
   eyebrow,

@@ -10,7 +10,7 @@ import { cn } from "./cn";
  * `mock/service-detail.html`'s `.svc-body`; first used by the services detail page, meant for
  * the blog post and guide detail pages too.
  *
- * Presentational, no i18n; must render outside `.mk`.
+ * Presentational, no i18n.
  */
 export function DetailLayout({
   main,

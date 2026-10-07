@@ -24,13 +24,6 @@ import { cn } from "./cn";
  * `values` content is fixed at exactly 4 items) — like `StepGallery`, the `681–980px`/`<681px`
  * breakpoints (2-col/1-col) degrade for any item count.
  *
- * MUST be rendered **outside** any `.mk`-scoped subtree (see `SpecStrip`'s docstring for the
- * full cascade-layers explanation): `mock.css`'s un-layered `.mk * { margin:0; padding:0 }`
- * reset always beats a `@layer`-wrapped Tailwind utility regardless of specificity, silently
- * zeroing this component's padding/gap if nested inside `.mk`. `about-page.tsx` renders this
- * component outside `.mk` and gives the neighbouring still-raw markup its own small `.mk`
- * wrapper instead.
- *
  * Purely presentational, per the `core/ui` ground rule: no i18n, no entrance-reveal wiring
  * (the caller wraps the whole section, same as `StatBand`/`StepGallery`) — only the hover
  * motion is baked in here, since (like `PropertyCard`/`PricingCards`) that's intrinsic card

@@ -17,11 +17,11 @@ import { cn } from "./cn";
  * page's `.mk`-scoped hero override used (`grid-template-columns:1.1fr .9fr;gap:40px`,
  * `34px` under 980px) — not `mock/owners.html`'s original (now-superseded) values.
  * `compact` lowers the minimum height and headline size for these form-bearing heroes so
- * the page below stays close. The headline size (`clamp(40px,5.4vw,68px)`) is the live
- * cascade's actual winner — `mock.css`'s `.hero.compact h1` (3 classes) beats the
- * `.owner-hero h1` override (2 classes) on specificity even though the latter reads as
+ * the page below stays close. The headline size (`clamp(40px,5.4vw,68px)`) was the old live
+ * cascade's actual winner — the old `mock.css`'s `.hero.compact h1` (3 classes) beat the
+ * `.owner-hero h1` override (2 classes) on specificity even though the latter read as
  * the "more specific" one; verified against a real render, not just the stylesheet. The
- * no-wrap/no-max-width (from `.owner-hero h1`, which *does* win there — nothing else sets
+ * no-wrap/no-max-width (from `.owner-hero h1`, which *did* win there — nothing else set
  * those two properties) is what lets the stacked `;`-joined headline sit one phrase per
  * line. Only Owners uses `aside`/`compact` today.
  *

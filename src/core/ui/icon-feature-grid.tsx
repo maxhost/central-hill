@@ -3,9 +3,8 @@ import { cn } from "./cn";
 import { Container } from "./container";
 
 export type IconFeatureGridItem = {
-  /** Caller-built icon element (e.g. `<i className="iconoir-chat-bubble" aria-hidden />` —
-   * `mock.css` loads the Iconoir mask-icon stylesheet globally, unscoped from `.mk`, so the
-   * raw class still resolves outside it), rendered inside the component's own 48px bordered
+  /** Caller-built icon element (e.g. a server parent's `<Icon name="chat-bubble" size={24} />`
+   * from `@core/ui/icon`, ADR 0034), rendered inside the component's own 48px bordered
    * circle. Same "caller supplies the node, no slice icon registry here" convention as
    * `EditorialSplit`'s `item.icon`. */
   icon?: ReactNode;
@@ -19,17 +18,9 @@ export type IconFeatureGridItem = {
  * Works" (`.howstrip`/`.how-grid`/`.how-item` in `services-listing.tsx`'s old `PAGE_STYLE`,
  * now trimmed to the page's still-raw sections only) — ported 1:1, not a new design.
  *
- * Correction to that file's old top-of-file docstring: it claimed Iconoir glyphs "render
- * blank" on this page because "the icon font is not loaded in the app shell" — checked
- * against the live `/en/services` render (not just the mock source) while building this
- * component, and that's stale. `mock.css`'s `@import url(".../iconoir.css")` is a *mask-icon*
- * stylesheet (`mask-image: url('data:image/svg+xml...')` on `[class^='iconoir-']::before`,
- * not an icon font/ligature), it's unscoped from `.mk`, and it's already imported by every
- * route under `src/app/[locale]/**\/page.tsx` that renders a `.mk` page — including this one.
- * Live screenshots (desktop/tablet/mobile) confirm the three `.hico` circles render their
- * actual glyphs (chat bubble / home / headset), not blank circles. This component keeps
- * rendering whatever `icon` node the caller passes, same as before — the fix was just not
- * silently dropping the icon on the (incorrect) assumption it'd be invisible anyway.
+ * Historical: that file's old docstring claimed the Iconoir glyphs "render blank" on this page;
+ * that was stale (the old `mock.css` mask-icon stylesheet did render them). This component
+ * renders whatever `icon` node the caller passes (now an inline `<Icon>` SVG, ADR 0034).
  *
  * Not `StepGallery`: that component is always full-bleed **photo** cards with a numbered
  * index overlay, no bordered icon circle, and no centered eyebrow/heading band chrome of its

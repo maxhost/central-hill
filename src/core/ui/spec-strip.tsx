@@ -14,15 +14,6 @@ import { cn } from "./cn";
  * own `Section`/`Container`, same reasoning as `FeaturePanel`) — the caller places it inside
  * whatever wrapper its own page's layout needs; `className` is an additive escape hatch for
  * that wrapper's own spacing.
- *
- * MUST be rendered **outside** any `.mk`-scoped subtree: `mock.css`'s `.mk * { margin:0;
- * padding:0 }` reset is a plain (un-layered) rule, and `@import "tailwindcss"` wraps every
- * Tailwind utility in a CSS cascade layer — an un-layered rule always wins over a layered one
- * regardless of specificity, so a `.mk`-nested instance would silently lose its own
- * `py-[34px]`/`mt-2.5` to that reset (discovered the hard way: the first cut nested this
- * inside `.mk` to reach `var(--section-y)`/the raw gallery's CSS, which zeroed its padding and
- * margins). `building-detail.tsx` now keeps this component outside `.mk` entirely and gives
- * the still-raw gallery its own tiny dedicated `.mk` wrapper instead.
  */
 export function SpecStrip({
   items,

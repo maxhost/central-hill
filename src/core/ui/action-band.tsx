@@ -14,7 +14,7 @@ export type ActionBandCta = {
  * `building-detail.tsx`'s closing "Book an apartment in this building" band (`bookband` in
  * `bodyHtml()`), ported 1:1 from the live `.mk`-scoped `.bookband`/`.inner`/`.eyebrow`/`h2`/
  * `.sub`/`.act`/`.note` rules (that page's old `PAGE_STYLE`, identical to
- * `mock/building-detail.html`) plus `mock.css`'s inherited `.wrap`, `.eyebrow`, `h2`, `.mk`
+ * `mock/building-detail.html`) plus the old `mock.css`'s inherited `.wrap`, `.eyebrow`, `h2`, `.mk`
  * body rhythm and `.btn.btn-accent`.
  *
  * Not one of the existing dark/CTA primitives:
@@ -41,13 +41,11 @@ export type ActionBandCta = {
  *
  * Purely presentational, per the `core/ui` ground rule: no i18n, no fetching, no domain types —
  * every string arrives pre-translated. Owns its full-bleed `<section>` + 1240px/28px column (the
- * original `.wrap`, i.e. the `mock.css` `--max` — see `ProseSection`'s docstring for the flagged
- * drift vs. `Container`'s `max-w-7xl`) and sets the inherited `line-height:1.6` itself (the
+ * original `.wrap`, i.e. the old `mock.css` `--max` — see `ProseSection`'s docstring for the
+ * flagged drift vs. `Container`'s `max-w-7xl`) and sets the inherited `line-height:1.6` itself (the
  * eyebrow's line box, the button's 22.4px and the note's 20px line heights all derive from it).
  * The original section's padding was `0` (inline `style`), with the vertical rhythm (64px) on
- * the inner flex row — kept as-is. MUST be rendered **outside** any `.mk`-scoped subtree (see
- * `SpecStrip`'s docstring: `mock.css`'s un-layered `.mk * { margin:0; padding:0 }` reset beats
- * any `@layer`-wrapped Tailwind utility regardless of specificity).
+ * the inner flex row — kept as-is.
  */
 export function ActionBand({
   eyebrow,

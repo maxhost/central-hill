@@ -29,8 +29,7 @@ export type DetailTitleCrumb = {
  *   rating…) is the caller's.
  *
  * Purely presentational, per the `core/ui` ground rule: no i18n, no `@core/media`; every string
- * arrives pre-translated. MUST render outside any `.mk`-scoped subtree (Lesson 1 in
- * `docs/component-extraction-workflow.md`).
+ * arrives pre-translated.
  */
 export function DetailTitle({
   crumbs,

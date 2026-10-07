@@ -47,14 +47,15 @@ const TONE = {
  * 1px `line`-colored gap + 1px outer `line` border framing a light `surface` panel and/or a
  * dark `feature` panel, each eyebrow / serif `<h3>` / body / button / small contact line.
  * Two panels sit side by side from 981px up and stack (in the given order) at ≤980px, exactly
- * like `mock.css`'s `@media (max-width:980px) { .dual { grid-template-columns:1fr } }`; one
+ * like the old `mock.css`'s `@media (max-width:980px) { .dual { grid-template-columns:1fr } }`; one
  * panel is always a single full-width column (`mock/buildings.html`'s inline
  * `grid-template-columns:1fr` variant). First built extracting Guests' closing guest/owner
  * dual CTA (`guest-page.tsx`'s old `bodyBottom()`), ported 1:1 from the live `.mk`-scoped
  * `.dual`/`.dcol`/`.dcol.owner …`/`.contact-line` rules + the inherited `.eyebrow`, `h3`,
- * `.btn`/`.btn-solid`/`.btn-accent` and `.mk` body rhythm in `src/app/mock.css` (identical to
- * `mock/assets/site.css`). Panel order is the caller's: `mock/home.html` puts the owner panel
- * first, `mock/guest.html` the guest panel — both are just a different `panels` array.
+ * `.btn`/`.btn-solid`/`.btn-accent` and `.mk` body rhythm in the old `src/app/mock.css`
+ * (identical to `mock/assets/site.css`). Panel order is the caller's: `mock/home.html` puts the
+ * owner panel first, `mock/guest.html` the guest panel — both are just a different `panels`
+ * array.
  *
  * Not one of the existing CTA primitives:
  * - **`DualCtaPanels`** is the "Immersive Panels" design — full-bleed *photo* panels with a
@@ -84,9 +85,7 @@ const TONE = {
  * panel's strut, and the button's 22.4px / contact line's 20.8px line heights derive from it.
  * Colors are tokens; titles on the dark panel are plain `text-white` (the original's `#fff`,
  * not `on-feature`), and the light panel's contact line inherits `ink` (the original sets no
- * color on it). MUST be rendered **outside** any `.mk`-scoped subtree (see `SpecStrip`'s
- * docstring: `mock.css`'s un-layered `.mk * { margin:0; padding:0 }` reset beats any
- * `@layer`-wrapped Tailwind utility regardless of specificity).
+ * color on it).
  */
 export function SplitCtaPanels({
   panels,

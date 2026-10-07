@@ -16,8 +16,8 @@ export type UnitCardSpec = {
  * CTA, the whole card one plain `<a>` that lifts on hover. First built extracting
  * `building-detail.tsx`'s "Apartments in this Building" grid (`apartmentCardHtml()` in
  * `bodyHtml()`), ported 1:1 from the live `.mk`-scoped `.pcard`/`.ph`/`.badge`/`.pbody`/
- * `.pbody h3` CSS (`src/app/mock.css`) plus the page's own `.pspecs`/`.pspec`/`.pbody .check`
- * rules (its old `PAGE_STYLE`, from `mock/building-detail.html`).
+ * `.pbody h3` CSS (the old `src/app/mock.css`) plus the page's own `.pspecs`/`.pspec`/
+ * `.pbody .check` rules (its old `PAGE_STYLE`, from `mock/building-detail.html`).
  *
  * **Not `PropertyCard`**, though both are "photo + name + meta" cards on the same `.pcard`
  * chrome: `PropertyCard` (Home/Guest featured carousel) pads its body `p-6` (vs. this
@@ -49,10 +49,8 @@ export type UnitCardSpec = {
  * the image, `BuildingListingCard` gives it `z-10`), so this is treated as a paint-order bug, not
  * design. Non-hover render is unchanged.
  *
- * MUST be rendered **outside** any `.mk`-scoped subtree (see `SpecStrip`'s docstring:
- * `mock.css`'s un-layered `.mk * { margin:0; padding:0 }` reset beats any `@layer`-wrapped
- * Tailwind utility regardless of specificity). Expects an inherited `line-height: 1.6` (the
- * `.mk` body rhythm the spec chips/CTA heights derive from) — `UnitCardGrid` does not set it;
+ * Expects an inherited `line-height: 1.6` (the old `.mk` body rhythm the spec chips/CTA
+ * heights derive from) — `UnitCardGrid` does not set it;
  * the enclosing section should (as `building-detail.tsx`'s apartments section does).
  */
 export function UnitCard({
@@ -117,7 +115,7 @@ export function UnitCard({
 
 /**
  * The responsive grid `UnitCard`s sit in — 3 columns, 2 at ≤980px, 1 at ≤680px, 26px gap
- * (the live `.pf-grid` rule + its `mock.css` breakpoints, ported 1:1). Bare layout only: no
+ * (the old live `.pf-grid` rule + its `mock.css` breakpoints, ported 1:1). Bare layout only: no
  * section padding, heading or background — the caller composes those around it.
  */
 export function UnitCardGrid({ children, className }: { children: ReactNode; className?: string }) {

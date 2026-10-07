@@ -7,8 +7,8 @@ import { debugLog } from "./debug-log";
 /**
  * Scroll-reveal wrapper for a Home section: fades/slides in once, immediately on mount if
  * already in the initial viewport (no flash), otherwise on first scroll-into-view. Mirrors
- * the `.mk` pages' reveal-io/pre-reveal pattern (scroll-reveal.tsx) but as a real React
- * wrapper, since Home has no `.mk` HTML-string/CSS-class scaffolding to hook into.
+ * the old `.mk` pages' reveal-io/pre-reveal pattern (the former scroll-reveal.tsx) but as a real
+ * React wrapper, since Home has no `.mk` HTML-string/CSS-class scaffolding to hook into.
  *
  * Wrap at the home-page.tsx call site (not inside a shared section component like
  * `FeaturedPortfolio`, which Guest also renders) so the effect stays Home-only.

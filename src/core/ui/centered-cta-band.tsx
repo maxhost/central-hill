@@ -29,8 +29,7 @@ import { ButtonLink } from "./button";
  *
  * Includes its own section shell (standard `clamp(72px,10vw,150px)` padding, 84px scroll
  * margin), like `FeatureCtaBand`/`ActionBand`. Purely presentational: no i18n, no data, no
- * entrance animation (wrap it in `Reveal` where the page animates). Render it outside any
- * `.mk` subtree (see `SpecStrip`'s docstring).
+ * entrance animation (wrap it in `Reveal` where the page animates).
  */
 type CenteredCtaBandAction =
   | { cta: { href: string; label: string }; children?: never }

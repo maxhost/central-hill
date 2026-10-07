@@ -9,7 +9,8 @@ import { cn } from "./cn";
  * SECTION 10 — the former `BODY_BOTTOM` raw markup in `real-estate-page.tsx`), ported 1:1 from
  * that page's `.mk`-scoped `.form-card`/`.fgroup`/`.fgroup-title`/`.fgroup-tag`/`.ffield`/
  * `.ftwo`/`.facc`/`.form-note` rules (old `PAGE_STYLE`, which match `mock/real-estate.html`
- * plus the live-only `.req`/`.fgroup-tag`/`.facc` additions) and `mock.css`'s `.btn.btn-accent`.
+ * plus the live-only `.req`/`.fgroup-tag`/`.facc` additions) and the old `mock.css`'s
+ * `.btn.btn-accent`.
  *
  * Second consumer (a deliberate, user-approved style unification, not a pixel-identical
  * extraction): `OwnerEstimateForm` (slices/pages — the Owners hero's 3-step wizard + Buildings'
@@ -61,10 +62,6 @@ import { cn } from "./cn";
  * line box (15px × 1.6) comes from an ancestor's `line-height:1.6` — `EnquirySplit` sets it;
  * any other host must too (`leading-[1.6]`), or the controls render 1.5px shorter. Breakpoint:
  * `FormRow` stacks to one column ≤680px (the original's `max-width:680px`).
- *
- * MUST render **outside** any `.mk`-scoped subtree (`mock.css`'s un-layered
- * `.mk * { margin:0; padding:0 }` beats every `@layer`-wrapped Tailwind spacing utility — see
- * `SpecStrip`'s docstring / `docs/component-extraction-workflow.md` Lesson 1).
  */
 
 /** Colour tone of the form primitives: `light` (default — on `bg`/`surface`) or `dark` (on the

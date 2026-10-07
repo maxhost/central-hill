@@ -12,8 +12,8 @@ export type StatTile = { value: string; label: string; caption?: string };
  * Real Estate's "Performance You Can Measure" (`#track-record` → `.tiles`/`.tile`/`.tval`/
  * `.tlbl`/`.tcap` in `real-estate-page.tsx`'s old `PAGE_STYLE`, identical to
  * `mock/real-estate.html`'s CSS) — ported 1:1 from the live computed styles, including the
- * `.mk` wrapper's inherited `line-height:1.6` (re-applied here as `leading-[1.6]`, since
- * outside `.mk` Tailwind's preflight would otherwise give 1.5).
+ * old `.mk` wrapper's inherited `line-height:1.6` (re-applied here as `leading-[1.6]`, since
+ * Tailwind's preflight would otherwise give 1.5).
  *
  * Not `StatBand`: that's a full-bleed dark (`bg-feature`) band of cream figures with no
  * bordered cells and no per-figure caption. Not `SpecStrip`: a flat, bottom-bordered-only
@@ -28,10 +28,7 @@ export type StatTile = { value: string; label: string; caption?: string };
  * scrolls in (and on SSR / no JS / reduced motion) the final figure is shown statically.
  *
  * Bare (no own `Section`/`Container`/heading — the caller owns the section shell, sec-head and
- * entrance reveal, same as `StatBento`). MUST be rendered **outside** any `.mk`-scoped subtree:
- * `mock.css`'s un-layered `.mk * { margin:0; padding:0 }` beats `@layer`-wrapped Tailwind
- * utilities regardless of specificity (see `SpecStrip`'s docstring), which would zero the tile
- * padding and label margins. Purely presentational: no i18n, no data fetching.
+ * entrance reveal, same as `StatBento`). Purely presentational: no i18n, no data fetching.
  */
 export function StatTiles({
   tiles,

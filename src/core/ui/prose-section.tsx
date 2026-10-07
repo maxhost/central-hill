@@ -43,13 +43,13 @@ export type ProseSectionSubsection = {
  * this extraction pixel-identical to its current render, as the workflow doc requires;
  * flagged in the extraction report for the coordinator to decide whether a future pass
  * should unify `mock/assets/site.css`'s tokens with `design-system.md`'s canonical ones
- * (every other still-raw `.mk` section on every page shares this same drift, so that's a
+ * (every other then-raw `.mk` section on every page shared this same drift, so that's a
  * site-wide decision, not a one-component one).
  *
  * No entrance animation wired in (unlike `EditorialSplit`, which bakes in its own `Reveal`):
- * `src/app/mock.css` explicitly neutralises `.mk .reveal { opacity:1; transform:none }`
- * (no scroll-reveal JS is loaded for raw `.mk` markup), so this exact section currently
- * renders static/always-visible. `building-detail.tsx`'s other already-extracted real-JSX
+ * the old `src/app/mock.css` explicitly neutralised `.mk .reveal { opacity:1; transform:none }`
+ * (no scroll-reveal JS was loaded for raw `.mk` markup), so this exact section rendered
+ * static/always-visible. `building-detail.tsx`'s other already-extracted real-JSX
  * sections on this same page (`Hero`, `SpecStrip`) are likewise rendered without `Reveal`.
  * Adding one here would be a behavior change beyond "port the existing section", not just a
  * refactor — left out to match the live page exactly; a future design decision to animate
@@ -57,16 +57,10 @@ export type ProseSectionSubsection = {
  *
  * Paragraphs are plain strings rendered as real `<p>` children (React escapes text nodes
  * automatically) — no HTML-escaping helper needed here, unlike the raw-string
- * `dangerouslySetInnerHTML` approach the rest of `building-detail.tsx`'s still-raw sections
- * use. The source mock's `.prose p { margin-bottom:18px }` applies unconditionally (no
- * `:last-child` reset), so the last paragraph of both the intro and the subsection keeps its
- * trailing margin — ported as-is, not "fixed", to stay pixel-identical.
- *
- * MUST be rendered **outside** any `.mk`-scoped subtree (see `SpecStrip`'s docstring for the
- * full cascade-layers explanation: `mock.css`'s un-layered `.mk * { margin:0; padding:0 }`
- * reset always beats a `@layer`-wrapped Tailwind utility regardless of specificity).
- * `building-detail.tsx` renders this component before its `.mk`-wrapped remainder
- * (apartments/amenities/FAQ/book band), which keeps its own small `.mk` wrapper.
+ * `dangerouslySetInnerHTML` approach `building-detail.tsx`'s then-raw sections used. The source
+ * mock's `.prose p { margin-bottom:18px }` applies unconditionally (no `:last-child` reset), so
+ * the last paragraph of both the intro and the subsection keeps its trailing margin — ported
+ * as-is, not "fixed", to stay pixel-identical.
  */
 export function ProseSection({
   eyebrow,

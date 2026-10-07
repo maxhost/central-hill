@@ -3,7 +3,9 @@ import { cn } from "./cn";
 import { SectionHead } from "./section-head";
 
 export type IntroSplitBadge = {
-  /** Caller-built icon element (e.g. an Iconoir `<i>` sized by the caller), rendered as-is. */
+  /** Caller-built icon element (e.g. a server parent's
+   * `<Icon name="percentage-circle" size={22} />` from `@core/ui/icon`, ADR 0034), rendered
+   * as-is. */
   icon?: ReactNode;
   label: string;
 };
@@ -14,8 +16,8 @@ export type IntroSplitBadge = {
  * full-height cover image on the right (`1.05fr/.95fr`, 56px gap, vertically centred; one
  * column with a 32px gap at ≤880px, text first). First built for Guests' "Welcome to Central
  * Hill" (the old `<!-- WELCOME -->` block in `guest-page.tsx`'s `bodyTop()` → `.welcome`/
- * `.guarantee` in its `PAGE_STYLE`, identical to `mock/guest.html`'s CSS, plus `mock.css`'s
- * `h2.section-title`/`.lede`) — ported 1:1 from the live computed styles, including the `.mk`
+ * `.guarantee` in its `PAGE_STYLE`, identical to `mock/guest.html`'s CSS, plus the old `mock.css`'s
+ * `h2.section-title`/`.lede`) — ported 1:1 from the live computed styles, including the old `.mk`
  * wrapper's inherited `line-height:1.6` (re-applied as `leading-[1.6]` on the root; Tailwind's
  * preflight would otherwise give 1.5). The headline + lede are now `SectionHead` (`flush`), so
  * the title drops `h2.section-title`'s eyebrow-less `margin-top:14px` and the lede offset is
@@ -45,11 +47,8 @@ export type IntroSplitBadge = {
  * `Section`/`Container` — the caller owns the section shell and the
  * entrance reveal, same as `StatTiles`/`ChecklistCards`/`SplitCtaPanels`): Guests' still-raw
  * `.wrap`-based neighbours use `1240px/28px` + `clamp(72px,10vw,150px)`, which differ from the
- * kernel `Section`/`Container` tokens, so the shell is reproduced at the call site. MUST be
- * rendered **outside** any `.mk`-scoped subtree: `mock.css`'s un-layered `.mk * { margin:0;
- * padding:0 }` beats `@layer`-wrapped Tailwind utilities regardless of specificity (see
- * `SpecStrip`'s docstring). Purely presentational: no i18n, no data fetching; React escapes the
- * admin-authored strings.
+ * kernel `Section`/`Container` tokens, so the shell is reproduced at the call site. Purely
+ * presentational: no i18n, no data fetching; React escapes the admin-authored strings.
  */
 export function IntroSplit({
   eyebrow,

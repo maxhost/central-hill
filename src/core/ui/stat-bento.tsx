@@ -42,13 +42,6 @@ export type StatBentoCell =
  * documents for itself — the content schema (`RealEstateContent["market"]`) always supplies
  * exactly a `regulatory` (text) and a `thesis` (list) cell alongside `fundamentals` (feature).
  *
- * MUST be rendered **outside** any `.mk`-scoped subtree (see `SpecStrip`'s/`NumberedFeatureGrid`'s
- * docstrings for the full cascade-layers explanation): `mock.css`'s un-layered
- * `.mk * { margin:0; padding:0 }` reset always beats a `@layer`-wrapped Tailwind utility
- * regardless of specificity, silently zeroing this component's padding/gap if nested inside
- * `.mk`. `real-estate-page.tsx` renders this component outside `.mk` and gives the
- * neighbouring still-raw section-head markup its own small `.mk` wrapper instead.
- *
  * Purely presentational, per the `core/ui` ground rule: no i18n, no entrance-reveal wiring
  * (the caller wraps the whole section in `Reveal`, same as `NumberedFeatureGrid`) — only the
  * hover motion and the accent sweep-line are baked in here, since (like

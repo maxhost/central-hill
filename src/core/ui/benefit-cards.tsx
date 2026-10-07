@@ -4,10 +4,10 @@ import { ButtonLink } from "./button";
 import { cn } from "./cn";
 
 export type BenefitCardItem = {
-  /** Caller-built icon element (e.g. `<i className="iconoir-key" aria-hidden />` — `mock.css`
-   * loads the Iconoir mask-icon stylesheet globally, unscoped from `.mk`, so the raw class still
-   * resolves outside it, same precedent as `IconFeatureGrid`/`PhotoFeatureGrid`'s `item.icon`).
-   * Rendered at 30px in `accent-deep`, shifting to `accent` with a small lift on card hover. */
+  /** Caller-built icon element (e.g. a server parent's `<Icon name="key" size={30} />` from
+   * `@core/ui/icon`, ADR 0034; same precedent as `IconFeatureGrid`/`PhotoFeatureGrid`'s
+   * `item.icon`). Rendered at 30px in `accent-deep`, shifting to `accent` with a small lift on
+   * card hover. */
   icon?: ReactNode;
   title: string;
   description: string;
@@ -18,7 +18,7 @@ export type BenefitCardItem = {
   linkLabel?: string;
 };
 
-/** Card chrome shared by plain and link cards (surface, padding, `.mk`'s 1.6 line box, hover lift). */
+/** Card chrome shared by plain and link cards (surface, padding, 1.6 line box, hover lift). */
 const CARD =
   "group bg-surface px-[34px] py-10 leading-[1.6] transition-[transform,box-shadow] duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:[transform:translateY(-4px)] hover:[box-shadow:0_16px_28px_-20px_rgba(0,0,0,0.35)]";
 
@@ -28,7 +28,7 @@ const CARD =
  * `accent`) — plus an optional centred CTA row (one `ButtonLink` + helper note). First built for
  * Guests' "Why Book Directly With Us?" (`.grid-3`/`.bcard`/`.ico`/`.cta-row`/`.cta-note` in
  * `mock.css` + `guest-page.tsx`'s old page-scoped `.bcard`/`.ico` hover rules), ported 1:1 from
- * the live computed styles — including the `.mk` wrapper's inherited `line-height:1.6` on the
+ * the live computed styles — including the old `.mk` wrapper's inherited `line-height:1.6` on the
  * card (re-applied as `leading-[1.6]`), which sets the height of the icon's line box and so the
  * icon→title spacing.
  *
@@ -64,10 +64,9 @@ const CARD =
  * ~7.6px of descent below its 18px margin (title 55.6px under the icon top). The wrapper here
  * reproduces that exactly with `inline-block` + `overflow-hidden` (CSS 2.1: an inline-block
  * whose `overflow` isn't `visible` also takes its baseline from the bottom margin edge) at a
- * fixed `1em` (30px) height — the glyph is exactly 1em, so nothing is clipped. (Forcing the child
- * to `display:block` doesn't work: Iconoir's un-layered `[class^='iconoir-']{display:inline-block}`
- * beats a layered Tailwind utility.) `PhotoFeatureGrid`'s plain `block` wrapper lands ~3.6px
- * tighter.
+ * fixed `1em` (30px) height — the glyph is exactly 1em, so nothing is clipped. (Historical: this
+ * wrapper dates from the old Iconoir `<i>`, whose un-layered `display:inline-block` beat a layered
+ * `block` utility.) `PhotoFeatureGrid`'s plain `block` wrapper lands ~3.6px tighter.
  *
  * Link cards (added for About's "Let's Start a Conversation" `.touch-grid`/`.touch`, additive —
  * items without `href` render exactly as before): an item with `href` renders as an `<a>`
@@ -84,9 +83,7 @@ const CARD =
  * the 2 → 1 breakpoints below it are unchanged.
  *
  * Bare (no own `Section`/`Container`/heading — the caller owns the section shell, sec-head and
- * entrance reveal, same as `PhotoFeatureGrid`/`StatTiles`). MUST be rendered **outside** any
- * `.mk`-scoped subtree: `mock.css`'s un-layered `.mk * { margin:0; padding:0 }` beats
- * `@layer`-wrapped Tailwind utilities regardless of specificity (see `SpecStrip`'s docstring).
+ * entrance reveal, same as `PhotoFeatureGrid`/`StatTiles`).
  * Purely presentational: no i18n, no data fetching, no icon registry.
  */
 export function BenefitCards({

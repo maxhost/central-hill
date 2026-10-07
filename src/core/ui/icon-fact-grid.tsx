@@ -19,7 +19,7 @@ export type IconFactItem = {
  * `IconFeatureGrid`** (a centred 3-column section with its own band and heading).
  *
  * Bare and presentational (no section shell, no heading — the caller places it, e.g. as the
- * first `ContentBlock`); no i18n; renders nothing for an empty list. Must render outside `.mk`.
+ * first `ContentBlock`); no i18n; renders nothing for an empty list.
  */
 export function IconFactGrid({ items, className }: { items: readonly IconFactItem[]; className?: string }) {
   if (!items.length) return null;

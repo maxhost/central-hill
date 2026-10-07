@@ -14,7 +14,7 @@ import { cn } from "./cn";
  * separated by hairlines instead of bands.
  *
  * Presentational, no i18n — strings arrive pre-translated; `id` lands on the block (in-page
- * anchors, 84px scroll margin for the fixed nav). Must render outside `.mk`.
+ * anchors, 84px scroll margin for the fixed nav).
  */
 export function ContentBlock({
   eyebrow,

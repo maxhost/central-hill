@@ -18,7 +18,7 @@ export type ContactSplitRow = {
  * is 48/44px, 36/28px at ≤680px. First built for About's closing "Let's Start a Conversation"
  * (`mock/about.html`'s `.contact-split`/`.office`/`.ofield`/`.olbl`/`.oval`/`.cform`/
  * `.cform-sub`), ported 1:1 from those `.mk`-scoped rules (`about-page.tsx`'s old `PAGE_STYLE`)
- * plus `mock.css`'s inherited `.mk` rhythm (`line-height:1.6`) and serif `h3` (500 / 1.08 /
+ * plus the old `mock.css`'s inherited `.mk` rhythm (`line-height:1.6`) and serif `h3` (500 / 1.08 /
  * -0.015em). The office title is plain `text-white` (the original's `#fff`, not `on-feature` —
  * same call as `ActionBand`).
  *
@@ -39,8 +39,6 @@ export type ContactSplitRow = {
  *
  * Purely presentational: no i18n, no fetching — every string arrives pre-translated. Bare (no
  * `Section`/`Container`/heading/reveal of its own; `className` is for the caller's spacing).
- * MUST render **outside** any `.mk`-scoped subtree (`mock.css`'s un-layered `.mk *` reset beats
- * layered Tailwind utilities — see `SpecStrip`'s docstring).
  */
 export function ContactSplit({
   infoTitle,

@@ -2,9 +2,8 @@ import type { ReactNode } from "react";
 import { ButtonLink } from "./button";
 
 export type PhotoFeatureGridItem = {
-  /** Caller-built icon element (e.g. `<i className="iconoir-car" aria-hidden />` — `mock.css`
-   * loads the Iconoir mask-icon stylesheet globally, unscoped from `.mk`, so the raw class
-   * still resolves outside it, same precedent as `IconFeatureGrid`'s `item.icon`). Rendered at
+  /** Caller-built icon element (e.g. a server parent's `<Icon name="car" size={30} />` from
+   * `@core/ui/icon`, ADR 0034; same precedent as `IconFeatureGrid`'s `item.icon`). Rendered at
    * 30px, white, with a drop-shadow so it stays legible over any photo. */
   icon?: ReactNode;
   title: string;
@@ -70,14 +69,6 @@ export type PhotoFeatureGridItem = {
  * `guest-page.tsx` as of this extraction) — not migrated here (out of this task's scope), but
  * worth knowing when it's its turn: it only needs a `ctaVariant="ghost"` (its button is
  * `btn-ghost`, not `btn-accent`) and no other prop change.
- *
- * MUST be rendered **outside** any `.mk`-scoped subtree (`NumberedFeatureGrid`/`SpecStrip`'s
- * docstrings have the full cascade-layers explanation): `mock.css`'s un-layered
- * `.mk * { margin:0; padding:0 }` reset always beats a `@layer`-wrapped Tailwind utility
- * regardless of specificity, silently zeroing this component's `gap-[26px]`/card padding/
- * `cta-row`'s `mt-11` if nested inside `.mk`. `guest-page.tsx` renders this component outside
- * `.mk` and gives the still-raw neighboring "What to Do" markup its own small, dedicated `.mk`
- * wrapper instead.
  *
  * The CTA uses `core/ui`'s `ButtonLink` (not a pixel-reproduction of the mock's raw `.btn`
  * CSS) — same choice every other ported CTA in this codebase already made

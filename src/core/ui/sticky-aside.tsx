@@ -11,8 +11,7 @@ import { cn } from "./cn";
  *
  * Shell only: what goes inside is the caller's (the service booking card lives in the services
  * slice). Sticky needs the parent grid to use `align-items: start` (otherwise the aside is
- * stretched to the row height and has nowhere to stick). Presentational, no i18n; must render
- * outside `.mk`.
+ * stretched to the row height and has nowhere to stick). Presentational, no i18n.
  */
 export function StickyAside({
   children,

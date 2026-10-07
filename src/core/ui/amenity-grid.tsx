@@ -15,7 +15,7 @@ export type AmenityGridItem = {
  * `PAGE_STYLE` rules (`.mk .am-grid` / `.mk .am` / `.mk .am svg` / `.mk .am span`): `1px` gap on
  * a `line` background inside a `1px` `line` border (the hairline technique), cells
  * `flex`/`items-center` with a `14px` gap and `24px 26px` padding, the glyph `22×22` in
- * `accent-deep` (`flex:none`), the label `15px` in `ink`. The `.mk` wrapper's inherited
+ * `accent-deep` (`flex:none`), the label `15px` in `ink`. The old `.mk` wrapper's inherited
  * `line-height:1.6` is re-applied as `leading-[1.6]` on each cell (Tailwind's preflight would
  * otherwise give 1.5), so the label's line box — and therefore the cell height — is unchanged.
  *
@@ -33,19 +33,16 @@ export type AmenityGridItem = {
  * - `IconFeatureGrid` bakes in its own tinted/bordered band, `Container` and centred heading, and
  *   lays items out as a 48px icon *circle* beside a title + description, fixed at 1 → 3 columns
  *   with a 30px gap — no hairline cells, no 4-up grid, and it can't be used bare.
- * - `ChipBar` is a single wrapping row of rounded pill `<button>`s (with active/soon states and an
- *   Iconoir class string, not a caller node) inside a filter bar with an eyebrow label — an
- *   interactive filter control, not a static grid.
+ * - `ChipBar` is a single wrapping row of rounded pill `<button>`s (with active/soon states)
+ *   inside a filter bar with an eyebrow label — an interactive filter control, not a static grid.
  * - `SpecStrip` is a flex strip of big serif *values* over uppercase labels (no icons, no cells).
  * - `PhotoFeatureGrid` is full-bleed photo cards with white text over a scrim.
  * Hence a new primitive (those are left untouched).
  *
  * Bare (no own `Section`/`Container`/heading — the caller owns the section shell and its
  * `SectionHead`, same as `BenefitCards`/`StatTiles`). No entrance animation (Buildings detail is
- * static: its raw `.reveal` was neutralised by `mock.css`); wrap it in `Reveal` where a page
- * animates. MUST be rendered **outside** any `.mk`-scoped subtree: `mock.css`'s un-layered
- * `.mk * { margin:0; padding:0 }` beats `@layer`-wrapped Tailwind utilities regardless of
- * specificity (see `SpecStrip`'s docstring). Purely presentational: no i18n, no data fetching,
+ * static: its raw `.reveal` was neutralised by the old `mock.css`); wrap it in `Reveal` where a
+ * page animates. Purely presentational: no i18n, no data fetching,
  * no icon registry, no `@core/media`.
  */
 export function AmenityGrid({

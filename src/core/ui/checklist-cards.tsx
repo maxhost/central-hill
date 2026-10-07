@@ -21,7 +21,7 @@ export type ChecklistCard = {
  * Estate's "Deal Structures" partnership models (`#deal-structures` → `.models`/`.model`/
  * `.feat-tag`/`.mtag` in `real-estate-page.tsx`'s old `PAGE_STYLE`, identical to
  * `mock/real-estate.html`'s CSS) — ported 1:1 from the live computed styles, including the
- * `.mk` wrapper's inherited `line-height:1.6` (re-applied as `leading-[1.6]`; Tailwind's
+ * old `.mk` wrapper's inherited `line-height:1.6` (re-applied as `leading-[1.6]`; Tailwind's
  * preflight would otherwise give 1.5).
  *
  * Not `PricingCards` (Owners' plans), although the card chrome looks related: that one is a
@@ -43,10 +43,8 @@ export type ChecklistCard = {
  * `minmax(0,1fr)`) to match the original exactly.
  *
  * Bare (no own `Section`/`Container`/heading/note — the caller owns the section shell, sec-head,
- * entrance reveal and any footnote, same as `StatTiles`/`StatBento`). MUST be rendered
- * **outside** any `.mk`-scoped subtree: `mock.css`'s un-layered `.mk * { margin:0; padding:0 }`
- * beats `@layer`-wrapped Tailwind utilities regardless of specificity, which would zero the card
- * padding and list spacing. Purely presentational: no i18n, no data fetching.
+ * entrance reveal and any footnote, same as `StatTiles`/`StatBento`). Purely presentational: no
+ * i18n, no data fetching.
  */
 export function ChecklistCards({
   cards,

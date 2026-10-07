@@ -27,10 +27,8 @@ export type FaqAccordionItem = {
  *
  * Bare (no own `Section`/`Container`/heading, no `FAQPage` JSON-LD): the caller owns the
  * section shell, the `SectionHead` above it and the structured data (`core/seo`'s
- * `faqPageLd` + `JsonLd`), same split as `AmenityGrid`/`StatTiles`. MUST be rendered
- * **outside** any `.mk`-scoped subtree: `mock.css`'s un-layered `.mk * { margin:0; padding:0 }`
- * beats `@layer`-wrapped Tailwind utilities regardless of specificity (see `SpecStrip`'s
- * docstring). Purely presentational: no i18n, no data fetching, no slice imports.
+ * `faqPageLd` + `JsonLd`), same split as `AmenityGrid`/`StatTiles`. Purely presentational: no
+ * i18n, no data fetching, no slice imports.
  */
 export function FaqAccordion({ items, className }: { items: FaqAccordionItem[]; className?: string }) {
   return (

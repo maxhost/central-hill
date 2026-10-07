@@ -5,10 +5,10 @@ export type CertificationCardItem = {
   /** Caller-built logo node, rendered in the card's 48px-tall centred logo slot (which scales up
    * slightly on card hover). Pass either an external/R2 `<img>` — any `<img>` inside the slot is
    * sized by the slot itself (`h-[48px] w-auto max-w-[160px] object-contain`), so the caller only
-   * supplies `src`/`alt` — or a placeholder glyph such as
-   * `<i className="iconoir-check-circle text-[40px] leading-none text-accent-deep" aria-hidden />`
-   * (`mock.css` loads the Iconoir mask-icon stylesheet globally, unscoped from `.mk`, same
-   * precedent as `BenefitCards`/`IconFeatureGrid`'s `item.icon`). Omitted → no slot. */
+   * supplies `src`/`alt` — or a placeholder glyph such as a server parent's
+   * `<Icon name="check-circle" size={40} className="block text-accent-deep" />` from
+   * `@core/ui/icon` (ADR 0034; same precedent as `BenefitCards`/`IconFeatureGrid`'s
+   * `item.icon`). Omitted → no slot. */
   logo?: ReactNode;
   /** Serif card title (`<h3>`), e.g. the certification or membership name. */
   name: string;
@@ -28,7 +28,7 @@ export type CertificationCardItem = {
  * `38px 32px` padding, `text-align:center`; the logo slot `48px` tall, `max-width:160px`, centred
  * with an `18px` bottom margin; the name `22px` serif 500 / `1.08` / `-0.015em` in `ink` (the
  * `.mk h3` base) with `6px` below; the issuer `12px` / `.1em` / uppercase / 600 in `accent-deep`
- * with `14px` below; the description `14px` in `ink-soft`. The `.mk` wrapper's inherited
+ * with `14px` below; the description `14px` in `ink-soft`. The old `.mk` wrapper's inherited
  * `line-height:1.6` is re-applied as `leading-[1.6]` on each card (Tailwind's preflight would
  * otherwise give 1.5). Hover lift / shadow are literal `[transform:…]` / `[box-shadow:…]`
  * arbitrary properties (Tailwind v4's translate/shadow utilities wouldn't produce the original
@@ -66,10 +66,7 @@ export type CertificationCardItem = {
  * Bare (no own `Section`/`Container`/heading — the caller owns the section shell, its
  * `SectionHead` and the entrance `Reveal`, same as `AmenityGrid`/`ChecklistCards`). The original
  * per-card stagger (`.reveal-stagger`) isn't reproduced; callers wrap the grid in one `Reveal`.
- * MUST be rendered **outside** any `.mk`-scoped subtree: `mock.css`'s un-layered
- * `.mk * { margin:0; padding:0 }` beats `@layer`-wrapped Tailwind utilities regardless of
- * specificity (see `SpecStrip`'s docstring). Purely presentational: no i18n, no data fetching,
- * no icon registry, no `@core/media`.
+ * Purely presentational: no i18n, no data fetching, no icon registry, no `@core/media`.
  */
 export function CertificationCards({
   items,

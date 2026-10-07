@@ -142,7 +142,7 @@ export function TwoColumnShowcase({
 /**
  * Fixed check glyph for the floating reassurance badge — always the same icon regardless of
  * caller, so it's inlined here rather than depending on any slice's icon registry (Iconoir
- * `check`, same path/attributes as `pages/ui/components/icon.tsx`'s `"check"` entry).
+ * `check`, same path as the `"check"` entry in `icons/svg.ts`).
  */
 function CheckIcon({ className }: { className?: string }) {
   return (
