@@ -1,6 +1,6 @@
 # Plan por sesiones: iconos (Iconoir) + detalle de blog y de guía
 
-**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–5 hechas, falta revisión+commit de la 5; sigue 6). Cada sesión es autocontenida: se puede hacer
+**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–5 hechas; sigue 6). Cada sesión es autocontenida: se puede hacer
 `/compact` o `/clear` entre sesiones. Para retomar, basta con decir "seguimos con la sesión N de
 `docs/plan-iconos-y-detalles.md`".
 
@@ -352,7 +352,7 @@ Decisiones de la revisión (todo lo marcado `decide` se queda como está en el m
 - **Commit:** los mocks aprobados.
 
 ## Sesión 5: componentes compartidos + montaje de los dos detalles
-**✅ Hecha el 2026-10-07 (pendiente de revisión del usuario y commits).** Cambios respecto a lo previsto:
+**✅ Hecha el 2026-10-07** (commits e260bc1..6466e85). Cambios respecto a lo previsto:
 - **CTA de los laterales en `page_content`** (decisión del usuario, no en Settings): keys nuevas `blog`
   (`post_aside`) y `guides` (`guide_aside`, con foto). Migración 0016 (solo datos, aplicada en dev) inserta las
   filas con `defaultBlog`/`defaultGuides`. Destino fijo en código (`/owners`, `/buildings` del idioma); el CTA
@@ -401,6 +401,11 @@ Decisiones de la revisión (todo lo marcado `decide` se queda como está en el m
   - las páginas de detalle con componentes.
 - Revisar de nuevo todas las rutas públicas buscando restos del mock (el mismo método que la
   auditoría del 2026-10-06).
+- Pendientes de la sesión 5:
+  - borrar los dos worktrees de los agentes en `.claude/worktrees/` (todo está ya en `main`; están "locked":
+    `git worktree remove --force` + borrar las ramas `worktree-agent-*`);
+  - traducir a pt/es/fr el copy de las filas `blog`/`guides` de `page_content` (pasarlas por el pipeline de
+    traducción; hoy salen en inglés en todos los idiomas).
 
 ---
 
