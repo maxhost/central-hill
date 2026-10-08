@@ -156,6 +156,10 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
       {/* Page hook for the header's `body:has([data-page="owners"])` rule (settings `site-header.tsx`),
           which pins the Owners mega-menu open as the section sub-nav once the header is scrolled. */}
       <span hidden data-page="owners" />
+      {/* JS-off fallback: `Reveal` renders hidden until it scrolls into view (as Home/Guests do). */}
+      <noscript>
+        <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
+      </noscript>
       <Hero
         id="worth"
         background={

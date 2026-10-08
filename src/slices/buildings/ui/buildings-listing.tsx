@@ -65,6 +65,10 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
 
   return (
     <Fragment>
+      {/* JS-off fallback: `Reveal` renders hidden until it scrolls into view (as Home/Guests do). */}
+      <noscript>
+        <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
+      </noscript>
       {/*
        * Real JSX — `core/ui`'s `Hero`, single-column (no `aside`), ported 1:1 from the old
        * `.mk`-scoped overrides (now deleted) that strengthened the overlay, vertically
