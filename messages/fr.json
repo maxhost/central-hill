@@ -217,6 +217,17 @@
           }
         }
       }
+    },
+    "home": "Accueil",
+    "breadcrumbLabel": "Fil d'Ariane",
+    "toc": "Dans cet article",
+    "relatedEyebrow": "À lire aussi",
+    "bylineFallback": "Gestion locative à Lisbonne depuis 2014",
+    "callout": {
+      "tip": "Astuce",
+      "info": "Bon à savoir",
+      "warning": "Important",
+      "note": "Remarque"
     }
   },
   "buildings": {

@@ -13,7 +13,8 @@ related posts. Translatable (**[T]**) fields — `title`, `excerpt`, `body`, cat
 
 ## Contract (`contract.ts`)
 
-Types: `PostSummary`, `PostDetail`, `CategoryRef`, `AuthorRef`, `PostBody`, `BodyBlock`.
+Types: `PostSummary`, `PostDetail`, `CategoryRef`, `AuthorRef` (with the optional translated
+`bio`), `PostBody`, `BodyBlock`.
 Reads: `listPosts(locale)`, `getFeaturedPost(locale)`, `listCategories(locale)`,
 `getPostBySlug(locale, slug)`, `listPostParams()`.
 Cache tags: `BLOG_TAGS.list` = `blog_post-list`, `BLOG_TAGS.post(id)` = `blog_post:<id>`.
@@ -46,7 +47,17 @@ Consumed by S9 pages (featured/teasers), S13 seo-geo (URLs), S14 translation-pip
   `NewsletterForm` (`theme="dark"`, `source="blog"`; email + consent + submit → a `newsletter`
   lead), copy from `blog.newsletter.eyebrow|title|description`. The listing is fully
   componentised (no `.mk` subtree). Icons are `core/ui` `<Icon>` (ADR 0034); no `mock.css`.
-- `app/[locale]/blog/[slug]/page.tsx` → `ui/blog-post.tsx` (header · hero · body blocks · CTA · 3 related)
+- `app/[locale]/blog/[slug]/page.tsx` → `ui/blog-post.tsx`, the approved `mock/blog-post.html` on
+  the service-detail skeleton, all `core/ui`: `DetailTitle` (Home / Blog / category; author ·
+  `published_date` date · `reading_time` minutes) · cover in `MosaicGallery adaptive` · `DetailLayout`
+  with the article (`ui/components/body-renderer.tsx`, the mock's `.article` prose; `callout` →
+  `core/ui` `Callout` with the `callout_<variant>` site icon + `blog.callout.*`; `ul` bullets = the
+  `list_bullet` site icon) + byline (initial disc, name, author `bio` or `blog.bylineFallback`), and a
+  `StickyAside` with `TocList` ("In this article", h2 + h3 as sub; `collapsible` copy above the
+  article ≤980px) + `AsideCta` from the pages contract's `getBlogAsideCta` (a post's own `cta`
+  replaces only the button) · `NewsletterSignup` · related posts as the listing's `JournalCard` grid.
+  Heading anchors come from `ui/components/headings.ts` (`headingIds` / `tocItems`, slug + `-2`,
+  `-3` dedupe), the one source for both the TOC and the renderer.
 
 Both: `generateStaticParams` + `generateMetadata` (`core/seo` `buildMetadata`, hreflang from the
 per-locale slug table) + `revalidate`. Article detail emits `BlogPosting` + `BreadcrumbList` JSON-LD.
@@ -98,5 +109,5 @@ Plugs into the backoffice shell. Contributes three `content`-group screens
 ## Tests
 
 `tests/blog.test.ts` — body block-set validation. `tests/blog-admin.test.ts` — the admin
-save schemas (category/author/post + block body + related cap). Run:
-`npx tsx --test src/slices/blog/tests/blog.test.ts src/slices/blog/tests/blog-admin.test.ts`.
+save schemas (category/author/post + block body + related cap). `tests/headings.test.ts` — heading
+anchor ids + TOC entries. Run: `npx tsx --test src/slices/blog/tests/*.test.ts`.

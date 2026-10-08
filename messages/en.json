@@ -217,6 +217,17 @@
           }
         }
       }
+    },
+    "home": "Home",
+    "breadcrumbLabel": "Breadcrumb",
+    "toc": "In this article",
+    "relatedEyebrow": "Keep reading",
+    "bylineFallback": "Property management in Lisbon since 2014",
+    "callout": {
+      "tip": "Tip",
+      "info": "Good to know",
+      "warning": "Important",
+      "note": "Note"
     }
   },
   "buildings": {

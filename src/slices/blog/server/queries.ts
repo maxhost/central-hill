@@ -120,6 +120,8 @@ function mapSummary(row: PostRow, ctx: SummaryCtx): PostSummary {
     slug: row.auth_slug,
     name: content.get("author", row.auth_id, "name") ?? row.auth_slug,
   };
+  const bio = content.get("author", row.auth_id, "bio")?.trim();
+  if (bio) authorRef.bio = bio;
 
   const cover = row.cover_media_id
     ? toImageData(

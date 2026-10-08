@@ -217,6 +217,17 @@
           }
         }
       }
+    },
+    "home": "Início",
+    "breadcrumbLabel": "Navegação estrutural",
+    "toc": "Neste artigo",
+    "relatedEyebrow": "Continue a ler",
+    "bylineFallback": "Gestão de alojamento em Lisboa desde 2014",
+    "callout": {
+      "tip": "Dica",
+      "info": "Bom saber",
+      "warning": "Importante",
+      "note": "Nota"
     }
   },
   "buildings": {

@@ -29,6 +29,8 @@ export interface AuthorRef {
   id: string;
   slug: string;
   name: string;
+  /** Translated short bio (the article byline's second line), when the author has one. */
+  bio?: string;
 }
 
 export interface PostSummary {

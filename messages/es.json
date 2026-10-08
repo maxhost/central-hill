@@ -217,6 +217,17 @@
           }
         }
       }
+    },
+    "home": "Inicio",
+    "breadcrumbLabel": "Ruta de navegación",
+    "toc": "En este artículo",
+    "relatedEyebrow": "Sigue leyendo",
+    "bylineFallback": "Gestión de alojamientos en Lisboa desde 2014",
+    "callout": {
+      "tip": "Consejo",
+      "info": "Conviene saber",
+      "warning": "Importante",
+      "note": "Nota"
     }
   },
   "buildings": {
