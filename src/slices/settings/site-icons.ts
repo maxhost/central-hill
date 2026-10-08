@@ -20,6 +20,15 @@ export const SITE_ICON_DEFAULTS = {
   reading_time: "clock",
   /** Search box in a page head (blog). */
   search: "search",
+  /** Blog post and guide detail: "In this article/guide" head, post publication date, bullet of a post list. */
+  table_of_contents: "list",
+  published_date: "calendar",
+  list_bullet: "check-circle",
+  /** Callouts: the blog `callout` block by variant; `callout_tip` is also the guide "Local tip". */
+  callout_tip: "light-bulb",
+  callout_info: "info-circle",
+  callout_warning: "warning-triangle",
+  callout_note: "notes",
   /** Apartment card specs (building detail). */
   spec_bedrooms: "house-rooms",
   spec_beds: "bed",
@@ -50,6 +59,7 @@ export const SITE_ICON_DEFAULTS = {
   guide_custom: "compass",
 } as const satisfies Record<
   | "account" | "contact" | "language" | "location" | "reading_time" | "search"
+  | "table_of_contents" | "published_date" | "list_bullet" | `callout_${"tip" | "info" | "warning" | "note"}`
   | `services_how_${1 | 2 | 3}`
   | `service_${"included" | "badge" | "note" | "photos"}`
   | `know_${"included" | "cancellation" | "practical"}`

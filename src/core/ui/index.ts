@@ -129,3 +129,9 @@ export { DetailLayout } from "./detail-layout";
 export { StickyAside } from "./sticky-aside";
 /** Content-column block: optional eyebrow + serif `<h2>` + body, 40px padding, hairline top border between blocks (first drops it). */
 export { ContentBlock } from "./content-block";
+/** Detail-page table of contents (client): uppercase head + `#id` links on a hairline rail, the entry being read highlighted; `collapsible` = the closed mobile `<details>` card above the content. */
+export { TocList, type TocItem } from "./toc-list";
+/** Tinted inline note with a 2px left rule (accent / accent-deep for `warning` / line for `note`): caller icon, uppercase label, body. The blog `callout` block and the guide "Local tip". */
+export { Callout, type CalloutVariant } from "./callout";
+/** CTA closing a detail `StickyAside` under its TOC: optional 16:10 photo (caller node), eyebrow, serif title, copy, full-width accent button. */
+export { AsideCta } from "./aside-cta";

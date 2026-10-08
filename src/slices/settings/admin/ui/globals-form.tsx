@@ -44,8 +44,23 @@ const STAT_KEYS: StatKey[] = [
   "apartments",
 ];
 /** Site icons, grouped as the form shows them (ADR 0034 amendment 2). */
-const SITE_ICON_GROUPS: { key: "general" | "specs" | "services" | "guides"; icons: SiteIconKey[] }[] = [
+const SITE_ICON_GROUPS: {
+  key: "general" | "detail" | "specs" | "services" | "guides";
+  icons: SiteIconKey[];
+}[] = [
   { key: "general", icons: ["account", "contact", "language", "location", "reading_time", "search"] },
+  {
+    key: "detail",
+    icons: [
+      "table_of_contents",
+      "published_date",
+      "list_bullet",
+      "callout_tip",
+      "callout_info",
+      "callout_warning",
+      "callout_note",
+    ],
+  },
   { key: "specs", icons: ["spec_bedrooms", "spec_beds", "spec_guests", "spec_size"] },
   {
     key: "services",

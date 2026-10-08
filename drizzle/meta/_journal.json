@@ -113,6 +113,13 @@
       "when": 1791388811019,
       "tag": "0015_site_icons",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1791394711545,
+      "tag": "0016_pages_blog_guides_rows",
+      "breakpoints": true
     }
   ]
 }

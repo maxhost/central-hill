@@ -1,7 +1,8 @@
 # Slice `pages` (S9)
 
 The five **editable fixed marketing pages** — Home, Owners, Real Estate, About, and the
-Guest landing — stored one row per `key` in `page_content`, each validated by a fixed
+Guest landing — plus the `blog` and `guides` rows (copy those sections show outside a post or
+guide), stored one row per `key` in `page_content`, each validated by a fixed
 per-page Zod schema (ADR 0012 / `docs/data-model.md` → Page content model). This slice is
 **pure composition**: it owns only its own page rows and resolves their [T] blocks + media,
 then its UI embeds the dynamic/shared pieces through *other slices' contracts*. It holds **no
@@ -10,7 +11,7 @@ foreign tables**. See `docs/vertical-slices.md` → S9.
 ## Owns
 
 **Table** (`schema.ts`, migrations `0000`, `0003`):
-- `page_content` — `key (unique: home|owners|real_estate|about|guest), data jsonb
+- `page_content` — `key (unique: home|owners|real_estate|about|guest|blog|guides), data jsonb
   (SOURCE-locale values, validated per `key`), og_image_media_id?`. Pages have **no
   draft/published state** (owner direction, `0003`): a row that exists is live.
   Target-locale [T] values live in the cross-cutting `translation` table with
@@ -27,6 +28,12 @@ groups are **fixed-count arrays** (e.g. exactly 6 benefits) — the admin form s
 Reads (all return `null` when the page row has not been authored):
 - `getHomePage(locale)`, `getOwnersPage(locale)`, `getGuestPage(locale)`,
   `getRealEstatePage(locale)`, `getAboutPage(locale)`.
+
+Sidebar CTAs of the detail pages (never null — they fall back to `defaultBlog`/`defaultGuides`):
+- `getBlogAsideCta(locale)` → `BlogAsideCta {eyebrow?, title, body?, cta{label, href}}`, href =
+  the locale's `/owners` (the blog slice swaps in a post's own CTA when it has one);
+- `getGuideAsideCta(locale)` → `GuideAsideCta` (same + `image: MediaImageData | null`), href = the
+  locale's `/buildings`; `GUIDE_ASIDE_FALLBACK_IMAGE` is the photo to show while `image` is null.
 
 Each returns `PageResult<T> = { content, media, ogImage }`:
 - `content` — the page's fixed schema with every [T] leaf resolved for the locale (approved
@@ -682,3 +689,13 @@ Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton f
 (fixed-count arity, unknown key). `tests/pages-admin.test.ts` — the schema → form model
 (`describe` leaf/array detection, `emptyValue`/`applyDefaults` scaffolding, `humanizeKey`). Run:
 `npx tsx --test src/slices/pages/tests/pages.test.ts src/slices/pages/tests/pages-admin.test.ts`.
+
+### `blog` and `guides` rows: the detail-page sidebar CTAs (session 5)
+
+Two more keys (`schemas/blog.ts`, `schemas/guides.ts`) hold the CTA at the bottom of the sticky
+aside of every blog post and every guide (`mock/blog-post.html`, `mock/guide-detail.html`), edited
+in `/admin/pages` like any page. Drizzle `0016` inserts both rows with `defaultBlog` /
+`defaultGuides` (the approved mock copy; the guide title is generic since every guide shares it).
+Destinations are fixed in code so they stay on the visitor's locale. `revalidatePage` revalidates
+`/{locale}/blog` and `/{locale}/guides` as **layouts**, so every post/guide under them refreshes.
+

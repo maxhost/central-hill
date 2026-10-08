@@ -81,7 +81,7 @@ has a known, validated schema (Zod in code) that both renders the admin form and
 ```
 page_content
   id        uuid pk
-  key       text unique   -- 'home' | 'owners' | 'real_estate' | 'about' | 'guest'
+  key       text unique   -- 'home' | 'owners' | 'real_estate' | 'about' | 'guest' | 'blog' | 'guides'
   status    text          -- draft | published
   data      jsonb         -- SOURCE-locale values, validated against the page's fixed schema
   og_image_media_id  uuid null
@@ -161,6 +161,13 @@ page_content
   `/admin/testimonials`; the page stores **no** testimonials block — its heading is i18n chrome,
   `pages.reviews.titleGuests`); dual-CTA contact = **company_settings**; FAQ = **faq** via
   `faq_group_key`. The two `*_media_id` are optional (`""` = fall back to the approved mock asset).
+
+- **blog** (drizzle 0016): `post_aside{eyebrow?, title, body?, cta_label}` — the CTA under the
+  "In this article" TOC of every post. Destination fixed in code (locale `/owners`); a post's own
+  `cta_label`/`cta_url` replaces the button. No FAQ, no OG override in use.
+- **guides** (drizzle 0016): `guide_aside{image_media_id?, eyebrow?, title, body?, cta_label}` — the
+  accommodation CTA under the "In this guide" TOC of every guide. Destination fixed in code (locale
+  `/buildings`); a blank image shows the mock photo.
 
 **FAQ (all five pages).** Every page's `data` carries an optional **`faq_group_key`** (blank/absent =
 no FAQ). When set, it holds the language-neutral `key` of a `faq_group` (faq slice); the page renders

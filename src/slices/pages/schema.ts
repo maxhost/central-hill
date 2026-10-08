@@ -2,8 +2,8 @@ import { jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { pkUuid, timestamps } from "@core/db/columns";
 
 /**
- * Slice `pages` — the 5 editable fixed marketing pages (ADR 0012). `data` holds the
- * SOURCE-locale values, validated against the page's fixed Zod schema (see
+ * Slice `pages` — the 5 editable fixed marketing pages + the `blog`/`guides` copy (ADR 0012).
+ * `data` holds the SOURCE-locale values, validated against the page's fixed Zod schema (see
  * `validation.ts`). Target locales live in `translation` with field='block:<dot.path>'.
  *
  * Pages have **no draft/published state** (owner direction): a row that exists is live.
@@ -12,7 +12,7 @@ import { pkUuid, timestamps } from "@core/db/columns";
 export const page_content = pgTable("page_content", {
   id: pkUuid(),
   key: text()
-    .$type<"home" | "owners" | "real_estate" | "about" | "guest">()
+    .$type<"home" | "owners" | "real_estate" | "about" | "guest" | "blog" | "guides">()
     .notNull()
     .unique(),
   data: jsonb().$type<Record<string, unknown>>().notNull().default({}),

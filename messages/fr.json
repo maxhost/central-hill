@@ -740,6 +740,7 @@
           "default": "Par défaut : {name}",
           "groups": {
             "general": "Général",
+            "detail": "Articles et guides",
             "specs": "Caractéristiques de l’appartement",
             "services": "Services",
             "guides": "Cartes de guide (par modèle)"
@@ -751,6 +752,13 @@
             "location": "Repère de lieu (guides)",
             "reading_time": "Blog : temps de lecture",
             "search": "Champ de recherche (blog)",
+            "table_of_contents": "Sommaire (« Dans cet article/ce guide »)",
+            "published_date": "Blog : date de publication",
+            "list_bullet": "Blog : puce de liste",
+            "callout_tip": "Encadré : astuce (aussi le « Conseil local » des guides)",
+            "callout_info": "Encadré : info",
+            "callout_warning": "Encadré : avertissement",
+            "callout_note": "Encadré : note",
             "spec_bedrooms": "Chambres",
             "spec_beds": "Lits",
             "spec_guests": "Voyageurs",
@@ -983,7 +991,9 @@
         "owners": "Propriétaires",
         "real_estate": "Immobilier",
         "about": "À propos",
-        "guest": "Page voyageurs"
+        "guest": "Page voyageurs",
+        "blog": "Blog",
+        "guides": "Guides"
       },
       "sections": {
         "publish": "Publication",

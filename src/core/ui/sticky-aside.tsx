@@ -9,6 +9,9 @@ import { cn } from "./cn";
  * `mock/service-detail.html`'s `.book` shell; the mock's `top:108px` is its 76px nav + 32px, so
  * this uses the live 64px nav (`NavBar`'s `h-16`) + the same 32px.
  *
+ * Taller than the viewport (a long guide TOC + CTA), it caps at the viewport minus the sticky
+ * offset and 32px below, and scrolls inside, so the bottom (the CTA) stays reachable.
+ *
  * Shell only: what goes inside is the caller's (the service booking card lives in the services
  * slice). Sticky needs the parent grid to use `align-items: start` (otherwise the aside is
  * stretched to the row height and has nowhere to stick). Presentational, no i18n.
@@ -27,7 +30,7 @@ export function StickyAside({
     <aside
       aria-label={label}
       className={cn(
-        "rounded-[8px] border border-line bg-surface p-[30px] leading-[1.6] text-ink min-[981px]:sticky min-[981px]:top-[96px]",
+        "rounded-[8px] border border-line bg-surface p-[30px] leading-[1.6] text-ink min-[981px]:sticky min-[981px]:top-[96px] min-[981px]:max-h-[calc(100vh-128px)] min-[981px]:overflow-y-auto",
         className,
       )}
     >

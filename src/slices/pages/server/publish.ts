@@ -18,12 +18,19 @@ const PAGE_PATH: Record<PageKey, string> = {
   guest: "guests",
   real_estate: "real-estate",
   about: "about",
+  blog: "blog",
+  guides: "guides",
 };
+
+/** Keys whose copy shows on every page under their segment (each post, each guide). */
+const SECTION_KEYS: ReadonlySet<PageKey> = new Set(["blog", "guides"]);
 
 export function revalidatePage(key: PageKey): void {
   updateTag(PAGE_TAGS.page(key));
   const segment = PAGE_PATH[key];
   for (const locale of routing.locales) {
-    revalidatePath(segment ? `/${locale}/${segment}` : `/${locale}`);
+    const path = segment ? `/${locale}/${segment}` : `/${locale}`;
+    if (SECTION_KEYS.has(key)) revalidatePath(path, "layout");
+    else revalidatePath(path);
   }
 }

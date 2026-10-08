@@ -6,6 +6,8 @@ import { translatablePaths } from "@core/validation/primitives";
 import { pageContentSchema } from "../validation";
 import { aboutSchema, guestSchema, homeSchema, translatablePathsByPage } from "../schemas";
 import { defaultAbout } from "../schemas/about";
+import { blogSchema, defaultBlog } from "../schemas/blog";
+import { defaultGuides, guidesSchema } from "../schemas/guides";
 import { collectMediaIds, expand, overlayTranslations } from "../server/overlay";
 
 /**
@@ -232,6 +234,27 @@ test("guest rejects a blank CTA url (the migration must backfill real links)", (
   const data = migration0012Payload() as { hero: { cta: { label: string; url: string } } };
   const broken = { ...data, hero: { ...data.hero, cta: { ...data.hero.cta, url: "" } } };
   assert.equal(guestSchema.safeParse(broken).success, false);
+});
+
+test("blog/guides defaults validate and the 0016 migration inserts exactly them", () => {
+  assert.equal(blogSchema.safeParse(defaultBlog).success, true);
+  assert.equal(guidesSchema.safeParse(defaultGuides).success, true);
+  const sql = readFileSync(path.resolve(process.cwd(), "drizzle/0016_pages_blog_guides_rows.sql"), "utf8");
+  const rows = Object.fromEntries(
+    [...sql.matchAll(/\('(\w+)', '(\{.*\})'::jsonb\)/g)].map((m) => [m[1], JSON.parse(m[2]!.replace(/''/g, "'"))]),
+  );
+  assert.deepEqual(rows, { blog: defaultBlog, guides: defaultGuides });
+});
+
+test("blog/guides aside CTAs translate their copy but not the photo", () => {
+  assert.deepEqual(translatablePathsByPage.blog.sort(), [
+    "post_aside.body",
+    "post_aside.cta_label",
+    "post_aside.eyebrow",
+    "post_aside.title",
+  ]);
+  assert.ok(!translatablePathsByPage.guides.some((p) => p.includes("_media_id")));
+  assert.ok(translatablePathsByPage.guides.includes("guide_aside.title"));
 });
 
 // ── pure overlay logic ──────────────────────────────────────────────────────────

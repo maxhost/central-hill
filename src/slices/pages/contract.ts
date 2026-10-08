@@ -2,7 +2,8 @@
  * Public contract of slice `pages` (S9) — the ONLY surface other slices may import.
  *
  * `pages` owns the five **editable fixed marketing pages** (Home, Owners, Real Estate,
- * About, Guest landing) stored one row per `key` in `page_content`, each validated by a
+ * About, Guest landing) plus the `blog` and `guides` rows (the copy those sections show outside
+ * a post/guide: the sidebar CTAs), stored one row per `key` in `page_content`, each validated by a
  * fixed per-page Zod schema (ADR 0012 / docs/data-model.md → Page content model). The
  * slice is **pure composition**: it reads its own `page_content` rows and resolves their
  * [T] blocks + media, then its UI embeds the dynamic/shared pieces through *other slices'
@@ -53,6 +54,26 @@ export type GuestPage = PageResult<GuestContent>;
 export type RealEstatePage = PageResult<RealEstateContent>;
 export type AboutPage = PageResult<AboutContent>;
 
+/**
+ * The CTA at the bottom of a blog post's sticky aside (the `blog` row's `post_aside`), ready for
+ * `core/ui` `AsideCta`: copy resolved for the locale, `cta.href` = the locale's `/owners`.
+ */
+export interface BlogAsideCta {
+  eyebrow?: string;
+  title: string;
+  body?: string;
+  cta: { label: string; href: string };
+}
+
+/**
+ * The accommodation CTA at the bottom of a guide's sticky aside (the `guides` row's
+ * `guide_aside`): `cta.href` = the locale's `/buildings`; `image` null → render
+ * `GUIDE_ASIDE_FALLBACK_IMAGE`.
+ */
+export interface GuideAsideCta extends BlogAsideCta {
+  image: MediaImageData | null;
+}
+
 export type {
   AboutContent,
   GuestContent,
@@ -64,11 +85,16 @@ export type {
 
 export {
   getAboutPage,
+  getBlogAsideCta,
   getGuestPage,
+  getGuideAsideCta,
   getHomePage,
   getOwnersPage,
   getRealEstatePage,
 } from "./server/queries";
+
+/** Fallback photo (`{ url, alt }`) for the guide aside CTA while no image is picked. */
+export { GUIDE_ASIDE_FALLBACK_IMAGE } from "./schemas/guides";
 
 /**
  * Backoffice contribution (S12). `pagesAdminScreens` is spread into

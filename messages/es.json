@@ -740,6 +740,7 @@
           "default": "Por defecto: {name}",
           "groups": {
             "general": "General",
+            "detail": "Artículos y guías",
             "specs": "Características del apartamento",
             "services": "Servicios",
             "guides": "Tarjetas de guía (por plantilla)"
@@ -751,6 +752,13 @@
             "location": "Pin de ubicación (guías)",
             "reading_time": "Blog: tiempo de lectura",
             "search": "Buscador (blog)",
+            "table_of_contents": "Índice (“En este artículo/guía”)",
+            "published_date": "Blog: fecha de publicación",
+            "list_bullet": "Blog: viñeta de lista",
+            "callout_tip": "Destacado: consejo (también el “Consejo local” de las guías)",
+            "callout_info": "Destacado: información",
+            "callout_warning": "Destacado: aviso",
+            "callout_note": "Destacado: nota",
             "spec_bedrooms": "Dormitorios",
             "spec_beds": "Camas",
             "spec_guests": "Huéspedes",
@@ -983,7 +991,9 @@
         "owners": "Propietarios",
         "real_estate": "Inmobiliaria",
         "about": "Acerca de",
-        "guest": "Página de huéspedes"
+        "guest": "Página de huéspedes",
+        "blog": "Blog",
+        "guides": "Guías"
       },
       "sections": {
         "publish": "Publicación",

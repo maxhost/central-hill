@@ -6,7 +6,9 @@ import type { Locale } from "@core/db/columns";
 import {
   PAGE_TAGS,
   type AboutPage,
+  type BlogAsideCta,
   type GuestPage,
+  type GuideAsideCta,
   type HomePage,
   type OwnersPage,
   type PageResult,
@@ -14,6 +16,8 @@ import {
 } from "../contract";
 import { page_content } from "../schema";
 import { type PageKey, translatablePathsByPage } from "../schemas";
+import { blogSchema, defaultBlog } from "../schemas/blog";
+import { defaultGuides, guidesSchema } from "../schemas/guides";
 import { resolveData, resolveMedia } from "./resolve";
 
 /**
@@ -60,3 +64,38 @@ export const getRealEstatePage = (locale: Locale): Promise<RealEstatePage | null
 
 export const getAboutPage = (locale: Locale): Promise<AboutPage | null> =>
   cached<AboutPage["content"]>("about", locale);
+
+/**
+ * The CTA closing every post's sticky aside, from the `blog` row (`defaultBlog` while no row
+ * exists or it fails the schema). The button always goes to the visitor's locale `/owners`.
+ */
+export async function getBlogAsideCta(locale: Locale): Promise<BlogAsideCta> {
+  const page = await cached<unknown>("blog", locale);
+  const parsed = page ? blogSchema.safeParse(page.content) : null;
+  const a = parsed?.success ? parsed.data.post_aside : defaultBlog.post_aside;
+  return {
+    eyebrow: a.eyebrow || undefined,
+    title: a.title,
+    body: a.body || undefined,
+    cta: { label: a.cta_label, href: `/${locale}/owners` },
+  };
+}
+
+/**
+ * The accommodation CTA closing every guide's sticky aside, from the `guides` row
+ * (`defaultGuides` while no row exists or it fails the schema). The button always goes to the
+ * visitor's locale `/buildings`; `image` is null while no photo is picked (show
+ * `GUIDE_ASIDE_FALLBACK_IMAGE`).
+ */
+export async function getGuideAsideCta(locale: Locale): Promise<GuideAsideCta> {
+  const page = await cached<unknown>("guides", locale);
+  const parsed = page ? guidesSchema.safeParse(page.content) : null;
+  const a = parsed?.success ? parsed.data.guide_aside : defaultGuides.guide_aside;
+  return {
+    image: (a.image_media_id && page?.media[a.image_media_id]) || null,
+    eyebrow: a.eyebrow || undefined,
+    title: a.title,
+    body: a.body || undefined,
+    cta: { label: a.cta_label, href: `/${locale}/buildings` },
+  };
+}

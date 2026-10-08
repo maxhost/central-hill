@@ -740,6 +740,7 @@
           "default": "Default: {name}",
           "groups": {
             "general": "General",
+            "detail": "Blog posts and guides",
             "specs": "Apartment specs",
             "services": "Services",
             "guides": "Guide cards (per template)"
@@ -751,6 +752,13 @@
             "location": "Location pin (guides)",
             "reading_time": "Blog: reading time",
             "search": "Search box (blog)",
+            "table_of_contents": "Table of contents (“In this article/guide”)",
+            "published_date": "Blog: publication date",
+            "list_bullet": "Blog: bullet of a list",
+            "callout_tip": "Callout: tip (also the guide “Local tip”)",
+            "callout_info": "Callout: info",
+            "callout_warning": "Callout: warning",
+            "callout_note": "Callout: note",
             "spec_bedrooms": "Bedrooms",
             "spec_beds": "Beds",
             "spec_guests": "Guests",
@@ -983,7 +991,9 @@
         "owners": "Owners",
         "real_estate": "Real Estate",
         "about": "About",
-        "guest": "Guest landing"
+        "guest": "Guest landing",
+        "blog": "Blog",
+        "guides": "Guides"
       },
       "sections": {
         "publish": "Publish",

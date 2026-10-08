@@ -30,6 +30,8 @@ import { guestSchema } from "@slices/pages/schemas/guest";
 import { ownersSchema } from "@slices/pages/schemas/owners";
 import { realEstateSchema } from "@slices/pages/schemas/real-estate";
 import { aboutSchema, defaultAbout } from "@slices/pages/schemas/about";
+import { blogSchema, defaultBlog } from "@slices/pages/schemas/blog";
+import { defaultGuides, guidesSchema } from "@slices/pages/schemas/guides";
 
 const SITE = "https://www.centralhill.pt";
 const BOOK = `${SITE}/en/rentals/holidays-rentals-rentals-d0/`;
@@ -195,15 +197,17 @@ async function main() {
 
   // Validate every page against its real schema BEFORE writing anything, so a shape
   // mismatch aborts cleanly with an empty DB (never a partial seed).
-  const pages: { key: "home" | "owners" | "guest" | "real_estate" | "about"; schema: { parse: (d: unknown) => unknown }; data: unknown }[] = [
+  const pages: { key: "home" | "owners" | "guest" | "real_estate" | "about" | "blog" | "guides"; schema: { parse: (d: unknown) => unknown }; data: unknown }[] = [
     { key: "home", schema: homeSchema, data: homeData() },
     { key: "owners", schema: ownersSchema, data: ownersData() },
     { key: "guest", schema: guestSchema, data: guestData() },
     { key: "real_estate", schema: realEstateSchema, data: realEstateData() },
     { key: "about", schema: aboutSchema, data: aboutData() },
+    { key: "blog", schema: blogSchema, data: defaultBlog },
+    { key: "guides", schema: guidesSchema, data: defaultGuides },
   ];
   for (const p of pages) p.schema.parse(p.data);
-  console.log("✓ all 5 page schemas validated");
+  console.log(`✓ all ${pages.length} page schemas validated`);
 
   // ── Company settings (singleton) ───────────────────────────────────────────
   await db.insert(company_settings).values({
@@ -333,9 +337,14 @@ async function main() {
     console.log(`✓ faq_group: ${key} (${items.length})`);
   }
 
-  // ── Page content (5 fixed pages) — already validated above ──────────────────
+  // ── Page content (fixed pages + blog/guides copy) — already validated above ──────────────────
   for (const p of pages) {
-    await db.insert(page_content).values({ key: p.key, data: p.data as Record<string, unknown> });
+    // Upsert: migrations create some rows (`guest` in 0012, `blog`/`guides` in 0016).
+    const data = p.data as Record<string, unknown>;
+    await db
+      .insert(page_content)
+      .values({ key: p.key, data })
+      .onConflictDoUpdate({ target: page_content.key, set: { data } });
     console.log(`✓ page_content: ${p.key}`);
   }
 
