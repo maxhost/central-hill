@@ -30,6 +30,14 @@ const benefit = (n: number) => ({
   description: `Why benefit ${n} matters for you and your stay.`,
 });
 
+const ctaPanel = (side: string) => ({
+  image_media_id: "",
+  eyebrow: `For ${side}s`,
+  title: `A ${side} panel title`,
+  body: `Why this matters to a ${side}.`,
+  cta_label: "Learn more",
+});
+
 const validHome = () => ({
   key: "home" as const,
   data: {
@@ -38,7 +46,8 @@ const validHome = () => ({
       headline: "Turning moments into memories",
       subtitle: "Design-led apartments across Portugal.",
       cta_primary: { label: "Book", url: "https://centralhill.pt/buildings" },
-      cta_secondary: { label: "Earnings", url: "https://centralhill.pt/owners" },
+      // Label only: the href is a hardcoded, locale-aware `/owners` route (home-page.tsx).
+      cta_secondary: { label: "Earnings" },
     },
     guests_pitch: {
       headline: "Why book with us",
@@ -53,6 +62,7 @@ const validHome = () => ({
       assurances: [1, 2, 3].map(assurance),
       service_category_slug: "",
     },
+    dual_cta: { owner: ctaPanel("owner"), guest: ctaPanel("guest") },
   },
 });
 
@@ -69,14 +79,29 @@ test("rejects a home page with the wrong benefit arity (fixed-count array)", () 
 
 test("home drops the sections removed from the page (ADR 0031)", () => {
   // Stale rows still carry these keys; the schema must strip rather than reject them,
-  // or an existing page would stop saving.
+  // or an existing page would stop saving. (The dual-CTA band ADR 0031 also removed was
+  // later restored by client direction — b8693db — so it is now required, not stripped.)
   const withLegacy = validHome();
   (withLegacy.data as Record<string, unknown>).owners_pitch = { headline: "gone" };
-  (withLegacy.data as Record<string, unknown>).dual_cta = { owner: {}, guest: {} };
+  (withLegacy.data.hero as Record<string, unknown>).cta_secondary = {
+    label: "Earnings",
+    url: "https://stale-preview.example/es/owners",
+  };
   const parsed = pageContentSchema.safeParse(withLegacy);
   assert.equal(parsed.success, true, "legacy keys must not fail validation");
   assert.ok(parsed.success && !("owners_pitch" in parsed.data.data), "owners_pitch is stripped");
-  assert.ok(parsed.success && !("dual_cta" in parsed.data.data), "dual_cta is stripped");
+  assert.ok(
+    parsed.success &&
+      parsed.data.key === "home" &&
+      !("url" in parsed.data.data.hero.cta_secondary),
+    "the legacy cta_secondary url is stripped",
+  );
+});
+
+test("home requires the restored dual-CTA band", () => {
+  const row = validHome();
+  delete (row.data as Record<string, unknown>).dual_cta;
+  assert.equal(pageContentSchema.safeParse(row).success, false);
 });
 
 test("rejects an unknown page key", () => {
@@ -90,6 +115,7 @@ test("home exposes prose leaves as translatable but not media ids or urls", () =
   for (const p of [
     "hero.headline",
     "hero.cta_primary.label",
+    "hero.cta_secondary.label",
     "guests_pitch.headline",
     "guests_pitch.benefits[].title",
     "guests_pitch.benefits[].description",
@@ -98,16 +124,24 @@ test("home exposes prose leaves as translatable but not media ids or urls", () =
     "services_carousel.headline",
     "services_carousel.eyebrow",
     "services_carousel.assurances[].label",
+    "dual_cta.owner.eyebrow",
+    "dual_cta.owner.title",
+    "dual_cta.owner.body",
+    "dual_cta.owner.cta_label",
+    "dual_cta.guest.title",
   ]) {
     assert.ok(paths.includes(p), `expected translatable path ${p}`);
   }
   assert.ok(!paths.includes("hero.video_media_id"), "media ids are not translatable");
   assert.ok(!paths.includes("guests_pitch.image_media_id"), "media ids are not translatable");
+  assert.ok(!paths.includes("dual_cta.owner.image_media_id"), "media ids are not translatable");
+  assert.ok(!paths.includes("dual_cta.guest.image_media_id"), "media ids are not translatable");
   assert.ok(!paths.includes("hero.cta_primary.url"), "urls are not translatable");
-  // The removed sections must not leak back into the translation pipeline, which would
+  assert.ok(!paths.includes("hero.cta_secondary.url"), "the owners CTA has no stored url");
+  // The removed section must not leak back into the translation pipeline, which would
   // queue work for copy that no page renders (ADR 0031).
   assert.ok(
-    !paths.some((p) => p.startsWith("owners_pitch") || p.startsWith("dual_cta")),
+    !paths.some((p) => p.startsWith("owners_pitch")),
     "the removed Home sections are not translatable",
   );
   assert.ok(!paths.includes("faq_group_key"), "the faq group key is language-neutral, not translatable");

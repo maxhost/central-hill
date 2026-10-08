@@ -28,6 +28,7 @@ function valid(overrides: Record<string, unknown> = {}) {
     og_image_media_id: null,
     avantio_id: null,
     avantio_url: null,
+    booking_enabled: false,
     name: "Lapa Riverside",
     headline: "Riverside living",
     teaser: "A calm address by the water.",
@@ -63,10 +64,22 @@ test("rejects a non-kebab slug", () => {
   assert.equal(buildingSaveInput.safeParse(valid({ slug: "Lapa Riverside" })).success, false);
 });
 
-test("requires a cover image (uuid, not null)", () => {
-  const r = buildingSaveInput.safeParse(valid({ cover_media_id: null }));
+test("cover image is optional (placeholder is shown when absent)", () => {
+  assert.equal(buildingSaveInput.safeParse(valid({ cover_media_id: null })).success, true);
+});
+
+test("rejects a cover image that is not a uuid", () => {
+  const r = buildingSaveInput.safeParse(valid({ cover_media_id: "not-a-uuid" }));
   assert.equal(r.success, false);
   if (!r.success) assert.ok(r.error.issues.some((i) => i.path.join(".") === "cover_media_id"));
+});
+
+test("requires booking_enabled (boolean)", () => {
+  const input: Record<string, unknown> = valid();
+  delete input.booking_enabled;
+  const r = buildingSaveInput.safeParse(input);
+  assert.equal(r.success, false);
+  if (!r.success) assert.ok(r.error.issues.some((i) => i.path.join(".") === "booking_enabled"));
 });
 
 test("rejects a FAQ row with an empty question", () => {

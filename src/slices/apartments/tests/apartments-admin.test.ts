@@ -5,8 +5,8 @@ import { apartmentSaveInput } from "../admin/validation";
 /**
  * Slice `apartments` backoffice (S12) — the admin **save** schema. Pure (Zod, no DB).
  * Simplified to the building-card fields: no slug (auto-generated in the action),
- * no bathrooms/size/floor/gallery/description/SEO; cover and Avantio handles are
- * optional. Run: `npx tsx --test src/slices/apartments/tests/apartments-admin.test.ts`.
+ * no bathrooms/floor/gallery/description/SEO; size_m2 is back (nullable), and cover
+ * and Avantio handles are optional. Run: `npx tsx --test src/slices/apartments/tests/apartments-admin.test.ts`.
  */
 
 const BUILDING = "11111111-1111-4111-8111-111111111111";
@@ -21,6 +21,7 @@ function valid(overrides: Record<string, unknown> = {}) {
     bedrooms: 1,
     max_guests: 2,
     beds_count: 1,
+    size_m2: 35,
     cover_media_id: COVER,
     avantio_id: "AV-2A",
     avantio_url: "https://book.example.com/2a",
@@ -36,7 +37,13 @@ test("accepts a complete, valid apartment", () => {
 test("card-only optionals accepted as null", () => {
   assert.equal(
     apartmentSaveInput.safeParse(
-      valid({ badge: null, cover_media_id: null, avantio_id: null, avantio_url: null }),
+      valid({
+        badge: null,
+        size_m2: null,
+        cover_media_id: null,
+        avantio_id: null,
+        avantio_url: null,
+      }),
     ).success,
     true,
   );
