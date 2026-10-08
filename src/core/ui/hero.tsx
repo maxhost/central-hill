@@ -187,7 +187,11 @@ export function Hero({
         // the copy under the fixed navbar, so it's the one value that tunes that gap. It's a
         // floor, not a cap — Owners' card is tall enough that actual rendered height is
         // content-driven well past this minimum either way, confirmed against a live render.
-        compact ? "min-h-[64vh]" : "min-h-[73.6vh]",
+        // Capped in px: browser zoom-out multiplies the CSS viewport height, so a bare `vh`
+        // floor kept the hero filling the screen while its px-sized copy shrank (client
+        // report, 2026-10-07). The caps sit just above the 1080p render (707/614px), so normal
+        // screens at 100% are unchanged and zooming out now scales the hero with its content.
+        compact ? "min-h-[min(64vh,660px)]" : "min-h-[min(73.6vh,760px)]",
       )}
     >
       {background}
