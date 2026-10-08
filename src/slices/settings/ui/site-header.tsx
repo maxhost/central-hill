@@ -214,7 +214,10 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
             loginHref={AVANTIO_OWNERS_LOGIN_URL}
             loginLabel={t("ownerLogin")}
             contactSlot={
+              // Keyed: without it React (dev) warns "unique key" when this server-built element
+              // renders inside the client drawer.
               <ContactDialog
+                key="drawer-contact"
                 variant="button"
                 label={t("contact")}
                 title={t("contactDialog.title")}

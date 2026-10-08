@@ -26,6 +26,10 @@ export interface NavEntry {
  * doesn't depend on a settings-slice component. Hidden on `lg+`, where `NavBar` shows the full
  * bar. Receives already-resolved, serializable nav entries + CTA labels — no data fetching of
  * its own. See `docs/specs/home-component-library/08-nav-chrome.md`.
+ *
+ * Entries with sub-tabs are an accordion: the label stays a link to the page, a chevron button
+ * beside it (`aria-expanded`/`aria-controls`) reveals the sub-pages, and only one entry is open
+ * at a time. Closing the drawer collapses it.
  */
 export function MobileDrawer({
   links,
@@ -49,6 +53,12 @@ export function MobileDrawer({
   closeLabel: string;
 }) {
   const [open, setOpen] = useState(false);
+  // Accordion: at most one entry's sub-pages are expanded; opening another closes it.
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const close = () => {
+    setOpen(false);
+    setExpanded(null);
+  };
 
   return (
     <div className="lg:hidden">
@@ -56,7 +66,7 @@ export function MobileDrawer({
         type="button"
         aria-label={open ? closeLabel : openLabel}
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => (open ? close() : setOpen(true))}
         className="inline-flex h-10 w-10 items-center justify-center rounded-md text-ink hover:bg-surface"
       >
         <UiIcon name={open ? "xmark" : "menu"} size={open ? 28 : 20} />
@@ -68,31 +78,55 @@ export function MobileDrawer({
           className="fixed inset-x-0 top-16 z-40 max-h-[calc(100vh-4rem)] overflow-y-auto border-b border-line bg-bg shadow-sm"
         >
           <nav className="flex flex-col px-6 py-4">
-            {links.map((l) => (
-              <div key={l.href + l.label} className="border-b border-line/60">
-                <Link
-                  href={l.href}
-                  onClick={() => setOpen(false)}
-                  className="block py-3 text-base text-ink transition-colors hover:text-accent"
-                >
-                  {l.label}
-                </Link>
-                {l.children?.length ? (
-                  <div className="flex flex-col pb-2 pl-4">
-                    {l.children.map((c) => (
-                      <Link
-                        key={c.href + c.label}
-                        href={c.href}
-                        onClick={() => setOpen(false)}
-                        className="py-2 text-sm text-ink-soft transition-colors hover:text-accent"
+            {links.map((l) => {
+              const key = l.href + l.label;
+              const hasChildren = Boolean(l.children?.length);
+              const isOpen = expanded === key;
+              const panelId = `drawer-sub-${key.replace(/[^a-z0-9]+/gi, "-")}`;
+              return (
+                <div key={key} className="border-b border-line/60">
+                  <div className="flex items-center justify-between gap-2">
+                    <Link
+                      href={l.href}
+                      onClick={close}
+                      className="block flex-1 py-3 text-base text-ink transition-colors hover:text-accent"
+                    >
+                      {l.label}
+                    </Link>
+                    {hasChildren ? (
+                      <button
+                        type="button"
+                        aria-label={l.label}
+                        aria-expanded={isOpen}
+                        aria-controls={panelId}
+                        onClick={() => setExpanded(isOpen ? null : key)}
+                        className="-mr-2 inline-flex h-11 w-11 flex-none items-center justify-center rounded-md text-ink-soft transition-colors hover:bg-surface hover:text-ink"
                       >
-                        {c.label}
-                      </Link>
-                    ))}
+                        <UiIcon
+                          name="nav-arrow-down"
+                          size={18}
+                          className={isOpen ? "rotate-180 transition-transform duration-200" : "transition-transform duration-200"}
+                        />
+                      </button>
+                    ) : null}
                   </div>
-                ) : null}
-              </div>
-            ))}
+                  {hasChildren && isOpen ? (
+                    <div id={panelId} className="flex flex-col pb-2 pl-4">
+                      {l.children!.map((c) => (
+                        <Link
+                          key={c.href + c.label}
+                          href={c.href}
+                          onClick={close}
+                          className="py-2 text-sm text-ink-soft transition-colors hover:text-accent"
+                        >
+                          {c.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
 
             <a
               href={loginHref}
@@ -108,7 +142,7 @@ export function MobileDrawer({
                 href={book.href}
                 target={book.external ? "_blank" : undefined}
                 rel={book.external ? "noopener noreferrer" : undefined}
-                onClick={() => setOpen(false)}
+                onClick={close}
                 className={buttonClassName("ghost", undefined, "sm")}
               >
                 {book.label}
@@ -120,7 +154,7 @@ export function MobileDrawer({
                 href={earn.href}
                 target={earn.external ? "_blank" : undefined}
                 rel={earn.external ? "noopener noreferrer" : undefined}
-                onClick={() => setOpen(false)}
+                onClick={close}
                 className={buttonClassName("primary", undefined, "sm")}
               >
                 {earn.label}
