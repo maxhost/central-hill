@@ -153,6 +153,9 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
 
   return (
     <>
+      {/* Page hook for the header's `body:has([data-page="owners"])` rule (settings `site-header.tsx`),
+          which pins the Owners mega-menu open as the section sub-nav once the header is scrolled. */}
+      <span hidden data-page="owners" />
       <Hero
         id="worth"
         background={
