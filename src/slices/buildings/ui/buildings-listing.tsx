@@ -139,7 +139,7 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
               eyebrow="For Owners"
               title="Looking to add your property to our portfolio?"
               body="Join the buildings above. We'll assess your apartment and show you what it could earn — free, no obligation, within 48 hours."
-              cta={{ href: `/${locale}#owners`, label: "Get Your Free Earnings Estimate →" }}
+              cta={{ href: "#estimate", label: "Get Your Free Earnings Estimate →" }}
               contactLine="Call +351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725"
             />
           </Reveal>
@@ -176,28 +176,31 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
        * `note` here (the original markup never had one under this particular button, unlike
        * Owners' hero card). Image is still the fixed Pexels placeholder (no schema field).
        */}
-      <Section className="border-t border-line bg-[color-mix(in_srgb,var(--color-line)_26%,var(--color-bg))]">
-        <Container>
-          <Reveal label="buildings-calculator">
-            <div className="grid grid-cols-1 items-center gap-[34px] min-[981px]:grid-cols-2 min-[981px]:gap-16">
-              <OwnerEstimateForm
-                badge="Earn +25%"
-                headline="Discover your property's earning potential"
-                subheadline="Find out how much your property could earn — free, instant, no obligation."
-                ctaLabel="Calculate My Earnings"
-              />
-              <div className="order-first min-[981px]:order-none">
-                {/* eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset */}
-                <img
-                  src={CALC_FALLBACK_IMG}
-                  alt={CALC_FALLBACK_ALT}
-                  className="aspect-[4/5] w-full rounded-sm object-cover"
+      {/* `#estimate` is the target of the "For Owners" panel's CTA above. */}
+      <div id="estimate" className="scroll-mt-[84px]">
+        <Section className="border-t border-line bg-[color-mix(in_srgb,var(--color-line)_26%,var(--color-bg))]">
+          <Container>
+            <Reveal label="buildings-calculator">
+              <div className="grid grid-cols-1 items-center gap-[34px] min-[981px]:grid-cols-2 min-[981px]:gap-16">
+                <OwnerEstimateForm
+                  badge="Earn +25%"
+                  headline="Discover your property's earning potential"
+                  subheadline="Find out how much your property could earn — free, instant, no obligation."
+                  ctaLabel="Calculate My Earnings"
                 />
+                <div className="order-first min-[981px]:order-none">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset */}
+                  <img
+                    src={CALC_FALLBACK_IMG}
+                    alt={CALC_FALLBACK_ALT}
+                    className="aspect-[4/5] w-full rounded-sm object-cover"
+                  />
+                </div>
               </div>
-            </div>
-          </Reveal>
-        </Container>
-      </Section>
+            </Reveal>
+          </Container>
+        </Section>
+      </div>
     </Fragment>
   );
 }
