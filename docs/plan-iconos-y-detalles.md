@@ -1,6 +1,6 @@
 # Plan por sesiones: iconos (Iconoir) + detalle de blog y de guía
 
-**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–4 hechas; sigue 5). Cada sesión es autocontenida: se puede hacer
+**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–5 hechas, falta revisión+commit de la 5; sigue 6). Cada sesión es autocontenida: se puede hacer
 `/compact` o `/clear` entre sesiones. Para retomar, basta con decir "seguimos con la sesión N de
 `docs/plan-iconos-y-detalles.md`".
 
@@ -352,8 +352,29 @@ Decisiones de la revisión (todo lo marcado `decide` se queda como está en el m
 - **Commit:** los mocks aprobados.
 
 ## Sesión 5: componentes compartidos + montaje de los dos detalles
+**✅ Hecha el 2026-10-07 (pendiente de revisión del usuario y commits).** Cambios respecto a lo previsto:
+- **CTA de los laterales en `page_content`** (decisión del usuario, no en Settings): keys nuevas `blog`
+  (`post_aside`) y `guides` (`guide_aside`, con foto). Migración 0016 (solo datos, aplicada en dev) inserta las
+  filas con `defaultBlog`/`defaultGuides`. Destino fijo en código (`/owners`, `/buildings` del idioma); el CTA
+  propio de un post sustituye solo el botón. Título por defecto de la guía: "Your base for exploring" (el del
+  mock solo valía para playas). `revalidatePage` revalida `/blog` y `/guides` como layout.
+- `core/ui`: `TocList` (cliente; variante `collapsible` para móvil), `Callout`, `AsideCta` (`divided`).
+  `StickyAside` pasa a tener `max-height` + scroll interno (el lateral de guías largas se salía de la pantalla).
+- 7 site icons nuevos (grupo "Blog posts and guides"): `table_of_contents`, `published_date`, `list_bullet`,
+  `callout_tip|info|warning|note` (`callout_tip` = "Local tip").
+- `seed-demo` hace upsert de `page_content` (chocaba con la fila `guest` de la 0012).
+- Blog (agente): `blog-post.tsx` reescrito, `BodyRenderer` restilizado, ids de encabezados en `headings.ts`
+  (+test), byline con `bio` del autor o texto por defecto. Guía (agente): `guide-page.tsx` reescrito,
+  `RecommendationCard` acepta `place` (fila de teléfono + "Directions →" a Google Maps; el listado queda
+  idéntico), anclas por slug del título (`carcavelos-oeiras`), "More Lisbon guides" con `GuideCard`.
+  Se quita el enlace "← back to guides" (lo sustituye el breadcrumb); la galería no tiene "ver todas".
+- Verificado: typecheck y lint limpios; tests de blog 20/20, guides 22/22, settings 18/18, core/ui icon 10/10,
+  pages con los 5 fallos previos de siempre. Capturas a 1440/390 en el scratchpad (`s5-blog`, `s5-guide`, `s5-main`).
+- `PostCard` y `PlaceCard` ya no se usan: se borran en la sesión 6.
 - **Incluye:** los dos CTA de los laterales, editables en el backoffice (dónde guardarlos, p. ej. en settings o
-  en `page_content`, se decide al empezar la sesión, con un ADR si toca el kernel).
+  en `page_content`, se decide al empezar la sesión, con un ADR si toca el kernel). Recomendación
+  del coordinador: Settings, junto a "Site icons" (son textos globales, no de una página). Preguntar al usuario
+  antes de empezar.
 - **Pasos:**
   1. **El coordinador, primero, para evitar conflictos:**
      - `core/ui` `TocList` (índice con anclas, resalta la sección activa, sticky dentro de
