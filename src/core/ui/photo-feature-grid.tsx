@@ -70,12 +70,8 @@ export type PhotoFeatureGridItem = {
  * worth knowing when it's its turn: it only needs a `ctaVariant="ghost"` (its button is
  * `btn-ghost`, not `btn-accent`) and no other prop change.
  *
- * The CTA uses `core/ui`'s `ButtonLink` (not a pixel-reproduction of the mock's raw `.btn`
- * CSS) — same choice every other ported CTA in this codebase already made
- * (`TwoColumnShowcase`/`EditorialSplit`/`PricingCards`/`FeatureCtaBand`/`CalloutBand`), so this
- * inherits, not introduces, `ButtonLink`'s own small deviations from `.btn` (`rounded-md` 6px
- * vs the mock's `3px`, `py-3` 12px vs `14px`, `text-surface` `#fffdf8` vs the mock's literal
- * `#fff`) — noted here for completeness, not treated as this component's bug to fix.
+ * The CTA uses `core/ui`'s `ButtonLink`, like every other CTA on the site (ADR 0035: it is the
+ * mock's `.btn`).
  *
  * Purely presentational, per the `core/ui` ground rule: no `@core/media`, no slice icon
  * registry, no i18n, no `Reveal` wired in internally (the caller wraps it, same as

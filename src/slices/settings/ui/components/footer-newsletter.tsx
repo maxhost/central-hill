@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { UiIcon } from "@core/ui";
+import { UiIcon, buttonClassName } from "@core/ui";
 
 /** Copy for the whole widget — plain props for now (i18n `settings.footer.newsletter.*`);
  *  will move to the backoffice once this section is wired to a real destination. */
@@ -78,11 +78,11 @@ export function FooterNewsletter({ labels }: { labels: FooterNewsletterLabels })
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={labels.placeholder}
-          className="w-full min-w-0 flex-1 rounded-[3px] border border-white/25 bg-transparent px-4 py-2.5 text-sm text-on-feature placeholder:text-on-feature-soft/70 focus:border-white focus:outline-none"
+          className="w-full min-w-0 flex-1 rounded-[3px] border border-white/25 bg-transparent px-4 py-[11px] text-[14px] leading-[1.6] text-on-feature placeholder:text-on-feature-soft/70 focus:border-white focus:outline-none"
         />
         <button
           type="submit"
-          className="shrink-0 whitespace-nowrap rounded-[3px] bg-accent px-5 py-2.5 text-sm font-medium text-surface transition-colors hover:bg-accent-deep"
+          className={buttonClassName("primary", "shrink-0 whitespace-nowrap", "sm")}
         >
           {labels.cta}
         </button>
@@ -159,7 +159,7 @@ export function FooterNewsletter({ labels }: { labels: FooterNewsletterLabels })
 
                 <button
                   type="submit"
-                  className="inline-flex w-full items-center justify-center rounded-md bg-accent px-5 py-3 text-sm font-medium text-surface transition-colors hover:bg-accent-deep sm:w-auto"
+                  className={buttonClassName("primary", "w-full sm:w-auto")}
                 >
                   {labels.submit}
                 </button>

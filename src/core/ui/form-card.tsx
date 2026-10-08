@@ -1,4 +1,5 @@
 import type { ComponentProps, ReactNode } from "react";
+import { buttonClassName } from "./button";
 import { cn } from "./cn";
 import { UiIcon } from "./ui-icon";
 
@@ -294,8 +295,7 @@ export function FormTextarea({ className, ...props }: ComponentProps<"textarea">
   return <textarea {...props} className={cn(controlClass, "min-h-[110px] resize-y", className)} />;
 }
 
-const accentButtonClass =
-  "inline-flex cursor-pointer items-center justify-center gap-[0.5em] rounded-[3px] border border-transparent bg-accent px-[28px] py-[14px] text-[14px] font-medium tracking-[0.01em] text-white transition-all duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-accent-deep disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-accent";
+const accentButtonClass = buttonClassName("primary");
 
 /** The solid accent button (the original `.btn.btn-accent`) as a plain `<button>` — `type`
  * defaults to `"button"` (e.g. wizard "next" steps), every native prop forwarded, `className`

@@ -112,8 +112,7 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   `mock/building-detail.html`; no drift found) and verified computed-style- and
   screenshot-identical at 1440/834/390, button hover included. Not `FeaturePanel` (bordered,
   stacked, `<h3>`), `FeatureCtaBand` (photo split) or `CalloutBand` (light, rounded); the button
-  is a literal `.btn.btn-accent` port, not `ButtonLink` (whose `primary` differs in radius,
-  padding, border, tracking and uses `next/link`) — see `ActionBand`'s docstring. Rendered on
+  is `buttonClassName("primary")` on a plain `<a>` (ADR 0035). Rendered on
   every building, **outside** `.mk`, after the still-raw amenities/FAQ `.mk` wrapper (order
   unchanged); links to the building's Avantio URL in a new tab, else the in-page `#book`
   anchor; static (the old `.reveal` was neutralised). Labels: existing `buildings.book*` keys.

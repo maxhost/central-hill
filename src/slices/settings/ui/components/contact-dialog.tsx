@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ContactForm } from "@slices/leads/contract";
-import { UiIcon, cn } from "@core/ui";
+import { UiIcon, buttonClassName, cn } from "@core/ui";
 
 /**
  * Contact entry point (client feedback B1). Mirrors LovelyStay: a contact option sits
@@ -69,10 +69,8 @@ export function ContactDialog({
         title={variant === "icon" ? label : undefined}
         data-icon-btn={variant === "icon" ? "" : undefined}
         className={cn(
-          variant === "button" &&
-            "inline-flex items-center justify-center rounded-md border border-line px-7 py-3 text-sm font-medium text-ink transition-colors hover:border-ink",
-          variant === "light" &&
-            "inline-flex items-center justify-center rounded-md border border-white/60 px-7 py-3 text-sm font-medium text-white transition-colors hover:bg-white hover:text-ink",
+          variant === "button" && buttonClassName("outline"),
+          variant === "light" && buttonClassName("light"),
           variant === "icon" &&
             "inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface hover:text-ink",
           variant === "link" && "text-sm text-ink-soft transition-colors hover:text-ink",

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { MediaImage, type MediaImageData } from "@core/media";
-import { Callout, type CalloutVariant, cn } from "@core/ui";
+import { Callout, type CalloutVariant, buttonClassName, cn } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import type { BodyBlock, PostBody } from "../../contract";
 
@@ -91,8 +91,6 @@ function spaceAbove(block: BodyBlock, prev: BodyBlock | null): string {
 
 const HEADING_BASE = "scroll-mt-[96px] font-serif font-medium tracking-[-0.015em] text-ink";
 const ITEM = "text-base leading-[1.55] text-ink";
-const BTN =
-  "inline-flex items-center justify-center gap-[0.5em] rounded-[3px] border border-transparent bg-accent px-7 py-[14px] text-[14px] font-medium tracking-[0.01em] text-white transition-all duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-accent-deep";
 
 function Block({
   block,
@@ -207,7 +205,7 @@ function Block({
     case "cta":
       return (
         <div className={space}>
-          <a href={block.url} className={BTN}>
+          <a href={block.url} className={buttonClassName("primary")}>
             {block.label}
           </a>
         </div>

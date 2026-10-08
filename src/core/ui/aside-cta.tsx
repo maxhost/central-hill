@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { buttonClassName } from "./button";
 import { cn } from "./cn";
 
 /**
@@ -59,7 +60,7 @@ export function AsideCta({
       <Link
         href={cta.href}
         {...(external ? { target: "_blank", rel: "noopener noreferrer" } : null)}
-        className="mt-[18px] flex w-full cursor-pointer items-center justify-center gap-[0.5em] rounded-[3px] border border-transparent bg-accent px-7 py-[14px] text-[14px] font-medium tracking-[0.01em] text-white transition-all duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-accent-deep"
+        className={buttonClassName("primary", "mt-[18px] w-full")}
       >
         {cta.label}
       </Link>

@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { Link } from "@/i18n/navigation";
+import { buttonClassName } from "./button";
 import { UiIcon } from "./ui-icon";
 
 export interface NavCta {
@@ -108,7 +109,7 @@ export function MobileDrawer({
                 target={book.external ? "_blank" : undefined}
                 rel={book.external ? "noopener noreferrer" : undefined}
                 onClick={() => setOpen(false)}
-                className="inline-flex items-center justify-center rounded-[3px] border border-ink px-5 py-3 text-sm font-medium text-ink transition-colors hover:bg-ink hover:text-bg"
+                className={buttonClassName("ghost", undefined, "sm")}
               >
                 {book.label}
               </a>
@@ -120,7 +121,7 @@ export function MobileDrawer({
                 target={earn.external ? "_blank" : undefined}
                 rel={earn.external ? "noopener noreferrer" : undefined}
                 onClick={() => setOpen(false)}
-                className="inline-flex items-center justify-center rounded-[3px] bg-accent px-5 py-3 text-sm font-medium text-surface transition-colors hover:bg-accent-deep"
+                className={buttonClassName("primary", undefined, "sm")}
               >
                 {earn.label}
               </a>

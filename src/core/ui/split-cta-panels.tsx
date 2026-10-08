@@ -1,3 +1,4 @@
+import { buttonClassName } from "./button";
 import { cn } from "./cn";
 
 export type SplitCtaPanel = {
@@ -20,16 +21,13 @@ export type SplitCtaPanel = {
   contactLine?: string;
 };
 
-const BUTTON =
-  "inline-flex cursor-pointer items-center gap-[0.5em] rounded-[3px] border border-transparent px-7 py-[14px] text-[14px] font-medium tracking-[0.01em] no-underline transition-all duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)]";
-
 const TONE = {
   light: {
     panel: "bg-surface text-ink",
     eyebrow: "text-accent-deep",
     title: "text-ink",
     body: "text-ink-soft",
-    button: "bg-ink text-bg hover:bg-feature",
+    button: "solid",
     contact: "",
   },
   dark: {
@@ -37,7 +35,7 @@ const TONE = {
     eyebrow: "text-feature-accent",
     title: "text-white",
     body: "text-on-feature-soft",
-    button: "bg-accent text-white hover:bg-accent-deep",
+    button: "primary",
     contact: "text-on-feature-soft",
   },
 } as const;
@@ -67,15 +65,9 @@ const TONE = {
  *   plus one outer border, not a border per panel. Its button is also `ButtonLink` (see below).
  * Bending either to this shape would change their existing consumers' render.
  *
- * The buttons are **not** `ButtonLink` (same finding as `ActionBand`): its variants are
- * `rounded-md`, `py-3`, no hairline border, no letter-spacing, `transition-colors`, a
- * `next/link`, and there is no ink-filled variant at all — while the original `.btn` is
- * `border-radius:3px`, `padding:14px 28px`, a 1px transparent border (part of its 52.39px
- * height), `letter-spacing:.01em`, `transition:.25s` on all properties and a plain `<a>`
- * (`.btn-solid` = ink fill / `bg` text → `feature` on hover; `.btn-accent` = accent fill /
- * white text → `accent-deep` on hover). Those values are ported literally here. The button is
- * an inline-flex box in a block panel, so a long label wraps inside it on narrow panels
- * (Guests' owner CTA at 390px) — same as the original.
+ * The buttons are `buttonClassName` (ADR 0035): `solid` on the light panel, `primary` on the dark
+ * one, rendered as a plain `<a>`. The button is an inline-flex box in a block panel, so a long
+ * label wraps inside it on narrow panels (Guests' owner CTA at 390px) — same as the original.
  *
  * Purely presentational, per the `core/ui` ground rule: no i18n, no fetching, no domain
  * types, no `<section>`/column of its own (the original's `<section>` padding is a page
@@ -124,7 +116,7 @@ export function SplitCtaPanels({
             <a
               href={p.cta.href}
               {...(p.cta.external ? { target: "_blank", rel: "noopener noreferrer" } : null)}
-              className={cn(BUTTON, t.button)}
+              className={buttonClassName(t.button)}
             >
               {`${p.cta.label} →`}
             </a>

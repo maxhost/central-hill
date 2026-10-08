@@ -1,3 +1,5 @@
+import { buttonClassName } from "./button";
+
 export type ActionBandCta = {
   href: string;
   /** Pre-translated button label — the band appends the trailing " →". */
@@ -26,14 +28,9 @@ export type ActionBandCta = {
  *   full-bleed band, and has no note under its CTA.
  * Bending any of them to this shape would change their existing consumers' render.
  *
- * The button is **not** `ButtonLink`: its `primary` variant is `rounded-md`, `py-3`, no
- * hairline border, no letter-spacing, `text-surface`, `transition-colors` and `next/link` —
- * while the original `.btn.btn-accent` is `border-radius:3px`, `padding:14px 28px`, a 1px
- * transparent border (part of its 52.39px height), `letter-spacing:.01em`, white text,
- * `transition:.25s` on all properties and a plain `<a>` (the href is either an external Avantio
- * URL or an in-page `#book` anchor). Those values are ported literally here instead. Flex-item
- * blockification makes the button (and the note) compute to `display:flex`/`block` with their
- * content width — same as the original, since the action column is `align-items:flex-start`.
+ * The button is `buttonClassName("primary")` (ADR 0035) on a plain `<a>` (the href is either an
+ * external Avantio URL or an in-page `#book` anchor). The action column is
+ * `align-items:flex-start`, so the button keeps its content width.
  *
  * Static on purpose: the original's `.reveal` was neutralised by `mock.css` and this page
  * mounts no scroll-reveal script, so the band never animated. The colors are tokens; the
@@ -78,7 +75,7 @@ export function ActionBand({
             <a
               href={cta.href}
               {...(cta.external ? { target: "_blank", rel: "noopener noreferrer" } : null)}
-              className="inline-flex cursor-pointer items-center gap-[0.5em] rounded-[3px] border border-transparent bg-accent px-7 py-[14px] text-[14px] font-medium tracking-[0.01em] text-white transition-all duration-[250ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:bg-accent-deep"
+              className={buttonClassName("primary")}
             >
               {`${cta.label} →`}
             </a>

@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { ButtonLink, MobileDrawer, NavBar, type NavEntry } from "@core/ui";
+import { ButtonLink, MobileDrawer, NavBar, buttonClassName, type NavEntry } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import { Link } from "@/i18n/navigation";
 import { AVANTIO_OWNERS_LOGIN_URL } from "../contract";
@@ -166,7 +166,7 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
             <Link
               href="/#booking-engine"
               data-cta="ghost"
-              className="inline-flex items-center gap-2 rounded-[3px] border border-ink px-5 py-[11px] text-sm font-medium text-ink transition-colors hover:bg-ink hover:text-bg"
+              className={buttonClassName("ghost", undefined, "sm")}
             >
               {t("ctaBook")}
             </Link>
@@ -176,7 +176,7 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
              * standout action next to the outlined "Book Now". Always routes to `/owners` in
              * the active locale.
              */}
-            <ButtonLink href={`/${locale}/owners`} className="rounded-[3px] px-5 py-[11px] text-sm">
+            <ButtonLink href={`/${locale}/owners`} size="sm">
               {t("ctaEarn")}
             </ButtonLink>
           </>

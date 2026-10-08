@@ -11,7 +11,7 @@ export type BookingAction = { href: string; label: string };
  * optional `price_note`, the hairline label/value `booking_rows`, then the actions — a full-width
  * primary `ButtonLink` and an optional full-width `ghost` one 10px below — and an optional note
  * with the `service_note` site icon (a shield by default). Which actions exist is the page's call (booking type → enquiry / external / none).
- * Buttons are `core/ui` `ButtonLink` as on every other page (not the mock's 14px/3px `.btn`).
+ * Buttons are `core/ui` `ButtonLink` as on every other page (ADR 0035).
  */
 export function ServiceBookingCard({
   label,

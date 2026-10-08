@@ -9,7 +9,7 @@ export { UiIcon, type UiIconName } from "./ui-icon";
 export { Container } from "./container";
 export { Section } from "./section";
 export { Eyebrow } from "./eyebrow";
-export { ButtonLink, buttonClassName } from "./button";
+export { ButtonLink, buttonClassName, type ButtonSize, type ButtonVariant } from "./button";
 /** Scroll-reveal wrapper (fade/slide-in once, IntersectionObserver-based). */
 export { Reveal } from "./motion/reveal";
 /** Animated count-up for headline figures, parses a display string and counts to it. */

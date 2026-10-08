@@ -65,6 +65,8 @@ documented heritage alternative should the client ever revisit — that would be
 ## Components
 - **Buttons/CTAs:** one clear primary per page; solid accent fill, ~14–16×28–32px, small radius;
   specific copy ("View apartment", "Check availability"), never "Submit/Learn more".
+  One implementation: `core/ui` `ButtonLink` / `buttonClassName` (ADR 0035 — the mock's `.btn`,
+  3px radius, 14×28px; `sm` 11×20 for header CTAs). Never hand-write button classes.
 - **Nav:** sticky; **transparent over hero → frosted (`backdrop-filter:blur`) on scroll**; descriptive
   labels; property reachable in 1–2 clicks.
 - **Property cards:** image (4:3, fixed dims) + optional tag · title=type+spec · location · 2–4 feature

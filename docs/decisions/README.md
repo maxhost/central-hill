@@ -41,6 +41,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0032 — Home gains a services & partners carousel, composed from the services catalogue](#0032)
 - [0033 — Home's section components move into `core/ui` as a reusable library](#0033)
 - [0034 — One icon system: server-rendered inline Iconoir SVG via `core/ui` `<Icon>`](#0034)
+- [0035 — One button: `ButtonLink`/`buttonClassName` is the mock's `.btn`](#0035)
 
 ---
 
@@ -1257,3 +1258,38 @@ specs, guide template icons, reading time…).
 - **Still fixed:** About's icons (About doesn't read `page_content` yet; that is session 3d),
   the amenity icons (stored and validated, but there is no amenity admin screen) and the
   `TwoColumnShowcase` badge (no page uses it).
+
+## 0035 — One button: `ButtonLink`/`buttonClassName` is the mock's `.btn` <a id="0035"></a>
+**Status:** Accepted (2026-10-07).
+
+**Context:** The consistency audit (`docs/auditoria-consistencia-2026-10-07.md`) measured two
+button looks in the public content:
+- `ButtonLink`: 6px radius, 12px vertical padding, ~44px tall.
+- A "literal `.btn` port" copied by hand into `ActionBand`, `SplitCtaPanels`, `AsideCta`,
+  `FormCard`'s button, the blog body CTA, the header, the mobile drawer and the footer
+  newsletter: 3px radius, 14px × 28px, ~52px tall.
+
+`ContactDialog` also copied `ButtonLink`'s classes by hand. The approved baseline
+(`mock/assets/site.css` `.btn`, `.nav-cta .btn`) and `docs/design-system.md` ("~14–16×28–32px,
+small radius") both describe the second look, so `ButtonLink` was the one that drifted.
+
+**Decision:**
+- **One definition.** `src/core/ui/button.tsx` is the mock's `.btn`: 3px radius, 14px/500
+  label with .01em tracking, line-height pinned to 1.6, a 1px border on every variant
+  (transparent on filled ones), and a .25s transition.
+- **Variants:** `primary` (`.btn-accent`), `solid` (`.btn-solid`, new; ink fill → `feature`),
+  `outline`, `light` (`.btn-light`, white/65 hairline) and `ghost` (`.btn-ghost`).
+- **Sizes:** `md` (14 × 28) and `sm` (11 × 20, `.nav-cta .btn`, for the header and the
+  drawer).
+- **Usage.** Every public button uses `ButtonLink` or, for a native `<button>`, a plain `<a>` or
+  a client island, `buttonClassName(variant, layoutClasses?, size?)`.
+  - `className` is for layout only (width, margin, alignment). `cn` doesn't merge conflicting
+    utilities, so size, radius and colour are never overridden from outside.
+  - The header's "Book Now" keeps `data-cta="ghost"` for its white-on-hero rule in
+    `globals.css`.
+
+**Consequences:**
+- Every `ButtonLink` on the site goes from 6px/44px to 3px/52px (header CTAs to 46px).
+- The hand-written copies are gone. The footer newsletter input moves to the same 46px height
+  as its `sm` button.
+- The backoffice (`/admin`) is out of scope and keeps its own buttons.
