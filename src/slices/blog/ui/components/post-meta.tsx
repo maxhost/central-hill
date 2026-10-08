@@ -6,7 +6,7 @@ import { Icon } from "@core/ui/icon";
 /**
  * Month + year of a post's `publishedAt` ("June 2025", "junho de 2025"), as the blog mock
  * prints it in the featured block and the card meta. `null` for unpublished/invalid dates.
- * (The article detail and `PostCard` use the long `dateStyle` instead — a different format.)
+ * (The article detail's byline uses the long `dateStyle` instead — a different format.)
  */
 export function formatPostMonth(iso: string | null, locale: string): string | null {
   if (!iso) return null;

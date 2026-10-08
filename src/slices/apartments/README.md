@@ -32,24 +32,11 @@ Cache tags: `APARTMENT_TAGS.list` = `apartment-list`, `APARTMENT_TAGS.apartment(
 
 ## UI
 
-- `ui/building-apartments.tsx` → `BuildingApartments({ locale, slug })` — the full
-  "Apartments in this Building" section (eyebrow + grid + Avantio note). Self-contained:
-  resolves the building via the buildings contract, lists its units, renders nothing when
-  unpublished or empty.
-- `ui/components/apartment-card.tsx` → `ApartmentCard` — cover + badge + name + the
-  "Bedrooms · Up to Guests · Beds" spec line; links to the unit's own Avantio deep-link, else
-  the building booking section.
-
-### Integration note (S2)
-
-`BuildingApartments`/`ApartmentCard` (above) are the **Tailwind** rendering of the grid, kept
-for any consumer that wants the design-system look. The live building-detail page
-(`buildings/ui/building-detail.tsx`) instead renders the units inline in the locked **`.mk`
-mock** `.pcard` markup — the rest of that page is the approved `mock/building-detail.html`
-design, so a Tailwind island would clash and (unlike the mock card) shows no placeholder. The
-buildings slice consumes only this slice's **contract** (`listByBuilding` + `ApartmentSummary`),
-never its internals — same pattern as the listing keeping the mock card over the Tailwind
-`BuildingCard`.
+This slice ships **no public UI**. The "Apartments in this Building" grid is rendered by the
+buildings slice (`buildings/ui/building-detail.tsx`) with `core/ui`'s `UnitCard`/`UnitCardGrid`,
+consuming only this slice's **contract** (`listByBuilding` + `ApartmentSummary`) and its
+`apartments` i18n namespace. (The former Tailwind `BuildingApartments`/`ApartmentCard` had no
+consumer and were removed on 2026-10-07.)
 
 ## i18n
 

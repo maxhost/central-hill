@@ -36,8 +36,7 @@ const IMG_CLASS =
  *
  * **Blog-only, not a `core/ui` primitive**: it owns its `PostSummary` coupling. Labels come
  * pre-translated from the caller (`blog.readingMinutes`, `blog.readArticle`), so it stays
- * presentational and server-safe. Not `PostCard` (the article detail's related posts — an older,
- * borderless look this change leaves untouched so the detail page renders exactly as before).
+ * presentational and server-safe. Also the article detail's related-posts grid.
  *
  * Image: `MediaImage` when the cover has a URL and real dimensions (alt falls back to the post
  * title); otherwise the same plain `<img>` `mediaImgTag` emits for missing/dimensionless media

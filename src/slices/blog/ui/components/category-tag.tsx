@@ -16,8 +16,7 @@ import { safeSwatch } from "./category-color";
  * responsibility for very light picks.
  *
  * Presentational and server-safe (no hooks, no i18n): the name is already localised in
- * `CategoryRef`. Not used by `PostCard` (the article detail's related posts), which has a
- * different, older look (dot + muted label) that this change leaves untouched.
+ * `CategoryRef`.
  */
 export function CategoryTag({
   category,

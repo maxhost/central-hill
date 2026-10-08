@@ -68,7 +68,7 @@ const SEED_CREDIT_PREFIXES = ["Pexels · photo-", "Unsplash · photo-", "Wikimed
 const isSeedOwnedCredit = (credit: string | null | undefined) =>
   Boolean(credit) && SEED_CREDIT_PREFIXES.some((p) => credit!.startsWith(p));
 
-/** 4:3 place photo (the `PlaceCard` / Top Recommendations tile ratio). */
+/** 4:3 place photo (the `RecommendationCard` tile ratio). */
 const placeImage = (id: string, alt: string) => pexelsImage(id, alt, 1600, 1200);
 
 interface PlaceSeed {

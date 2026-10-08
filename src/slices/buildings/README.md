@@ -103,8 +103,7 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   shell/sec-head/powered line are inline JSX in `building-detail.tsx`, **outside** `.mk` (no
   raw wrapper needed; no scroll-reveal — the old `.reveal` was neutralised, section was static).
   One deliberate fix vs. the old render: the badge used to vanish under the zoomed image while
-  the card was hovered (paint order); it now stays on top (`z-[1]`). The apartments slice's
-  Tailwind `BuildingApartments`/`ApartmentCard` are a different look, kept for other consumers.
+  the card was hovered (paint order); it now stays on top (`z-[1]`).
   The closing **"Book an apartment in this building" band is real JSX**: `core/ui`'s new
   `ActionBand` (full-bleed `bg-feature` band; eyebrow + serif `<h2>` + line on the left, accent
   button + small note on the right, wrapping to two rows when narrow), replacing the old

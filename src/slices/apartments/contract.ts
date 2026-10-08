@@ -4,7 +4,7 @@
  * booking engine. Amenities & FAQ live on the **building** (S2), not here. Produces
  * summary/detail read models + cache tags (docs/vertical-slices.md → S3).
  * Consumers: S2 building detail ("Apartments in this Building" grid via
- * `BuildingApartments`), S9 pages, S13 seo-geo, S14 translation.
+ * `listByBuilding`), S9 pages, S13 seo-geo, S14 translation.
  * [T] fields (name, badge, description, meta_*) resolve via `core/i18n`.
  */
 import type { MediaImageData } from "@core/media";

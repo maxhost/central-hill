@@ -43,8 +43,7 @@ module, never by querying its table.
   `AsideCta`; on mobile a collapsible `TocList` sits above the sections), then "More
   {city} guides" (`GuideCard`, max 3, current excluded) on the `alt` band.
   `RecommendationCard` serves both the index (`rec`, links to the guide) and the detail
-  (`place`, an `<article>` with a phone · "Directions →" footer). `PlaceCard` is unused
-  (removal in session 6).
+  (`place`, an `<article>` with a phone · "Directions →" footer).
   `generateStaticParams` from `listGuideParams()`; `dynamicParams = true`. The `[city]`
   segment is verified against the page's `city_id` (a mismatched city → `notFound`).
 

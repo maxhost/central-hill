@@ -27,8 +27,7 @@ export type UnitCardSpec = {
  * `accent` on card hover) and links with `next/link` (these cards link **out**, to the Avantio
  * booking engine, in a new tab — or to an in-page `#book` anchor). Bending `PropertyCard` to
  * cover all of that would change its Home consumers' render; a separate primitive keeps both
- * pixel-exact. Also not the apartments slice's `ApartmentCard` (a different, Tailwind-native
- * look) nor buildings' `BuildingListingCard` (slice-internal, `BuildingSummary`-coupled, text
+ * pixel-exact. Also not buildings' `BuildingListingCard` (slice-internal, `BuildingSummary`-coupled, text
  * meta line + teaser).
  *
  * Purely presentational, per the `core/ui` ground rule: no `@core/media`, no i18n, no domain
