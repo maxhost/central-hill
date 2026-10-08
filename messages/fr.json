@@ -31,7 +31,16 @@
       "restaurant": "Restaurant",
       "viewpoint": "Belvédère",
       "beach": "Plage"
-    }
+    },
+    "home": "Accueil",
+    "breadcrumbLabel": "Fil d'Ariane",
+    "crumbGuides": "Guides",
+    "toc": "Dans ce guide",
+    "areaCount": "{count, plural, one {# zone} other {# zones}}",
+    "placeCount": "{count, plural, one {# lieu} other {# lieux}}",
+    "moreEyebrow": "Continuer à explorer",
+    "moreTitle": "Plus de guides de {city}",
+    "allCityGuides": "Tous les guides de {city}"
   },
   "common": {
     "tagline": "Locations meublées premium à Lisbonne"

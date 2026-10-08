@@ -33,8 +33,18 @@ module, never by querying its table.
   (`listTopRecommendations` → `RecommendationCard`; the whole section is hidden when the
   query returns nothing), and the closing `CenteredCtaBand`. `revalidate = 3600` +
   tag-revalidated. Icons are `core/ui` `<Icon>` (inline Iconoir SVG, ADR 0034); no `mock.css`.
-- `/[locale]/guides/[city]/[slug]` — guide-page detail: breadcrumb, hero, a stack of
-  sections (body, optional header image, "local tip" callout, place grid, optional CTA).
+- `/[locale]/guides/[city]/[slug]` — guide-page detail (`ui/guide-page.tsx`, the approved
+  `mock/guide-detail.html` on the service-detail skeleton): `core/ui` `DetailTitle`
+  (Home / Guides / city, meta = template icon + "N areas" · pin + "N places"),
+  `MosaicGallery adaptive` (hero + section images, deduplicated, max 5), `DetailLayout` with
+  one `ContentBlock` per section (anchor from `sectionAnchorIds`, eyebrow "01"…: prose,
+  16:9 image, "Local tip" `Callout`, places grid of `RecommendationCard` in place mode,
+  optional CTA) beside a `StickyAside` (`TocList` + the `pages` contract's accommodation
+  `AsideCta`; on mobile a collapsible `TocList` sits above the sections), then "More
+  {city} guides" (`GuideCard`, max 3, current excluded) on the `alt` band.
+  `RecommendationCard` serves both the index (`rec`, links to the guide) and the detail
+  (`place`, an `<article>` with a phone · "Directions →" footer). `PlaceCard` is unused
+  (removal in session 6).
   `generateStaticParams` from `listGuideParams()`; `dynamicParams = true`. The `[city]`
   segment is verified against the page's `city_id` (a mismatched city → `notFound`).
 
@@ -102,7 +112,9 @@ UI chrome → `guides` namespace in `messages/{en,pt,es,fr}.json` (all 4 authore
 city bar (`chooseCity`/`cityLisbon`/`cityPorto`/`cityCascais`/`citySoon`/`cityNote`),
 per-city heading, card CTA, Top Recommendations head (`recEyebrow`/`recTitle`/`recIntro`)
 and type labels (`recType.restaurant|viewpoint|beach`; other categories show their raw text), breadcrumb, "local tip", place meta labels (address/hours/
-phone) and outbound link labels (website/book/directions). DB content ([T] fields)
+phone) and outbound link labels (website/book/directions); the detail page's `home`, `breadcrumbLabel`,
+`crumbGuides`, `toc`, `areaCount`/`placeCount` (ICU plurals), `moreEyebrow`, `moreTitle`,
+`allCityGuides`. DB content ([T] fields)
 resolves through `core/i18n` with the source-locale (`en`) fallback + `approved`-only
 gating. Section `body` is plain rich text rendered as paragraphs.
 
@@ -124,4 +136,6 @@ detail subscribe). Called by the guides admin actions (S12).
 ## Tests
 
 `tests/guides.test.ts` — page / section / place input validation + the translatable-path
-contract. Run: `npx tsx --test src/slices/guides/tests/guides.test.ts`.
+contract. `tests/format.test.ts` — the detail page's pure helpers (`sectionAnchorIds`,
+`sectionNumber`, `placeDirectionsUrl`, `priceTierSymbol`). Run:
+`npx tsx --test src/slices/guides/tests/*.test.ts`.

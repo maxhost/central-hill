@@ -31,7 +31,16 @@
       "restaurant": "Restaurante",
       "viewpoint": "Mirador",
       "beach": "Playa"
-    }
+    },
+    "home": "Inicio",
+    "breadcrumbLabel": "Ruta de navegación",
+    "crumbGuides": "Guías",
+    "toc": "En esta guía",
+    "areaCount": "{count, plural, one {# zona} other {# zonas}}",
+    "placeCount": "{count, plural, one {# lugar} other {# lugares}}",
+    "moreEyebrow": "Sigue explorando",
+    "moreTitle": "Más guías de {city}",
+    "allCityGuides": "Todas las guías de {city}"
   },
   "common": {
     "tagline": "Alquileres premium amueblados en Lisboa"

@@ -31,7 +31,16 @@
       "restaurant": "Restaurante",
       "viewpoint": "Miradouro",
       "beach": "Praia"
-    }
+    },
+    "home": "Início",
+    "breadcrumbLabel": "Navegação estrutural",
+    "crumbGuides": "Guias",
+    "toc": "Neste guia",
+    "areaCount": "{count, plural, one {# zona} other {# zonas}}",
+    "placeCount": "{count, plural, one {# lugar} other {# lugares}}",
+    "moreEyebrow": "Continue a explorar",
+    "moreTitle": "Mais guias de {city}",
+    "allCityGuides": "Todos os guias de {city}"
   },
   "common": {
     "tagline": "Alojamento mobilado premium em Lisboa"

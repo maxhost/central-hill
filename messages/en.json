@@ -31,7 +31,16 @@
       "restaurant": "Restaurant",
       "viewpoint": "Viewpoint",
       "beach": "Beach"
-    }
+    },
+    "home": "Home",
+    "breadcrumbLabel": "Breadcrumb",
+    "crumbGuides": "Guides",
+    "toc": "In this guide",
+    "areaCount": "{count, plural, one {# area} other {# areas}}",
+    "placeCount": "{count, plural, one {# place} other {# places}}",
+    "moreEyebrow": "Keep exploring",
+    "moreTitle": "More {city} guides",
+    "allCityGuides": "All {city} guides"
   },
   "common": {
     "tagline": "Premium furnished rentals in Lisbon"
