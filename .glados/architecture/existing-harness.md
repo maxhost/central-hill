@@ -9,9 +9,9 @@ of it was removed or changed during GLaDOS onboarding. Classification only.
 - `CLAUDE.md`: operating manual. The 7 golden rules (slice ownership, contracts only,
   kernel via ADR, additive migrations, never revert others' code, escalate decisions,
   done = verified), the stack and the Definition of Done. Still the primary agent brief.
-- `docs/decisions/README.md`: ADRs 0001–0032, all inline in this one file. Source of truth
+- `docs/decisions/README.md`: ADRs 0001–0034, all inline in this one file. Source of truth
   for cross-cutting decisions. `docs/parqueado.md` holds **parked, unaccepted** proposals
-  (e.g. draft ADR 0033, the icon system).
+  (e.g. a dark `SectionHead` variant for the `StatBand` title).
 - `docs/data-model.md`: the DB source of truth (entities, ownership, [T] fields, JSON shapes).
 - `docs/vertical-slices.md`: the slice catalogue and dependency graph. `src/slices/*/README.md`
   and `contract.ts` document each slice's tables, contract, tags and test command.

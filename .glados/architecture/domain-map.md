@@ -47,7 +47,8 @@ Important rules: booking, availability and payments are **never** built here (AD
 
 ### Domain: Blog
 Responsibilities: posts, categories, authors, related posts; listing (featured post, category
-chips, load-more, newsletter band) and article detail. The body is portable JSON (ADR 0013).
+chips, load-more, newsletter band) and article detail (`mock/blog-post.html`: TOC, callouts,
+sidebar CTA from `page_content` key `blog`). The body is portable JSON (ADR 0013).
 Relevant code: `src/slices/blog/`, `src/app/[locale]/blog/`, `src/app/(admin)/admin/(panel)/{posts,authors,blog-categories}/`,
 `scripts/seed-blog.ts`, `mock/blog.html`.
 Depends on: leads (newsletter form), backoffice. Used by: seo.
@@ -66,7 +67,8 @@ Sensitive: no.
 Important rules: bump the `getServiceBySlug` cache-key version when `ServiceDetail` changes shape.
 
 ### Domain: City guides ("What to Do")
-Responsibilities: `guide_page → guide_section → guide_place` tree per city; index and detail.
+Responsibilities: `guide_page → guide_section → guide_place` tree per city; index and detail
+(`mock/guide-detail.html`: TOC, place cards, sidebar CTA from `page_content` key `guides`).
 Relevant code: `src/slices/guides/`, `src/app/[locale]/guides/`, `scripts/seed-guides.ts`,
 `mock/what-to-do.html`.
 Depends on: geography. Used by: seo.
@@ -144,8 +146,8 @@ server ingest and delete code.
 
 ### Design system & mocks
 `src/core/ui/` (presentational components, no i18n, no `@core/media`), `src/app/globals.css`
-(`@theme` tokens, Warm Editorial), `src/app/mock.css` (legacy scoped mock CSS), `mock/`
-(approved baselines). Process: `docs/component-extraction-workflow.md`,
+(`@theme` tokens, Warm Editorial), `src/core/ui/icon*` (the single Iconoir icon system, ADR
+0034), `mock/` (approved baselines). Process: `docs/component-extraction-workflow.md`,
 `docs/design-system.md`, `docs/mock-agent-contract.md`.
 
 ### Persistence

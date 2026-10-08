@@ -83,7 +83,6 @@ with `pnpm tsx --env-file=.env.local --tsconfig scripts/tsconfig.json scripts/<x
 | Better Auth | `src/core/auth`, `src/app/api/auth/[...all]` | live (backoffice only) |
 | Email | `src/core/email` | seam only: console (dev) / noop (prod) provider |
 | LLM translation | `src/core/i18n/translate.ts` | seam only: identity provider (copies source) |
-| jsDelivr CDN | Iconoir stylesheet (`src/app/mock.css` `@import`, services `ServiceCard`) | live, external CSS at runtime |
 | Unsplash / Wikimedia / Pexels | `scripts/seed-*.ts` only | build-free; images re-hosted to R2 |
 
 ## Authentication / authorization
@@ -136,14 +135,17 @@ actions (`src/slices/backoffice/server/media-actions.ts`, presign/finalize/previ
 - **Unit-test drift:** 16 of 225 slice tests fail at HEAD, and the same 16 failed at
   `3f3c5c5`. Fixtures are behind the current admin save schemas (for example, buildings now
   requires `booking_enabled`). Nothing runs them automatically.
-- **Three icon systems coexist:** the Iconoir CDN stylesheet, a hand-copied SVG registry in
-  `src/slices/pages/ui/components/icon.tsx`, and per-position SVGs in code. A unification
-  ADR (0033) is drafted and parked in `docs/parqueado.md`. The Iconoir CSS is an external
-  runtime dependency on a performance-critical site.
-- **Legacy mock CSS remains in production.** `src/app/mock.css` (a scoped port of
-  `mock/assets/site.css`) is still imported by some routes. Pages are being migrated
-  section-by-section to `core/ui` components (`docs/component-extraction-workflow.md`), so a
-  page may mix `.mk`-scoped raw markup and components.
+- **Icons — resolved (2026-10-07, ADR 0034 + amendments).** One system: `core/ui` `<Icon>`
+  (server-rendered inline Iconoir SVG from the pinned `iconoir` package) plus `<UiIcon>` (a
+  small typed client-safe subset for interface glyphs); the backoffice icon picker uses the
+  `public/icons/iconoir-<v>.svg` sprite. DB icon keys are validated by
+  `@core/validation/icon-key`; fixed UI icons are editable as `company_settings.site_icons`
+  (Settings → "Site icons"). No CDN stylesheet remains.
+- **Legacy mock CSS — resolved (2026-10-07).** `src/app/mock.css` is deleted and no public
+  route renders `.mk`-scoped raw markup; every public page (including the blog post and guide
+  detail pages, built on `DetailTitle`/`DetailLayout`/`StickyAside`/`TocList`/`Callout`/`AsideCta`)
+  is composed of `core/ui` + slice components. `mock/` remains only as the approved visual
+  baseline.
 - **`src/slices/media/`** contains only `validation.ts`, has no README and is not in the
   slice catalog (`docs/vertical-slices.md`). Media behaviour lives in the kernel `src/core/media`.
 - **Apartments has no public route** (`src/app/[locale]/` has no apartments page). Apartments
@@ -156,6 +158,5 @@ actions (`src/slices/backoffice/server/media-actions.ts`, presign/finalize/previ
 - **Client briefs are deliberately untracked:** `CLAUDE.md` names `cliente-docs/` as the
   requirements source of truth, but `.gitignore` excludes it ("NOT pushed to the public repo")
   and it is absent from this checkout. Agents only have the synthesis `docs/content-briefs.md`.
-- **ADR numbering collision:** `docs/decisions/README.md` has an accepted ADR 0033 (Home
-  components → `core/ui`), missing from its own index. `docs/parqueado.md` also proposes a
-  different "ADR 0033" (icon system).
+- **ADR numbering collision — resolved.** The parked icon draft "0033" was accepted as ADR
+  0034 (2026-10-06); 0033 (Home components → `core/ui`) is in the index.

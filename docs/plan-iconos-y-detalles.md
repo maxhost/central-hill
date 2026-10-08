@@ -1,6 +1,6 @@
 # Plan por sesiones: iconos (Iconoir) + detalle de blog y de guía
 
-**Creado:** 2026-10-06. **Estado:** en curso (sesiones 0–5 hechas; sigue 6). Cada sesión es autocontenida: se puede hacer
+**Creado:** 2026-10-06. **Estado:** terminado (sesiones 0–6 hechas el 2026-10-07). Cada sesión es autocontenida: se puede hacer
 `/compact` o `/clear` entre sesiones. Para retomar, basta con decir "seguimos con la sesión N de
 `docs/plan-iconos-y-detalles.md`".
 
@@ -391,6 +391,22 @@ Decisiones de la revisión (todo lo marcado `decide` se queda como está en el m
 - **Commits:** core/ui · blog · guía.
 
 ## Sesión 6: limpieza final y docs
+**✅ Hecha el 2026-10-07.** Hecho:
+- Borrados `BuildingApartments`, `ApartmentCard`, `PostCard`, `PlaceCard`, más las 5 claves `guides.*` que solo
+  usaba `PlaceCard` (`address`, `hours`, `phone`, `website`, `book`) en los 4 idiomas; READMEs y comentarios al día.
+- `.glados/architecture/*` al día (iconos resueltos, `mock.css` eliminado, detalles con componentes).
+  `parqueado.md` ya no tenía la entrada de iconos.
+- Re-auditoría: las 166 URLs del sitemap dan 200; 175 `<img>` distintas, 0 rotas; sin `.mk`, `iconoir-*`, jsDelivr
+  ni `<i class>` en el HTML. **Regresión encontrada y arreglada:** Owners perdió `data-page="owners"` en `e99a9c5`
+  (2026-10-04), así que el sub-menú de Owners del header ya no se fijaba al hacer scroll. Se añade un marcador en
+  `owners-page.tsx` (verificado con Playwright).
+- typecheck y lint limpios; tests blog 20/20, guides 22/22; apartments 4 y pages 5 fallos (de los 16 desfasados).
+
+Pendiente / movido:
+- Worktrees de agentes: verificado que todo su contenido ya está en `main` (versión mejorada); los borra el usuario
+  a mano (el clasificador de permisos bloquea `git worktree remove`).
+- La traducción de `page_content` `blog`/`guides` sale de este plan (ver "Fuera de este plan").
+
 - Borrar el código muerto detectado:
   - `apartments/ui/building-apartments.tsx` + `components/apartment-card.tsx` (nadie los usa);
   - `PostCard` / `PlaceCard` si quedan sin uso tras la sesión 5.
@@ -410,6 +426,13 @@ Decisiones de la revisión (todo lo marcado `decide` se queda como está en el m
 ---
 
 ## Fuera de este plan (anotado)
+- **Traducción de `page_content` (para un arco nuevo: revisar página por página contra su editor del
+  backoffice).** Hoy el pipeline no la cubre: el proveedor es el de identidad (copia el inglés;
+  `TRANSLATE_API_KEY` vacía), `savePage` (`pages/admin/actions.ts`) nunca escribe las filas fuente en
+  `translation`, así que ninguna fila de `page_content` entra en `/admin/translations`, y aprobar invalida
+  `page_content:<id>` mientras las lecturas usan `page:<key>`. Afecta a todas las páginas, no solo a los
+  laterales de blog/guías (que hoy salen en inglés en pt/es/fr). Opciones vistas: un script puntual con
+  traducciones en `needs_review`, o arreglar `savePage` + la etiqueta de caché + un proveedor real (kernel → ADR).
 - 16 tests unitarios desfasados respecto a los esquemas del admin (tarea recomendada para
   GLaDOS).
 - Formulario de consulta de servicios sin fecha/huéspedes (slice leads).
