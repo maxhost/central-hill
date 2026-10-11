@@ -1054,6 +1054,7 @@
         "meta_description": "Méta-description (résultats de recherche)",
         "hero": "Hero",
         "video_media_id": "Vidéo d’arrière-plan",
+        "poster_media_id": "Affiche de la vidéo (image fixe)",
         "image_media_id": "Image",
         "eyebrow": "Surtitre (petit texte au-dessus du titre)",
         "headline": "Titre",

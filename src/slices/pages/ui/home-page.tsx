@@ -1,9 +1,11 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { preload } from "react-dom";
 import type { Locale } from "@core/db/columns";
 import { ButtonLink, Hero, Reveal, ScrollDebugProbe } from "@core/ui";
 import { AvantioSearchBar } from "@slices/settings/contract";
 import { getHomePage } from "../contract";
+import { heroPosterSrc } from "./hero-poster";
 import { orMessage } from "./or-message";
 import { DualCta } from "./components/dual-cta";
 import { FaqSection } from "./components/faq-section";
@@ -50,6 +52,12 @@ export async function HomePage({ locale }: { locale: Locale }) {
   // Optional copy overrides (spec S3, rule D1): blank / absent → today's i18n message.
   const portfolio = content.portfolio;
   const faqGroupKey = content.faq_group_key ?? "";
+  // Hero poster (spec S4): the uploaded still, optimized (w=1920) through the same Next image
+  // optimizer as `MediaImage`; blank / unresolved → the stock poster. It is the hero's first
+  // paint (the LCP candidate), so an uploaded one is preloaded at high priority — the same
+  // `react-dom` preload `next/image` emits for `priority`. The stock fallback is left as is.
+  const uploadedPoster = heroPosterSrc(media[hero.poster_media_id ?? ""]);
+  if (uploadedPoster) preload(uploadedPoster, { as: "image", fetchPriority: "high" });
 
   return (
     <main>
@@ -62,7 +70,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
             muted
             loop
             playsInline
-            poster={HERO_FALLBACK_POSTER}
+            poster={uploadedPoster ?? HERO_FALLBACK_POSTER}
           >
             <source
               src={media[hero.video_media_id]?.url ?? HERO_FALLBACK_VIDEO}

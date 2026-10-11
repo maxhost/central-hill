@@ -29,6 +29,8 @@ const GUESTS_IMG_HINT =
   "Lifestyle photo for the Guests section. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
 const HERO_VIDEO_HINT =
   "Background loop. MP4 (H.264), 1920×1080 (16:9), no audio, 10–20 s, ideally under 15 MB (max 200 MB).";
+const HERO_POSTER_HINT =
+  "Shown while the video loads and when it can't play. Use a still from the video. 1920×1080 (16:9), JPG or WebP, under 400 KB.";
 const PANEL_IMG_HINT =
   "Panel background photo. Landscape — recommended 1600×1200px, JPG or WebP, under 600 KB.";
 
@@ -56,6 +58,12 @@ export const homeSchema = z.object({
   hero: z.object({
     // Optional: "" → the stock hero clip (`HERO_FALLBACK_VIDEO`). The picker offers MP4/WebM.
     video_media_id: optionalVideo(HERO_VIDEO_HINT),
+    /**
+     * Still shown while the video loads / when it can't play (the hero's first paint).
+     * Optional: "" → the stock poster (`HERO_FALLBACK_POSTER`). Served through the Next
+     * image optimizer (spec S4).
+     */
+    poster_media_id: optionalImage(HERO_POSTER_HINT).optional(),
     /** Small line above the headline. Blank → `pages.home.heroEyebrow`. */
     eyebrow: tStrOpt({ max: 60 }),
     headline: tStr({ max: 160 }),

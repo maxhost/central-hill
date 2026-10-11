@@ -90,6 +90,22 @@ test("homeSchema: hero video picks video, guests pitch picks image — S1", () =
   if (pitch.kind === "media") assert.equal(pitch.accept, "image");
 });
 
+test("homeSchema: hero poster is an image picker right after the video — S4", () => {
+  const hero = field(describe(homeSchema), "hero");
+  const poster = field(hero, "poster_media_id");
+  assert.equal(poster.kind, "media");
+  if (poster.kind === "media") {
+    assert.equal(poster.accept, "image");
+    assert.match(poster.hint ?? "", /Use a still from the video\. 1920×1080/);
+  }
+  if (hero.kind !== "object") return;
+  const keys = hero.fields.map((f) => f.key);
+  assert.equal(keys.indexOf("poster_media_id"), keys.indexOf("video_media_id") + 1);
+  // A legacy hero (no poster key) is scaffolded with "" — the stock poster.
+  const filled = applyDefaults(hero, { video_media_id: "" }) as Record<string, unknown>;
+  assert.equal(filled.poster_media_id, "");
+});
+
 test("icon_key leaves become the icon picker", () => {
   const benefits = field(field(root, "why"), "benefits");
   assert.equal(benefits.kind, "array");

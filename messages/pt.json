@@ -1054,6 +1054,7 @@
         "meta_description": "Meta descrição (resultados de pesquisa)",
         "hero": "Hero",
         "video_media_id": "Vídeo de fundo",
+        "poster_media_id": "Poster do vídeo (imagem fixa)",
         "image_media_id": "Imagem",
         "eyebrow": "Antetítulo (texto pequeno acima do título)",
         "headline": "Título",

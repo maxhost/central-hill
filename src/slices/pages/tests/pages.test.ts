@@ -9,7 +9,9 @@ import { defaultAbout } from "../schemas/about";
 import { blogSchema, defaultBlog } from "../schemas/blog";
 import { defaultGuides, guidesSchema } from "../schemas/guides";
 import { collectMediaIds, expand, overlayTranslations } from "../server/overlay";
+import { heroPosterSrc } from "../ui/hero-poster";
 import { orMessage } from "../ui/or-message";
+import { formatStatFigure, parseStatValue } from "../ui/stat-figure-value";
 
 /**
  * Slice `pages` unit tests — the page schemas' translatable-field contract (ADR 0012 /
@@ -81,6 +83,70 @@ test("home hero video is optional: blank or a uuid, never garbage (S1)", () => {
   assert.equal(parse(""), true, "blank → the stock hero clip");
   assert.equal(parse(UUID), true);
   assert.equal(parse("not-a-uuid"), false);
+});
+
+// ── S4: hero poster ───────────────────────────────────────────────────────────
+test("home hero poster is optional: absent, blank or a uuid, never garbage (S4)", () => {
+  const parse = (poster: string | undefined) => {
+    const row = validHome();
+    const hero: Record<string, unknown> = { ...row.data.hero };
+    if (poster !== undefined) hero.poster_media_id = poster;
+    return homeSchema.safeParse({ ...row.data, hero }).success;
+  };
+  assert.equal(parse(undefined), true, "legacy rows have no poster key");
+  assert.equal(parse(""), true, "blank → the stock poster");
+  assert.equal(parse(UUID), true);
+  assert.equal(parse("not-a-uuid"), false);
+  // The resolver loads it like every other media reference.
+  const ids: string[] = [];
+  collectMediaIds({ hero: { video_media_id: "", poster_media_id: UUID } }, ids);
+  assert.deepEqual(ids, [UUID]);
+});
+
+test("hero poster goes through the Next image optimizer at w=1920 (S4)", () => {
+  // Outside a Next build there is no remotePatterns config; NODE_ENV=test skips the dev-only
+  // host check so we exercise the URL Next builds (production allows the R2 host).
+  const prev = process.env.NODE_ENV;
+  (process.env as Record<string, string | undefined>).NODE_ENV = "test";
+  try {
+    const asset = { url: "https://media.example.com/k/poster.jpg", width: 1920, height: 1080, alt: "", blurhash: null };
+    const src = heroPosterSrc(asset);
+    assert.ok(src?.startsWith("/_next/image?"), src ?? "null");
+    const q = new URLSearchParams(src!.split("?")[1]);
+    assert.equal(q.get("url"), asset.url);
+    assert.equal(q.get("w"), "1920");
+    assert.equal(q.get("q"), "75");
+    assert.equal(heroPosterSrc(undefined), null, "no asset → caller's stock poster");
+    assert.equal(heroPosterSrc(null), null);
+  } finally {
+    (process.env as Record<string, string | undefined>).NODE_ENV = prev;
+  }
+});
+
+// ── S4 cierre: Settings value → statFigure (scripts/backfill-home-stats.ts) ───
+test("parseStatValue round-trips the company figures (incl. today's live values)", () => {
+  const cases: [string, ReturnType<typeof parseStatValue>][] = [
+    ["65+", { to: "65", prefix: "", suffix: "+", group: false }],
+    ["€55M+", { to: "55", prefix: "€", suffix: "M+", group: false }],
+    ["400,000+", { to: "400000", prefix: "", suffix: "+", group: true }],
+    ["12", { to: "12", prefix: "", suffix: "", group: false }],
+    // Live Settings values on 2026-10-11 (dry run).
+    ["60,000+", { to: "60000", prefix: "", suffix: "+", group: true }],
+    ["12+", { to: "12", prefix: "", suffix: "+", group: false }],
+    ["700,000+", { to: "700000", prefix: "", suffix: "+", group: true }],
+    ["1000", { to: "1000", prefix: "", suffix: "", group: false }],
+  ];
+  for (const [value, expected] of cases) {
+    const row = parseStatValue(value);
+    assert.deepEqual(row, expected, value);
+    assert.equal(formatStatFigure(row!), value, `${value} renders back identically`);
+  }
+});
+
+test("parseStatValue rejects values a figure row can't reproduce", () => {
+  for (const v of ["", "+", "4.8", "400 000", "1,00", "0400", "12-15", "abc"]) {
+    assert.equal(parseStatValue(v), null, JSON.stringify(v));
+  }
 });
 
 // ── S3: optional copy overrides with i18n fallback ────────────────────────────
