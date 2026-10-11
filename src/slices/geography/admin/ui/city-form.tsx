@@ -101,6 +101,8 @@ export function CityForm({
   const router = useRouter();
   const [pending, start] = useTransition();
   const queue = useMediaQueue();
+  // A pick still being reserved isn't in the form's value yet — Save waits for it.
+  const preparing = queue.isPreparing;
   const [state, setState] = useState<FormState>(() => initialState(initial));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(null);
@@ -140,6 +142,7 @@ export function CityForm({
   }
 
   function onSubmit() {
+    if (preparing) return;
     setBanner(null);
     setErrors({});
     void (async () => {
@@ -363,7 +366,12 @@ export function CityForm({
         >
           {tb("actions.cancel")}
         </AdminButton>
-        <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>
+        {preparing ? (
+          <p role="status" className="text-xs text-ink-soft">
+            {tb("media.waitForMedia")}
+          </p>
+        ) : null}
+        <AdminButton variant="primary" onClick={onSubmit} disabled={pending || preparing}>
           {pending ? tb("actions.saving") : tb("actions.save")}
         </AdminButton>
       </FormActions>

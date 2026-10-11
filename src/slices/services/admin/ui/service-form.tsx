@@ -154,6 +154,8 @@ export function ServiceForm({
   const router = useRouter();
   const [pending, start] = useTransition();
   const queue = useMediaQueue();
+  // A pick still being reserved isn't in the form's value yet — Save waits for it.
+  const preparing = queue.isPreparing;
   const [state, setState] = useState<FormState>(() =>
     initialState(initial, categories[0]?.id ?? ""),
   );
@@ -165,6 +167,7 @@ export function ServiceForm({
   const err = (key: string) => errors[key];
 
   function onSubmit() {
+    if (preparing) return;
     setBanner(null);
     if (!state.cover_media_id) {
       setErrors({ cover_media_id: t("admin.errors.coverRequired") });
@@ -477,7 +480,12 @@ export function ServiceForm({
         >
           {tb("actions.cancel")}
         </AdminButton>
-        <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>
+        {preparing ? (
+          <p role="status" className="text-xs text-ink-soft">
+            {tb("media.waitForMedia")}
+          </p>
+        ) : null}
+        <AdminButton variant="primary" onClick={onSubmit} disabled={pending || preparing}>
           {pending ? tb("actions.saving") : tb("actions.save")}
         </AdminButton>
       </FormActions>

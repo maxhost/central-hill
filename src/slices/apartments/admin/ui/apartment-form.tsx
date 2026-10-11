@@ -115,6 +115,8 @@ export function ApartmentForm({
   const toast = useToast();
   const [pending, start] = useTransition();
   const queue = useMediaQueue();
+  // A pick still being reserved isn't in the form's value yet — Save waits for it.
+  const preparing = queue.isPreparing;
   const [state, setState] = useState<FormState>(() =>
     initialState(initial, buildings[0]?.id ?? ""),
   );
@@ -125,6 +127,7 @@ export function ApartmentForm({
   const err = (key: string) => errors[key];
 
   function onSubmit() {
+    if (preparing) return;
     setErrors({});
     void (async () => {
       // Uploads run OUTSIDE the transition on purpose: `startTransition` marks every
@@ -333,7 +336,12 @@ export function ApartmentForm({
         >
           {tb("actions.cancel")}
         </AdminButton>
-        <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>
+        {preparing ? (
+          <p role="status" className="text-xs text-ink-soft">
+            {tb("media.waitForMedia")}
+          </p>
+        ) : null}
+        <AdminButton variant="primary" onClick={onSubmit} disabled={pending || preparing}>
           {pending ? tb("actions.saving") : tb("actions.save")}
         </AdminButton>
       </FormActions>

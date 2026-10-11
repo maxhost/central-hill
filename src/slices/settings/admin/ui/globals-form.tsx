@@ -114,6 +114,8 @@ export function GlobalsForm({
   const router = useRouter();
   const [pending, start] = useTransition();
   const queue = useMediaQueue();
+  // A pick still being reserved isn't in the form's value yet — Save waits for it.
+  const preparing = queue.isPreparing;
   const [state, setState] = useState<GlobalsEditData>(initial);
   const [previews, setPreviews] = useState(initialPreviews);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -135,6 +137,7 @@ export function GlobalsForm({
   const err = (key: string) => errors[key];
 
   function onSubmit() {
+    if (preparing) return;
     setBanner(null);
     const orNull = (v: string) => (v.trim() === "" ? null : v.trim());
 
@@ -415,7 +418,12 @@ export function GlobalsForm({
       </AdminCard>
 
       <FormActions>
-        <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>
+        {preparing ? (
+          <p role="status" className="text-xs text-ink-soft">
+            {tb("media.waitForMedia")}
+          </p>
+        ) : null}
+        <AdminButton variant="primary" onClick={onSubmit} disabled={pending || preparing}>
           {pending ? tb("actions.saving") : tb("actions.save")}
         </AdminButton>
       </FormActions>
