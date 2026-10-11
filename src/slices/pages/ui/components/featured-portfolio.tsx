@@ -32,6 +32,7 @@ export async function FeaturedPortfolio({
   ctaLabel,
   ctaNote,
   ctaHref,
+  viewLabel,
   tightBottom,
 }: {
   locale: Locale;
@@ -48,6 +49,8 @@ export async function FeaturedPortfolio({
   ctaNote?: string;
   /** Overrides the `/{locale}/buildings` button target. */
   ctaHref?: string;
+  /** Overrides `portfolio.view` — the "View →" line on each property card. */
+  viewLabel?: string;
   /**
    * Drops the section's own bottom padding — for when the next section already supplies
    * its own top padding, so the two don't stack into a double-sized gap (client feedback,
@@ -89,7 +92,7 @@ export async function FeaturedPortfolio({
             </>
           ) : undefined
         }
-        viewLabel={t("portfolio.view")}
+        viewLabel={viewLabel ?? t("portfolio.view")}
       />
     );
   });

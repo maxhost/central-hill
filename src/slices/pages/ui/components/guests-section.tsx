@@ -28,6 +28,8 @@ type GuestsContent = {
   benefits: IconCard[];
   image_media_id?: string;
   cta: CtaNote;
+  /** Floating image badge (spec S3). Blank label → `cta.note`; blank icon → `check`. */
+  badge?: { label?: string; icon_key?: string };
 };
 
 const SHOWCASE_CLASS = "aspect-[4/5] w-full rounded-sm object-cover";
@@ -66,6 +68,12 @@ export function GuestsSection({
         description: b.description,
       }))}
       cta={{ href: content.cta.url, label: content.cta.label, note: content.cta.note }}
+      badge={content.badge?.label?.trim() ? content.badge.label : undefined}
+      badgeIcon={
+        content.badge?.icon_key ? (
+          <Icon name={content.badge.icon_key} size={20} />
+        ) : undefined
+      }
       image={imageEl}
     />
   );

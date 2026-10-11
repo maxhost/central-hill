@@ -17,7 +17,7 @@ import {
 import { savePage } from "../actions";
 import { type FieldNode, type SelectOptions, humanizeKey } from "../form-model";
 import { type EditorNote, resolveEditorLayout } from "../layout";
-import { NodeField, type PathOnChange } from "./schema-fields";
+import { NodeField, type PathOnChange, useFieldLabels } from "./schema-fields";
 
 /**
  * Page content editor (S12, ADR 0012). One client island per fixed page
@@ -89,6 +89,7 @@ export function PageEditor({
 }) {
   const t = useTranslations("pages");
   const tb = useTranslations("backoffice");
+  const labels = useFieldLabels();
   const router = useRouter();
   const [pending, start] = useTransition();
   const queue = useMediaQueue();
@@ -215,8 +216,8 @@ export function PageEditor({
             {item.note ? <CardNote note={item.note} /> : null}
             {item.kind === "card" ? (
               <div className="space-y-4">
+                {item.paths.map((p) => renderField(p, labels.field(p)))}
                 {item.hostsOgImage ? ogImageField : null}
-                {item.paths.map((p) => renderField(p, humanizeKey(p)))}
               </div>
             ) : null}
           </AdminCard>
@@ -225,8 +226,8 @@ export function PageEditor({
         <>
           <AdminCard title={t("admin.sections.social")}>{ogImageField}</AdminCard>
           {topFields.map((f) => (
-            <AdminCard key={f.key} title={humanizeKey(f.key)}>
-              {renderField(f.key, humanizeKey(f.key))}
+            <AdminCard key={f.key} title={labels.field(f.key)}>
+              {renderField(f.key, labels.field(f.key))}
             </AdminCard>
           ))}
         </>

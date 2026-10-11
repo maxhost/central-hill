@@ -4,6 +4,7 @@ import type { Locale } from "@core/db/columns";
 import { ButtonLink, Hero, Reveal, ScrollDebugProbe } from "@core/ui";
 import { AvantioSearchBar } from "@slices/settings/contract";
 import { getHomePage } from "../contract";
+import { orMessage } from "./or-message";
 import { DualCta } from "./components/dual-cta";
 import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
@@ -46,6 +47,8 @@ export async function HomePage({ locale }: { locale: Locale }) {
 
   const { content, media } = page;
   const { hero, guests_pitch, services_carousel, dual_cta } = content;
+  // Optional copy overrides (spec S3, rule D1): blank / absent → today's i18n message.
+  const portfolio = content.portfolio;
   const faqGroupKey = content.faq_group_key ?? "";
 
   return (
@@ -67,7 +70,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
             />
           </video>
         }
-        eyebrow={t("home.heroEyebrow")}
+        eyebrow={orMessage(hero.eyebrow, t("home.heroEyebrow"))}
         headline={hero.headline}
         subtitle={hero.subtitle}
         actions={
@@ -100,7 +103,11 @@ export async function HomePage({ locale }: { locale: Locale }) {
       </noscript>
 
       <Reveal label="stats">
-        <StatsBand locale={locale} keys={["bookings", "years", "guests", "revenue"]} />
+        <StatsBand
+          locale={locale}
+          keys={["bookings", "years", "guests", "revenue"]}
+          title={orMessage(content.stats?.title, t("stats.title"))}
+        />
       </Reveal>
 
       {/* Guests pitch now sits directly under stats, ahead of the carousel (client feedback). */}
@@ -116,7 +123,15 @@ export async function HomePage({ locale }: { locale: Locale }) {
        * of the services carousel. No intro copy under the title (client feedback).
        */}
       <Reveal label="featured-portfolio">
-        <FeaturedPortfolio locale={locale} showEyebrow={false} intro="" tightBottom />
+        <FeaturedPortfolio
+          locale={locale}
+          showEyebrow={false}
+          intro=""
+          tightBottom
+          title={orMessage(portfolio?.title, t("portfolio.title"))}
+          ctaLabel={orMessage(portfolio?.cta_label, t("portfolio.viewAll"))}
+          viewLabel={orMessage(portfolio?.card_view_label, t("portfolio.view"))}
+        />
       </Reveal>
 
       {/* Services & partners (ADR 0032) — copy from the page, cards from `services`. */}
@@ -128,7 +143,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
         <FaqSection
           locale={locale}
           groupKey={faqGroupKey}
-          title={t("faqTitle")}
+          title={orMessage(content.faq?.title, t("faqTitle"))}
         />
       ) : null}
 

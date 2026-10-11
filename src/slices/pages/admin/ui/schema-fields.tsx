@@ -28,6 +28,29 @@ import {
 
 export type PathOnChange = (path: (string | number)[], value: unknown) => void;
 
+/**
+ * Readable editor labels (owner request, spec S3). A field key resolves to
+ * `pages.admin.labels.<key>` (4 locales) and falls back to `humanizeKey` when no label is
+ * authored — so a page or key without one renders exactly as before. Keys are labelled
+ * globally (the same `headline` / `cta` / `icon_key` reads the same on every page). Array
+ * items use the singular `pages.admin.itemLabels.<arrayKey>` ("Benefit 1"), else the array's
+ * own label ("Benefits 1", the previous behaviour).
+ */
+export function useFieldLabels() {
+  const t = useTranslations("pages");
+  return {
+    field(key: string): string {
+      const k = `admin.labels.${key}`;
+      return t.has(k) ? t(k) : humanizeKey(key);
+    },
+    item(arrayKey: string | number | undefined, fallback: string): string {
+      if (typeof arrayKey !== "string") return fallback;
+      const k = `admin.itemLabels.${arrayKey}`;
+      return t.has(k) ? t(k) : fallback;
+    },
+  };
+}
+
 interface RenderProps {
   node: FieldNode;
   value: unknown;
@@ -53,6 +76,7 @@ export function NodeField(props: RenderProps) {
     options,
   } = props;
   const errorKey = path.join(".");
+  const labels = useFieldLabels();
 
   if (node.kind === "object") {
     const body = node.fields.map((f) => (
@@ -61,7 +85,7 @@ export function NodeField(props: RenderProps) {
         node={f.node}
         value={(value as Record<string, unknown> | undefined)?.[f.key]}
         path={[...path, f.key]}
-        label={humanizeKey(f.key)}
+        label={labels.field(f.key)}
         depth={depth + 1}
         onChange={onChange}
         errors={errors}
@@ -84,6 +108,7 @@ export function NodeField(props: RenderProps) {
     const items = Array.isArray(value) ? value : [];
     const canAdd = items.length < node.max;
     const canRemove = items.length > node.min;
+    const itemLabel = labels.item(path.at(-1), label);
     return (
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
@@ -93,7 +118,7 @@ export function NodeField(props: RenderProps) {
           <div key={i} className="space-y-3 rounded-md border border-line p-3">
             <div className="flex items-center justify-between">
               <span className="text-xs text-ink-soft">
-                {label} {i + 1}
+                {itemLabel} {i + 1}
               </span>
               <div className="flex items-center gap-1">
                 <ArrayBtn
@@ -122,7 +147,7 @@ export function NodeField(props: RenderProps) {
               node={node.element}
               value={item}
               path={[...path, i]}
-              label={`${label} ${i + 1}`}
+              label={`${itemLabel} ${i + 1}`}
               depth={depth + 1}
               onChange={onChange}
               errors={errors}
@@ -137,7 +162,7 @@ export function NodeField(props: RenderProps) {
             onClick={() => onChange(path, [...items, emptyValue(node.element)])}
             className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-ink"
           >
-            + {label}
+            + {itemLabel}
           </button>
         ) : null}
       </div>

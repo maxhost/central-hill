@@ -99,6 +99,17 @@ test("icon_key leaves become the icon picker", () => {
   assert.equal(emptyValue(icon), "");
 });
 
+test("home S3: the guests-pitch badge icon is an optional icon picker", () => {
+  const home = describe(homeSchema);
+  const icon = field(field(field(home, "guests_pitch"), "badge"), "icon_key");
+  assert.deepEqual(icon, { kind: "icon", optional: true });
+  // A legacy row (no `badge`) is scaffolded with blanks, which the schema accepts.
+  assert.deepEqual(applyDefaults(field(field(home, "guests_pitch"), "badge"), undefined), {
+    label: "",
+    icon_key: "",
+  });
+});
+
 test("fixed-count arrays carry min === max", () => {
   const benefits = field(field(root, "why"), "benefits");
   assert.equal(benefits.kind, "array");
@@ -220,6 +231,15 @@ test("every home root key is rendered exactly once (a card or Other)", () => {
   assert.deepEqual([...rendered].sort(), [...homeRootKeys].sort());
   // Today every key is placed, so there is no Other card.
   assert.ok(!cardIds(layout).includes(OTHER_CARD_ID));
+  // S3: the new section objects land in their own cards.
+  const pathsOf = (id: string) => {
+    const card = layout.find((i) => i.id === id);
+    return card && card.kind === "card" ? card.paths : [];
+  };
+  assert.deepEqual(pathsOf("seo"), ["seo"]);
+  assert.deepEqual(pathsOf("stats"), ["stats"]);
+  assert.deepEqual(pathsOf("portfolio"), ["portfolio"]);
+  assert.deepEqual(pathsOf("faq"), ["faq_group_key", "faq"]);
 });
 
 test("an unknown root key lands in a trailing Other card", () => {

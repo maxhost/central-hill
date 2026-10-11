@@ -16,6 +16,14 @@ export const iconCard = z.object({
 });
 
 /**
+ * An icon that may be left unset: `""` (or absent) → the render's default icon. The editor's
+ * `applyDefaults` scaffolds a blank icon as `""`, so the blank literal must validate. The
+ * `icon_key` field name drives the form-model's icon picker (optional → "none" allowed).
+ * Not a [T] field.
+ */
+export const optionalIconKey = z.union([z.literal(""), iconKey]).optional();
+
+/**
  * A compact "icon + label" reassurance mark — the trust strip that sits under a section
  * heading (e.g. "Exclusive Selection", "24h Customer Support"). Unlike `iconCard` it has
  * no description: it is a one-line claim, not a benefit card.

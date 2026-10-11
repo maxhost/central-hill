@@ -17,11 +17,14 @@ export async function StatsBand({
   locale,
   keys,
   showTitle = true,
+  title,
 }: {
   locale: Locale;
   keys: StatKey[];
   /** Hide the centred heading for a bare proof band (Owners, mirroring the mock). */
   showTitle?: boolean;
+  /** Overrides `pages.stats.title` (Home's editable heading, already blank-resolved). */
+  title?: string;
 }) {
   const globals = await getGlobals(locale);
   if (!globals) return null;
@@ -31,5 +34,5 @@ export async function StatsBand({
 
   const t = await getTranslations("pages");
 
-  return <StatBand title={showTitle ? t("stats.title") : undefined} cells={cells} />;
+  return <StatBand title={showTitle ? (title ?? t("stats.title")) : undefined} cells={cells} />;
 }

@@ -9,6 +9,7 @@ import { defaultAbout } from "../schemas/about";
 import { blogSchema, defaultBlog } from "../schemas/blog";
 import { defaultGuides, guidesSchema } from "../schemas/guides";
 import { collectMediaIds, expand, overlayTranslations } from "../server/overlay";
+import { orMessage } from "../ui/or-message";
 
 /**
  * Slice `pages` unit tests — the page schemas' translatable-field contract (ADR 0012 /
@@ -80,6 +81,74 @@ test("home hero video is optional: blank or a uuid, never garbage (S1)", () => {
   assert.equal(parse(""), true, "blank → the stock hero clip");
   assert.equal(parse(UUID), true);
   assert.equal(parse("not-a-uuid"), false);
+});
+
+// ── S3: optional copy overrides with i18n fallback ────────────────────────────
+/** The S3 keys, filled (the legacy `validHome()` row has none of them). */
+const withS3Copy = (fill: (s: string) => string) => {
+  const row = validHome();
+  const data = {
+    ...row.data,
+    seo: { meta_title: fill("Central Hill"), meta_description: fill("Furnished apartments.") },
+    hero: { ...row.data.hero, eyebrow: fill("Portugal") },
+    stats: { title: fill("Trusted") },
+    guests_pitch: {
+      ...row.data.guests_pitch,
+      badge: { label: fill("Fully managed"), icon_key: fill("shield-check") },
+    },
+    portfolio: {
+      title: fill("Our portfolio"),
+      cta_label: fill("All properties"),
+      card_view_label: fill("Open →"),
+    },
+    faq: { title: fill("Questions") },
+  };
+  return data;
+};
+
+test("home S3: a legacy row without the new keys still validates", () => {
+  const parsed = homeSchema.safeParse(validHome().data);
+  assert.equal(parsed.success, true);
+  if (!parsed.success) return;
+  assert.equal(parsed.data.seo, undefined);
+  assert.equal(parsed.data.guests_pitch.badge, undefined);
+});
+
+test("home S3: the new copy validates filled and blank (editor scaffolds blanks)", () => {
+  assert.equal(homeSchema.safeParse(withS3Copy((s) => s)).success, true);
+  assert.equal(homeSchema.safeParse(withS3Copy(() => "")).success, true);
+  const bad = withS3Copy((s) => s);
+  bad.guests_pitch.badge.icon_key = "not-an-icon";
+  assert.equal(homeSchema.safeParse(bad).success, false, "a non-blank icon must be a real icon");
+  const long = withS3Copy((s) => s);
+  long.seo.meta_title = "x".repeat(71);
+  assert.equal(homeSchema.safeParse(long).success, false, "meta title is capped at 70");
+});
+
+test("orMessage: blank / whitespace / absent → the i18n fallback, text → the text", () => {
+  assert.equal(orMessage(undefined, "Fallback"), "Fallback");
+  assert.equal(orMessage(null, "Fallback"), "Fallback");
+  assert.equal(orMessage("", "Fallback"), "Fallback");
+  assert.equal(orMessage("   ", "Fallback"), "Fallback");
+  assert.equal(orMessage("Custom", "Fallback"), "Custom");
+});
+
+test("home S3: the new copy is translatable, the badge icon is not", () => {
+  const paths = translatablePathsByPage.home;
+  for (const p of [
+    "seo.meta_title",
+    "seo.meta_description",
+    "hero.eyebrow",
+    "stats.title",
+    "guests_pitch.badge.label",
+    "portfolio.title",
+    "portfolio.cta_label",
+    "portfolio.card_view_label",
+    "faq.title",
+  ]) {
+    assert.ok(paths.includes(p), `expected translatable path ${p}`);
+  }
+  assert.ok(!paths.includes("guests_pitch.badge.icon_key"), "icons are shared, not copy");
 });
 
 test("rejects a home page with the wrong benefit arity (fixed-count array)", () => {

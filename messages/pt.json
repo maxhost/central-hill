@@ -1035,7 +1035,7 @@
         "notes": {
           "heroSecondary": "O botão secundário leva sempre a /owners.",
           "searchBar": "A barra de pesquisa Avantio configura-se em Definições.",
-          "stats": "A faixa de números mostra, por agora, os números da empresa definidos em Definições.",
+          "stats": "O título edita-se aqui; os números continuam a vir dos números da empresa em Definições.",
           "portfolio": "Os cartões de imóveis vêm de Edifícios (em destaque, por posição).",
           "services": "Os cartões vêm de Serviços.",
           "faq": "As perguntas editam-se em FAQ.",
@@ -1047,6 +1047,48 @@
           "services": "Abrir Serviços",
           "faq": "Abrir FAQ"
         }
+      },
+      "labels": {
+        "seo": "SEO",
+        "meta_title": "Meta título (resultados de pesquisa)",
+        "meta_description": "Meta descrição (resultados de pesquisa)",
+        "hero": "Hero",
+        "video_media_id": "Vídeo de fundo",
+        "image_media_id": "Imagem",
+        "eyebrow": "Antetítulo (texto pequeno acima do título)",
+        "headline": "Título",
+        "subtitle": "Subtítulo",
+        "subheadline": "Subtítulo",
+        "title": "Título",
+        "description": "Descrição",
+        "body": "Texto",
+        "label": "Texto",
+        "url": "Ligação (URL)",
+        "note": "Nota",
+        "cta_primary": "Botão principal",
+        "cta_secondary": "Botão secundário",
+        "cta": "Botão",
+        "cta_label": "Texto do botão",
+        "card_view_label": "Texto do botão do cartão",
+        "badge": "Etiqueta flutuante",
+        "icon_key": "Ícone",
+        "benefits": "Vantagens",
+        "assurances": "Garantias",
+        "service_category_slug": "Categoria de serviços",
+        "faq_group_key": "Grupo de FAQ",
+        "owner": "Painel de proprietários",
+        "guest": "Painel de hóspedes",
+        "stats": "Números",
+        "portfolio": "Portfólio em destaque",
+        "faq": "FAQ",
+        "guests_pitch": "Apresentação para hóspedes",
+        "services_carousel": "Parceiros e serviços",
+        "dual_cta": "CTA duplo final"
+      },
+      "itemLabels": {
+        "benefits": "Vantagem",
+        "assurances": "Garantia",
+        "stats": "Número"
       }
     }
   },

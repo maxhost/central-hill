@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import type { Locale } from "@core/db/columns";
-import { buildMetadata } from "@core/seo";
-import { getHomePage } from "@slices/pages/contract";
+import { buildHomeMetadata } from "@slices/pages/contract";
 import { HomePage } from "@slices/pages/ui/home-page";
 
 /** ISR: static per locale; on-demand revalidation via the `page:home` tag. */
@@ -23,28 +21,7 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
-  const t = await getTranslations({ locale, namespace: "pages" });
-  const page = await getHomePage(locale);
-
-  const languages: Partial<Record<Locale | "x-default", string>> = { "x-default": "/" };
-  for (const l of routing.locales) languages[l] = `/${l}`;
-
-  return buildMetadata({
-    title: t("home.metaTitle"),
-    description: t("home.metaDescription"),
-    canonicalPath: `/${locale}`,
-    languages,
-    images: page?.ogImage
-      ? [
-          {
-            url: page.ogImage.url,
-            width: page.ogImage.width,
-            height: page.ogImage.height,
-            alt: page.ogImage.alt,
-          },
-        ]
-      : undefined,
-  });
+  return buildHomeMetadata(locale);
 }
 
 export default async function HomeRoute({

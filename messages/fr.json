@@ -1035,7 +1035,7 @@
         "notes": {
           "heroSecondary": "Le bouton secondaire mène toujours à /owners.",
           "searchBar": "La barre de recherche Avantio se configure dans Paramètres.",
-          "stats": "La bande de chiffres affiche pour l’instant les chiffres de l’entreprise définis dans Paramètres.",
+          "stats": "Le titre se modifie ici ; les chiffres proviennent toujours des chiffres de l’entreprise dans Paramètres.",
           "portfolio": "Les cartes de biens viennent d’Immeubles (à la une, par position).",
           "services": "Les cartes viennent de Services.",
           "faq": "Les questions se modifient dans FAQ.",
@@ -1047,6 +1047,48 @@
           "services": "Ouvrir Services",
           "faq": "Ouvrir FAQ"
         }
+      },
+      "labels": {
+        "seo": "SEO",
+        "meta_title": "Méta-titre (résultats de recherche)",
+        "meta_description": "Méta-description (résultats de recherche)",
+        "hero": "Hero",
+        "video_media_id": "Vidéo d’arrière-plan",
+        "image_media_id": "Image",
+        "eyebrow": "Surtitre (petit texte au-dessus du titre)",
+        "headline": "Titre",
+        "subtitle": "Sous-titre",
+        "subheadline": "Sous-titre",
+        "title": "Titre",
+        "description": "Description",
+        "body": "Texte",
+        "label": "Texte",
+        "url": "Lien (URL)",
+        "note": "Note",
+        "cta_primary": "Bouton principal",
+        "cta_secondary": "Bouton secondaire",
+        "cta": "Bouton",
+        "cta_label": "Texte du bouton",
+        "card_view_label": "Texte du bouton de la carte",
+        "badge": "Badge flottant",
+        "icon_key": "Icône",
+        "benefits": "Avantages",
+        "assurances": "Garanties",
+        "service_category_slug": "Catégorie de services",
+        "faq_group_key": "Groupe de FAQ",
+        "owner": "Panneau propriétaires",
+        "guest": "Panneau voyageurs",
+        "stats": "Chiffres",
+        "portfolio": "Portfolio à la une",
+        "faq": "FAQ",
+        "guests_pitch": "Présentation voyageurs",
+        "services_carousel": "Partenaires et services",
+        "dual_cta": "CTA double final"
+      },
+      "itemLabels": {
+        "benefits": "Avantage",
+        "assurances": "Garantie",
+        "stats": "Chiffre"
       }
     }
   },

@@ -64,7 +64,7 @@ const L = "admin.layout";
 const link = (href: string, labelKey: string) => ({ href, labelKey: `${L}.links.${labelKey}` });
 
 const HOME_LAYOUT: EditorLayoutItem[] = [
-  { kind: "card", id: "seo", titleKey: `${L}.cards.seo`, paths: [], hostsOgImage: true },
+  { kind: "card", id: "seo", titleKey: `${L}.cards.seo`, paths: ["seo"], hostsOgImage: true },
   {
     kind: "card",
     id: "hero",
@@ -82,7 +82,7 @@ const HOME_LAYOUT: EditorLayoutItem[] = [
     kind: "card",
     id: "stats",
     titleKey: `${L}.cards.stats`,
-    paths: [],
+    paths: ["stats"],
     note: { textKey: `${L}.notes.stats`, link: link("/admin/settings", "settings") },
   },
   { kind: "card", id: "guests_pitch", titleKey: `${L}.cards.guests_pitch`, paths: ["guests_pitch"] },
@@ -90,7 +90,7 @@ const HOME_LAYOUT: EditorLayoutItem[] = [
     kind: "card",
     id: "portfolio",
     titleKey: `${L}.cards.portfolio`,
-    paths: [],
+    paths: ["portfolio"],
     note: { textKey: `${L}.notes.portfolio`, link: link("/admin/buildings", "buildings") },
   },
   {
@@ -104,7 +104,7 @@ const HOME_LAYOUT: EditorLayoutItem[] = [
     kind: "card",
     id: "faq",
     titleKey: `${L}.cards.faq`,
-    paths: ["faq_group_key"],
+    paths: ["faq_group_key", "faq"],
     note: { textKey: `${L}.notes.faq`, link: link("/admin/faq", "faq") },
   },
   {

@@ -12,12 +12,13 @@
  * docs/data-model.md → Page content model → home.
  */
 import { z } from "zod";
-import { cta, ctaWithNote, tStr, tStrOpt } from "@core/validation/primitives";
+import { cta, ctaWithNote, seoShape, tStr, tStrOpt } from "@core/validation/primitives";
 import {
   assurance,
   faqGroupKey,
   fixed,
   iconCard,
+  optionalIconKey,
   optionalImage,
   optionalVideo,
   serviceCategorySlug,
@@ -43,10 +44,20 @@ const ctaPanel = z.object({
   cta_label: tStr({ max: 60 }),
 });
 
+/*
+ * Optional copy overrides added by spec `home-admin-editor` S3. Every one is optional and
+ * blank-tolerant: empty / absent → the page renders the current i18n message of the visitor's
+ * locale (rule D1), so a row saved before these keys existed renders exactly as before. The
+ * section objects themselves are optional too (legacy rows have none of them).
+ */
 export const homeSchema = z.object({
+  /** Search/social meta for `/<locale>`. Blank → `pages.home.metaTitle` / `metaDescription`. */
+  seo: z.object({ ...seoShape }).optional(),
   hero: z.object({
     // Optional: "" → the stock hero clip (`HERO_FALLBACK_VIDEO`). The picker offers MP4/WebM.
     video_media_id: optionalVideo(HERO_VIDEO_HINT),
+    /** Small line above the headline. Blank → `pages.home.heroEyebrow`. */
+    eyebrow: tStrOpt({ max: 60 }),
     headline: tStr({ max: 160 }),
     subtitle: tStrOpt({ max: 280 }),
     // External booking engine (Avantio) — genuinely a redirect, so its target is
@@ -58,13 +69,36 @@ export const homeSchema = z.object({
     // locale-aware `/owners` href.
     cta_secondary: z.object({ label: tStr({ max: 80 }) }),
   }),
+  /**
+   * Figures band heading. Blank → `pages.stats.title`. The figures themselves still come
+   * from Settings (company stats) until spec S5 makes them editable here.
+   */
+  stats: z.object({ title: tStrOpt({ max: 160 }) }).optional(),
   guests_pitch: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 4),
     image_media_id: optionalImage(GUESTS_IMG_HINT),
     cta: ctaWithNote,
+    /**
+     * The image's floating reassurance badge. Blank label → `cta.note` (as before);
+     * blank icon → `check`.
+     */
+    badge: z
+      .object({ label: tStrOpt({ max: 120 }), icon_key: optionalIconKey })
+      .optional(),
   }),
+  /**
+   * Featured portfolio copy (the cards come from `buildings`). Blank → `pages.portfolio.title`
+   * / `viewAll` / `view`.
+   */
+  portfolio: z
+    .object({
+      title: tStrOpt({ max: 160 }),
+      cta_label: tStrOpt({ max: 80 }),
+      card_view_label: tStrOpt({ max: 40 }),
+    })
+    .optional(),
   /**
    * Services & partners carousel (ADR 0032). The **cards** are not authored here — they
    * are the published services of slice `services`, in their admin-set `position` order,
@@ -80,6 +114,8 @@ export const homeSchema = z.object({
   }),
   /** Optional FAQ group to show on the page (blank = none). */
   faq_group_key: faqGroupKey,
+  /** FAQ section heading (the group stays in `faq_group_key`). Blank → `pages.faqTitle`. */
+  faq: z.object({ title: tStrOpt({ max: 160 }) }).optional(),
   // Closing band: two image panels (owner / guest) with editable copy + CTA labels.
   dual_cta: z.object({
     owner: ctaPanel,

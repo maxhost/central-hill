@@ -93,6 +93,13 @@ export {
   getRealEstatePage,
 } from "./server/queries";
 
+/**
+ * The Home route's `generateMetadata` body: `seo.meta_title` / `seo.meta_description` with the
+ * `pages.home.*` i18n fallback when blank, canonical + hreflang (incl. `x-default`) + the
+ * optional OG image (spec `home-admin-editor` S3). `src/app/[locale]/page.tsx` just calls it.
+ */
+export { buildHomeMetadata } from "./server/metadata";
+
 /** Fallback photo (`{ url, alt }`) for the guide aside CTA while no image is picked. */
 export { GUIDE_ASIDE_FALLBACK_IMAGE } from "./schemas/guides";
 

@@ -1035,7 +1035,7 @@
         "notes": {
           "heroSecondary": "The secondary button always links to /owners.",
           "searchBar": "The Avantio search bar is configured in Settings.",
-          "stats": "The figures band currently shows the company figures from Settings.",
+          "stats": "The heading is edited here; the figures still come from the company figures in Settings.",
           "portfolio": "Property cards come from Buildings (featured, by position).",
           "services": "Cards come from Services.",
           "faq": "Questions are edited in FAQ.",
@@ -1047,6 +1047,48 @@
           "services": "Open Services",
           "faq": "Open FAQ"
         }
+      },
+      "labels": {
+        "seo": "SEO",
+        "meta_title": "Meta title (search results)",
+        "meta_description": "Meta description (search results)",
+        "hero": "Hero",
+        "video_media_id": "Background video",
+        "image_media_id": "Image",
+        "eyebrow": "Eyebrow (small text above the title)",
+        "headline": "Title",
+        "subtitle": "Subtitle",
+        "subheadline": "Subtitle",
+        "title": "Title",
+        "description": "Description",
+        "body": "Text",
+        "label": "Text",
+        "url": "Link (URL)",
+        "note": "Note",
+        "cta_primary": "Primary button",
+        "cta_secondary": "Secondary button",
+        "cta": "Button",
+        "cta_label": "Button text",
+        "card_view_label": "Card button text",
+        "badge": "Floating badge",
+        "icon_key": "Icon",
+        "benefits": "Benefits",
+        "assurances": "Assurances",
+        "service_category_slug": "Service category",
+        "faq_group_key": "FAQ group",
+        "owner": "Owner panel",
+        "guest": "Guest panel",
+        "stats": "Figures",
+        "portfolio": "Featured portfolio",
+        "faq": "FAQ",
+        "guests_pitch": "Guests pitch",
+        "services_carousel": "Partners & Services",
+        "dual_cta": "Closing dual CTA"
+      },
+      "itemLabels": {
+        "benefits": "Benefit",
+        "assurances": "Assurance",
+        "stats": "Figure"
       }
     }
   },
