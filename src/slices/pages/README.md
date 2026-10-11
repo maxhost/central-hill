@@ -2,7 +2,8 @@
 
 The five **editable fixed marketing pages** — Home, Owners, Real Estate, About, and the
 Guest landing — plus the `blog` and `guides` rows (copy those sections show outside a post or
-guide), stored one row per `key` in `page_content`, each validated by a fixed
+guide) and the `buildings` row (the Buildings **listing**'s editable sections, rendered inside slice
+`buildings`' listing through this slice's contract), stored one row per `key` in `page_content`, each validated by a fixed
 per-page Zod schema (ADR 0012 / `docs/data-model.md` → Page content model). This slice is
 **pure composition**: it owns only its own page rows and resolves their [T] blocks + media,
 then its UI embeds the dynamic/shared pieces through *other slices' contracts*. It holds **no
@@ -10,20 +11,22 @@ foreign tables**. See `docs/vertical-slices.md` → S9.
 
 ## Owns
 
-**Table** (`schema.ts`, migrations `0000`, `0003`):
-- `page_content` — `key (unique: home|owners|real_estate|about|guest|blog|guides), data jsonb
+**Table** (`schema.ts`, migrations `0000`, `0003`; data-only rows `0016` blog/guides, `0017` buildings):
+- `page_content` — `key (unique: home|owners|real_estate|about|guest|blog|guides|buildings), data jsonb
   (SOURCE-locale values, validated per `key`), og_image_media_id?`. Pages have **no
   draft/published state** (owner direction, `0003`): a row that exists is live.
   Target-locale [T] values live in the cross-cutting `translation` table with
   `entity_type='page_content'`, `field='block:<dot.path>'` (e.g. `block:owners.benefits.0.title`).
 
 **Page schemas** (`schemas/`): one fixed Zod schema per page (`home`, `owners`, `real-estate`,
-`about`, `guest`) composed from `_shared.ts` (`iconCard`, `assurance`, `step`, `titledItem`,
-`faqGroupKey`, `serviceCategorySlug`, `optionalIconKey`, `statFigure`, the media helpers
+`about`, `guest`, `blog`, `guides`, `buildings`) composed from `_shared.ts` (`iconCard`, `assurance`, `step`, `titledItem`,
+`faqGroupKey`, `serviceCategorySlug`, `optionalIconKey`, `statFigure`, the estimate-wizard copy
+overrides `estimateContactStep` / `estimateDoneStep` (Owners `earnings_form` + Buildings
+`calculator`), the media helpers
 `optionalImage` / `optionalVideo` / `optionalAnimated`, and the `fixed` / `between` array helpers). `schemas/index.ts` maps `key → schema` (`pageSchemas`) and derives
 `translatablePathsByPage` (the [T] leaf paths the translation pipeline extracts). Repeating
 groups are **fixed-count arrays** (e.g. exactly 6 benefits) — the admin form shows N slots —
-except bounded `between(min,max)` lists (Owners `plans.tiers` 1–4 and `stats` 0–8, Home `stats.figures` 0–8),
+except bounded `between(min,max)` lists (Owners `plans.tiers` 1–4 and `stats` 0–8, Home and Buildings `stats.figures` 0–8),
 which the form edits with "+ add" / remove.
 
 ## Contract (`contract.ts`)
@@ -31,6 +34,9 @@ which the form edits with "+ add" / remove.
 Reads (all return `null` when the page row has not been authored):
 - `getHomePage(locale)`, `getOwnersPage(locale)`, `getGuestPage(locale)`,
   `getRealEstatePage(locale)`, `getAboutPage(locale)`.
+- `getBuildingsPage(locale)` → `BuildingsPage` (`PageResult<BuildingsContent>`) — **never null**:
+  no row, or a row that fails `buildingsSchema`, → `defaultBuildings` (blank texts + the three
+  figures). Its sections, `buildBuildingsMetadata` and the rest: "Buildings content model" below.
 
 Sidebar CTAs of the detail pages (never null — they fall back to `defaultBlog`/`defaultGuides`):
 - `getBlogAsideCta(locale)` → `BlogAsideCta {eyebrow?, title, body?, cta{label, href}}`, href =
@@ -694,10 +700,67 @@ for the Owners keys live in `pages.admin.labels` / `itemLabels` / `addLabels` (4
   (labels, placeholders, Studio, aria-labels, consent lines, back/submit, step 3) and takes the
   editable step-2/3 copy as optional props. Its second consumer, Buildings, passes none → its
   steps 2/3 and fields are translated too; its step-1 copy is still Buildings' own EN props.
+  *(Superseded by spec buildings-admin-editor S2: see "Buildings content model".)*
 - With every new field blank the page is the same as before the spec in EN, and PT/ES/FR now get
   the translated fixed strings (form, badges, pill, Choose, testimonials/FAQ titles, closing CTA,
   metadata). Remaining English in PT/ES/FR that isn't DB content: the stock-photo `alt`s in
   `owners-page.tsx`, the marquee's `aria-label`, and the header's Owners sub-nav (settings slice).
+
+### Buildings content model (spec `docs/specs/buildings-admin-editor.md`, 2026-10-11)
+
+New key **`buildings`** (`schemas/buildings.ts`): the editable sections of the Buildings
+**listing** `/<locale>/buildings` — not the detail page `/buildings/[slug]`, which reads nothing
+from this row. Edited in `/admin/pages/buildings`. The building cards stay in slice `buildings`
+(`/admin/buildings`); the estimate form's labels/placeholders stay fixed i18n
+(`pages.estimateForm.*`). Every text is optional and blank-tolerant: blank → `pages.buildings.*`
+(EN = the literals the page showed before the spec), so the default row renders the page unchanged
+in EN and translated in PT/ES/FR. Same D1 rule as Home/Owners: a filled field shows on every locale
+until the translation tabs exist. URLs are not editable. Full field table: `docs/data-model.md` →
+buildings.
+
+| Section | Fields | Blank / absent → |
+|---|---|---|
+| SEO | `seo?{meta_title?, meta_description?}` + `og_image_media_id` column | `pages.buildings.metaTitle` / `metaDescription`; no OG |
+| Hero | `hero?{image_media_id (image, 16:9), eyebrow?, headline?, copy?, contact?{label?, title?, intro?}}` | stock Unsplash photo; `pages.buildings.heroEyebrow` / `heroTitle` / `heroCopy`; `pages.owners.contactLabel` / `contactTitle` / `contactIntro` |
+| For Owners panel | `owner_panel?{eyebrow?, title?, body?, cta_label?, contact_line?}` | `pages.buildings.ownerEyebrow` / `ownerTitle` / `ownerBody` / `ownerCta`; contact line from Settings ("Call {phone}", `ownersFinalContactLine`) |
+| Figures | `stats?{title?, figures (0–8 × buildingsFigure)}` | `pages.buildings.statsTitle`; **0 rows → no band** (title included) |
+| Calculator | `calculator?{badge?, headline?, subheadline?, cta_label?, contact_step, done_step, media_media_id (animated, 4:5)}` | `pages.buildings.calcBadge` / `calcTitle` / `calcSubtitle` / `calcCta`; steps 2/3 → `pages.estimateForm.*`; stock Pexels photo |
+
+- **`buildingsFigure`** = `statFigure.extend({ description: tStrOpt({ max: 120 }) })`, local to
+  `schemas/buildings.ts` (`statFigure` is untouched): the second line under each label.
+- **`estimateContactStep` / `estimateDoneStep`** (`_shared.ts`): step-2/3 copy overrides, moved
+  unchanged out of `owners.ts` so Owners' `earnings_form` and Buildings' `calculator` share them.
+- **`defaultBuildings`**: blank texts + the three figures (400,000+ Bookings Completed, 12+ Years
+  of Experience, €55M+ Revenue Generated, each with its description). Used by drizzle **0017**
+  (data only: inserts the row, `ON CONFLICT DO NOTHING`), by `getBuildingsPage` when there is no
+  valid row, and by the tests. The row matters for the editor: without it `applyDefaults` would open
+  with 0 figures and the first Save would hide the band.
+- Media: `hero.image_media_id` → `accept: "image"` (Owners' hero hint); `calculator.media_media_id`
+  → `"animated"` (image, animated WebP, MP4/WebM, Lottie; the 4:5 hint of Home's pitch).
+- Publish: `PAGE_PATH.buildings = "buildings"` → `revalidatePage("buildings")` busts `page:buildings`
+  and revalidates `/{locale}/buildings` ×4 (a plain path, not a section layout).
+
+**Contract exports** (`contract.ts`):
+- `getBuildingsPage(locale)` / `BuildingsPage` / `BuildingsContent` — see "Contract" above.
+- `buildBuildingsMetadata(locale)` (`server/metadata.ts`): `seo.*` → i18n fallback, canonical
+  `/<locale>/buildings`, hreflang + `x-default` → `/buildings`, optional OG; built with
+  `seoMetadataInput`. The route `src/app/[locale]/buildings/page.tsx` only calls it.
+- Server components `BuildingsHero`, `BuildingsOwnerPanel`, `BuildingsStats`, `BuildingsCalculator`
+  (`ui/components/buildings-sections.tsx`), each `{ page, locale }`. Slice `buildings`'
+  `buildings-listing.tsx` reads the page once and composes hero → (its grid) → panel → stats →
+  calculator. JSX and classes moved 1:1 from that file. `BuildingsHero` keeps
+  `source="buildings-hero"` on the contact dialog; `BuildingsOwnerPanel`'s button is fixed to
+  `#estimate`; `BuildingsStats` returns `null` without figures; `BuildingsCalculator` carries
+  `id="estimate"` and renders its media with `sideMedia()` (none → stock photo).
+- `describedStatFigureCells(rows)` (`ui/stat-figure-value.ts`, pure): `statFigureCells` plus each
+  row's `description` (a blank one is dropped); columns via `statBandColumns(n)` (3 → 3).
+
+**Editor.** `BUILDINGS_LAYOUT` (`admin/layout.ts`), `BUILDINGS_CARD_IDS` = `seo` (hosts the OG
+image, 70/200 note), `hero`, `owner_panel` (note + link to `/admin/settings`), `stats` ("without
+figures the band is hidden"), `calculator` (Owners' earnings-form note: fixed translated labels, no
+leads yet), plus the read-only `buildings_grid` info row (link to `/admin/buildings`) after the
+hero and "Other" for unclaimed keys. `EditorCardId` includes these ids. Labels / `itemLabels` /
+`addLabels` in `pages.admin.*` (4 locales).
 
 ### Icons on `core/ui` `<Icon>` — Home, Guests, About (ADR 0034)
 
@@ -767,8 +830,9 @@ no-submit behaviour (a verified 0-diff DOM/behaviour inventory, bar the a11y add
   "Studio", aria-labels, checkboxes, back/submit, step 3) now comes from `pages.estimateForm.*`
   (4 locales); steps 2/3 copy is overridable through optional props (Owners passes
   `earnings_form.contact_step.*` / `done_step.*`). Still pending: `href="#"` terms/privacy links,
-  not wired to `submitLead`, and Buildings' own step-1 copy (badge/title/subtitle/button) is
-  English passed by `buildings-listing.tsx`.
+  not wired to `submitLead`. *(Closed by spec buildings-admin-editor S2: Buildings' step-1 copy
+  is no longer English literals — `BuildingsCalculator` passes `calculator.*` or
+  `pages.buildings.calc*`, plus the same step-2/3 overrides as Owners.)*
 
 ## Routes (`src/app/[locale]/…`)
 
@@ -778,7 +842,8 @@ no-submit behaviour (a verified 0-diff DOM/behaviour inventory, bar the a11y add
 image override comes from the page row. Home and Owners are the exceptions: their
 `generateMetadata` is `buildHomeMetadata` / `buildOwnersMetadata` from the contract (editable
 `seo.*`, i18n fallback; Owners builds its input with the pure `seoMetadataInput` from
-`server/metadata-input.ts`).
+`server/metadata-input.ts`). The Buildings listing route (`/buildings`, owned by slice `buildings`)
+does the same with `buildBuildingsMetadata`.
 
 ## i18n
 
@@ -829,7 +894,8 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
   while the media queue `isPreparing`, flushing or saving, with the "Wait until the media is
   ready." hint (spec S2).
 - `admin/layout.ts` (pure, tested) — per-page **editor layout** (spec home-admin-editor S2; `home`
-  and, since spec owners-admin-editor S1, `owners` — see "Owners content model" for its 12 cards). An ordered list of cards with **stable ids** — `seo`, `hero`, `stats`,
+  and, since spec owners-admin-editor S1, `owners` — see "Owners content model" for its 12 cards;
+  since spec buildings-admin-editor S1, `buildings` — see "Buildings content model"). An ordered list of cards with **stable ids** — `seo`, `hero`, `stats`,
   `guests_pitch`, `portfolio`, `services_carousel`, `faq`, `dual_cta` (never rename one: they will
   be the unit of the translation arc's per-section "Translate with AI") — each listing the `data`
   root keys it renders, plus read-only rows/notes (the Avantio search bar → Settings; notes with
@@ -853,7 +919,9 @@ Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton f
 - **Translation review** of page [T] blocks: **S14**, on the `core/i18n` seam.
 - **Home editor open items** (editable URL fields, R2 GET CORS for Lottie, per-locale tabs with
   stable row ids, …): `docs/specs/home-admin-editor.md` → "Abiertos".
-- **Owners editor open items** (real video/Lottie upload test, Buildings' step-1 English copy,
+- **Buildings editor open items** (migration 0017 applied in PROD on 2026-10-11,
+  real save test with a WebM, `cta_label` arrow, …): `docs/specs/buildings-admin-editor.md` → "Abiertos".
+- **Owners editor open items** (real video/Lottie upload test, Buildings' step-1 English copy — closed by the Buildings spec,
   estimate form not sending leads, dead `#` links, mixed testimonials, leftover EN fallback alts /
   header sub-nav, …): `docs/specs/owners-admin-editor.md` → "Abiertos".
 
@@ -865,10 +933,14 @@ Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton f
 `orMessage` fallback, translatable paths incl. `stats.figures.*.label` and excluding `icon_key`,
 `formatStatFigure` ↔ `parseStatValue` round-trip, `statFigureCells`, `statBandColumns`, hero
 poster), plus the Owners additions (`orNamedMessage`, `seoMetadataInput`, `pages.estimateForm`
-keys ×4 with matching ICU args, 0–8 `stats`, `final_cta` + contact line). `tests/pages-admin.test.ts` — the schema → form model (`describe` leaf/array detection,
+keys ×4 with matching ICU args, 0–8 `stats`, `final_cta` + contact line), plus the Buildings
+additions (`buildingsSchema` with `defaultBuildings` / blank / filled rows, migration 0017 =
+`defaultBuildings`, `pages.buildings.*` ×4 with EN = the old literals, `orMessage` fallbacks, owner
+panel contact line, `seoMetadataInput` for `/buildings`, `describedStatFigureCells` + 3 columns). `tests/pages-admin.test.ts` — the schema → form model (`describe` leaf/array detection,
 `emptyValue`/`applyDefaults` scaffolding, `humanizeKey`, media `accept` per field, `admin_hidden`
 nodes and hidden values round-tripping on save) and the editor layouts (card placement, "Other"
-fallback, Owners' 12 ids). Run:
+fallback, Owners' 12 ids, Buildings' 5 ids + grid info row, media `accept` hero `image` /
+calculator `animated`). Run:
 `npx tsx --test src/slices/pages/tests/pages.test.ts src/slices/pages/tests/pages-admin.test.ts`.
 
 ### `blog` and `guides` rows: the detail-page sidebar CTAs (session 5)

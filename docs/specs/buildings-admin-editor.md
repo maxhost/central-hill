@@ -1,6 +1,6 @@
 # Spec + plan — Admin Buildings (listado) editable sección a sección
 
-**Fecha:** 2026-10-11 · **Slices:** `pages` (datos + editor + secciones) y `buildings` (composición del listado) · **Estado:** spec aprobado, sin implementar
+**Fecha:** 2026-10-11 · **Slices:** `pages` (datos + editor + secciones) y `buildings` (composición del listado) · **Estado:** S1–S2 entregadas; migración 0017 aplicada en PROD; prueba real de guardado pendiente (QA del owner)
 **Precedentes:** `docs/specs/home-admin-editor.md`, `docs/specs/owners-admin-editor.md` (mismo proceso, mismas piezas reutilizables)
 
 ## Objetivo
@@ -199,3 +199,81 @@ Cada sesión cabe en 10–15 minutos.
 **Decididas por el coordinador (revisables):** la imagen del hero es sólo foto (como Owners; Home usa vídeo en su
 hero, se puede añadir después); la línea de contacto vacía usa el formato "Call {phone}" de Owners, que es el que hoy
 se ve literal; la fila se crea por migración para que las cifras no se pierdan en el primer guardado.
+
+## Estado (2026-10-11)
+
+S1 y S2 están entregadas. S3 está a medias: el recorrido de sólo lectura y la documentación están
+hechos y la migración 0017 está aplicada en PROD (2026-10-11, con el OK del owner); falta la prueba real de guardado. Commits:
+
+| Sesión | Commit | Qué entró |
+|---|---|---|
+| Spec | `e22b733` | Este documento + plan por sesiones |
+| S1 | `e5d81bb` | `schemas/buildings.ts` (`buildingsSchema`, `buildingsFigure` con `description`, `defaultBuildings`, hints de medios). `estimateContactStep` / `estimateDoneStep` extraídos de `owners.ts` a `_shared.ts` sin cambiar su forma. Clave `buildings` en `pageKey`, `pageSchemas`, `translatablePathsByPage`, `schema.ts` y `PAGE_PATH`. Migración `0017_pages_buildings_row.sql` (sólo datos, `ON CONFLICT DO NOTHING`) + journal; **no se ejecutó contra la DB**. `BUILDINGS_LAYOUT` con 5 tarjetas + info del grid + "Other"; etiquetas, `itemLabels` / `addLabels` (4 idiomas) |
+| S2 | `d1c2af9` | `getBuildingsPage` (nunca null: sin fila o fila inválida → `defaultBuildings`), `buildBuildingsMetadata`, `BuildingsHero` / `BuildingsOwnerPanel` / `BuildingsStats` / `BuildingsCalculator` en `ui/components/buildings-sections.tsx`, exportados por el contrato. `describedStatFigureCells`. `buildings-listing.tsx` sólo compone; la ruta sólo llama a `buildBuildingsMetadata`. Claves `pages.buildings.*` en 4 idiomas (EN = literales anteriores) |
+| S3 | — | Recorrido de sólo lectura de `/{en,pt,es,fr}/buildings` y documentación: `pages/README.md`, `buildings/README.md`, `docs/data-model.md` → buildings y este estado. Migración 0017 aplicada en PROD. **Pendiente:** prueba real de guardado |
+
+Con S2 se cierra el abierto nº 2 de Owners: el paso 1 de la calculadora de Buildings ya sale traducido.
+
+### Verificación hecha
+
+- **Tests por sesión** (`tests/pages.test.ts`, `tests/pages-admin.test.ts`):
+  - **S1:** `defaultBuildings`, una fila vacía (scaffold) y una rellena validan; `accept` del hero
+    (`image`, 16:9) y de la calculadora (`animated`, 4:5); el layout tiene 5 ids estables, la info
+    del grid va tras el hero y cada clave se coloca una sola vez; los textos son traducibles y los
+    medios, números y afijos no; la migración 0017 inserta exactamente `defaultBuildings`.
+  - **S2:** todas las claves `pages.buildings.*` existen en los 4 idiomas y en EN coinciden con los
+    literales anteriores; vacío → texto i18n, relleno → su texto; línea de contacto: el campo gana,
+    vacío → Settings con "Call"; `seoMetadataInput` cae a i18n y conserva canonical / hreflang; las
+    cifras conservan su `description` y 3 cifras dan 3 columnas.
+- **Revisión del coordinador en cada sesión**, según el protocolo del plan: diff, typecheck + lint +
+  tests comprobando el exit code, y el admin real y la página pública en Playwright headed **sin guardar**.
+- **S3, recorrido de sólo lectura** (dev server local, sin fila `buildings` en la DB → `defaultBuildings`):
+  - `/{en,pt,es,fr}/buildings` → 200. El detalle `/{en,pt,es,fr}/buildings/bairro-alto-view` → 200;
+    sus archivos no cambiaron en S1–S2 y no muestra nada de esta fila.
+  - **EN:** todos los textos visibles coinciden con los literales anteriores al spec (`e22b733`:
+    `buildings-listing.tsx` y la ruta): hero (eyebrow, título, texto, botón "Contact Us", título e
+    intro del diálogo), panel For Owners (incluido el "→" del botón), la línea de contacto construida
+    desde Settings (idéntica a la literal: "Call +351 910 075 725 · info@centralhill.pt · WhatsApp
+    +351 910 075 725"), las 3 cifras con etiqueta y descripción, y la calculadora (badge, título,
+    subtítulo, botón). `<title>`, meta description, `og:title` / `og:description` / `og:url` y
+    `twitter:*` son los de antes; canonical `/en/buildings` y hreflang en / pt / es / fr +
+    `x-default` → `/buildings`, igual que antes. Sin `og:image` (no hay OG configurada, como antes).
+  - **PT/ES/FR:** salen traducidos `<html lang>`, `<title>`, meta description, `og:*` y `twitter:*`
+    (canonical y `og:url` con su propio idioma), el hero completo (incluido el diálogo de contacto),
+    el panel For Owners (con "Ligue / Llame al / Appelez le …" en la línea de contacto), el título de
+    la banda de cifras, el paso 1 de la calculadora, todo el formulario (labels, pasos 2 y 3) y los
+    textos fijos de las tarjetas ("Ver Todas as Unidades", "Apartamentos", "Novo"…).
+  - **Sigue en inglés en PT/ES/FR** (ver Abiertos nº 5): las etiquetas y descripciones de las 3
+    cifras, el texto de las tarjetas de edificios, los `alt` de las fotos de respaldo y el formato
+    numérico "400,000+".
+- **Las sesiones no escriben en DB / R2.**
+- **Migración 0017 en PROD (OK del owner, 2026-10-11):** antes, el ledger tenía 17 migraciones (hasta la 0016) y no
+  había fila `buildings`; `pnpm db:migrate` aplicó sólo la 0017 (ledger → 18). La fila quedó con las 3 cifras de
+  `defaultBuildings`, `og_image_media_id` nulo. `media_asset` sigue en 151.
+
+## Abiertos
+
+1. **Migración 0017: aplicada en PROD** (2026-10-11). El editor ya abre con las 3 cifras y se puede guardar.
+   Post-deploy: nada más (la fila ya existe; el código usa `defaultBuildings` si faltara).
+2. **Prueba real de guardado pendiente — la hace el owner como QA durante la semana** (el clasificador de permisos bloqueó la prueba automática): instantánea de la fila → rellenar campos
+   + subir un WebM a la calculadora → guardar → verificar en la página → restaurar la fila, borrar el
+   asset y reiniciar el dev server.
+3. **`owner_panel.cta_label` relleno se pinta tal cual.** El "→" no se añade en código (el texto por
+   defecto lo lleva dentro): quien edite el botón tiene que escribir la flecha si la quiere.
+   (`calculator.cta_label` sí añade la flecha en código.)
+4. **`hero` / `calculator` presentes sin su clave de medio no validan.** Un objeto `hero` sin
+   `image_media_id` (o `calculator` sin `media_media_id`) falla el parse y la página cae entera a
+   `defaultBuildings`. Riesgo bajo: el editor siempre escribe esas claves (`""` si no hay asset).
+5. **Inglés en PT/ES/FR que sigue tras el spec:**
+   - **Etiquetas y descripciones de las cifras** ("Bookings Completed", "Across all managed
+     properties"…). Son datos de la fila (`defaultBuildings`, EN), no i18n, así que salen en inglés en
+     los 4 idiomas hasta que existan sus traducciones (arco de pestañas). Antes del spec también eran
+     literales EN. El título de la banda sí sale traducido.
+   - **Formato numérico** "400,000+" con coma en todos los idiomas (`formatStatFigure`, agrupación
+     en-US compartida con Home y Owners).
+   - **Tarjetas de edificios:** el texto de cada edificio (teaser) es contenido EN del slice
+     `buildings` sin traducción aprobada; los nombres son propios. Fuera de este spec.
+   - **`alt` de las fotos de respaldo** (`BUILDINGS_HERO_ALT`, `BUILDINGS_CALC_FALLBACK_ALT`), que sólo
+     se usan mientras no hay asset. Fuera de alcance, como en Owners (abierto nº 8).
+6. **Arco de traducción por pestañas** (`home-admin-editor.md` → "Modelo de traducción por pestañas"),
+   incluido el id estable por fila para `stats.figures`.

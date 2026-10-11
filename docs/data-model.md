@@ -17,7 +17,7 @@ important modeling decision:
 1. **Dynamic entities** — collections the admin manages as records via CMS list+form screens:
    buildings, apartments, blog posts, services, city guides, testimonials, leads.
 2. **Editable fixed pages** — the marketing pages (`home`, `owners`, `real_estate`, `about`,
-   `guest`) have a **layout fixed in code**. Only their *text/media values* are editable, through a
+   `guest`, plus the `buildings` listing's sections) have a **layout fixed in code**. Only their *text/media values* are editable, through a
    **fixed per-page form** (a known schema — **not** a drag-and-drop block builder). Stored in
    `page_content`. See §"Page content model".
 3. **Company-wide settings** — stats, contact, social, office, navigation, footer, Avantio config:
@@ -81,7 +81,7 @@ has a known, validated schema (Zod in code) that both renders the admin form and
 ```
 page_content
   id        uuid pk
-  key       text unique   -- 'home' | 'owners' | 'real_estate' | 'about' | 'guest' | 'blog' | 'guides'
+  key       text unique   -- 'home' | 'owners' | 'real_estate' | 'about' | 'guest' | 'blog' | 'guides' | 'buildings'
   data      jsonb         -- SOURCE-locale values, validated against the page's fixed schema
   og_image_media_id  uuid null
 ```
@@ -91,8 +91,8 @@ page_content
   `block:owners_benefits.0.title`). The page schema declares which leaf paths are **[T]**.
 - Repeating groups are **fixed-count arrays** in the schema (e.g. exactly 6 benefit cards) — the form
   shows a fixed number of slots, never "add block".
-  Exceptions are **bounded** lists (`between(min,max)`, e.g. Owners `plans.tiers[1..4]`, Home
-  `stats.figures[0..8]`): the editor shows "+ add" / remove within the bounds.
+  Exceptions are **bounded** lists (`between(min,max)`, e.g. Owners `plans.tiers[1..4]`, Home and
+  Buildings `stats.figures[0..8]`): the editor shows "+ add" / remove within the bounds.
 - Values that are inherently dynamic/shared are **not** copied into `data`; they reference other
   slices at render time (see per-page notes).
 - On save+publish → `revalidatePath('/{locale}/<page>')` for all 4 locales.
@@ -231,6 +231,38 @@ page_content
 - **guides** (drizzle 0016): `guide_aside{image_media_id?, eyebrow?, title, body?, cta_label}` — the
   accommodation CTA under the "In this guide" TOC of every guide. Destination fixed in code (locale
   `/buildings`); a blank image shows the mock photo.
+
+- **buildings** (as shipped by `docs/specs/buildings-admin-editor.md`, 2026-10-11;
+  `src/slices/pages/schemas/buildings.ts`). The editable sections of the Buildings **listing**
+  (`/<locale>/buildings`), rendered inside slice `buildings`' listing through the `pages` contract.
+  Not the detail page `/buildings/[slug]` (it reads nothing from this row). Same notation as home.
+  Every text field is optional and blank-tolerant; blank → `pages.buildings.*` i18n (EN = the
+  literals the page showed before the spec). No editable URLs.
+
+  | Path | Type | Class | Blank / absent → |
+  |---|---|---|---|
+  | `seo?.meta_title?` / `seo?.meta_description?` | ≤70 / ≤200 (`seoShape`) | T | i18n `pages.buildings.metaTitle` / `metaDescription` |
+  | *(column)* `og_image_media_id` | image | C | no OG override |
+  | `hero?.image_media_id` | `"" \| uuid`, image 16:9 | C | stock Unsplash photo |
+  | `hero?{eyebrow? ≤60, headline? ≤160, copy? ≤600}` | hero texts | T | i18n `pages.buildings.heroEyebrow` / `heroTitle` / `heroCopy` |
+  | `hero?.contact?{label? ≤40, title? ≤80, intro? ≤280}` | button + contact dialog | T | i18n `pages.owners.contactLabel` / `contactTitle` / `contactIntro` |
+  | `owner_panel?{eyebrow? ≤60, title? ≤160, body? ≤400, cta_label? ≤80}` | "For Owners" panel; button fixed to `#estimate` | T | i18n `pages.buildings.ownerEyebrow` / `ownerTitle` / `ownerBody` / `ownerCta` |
+  | `owner_panel?.contact_line?` ≤200 | panel contact line | T | built from **company_settings** (`Call {phone} · email · WhatsApp …`, as Owners' closing CTA) |
+  | `stats?.title?` ≤160 | band heading | T | i18n `pages.buildings.statsTitle` |
+  | `stats?.figures` | **0–8** × `buildingsFigure` = `statFigure` + `description?` ≤120 | `label` / `description` T · number and affixes C | **no rows → no band** (heading included) |
+  | `calculator?{badge? ≤60, headline? ≤160, subheadline? ≤280, cta_label? ≤80}` | step 1 of the wizard | T | i18n `pages.buildings.calcBadge` / `calcTitle` / `calcSubtitle` / `calcCta` |
+  | `calculator?.contact_step?` / `done_step?` | same shapes as owners `earnings_form` (`estimateContactStep` / `estimateDoneStep`, `_shared.ts`) | T | i18n `pages.estimateForm.*` |
+  | `calculator?.media_media_id` | `"" \| uuid`; image (incl. animated WebP), MP4/WebM or Lottie (`optionalAnimated`), 4:5 | C | stock Pexels photo |
+
+  → Composed, not stored: building cards = **buildings** (`listBuildings`, edited in
+  `/admin/buildings`); panel contact line fallback = **company_settings**; the estimate form's field
+  labels/placeholders are fixed i18n (`pages.estimateForm.*`) and it does not send leads yet.
+  → Row created by **drizzle 0017** (data only, `ON CONFLICT DO NOTHING`) with `defaultBuildings`:
+  blank texts + the three figures the page always showed (400,000+ / 12+ / €55M+ with their labels and
+  descriptions). Without the row the page still renders (`getBuildingsPage` falls back to
+  `defaultBuildings`), but the editor would open with 0 figures and the first Save would hide the band.
+  → Same language rule (D1) and caching as home: `getBuildingsPage` is tagged `page:buildings`, busted
+  by Save on `/admin/pages/buildings` (`revalidatePage` → `/{locale}/buildings` ×4).
 
 **FAQ (all five pages).** Every page's `data` carries an optional **`faq_group_key`** (blank/absent =
 no FAQ). When set, it holds the language-neutral `key` of a `faq_group` (faq slice); the page renders

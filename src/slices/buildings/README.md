@@ -49,12 +49,26 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
 
 - `/{locale}/buildings` — listing (`ui/buildings-listing.tsx`): the approved
   `mock/buildings.html` design, **composed entirely from React/Tailwind components** — no
-  `.mk` markup and no `dangerouslySetInnerHTML`. The hero is `core/ui`'s
-  `<Hero compact align="center">`,
-  single-column (no `aside`), ported 1:1 from the old `.mk`-scoped overrides (now deleted) via
-  five additive `Hero` props (`align`/`overlayClassName`/`headlineClassName`/
-  `subtitleClassName`/`wrapClassName` — see `core/ui/hero.tsx`'s docstring); this page has no
-  `page_content` row, so every hero string/image is still a fixed literal. The grid is
+  `.mk` markup and no `dangerouslySetInnerHTML`. Since spec `docs/specs/buildings-admin-editor.md`
+  (S2, `d1c2af9`) this file **only composes**: hero → grid → "For Owners" panel → figures band →
+  earnings calculator. Everything except the grid comes from slice `pages` through its contract
+  (golden rule 2): `getBuildingsPage(locale)` reads the `buildings` `page_content` row (no row or
+  an invalid one → `defaultBuildings`, so the page always renders) and `BuildingsHero` /
+  `BuildingsOwnerPanel` / `BuildingsStats` / `BuildingsCalculator` render it. **The listing's
+  copy, hero image, figures and calculator media are edited in `/admin/pages/buildings`**, not in
+  `/admin/buildings` (which keeps editing the cards). Blank fields render the `pages.buildings.*`
+  i18n text (EN = the literals this page showed before the spec), so PT/ES/FR are now translated.
+  The JSX/classes moved 1:1: the hero is still `core/ui`'s `<Hero compact align="center">` with
+  the five additive props (see `core/ui/hero.tsx`), the panel `core/ui`'s `FeaturePanel` (button
+  fixed to `#estimate`; a blank contact line is built from Settings, "Call {phone} · email ·
+  WhatsApp …"), the band `core/ui`'s `StatBand` with per-cell `description` and columns from the
+  figure count (3 → 3; 0 figures → no band), the calculator the Owners wizard
+  (`OwnerEstimateForm`) inside `id="estimate"` with its 4:5 side media (photo, animated WebP,
+  MP4/WebM or Lottie; none → the stock Pexels photo). Stock fallback images and their English
+  `alt`s now live in `pages/schemas/buildings.ts`. Details: `src/slices/pages/README.md` →
+  "Buildings content model". The route (`src/app/[locale]/buildings/page.tsx`) gets its whole
+  `generateMetadata` from `pages`' `buildBuildingsMetadata(locale)` (editable `seo.*`, i18n
+  fallback, canonical + hreflang as before). The grid is
   `./components/building-listing-card.tsx`'s `BuildingListingCard` inside `core/ui`'s
   `Section`/`Container` (one `Reveal`, no per-card stagger) fed from `listBuildings(locale)` —
   the locked `.pcard` design ported to Tailwind, **purpose-built for this grid**: distinct from
@@ -66,22 +80,7 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   `public/placeholders/building.svg` so cards never render empty. A building with **booking
   enabled** (admin toggle + an `avantio_url`) makes its whole card link out to that external
   booking URL in a new tab (`target="_blank"`) instead of the internal detail page;
-  `BuildingSummary.booking = { enabled, url }` carries this. The "For Owners" band is
-  `core/ui`'s new `FeaturePanel` (a single bordered, solid dark "feature band" panel — no
-  image, unlike `DualCtaPanels`/`FeatureCtaBand`, see that component's docstring for why it's
-  a separate primitive), ported 1:1 from the old `.dual`/`.dcol.owner`/`.contact-line` CSS
-  (shared `mock.css` rules, untouched — other `.mk`-embedded pages may still use them); no
-  schema field backs it, every string is still a fixed literal. "Numbers That Speak for
-  Themselves" is the same `core/ui` `StatBand` Owners/Home use (ported 1:1 from the old
-  `.stats`/`.stats-grid`/`.stat .lbl` CSS), extended with two additive props: `columns={3}`
-  (this page's grid, vs. the default 4) and each cell's `description` (a second line under the
-  label); the figures themselves are still the same fixed literals as before this port. The
-  "Discover your property's earning potential" earnings calculator is the exact Owners hero
-  wizard — `@slices/pages/contract`'s `OwnerEstimateForm` (now a cross-slice-reusable export;
-  see that component's + the contract's docstrings for why only step 1's copy is a prop while
-  steps 2/3 stay fixed; a self-contained client component on `core/ui`'s form-card
-  primitives — no `EstFormStepper`/`EstFormWizard` islands to mount any more), two columns (form/photo, photo
-  first when stacked). Image is still a fixed Pexels placeholder (no schema field).
+  `BuildingSummary.booking = { enabled, url }` carries this.
 - `/{locale}/buildings/{slug}` — detail (`ui/building-detail.tsx`): the approved
   `mock/building-detail.html` design, now **DB-driven** from `getBuildingBySlug(locale, slug)`
   (`notFound()` when unknown/unpublished): hero, gallery, the apartments-count/capacity/beds
@@ -207,6 +206,9 @@ change** → see Deferred.
 `revalidateBuildingList()` / `revalidateBuilding(id, slugByLocale)` — the single place
 that busts building ISR caches + localized paths on publish. Called by the building admin
 actions (S12) and by the apartments slice (S3) when it recomputes a building's stats.
+The listing's editable sections are busted by slice `pages`, not here: Save on
+`/admin/pages/buildings` → `revalidatePage("buildings")` (tag `page:buildings` + `/{locale}/buildings`
+×4). The detail pages read nothing from that row.
 
 ## Backoffice (`admin/`) — buildings CRUD (S12)
 
