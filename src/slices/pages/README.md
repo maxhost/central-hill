@@ -23,7 +23,7 @@ foreign tables**. See `docs/vertical-slices.md` → S9.
 `optionalImage` / `optionalVideo` / `optionalAnimated`, and the `fixed` / `between` array helpers). `schemas/index.ts` maps `key → schema` (`pageSchemas`) and derives
 `translatablePathsByPage` (the [T] leaf paths the translation pipeline extracts). Repeating
 groups are **fixed-count arrays** (e.g. exactly 6 benefits) — the admin form shows N slots —
-except bounded `between(min,max)` lists (Owners `plans.tiers` 1–4, Home `stats.figures` 0–8),
+except bounded `between(min,max)` lists (Owners `plans.tiers` 1–4 and `stats` 0–8, Home `stats.figures` 0–8),
 which the form edits with "+ add" / remove.
 
 ## Contract (`contract.ts`)
@@ -121,8 +121,9 @@ as the section sub-nav — it opens on hover and the settings header pins it ope
 past the top (`OWNERS_NAV_CSS`, scoped via `body:has([data-page="owners"])`); on mobile those
 anchors live under "Owners" in the burger drawer.
 Layout: hero +
-earnings form, an animated "numbers" band — still this page's own `stats[×4]
-{to,prefix?,suffix?,group,label}` (drizzle 0009), but now rendered as real JSX through the same
+earnings form, an animated "numbers" band — still this page's own `stats[0–8 ×
+{to,prefix?,suffix?,group,label}]` (drizzle 0009; exactly 4 until spec owners-admin-editor S4 —
+columns via `statBandColumns`, no rows → no band but the `#numbers` anchor stays), but now rendered as real JSX through the same
 reusable, count-up band Home uses (`core/ui`'s presentational `StatBand` + `CountUp`, wrapped in
 `<Reveal>`; `#numbers` anchor on its own wrapper div since it sits outside `.mk`) instead of the
 raw-HTML grid + `owner-stats-counter.tsx`'s `[data-count]`-scanning counter. *(Superseded

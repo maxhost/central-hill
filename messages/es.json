@@ -1165,7 +1165,7 @@
       "itemLabels": {
         "benefits": "Ventaja",
         "assurances": "Garantía",
-        "stats": "Cifra",
+        "stats": "Dato",
         "figures": "Dato",
         "tiers": "Plan",
         "features": "Característica",
@@ -1176,7 +1176,7 @@
         "figures": "Nuevo dato",
         "tiers": "Nuevo plan",
         "features": "Nueva característica",
-        "stats": "Nueva cifra"
+        "stats": "Nuevo dato"
       }
     }
   },

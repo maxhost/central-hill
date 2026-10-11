@@ -212,12 +212,19 @@ test("home S5: a figure's label is translatable, its number and affixes are not"
   }
 });
 
-test("owners S5: still exactly 4 shared statFigure rows, label still translatable", () => {
+test("owners S4: 0–8 shared statFigure rows (4 stored rows still valid), label translatable", () => {
   const stats = ownersSchema.shape.stats;
-  assert.equal(stats.safeParse(PROD_FIGURES).success, true);
-  assert.equal(stats.safeParse(PROD_FIGURES.slice(0, 3)).success, false);
+  assert.equal(stats.safeParse(PROD_FIGURES).success, true, "the 4 stored rows");
+  assert.equal(stats.safeParse([]).success, true, "0 rows → band hidden");
+  assert.equal(stats.safeParse(PROD_FIGURES.slice(0, 3)).success, true);
+  assert.equal(stats.safeParse(Array.from({ length: 8 }, () => PROD_FIGURES[0])).success, true);
+  assert.equal(stats.safeParse(Array.from({ length: 9 }, () => PROD_FIGURES[0])).success, false);
   assert.ok(translatablePathsByPage.owners.includes("stats[].label"));
   assert.ok(!translatablePathsByPage.owners.includes("stats[].to"));
+});
+
+test("owners S4: 4 rows keep the StatBand default of 4 desktop columns (band unchanged)", () => {
+  assert.equal(statBandColumns(4), 4);
 });
 
 // ── S3: optional copy overrides with i18n fallback ────────────────────────────

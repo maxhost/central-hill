@@ -141,8 +141,12 @@ export const ownersSchema = z.object({
       })
       .optional(),
   }),
-  /** Animated "numbers" band (#numbers) — per-page figures, not the global company stats. */
-  stats: fixed(statFigure, 4),
+  /**
+   * Animated "numbers" band (#numbers) — per-page figures, not the global company stats.
+   * 0–8 rows since spec owners-admin-editor S4 (was exactly 4; stored rows stay valid), like
+   * Home's `stats.figures`. No rows → the band is hidden (the `#numbers` anchor stays).
+   */
+  stats: between(statFigure, 0, 8),
   // "Why owners trust us" — Editorial Split (sticky title + CTAs beside a hairline benefit list).
   why: z.object({
     headline: tStr({ max: 160 }),

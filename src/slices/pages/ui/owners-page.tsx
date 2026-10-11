@@ -21,7 +21,7 @@ import { FaqSection } from "./components/faq-section";
 import { OwnerEstimateForm } from "./components/owner-estimate-form";
 import { TestimonialsRow } from "./components/testimonials-row";
 import { orMessage, orNamedMessage } from "./or-message";
-import { statFigureCells } from "./stat-figure-value";
+import { statBandColumns, statFigureCells } from "./stat-figure-value";
 
 // Benefit icons are each item's admin-editable `icon_key`, rendered by `core/ui` `<Icon>`
 // (inline Iconoir SVG, ADR 0034).
@@ -223,15 +223,19 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
       {/*
        * "Numbers that speak for themselves" — the same reusable, count-up band component Home
        * uses (`core/ui`'s presentational `StatBand` + `CountUp`), fed this page's own
-       * `content.stats` (`statCells` above) rather than the company-wide settings figures —
-       * the Home has its own editable rows too (spec S5), so this page keeps its own numbers,
-       * just the shared widget. No
-       * `title` → the bare proof band the locked design uses here (Home passes a heading).
+       * `content.stats` (`statCells` above) rather than the company-wide settings figures.
+       * Like Home (spec owners-admin-editor S4): 0–8 editable rows, desktop columns follow the
+       * row count (`statBandColumns`; 4 rows → 4, the `StatBand` default, so today's band is
+       * unchanged), mobile stays 2-up. No rows → no band, but the `#numbers` anchor div stays
+       * (the header's Owners menu links to it). No `title` → the bare proof band the locked
+       * design uses here (Home passes a heading).
        */}
       <div id="numbers" style={{ scrollMarginTop: 130 }}>
-        <Reveal label="owners-stats">
-          <StatBand cells={statCells} />
-        </Reveal>
+        {statCells.length > 0 ? (
+          <Reveal label="owners-stats">
+            <StatBand cells={statCells} columns={statBandColumns(statCells.length)} />
+          </Reveal>
+        ) : null}
       </div>
       {/*
        * "Why property owners trust us" — `core/ui`'s `EditorialSplit` (new; built for this
