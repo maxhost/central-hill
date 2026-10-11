@@ -6,6 +6,7 @@
 import { z } from "zod";
 import { iconKey } from "@core/validation/icon-key";
 import { mediaId, tStr } from "@core/validation/primitives";
+import { withMediaAccept } from "./media-accept";
 
 /** The ubiquitous "icon + title + description" card (benefits, features…). */
 export const iconCard = z.object({
@@ -71,6 +72,13 @@ export const faqGroupKey = z
  */
 export const optionalImage = (hint: string) =>
   z.union([z.literal(""), mediaId]).describe(hint);
+
+/**
+ * A background video reference that may be left unset (`""` → the public render's stock
+ * clip). Same shape as `optionalImage`, but the admin picker offers MP4 / WebM only.
+ */
+export const optionalVideo = (hint: string) =>
+  withMediaAccept(z.union([z.literal(""), mediaId]), "video").describe(hint);
 
 /** Fixed-count array helper — the design repeats exactly `n` times. */
 export const fixed = <T extends z.ZodType>(schema: T, n: number) =>

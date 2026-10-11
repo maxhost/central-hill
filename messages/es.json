@@ -1196,6 +1196,7 @@
       "moveUp": "Mover arriba",
       "moveDown": "Mover abajo",
       "uploadError": "Error al subir. Inténtalo de nuevo.",
+      "wrongType": "Este tipo de archivo no está permitido aquí.",
       "uploadingTitle": "Subiendo archivos",
       "uploadingHint": "Mantén esta ventana abierta hasta que terminen todos los archivos.",
       "statusQueued": "En espera",

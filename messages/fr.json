@@ -1196,6 +1196,7 @@
       "moveUp": "Monter",
       "moveDown": "Descendre",
       "uploadError": "Échec du téléversement. Réessayez.",
+      "wrongType": "Ce type de fichier n'est pas autorisé ici.",
       "uploadingTitle": "Téléversement des médias",
       "uploadingHint": "Gardez cette fenêtre ouverte jusqu’à la fin de tous les fichiers.",
       "statusQueued": "En attente",

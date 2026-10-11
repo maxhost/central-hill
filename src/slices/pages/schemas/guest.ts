@@ -13,7 +13,7 @@
  */
 import { z } from "zod";
 import { cta, ctaWithNote, tStr, tStrOpt } from "@core/validation/primitives";
-import { faqGroupKey, fixed, iconCard, optionalImage } from "./_shared";
+import { faqGroupKey, fixed, iconCard, optionalImage, optionalVideo } from "./_shared";
 
 /** Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). */
 const HERO_VIDEO_HINT =
@@ -31,7 +31,7 @@ const dualPanel = z.object({
 
 export const guestSchema = z.object({
   hero: z.object({
-    video_media_id: optionalImage(HERO_VIDEO_HINT),
+    video_media_id: optionalVideo(HERO_VIDEO_HINT),
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),

@@ -160,6 +160,7 @@ export function NodeField(props: RenderProps) {
       <Field label={label} hint={node.hint} error={errors[errorKey]}>
         <MediaField
           value={id}
+          accept={node.accept}
           preview={id ? (previews[id] ?? null) : null}
           onChange={(next) => onChange(path, next ?? "")}
         />

@@ -78,6 +78,10 @@ row is treated as not-staff.
   is the render-ready view. **ADR 0018 places the media admin UI here**; consuming
   slices import the fields via this contract and never touch `core/media` ingest
   directly (those kernel functions are `server-only` + ungated by design).
+  `accept` (`ui/media-accept.ts`, pure + tested) picks what a field takes: `"image"` (default,
+  JPEG/PNG/WebP/AVIF), `"video"` (MP4/WebM — background loops, e.g. the Home hero) or
+  `"media"` (either). It sets the file dialog filter **and** a client check on the picked
+  file (`backoffice.media.wrongType`); `core/media` ingest stays the authority.
 
 Backoffice routes are **dynamic** (auth) — no ISR, no cache tags.
 

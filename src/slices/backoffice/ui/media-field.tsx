@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { UiIcon, cn } from "@core/ui";
 import type { AdminMediaPreview } from "../server/media-actions";
+import { type MediaFieldAccept, acceptAttribute, isAcceptedType } from "./media-accept";
 import { reserveUpload, useMediaQueue } from "./media-queue";
 
 /**
@@ -14,11 +15,6 @@ import { reserveUpload, useMediaQueue } from "./media-queue";
  * `media_id[]`) and persists it through its own save action; the field only
  * manages upload + preview state. Labels come from the `backoffice` namespace.
  */
-
-const ACCEPT: Record<"image" | "media", string> = {
-  image: "image/jpeg,image/png,image/webp,image/avif",
-  media: "image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm",
-};
 
 /**
  * Picking a file **reserves an id and queues the bytes** — it does not upload (ADR
@@ -58,7 +54,8 @@ export function MediaField({
   /** Resolved preview for an already-persisted `value` (edit screens). */
   preview?: AdminMediaPreview | null;
   onChange: (id: string | null, preview: AdminMediaPreview | null) => void;
-  accept?: "image" | "media";
+  /** What the picker takes: `image` (default), `video` (MP4/WebM) or `media` (either). */
+  accept?: MediaFieldAccept;
 }) {
   const t = useTranslations("backoffice");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -76,6 +73,11 @@ export function MediaField({
 
   function onFile(file: File | undefined) {
     if (!file) return;
+    // The dialog filter is advisory; refuse a file of the wrong kind before reserving.
+    if (!isAcceptedType(accept, file.type)) {
+      setError(t("media.wrongType"));
+      return;
+    }
     start(async () => {
       try {
         const { id, preview: local } = await reserveUpload(file);
@@ -124,7 +126,7 @@ export function MediaField({
       <input
         ref={inputRef}
         type="file"
-        accept={ACCEPT[accept]}
+        accept={acceptAttribute(accept)}
         className="hidden"
         onChange={(e) => {
           onFile(e.target.files?.[0]);
@@ -151,7 +153,8 @@ export function MediaGalleryField({
   /** Resolved previews for already-persisted ids (edit screens). */
   previews?: Record<string, AdminMediaPreview>;
   onChange: (ids: string[]) => void;
-  accept?: "image" | "media";
+  /** What the picker takes: `image` (default), `video` (MP4/WebM) or `media` (either). */
+  accept?: MediaFieldAccept;
 }) {
   const t = useTranslations("backoffice");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -178,6 +181,11 @@ export function MediaGalleryField({
   function onFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     const list = Array.from(files);
+    if (list.some((f) => !isAcceptedType(accept, f.type))) {
+      setError(t("media.wrongType"));
+      return;
+    }
+    setError(null);
     start(async () => {
       try {
         const added: AdminMediaPreview[] = [];
@@ -259,7 +267,7 @@ export function MediaGalleryField({
         ref={inputRef}
         type="file"
         multiple
-        accept={ACCEPT[accept]}
+        accept={acceptAttribute(accept)}
         className="hidden"
         onChange={(e) => {
           onFiles(e.target.files);

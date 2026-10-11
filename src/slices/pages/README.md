@@ -551,7 +551,8 @@ prerendering `/[locale]/guests` throws on the missing `portfolio` / `dual_cta` b
 
 The Home `guests_pitch.image_media_id` and `dual_cta.*.image_media_id` are **optional images**
 (`""` allowed): until an R2 asset is uploaded the render falls back to an approved mock photo,
-so the section never renders empty.
+so the section never renders empty. `hero.video_media_id` is likewise optional (`optionalVideo`,
+`""` → `HERO_FALLBACK_VIDEO`); its admin picker accepts MP4 / WebM only (`accept: "video"`).
 
 All cross-slice data is read **through contracts only** (golden rule 2) — e.g. the featured
 portfolio builds its own card from `BuildingSummary` rather than importing buildings' UI.
@@ -658,7 +659,10 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
   schema** into a serializable `FieldNode` tree; `emptyValue` / `applyDefaults` scaffold a `data`
   object (fixed-count arrays padded to length); `humanizeKey` makes labels. Leaf mapping:
   `*_media_id` → media picker (a `.describe()` on the media schema becomes the uploader hint:
-  recommended size/format), `faq_group_key` → **select** dropdown (a `SELECT_SOURCES` key →
+  recommended size/format; its **`accept`** — `"image"` | `"video"` — comes from `.meta({
+  media_accept })`, set with `withMediaAccept` / `optionalVideo` from `schemas/media-accept.ts` /
+  `_shared.ts`; no metadata → `"image"`; the editor passes it to `MediaField accept`. New kinds,
+  e.g. `"animated"`, extend `MEDIA_ACCEPTS` and backoffice's accept map together), `faq_group_key` → **select** dropdown (a `SELECT_SOURCES` key →
   catalogue heuristic, mirroring the media one; `.describe()` becomes the picker hint), ZodBoolean
   → checkbox, ZodString → text (textarea when long). The `select` options are *not* in the schema:
   `getPageEditModel` fills them server-side from another slice's contract (today

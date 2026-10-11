@@ -12,19 +12,22 @@
  * docs/data-model.md → Page content model → home.
  */
 import { z } from "zod";
-import { cta, ctaWithNote, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
+import { cta, ctaWithNote, tStr, tStrOpt } from "@core/validation/primitives";
 import {
   assurance,
   faqGroupKey,
   fixed,
   iconCard,
   optionalImage,
+  optionalVideo,
   serviceCategorySlug,
 } from "./_shared";
 
 /** Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). */
 const GUESTS_IMG_HINT =
   "Lifestyle photo for the Guests section. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
+const HERO_VIDEO_HINT =
+  "Background loop. MP4 (H.264), 1920×1080 (16:9), no audio, 10–20 s, ideally under 15 MB (max 200 MB).";
 const PANEL_IMG_HINT =
   "Panel background photo. Landscape — recommended 1600×1200px, JPG or WebP, under 600 KB.";
 
@@ -42,7 +45,8 @@ const ctaPanel = z.object({
 
 export const homeSchema = z.object({
   hero: z.object({
-    video_media_id: mediaId,
+    // Optional: "" → the stock hero clip (`HERO_FALLBACK_VIDEO`). The picker offers MP4/WebM.
+    video_media_id: optionalVideo(HERO_VIDEO_HINT),
     headline: tStr({ max: 160 }),
     subtitle: tStrOpt({ max: 280 }),
     // External booking engine (Avantio) — genuinely a redirect, so its target is

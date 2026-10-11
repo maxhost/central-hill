@@ -1196,6 +1196,7 @@
       "moveUp": "Mover para cima",
       "moveDown": "Mover para baixo",
       "uploadError": "Falha no carregamento. Tente novamente.",
+      "wrongType": "Este tipo de ficheiro não é permitido aqui.",
       "uploadingTitle": "A carregar media",
       "uploadingHint": "Mantenha esta janela aberta até todos os ficheiros terminarem.",
       "statusQueued": "Em espera",

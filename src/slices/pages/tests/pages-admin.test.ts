@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { z } from "zod";
 import { mediaId, tStr } from "@core/validation/primitives";
-import { between, faqGroupKey, fixed, iconCard } from "../schemas/_shared";
+import { between, faqGroupKey, fixed, iconCard, optionalImage, optionalVideo } from "../schemas/_shared";
+import { homeSchema } from "../schemas/home";
+import { withMediaAccept } from "../schemas/media-accept";
 import { type FieldNode, applyDefaults, describe, emptyValue, humanizeKey } from "../admin/form-model";
 
 /**
@@ -55,6 +57,36 @@ test("media + string leaves are detected", () => {
   const copy = field(hero, "copy");
   assert.equal(copy.kind, "string");
   if (copy.kind === "string") assert.equal(copy.multiline, true); // max 600 → textarea
+});
+
+test("media leaves carry their picker accept from .meta (default image) — S1", () => {
+  const VIDEO_HINT = "Background loop.";
+  const media = describe(
+    z.object({
+      plain_media_id: mediaId,
+      photo_media_id: optionalImage("A photo."),
+      clip_media_id: optionalVideo(VIDEO_HINT),
+      // Metadata on an outer wrapper is found too.
+      wrapped_media_id: withMediaAccept(mediaId.optional(), "video"),
+    }),
+  );
+  assert.deepEqual(field(media, "plain_media_id"), { kind: "media", accept: "image" });
+  assert.deepEqual(field(media, "photo_media_id"), { kind: "media", accept: "image", hint: "A photo." });
+  assert.deepEqual(field(media, "clip_media_id"), { kind: "media", accept: "video", hint: VIDEO_HINT });
+  assert.deepEqual(field(media, "wrapped_media_id"), { kind: "media", accept: "video" });
+});
+
+test("homeSchema: hero video picks video, guests pitch picks image — S1", () => {
+  const home = describe(homeSchema);
+  const video = field(field(home, "hero"), "video_media_id");
+  assert.equal(video.kind, "media");
+  if (video.kind === "media") {
+    assert.equal(video.accept, "video");
+    assert.match(video.hint ?? "", /MP4 \(H\.264\), 1920×1080/);
+  }
+  const pitch = field(field(home, "guests_pitch"), "image_media_id");
+  assert.equal(pitch.kind, "media");
+  if (pitch.kind === "media") assert.equal(pitch.accept, "image");
 });
 
 test("icon_key leaves become the icon picker", () => {
@@ -150,4 +182,14 @@ test("humanizeKey makes editor labels", () => {
   assert.equal(humanizeKey("cta_label"), "Cta label");
   assert.equal(humanizeKey("headline"), "Headline");
   assert.equal(humanizeKey("icon_key"), "Icon");
+});
+
+test("guest hero video picker accepts video (same fix as home, S1)", async () => {
+  const { pageSchemas } = await import("../schemas");
+  const root = describe(pageSchemas.guest);
+  assert.equal(root.kind, "object");
+  const hero = root.kind === "object" ? root.fields.find((f) => f.key === "hero")?.node : undefined;
+  const video =
+    hero?.kind === "object" ? hero.fields.find((f) => f.key === "video_media_id")?.node : undefined;
+  assert.equal(video?.kind === "media" ? video.accept : undefined, "video");
 });

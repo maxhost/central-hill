@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { MEDIA_ACCEPTS, MEDIA_ACCEPT_META_KEY, type MediaAccept } from "../schemas/media-accept";
+
+export type { MediaAccept };
 
 /**
  * Schema → form model (S12, ADR 0012). The five fixed pages are edited by a
@@ -6,15 +9,15 @@ import { z } from "zod";
  * the renderer consumes, and we can scaffold an empty `data` skeleton for a page
  * that has never been authored. Pure (no DB / React) so it's unit-testable.
  *
- * Leaf mapping: `*_media_id` → media picker; `icon_key` → icon picker; ZodBoolean → checkbox; ZodString →
- * text (textarea when its max length is large). Arrays carry their min/max so the
+ * Leaf mapping: `*_media_id` → media picker (its `accept` read from `.meta`, default
+ * image); `icon_key` → icon picker; ZodBoolean → checkbox; ZodString → text (textarea when its max length is large). Arrays carry their min/max so the
  * editor adds/removes within bounds (fixed-count arrays have min === max).
  */
 
 export type FieldNode =
   | { kind: "object"; fields: { key: string; node: FieldNode }[] }
   | { kind: "array"; element: FieldNode; min: number; max: number }
-  | { kind: "media"; hint?: string }
+  | { kind: "media"; accept: MediaAccept; hint?: string }
   | { kind: "icon"; optional: boolean }
   | {
       kind: "select";
@@ -27,6 +30,28 @@ export type FieldNode =
     }
   | { kind: "boolean" }
   | { kind: "string"; multiline: boolean; optional: boolean };
+
+function isMediaAccept(v: unknown): v is MediaAccept {
+  return typeof v === "string" && (MEDIA_ACCEPTS as readonly string[]).includes(v);
+}
+
+/**
+ * Read a media field's picker `accept` from its metadata (`withMediaAccept` in
+ * `schemas/_shared.ts`), the same way the hint comes from `.describe()`. No metadata →
+ * `"image"`, so every pre-existing media field is unchanged. Metadata may sit on any
+ * wrapper layer (optional/nullable/default) or the base, so check outermost first.
+ */
+function mediaAccept(schema: z.ZodType): MediaAccept {
+  let s: z.ZodType | undefined = schema;
+  while (s) {
+    const meta = (s as { meta?: () => Record<string, unknown> | undefined }).meta?.();
+    const v = meta?.[MEDIA_ACCEPT_META_KEY];
+    if (isMediaAccept(v)) return v;
+    const inner: z.ZodType | undefined = (s as { def?: { innerType?: z.ZodType } }).def?.innerType;
+    s = inner && inner !== s ? inner : undefined;
+  }
+  return "image";
+}
 
 /**
  * Field-key → dropdown definition for the `select` leaf (fed at render time from another
@@ -143,8 +168,10 @@ export function describe(schema: z.ZodType, key = ""): FieldNode {
   if (key.endsWith("_media_id")) {
     // A `.describe()` on the media schema becomes uploader guidance in the editor
     // (recommended size/format). Read from the unwrapped base (describe sets it there).
+    // `accept` (image / video …) comes from the field's `.meta()` — see `withMediaAccept`.
     const hint = (base as { description?: string }).description;
-    return hint ? { kind: "media", hint } : { kind: "media" };
+    const accept = mediaAccept(schema);
+    return hint ? { kind: "media", accept, hint } : { kind: "media", accept };
   }
 
   const maxLength = (base as { maxLength?: number | null }).maxLength ?? null;

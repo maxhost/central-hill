@@ -54,8 +54,11 @@ export {
  * Media picker islands + their gated upload actions (S12 + ADR 0018). The media
  * admin UI lives here per ADR 0018; consuming slices import the fields and pass
  * resolved previews via {@link resolveMediaPreviews} from their server screens.
+ * `accept` picks what the dialog offers (and the client check allows): `"image"`
+ * (default), `"video"` (MP4/WebM — background loops) or `"media"` (either).
  */
 export { MediaField, MediaGalleryField } from "./ui/media-field";
+export type { MediaFieldAccept } from "./ui/media-accept";
 /**
  * Icon picker for any stored Iconoir name (`icon_key`, ADR 0034 amendment 2): search + grid,
  * previews from the generated sprite (admin only). Validate the value with the strict

@@ -1196,6 +1196,7 @@
       "moveUp": "Move up",
       "moveDown": "Move down",
       "uploadError": "Upload failed. Please try again.",
+      "wrongType": "That file type isn't allowed here.",
       "uploadingTitle": "Uploading media",
       "uploadingHint": "Keep this window open until every file has finished.",
       "statusQueued": "Waiting",

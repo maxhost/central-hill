@@ -71,6 +71,17 @@ test("accepts a complete home page row", () => {
   assert.equal(pageContentSchema.safeParse(validHome()).success, true);
 });
 
+test("home hero video is optional: blank or a uuid, never garbage (S1)", () => {
+  const parse = (video: string) => {
+    const row = validHome();
+    row.data.hero.video_media_id = video;
+    return homeSchema.safeParse(row.data).success;
+  };
+  assert.equal(parse(""), true, "blank → the stock hero clip");
+  assert.equal(parse(UUID), true);
+  assert.equal(parse("not-a-uuid"), false);
+});
+
 test("rejects a home page with the wrong benefit arity (fixed-count array)", () => {
   const row = validHome();
   row.data.guests_pitch.benefits = [1, 2, 3].map(benefit); // must be exactly 4
