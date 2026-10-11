@@ -26,11 +26,17 @@ export function MediaImage({
   className,
   sizes,
   priority,
+  unoptimized,
 }: {
   data: MediaImageData;
   className?: string;
   sizes?: string;
   priority?: boolean;
+  /**
+   * Serve the original bytes, skipping the image optimizer — for an image that may be
+   * animated (an animated WebP must not go through a resize that could flatten it).
+   */
+  unoptimized?: boolean;
 }) {
   // Decoded from the stored blurhash (ADR 0027) — at build/revalidate time, since public
   // pages are ISR. Absent or undecodable hash → no placeholder, never a broken image.
@@ -44,6 +50,7 @@ export function MediaImage({
       className={className}
       sizes={sizes}
       priority={priority}
+      unoptimized={unoptimized}
       {...(blur ? { placeholder: "blur" as const, blurDataURL: blur } : {})}
     />
   );

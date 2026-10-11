@@ -88,6 +88,14 @@ export const optionalImage = (hint: string) =>
 export const optionalVideo = (hint: string) =>
   withMediaAccept(z.union([z.literal(""), mediaId]), "video").describe(hint);
 
+/**
+ * A side-media reference that may be left unset: a photo, an animated WebP, an MP4/WebM
+ * loop or a Lottie (`.json` / `.lottie`) — spec home-admin-editor S6. Same shape as
+ * `optionalImage`; the public render picks the element by the asset's `mime`.
+ */
+export const optionalAnimated = (hint: string) =>
+  withMediaAccept(z.union([z.literal(""), mediaId]), "animated").describe(hint);
+
 /** Fixed-count array helper — the design repeats exactly `n` times. */
 export const fixed = <T extends z.ZodType>(schema: T, n: number) =>
   z.array(schema).length(n);

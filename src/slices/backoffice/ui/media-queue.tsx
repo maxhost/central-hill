@@ -16,6 +16,7 @@ import { UiIcon, cn } from "@core/ui";
 import { AdminButton } from "./form";
 import type { AdminMediaPreview } from "../server/media-actions";
 import { finalizeAdminUpload, presignAdminUpload } from "../server/media-actions";
+import { pickedFileType } from "./media-accept";
 import { reservationCount, trackReservation } from "./media-busy";
 
 /**
@@ -148,7 +149,7 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const enqueue = useCallback((id: string, file: File) => {
     setItems((prev) => [
       ...prev.filter((i) => i.id !== id),
-      { id, name: file.name, file, contentType: file.type, status: "queued", progress: 0 },
+      { id, name: file.name, file, contentType: pickedFileType(file), status: "queued", progress: 0 },
     ]);
   }, []);
 
@@ -340,7 +341,7 @@ export async function reserveUpload(
 ): Promise<{ id: string; preview: AdminMediaPreview }> {
   const signed = await presignAdminUpload({
     filename: file.name,
-    contentType: file.type,
+    contentType: pickedFileType(file),
     size: file.size,
   });
   if (!signed.ok) throw new Error(signed.error);
@@ -351,7 +352,7 @@ export async function reserveUpload(
       url: URL.createObjectURL(file),
       width: null,
       height: null,
-      mime: file.type,
+      mime: pickedFileType(file),
     },
   };
 }

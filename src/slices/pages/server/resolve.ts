@@ -2,7 +2,7 @@ import "server-only";
 import type { Locale } from "@core/db/columns";
 import { loadContent } from "@core/i18n/content";
 import { type MediaImageData, loadMedia, mediaUrl } from "@core/media";
-import { PAGE_CONTENT } from "../contract";
+import { PAGE_CONTENT, type PageMedia } from "../contract";
 import { type Json, collectMediaIds, overlayTranslations } from "./overlay";
 
 /**
@@ -36,14 +36,15 @@ export async function resolveData(
 }
 
 /**
- * Resolve every media reference in `data` (+ the OG override) into `MediaImageData`, with
- * [T] `alt` resolved for `locale`. Hero videos use the same map (read `.url`).
+ * Resolve every media reference in `data` (+ the OG override) into `PageMedia`
+ * (`MediaImageData` + `mime`), with [T] `alt` resolved for `locale`. Hero videos use the
+ * same map (read `.url`); the guests pitch picks its element by `.mime` (S6).
  */
 export async function resolveMedia(
   data: Json,
   ogImageMediaId: string | null,
   locale: Locale,
-): Promise<{ media: Record<string, MediaImageData>; ogImage: MediaImageData | null }> {
+): Promise<{ media: Record<string, PageMedia>; ogImage: MediaImageData | null }> {
   const ids: string[] = [];
   collectMediaIds(data, ids);
   if (ogImageMediaId) ids.push(ogImageMediaId);
@@ -57,7 +58,7 @@ export async function resolveMedia(
     ),
   ]);
 
-  const media: Record<string, MediaImageData> = {};
+  const media: Record<string, PageMedia> = {};
   for (const id of unique) {
     const asset = assets.get(id);
     if (!asset) continue;
@@ -67,6 +68,7 @@ export async function resolveMedia(
       height: asset.height ?? 0,
       alt: alts.get(MEDIA_ASSET, id, "alt") ?? "",
       blurhash: asset.blurhash,
+      mime: asset.mime,
     };
   }
 

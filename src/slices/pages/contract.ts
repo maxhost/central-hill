@@ -37,14 +37,23 @@ export const PAGE_TAGS = {
 } as const;
 
 /**
+ * A resolved media reference: `core/media`'s image data plus the asset's `mime`, so a
+ * renderer can pick the element (image / video / Lottie — spec home-admin-editor S6). A
+ * superset of `MediaImageData`, so every image consumer takes it unchanged. `mime` is
+ * optional only because a page cached before S6 has none; treat absent as an image.
+ */
+export type PageMedia = MediaImageData & { mime?: string };
+
+/**
  * A resolved page: its `content` is the page's fixed schema with every [T] leaf already
  * resolved for the locale (approved target, else source `en`); `media` maps every
- * `*_media_id` referenced in the content to its R2 image data (use `.url` for hero
- * videos); `ogImage` is the optional social-card override.
+ * `*_media_id` referenced in the content to its R2 media data (use `.url` for hero
+ * videos, `.mime` to tell image / video / Lottie apart); `ogImage` is the optional
+ * social-card override.
  */
 export interface PageResult<T> {
   content: T;
-  media: Record<string, MediaImageData>;
+  media: Record<string, PageMedia>;
   ogImage: MediaImageData | null;
 }
 

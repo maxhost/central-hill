@@ -20,6 +20,7 @@ import {
   fixed,
   iconCard,
   optionalIconKey,
+  optionalAnimated,
   optionalImage,
   optionalVideo,
   serviceCategorySlug,
@@ -27,8 +28,8 @@ import {
 } from "./_shared";
 
 /** Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). */
-const GUESTS_IMG_HINT =
-  "Lifestyle photo for the Guests section. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
+const GUESTS_MEDIA_HINT =
+  "Portrait 4:5 — the frame is fixed at 4:5, so other ratios are cropped. Photo: 1200×1500 px (min 960×1200), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1080×1350 or 1200×1500, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×1500, under 5 MB. Lottie (.lottie or .json): 4:5 canvas (e.g. 1200×1500).";
 const HERO_VIDEO_HINT =
   "Background loop. MP4 (H.264), 1920×1080 (16:9), no audio, 10–20 s, ideally under 15 MB (max 200 MB).";
 const HERO_POSTER_HINT =
@@ -98,7 +99,8 @@ export const homeSchema = z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 4),
-    image_media_id: optionalImage(GUESTS_IMG_HINT),
+    // Photo, animated WebP, MP4/WebM loop or Lottie (spec S6) — the key keeps its name.
+    image_media_id: optionalAnimated(GUESTS_MEDIA_HINT),
     cta: ctaWithNote,
     /**
      * The image's floating reassurance badge. Blank label → `cta.note` (as before);

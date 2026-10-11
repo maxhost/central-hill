@@ -4,8 +4,24 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { encode } from "blurhash";
 import { eq } from "drizzle-orm";
 import { db } from "@core/db/client";
+import {
+  IMAGE_MIMES,
+  LOTTIE_EXTENSION,
+  LOTTIE_JSON_MIME,
+  VIDEO_MIMES,
+  canonicalMediaMime,
+  fileExtension,
+  isLottieMime,
+} from "../mime";
 import type { MediaAsset } from "../queries";
 import { media_asset } from "../schema";
+import {
+  MAX_LOTTIE_BYTES,
+  frameDimensions,
+  inspectDotLottie,
+  inspectLottieJson,
+  isAnimatedImage,
+} from "./inspect";
 import { r2Bucket, r2Client, r2Delete, r2GetBytes } from "./r2";
 
 /**
@@ -22,8 +38,8 @@ import { r2Bucket, r2Client, r2Delete, r2GetBytes } from "./r2";
  * to Next/Image at request time (ADR 0018).
  */
 
-const IMAGE_MIME = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
-const VIDEO_MIME = new Set(["video/mp4", "video/webm"]);
+const IMAGE_MIME = new Set<string>(IMAGE_MIMES);
+const VIDEO_MIME = new Set<string>(VIDEO_MIMES);
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024; // 15 MB — premium hero JPEGs sit well under this.
 const MAX_VIDEO_BYTES = 200 * 1024 * 1024; // 200 MB — hero loops, not feature films.
 const PRESIGN_TTL_SECONDS = 600; // 10 min to start the PUT.
@@ -80,16 +96,23 @@ async function loadSharp() {
   return (await import("sharp")).default;
 }
 
-type MediaKind = "image" | "video";
+/**
+ * `lottie` (spec home-admin-editor S6): a vector animation, as Lottie JSON (`.json`) or
+ * dotLottie (`.lottie`). Never touched by sharp; validated structurally on finalize.
+ */
+type MediaKind = "image" | "video" | "lottie";
 
 function mediaKind(mime: string): MediaKind {
   if (IMAGE_MIME.has(mime)) return "image";
   if (VIDEO_MIME.has(mime)) return "video";
+  if (isLottieMime(mime)) return "lottie";
   throw new Error(`Unsupported media type: ${mime || "(none)"}`);
 }
 
 function maxBytesFor(kind: MediaKind): number {
-  return kind === "video" ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+  if (kind === "video") return MAX_VIDEO_BYTES;
+  if (kind === "lottie") return MAX_LOTTIE_BYTES;
+  return MAX_IMAGE_BYTES;
 }
 
 /** Lowercase, slug-ish filename so R2 keys stay clean and URL-safe. */
@@ -141,7 +164,16 @@ export interface PresignResult {
 }
 
 export async function presignUpload(input: PresignInput): Promise<PresignResult> {
-  const kind = mediaKind(input.contentType);
+  // Lottie is recognised by extension (a `.lottie` usually arrives with no type at all);
+  // the canonical mime is what gets signed, so it is what the browser must send.
+  const contentType = canonicalMediaMime(input.filename, input.contentType);
+  const kind = mediaKind(contentType);
+  if (kind === "lottie") {
+    const expected = LOTTIE_EXTENSION[contentType as keyof typeof LOTTIE_EXTENSION];
+    if (fileExtension(input.filename) !== expected) {
+      throw new Error("A Lottie animation must be uploaded as a .json or .lottie file.");
+    }
+  }
   if (input.size > maxBytesFor(kind)) {
     throw new Error(`File too large for ${kind}: ${input.size} bytes.`);
   }
@@ -152,7 +184,7 @@ export async function presignUpload(input: PresignInput): Promise<PresignResult>
     new PutObjectCommand({
       Bucket: r2Bucket(),
       Key: r2Key,
-      ContentType: input.contentType,
+      ContentType: contentType,
       CacheControl: UPLOAD_CACHE_CONTROL,
     }),
     {
@@ -164,7 +196,7 @@ export async function presignUpload(input: PresignInput): Promise<PresignResult>
     id,
     r2Key,
     uploadUrl,
-    contentType: input.contentType,
+    contentType,
     cacheControl: UPLOAD_CACHE_CONTROL,
     expiresInSeconds: PRESIGN_TTL_SECONDS,
   };
@@ -233,6 +265,12 @@ async function normaliseImageMaster(
   const sharp = await loadSharp();
   const meta = await sharp(original).metadata();
 
+  // An animated WebP (spec S6) is stored as uploaded: re-encoding through the pipeline
+  // below would keep only the first frame. Its dimensions are one frame's, not the strip's.
+  if (isAnimatedImage(meta)) {
+    return { ...frameDimensions(meta), bytes: original.length, buffer: original };
+  }
+
   // EXIF orientations 5–8 transpose the image, so the visual axes are swapped.
   const transposed = (meta.orientation ?? 1) >= 5;
   const visualWidth = (transposed ? meta.height : meta.width) ?? null;
@@ -274,6 +312,20 @@ async function normaliseImageMaster(
   return { width: info.width, height: info.height, bytes: data.length, buffer: data };
 }
 
+/**
+ * Validate an uploaded Lottie and read its canvas size; a file that is not a Lottie is
+ * deleted from R2 and rejected, so no row ever points at it.
+ */
+async function inspectLottie(r2Key: string, mime: string) {
+  const bytes = await r2GetBytes(r2Key);
+  try {
+    return mime === LOTTIE_JSON_MIME ? inspectLottieJson(bytes) : inspectDotLottie(bytes);
+  } catch (e) {
+    await r2Delete(r2Key);
+    throw e;
+  }
+}
+
 export async function finalizeUpload(input: FinalizeInput): Promise<MediaAsset> {
   // 1. Verify the object actually landed and read its real type/size.
   const head = await r2Client().send(
@@ -298,7 +350,11 @@ export async function finalizeUpload(input: FinalizeInput): Promise<MediaAsset> 
     width = master.width;
     height = master.height;
     bytes = master.bytes;
-    blurhash = await encodeBlurhash(master.buffer);
+    blurhash = await encodeBlurhash(master.buffer); // first frame, for an animated master
+  } else if (kind === "lottie") {
+    const info = await inspectLottie(input.r2Key, mime);
+    width = info.width;
+    height = info.height;
   }
 
   // 3. Insert the row (idempotent: a retried finalize returns the existing asset).

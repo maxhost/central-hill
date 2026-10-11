@@ -4,7 +4,14 @@ import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { UiIcon, cn } from "@core/ui";
 import type { AdminMediaPreview } from "../server/media-actions";
-import { type MediaFieldAccept, acceptAttribute, emptyStateKey, isAcceptedType } from "./media-accept";
+import {
+  type MediaFieldAccept,
+  acceptAttribute,
+  emptyStateKey,
+  isAcceptedType,
+  pickedFileType,
+  previewLabelKey,
+} from "./media-accept";
 import { reserveUpload, useMediaQueue } from "./media-queue";
 
 /**
@@ -22,7 +29,7 @@ import { reserveUpload, useMediaQueue } from "./media-queue";
  * preview is a local object URL, because there is nothing on R2 to point at yet.
  */
 
-/** Small visual: image thumbnail, or a labelled tile for video / unknown. */
+/** Small visual: image thumbnail, or a labelled tile for video / Lottie. */
 function Thumb({
   preview,
   className,
@@ -40,7 +47,7 @@ function Thumb({
   }
   return (
     <div className={cn("flex h-full w-full items-center justify-center text-xs text-ink-soft", className)}>
-      {preview ? t("media.video") : t(emptyStateKey(accept))}
+      {preview ? t(previewLabelKey(preview.mime)) : t(emptyStateKey(accept))}
     </div>
   );
 }
@@ -57,7 +64,10 @@ export function MediaField({
   /** Resolved preview for an already-persisted `value` (edit screens). */
   preview?: AdminMediaPreview | null;
   onChange: (id: string | null, preview: AdminMediaPreview | null) => void;
-  /** What the picker takes: `image` (default), `video` (MP4/WebM) or `media` (either). */
+  /**
+   * What the picker takes: `image` (default), `video` (MP4/WebM), `media` (either) or
+   * `animated` (images, video and Lottie).
+   */
   accept?: MediaFieldAccept;
 }) {
   const t = useTranslations("backoffice");
@@ -79,7 +89,8 @@ export function MediaField({
   function onFile(file: File | undefined) {
     if (!file) return;
     // The dialog filter is advisory; refuse a file of the wrong kind before reserving.
-    if (!isAcceptedType(accept, file.type)) {
+    // Canonical type: a `.lottie` usually reports none at all (see `pickedFileType`).
+    if (!isAcceptedType(accept, pickedFileType(file))) {
       setError(t("media.wrongType"));
       return;
     }
@@ -163,7 +174,10 @@ export function MediaGalleryField({
   /** Resolved previews for already-persisted ids (edit screens). */
   previews?: Record<string, AdminMediaPreview>;
   onChange: (ids: string[]) => void;
-  /** What the picker takes: `image` (default), `video` (MP4/WebM) or `media` (either). */
+  /**
+   * What the picker takes: `image` (default), `video` (MP4/WebM), `media` (either) or
+   * `animated` (images, video and Lottie).
+   */
   accept?: MediaFieldAccept;
 }) {
   const t = useTranslations("backoffice");
@@ -193,7 +207,7 @@ export function MediaGalleryField({
   function onFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     const list = Array.from(files);
-    if (list.some((f) => !isAcceptedType(accept, f.type))) {
+    if (list.some((f) => !isAcceptedType(accept, pickedFileType(f)))) {
       setError(t("media.wrongType"));
       return;
     }

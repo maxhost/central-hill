@@ -9,10 +9,11 @@ import type { z } from "zod";
  * What a media field's admin picker accepts. Declared on the field schema through
  * `.meta({ media_accept })` (use `withMediaAccept`); the form-model reads it into the
  * `media` node and the editor passes it to the backoffice `MediaField` as `accept`. No
- * metadata → `"image"`. To add a kind (e.g. `"animated"` in S6), extend this tuple **and**
- * the `MediaField` accept map in slice `backoffice` together.
+ * metadata → `"image"`. To add a kind, extend this tuple **and** the `MediaField` accept
+ * map in slice `backoffice` together. `"animated"` (S6) = images (incl. animated WebP),
+ * MP4/WebM and Lottie (`.json` / `.lottie`) — the Home guests-pitch side media only.
  */
-export const MEDIA_ACCEPTS = ["image", "video"] as const;
+export const MEDIA_ACCEPTS = ["image", "video", "animated"] as const;
 export type MediaAccept = (typeof MEDIA_ACCEPTS)[number];
 
 /** The `.meta()` key the accept lives under (namespaced: it shares zod's global registry). */

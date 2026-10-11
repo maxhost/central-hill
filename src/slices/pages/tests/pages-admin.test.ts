@@ -77,7 +77,7 @@ test("media leaves carry their picker accept from .meta (default image) — S1",
   assert.deepEqual(field(media, "wrapped_media_id"), { kind: "media", accept: "video" });
 });
 
-test("homeSchema: hero video picks video, guests pitch picks image — S1", () => {
+test("homeSchema: hero video picks video, guests pitch picks animated — S1/S6", () => {
   const home = describe(homeSchema);
   const video = field(field(home, "hero"), "video_media_id");
   assert.equal(video.kind, "media");
@@ -87,7 +87,25 @@ test("homeSchema: hero video picks video, guests pitch picks image — S1", () =
   }
   const pitch = field(field(home, "guests_pitch"), "image_media_id");
   assert.equal(pitch.kind, "media");
-  if (pitch.kind === "media") assert.equal(pitch.accept, "image");
+  if (pitch.kind === "media") {
+    assert.equal(pitch.accept, "animated");
+    assert.match(pitch.hint ?? "", /^Portrait 4:5 — the frame is fixed at 4:5/);
+    assert.match(pitch.hint ?? "", /Lottie \(\.lottie or \.json\)/);
+  }
+});
+
+test("only guests_pitch.image_media_id is animated; every other Home media field unchanged — S6", () => {
+  const accepts: Record<string, string> = {};
+  const walk = (node: FieldNode, path: string) => {
+    if (node.kind === "media") accepts[path] = node.accept;
+    if (node.kind === "object") for (const f of node.fields) walk(f.node, `${path}.${f.key}`);
+    if (node.kind === "array") walk(node.element, `${path}[]`);
+  };
+  walk(describe(homeSchema), "home");
+  const animated = Object.entries(accepts).filter(([, a]) => a === "animated").map(([p]) => p);
+  assert.deepEqual(animated, ["home.guests_pitch.image_media_id"]);
+  assert.equal(accepts["home.hero.video_media_id"], "video");
+  assert.equal(accepts["home.hero.poster_media_id"], "image");
 });
 
 test("homeSchema: hero poster is an image picker right after the video — S4", () => {
