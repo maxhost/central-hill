@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ADMIN_HIDDEN_META_KEY } from "../schemas/admin-hidden";
 import { MEDIA_ACCEPTS, MEDIA_ACCEPT_META_KEY, type MediaAccept } from "../schemas/media-accept";
 
 export type { MediaAccept };
@@ -12,6 +13,11 @@ export type { MediaAccept };
  * Leaf mapping: `*_media_id` → media picker (its `accept` read from `.meta`, default
  * image); `icon_key` → icon picker; ZodBoolean → checkbox; ZodString → text (textarea when its max length is large). Arrays carry their min/max so the
  * editor adds/removes within bounds (fixed-count arrays have min === max).
+ *
+ * A field tagged `.meta({ admin_hidden: true })` (`adminHidden`, spec owners-admin-editor)
+ * becomes a `hidden` node wrapping its normal node: the editor renders nothing for it, but
+ * `emptyValue` / `applyDefaults` treat it exactly like the wrapped node, so its stored value
+ * stays in the form state and is submitted unchanged on save.
  */
 
 export type FieldNode =
@@ -29,28 +35,38 @@ export type FieldNode =
       emptyHint: string;
     }
   | { kind: "boolean"; hint?: string }
-  | { kind: "string"; multiline: boolean; optional: boolean; hint?: string };
+  | { kind: "string"; multiline: boolean; optional: boolean; hint?: string }
+  /** Not rendered; its value round-trips untouched (`node` = what it would have been). */
+  | { kind: "hidden"; node: FieldNode };
 
 function isMediaAccept(v: unknown): v is MediaAccept {
   return typeof v === "string" && (MEDIA_ACCEPTS as readonly string[]).includes(v);
 }
 
 /**
- * Read a media field's picker `accept` from its metadata (`withMediaAccept` in
- * `schemas/_shared.ts`), the same way the hint comes from `.describe()`. No metadata →
- * `"image"`, so every pre-existing media field is unchanged. Metadata may sit on any
- * wrapper layer (optional/nullable/default) or the base, so check outermost first.
+ * Read a `.meta()` value by key. Metadata may sit on any wrapper layer
+ * (optional/nullable/default) or the base, so check outermost first; the first layer that
+ * has the key wins.
  */
-function mediaAccept(schema: z.ZodType): MediaAccept {
+function metaValue(schema: z.ZodType, key: string): unknown {
   let s: z.ZodType | undefined = schema;
   while (s) {
     const meta = (s as { meta?: () => Record<string, unknown> | undefined }).meta?.();
-    const v = meta?.[MEDIA_ACCEPT_META_KEY];
-    if (isMediaAccept(v)) return v;
+    if (meta && key in meta) return meta[key];
     const inner: z.ZodType | undefined = (s as { def?: { innerType?: z.ZodType } }).def?.innerType;
     s = inner && inner !== s ? inner : undefined;
   }
-  return "image";
+  return undefined;
+}
+
+/**
+ * Read a media field's picker `accept` from its metadata (`withMediaAccept` in
+ * `schemas/_shared.ts`), the same way the hint comes from `.describe()`. No metadata →
+ * `"image"`, so every pre-existing media field is unchanged.
+ */
+function mediaAccept(schema: z.ZodType): MediaAccept {
+  const v = metaValue(schema, MEDIA_ACCEPT_META_KEY);
+  return isMediaAccept(v) ? v : "image";
 }
 
 /**
@@ -127,8 +143,16 @@ function arrayBounds(arr: z.ZodType): { min: number; max: number } {
 
 const MULTILINE_OVER = 180;
 
-/** Describe a schema as a `FieldNode`; `key` drives leaf heuristics (media). */
+/**
+ * Describe a schema as a `FieldNode`; `key` drives leaf heuristics (media). A field tagged
+ * `admin_hidden` is wrapped in a `hidden` node (see the header).
+ */
 export function describe(schema: z.ZodType, key = ""): FieldNode {
+  const node = describeVisible(schema, key);
+  return metaValue(schema, ADMIN_HIDDEN_META_KEY) === true ? { kind: "hidden", node } : node;
+}
+
+function describeVisible(schema: z.ZodType, key: string): FieldNode {
   const { base, optional } = unwrap(schema);
 
   if (base instanceof z.ZodObject) {
@@ -206,6 +230,8 @@ export function emptyValue(node: FieldNode): unknown {
     case "select":
     case "string":
       return "";
+    case "hidden":
+      return emptyValue(node.node);
   }
 }
 
@@ -237,6 +263,9 @@ export function applyDefaults(node: FieldNode, value: unknown): unknown {
     case "select":
     case "string":
       return typeof value === "string" ? value : "";
+    case "hidden":
+      // Same as the visible field: the stored value is kept as-is (not rendered, still saved).
+      return applyDefaults(node.node, value);
   }
 }
 

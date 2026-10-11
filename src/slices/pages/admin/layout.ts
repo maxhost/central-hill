@@ -10,7 +10,8 @@
  * button of the translation arc. Never rename one.
  *
  * Safety net: any root key of `data` that no card claims is rendered at the end in an
- * "Other" card, so a field added to a schema can never disappear from the editor.
+ * "Other" card, so a field added to a schema can never disappear from the editor. A card
+ * whose root keys don't exist (yet) in the schema is dropped, unless it hosts the OG image.
  *
  * Pure TS (no React, no Zod) so the client editor and the tests can both import it.
  */
@@ -27,7 +28,23 @@ export const HOME_CARD_IDS = [
   "dual_cta",
 ] as const;
 
-export type EditorCardId = (typeof HOME_CARD_IDS)[number];
+/** Stable card ids of the Owners editor, in page order (spec owners-admin-editor). */
+export const OWNERS_CARD_IDS = [
+  "seo",
+  "hero",
+  "earnings_form",
+  "stats",
+  "why",
+  "services",
+  "plans",
+  "journey",
+  "dashboard",
+  "testimonials",
+  "faq",
+  "final_cta",
+] as const;
+
+export type EditorCardId = (typeof HOME_CARD_IDS)[number] | (typeof OWNERS_CARD_IDS)[number];
 
 /** Id of the fallback card that collects root keys no card claims. */
 export const OTHER_CARD_ID = "other";
@@ -117,12 +134,85 @@ const HOME_LAYOUT: EditorLayoutItem[] = [
   },
 ];
 
-const LAYOUTS: Partial<Record<string, EditorLayoutItem[]>> = { home: HOME_LAYOUT };
+/**
+ * Owners (spec owners-admin-editor → "Editor: formulario sección a sección"). Some root keys
+ * only arrive in later sessions (`seo`, `testimonials`, `faq`, `final_cta`); until then their
+ * cards are dropped by `resolveEditorLayout` (the SEO card stays: it hosts the OG image).
+ */
+const OWNERS_LAYOUT: EditorLayoutItem[] = [
+  {
+    kind: "card",
+    id: "seo",
+    titleKey: `${L}.cards.seo`,
+    paths: ["seo"],
+    note: { textKey: `${L}.notes.seoLimits` },
+    hostsOgImage: true,
+  },
+  {
+    kind: "card",
+    id: "hero",
+    titleKey: `${L}.cards.hero`,
+    paths: ["hero"],
+    note: { textKey: `${L}.notes.headlineLines` },
+  },
+  {
+    kind: "card",
+    id: "earnings_form",
+    titleKey: `${L}.cards.earnings_form`,
+    paths: ["earnings_form"],
+    note: { textKey: `${L}.notes.earningsForm` },
+  },
+  {
+    kind: "card",
+    id: "stats",
+    titleKey: `${L}.cards.stats`,
+    paths: ["stats"],
+    note: { textKey: `${L}.notes.stats` },
+  },
+  { kind: "card", id: "why", titleKey: `${L}.cards.why`, paths: ["why"] },
+  { kind: "card", id: "services", titleKey: `${L}.cards.services`, paths: ["services"] },
+  {
+    kind: "card",
+    id: "plans",
+    titleKey: `${L}.cards.plans`,
+    paths: ["plans"],
+    note: { textKey: `${L}.notes.plans` },
+  },
+  { kind: "card", id: "journey", titleKey: `${L}.cards.journey`, paths: ["journey"] },
+  { kind: "card", id: "dashboard", titleKey: `${L}.cards.dashboard`, paths: ["dashboard"] },
+  {
+    kind: "card",
+    id: "testimonials",
+    titleKey: `${L}.cards.testimonials`,
+    paths: ["testimonials"],
+    note: { textKey: `${L}.notes.testimonials`, link: link("/admin/testimonials", "testimonials") },
+  },
+  {
+    kind: "card",
+    id: "faq",
+    titleKey: `${L}.cards.faq`,
+    paths: ["faq_group_key", "faq"],
+    note: { textKey: `${L}.notes.faq`, link: link("/admin/faq", "faq") },
+  },
+  {
+    kind: "card",
+    id: "final_cta",
+    titleKey: `${L}.cards.final_cta`,
+    paths: ["final_cta"],
+    note: { textKey: `${L}.notes.finalCta`, link: link("/admin/settings", "settings") },
+  },
+];
+
+const LAYOUTS: Partial<Record<string, EditorLayoutItem[]>> = {
+  home: HOME_LAYOUT,
+  owners: OWNERS_LAYOUT,
+};
 
 /**
  * The layout for `pageKey`, resolved against the root keys the page schema actually has:
- * card paths that don't exist are dropped, and every root key no card claims is appended
- * in an "Other" card (schema order). Returns `null` for a page without a layout — the
+ * card paths that don't exist are dropped (a card left with no path is dropped too, unless
+ * it hosts the OG image), and every root key no card claims is appended in an "Other" card
+ * (schema order). Returns `null` for a page without a layout — the
  * editor then keeps its default one-card-per-root-key rendering.
  */
 export function resolveEditorLayout(
@@ -133,12 +223,17 @@ export function resolveEditorLayout(
   if (!layout) return null;
   const present = new Set(rootKeys);
   const claimed = new Set<string>();
-  const items = layout.map((item): EditorLayoutItem => {
-    if (item.kind !== "card") return item;
+  const items: EditorLayoutItem[] = [];
+  for (const item of layout) {
+    if (item.kind !== "card") {
+      items.push(item);
+      continue;
+    }
     const paths = item.paths.filter((p) => present.has(p) && !claimed.has(p));
     for (const p of paths) claimed.add(p);
-    return { ...item, paths };
-  });
+    if (paths.length === 0 && !item.hostsOgImage) continue;
+    items.push({ ...item, paths });
+  }
   const other = rootKeys.filter((k) => !claimed.has(k));
   if (other.length > 0) {
     items.push({ kind: "card", id: OTHER_CARD_ID, titleKey: `${L}.cards.other`, paths: other });

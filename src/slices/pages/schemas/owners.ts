@@ -12,15 +12,29 @@
  * See docs/data-model.md → Page content model → owners.
  */
 import { z } from "zod";
-import { ctaWithNote, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
-import { between, faqGroupKey, fixed, iconCard, statFigure, step } from "./_shared";
+import { ctaWithNote, tStr, tStrOpt, url } from "@core/validation/primitives";
+import {
+  between,
+  faqGroupKey,
+  fixed,
+  iconCard,
+  optionalImage,
+  statFigure,
+  step,
+} from "./_shared";
+import { adminHidden } from "./admin-hidden";
 
 /**
- * An image reference that may be left unset. An empty string means "no asset yet" — the
- * public render falls back to the approved mock photo (R2 isn't wired yet). Accepts a
- * `media_asset.id` once uploaded. `.describe()` becomes the admin uploader hint.
+ * A button URL kept in `data` but hidden in the editor (spec owners-admin-editor → "Campos
+ * ocultos"): where a button points is decided in code (the render uses `#worth` / `#start` /
+ * `#`), so staff never see or edit it. The stored value round-trips unchanged on save.
  */
-const optionalImage = (hint: string) => z.union([z.literal(""), mediaId]).describe(hint);
+const hiddenUrl = adminHidden(url);
+/** Local variant of the kernel `ctaWithNote` with its `url` hidden in the editor. */
+const ownersCta = ctaWithNote.extend({ url: hiddenUrl });
+
+const HERO_IMG_HINT =
+  "Full-bleed hero background (a dark overlay is applied). Landscape 16:9 — 1920×1080 px (min 1600×900), JPG or WebP, under 500 KB.";
 const SERVICES_IMG_HINT =
   "Lifestyle photo for the Services showcase. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
 const DASHBOARD_IMG_HINT =
@@ -28,11 +42,12 @@ const DASHBOARD_IMG_HINT =
 const JOURNEY_STEP_IMG_HINT =
   "Background photo for this step card (dark gradient overlay is applied — busy top area, calmer bottom works best). Portrait 3:4 — recommended 900×1200px, JPG or WebP, under 400 KB.";
 
-/** A management-plan column (cumulative bullet list; `commission` shown above the card). */
+/** A management-plan column (cumulative bullet list). */
 const tier = z.object({
   name: tStr({ max: 80 }),
   tag: tStrOpt({ max: 80 }),
-  commission: tStrOpt({ max: 20 }),
+  /** Never rendered on the page (the visible % is `corner_badge`) → hidden in the editor. */
+  commission: adminHidden(tStrOpt({ max: 20 })),
   /** Short figure in the card's corner badge (e.g. "10%", "+5%") — extra-earnings callout. */
   corner_badge: tStrOpt({ max: 12 }),
   is_popular: z.boolean(),
@@ -50,12 +65,13 @@ const journeyStep = step.extend({
 const planHelper = z.object({
   title: tStr({ max: 120 }),
   copy: tStr({ max: 400 }),
-  cta: z.object({ label: tStr({ max: 80 }), url: z.url() }).optional(),
+  cta: z.object({ label: tStr({ max: 80 }), url: hiddenUrl }).optional(),
 });
 
 export const ownersSchema = z.object({
   hero: z.object({
-    image_media_id: z.uuid(),
+    // Optional since spec owners-admin-editor S1: "" → the stock hero photo.
+    image_media_id: optionalImage(HERO_IMG_HINT),
     headline: tStr({ max: 160 }),
     copy: tStr({ max: 600 }),
   }),
@@ -74,8 +90,8 @@ export const ownersSchema = z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 6),
-    cta_primary: ctaWithNote,
-    cta_secondary: ctaWithNote,
+    cta_primary: ownersCta,
+    cta_secondary: ownersCta,
   }),
   // "Everything we handle" — Image Showcase (the home guests-pitch layout): headline + benefit
   // highlights + CTA beside a 4:5 lifestyle image with a floating reassurance badge.
@@ -84,7 +100,7 @@ export const ownersSchema = z.object({
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 4),
     image_media_id: optionalImage(SERVICES_IMG_HINT),
-    cta: ctaWithNote,
+    cta: ownersCta,
   }),
   plans: z.object({
     headline: tStr({ max: 160 }),
@@ -105,7 +121,7 @@ export const ownersSchema = z.object({
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 4),
     image_media_id: optionalImage(DASHBOARD_IMG_HINT),
-    cta: ctaWithNote,
+    cta: ownersCta,
   }),
   /** Optional FAQ group to show on the page (blank = none). */
   faq_group_key: faqGroupKey,

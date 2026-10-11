@@ -84,6 +84,10 @@ export function NodeField(props: RenderProps) {
   const errorKey = path.join(".");
   const labels = useFieldLabels();
 
+  // `admin_hidden` field: nothing to render. Its value stays in the editor's `data` (scaffolded
+  // by `applyDefaults`) and is saved back unchanged, since `onChange` never touches its path.
+  if (node.kind === "hidden") return null;
+
   if (node.kind === "object") {
     const body = node.fields.map((f) => (
       <NodeField

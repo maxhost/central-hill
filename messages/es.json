@@ -1030,7 +1030,15 @@
           "services_carousel": "Partners y Servicios",
           "faq": "FAQ",
           "dual_cta": "CTA doble final",
-          "other": "Otros"
+          "other": "Otros",
+          "earnings_form": "Formulario de estimación",
+          "why": "Por qué confían en nosotros",
+          "services": "Nos ocupamos de todo",
+          "plans": "Planes",
+          "journey": "Camino de crecimiento",
+          "dashboard": "Siempre a la vista",
+          "testimonials": "Testimonios",
+          "final_cta": "CTA final"
         },
         "notes": {
           "heroSecondary": "El botón secundario siempre lleva a /owners.",
@@ -1039,13 +1047,20 @@
           "portfolio": "Las tarjetas de inmuebles salen de Edificios (destacados, por posición).",
           "services": "Las tarjetas salen de Servicios.",
           "faq": "Las preguntas se editan en FAQ.",
-          "dualCta": "Los enlaces son fijos: /owners y el motor de reservas. La línea de contacto sale de Ajustes."
+          "dualCta": "Los enlaces son fijos: /owners y el motor de reservas. La línea de contacto sale de Ajustes.",
+          "seoLimits": "Meta título hasta 70 caracteres, meta descripción hasta 200.",
+          "headlineLines": "Usa ; para dividir el título en líneas.",
+          "earningsForm": "Las etiquetas, los placeholders y las casillas del formulario son fijos y se traducen automáticamente. El formulario aún no envía solicitudes.",
+          "plans": "Usa '{name}' en el texto del botón para el nombre del plan.",
+          "testimonials": "Las reseñas vienen de Testimonios.",
+          "finalCta": "Deja la línea de contacto en blanco para generarla desde Ajustes."
         },
         "links": {
           "settings": "Abrir Ajustes",
           "buildings": "Abrir Edificios",
           "services": "Abrir Servicios",
-          "faq": "Abrir FAQ"
+          "faq": "Abrir FAQ",
+          "testimonials": "Abrir Testimonios"
         }
       },
       "labels": {
@@ -1089,16 +1104,50 @@
         "to": "Número",
         "prefix": "Prefijo",
         "suffix": "Sufijo",
-        "group": "Separador de miles"
+        "group": "Separador de miles",
+        "earnings_form": "Formulario de estimación",
+        "contact_step": "Paso 2 — datos de contacto",
+        "done_step": "Paso 3 — confirmación",
+        "lede": "Texto de introducción",
+        "submit_label": "Texto del botón de envío",
+        "back_label": "Texto del botón volver",
+        "why": "Por qué nosotros",
+        "services": "Servicios",
+        "plans": "Planes",
+        "tiers": "Planes",
+        "helpers": "Banda de ayuda",
+        "name": "Nombre",
+        "tag": "Subtítulo corto",
+        "corner_badge": "Etiqueta de esquina (p. ej. 10%, +5%)",
+        "is_popular": "Más popular (destacado)",
+        "features": "Características",
+        "popular_label": "Texto de la etiqueta “Más popular”",
+        "choose_label": "Texto del botón “Elegir”",
+        "journey": "Recorrido",
+        "steps": "Pasos",
+        "dashboard": "Panel del propietario",
+        "copy": "Texto",
+        "contact": "Contacto",
+        "intro": "Texto de introducción",
+        "testimonials": "Testimonios",
+        "final_cta": "CTA final",
+        "contact_line": "Línea de contacto"
       },
       "itemLabels": {
         "benefits": "Ventaja",
         "assurances": "Garantía",
         "stats": "Cifra",
-        "figures": "Dato"
+        "figures": "Dato",
+        "tiers": "Plan",
+        "features": "Característica",
+        "steps": "Paso",
+        "helpers": "Banda de ayuda"
       },
       "addLabels": {
-        "figures": "Nuevo dato"
+        "figures": "Nuevo dato",
+        "tiers": "Nuevo plan",
+        "features": "Nueva característica",
+        "stats": "Nueva cifra"
       }
     }
   },

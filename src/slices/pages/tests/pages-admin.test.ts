@@ -5,8 +5,10 @@ import { mediaId, tStr } from "@core/validation/primitives";
 import { between, faqGroupKey, fixed, iconCard, optionalImage, optionalVideo } from "../schemas/_shared";
 import { homeSchema } from "../schemas/home";
 import { withMediaAccept } from "../schemas/media-accept";
+import { adminHidden } from "../schemas/admin-hidden";
+import { ownersSchema } from "../schemas/owners";
 import { type FieldNode, applyDefaults, describe, emptyValue, humanizeKey } from "../admin/form-model";
-import { HOME_CARD_IDS, OTHER_CARD_ID, resolveEditorLayout } from "../admin/layout";
+import { HOME_CARD_IDS, OTHER_CARD_ID, OWNERS_CARD_IDS, resolveEditorLayout } from "../admin/layout";
 
 /**
  * Slice `pages` backoffice (S12, ADR 0012) — the schema → form model. Pure (walks a
@@ -305,6 +307,128 @@ test("an unknown root key lands in a trailing Other card", () => {
 });
 
 test("pages without a layout return null (default rendering)", () => {
-  assert.equal(resolveEditorLayout("owners", ["hero"]), null);
+  assert.equal(resolveEditorLayout("guest", ["hero"]), null);
   assert.equal(resolveEditorLayout("about", []), null);
+});
+
+// ── Hidden fields + Owners layout (spec owners-admin-editor S1) ──────────────
+
+/** Walk a FieldNode by object keys / `[]` (array element). */
+function nodeAt(node: FieldNode, path: string[]): FieldNode {
+  let n = node;
+  for (const k of path) {
+    if (k === "[]") {
+      assert.equal(n.kind, "array");
+      if (n.kind !== "array") throw new Error("not array");
+      n = n.element;
+    } else n = field(n, k);
+  }
+  return n;
+}
+
+test("admin_hidden fields become hidden nodes wrapping the normal node", () => {
+  const node = describe(
+    z.object({
+      shown: tStr({ max: 80 }),
+      secret: adminHidden(tStr({ max: 80 })),
+      // The flag is found on an outer wrapper too.
+      wrapped: adminHidden(z.string().max(20).optional()),
+    }),
+  );
+  assert.equal(field(node, "shown").kind, "string");
+  assert.deepEqual(field(node, "secret"), {
+    kind: "hidden",
+    node: { kind: "string", multiline: false, optional: false },
+  });
+  assert.equal(field(node, "wrapped").kind, "hidden");
+});
+
+const ICON = { icon_key: "check-circle", title: "T", description: "D" };
+const CTA = { label: "Go", url: "https://example.com/x", note: "n" };
+const OWNERS_SAMPLE = {
+  hero: { image_media_id: "", headline: "A; B", copy: "Copy" },
+  earnings_form: { headline: "H", cta_label: "Estimate" },
+  stats: Array.from({ length: 4 }, (_, i) => ({ label: `L${i}`, to: "10", group: false })),
+  why: { headline: "W", benefits: Array(6).fill(ICON), cta_primary: CTA, cta_secondary: CTA },
+  services: { headline: "S", benefits: Array(4).fill(ICON), image_media_id: "", cta: CTA },
+  plans: {
+    headline: "P",
+    tiers: [
+      { name: "Basic", commission: "15%", is_popular: false, features: ["a"] },
+      { name: "Pro", commission: "20%", corner_badge: "+5%", is_popular: true, features: ["b", "c"] },
+    ],
+    helpers: [{ title: "Not sure?", copy: "Talk to us", cta: { label: "Talk", url: "https://example.com/h" } }],
+  },
+  journey: {
+    headline: "J",
+    steps: Array.from({ length: 5 }, (_, i) => ({ title: `S${i}`, description: "d", image_media_id: "" })),
+  },
+  dashboard: { headline: "D", benefits: Array(4).fill(ICON), image_media_id: "", cta: CTA },
+  faq_group_key: "",
+};
+
+test("ownersSchema: URLs and tier commission are hidden; labels stay visible", () => {
+  const root = describe(ownersSchema);
+  for (const path of [
+    ["why", "cta_primary", "url"],
+    ["why", "cta_secondary", "url"],
+    ["services", "cta", "url"],
+    ["dashboard", "cta", "url"],
+    ["plans", "helpers", "[]", "cta", "url"],
+    ["plans", "tiers", "[]", "commission"],
+  ]) {
+    assert.equal(nodeAt(root, path).kind, "hidden", path.join("."));
+  }
+  assert.equal(nodeAt(root, ["why", "cta_primary", "label"]).kind, "string");
+  assert.equal(nodeAt(root, ["plans", "tiers", "[]", "corner_badge"]).kind, "string");
+  assert.equal(nodeAt(root, ["plans", "helpers", "[]", "cta", "label"]).kind, "string");
+});
+
+test("ownersSchema: hidden values round-trip through applyDefaults and still validate on save", () => {
+  const root = describe(ownersSchema);
+  // What the editor loads (`getPageEditModel`) and, untouched, what `savePage` receives.
+  const formData = applyDefaults(root, OWNERS_SAMPLE) as typeof OWNERS_SAMPLE;
+  assert.equal(formData.why.cta_primary.url, CTA.url);
+  assert.equal(formData.dashboard.cta.url, CTA.url);
+  assert.equal(formData.plans.tiers[1]!.commission, "20%");
+  assert.equal(formData.plans.helpers[0]!.cta.url, "https://example.com/h");
+  const parsed = ownersSchema.safeParse(formData);
+  assert.ok(parsed.success, JSON.stringify(parsed.error?.issues));
+  assert.equal(parsed.data.plans.tiers[0]!.commission, "15%");
+  assert.equal(parsed.data.services.cta.url, CTA.url);
+  assert.equal(parsed.data.plans.helpers[0]!.cta?.url, "https://example.com/h");
+});
+
+test("ownersSchema: hero image is optional (\"\" validates) with the hero hint", () => {
+  assert.ok(ownersSchema.shape.hero.shape.image_media_id.safeParse("").success);
+  const hero = nodeAt(describe(ownersSchema), ["hero", "image_media_id"]);
+  assert.equal(hero.kind, "media");
+  if (hero.kind === "media") {
+    assert.equal(hero.accept, "image");
+    assert.match(hero.hint ?? "", /16:9/);
+  }
+});
+
+test("owners layout: 12 stable ids; cards without keys yet are dropped, SEO kept for the OG image", () => {
+  assert.deepEqual([...OWNERS_CARD_IDS], [
+    "seo", "hero", "earnings_form", "stats", "why", "services", "plans", "journey", "dashboard",
+    "testimonials", "faq", "final_cta",
+  ]);
+  const rootKeys = Object.keys(ownersSchema.shape);
+  const layout = resolveEditorLayout("owners", rootKeys);
+  assert.ok(layout);
+  // Today `seo`, `testimonials`, `final_cta` (and `faq.title`) don't exist yet.
+  assert.deepEqual(cardIds(layout), [
+    "seo", "hero", "earnings_form", "stats", "why", "services", "plans", "journey", "dashboard", "faq",
+  ]);
+  const seo = layout.find((i) => i.id === "seo");
+  assert.ok(seo && seo.kind === "card" && seo.hostsOgImage && seo.paths.length === 0);
+  // Every root key is rendered exactly once, and nothing falls into Other.
+  const rendered = layout.flatMap((i) => (i.kind === "card" ? i.paths : []));
+  assert.deepEqual([...rendered].sort(), [...rootKeys].sort());
+  assert.ok(!cardIds(layout).includes(OTHER_CARD_ID));
+  // Once a later session adds the keys, their cards appear in place.
+  const later = resolveEditorLayout("owners", [...rootKeys, "seo", "testimonials", "faq", "final_cta"]);
+  assert.ok(later);
+  assert.deepEqual(cardIds(later), [...OWNERS_CARD_IDS]);
 });

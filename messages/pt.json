@@ -1030,7 +1030,15 @@
           "services_carousel": "Parceiros e Serviços",
           "faq": "FAQ",
           "dual_cta": "CTA duplo final",
-          "other": "Outros"
+          "other": "Outros",
+          "earnings_form": "Formulário de estimativa",
+          "why": "Porque confiam em nós",
+          "services": "Tratamos de tudo",
+          "plans": "Planos",
+          "journey": "Percurso de crescimento",
+          "dashboard": "Sempre à vista",
+          "testimonials": "Testemunhos",
+          "final_cta": "CTA final"
         },
         "notes": {
           "heroSecondary": "O botão secundário leva sempre a /owners.",
@@ -1039,13 +1047,20 @@
           "portfolio": "Os cartões de imóveis vêm de Edifícios (em destaque, por posição).",
           "services": "Os cartões vêm de Serviços.",
           "faq": "As perguntas editam-se em FAQ.",
-          "dualCta": "Os links são fixos: /owners e o motor de reservas. A linha de contacto vem de Definições."
+          "dualCta": "Os links são fixos: /owners e o motor de reservas. A linha de contacto vem de Definições.",
+          "seoLimits": "Meta título até 70 caracteres, meta descrição até 200.",
+          "headlineLines": "Use ; para dividir o título em linhas.",
+          "earningsForm": "As etiquetas, os placeholders e as caixas de seleção do formulário são fixos e traduzidos automaticamente. O formulário ainda não envia pedidos.",
+          "plans": "Use '{name}' no texto do botão para o nome do plano.",
+          "testimonials": "As avaliações vêm de Testemunhos.",
+          "finalCta": "Deixe a linha de contacto em branco para a gerar a partir de Definições."
         },
         "links": {
           "settings": "Abrir Definições",
           "buildings": "Abrir Edifícios",
           "services": "Abrir Serviços",
-          "faq": "Abrir FAQ"
+          "faq": "Abrir FAQ",
+          "testimonials": "Abrir Testemunhos"
         }
       },
       "labels": {
@@ -1089,16 +1104,50 @@
         "to": "Número",
         "prefix": "Prefixo",
         "suffix": "Sufixo",
-        "group": "Separador de milhares"
+        "group": "Separador de milhares",
+        "earnings_form": "Formulário de estimativa",
+        "contact_step": "Passo 2 — dados de contacto",
+        "done_step": "Passo 3 — confirmação",
+        "lede": "Texto de introdução",
+        "submit_label": "Texto do botão de envio",
+        "back_label": "Texto do botão voltar",
+        "why": "Porquê nós",
+        "services": "Serviços",
+        "plans": "Planos",
+        "tiers": "Planos",
+        "helpers": "Faixa de ajuda",
+        "name": "Nome",
+        "tag": "Subtítulo curto",
+        "corner_badge": "Etiqueta de canto (ex.: 10%, +5%)",
+        "is_popular": "Mais popular (destacado)",
+        "features": "Características",
+        "popular_label": "Texto da etiqueta “Mais popular”",
+        "choose_label": "Texto do botão “Escolher”",
+        "journey": "Percurso",
+        "steps": "Passos",
+        "dashboard": "Painel do proprietário",
+        "copy": "Texto",
+        "contact": "Contacto",
+        "intro": "Texto de introdução",
+        "testimonials": "Testemunhos",
+        "final_cta": "CTA final",
+        "contact_line": "Linha de contacto"
       },
       "itemLabels": {
         "benefits": "Vantagem",
         "assurances": "Garantia",
         "stats": "Número",
-        "figures": "Dado"
+        "figures": "Dado",
+        "tiers": "Plano",
+        "features": "Característica",
+        "steps": "Passo",
+        "helpers": "Faixa de ajuda"
       },
       "addLabels": {
-        "figures": "Novo dado"
+        "figures": "Novo dado",
+        "tiers": "Novo plano",
+        "features": "Nova característica",
+        "stats": "Novo número"
       }
     }
   },

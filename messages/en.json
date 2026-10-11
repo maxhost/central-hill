@@ -1030,7 +1030,15 @@
           "services_carousel": "Partners & Services",
           "faq": "FAQ",
           "dual_cta": "Closing dual CTA",
-          "other": "Other"
+          "other": "Other",
+          "earnings_form": "Earnings form",
+          "why": "Why owners trust us",
+          "services": "Everything handled",
+          "plans": "Plans",
+          "journey": "Growth path",
+          "dashboard": "Always in sight",
+          "testimonials": "Testimonials",
+          "final_cta": "Closing CTA"
         },
         "notes": {
           "heroSecondary": "The secondary button always links to /owners.",
@@ -1039,13 +1047,20 @@
           "portfolio": "Property cards come from Buildings (featured, by position).",
           "services": "Cards come from Services.",
           "faq": "Questions are edited in FAQ.",
-          "dualCta": "Links are fixed: /owners and the booking engine. The contact line comes from Settings."
+          "dualCta": "Links are fixed: /owners and the booking engine. The contact line comes from Settings.",
+          "seoLimits": "Meta title up to 70 characters, meta description up to 200.",
+          "headlineLines": "Use ; to break the title into lines.",
+          "earningsForm": "Field labels, placeholders and checkboxes are fixed and translated automatically. The form doesn't send leads yet.",
+          "plans": "Use '{name}' in the button text for the plan name.",
+          "testimonials": "Reviews come from Testimonials.",
+          "finalCta": "Leave the contact line blank to build it from Settings."
         },
         "links": {
           "settings": "Open Settings",
           "buildings": "Open Buildings",
           "services": "Open Services",
-          "faq": "Open FAQ"
+          "faq": "Open FAQ",
+          "testimonials": "Open Testimonials"
         }
       },
       "labels": {
@@ -1089,16 +1104,50 @@
         "to": "Number",
         "prefix": "Prefix",
         "suffix": "Suffix",
-        "group": "Thousands separator"
+        "group": "Thousands separator",
+        "earnings_form": "Earnings form",
+        "contact_step": "Step 2 — contact details",
+        "done_step": "Step 3 — confirmation",
+        "lede": "Intro text",
+        "submit_label": "Submit button text",
+        "back_label": "Back button text",
+        "why": "Why us",
+        "services": "Services",
+        "plans": "Plans",
+        "tiers": "Plans",
+        "helpers": "Help band",
+        "name": "Name",
+        "tag": "Tagline",
+        "corner_badge": "Corner badge (e.g. 10%, +5%)",
+        "is_popular": "Most popular (highlighted)",
+        "features": "Features",
+        "popular_label": "“Most popular” pill text",
+        "choose_label": "“Choose” button text",
+        "journey": "Journey",
+        "steps": "Steps",
+        "dashboard": "Owner dashboard",
+        "copy": "Text",
+        "contact": "Contact",
+        "intro": "Intro text",
+        "testimonials": "Testimonials",
+        "final_cta": "Closing CTA",
+        "contact_line": "Contact line"
       },
       "itemLabels": {
         "benefits": "Benefit",
         "assurances": "Assurance",
         "stats": "Figure",
-        "figures": "Figure"
+        "figures": "Figure",
+        "tiers": "Plan",
+        "features": "Feature",
+        "steps": "Step",
+        "helpers": "Help band"
       },
       "addLabels": {
-        "figures": "New figure"
+        "figures": "New figure",
+        "tiers": "New plan",
+        "features": "New feature",
+        "stats": "New figure"
       }
     }
   },

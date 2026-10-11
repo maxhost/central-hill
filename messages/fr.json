@@ -1030,7 +1030,15 @@
           "services_carousel": "Partenaires et Services",
           "faq": "FAQ",
           "dual_cta": "Double CTA final",
-          "other": "Autres"
+          "other": "Autres",
+          "earnings_form": "Formulaire d’estimation",
+          "why": "Pourquoi les propriétaires nous font confiance",
+          "services": "Nous nous occupons de tout",
+          "plans": "Formules",
+          "journey": "Parcours de croissance",
+          "dashboard": "Toujours sous les yeux",
+          "testimonials": "Témoignages",
+          "final_cta": "CTA final"
         },
         "notes": {
           "heroSecondary": "Le bouton secondaire mène toujours à /owners.",
@@ -1039,13 +1047,20 @@
           "portfolio": "Les cartes de biens viennent d’Immeubles (à la une, par position).",
           "services": "Les cartes viennent de Services.",
           "faq": "Les questions se modifient dans FAQ.",
-          "dualCta": "Les liens sont fixes : /owners et le moteur de réservation. La ligne de contact vient de Paramètres."
+          "dualCta": "Les liens sont fixes : /owners et le moteur de réservation. La ligne de contact vient de Paramètres.",
+          "seoLimits": "Méta-titre jusqu’à 70 caractères, méta-description jusqu’à 200.",
+          "headlineLines": "Utilisez ; pour répartir le titre sur plusieurs lignes.",
+          "earningsForm": "Les libellés, les placeholders et les cases à cocher du formulaire sont fixes et traduits automatiquement. Le formulaire n’envoie pas encore de demandes.",
+          "plans": "Utilisez '{name}' dans le texte du bouton pour le nom de la formule.",
+          "testimonials": "Les avis proviennent de Témoignages.",
+          "finalCta": "Laissez la ligne de contact vide pour la générer depuis les Paramètres."
         },
         "links": {
           "settings": "Ouvrir Paramètres",
           "buildings": "Ouvrir Immeubles",
           "services": "Ouvrir Services",
-          "faq": "Ouvrir FAQ"
+          "faq": "Ouvrir FAQ",
+          "testimonials": "Ouvrir Témoignages"
         }
       },
       "labels": {
@@ -1089,16 +1104,50 @@
         "to": "Nombre",
         "prefix": "Préfixe",
         "suffix": "Suffixe",
-        "group": "Séparateur de milliers"
+        "group": "Séparateur de milliers",
+        "earnings_form": "Formulaire d’estimation",
+        "contact_step": "Étape 2 — coordonnées",
+        "done_step": "Étape 3 — confirmation",
+        "lede": "Texte d’introduction",
+        "submit_label": "Texte du bouton d’envoi",
+        "back_label": "Texte du bouton retour",
+        "why": "Pourquoi nous",
+        "services": "Services",
+        "plans": "Formules",
+        "tiers": "Formules",
+        "helpers": "Bandeau d’aide",
+        "name": "Nom",
+        "tag": "Accroche",
+        "corner_badge": "Badge d’angle (ex. 10 %, +5 %)",
+        "is_popular": "La plus populaire (mise en avant)",
+        "features": "Caractéristiques",
+        "popular_label": "Texte de la pastille « La plus populaire »",
+        "choose_label": "Texte du bouton « Choisir »",
+        "journey": "Parcours",
+        "steps": "Étapes",
+        "dashboard": "Tableau de bord propriétaire",
+        "copy": "Texte",
+        "contact": "Contact",
+        "intro": "Texte d’introduction",
+        "testimonials": "Témoignages",
+        "final_cta": "CTA final",
+        "contact_line": "Ligne de contact"
       },
       "itemLabels": {
         "benefits": "Avantage",
         "assurances": "Garantie",
         "stats": "Chiffre",
-        "figures": "Donnée"
+        "figures": "Donnée",
+        "tiers": "Formule",
+        "features": "Caractéristique",
+        "steps": "Étape",
+        "helpers": "Bandeau d’aide"
       },
       "addLabels": {
-        "figures": "Nouvelle donnée"
+        "figures": "Nouvelle donnée",
+        "tiers": "Nouvelle formule",
+        "features": "Nouvelle caractéristique",
+        "stats": "Nouveau chiffre"
       }
     }
   },
