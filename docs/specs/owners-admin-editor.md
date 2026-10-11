@@ -1,6 +1,6 @@
 # Spec + plan — Admin Owners editable sección a sección
 
-**Fecha:** 2026-10-11 · **Slice principal:** `pages` · **Estado:** spec aprobada, pendiente de implementar
+**Fecha:** 2026-10-11 · **Slice principal:** `pages` · **Estado:** completado (S1–S7, 2026-10-11)
 **Precedente:** `docs/specs/home-admin-editor.md` (mismo proceso, mismas piezas reutilizables)
 
 ## Objetivo
@@ -264,3 +264,102 @@ los campos ocultos. Cada sesión cabe en 10–15 minutos.
 **Decididas por el coordinador (revisables):** Owners no tiene título en la banda de cifras. La imagen del
 hero pasa a opcional. Los badges llevan icono opcional, como el pitch de Home. La imagen del CTA final es
 sólo foto, no animada.
+
+---
+
+## Estado final (2026-10-11)
+
+Todas las sesiones están entregadas. Commits:
+
+| Sesión | Commit | Qué entró |
+|---|---|---|
+| Spec | `394f696` | Este documento + plan por sesiones |
+| S1 | `ea4c787` | Marca `.meta({ admin_hidden: true })` (`schemas/admin-hidden.ts`): el form-model la convierte en un nodo `hidden` que no se pinta y conserva su valor al guardar. Variante local `ownersCta` (URL oculta), `plans.helpers[0].cta.url` y `tiers[].commission` ocultos. `OWNERS_LAYOUT` con las 12 tarjetas + "Other", notas y enlaces. Etiquetas legibles, `itemLabels` / `addLabels` (4 idiomas). `hero.image_media_id` opcional con hint |
+| S2 | `178d0d3` | `seo.*` + `buildOwnersMetadata` (contrato) + `seoMetadataInput` (puro); la ruta sólo lo llama. `hero.contact.*`, `services.badge.*`, `dashboard.badge.*`, `plans.popular_label` (+ prop `PricingCards.popularLabel` en `core/ui`), `plans.choose_label` (`orNamedMessage`, `{name}`), `testimonials.title`, `faq.title`. Claves i18n de fallback en 4 idiomas |
+| S3 | `9dcb9e3` | `OwnerEstimateForm` lee todo lo fijo de `pages.estimateForm.*` (4 idiomas). `earnings_form.contact_step.*` / `done_step.*` editables, como props opcionales con el i18n por defecto |
+| S4 | `a209711` | `stats` pasa de 4 fijas a 0–8 (`between(statFigure, 0, 8)`), "+ New figure", `statBandColumns`; 0 filas → sin banda (el ancla `#numbers` se mantiene) |
+| S5 | `d218dc9` | `sideMedia()` extraído a `ui/components/side-media.tsx` (Home sin cambios). `services.image_media_id` y `dashboard.image_media_id` → `optionalAnimated` (imagen, WebP animado, MP4/WebM, Lottie) con el hint 4:5 del pitch de Home |
+| S6 | `c6edbe5` | `final_cta.*` (eyebrow, título, texto, botón, línea de contacto, imagen 4:5) con fallback i18n. `ui/contact-line.ts`: `settingsContactLine` (compartido con el CTA doble de Home) + `ownersFinalContactLine` ("Call {phone}" localizado) |
+| S7 | — | Recorrido de `/owners` con todo vacío en los 4 idiomas (sólo lectura) y documentación: `pages/README.md`, `docs/data-model.md` → owners y este cierre. `core/ui` no tiene un doc que liste las props de `PricingCards`, así que no se tocó |
+
+### Verificación hecha
+
+- **Tests por sesión** (`tests/pages-admin.test.ts`, `tests/pages.test.ts`), centrados en los medios y
+  en los campos ocultos:
+  - **S1:** un campo `admin_hidden` se convierte en un nodo `hidden` que envuelve el normal; en
+    `ownersSchema` las URLs y `commission` están ocultas y las etiquetas no; los valores ocultos hacen
+    el viaje completo por `applyDefaults` y siguen validando al guardar; `hero.image_media_id` acepta
+    `""` y lleva su hint; el layout tiene 12 ids estables.
+  - **S2:** las claves nuevas son opcionales, toleran vacío y tienen límite; son traducibles (los
+    `icon_key` no); vacío → mensaje i18n, relleno → su texto; `{name}` en `orNamedMessage`;
+    `seoMetadataInput` cae a i18n y conserva canonical / hreflang / OG; cada clave del layout se
+    coloca una sola vez.
+  - **S3:** todas las claves `pages.estimateForm.*` existen en los 4 idiomas con los mismos argumentos
+    y etiquetas; los textos de los pasos 2 y 3 son opcionales, traducibles y su hint nombra el texto
+    EN actual.
+  - **S4:** 0–8 filas `statFigure` (las 4 filas guardadas siguen siendo válidas); con 4 filas la banda
+    conserva sus 4 columnas.
+  - **S5:** `accept` de cada medio (services/dashboard `animated` con hint 4:5; hero y pasos del
+    journey `image`); los valores guardados (`""` y uuid) siguen siendo válidos.
+  - **S6:** `final_cta` valida ausente, vacío y relleno; es traducible salvo la imagen; el texto que
+    nombra cada hint coincide con el mensaje EN; línea de contacto: el campo gana, vacío → Settings
+    con "Call", la Home no cambia.
+- **Revisión del coordinador en cada sesión**, según el protocolo del plan: diff, typecheck + lint +
+  tests, y el admin real y la página pública en Playwright headed **sin guardar**.
+- **S7, recorrido de sólo lectura con todos los campos nuevos vacíos** (estado actual de la DB, dev
+  server local):
+  - `/{en,pt,es,fr}/owners` → 200, con las 10 secciones (`#worth #numbers #why #services #plans
+    #journey #technology #testimonials #faq #start`).
+  - **EN:** todos los textos fijos de la versión anterior al spec (`394f696`: literales de
+    `owners-page.tsx`, de `owner-estimate-form.tsx` y el title/description de la ruta) aparecen
+    tal cual, incluida la intro del diálogo de contacto. La línea de contacto del CTA final, construida
+    desde Settings, es idéntica a la literal anterior.
+  - **PT/ES/FR:** `<title>`, meta/OG description, botón Contact y diálogo, todo el formulario (labels,
+    placeholders, Studio, aria-labels, checkboxes, Voltar/Enviar, paso 3), badges de services y
+    dashboard, pill "Most Popular", botones "Choose {name}", títulos de testimonios y FAQ y el CTA
+    final completo (incluida la línea "Ligue / Llame al / Appelez le …") salen traducidos.
+  - Lo que sigue en inglés en PT/ES/FR es contenido de la DB (EN, esperado: sólo se edita en EN) o
+    código fuera de este spec; ver Abiertos nº 8.
+- **Las sesiones no escriben en DB / R2.** Ninguna añadió migraciones ni scripts de pre-carga: las 4
+  filas de `stats` ya eran válidas con 0–8 y todos los campos nuevos son opcionales.
+- **S7, prueba real en PROD (OK del owner, 2026-10-11)**, contra la DB y R2 de producción desde el dev
+  server local:
+  - Instantánea de la fila `owners` → desde el admin (Playwright headed) se rellenaron 13 campos nuevos
+    (meta title, botón y título del diálogo Contact, título del paso 2, badges de services y dashboard,
+    pill, "Choose {name}", títulos de testimonios y FAQ, eyebrow y línea de contacto del CTA final) y se
+    subió un WebM a services → **Guardar**.
+  - En la DB: los valores nuevos quedaron guardados y **las URLs y `commission` ocultas se conservaron
+    intactas** (`https://www.centralhill.pt/en/owners`, 15/18/22/25 %).
+  - `/en/owners` y `/pt/owners` mostraron los 12 textos y el `<title>`; "Choose {name}" se pintó
+    como "S7 Pick Core"; el `<video>` de services se reprodujo desde R2 (`readyState` 4, en marcha).
+  - Restauración: la fila volvió a la instantánea (`data` idéntico, `updated_at` y OG originales); el
+    objeto de R2 y la fila `media_asset` de prueba se borraron (URL pública → 404; 151 assets, como
+    antes). La web desplegada no llegó a mostrar los textos de prueba: su caché `page:owners` es
+    independiente de la del dev server local.
+
+## Abiertos (para decidir después)
+
+1. **WebP animado y Lottie en services/dashboard sin probar con subida real.** El vídeo sí se probó en
+   PROD (ver "Verificación hecha"). Los otros dos tipos usan el mismo `sideMedia()` ya verificado en la
+   Home. El Lottie además depende del CORS GET del bucket (Home, abierto nº 2).
+2. **Buildings: el paso 1 del formulario sigue en inglés.** `buildings-listing.tsx` pasa sus propios
+   textos del paso 1 (badge "Earn +25%", título, subtítulo, botón "Calculate My Earnings") en inglés
+   fijo. Los labels, placeholders y los pasos 2 y 3 ya salen traducidos (verificado en `/pt/buildings`).
+   Es código del slice `buildings`.
+3. **`admin_hidden` disponible para la Home.** Resolvería su abierto nº 1 (ocultar
+   `hero.cta_primary.url` y `guests_pitch.cta.url`). Aplicarlo es otra decisión.
+4. **El formulario de estimación no envía leads** (`earnings_estimate`), y los enlaces `#` (botones
+   "Choose" de los planes, banda "Not sure", T&C / Privacy) siguen muertos. El destino lo decide el sistema.
+5. **Testimonios mezclados** (owner + guest), como antes. Filtrar por audiencia queda para después.
+6. **Arco de traducción por pestañas** (`home-admin-editor.md` → "Modelo de traducción por pestañas"),
+   incluido el id estable por fila para `stats`.
+7. **Post-deploy: no hace falta nada.** No hay pre-carga ni escrituras directas en DB, y con los campos
+   vacíos la página renderiza los fallbacks i18n. Basta el deploy del código, que regenera la página ISR.
+8. **Inglés fijo fuera de la DB en PT/ES/FR** (no lo cubre este spec):
+   - `alt` de las fotos de respaldo en `owners-page.tsx` (`HERO_FALLBACK_ALT`, `SERVICES_FALLBACK_ALT`,
+     `DASHBOARD_FALLBACK_ALT`, `CTA_FALLBACK_ALT`), que sólo se usan mientras no hay asset;
+   - `aria-label="Customer testimonials"` en `ui/components/testimonials-marquee.tsx`;
+   - el submenú "Owners" del header (`OWNERS_SECTIONS` en `settings/ui/site-header.tsx`, slice
+     `settings`), y también los de Real Estate y About.
+   - El comentario de cabecera de `schemas/owners.ts` aún dice que las cifras salen de
+     `company_settings` (obsoleto desde la migración 0009; sólo es un comentario).

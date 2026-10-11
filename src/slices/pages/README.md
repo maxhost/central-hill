@@ -180,7 +180,9 @@ use), ported 1:1 from the old `.cta-band`/`.cta-wrap` CSS. It isn't built on `Tw
 (always light-themed; every text color would need a dark override for this, its only consumer) —
 see its docstring. Still fully hardcoded, same as before this port: this section has no schema
 field yet (a separate follow-up), so its image is always the Pexels fallback and every string is
-a literal at the `owners-page.tsx` call site, not `content.*`.
+a literal at the `owners-page.tsx` call site, not `content.*`. *(Superseded 2026-10-11, spec
+owners-admin-editor S6: the band now reads the optional `final_cta.*` fields with i18n fallbacks
+and its contact line from Settings — see "Owners content model" below.)*
 
 Two sections are shared React islands: the `testimonials` infinite marquee (`<TestimonialsRow>`,
 the same component as the home "Partners & Guests" carousel) and the `faq` accordion
@@ -635,6 +637,68 @@ Save (no changes) on `/admin/pages/home` after running it.
 **Editor.** `admin/layout.ts` renders Home as 8 cards in page order (see "Backoffice" below), with
 readable labels and "+ New figure" for the figures list.
 
+### Owners content model (spec `docs/specs/owners-admin-editor.md`, 2026-10-11)
+
+Everything visible on Owners except catalogue components (testimonial cards, FAQ questions) and
+the estimate form's field labels/placeholders is editable in `/admin/pages/owners`. All fields the
+spec added are **optional** and blank-tolerant (a row saved before them validates and renders as
+before; no migration, no backfill). Same D1 rule as Home: EN only for now, blank → the visitor's
+locale i18n message through `orMessage`. Full field table: `docs/data-model.md` → owners.
+
+| Section | New / changed fields (`schemas/owners.ts`) | Blank / absent → |
+|---|---|---|
+| SEO | `seo?{meta_title?, meta_description?}` + `og_image_media_id` column | `pages.owners.metaTitle` / `metaDescription`; no OG |
+| Hero | `image_media_id` now optional; `contact?{label?, title?, intro?}` | stock photo; `pages.owners.contactLabel` / `contactTitle` / `contactIntro` |
+| Earnings form | `earnings_form.contact_step?{title?, lede?, submit_label?, back_label?}`, `done_step?{title?, body?}` | `pages.estimateForm.contactTitle` / `contactLede` / `submit` / `back` / `doneTitle` / `doneBody` |
+| Figures | `stats`: `fixed(4)` → `between(statFigure, 0, 8)` (the 4 stored rows stay valid) | 0 rows → no band (the `#numbers` anchor stays); columns via `statBandColumns` |
+| Services / Dashboard | `badge?{label?, icon_key?}`; `image_media_id` → `optionalAnimated` | `pages.owners.servicesBadge` / `dashboardBadge`; component's default icon; stock photo |
+| Plans | `popular_label?`, `choose_label?` (`{name}` = tier name) | `pages.owners.popular`; `pages.owners.choosePlan` (ICU `{name}`) |
+| Testimonials / FAQ | `testimonials?{title?}`, `faq?{title?}` | `pages.reviews.title`; `pages.owners.faqTitle` |
+| Closing CTA | `final_cta?{eyebrow?, headline?, body?, cta_label?, contact_line?, image_media_id?}` (image only, 4:5) | `pages.owners.finalEyebrow` / `finalTitle` / `finalCopy` / `finalCta`; contact line from Settings; stock photo |
+
+**Hidden fields (`admin_hidden`).** `schemas/admin-hidden.ts` exports `adminHidden(schema)` =
+`.meta({ admin_hidden: true })` (dependency-free, like `media-accept.ts`, so the client form-model
+can import it). `describe()` wraps such a field in a `{ kind: "hidden", node }` node:
+`schema-fields.tsx` renders nothing for it, while `emptyValue` / `applyDefaults` treat it like the
+wrapped node, so the stored value stays in the form state and is saved back unchanged (a required
+hidden `url` still validates). Owners hides every button URL (`why.cta_primary/secondary.url`,
+`services.cta.url`, `dashboard.cta.url`, `plans.helpers[0].cta.url`; via the local
+`ownersCta = ctaWithNote.extend({ url: hiddenUrl })`, the kernel primitive is untouched) and
+`plans.tiers[].commission` (never rendered; the visible % is `corner_badge`). Button targets are
+decided in code (`#worth`, `#start`, `#`). Home doesn't use it yet.
+
+**Editor.** `OWNERS_LAYOUT` (`admin/layout.ts`): 12 cards in page order with stable ids — `seo`
+(hosts the OG image), `hero`, `earnings_form`, `stats`, `why`, `services`, `plans`, `journey`,
+`dashboard`, `testimonials` (note + link to `/admin/testimonials`), `faq` (`faq_group_key` + `faq`,
+link to `/admin/faq`), `final_cta` (note + link to `/admin/settings`) — plus "Other" for unclaimed
+keys. `EditorCardId` is the union of Home's and Owners' ids. Readable labels / item / add labels
+for the Owners keys live in `pages.admin.labels` / `itemLabels` / `addLabels` (4 locales).
+
+**Public render.**
+- `buildOwnersMetadata(locale)` (contract, `server/metadata.ts`): `seo.*` → i18n fallback,
+  canonical `/<locale>/owners`, hreflang + `x-default`, optional OG; built by the pure
+  `seoMetadataInput` (`server/metadata-input.ts`). The route only calls it.
+- `ui/components/side-media.tsx` (`sideMedia(media)`, `SIDE_MEDIA_CLASS`, `SIDE_MEDIA_SIZES`):
+  the 4:5 side media chosen by `mime` (image / `unoptimized` WebP / `LoopVideo` / `LottiePlayer`),
+  extracted from `guests-section.tsx` unchanged; used by Home's guests pitch and Owners'
+  `services` / `dashboard`. `null` → the caller's stock photo.
+- `ui/contact-line.ts` (pure): `settingsContactLine(globals, formatPhone?)` builds
+  `phone · email · WhatsApp <n>` from Settings (shared with Home's dual CTA, whose output is
+  unchanged); `ownersFinalContactLine(field, globals, formatPhone)` = the field when filled, else
+  that line with the localized `pages.owners.finalCall` ("Call {phone}").
+- `orNamedMessage(value, name, fallback)` (`ui/or-message.ts`): the plan buttons — a filled
+  `choose_label` gets `{name}` replaced (plain text), blank → the ICU message.
+- `PricingCards` (`core/ui`) takes `popularLabel?` (default "Most Popular"); Owners passes
+  `plans.popular_label` or `pages.owners.popular`.
+- `OwnerEstimateForm` reads its fixed strings with `useTranslations("pages.estimateForm")`
+  (labels, placeholders, Studio, aria-labels, consent lines, back/submit, step 3) and takes the
+  editable step-2/3 copy as optional props. Its second consumer, Buildings, passes none → its
+  steps 2/3 and fields are translated too; its step-1 copy is still Buildings' own EN props.
+- With every new field blank the page is the same as before the spec in EN, and PT/ES/FR now get
+  the translated fixed strings (form, badges, pill, Choose, testimonials/FAQ titles, closing CTA,
+  metadata). Remaining English in PT/ES/FR that isn't DB content: the stock-photo `alt`s in
+  `owners-page.tsx`, the marquee's `aria-label`, and the header's Owners sub-nav (settings slice).
+
 ### Icons on `core/ui` `<Icon>` — Home, Guests, About (ADR 0034)
 
 Supersedes the `iconClass` / `mock.css` notes above for these three pages. Home's
@@ -699,16 +763,22 @@ no-submit behaviour (a verified 0-diff DOM/behaviour inventory, bar the a11y add
   inline links used to become separate flex items, leaving 10px gaps around them); the stepper
   is a labelled `role="group"` (`aria-labelledby` → its "Nº of Properties" label, which gains
   `id="nprop-label"`) with an `aria-live` value; decorative SVGs are `aria-hidden`.
-- Still pending, unchanged: hardcoded English copy (steps 2/3 + labels), `href="#"` terms/privacy
-  links, not wired to `submitLead`.
+- *(Updated 2026-10-11, spec owners-admin-editor S3)* Every fixed string (labels, placeholders,
+  "Studio", aria-labels, checkboxes, back/submit, step 3) now comes from `pages.estimateForm.*`
+  (4 locales); steps 2/3 copy is overridable through optional props (Owners passes
+  `earnings_form.contact_step.*` / `done_step.*`). Still pending: `href="#"` terms/privacy links,
+  not wired to `submitLead`, and Buildings' own step-1 copy (badge/title/subtitle/button) is
+  English passed by `buildings-listing.tsx`.
 
 ## Routes (`src/app/[locale]/…`)
 
 `/[locale]` (home), `/owners`, `/guests`, `/real-estate`, `/about` — each ISR (`revalidate =
 3600`), prebuilds all 4 locales, and emits canonical + `hreflang` alternates via
 `buildMetadata`. Page meta titles/descriptions come from the `pages` i18n namespace; the OG
-image override comes from the page row. Home is the exception: its `generateMetadata` is
-`buildHomeMetadata` from the contract (editable `seo.*`, i18n fallback).
+image override comes from the page row. Home and Owners are the exceptions: their
+`generateMetadata` is `buildHomeMetadata` / `buildOwnersMetadata` from the contract (editable
+`seo.*`, i18n fallback; Owners builds its input with the pure `seoMetadataInput` from
+`server/metadata-input.ts`).
 
 ## i18n
 
@@ -758,8 +828,8 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
   the `.describe()` hint of text/checkbox fields). Save is disabled (and `onSubmit` returns early)
   while the media queue `isPreparing`, flushing or saving, with the "Wait until the media is
   ready." hint (spec S2).
-- `admin/layout.ts` (pure, tested) — per-page **editor layout** (spec home-admin-editor S2; only
-  `home` has one). An ordered list of cards with **stable ids** — `seo`, `hero`, `stats`,
+- `admin/layout.ts` (pure, tested) — per-page **editor layout** (spec home-admin-editor S2; `home`
+  and, since spec owners-admin-editor S1, `owners` — see "Owners content model" for its 12 cards). An ordered list of cards with **stable ids** — `seo`, `hero`, `stats`,
   `guests_pitch`, `portfolio`, `services_carousel`, `faq`, `dual_cta` (never rename one: they will
   be the unit of the translation arc's per-section "Translate with AI") — each listing the `data`
   root keys it renders, plus read-only rows/notes (the Avantio search bar → Settings; notes with
@@ -783,6 +853,9 @@ Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton f
 - **Translation review** of page [T] blocks: **S14**, on the `core/i18n` seam.
 - **Home editor open items** (editable URL fields, R2 GET CORS for Lottie, per-locale tabs with
   stable row ids, …): `docs/specs/home-admin-editor.md` → "Abiertos".
+- **Owners editor open items** (real video/Lottie upload test, Buildings' step-1 English copy,
+  estimate form not sending leads, dead `#` links, mixed testimonials, leftover EN fallback alts /
+  header sub-nav, …): `docs/specs/owners-admin-editor.md` → "Abiertos".
 
 ## Tests
 
@@ -791,9 +864,11 @@ Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton f
 (fixed-count arity, unknown key), plus the Home additions (legacy rows and blanks validate,
 `orMessage` fallback, translatable paths incl. `stats.figures.*.label` and excluding `icon_key`,
 `formatStatFigure` ↔ `parseStatValue` round-trip, `statFigureCells`, `statBandColumns`, hero
-poster). `tests/pages-admin.test.ts` — the schema → form model (`describe` leaf/array detection,
-`emptyValue`/`applyDefaults` scaffolding, `humanizeKey`, media `accept` per field) and the editor
-layout (card placement, "Other" fallback). Run:
+poster), plus the Owners additions (`orNamedMessage`, `seoMetadataInput`, `pages.estimateForm`
+keys ×4 with matching ICU args, 0–8 `stats`, `final_cta` + contact line). `tests/pages-admin.test.ts` — the schema → form model (`describe` leaf/array detection,
+`emptyValue`/`applyDefaults` scaffolding, `humanizeKey`, media `accept` per field, `admin_hidden`
+nodes and hidden values round-tripping on save) and the editor layouts (card placement, "Other"
+fallback, Owners' 12 ids). Run:
 `npx tsx --test src/slices/pages/tests/pages.test.ts src/slices/pages/tests/pages-admin.test.ts`.
 
 ### `blog` and `guides` rows: the detail-page sidebar CTAs (session 5)

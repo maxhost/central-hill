@@ -150,23 +150,46 @@ page_content
   `revalidate`** (the route's `revalidate = 3600` re-renders from the same cached data entry). A
   direct DB write (script, SQL) is therefore invisible on the public site until the tag is busted —
   i.e. until an admin presses **Save** on `/admin/pages/home` (`revalidatePage("home")`).
-- **owners**: `hero{image_media_id, headline, copy}`; `earnings_form{badge, headline, subheadline, cta_label, note}`
-  (the form *fields* are fixed in code → `lead.kind='earnings_estimate'`; the `badge` — "★ Earn +25%" —
-  is highlighted inside the form card); `why{headline, subheadline?, benefits[×6]{icon_key,title,description},
-  cta_primary{label,url,note}, cta_secondary{label,url,note}}` (Editorial-Split layout mirroring the home
-  owners-pitch); `services{headline, subheadline?, benefits[×4]{icon_key,title,description}, image_media_id?, cta{label,url,note}}`
-  (Image-Showcase layout, image right); `plans{headline, subheadline?, tiers[1..4]{name, tag?, commission?, is_popular, features[1..20]}, helpers[×1]{title,copy,cta?}}`
-  (up to 4 pricing cards; `helpers` is the single full-width highlighted band below the tiers — drizzle 0010 trimmed 2→1); `journey{headline, subheadline?, steps[×5]{title,description}}`;
-  `dashboard{headline, subheadline?, benefits[×4]{icon_key,title,description}, image_media_id?, cta{label,url,note}}`
-  (Image-Showcase layout mirrored, image left). The "what owners say" testimonials block is **not** stored
-  here — it is the shared testimonials marquee composed at render (testimonials slice, like the home).
-  Owner direction (drizzle 0004→0007): the per-section *eyebrow* labels were dropped on the page (titles
-  stay), the hero badge moved into the form, `why` was restyled (Editorial-Split), and `services`/`dashboard`
-  were restyled (Image-Showcase, each with its own editable image) — but all sections are kept and editable.
-  → Stats ("numbers" band) = **per-page** `stats[×4]{to (digit string), prefix?, suffix?, group (bool), label}`
-  — each page may want different figures, so they live in the page row, **not** company_settings; the displayed
-  value is derived as `prefix + (grouped) to + suffix` and the client counter animates up to `to` (drizzle 0009).
-  → FAQ group `owners` referenced (drizzle 0004→0008).
+- **owners** (as shipped by `docs/specs/owners-admin-editor.md`, 2026-10-11; `src/slices/pages/schemas/owners.ts`).
+  Same notation as home. Every field the spec added is optional and blank-tolerant, so rows saved
+  before it still validate (no migration, no backfill). **Hidden** = tagged `.meta({ admin_hidden: true })`:
+  kept in `data` and saved back unchanged, but not shown in the editor (button targets are decided in code).
+
+  | Path | Type | Class | Blank / absent → |
+  |---|---|---|---|
+  | `seo?.meta_title?` / `seo?.meta_description?` | ≤70 / ≤200 (`seoShape`) | T | i18n `pages.owners.metaTitle` / `metaDescription` |
+  | *(column)* `og_image_media_id` | image | C | no OG override |
+  | `hero.image_media_id` | `"" \| uuid`, image (**optional** since the spec) | C | stock Unsplash photo |
+  | `hero.headline` / `hero.copy` | ≤160 (`;` = line break) / ≤600, **required** | T | — |
+  | `hero.contact?{label? ≤40, title? ≤80, intro? ≤280}` | button + contact dialog | T | i18n `pages.owners.contactLabel` / `contactTitle` / `contactIntro` |
+  | `earnings_form{badge?, headline, subheadline?, cta_label, note?}` | step 1 of the form card | T | — |
+  | `earnings_form.contact_step?{title? ≤120, lede? ≤280, submit_label? ≤60, back_label? ≤30}` | step 2 | T | i18n `pages.estimateForm.contactTitle` / `contactLede` / `submit` / `back` |
+  | `earnings_form.done_step?{title? ≤120, body? ≤400}` | step 3 | T | i18n `pages.estimateForm.doneTitle` / `doneBody` |
+  | `stats` | **0–8** × `statFigure` (was exactly 4; drizzle 0009 rows stay valid) | `label` T · rest C | **no rows → no band** (anchor `#numbers` kept) |
+  | `why{headline, subheadline?, benefits[×6]{icon_key,title,description}, cta_primary, cta_secondary}` | CTAs = `{label, url, note?}`, **`url` hidden** | text T · icon/url C | — |
+  | `services` / `dashboard` `{headline, subheadline?, benefits[×4], cta{label, url, note?}}` | **`cta.url` hidden** | text T · icon/url C | — |
+  | `services.image_media_id` / `dashboard.image_media_id` | `"" \| uuid`; image (incl. animated WebP), MP4/WebM or Lottie (`optionalAnimated`) | C | stock photos |
+  | `services.badge?` / `dashboard.badge?` `{label? ≤120, icon_key?}` | floating badge on the media | label T · icon C | i18n `pages.owners.servicesBadge` / `dashboardBadge`; default icon |
+  | `plans{headline, subheadline?, tiers[1..4], helpers[×1]{title, copy, cta?{label, url}}}` | **`helpers[0].cta.url` hidden** | text T · url C | — |
+  | `plans.tiers[]{name, tag?, commission?, corner_badge? ≤12, is_popular, features[1..20]}` | **`commission` hidden** (never rendered; the visible % is `corner_badge`) | text T | — |
+  | `plans.popular_label?` ≤30 / `plans.choose_label?` ≤60 (`{name}` = tier name) | pill / tier buttons | T | i18n `pages.owners.popular` / `choosePlan` |
+  | `journey{headline, subheadline?, steps[×5]{title, description, image_media_id}}` | step image `"" \| uuid`, 3:4 | text T · image C | stock Pexels photos |
+  | `testimonials?.title?` ≤160 | heading only | T | i18n `pages.reviews.title` |
+  | `faq_group_key?` / `faq?.title?` ≤160 | group key / heading | C / T | no FAQ / i18n `pages.owners.faqTitle` |
+  | `final_cta?{eyebrow? ≤60, headline? ≤160, body? ≤600, cta_label? ≤80, contact_line? ≤200, image_media_id?}` | closing band; image only (4:5) | text T · image C | i18n `pages.owners.finalEyebrow` / `finalTitle` / `finalCopy` / `finalCta`; contact line built from **company_settings** (`Call {phone} · email · WhatsApp …`); stock photo |
+
+  → Composed, not stored: testimonial cards = **testimonials** (owner + guest mixed); FAQ questions
+  = **faq** (group `owners`, drizzle 0004→0008); closing contact line fallback = **company_settings**.
+  The estimate form's field labels/placeholders/checkboxes are fixed i18n (`pages.estimateForm.*`) and the
+  form does not send leads yet (`lead.kind='earnings_estimate'` pending). Button targets are fixed in
+  code (`#worth`, `#start`, `#` for the plan buttons, the "Not sure" band and T&C/Privacy).
+  → Stats are **per-page** (not company_settings): the displayed value is `prefix + (grouped) to + suffix`
+  and the client counter animates up to `to` (drizzle 0009).
+  → Same language rule (D1) and caching as home: EN only until the per-locale tabs exist; `getOwnersPage`
+  is tagged `page:owners`, busted by Save on `/admin/pages/owners`.
+  → History: drizzle 0004→0010 restored/restyled the sections (eyebrows dropped, hero badge moved into the
+  form, Editorial-Split `why`, Image-Showcase `services`/`dashboard`, plans ≤4, one helper band); spec
+  `owners-admin-editor` (2026-10-11) added every optional field above and the hidden fields.
 - **real_estate**: `hero{image_media_id, headline, subheadline, positioning, capability_statement_media_id, cta_primary{label,url}, cta_secondary{label,url}}`;
   `partners{headline, subheadline, benefits[4]{icon_key, title, description}, cta_primary{label,url,note}, cta_secondary{label,url,note}}`
   ("Built for Institutional Partners" — Editorial Split, modelled on owners `why`; benefit icons are
