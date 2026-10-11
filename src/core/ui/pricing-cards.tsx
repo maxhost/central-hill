@@ -47,12 +47,15 @@ export function PricingCards({
   body,
   tiers,
   footer,
+  popularLabel = "Most Popular",
 }: {
   headline: string;
   body?: string;
   tiers: PricingTier[];
   /** Extra content below the grid, at the original `.plan-helpers` spacing (e.g. `CalloutBand`). */
   footer?: ReactNode;
+  /** Text of the popular tier's ribbon (the caller passes its localized copy). */
+  popularLabel?: string;
 }) {
   return (
     <Section>
@@ -79,7 +82,7 @@ export function PricingCards({
             >
               {t.isPopular ? (
                 <span className="absolute -top-[13px] left-1/2 -translate-x-1/2 rounded-full bg-accent px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.13em] text-white">
-                  Most Popular
+                  {popularLabel}
                 </span>
               ) : null}
               {t.cornerBadge ? (

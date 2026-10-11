@@ -10,7 +10,8 @@ import { blogSchema, defaultBlog } from "../schemas/blog";
 import { defaultGuides, guidesSchema } from "../schemas/guides";
 import { collectMediaIds, expand, overlayTranslations } from "../server/overlay";
 import { heroPosterSrc } from "../ui/hero-poster";
-import { orMessage } from "../ui/or-message";
+import { seoMetadataInput } from "../server/metadata-input";
+import { orMessage, orNamedMessage } from "../ui/or-message";
 import {
   formatStatFigure,
   parseStatValue,
@@ -563,4 +564,88 @@ test("collectMediaIds gathers every *_media_id across nesting", () => {
   // hero.video + guests_pitch.image (the dual-CTA panels went with ADR 0031)
   assert.equal(ids.length, 2);
   assert.ok(ids.every((id) => id === UUID));
+});
+
+// ── Owners S2: optional copy overrides with i18n fallback ────────────────────
+test("owners S2: the new copy keys are optional, blank-tolerant and capped", () => {
+  const { hero, services, plans, seo, testimonials, faq } = ownersSchema.shape;
+  const heroBase = { image_media_id: "", headline: "Your Property", copy: "Managed." };
+  assert.ok(hero.safeParse(heroBase).success, "a legacy hero without `contact` validates");
+  assert.ok(hero.safeParse({ ...heroBase, contact: { label: "", title: "", intro: "" } }).success);
+  assert.ok(!hero.safeParse({ ...heroBase, contact: { label: "x".repeat(41) } }).success, "label ≤ 40");
+  const badge = services.shape.badge;
+  assert.ok(badge.safeParse(undefined).success);
+  assert.ok(badge.safeParse({ label: "", icon_key: "" }).success);
+  assert.ok(badge.safeParse({ label: "Handled", icon_key: "shield-check" }).success);
+  assert.ok(!badge.safeParse({ label: "Handled", icon_key: "not-an-icon" }).success);
+  assert.ok(plans.shape.choose_label.safeParse("Pick {name}").success);
+  assert.ok(!plans.shape.popular_label.safeParse("x".repeat(31)).success, "pill ≤ 30");
+  assert.ok(seo.safeParse(undefined).success && testimonials.safeParse(undefined).success);
+  assert.ok(faq.safeParse({ title: "Questions" }).success);
+});
+
+test("owners S2: the new copy is translatable, the badge icons are not", () => {
+  const paths = translatablePathsByPage.owners;
+  for (const p of [
+    "seo.meta_title",
+    "seo.meta_description",
+    "hero.contact.label",
+    "hero.contact.title",
+    "hero.contact.intro",
+    "services.badge.label",
+    "dashboard.badge.label",
+    "plans.popular_label",
+    "plans.choose_label",
+    "testimonials.title",
+    "faq.title",
+  ]) {
+    assert.ok(paths.includes(p), `expected translatable path ${p}`);
+  }
+  assert.ok(!paths.includes("services.badge.icon_key") && !paths.includes("dashboard.badge.icon_key"));
+});
+
+test("owners S2: a blank field renders the i18n message, a filled one its own text", () => {
+  assert.equal(orMessage(undefined, "Contact Us"), "Contact Us");
+  assert.equal(orMessage("  ", "Most Popular"), "Most Popular");
+  assert.equal(orMessage("Talk to us", "Contact Us"), "Talk to us");
+});
+
+test("orNamedMessage: `{name}` is replaced in a field; blank → the ICU fallback gets the name", () => {
+  const icu = (name: string) => `Choose ${name}`; // stands in for t("owners.choosePlan", { name })
+  assert.equal(orNamedMessage(undefined, "Prime", icu), "Choose Prime");
+  assert.equal(orNamedMessage("", "Prime", icu), "Choose Prime");
+  assert.equal(orNamedMessage("Go {name}", "Prime", icu), "Go Prime");
+  assert.equal(orNamedMessage("{name} — {name}", "Core", icu), "Core — Core");
+  assert.equal(orNamedMessage("Start now", "Core", icu), "Start now", "no placeholder → as written");
+});
+
+test("seoMetadataInput: falls back to i18n, uses seo fields + OG, keeps canonical/hreflang", () => {
+  const base = {
+    locale: "pt" as const,
+    path: "/owners",
+    fallbackTitle: "Para Proprietários — Central Hill",
+    fallbackDescription: "Descrição.",
+  };
+  const blank = seoMetadataInput({ ...base, seo: { meta_title: "", meta_description: " " }, ogImage: null });
+  assert.equal(blank.title, base.fallbackTitle);
+  assert.equal(blank.description, base.fallbackDescription);
+  assert.equal(blank.images, undefined);
+  assert.equal(blank.canonicalPath, "/pt/owners");
+  assert.deepEqual(blank.languages, {
+    "x-default": "/owners",
+    en: "/en/owners",
+    pt: "/pt/owners",
+    es: "/es/owners",
+    fr: "/fr/owners",
+  });
+  assert.equal(seoMetadataInput({ ...base, seo: undefined, ogImage: undefined }).title, base.fallbackTitle);
+  const og = { url: "https://cdn.example/og.jpg", width: 1200, height: 630, alt: "Owners", blurhash: null };
+  const filled = seoMetadataInput({
+    ...base,
+    seo: { meta_title: "Owners", meta_description: "Managed rentals." },
+    ogImage: og,
+  });
+  assert.equal(filled.title, "Owners");
+  assert.equal(filled.description, "Managed rentals.");
+  assert.deepEqual(filled.images, [{ url: og.url, width: 1200, height: 630, alt: "Owners" }]);
 });

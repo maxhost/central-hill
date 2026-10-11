@@ -944,7 +944,7 @@
     },
     "owners": {
       "metaTitle": "Pour les Propriétaires — Central Hill",
-      "metaDescription": "Transformez votre bien au Portugal en un actif performant — entièrement géré, transparent et avec des rendements régulièrement supérieurs au marché.",
+      "metaDescription": "Transformez votre bien au Portugal en un actif performant — entièrement géré, transparent et avec des rendements régulièrement supérieurs au marché. Une tarification pilotée par l'IA et un tableau de bord propriétaire disponible 24h/24 et 7j/7.",
       "heroCta": "Obtenez Votre Estimation de Revenus Gratuite",
       "navEstimate": "Estimation de Revenus",
       "servicesEyebrow": "Tout Pris en Charge pour Vous",
@@ -962,7 +962,12 @@
       "finalEyebrow": "Commencez à Gagner Plus Dès Aujourd'hui",
       "finalTitle": "Prêt à Faire Travailler Votre Bien pour Vous ?",
       "finalCopy": "Rejoignez le nombre croissant de propriétaires au Portugal qui font confiance à Central Hill pour des résultats exceptionnels. Commencez par une analyse de rentabilité gratuite et sans engagement.",
-      "finalCta": "Obtenez Votre Estimation de Revenus Gratuite"
+      "finalCta": "Obtenez Votre Estimation de Revenus Gratuite",
+      "contactLabel": "Contactez-nous",
+      "contactTitle": "Contactez-nous",
+      "contactIntro": "Envoyez-nous un message et notre équipe vous répondra rapidement.",
+      "servicesBadge": "Chaque détail est pris en charge — vous restez libre.",
+      "dashboardBadge": "Des données en temps réel, où que vous soyez."
     },
     "guests": {
       "metaTitle": "Pour les Voyageurs — Central Hill",

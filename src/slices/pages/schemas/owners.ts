@@ -12,12 +12,13 @@
  * See docs/data-model.md → Page content model → owners.
  */
 import { z } from "zod";
-import { ctaWithNote, tStr, tStrOpt, url } from "@core/validation/primitives";
+import { ctaWithNote, seoShape, tStr, tStrOpt, url } from "@core/validation/primitives";
 import {
   between,
   faqGroupKey,
   fixed,
   iconCard,
+  optionalIconKey,
   optionalImage,
   statFigure,
   step,
@@ -68,12 +69,45 @@ const planHelper = z.object({
   cta: z.object({ label: tStr({ max: 80 }), url: hiddenUrl }).optional(),
 });
 
+/**
+ * A showcase image's floating reassurance badge (spec owners-admin-editor S2). Blank label →
+ * the section's i18n badge; blank icon → the component's default icon.
+ */
+const showcaseBadge = z
+  .object({
+    label: tStrOpt({ max: 120 }).describe("Text on the image's floating badge. Leave blank for the current default."),
+    icon_key: optionalIconKey,
+  })
+  .optional();
+
+/*
+ * Optional copy overrides added by spec `owners-admin-editor` S2 (`seo`, `hero.contact`,
+ * `services.badge`, `dashboard.badge`, `plans.popular_label` / `choose_label`, `testimonials`,
+ * `faq`). Every one is optional and blank-tolerant: empty / absent → the page renders the
+ * current i18n message of the visitor's locale, so a row saved before these keys existed
+ * renders exactly as before.
+ */
 export const ownersSchema = z.object({
+  /** Search/social meta for `/<locale>/owners`. Blank → `pages.owners.metaTitle` / `metaDescription`. */
+  seo: z.object({ ...seoShape }).optional(),
   hero: z.object({
     // Optional since spec owners-admin-editor S1: "" → the stock hero photo.
     image_media_id: optionalImage(HERO_IMG_HINT),
     headline: tStr({ max: 160 }),
     copy: tStr({ max: 600 }),
+    /**
+     * The hero's Contact button and the dialog it opens. Blank → `pages.owners.contactLabel`
+     * / `contactTitle` / `contactIntro`.
+     */
+    contact: z
+      .object({
+        label: tStrOpt({ max: 40 }).describe("Button text. Leave blank for “Contact Us”."),
+        title: tStrOpt({ max: 80 }).describe("Title of the contact dialog the button opens. Leave blank for “Contact us”."),
+        intro: tStrOpt({ max: 280 }).describe(
+          "Intro line of the contact dialog. Leave blank for “Send us a message and our team will get back to you shortly.”",
+        ),
+      })
+      .optional(),
   }),
   earnings_form: z.object({
     /** Highlighted badge shown at the top of the form card (e.g. "★ Earn +25%"). */
@@ -101,6 +135,8 @@ export const ownersSchema = z.object({
     benefits: fixed(iconCard, 4),
     image_media_id: optionalImage(SERVICES_IMG_HINT),
     cta: ownersCta,
+    /** Blank label → `pages.owners.servicesBadge`. */
+    badge: showcaseBadge,
   }),
   plans: z.object({
     headline: tStr({ max: 160 }),
@@ -108,6 +144,12 @@ export const ownersSchema = z.object({
     tiers: between(tier, 1, 4),
     // Single full-width highlighted helper band below the plans (drizzle 0010 trimmed 2→1).
     helpers: fixed(planHelper, 1),
+    /** The popular tier's pill. Blank → `pages.owners.popular`. */
+    popular_label: tStrOpt({ max: 30 }).describe("Leave blank for “Most Popular”."),
+    /** Each tier's button; `{name}` = the tier name. Blank → `pages.owners.choosePlan`. */
+    choose_label: tStrOpt({ max: 60 }).describe(
+      "Use {name} for the plan name, e.g. “Choose {name}”. Leave blank for “Choose {name}”.",
+    ),
   }),
   journey: z.object({
     headline: tStr({ max: 160 }),
@@ -122,9 +164,21 @@ export const ownersSchema = z.object({
     benefits: fixed(iconCard, 4),
     image_media_id: optionalImage(DASHBOARD_IMG_HINT),
     cta: ownersCta,
+    /** Blank label → `pages.owners.dashboardBadge`. */
+    badge: showcaseBadge,
   }),
+  /** Testimonials heading (the reviews come from `testimonials`). Blank → `pages.reviews.title`. */
+  testimonials: z
+    .object({
+      title: tStrOpt({ max: 160 }).describe("Leave blank for “We Care About Our Partners & Guests”."),
+    })
+    .optional(),
   /** Optional FAQ group to show on the page (blank = none). */
   faq_group_key: faqGroupKey,
+  /** FAQ section heading (the group stays in `faq_group_key`). Blank → `pages.owners.faqTitle`. */
+  faq: z
+    .object({ title: tStrOpt({ max: 160 }).describe("Leave blank for “Owner Questions, Answered”.") })
+    .optional(),
 });
 
 export type OwnersContent = z.infer<typeof ownersSchema>;

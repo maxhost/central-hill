@@ -109,6 +109,13 @@ export {
  */
 export { buildHomeMetadata } from "./server/metadata";
 
+/**
+ * The Owners route's `generateMetadata` body, same shape as `buildHomeMetadata`: `seo.*` with
+ * the `pages.owners.*` i18n fallback, canonical + hreflang + optional OG image (spec
+ * `owners-admin-editor` S2). `src/app/[locale]/owners/page.tsx` just calls it.
+ */
+export { buildOwnersMetadata } from "./server/metadata";
+
 /** Fallback photo (`{ url, alt }`) for the guide aside CTA while no image is picked. */
 export { GUIDE_ASIDE_FALLBACK_IMAGE } from "./schemas/guides";
 

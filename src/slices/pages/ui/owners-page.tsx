@@ -20,12 +20,16 @@ import { getOwnersPage } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { OwnerEstimateForm } from "./components/owner-estimate-form";
 import { TestimonialsRow } from "./components/testimonials-row";
+import { orMessage, orNamedMessage } from "./or-message";
 import { statFigureCells } from "./stat-figure-value";
 
 // Benefit icons are each item's admin-editable `icon_key`, rendered by `core/ui` `<Icon>`
 // (inline Iconoir SVG, ADR 0034).
-const SERVICES_BADGE = "Every detail handled — you stay free.";
-const DASHBOARD_BADGE = "Real-time data, from anywhere.";
+
+/** A showcase badge's optional icon (blank → `TwoColumnShowcase`'s default), as Home's pitch. */
+function badgeIcon(iconKey: string | undefined) {
+  return iconKey ? <Icon name={iconKey} size={20} /> : undefined;
+}
 
 // Image fallbacks = the approved mock photos, used 1:1 until a real R2 asset is set in the
 // backoffice (the seeded `*_media_id`s have no uploaded asset yet → resolved media is absent).
@@ -92,6 +96,9 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
   const { content, media } = page;
   const { hero, earnings_form, stats, why, services, plans, journey, dashboard } = content;
   const faqGroupKey = content.faq_group_key ?? "";
+  // Optional copy overrides (spec owners-admin-editor S2): blank / absent → today's i18n message.
+  const contact = hero.contact;
+  const testimonialsTitle = content.testimonials?.title;
 
   const whyItems = why.benefits.map((b) => ({
     icon: <Icon name={b.icon_key} size={28} className="mt-0.5 flex-none text-accent-deep" />,
@@ -191,9 +198,9 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
         actions={
           <ContactDialog
             variant="light"
-            label="Contact Us"
-            title="Contact us"
-            intro="Send us a message and our team will get back to you shortly."
+            label={orMessage(contact?.label, t("owners.contactLabel"))}
+            title={orMessage(contact?.title, t("owners.contactTitle"))}
+            intro={orMessage(contact?.intro, t("owners.contactIntro"))}
             source="owners-hero"
           />
         }
@@ -255,7 +262,8 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
             body={services.subheadline}
             bullets={servicesBullets}
             cta={{ href: "#worth", label: `${services.cta.label} →`, note: services.cta.note }}
-            badge={SERVICES_BADGE}
+            badge={orMessage(services.badge?.label, t("owners.servicesBadge"))}
+            badgeIcon={badgeIcon(services.badge?.icon_key)}
             tone="alt"
             imagePosition="right"
             image={
@@ -291,13 +299,19 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
           <PricingCards
             headline={plans.headline}
             body={plans.subheadline}
-            tiers={plans.tiers.map((t) => ({
-              name: t.name,
-              tag: t.tag,
-              cornerBadge: t.corner_badge,
-              isPopular: t.is_popular,
-              features: t.features,
-              cta: { href: "#", label: `Choose ${t.name}` },
+            popularLabel={orMessage(plans.popular_label, t("owners.popular"))}
+            tiers={plans.tiers.map((tier) => ({
+              name: tier.name,
+              tag: tier.tag,
+              cornerBadge: tier.corner_badge,
+              isPopular: tier.is_popular,
+              features: tier.features,
+              cta: {
+                href: "#",
+                label: orNamedMessage(plans.choose_label, tier.name, (name) =>
+                  t("owners.choosePlan", { name }),
+                ),
+              },
             }))}
             footer={plans.helpers.map((h, i) =>
               h.cta ? (
@@ -329,7 +343,8 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
             body={dashboard.subheadline}
             bullets={dashboardBullets}
             cta={{ href: "#worth", label: `${dashboard.cta.label} →`, note: dashboard.cta.note }}
-            badge={DASHBOARD_BADGE}
+            badge={orMessage(dashboard.badge?.label, t("owners.dashboardBadge"))}
+            badgeIcon={badgeIcon(dashboard.badge?.icon_key)}
             imagePosition="left"
             image={
               dashboardMedia ? (
@@ -357,14 +372,18 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
        * editable per page (`faq_group_key`); blank/empty → nothing renders.
        */}
       <div id="testimonials" style={{ scrollMarginTop: 130 }}>
-        <TestimonialsRow locale={locale} showEyebrow={false} />
+        <TestimonialsRow
+          locale={locale}
+          showEyebrow={false}
+          title={testimonialsTitle?.trim() ? testimonialsTitle : undefined}
+        />
       </div>
       {faqGroupKey ? (
         <div id="faq" style={{ scrollMarginTop: 130 }}>
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
-            title={t("owners.faqTitle")}
+            title={orMessage(content.faq?.title, t("owners.faqTitle"))}
           />
         </div>
       ) : null}

@@ -409,7 +409,7 @@ test("ownersSchema: hero image is optional (\"\" validates) with the hero hint",
   }
 });
 
-test("owners layout: 12 stable ids; cards without keys yet are dropped, SEO kept for the OG image", () => {
+test("owners layout: 12 stable ids; cards without keys yet are dropped, every key placed once", () => {
   assert.deepEqual([...OWNERS_CARD_IDS], [
     "seo", "hero", "earnings_form", "stats", "why", "services", "plans", "journey", "dashboard",
     "testimonials", "faq", "final_cta",
@@ -417,12 +417,13 @@ test("owners layout: 12 stable ids; cards without keys yet are dropped, SEO kept
   const rootKeys = Object.keys(ownersSchema.shape);
   const layout = resolveEditorLayout("owners", rootKeys);
   assert.ok(layout);
-  // Today `seo`, `testimonials`, `final_cta` (and `faq.title`) don't exist yet.
+  // Since S2 `seo`, `testimonials` and `faq.title` exist; `final_cta` arrives in S6.
   assert.deepEqual(cardIds(layout), [
-    "seo", "hero", "earnings_form", "stats", "why", "services", "plans", "journey", "dashboard", "faq",
+    "seo", "hero", "earnings_form", "stats", "why", "services", "plans", "journey", "dashboard",
+    "testimonials", "faq",
   ]);
   const seo = layout.find((i) => i.id === "seo");
-  assert.ok(seo && seo.kind === "card" && seo.hostsOgImage && seo.paths.length === 0);
+  assert.ok(seo && seo.kind === "card" && seo.hostsOgImage && seo.paths.join() === "seo");
   // Every root key is rendered exactly once, and nothing falls into Other.
   const rendered = layout.flatMap((i) => (i.kind === "card" ? i.paths : []));
   assert.deepEqual([...rendered].sort(), [...rootKeys].sort());

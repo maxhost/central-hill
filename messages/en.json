@@ -944,7 +944,7 @@
     },
     "owners": {
       "metaTitle": "For Owners — Central Hill",
-      "metaDescription": "Turn your Portugal property into a high-performing asset — fully managed, fully transparent, with consistently above-market returns.",
+      "metaDescription": "Turn your Portugal property into a high-performing asset — fully managed, transparent, with consistently above-market returns. AI-driven pricing and a 24/7 owner dashboard.",
       "heroCta": "Get Your Free Earnings Estimate",
       "navEstimate": "Earnings Estimate",
       "servicesEyebrow": "Everything Done for You",
@@ -962,7 +962,12 @@
       "finalEyebrow": "Start Earning More Today",
       "finalTitle": "Ready to Make Your Property Work for You?",
       "finalCopy": "Join the growing number of property owners across Portugal who trust Central Hill to deliver exceptional results. Start with a free, no-obligation profitability analysis.",
-      "finalCta": "Get Your Free Earnings Estimate"
+      "finalCta": "Get Your Free Earnings Estimate",
+      "contactLabel": "Contact Us",
+      "contactTitle": "Contact us",
+      "contactIntro": "Send us a message and our team will get back to you shortly.",
+      "servicesBadge": "Every detail handled — you stay free.",
+      "dashboardBadge": "Real-time data, from anywhere."
     },
     "guests": {
       "metaTitle": "For Guests — Central Hill",

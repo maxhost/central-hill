@@ -5,7 +5,8 @@ import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
 import { orMessage } from "../ui/or-message";
-import { getHomePage } from "./queries";
+import { seoMetadataInput } from "./metadata-input";
+import { getHomePage, getOwnersPage } from "./queries";
 
 /**
  * `generateMetadata` for the Home route (`src/app/[locale]/page.tsx`), spec
@@ -40,4 +41,29 @@ export async function buildHomeMetadata(locale: Locale): Promise<Metadata> {
         ]
       : undefined,
   });
+}
+
+/**
+ * `generateMetadata` for the Owners route (`src/app/[locale]/owners/page.tsx`), spec
+ * `owners-admin-editor` S2 — the same output as {@link buildHomeMetadata}'s shape. Title /
+ * description come from the page's `seo.*` and fall back to `pages.owners.metaTitle` /
+ * `metaDescription` when blank. Canonical `/<locale>/owners`, hreflang alternates for every
+ * locale + `x-default` → `/owners`, and the optional OG image override (via the pure
+ * `seoMetadataInput`).
+ */
+export async function buildOwnersMetadata(locale: Locale): Promise<Metadata> {
+  const [t, page] = await Promise.all([
+    getTranslations({ locale, namespace: "pages" }),
+    getOwnersPage(locale),
+  ]);
+  return buildMetadata(
+    seoMetadataInput({
+      locale,
+      path: "/owners",
+      seo: page?.content.seo,
+      ogImage: page?.ogImage,
+      fallbackTitle: t("owners.metaTitle"),
+      fallbackDescription: t("owners.metaDescription"),
+    }),
+  );
 }

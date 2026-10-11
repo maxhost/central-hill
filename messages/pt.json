@@ -944,7 +944,7 @@
     },
     "owners": {
       "metaTitle": "Para Proprietários — Central Hill",
-      "metaDescription": "Transforme o seu imóvel em Portugal num ativo de elevado desempenho — totalmente gerido, transparente e com retornos consistentemente acima do mercado.",
+      "metaDescription": "Transforme o seu imóvel em Portugal num ativo de elevado desempenho — totalmente gerido, transparente e com retornos consistentemente acima do mercado. Preços otimizados por IA e um painel do proprietário disponível 24/7.",
       "heroCta": "Obtenha a Sua Estimativa de Rendimento Gratuita",
       "navEstimate": "Estimativa de Rendimento",
       "servicesEyebrow": "Tudo Tratado por Si",
@@ -962,7 +962,12 @@
       "finalEyebrow": "Comece a Ganhar Mais Hoje",
       "finalTitle": "Pronto para Pôr o Seu Imóvel a Trabalhar para Si?",
       "finalCopy": "Junte-se ao número crescente de proprietários em Portugal que confiam na Central Hill para entregar resultados excecionais. Comece com uma análise de rentabilidade gratuita e sem compromisso.",
-      "finalCta": "Obtenha a Sua Estimativa de Rendimento Gratuita"
+      "finalCta": "Obtenha a Sua Estimativa de Rendimento Gratuita",
+      "contactLabel": "Contacte-nos",
+      "contactTitle": "Contacte-nos",
+      "contactIntro": "Envie-nos uma mensagem e a nossa equipa responderá em breve.",
+      "servicesBadge": "Tratamos de cada detalhe — fica livre.",
+      "dashboardBadge": "Dados em tempo real, a partir de qualquer lugar."
     },
     "guests": {
       "metaTitle": "Para Hóspedes — Central Hill",

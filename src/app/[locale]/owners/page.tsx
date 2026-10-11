@@ -3,11 +3,10 @@ import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import type { Locale } from "@core/db/columns";
-import { buildMetadata } from "@core/seo";
+import { buildOwnersMetadata } from "@slices/pages/contract";
 import { OwnersPage } from "@slices/pages/ui/owners-page";
 
-/** Static per locale. Content is the embedded mock (no DB). */
+/** ISR: static per locale; on-demand revalidation via the `page:owners` tag. */
 export const revalidate = 3600;
 
 export function generateStaticParams() {
@@ -22,17 +21,7 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
-
-  const languages: Partial<Record<Locale | "x-default", string>> = { "x-default": "/owners" };
-  for (const l of routing.locales) languages[l] = `/${l}/owners`;
-
-  return buildMetadata({
-    title: "For Owners — Central Hill",
-    description:
-      "Turn your Portugal property into a high-performing asset — fully managed, transparent, with consistently above-market returns. AI-driven pricing and a 24/7 owner dashboard.",
-    canonicalPath: `/${locale}/owners`,
-    languages,
-  });
+  return buildOwnersMetadata(locale);
 }
 
 export default async function OwnersRoute({
