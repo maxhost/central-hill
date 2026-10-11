@@ -6,6 +6,7 @@ import { between, faqGroupKey, fixed, iconCard, optionalImage, optionalVideo } f
 import { homeSchema } from "../schemas/home";
 import { withMediaAccept } from "../schemas/media-accept";
 import { type FieldNode, applyDefaults, describe, emptyValue, humanizeKey } from "../admin/form-model";
+import { HOME_CARD_IDS, OTHER_CARD_ID, resolveEditorLayout } from "../admin/layout";
 
 /**
  * Slice `pages` backoffice (S12, ADR 0012) — the schema → form model. Pure (walks a
@@ -192,4 +193,45 @@ test("guest hero video picker accepts video (same fix as home, S1)", async () =>
   const video =
     hero?.kind === "object" ? hero.fields.find((f) => f.key === "video_media_id")?.node : undefined;
   assert.equal(video?.kind === "media" ? video.accept : undefined, "video");
+});
+
+// ── Editor layout (spec home-admin-editor S2) ────────────────────────────────
+
+const homeRootKeys = Object.keys(homeSchema.shape);
+const cardIds = (items: NonNullable<ReturnType<typeof resolveEditorLayout>>) =>
+  items.filter((i) => i.kind === "card").map((i) => i.id);
+
+test("home layout lists the 8 stable card ids in page order", () => {
+  const layout = resolveEditorLayout("home", homeRootKeys);
+  assert.ok(layout);
+  assert.deepEqual(cardIds(layout), [...HOME_CARD_IDS]);
+  assert.deepEqual([...HOME_CARD_IDS], [
+    "seo", "hero", "stats", "guests_pitch", "portfolio", "services_carousel", "faq", "dual_cta",
+  ]);
+  // The search-bar info row sits between hero and stats.
+  const ids = layout.map((i) => i.id);
+  assert.equal(ids.indexOf("search_bar"), ids.indexOf("hero") + 1);
+});
+
+test("every home root key is rendered exactly once (a card or Other)", () => {
+  const layout = resolveEditorLayout("home", homeRootKeys);
+  assert.ok(layout);
+  const rendered = layout.flatMap((i) => (i.kind === "card" ? i.paths : []));
+  assert.deepEqual([...rendered].sort(), [...homeRootKeys].sort());
+  // Today every key is placed, so there is no Other card.
+  assert.ok(!cardIds(layout).includes(OTHER_CARD_ID));
+});
+
+test("an unknown root key lands in a trailing Other card", () => {
+  const layout = resolveEditorLayout("home", [...homeRootKeys, "brand_new"]);
+  assert.ok(layout);
+  const last = layout.at(-1);
+  assert.ok(last && last.kind === "card");
+  assert.equal(last.id, OTHER_CARD_ID);
+  assert.deepEqual(last.paths, ["brand_new"]);
+});
+
+test("pages without a layout return null (default rendering)", () => {
+  assert.equal(resolveEditorLayout("owners", ["hero"]), null);
+  assert.equal(resolveEditorLayout("about", []), null);
 });

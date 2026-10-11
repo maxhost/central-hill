@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { UiIcon, cn } from "@core/ui";
 import type { AdminMediaPreview } from "../server/media-actions";
@@ -59,7 +59,9 @@ export function MediaField({
 }) {
   const t = useTranslations("backoffice");
   const inputRef = useRef<HTMLInputElement>(null);
-  const [pending, start] = useTransition();
+  // Not a transition: the "Preparing…" state and the queue's busy count must paint
+  // immediately, and the field's `onChange` must not be deferred behind the reservation.
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<AdminMediaPreview | null>(initialPreview ?? null);
   const queue = useMediaQueue();
@@ -78,7 +80,10 @@ export function MediaField({
       setError(t("media.wrongType"));
       return;
     }
-    start(async () => {
+    setPending(true);
+    // Tracked by the queue (`isPreparing`) until `onChange` has run, so the form cannot
+    // be saved in the window where its value does not hold the new id yet.
+    void queue.track(async () => {
       try {
         const { id, preview: local } = await reserveUpload(file);
         // Replacing a pick must not leave the previous file queued for upload.
@@ -88,6 +93,8 @@ export function MediaField({
         onChange(id, local);
       } catch (e) {
         setError(e instanceof Error ? e.message : t("media.uploadError"));
+      } finally {
+        setPending(false);
       }
     });
   }
@@ -158,7 +165,9 @@ export function MediaGalleryField({
 }) {
   const t = useTranslations("backoffice");
   const inputRef = useRef<HTMLInputElement>(null);
-  const [pending, start] = useTransition();
+  // Not a transition: the "Preparing…" state and the queue's busy count must paint
+  // immediately, and the field's `onChange` must not be deferred behind the reservation.
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previews, setPreviews] = useState<Record<string, AdminMediaPreview>>(initialPreviews ?? {});
   const queue = useMediaQueue();
@@ -186,7 +195,9 @@ export function MediaGalleryField({
       return;
     }
     setError(null);
-    start(async () => {
+    setPending(true);
+    // Tracked by the queue (`isPreparing`) until `onChange` has run — see `MediaField`.
+    void queue.track(async () => {
       try {
         const added: AdminMediaPreview[] = [];
         for (const file of list) {
@@ -202,6 +213,8 @@ export function MediaGalleryField({
         onChange([...value, ...added.map((p) => p.id)]);
       } catch (e) {
         setError(e instanceof Error ? e.message : t("media.uploadError"));
+      } finally {
+        setPending(false);
       }
     });
   }

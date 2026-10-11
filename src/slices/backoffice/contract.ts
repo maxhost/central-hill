@@ -71,7 +71,15 @@ export { IconField, SpriteIcon } from "./ui/icon-field";
  * `useMediaQueue()` before calling its save action, or it will persist ids whose bytes
  * were never uploaded.
  */
+/**
+ * Busy signal (spec home-admin-editor S2): `useMediaQueue().isPreparing` is true while a
+ * picked file is still being reserved (the field's value does not hold the new id yet).
+ * Forms MUST disable Save and early-return from their submit handler while it is true;
+ * show `backoffice.media.waitForMedia` next to the button. Wired today in the `pages`
+ * editor only.
+ */
 export { MediaQueueProvider, useMediaQueue } from "./ui/media-queue";
+export type { MediaQueueApi } from "./ui/media-queue";
 export {
   presignAdminUpload,
   finalizeAdminUpload,

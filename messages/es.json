@@ -1018,6 +1018,35 @@
         "status": "Estado",
         "ogImage": "Imagen para compartir",
         "ogImageHint": "Se usa al compartir la página en redes sociales. Recomendado: 1200×630px, JPG/PNG/WebP, hasta 1 MB."
+      },
+      "layout": {
+        "cards": {
+          "seo": "SEO y redes sociales",
+          "hero": "Hero",
+          "searchBar": "Buscador",
+          "stats": "Cifras",
+          "guests_pitch": "Pitch para huéspedes",
+          "portfolio": "Portfolio destacado",
+          "services_carousel": "Partners y Servicios",
+          "faq": "FAQ",
+          "dual_cta": "CTA doble final",
+          "other": "Otros"
+        },
+        "notes": {
+          "heroSecondary": "El botón secundario siempre lleva a /owners.",
+          "searchBar": "El buscador de Avantio se configura en Ajustes.",
+          "stats": "La banda de cifras muestra, por ahora, las cifras de la empresa definidas en Ajustes.",
+          "portfolio": "Las tarjetas de inmuebles salen de Edificios (destacados, por posición).",
+          "services": "Las tarjetas salen de Servicios.",
+          "faq": "Las preguntas se editan en FAQ.",
+          "dualCta": "Los enlaces son fijos: /owners y el motor de reservas. La línea de contacto sale de Ajustes."
+        },
+        "links": {
+          "settings": "Abrir Ajustes",
+          "buildings": "Abrir Edificios",
+          "services": "Abrir Servicios",
+          "faq": "Abrir FAQ"
+        }
       }
     }
   },
@@ -1205,7 +1234,8 @@
       "retryFailed": "Reintentar los fallidos",
       "close": "Cerrar",
       "preparing": "Preparando…",
-      "queuedNote": "Se sube al guardar"
+      "queuedNote": "Se sube al guardar",
+      "waitForMedia": "Espera a que los archivos estén listos."
     },
     "icon": {
       "none": "Sin icono",

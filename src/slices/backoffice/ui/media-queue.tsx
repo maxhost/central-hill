@@ -1,12 +1,22 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { UiIcon, cn } from "@core/ui";
 import { AdminButton } from "./form";
 import type { AdminMediaPreview } from "../server/media-actions";
 import { finalizeAdminUpload, presignAdminUpload } from "../server/media-actions";
+import { reservationCount, trackReservation } from "./media-busy";
 
 /**
  * Deferred media uploads (ADR 0030).
@@ -39,7 +49,7 @@ interface QueueItem {
   error?: string;
 }
 
-interface MediaQueueApi {
+export interface MediaQueueApi {
   /** Queue a picked file against a reserved asset id. Replaces any prior entry for it. */
   enqueue: (id: string, file: File) => void;
   /** Drop a queued file (the editor removed or replaced the field's value). */
@@ -50,6 +60,18 @@ interface MediaQueueApi {
   hasPending: boolean;
   /** Is this asset's file still waiting to be uploaded? Drives the field's note. */
   isQueued: (id: string) => boolean;
+  /**
+   * Run a pick's reservation (presign → enqueue → field `onChange`) as one in-flight
+   * unit, so `isPreparing` covers the window in which the form's value does not hold
+   * the new id yet. Settles whether `work` resolves or throws.
+   */
+  track: <T>(work: () => Promise<T>) => Promise<T>;
+  /**
+   * True while any picked file is still being reserved. Forms MUST disable Save (and
+   * guard their submit handler) while it is true, or a fast save persists the form
+   * without the file just picked.
+   */
+  isPreparing: boolean;
 }
 
 const MediaQueueContext = createContext<MediaQueueApi | null>(null);
@@ -68,6 +90,8 @@ export function useMediaQueue(): MediaQueueApi {
       flush: async () => true,
       hasPending: false,
       isQueued: () => false,
+      track: (work) => work(),
+      isPreparing: false,
     }
   );
 }
@@ -107,6 +131,7 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<QueueItem[]>([]);
   const [open, setOpen] = useState(false);
   const [running, setRunning] = useState(false);
+  const [preparing, dispatchPreparing] = useReducer(reservationCount, 0);
   // The upload loop is async and must always see the current queue, but a ref may not
   // be written during render — mirror the state into it from an effect instead. Safe
   // for the loop's purposes: items are enqueued when a file is picked and read when the
@@ -213,9 +238,15 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
     [items],
   );
 
+  const track = useCallback(
+    <T,>(work: () => Promise<T>): Promise<T> => trackReservation(work, dispatchPreparing),
+    [],
+  );
+  const isPreparing = preparing > 0;
+
   const api = useMemo<MediaQueueApi>(
-    () => ({ enqueue, dequeue, flush, hasPending, isQueued }),
-    [enqueue, dequeue, flush, hasPending, isQueued],
+    () => ({ enqueue, dequeue, flush, hasPending, isQueued, track, isPreparing }),
+    [enqueue, dequeue, flush, hasPending, isQueued, track, isPreparing],
   );
 
   const settled = !running && items.every((i) => i.status === "done" || i.status === "failed");

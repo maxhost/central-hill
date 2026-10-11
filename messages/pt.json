@@ -1018,6 +1018,35 @@
         "status": "Estado",
         "ogImage": "Imagem de partilha social",
         "ogImageHint": "Usada quando a página é partilhada nas redes sociais. Recomendado: 1200×630px, JPG/PNG/WebP, até 1 MB."
+      },
+      "layout": {
+        "cards": {
+          "seo": "SEO e redes sociais",
+          "hero": "Hero",
+          "searchBar": "Barra de pesquisa",
+          "stats": "Números",
+          "guests_pitch": "Pitch para hóspedes",
+          "portfolio": "Portefólio em destaque",
+          "services_carousel": "Parceiros e Serviços",
+          "faq": "FAQ",
+          "dual_cta": "CTA duplo final",
+          "other": "Outros"
+        },
+        "notes": {
+          "heroSecondary": "O botão secundário leva sempre a /owners.",
+          "searchBar": "A barra de pesquisa Avantio configura-se em Definições.",
+          "stats": "A faixa de números mostra, por agora, os números da empresa definidos em Definições.",
+          "portfolio": "Os cartões de imóveis vêm de Edifícios (em destaque, por posição).",
+          "services": "Os cartões vêm de Serviços.",
+          "faq": "As perguntas editam-se em FAQ.",
+          "dualCta": "Os links são fixos: /owners e o motor de reservas. A linha de contacto vem de Definições."
+        },
+        "links": {
+          "settings": "Abrir Definições",
+          "buildings": "Abrir Edifícios",
+          "services": "Abrir Serviços",
+          "faq": "Abrir FAQ"
+        }
       }
     }
   },
@@ -1205,7 +1234,8 @@
       "retryFailed": "Repetir os que falharam",
       "close": "Fechar",
       "preparing": "A preparar…",
-      "queuedNote": "Carrega ao guardar"
+      "queuedNote": "Carrega ao guardar",
+      "waitForMedia": "Aguarde até os ficheiros estarem prontos."
     },
     "icon": {
       "none": "Sem ícone",

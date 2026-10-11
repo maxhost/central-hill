@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -16,6 +16,7 @@ import {
 } from "@slices/backoffice/contract";
 import { savePage } from "../actions";
 import { type FieldNode, type SelectOptions, humanizeKey } from "../form-model";
+import { type EditorNote, resolveEditorLayout } from "../layout";
 import { NodeField, type PathOnChange } from "./schema-fields";
 
 /**
@@ -25,7 +26,30 @@ import { NodeField, type PathOnChange } from "./schema-fields";
  * `data` object updated immutably by path. Pages have no draft/published state — a
  * saved page is live; only the social-share image sits outside `data` (own column).
  * Saves post through `savePage`.
+ *
+ * A page with an editor layout (`../layout.ts`, today only `home`) renders its cards in
+ * page order with read-only notes; every other page keeps one card per root key. Save is
+ * disabled while a picked file is still being reserved (`queue.isPreparing`) or while the
+ * upload flush / save runs.
  */
+
+/** Small muted line under a card title (+ optional link to the admin screen it names). */
+function CardNote({ note }: { note: EditorNote }) {
+  const t = useTranslations("pages");
+  return (
+    <p className="-mt-1 mb-4 text-xs text-ink-soft">
+      {t(note.textKey)}
+      {note.link ? (
+        <>
+          {" "}
+          <Link href={note.link.href} className="font-medium text-ink underline-offset-2 hover:underline">
+            {t(note.link.labelKey)} →
+          </Link>
+        </>
+      ) : null}
+    </p>
+  );
+}
 
 /** Immutable nested set by path (string keys = object, number = array index). */
 function setIn(
@@ -72,6 +96,13 @@ export function PageEditor({
   const [ogImage, setOgImage] = useState<string>(initialOgImageMediaId ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(null);
+  // Covers the upload flush (which runs outside the transition) up to the hand-off to
+  // `start`; `pending` covers the save itself. The ref blocks a double submit that
+  // lands before React re-renders the disabled button.
+  const [flushing, setFlushing] = useState(false);
+  const submittingRef = useRef(false);
+  const preparing = queue.isPreparing;
+  const busy = pending || flushing || preparing;
 
   const onChange: PathOnChange = (path, value) => {
     setData((prev) => setIn(prev, path, value) as Record<string, unknown>);
@@ -82,14 +113,31 @@ export function PageEditor({
     ? t(`admin.pages.${pageKey}`)
     : humanizeKey(pageKey);
 
+  const layout = resolveEditorLayout(
+    pageKey,
+    topFields.map((f) => f.key),
+  );
+
   function onSubmit() {
+    // Guard the handler too, not just the button: a save while a pick is still being
+    // reserved would persist the page without the file just picked.
+    if (busy || submittingRef.current) return;
+    submittingRef.current = true;
     setBanner(null);
     setErrors({});
+    setFlushing(true);
     void (async () => {
       // Uploads run OUTSIDE the transition on purpose: `startTransition` marks every
       // update in its scope as low priority, so the queue's progress modal would not
       // paint until the transition it lives in had already finished (ADR 0030).
-      if (!(await queue.flush())) return;
+      let flushed = false;
+      try {
+        flushed = await queue.flush();
+      } finally {
+        setFlushing(false);
+        if (!flushed) submittingRef.current = false;
+      }
+      if (!flushed) return;
       start(async () => {
         const result = await savePage(pageKey, {
           data,
@@ -107,8 +155,38 @@ export function PageEditor({
           setBanner(tb("actions.saveError"));
         }
       });
+      submittingRef.current = false;
     })();
   }
+
+  const ogImageField = (
+    <Field label={t("admin.fields.ogImage")} hint={t("admin.fields.ogImageHint")}>
+      <MediaField
+        value={ogImage || null}
+        preview={ogImage ? (previews[ogImage] ?? null) : null}
+        onChange={(id) => setOgImage(id ?? "")}
+      />
+    </Field>
+  );
+
+  const renderField = (key: string, label: string) => {
+    const f = topFields.find((x) => x.key === key);
+    if (!f) return null;
+    return (
+      <NodeField
+        key={f.key}
+        node={f.node}
+        value={data[f.key]}
+        path={[f.key]}
+        label={label}
+        depth={0}
+        onChange={onChange}
+        errors={errors}
+        previews={previews}
+        options={options}
+      />
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -131,45 +209,44 @@ export function PageEditor({
         </p>
       ) : null}
 
-      <AdminCard title={t("admin.sections.social")}>
-        <Field
-          label={t("admin.fields.ogImage")}
-          hint={t("admin.fields.ogImageHint")}
-        >
-          <MediaField
-            value={ogImage || null}
-            preview={ogImage ? (previews[ogImage] ?? null) : null}
-            onChange={(id) => setOgImage(id ?? "")}
-          />
-        </Field>
-      </AdminCard>
-
-      {topFields.map((f) => (
-        <AdminCard key={f.key} title={humanizeKey(f.key)}>
-          <NodeField
-            node={f.node}
-            value={data[f.key]}
-            path={[f.key]}
-            label={humanizeKey(f.key)}
-            depth={0}
-            onChange={onChange}
-            errors={errors}
-            previews={previews}
-            options={options}
-          />
-        </AdminCard>
-      ))}
+      {layout ? (
+        layout.map((item) => (
+          <AdminCard key={item.id} title={t(item.titleKey)}>
+            {item.note ? <CardNote note={item.note} /> : null}
+            {item.kind === "card" ? (
+              <div className="space-y-4">
+                {item.hostsOgImage ? ogImageField : null}
+                {item.paths.map((p) => renderField(p, humanizeKey(p)))}
+              </div>
+            ) : null}
+          </AdminCard>
+        ))
+      ) : (
+        <>
+          <AdminCard title={t("admin.sections.social")}>{ogImageField}</AdminCard>
+          {topFields.map((f) => (
+            <AdminCard key={f.key} title={humanizeKey(f.key)}>
+              {renderField(f.key, humanizeKey(f.key))}
+            </AdminCard>
+          ))}
+        </>
+      )}
 
       <FormActions>
+        {preparing ? (
+          <p role="status" className="text-xs text-ink-soft">
+            {tb("media.waitForMedia")}
+          </p>
+        ) : null}
         <AdminButton
           variant="ghost"
           onClick={() => router.push("/admin/pages")}
-          disabled={pending}
+          disabled={pending || flushing}
         >
           {tb("actions.cancel")}
         </AdminButton>
-        <AdminButton variant="primary" onClick={onSubmit} disabled={pending}>
-          {pending ? tb("actions.saving") : tb("actions.save")}
+        <AdminButton variant="primary" onClick={onSubmit} disabled={busy}>
+          {pending || flushing ? tb("actions.saving") : tb("actions.save")}
         </AdminButton>
       </FormActions>
     </div>
