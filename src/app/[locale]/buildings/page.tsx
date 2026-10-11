@@ -3,11 +3,14 @@ import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import type { Locale } from "@core/db/columns";
-import { buildMetadata } from "@core/seo";
+import { buildBuildingsMetadata } from "@slices/pages/contract";
 import { BuildingsListing } from "@slices/buildings/ui/buildings-listing";
 
-/** Static per locale. Content is the embedded mock (no DB). */
+/**
+ * Static per locale (ISR). Content: the published buildings (slice `buildings`, tag
+ * `building-list`) + the editable sections of the `buildings` `page_content` row (slice `pages`,
+ * tag `page:buildings`); a publish in either busts the page.
+ */
 export const revalidate = 3600;
 
 export function generateStaticParams() {
@@ -22,17 +25,7 @@ export async function generateMetadata({
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
-
-  const languages: Partial<Record<Locale | "x-default", string>> = { "x-default": "/buildings" };
-  for (const l of routing.locales) languages[l] = `/${l}/buildings`;
-
-  return buildMetadata({
-    title: "Buildings — Central Hill",
-    description:
-      "Explore Central Hill's curated portfolio of exceptional buildings in Lisbon's most vibrant and iconic neighbourhoods — each handpicked for location, character, and guest experience.",
-    canonicalPath: `/${locale}/buildings`,
-    languages,
-  });
+  return buildBuildingsMetadata(locale);
 }
 
 export default async function BuildingsIndexPage({

@@ -41,6 +41,21 @@ export function statFigureCells(rows: readonly StatFigureRow[]): { value: string
 }
 
 /**
+ * Figure rows with an optional second line → `StatBand` cells (Buildings' band, spec
+ * buildings-admin-editor S2): the `statFigureCells` mapping plus each row's `description`; a blank one is
+ * dropped so the cell shows no empty second line.
+ */
+export function describedStatFigureCells(
+  rows: readonly (StatFigureRow & { description?: string })[],
+): { value: string; label: string; description?: string }[] {
+  return rows.map((r) => ({
+    value: formatStatFigure(r),
+    label: r.label,
+    ...(r.description?.trim() ? { description: r.description } : {}),
+  }));
+}
+
+/**
  * Desktop column count for a band of `n` figures (spec S5): 1–5 → one row of N; 6 → 3 (3×2);
  * 7–8 → 4 (two rows). Mobile is always 2-up (`StatBand`). `n` ≤ 0 never renders a band; it
  * maps to 1 only to keep the return type total.

@@ -970,6 +970,22 @@
       "servicesBadge": "Nos ocupamos de cada detalle — tú quedas libre.",
       "dashboardBadge": "Datos en tiempo real, desde cualquier lugar."
     },
+    "buildings": {
+      "metaTitle": "Edificios — Central Hill",
+      "metaDescription": "Descubre el portfolio de edificios excepcionales de Central Hill en los barrios más vibrantes y emblemáticos de Lisboa, cada uno elegido por su ubicación, su carácter y la experiencia del huésped.",
+      "heroEyebrow": "Lisboa · Portugal",
+      "heroTitle": "Propiedades Estratégicas en Ubicaciones Privilegiadas",
+      "heroCopy": "Explora nuestro portfolio cuidadosamente seleccionado de edificios excepcionales, cada uno elegido por su ubicación, su carácter y la experiencia del huésped en los barrios más vibrantes de Portugal.",
+      "ownerEyebrow": "Para Propietarios",
+      "ownerTitle": "¿Quieres sumar tu propiedad a nuestro portfolio?",
+      "ownerBody": "Únete a los edificios de arriba. Evaluamos tu apartamento y te mostramos cuánto podría generar: gratis, sin compromiso, en 48 horas.",
+      "ownerCta": "Consigue Tu Estimación de Ingresos Gratuita →",
+      "statsTitle": "Cifras Que Hablan por Sí Solas",
+      "calcBadge": "Gana +25%",
+      "calcTitle": "Descubre el potencial de ingresos de tu propiedad",
+      "calcSubtitle": "Averigua cuánto podría generar tu propiedad: gratis, al instante, sin compromiso.",
+      "calcCta": "Calcular Mis Ingresos"
+    },
     "estimateForm": {
       "addressLabel": "Dirección de la Propiedad",
       "addressPlaceholder": "Calle, barrio, ciudad",

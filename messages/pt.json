@@ -970,6 +970,22 @@
       "servicesBadge": "Tratamos de cada detalhe — fica livre.",
       "dashboardBadge": "Dados em tempo real, a partir de qualquer lugar."
     },
+    "buildings": {
+      "metaTitle": "Edifícios — Central Hill",
+      "metaDescription": "Descubra o portefólio de edifícios excecionais da Central Hill nos bairros mais vibrantes e emblemáticos de Lisboa — cada um escolhido a dedo pela localização, carácter e experiência do hóspede.",
+      "heroEyebrow": "Lisboa · Portugal",
+      "heroTitle": "Propriedades Estratégicas em Localizações Privilegiadas",
+      "heroCopy": "Explore o nosso portefólio cuidadosamente selecionado de edifícios excecionais — cada um escolhido a dedo pela localização, carácter e experiência do hóspede nos bairros mais vibrantes de Portugal.",
+      "ownerEyebrow": "Para Proprietários",
+      "ownerTitle": "Quer juntar o seu imóvel ao nosso portefólio?",
+      "ownerBody": "Junte-se aos edifícios acima. Avaliamos o seu apartamento e mostramos-lhe quanto poderia render — grátis, sem compromisso, em 48 horas.",
+      "ownerCta": "Obtenha a Sua Estimativa de Rendimento Gratuita →",
+      "statsTitle": "Números Que Falam por Si",
+      "calcBadge": "Ganhe +25%",
+      "calcTitle": "Descubra o potencial de rendimento do seu imóvel",
+      "calcSubtitle": "Saiba quanto o seu imóvel poderia render — grátis, imediato, sem compromisso.",
+      "calcCta": "Calcular os Meus Rendimentos"
+    },
     "estimateForm": {
       "addressLabel": "Morada do Imóvel",
       "addressPlaceholder": "Rua, bairro, cidade",

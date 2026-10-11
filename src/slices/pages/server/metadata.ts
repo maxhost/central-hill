@@ -6,7 +6,7 @@ import type { Locale } from "@core/db/columns";
 import { buildMetadata } from "@core/seo";
 import { orMessage } from "../ui/or-message";
 import { seoMetadataInput } from "./metadata-input";
-import { getHomePage, getOwnersPage } from "./queries";
+import { getBuildingsPage, getHomePage, getOwnersPage } from "./queries";
 
 /**
  * `generateMetadata` for the Home route (`src/app/[locale]/page.tsx`), spec
@@ -64,6 +64,30 @@ export async function buildOwnersMetadata(locale: Locale): Promise<Metadata> {
       ogImage: page?.ogImage,
       fallbackTitle: t("owners.metaTitle"),
       fallbackDescription: t("owners.metaDescription"),
+    }),
+  );
+}
+
+/**
+ * `generateMetadata` for the Buildings listing route (`src/app/[locale]/buildings/page.tsx`), spec
+ * `buildings-admin-editor` S2 — the same shape as {@link buildOwnersMetadata}. Title /
+ * description come from the page's `seo.*` and fall back to `pages.buildings.metaTitle` /
+ * `metaDescription` when blank (no row → the defaults, i.e. exactly what the route built
+ * before). Canonical `/<locale>/buildings`, hreflang + `x-default` → `/buildings`, optional OG.
+ */
+export async function buildBuildingsMetadata(locale: Locale): Promise<Metadata> {
+  const [t, page] = await Promise.all([
+    getTranslations({ locale, namespace: "pages" }),
+    getBuildingsPage(locale),
+  ]);
+  return buildMetadata(
+    seoMetadataInput({
+      locale,
+      path: "/buildings",
+      seo: page.content.seo,
+      ogImage: page.ogImage,
+      fallbackTitle: t("buildings.metaTitle"),
+      fallbackDescription: t("buildings.metaDescription"),
     }),
   );
 }

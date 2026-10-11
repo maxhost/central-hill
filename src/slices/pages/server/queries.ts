@@ -7,6 +7,7 @@ import {
   PAGE_TAGS,
   type AboutPage,
   type BlogAsideCta,
+  type BuildingsPage,
   type GuestPage,
   type GuideAsideCta,
   type HomePage,
@@ -17,6 +18,7 @@ import {
 import { page_content } from "../schema";
 import { type PageKey, translatablePathsByPage } from "../schemas";
 import { blogSchema, defaultBlog } from "../schemas/blog";
+import { buildingsSchema, defaultBuildings } from "../schemas/buildings";
 import { defaultGuides, guidesSchema } from "../schemas/guides";
 import { resolveData, resolveMedia } from "./resolve";
 
@@ -98,4 +100,19 @@ export async function getGuideAsideCta(locale: Locale): Promise<GuideAsideCta> {
     body: a.body || undefined,
     cta: { label: a.cta_label, href: `/${locale}/buildings` },
   };
+}
+
+/**
+ * The Buildings listing's editable sections (`buildings` row, spec buildings-admin-editor S2):
+ * the row's content parsed with `buildingsSchema`, or `defaultBuildings` (blank texts + the
+ * three current figures) while no row exists or it fails the schema — never null, so the
+ * listing always renders. Blank texts are resolved to i18n by the section components.
+ */
+export async function getBuildingsPage(locale: Locale): Promise<BuildingsPage> {
+  const page = await cached<unknown>("buildings", locale);
+  if (page) {
+    const parsed = buildingsSchema.safeParse(page.content);
+    if (parsed.success) return { content: parsed.data, media: page.media, ogImage: page.ogImage };
+  }
+  return { content: defaultBuildings, media: {}, ogImage: page?.ogImage ?? null };
 }

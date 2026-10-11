@@ -970,6 +970,22 @@
       "servicesBadge": "Chaque détail est pris en charge — vous restez libre.",
       "dashboardBadge": "Des données en temps réel, où que vous soyez."
     },
+    "buildings": {
+      "metaTitle": "Immeubles — Central Hill",
+      "metaDescription": "Découvrez le portefeuille d'immeubles d'exception de Central Hill dans les quartiers les plus vivants et emblématiques de Lisbonne — chacun choisi pour son emplacement, son caractère et l'expérience offerte aux voyageurs.",
+      "heroEyebrow": "Lisbonne · Portugal",
+      "heroTitle": "Des Propriétés Stratégiques dans des Emplacements de Premier Choix",
+      "heroCopy": "Découvrez notre portefeuille soigneusement sélectionné d'immeubles d'exception — chacun choisi pour son emplacement, son caractère et l'expérience offerte aux voyageurs dans les quartiers les plus vivants du Portugal.",
+      "ownerEyebrow": "Pour les Propriétaires",
+      "ownerTitle": "Vous souhaitez ajouter votre bien à notre portefeuille ?",
+      "ownerBody": "Rejoignez les immeubles ci-dessus. Nous évaluons votre appartement et vous montrons ce qu'il pourrait rapporter — gratuitement, sans engagement, sous 48 heures.",
+      "ownerCta": "Obtenez Votre Estimation de Revenus Gratuite →",
+      "statsTitle": "Des Chiffres Qui Parlent d'Eux-Mêmes",
+      "calcBadge": "Gagnez +25%",
+      "calcTitle": "Découvrez le potentiel de revenus de votre bien",
+      "calcSubtitle": "Découvrez combien votre bien pourrait rapporter — gratuit, immédiat, sans engagement.",
+      "calcCta": "Calculer Mes Revenus"
+    },
     "estimateForm": {
       "addressLabel": "Adresse du Bien",
       "addressPlaceholder": "Rue, quartier, ville",

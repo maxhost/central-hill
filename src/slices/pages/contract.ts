@@ -18,6 +18,7 @@
 import type { MediaImageData } from "@core/media";
 import type {
   AboutContent,
+  BuildingsContent,
   GuestContent,
   HomeContent,
   OwnersContent,
@@ -62,6 +63,8 @@ export type OwnersPage = PageResult<OwnersContent>;
 export type GuestPage = PageResult<GuestContent>;
 export type RealEstatePage = PageResult<RealEstateContent>;
 export type AboutPage = PageResult<AboutContent>;
+/** The Buildings listing's editable sections (spec buildings-admin-editor). */
+export type BuildingsPage = PageResult<BuildingsContent>;
 
 /**
  * The CTA at the bottom of a blog post's sticky aside (the `blog` row's `post_aside`), ready for
@@ -85,6 +88,7 @@ export interface GuideAsideCta extends BlogAsideCta {
 
 export type {
   AboutContent,
+  BuildingsContent,
   GuestContent,
   HomeContent,
   OwnersContent,
@@ -95,6 +99,7 @@ export type {
 export {
   getAboutPage,
   getBlogAsideCta,
+  getBuildingsPage,
   getGuestPage,
   getGuideAsideCta,
   getHomePage,
@@ -115,6 +120,30 @@ export { buildHomeMetadata } from "./server/metadata";
  * `owners-admin-editor` S2). `src/app/[locale]/owners/page.tsx` just calls it.
  */
 export { buildOwnersMetadata } from "./server/metadata";
+
+/**
+ * The Buildings listing route's `generateMetadata` body (spec `buildings-admin-editor` S2), same
+ * shape as `buildOwnersMetadata`: `seo.*` with the `pages.buildings.*` i18n fallback, canonical
+ * `/<locale>/buildings` + hreflang (incl. `x-default` → `/buildings`) + optional OG image.
+ * `src/app/[locale]/buildings/page.tsx` just calls it.
+ */
+export { buildBuildingsMetadata } from "./server/metadata";
+
+/**
+ * The Buildings listing's editable sections (spec `buildings-admin-editor` S2) — server
+ * components the slice `buildings` listing composes around its own building grid:
+ * hero → (grid) → owner panel → stats → calculator. Each takes the page read once with
+ * `getBuildingsPage(locale)` (`page`) + `locale`; blank fields render the `pages.buildings.*`
+ * i18n text (EN = the literals the page always showed). `BuildingsStats` renders nothing
+ * without figures; `BuildingsCalculator` carries the `#estimate` anchor the owner panel's
+ * button scrolls to.
+ */
+export {
+  BuildingsCalculator,
+  BuildingsHero,
+  BuildingsOwnerPanel,
+  BuildingsStats,
+} from "./ui/components/buildings-sections";
 
 /** Fallback photo (`{ url, alt }`) for the guide aside CTA while no image is picked. */
 export { GUIDE_ASIDE_FALLBACK_IMAGE } from "./schemas/guides";

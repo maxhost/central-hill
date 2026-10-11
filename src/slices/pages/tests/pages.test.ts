@@ -8,13 +8,14 @@ import { aboutSchema, guestSchema, homeSchema, ownersSchema, translatablePathsBy
 import { defaultAbout } from "../schemas/about";
 import { blogSchema, defaultBlog } from "../schemas/blog";
 import { defaultGuides, guidesSchema } from "../schemas/guides";
-import { defaultBuildings } from "../schemas/buildings";
+import { buildingsSchema, defaultBuildings } from "../schemas/buildings";
 import { collectMediaIds, expand, overlayTranslations } from "../server/overlay";
 import { heroPosterSrc } from "../ui/hero-poster";
 import { seoMetadataInput } from "../server/metadata-input";
 import { orMessage, orNamedMessage } from "../ui/or-message";
 import { ownersFinalContactLine, settingsContactLine } from "../ui/contact-line";
 import {
+  describedStatFigureCells,
   formatStatFigure,
   parseStatValue,
   statBandColumns,
@@ -845,4 +846,132 @@ test("buildings S1: migration 0017 inserts exactly defaultBuildings", () => {
   assert.ok(json, "the buildings row literal");
   assert.deepEqual(JSON.parse(json), defaultBuildings);
   assert.match(sql, /ON CONFLICT \("key"\) DO NOTHING/);
+});
+
+// ── Buildings listing S2: public render + SEO ────────────────────────────────
+
+const BUILDINGS_KEYS = [
+  "metaTitle",
+  "metaDescription",
+  "heroEyebrow",
+  "heroTitle",
+  "heroCopy",
+  "ownerEyebrow",
+  "ownerTitle",
+  "ownerBody",
+  "ownerCta",
+  "statsTitle",
+  "calcBadge",
+  "calcTitle",
+  "calcSubtitle",
+  "calcCta",
+] as const;
+function buildingsMessages(locale: string): Record<string, string> {
+  return JSON.parse(readFileSync(path.resolve(process.cwd(), `messages/${locale}.json`), "utf8")).pages
+    .buildings;
+}
+
+test("buildings S2: every pages.buildings key exists in all 4 locales, EN = today's literals", () => {
+  for (const locale of ESTIMATE_LOCALES) {
+    const m = buildingsMessages(locale);
+    assert.deepEqual(Object.keys(m).sort(), [...BUILDINGS_KEYS].sort(), `${locale}: same keys`);
+    for (const k of BUILDINGS_KEYS) assert.ok(m[k]?.trim(), `${locale}.${k} is non-empty`);
+    assert.ok(m.ownerCta?.endsWith(" →"), `${locale}.ownerCta keeps the arrow`);
+  }
+  const en = buildingsMessages("en");
+  assert.equal(en.metaTitle, "Buildings — Central Hill");
+  assert.equal(en.heroTitle, "Strategic Properties in Prime Locations");
+  assert.equal(en.ownerCta, "Get Your Free Earnings Estimate →");
+  assert.equal(en.statsTitle, "Numbers That Speak for Themselves");
+  assert.equal(en.calcBadge, "Earn +25%");
+  assert.equal(en.calcCta, "Calculate My Earnings");
+  // The schema hints name the same EN defaults.
+  const hero = buildingsSchema.shape.hero.unwrap().shape;
+  assert.ok(hero.headline.description?.includes(`“${en.heroTitle}”`));
+  assert.ok(hero.copy.description?.includes(`“${en.heroCopy}”`));
+  const panel = buildingsSchema.shape.owner_panel.unwrap().shape;
+  assert.ok(panel.body.description?.includes(`“${en.ownerBody}”`));
+  assert.ok(panel.cta_label.description?.includes(`“${en.ownerCta}”`));
+  const calc = buildingsSchema.shape.calculator.unwrap().shape;
+  assert.ok(calc.headline.description?.includes(`“${en.calcTitle}”`));
+  assert.ok(calc.subheadline.description?.includes(`“${en.calcSubtitle}”`));
+});
+
+test("buildings S2: blank fields render the i18n text, filled ones their own", () => {
+  const en = buildingsMessages("en");
+  const blank = defaultBuildings; // no row in the DB → the render uses this
+  assert.equal(orMessage(blank.hero?.headline, en.heroTitle!), en.heroTitle);
+  assert.equal(orMessage(blank.owner_panel?.cta_label, en.ownerCta!), en.ownerCta);
+  assert.equal(orMessage(blank.calculator?.badge, en.calcBadge!), en.calcBadge);
+  assert.equal(orMessage(" ", en.statsTitle!), en.statsTitle);
+  const filled = buildingsSchema.parse({
+    hero: { image_media_id: "", headline: "Our buildings" },
+    calculator: { badge: "Earn more", media_media_id: "" },
+  });
+  assert.equal(orMessage(filled.hero?.headline, en.heroTitle!), "Our buildings");
+  assert.equal(orMessage(filled.calculator?.badge, en.calcBadge!), "Earn more");
+});
+
+test("buildings S2: owner panel contact line — field wins, blank → Settings with 'Call'", () => {
+  const settings = { phone: "+351 910 075 725", email: "info@centralhill.pt", whatsapp: "+351 910 075 725" };
+  const call = (phone: string) => `Call ${phone}`; // EN `pages.owners.finalCall`
+  assert.equal(
+    ownersFinalContactLine(defaultBuildings.owner_panel?.contact_line, settings, call),
+    "Call +351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725",
+    "today's literal, rebuilt from today's Settings",
+  );
+  assert.equal(ownersFinalContactLine("Call us 24/7", settings, call), "Call us 24/7");
+});
+
+test("buildings S2: seoMetadataInput falls back to i18n and keeps canonical/hreflang", () => {
+  const en = buildingsMessages("en");
+  const input = seoMetadataInput({
+    locale: "en",
+    path: "/buildings",
+    seo: defaultBuildings.seo,
+    ogImage: null,
+    fallbackTitle: en.metaTitle!,
+    fallbackDescription: en.metaDescription!,
+  });
+  assert.equal(input.title, "Buildings — Central Hill");
+  assert.equal(
+    input.description,
+    "Explore Central Hill's curated portfolio of exceptional buildings in Lisbon's most vibrant and iconic neighbourhoods — each handpicked for location, character, and guest experience.",
+  );
+  assert.equal(input.canonicalPath, "/en/buildings");
+  assert.deepEqual(input.languages, {
+    "x-default": "/buildings",
+    en: "/en/buildings",
+    pt: "/pt/buildings",
+    es: "/es/buildings",
+    fr: "/fr/buildings",
+  });
+  assert.equal(input.images, undefined);
+  const filled = seoMetadataInput({
+    locale: "fr",
+    path: "/buildings",
+    seo: { meta_title: "Nos immeubles", meta_description: "" },
+    ogImage: null,
+    fallbackTitle: "x",
+    fallbackDescription: "fallback",
+  });
+  assert.equal(filled.title, "Nos immeubles");
+  assert.equal(filled.description, "fallback");
+  assert.equal(filled.canonicalPath, "/fr/buildings");
+});
+
+test("buildings S2: figures → cells keep descriptions; 3 figures → 3 columns, as today", () => {
+  const cells = describedStatFigureCells(defaultBuildings.stats?.figures ?? []);
+  assert.deepEqual(cells, [
+    { value: "400,000+", label: "Bookings Completed", description: "Across all managed properties" },
+    { value: "12+", label: "Years of Experience", description: "Optimizing owner returns in Portugal" },
+    { value: "€55M+", label: "Revenue Generated", description: "For our property owners" },
+  ]);
+  assert.equal(statBandColumns(cells.length), 3);
+  assert.deepEqual(
+    describedStatFigureCells([{ label: "Guests", to: "5", group: false, description: " " }]),
+    [{ value: "5", label: "Guests" }],
+    "a blank description adds no second line",
+  );
+  assert.deepEqual(describedStatFigureCells([]), [], "no figures → no band");
 });

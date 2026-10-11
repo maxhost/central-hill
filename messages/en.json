@@ -970,6 +970,22 @@
       "servicesBadge": "Every detail handled — you stay free.",
       "dashboardBadge": "Real-time data, from anywhere."
     },
+    "buildings": {
+      "metaTitle": "Buildings — Central Hill",
+      "metaDescription": "Explore Central Hill's curated portfolio of exceptional buildings in Lisbon's most vibrant and iconic neighbourhoods — each handpicked for location, character, and guest experience.",
+      "heroEyebrow": "Lisbon · Portugal",
+      "heroTitle": "Strategic Properties in Prime Locations",
+      "heroCopy": "Explore our carefully curated portfolio of exceptional buildings — each handpicked for its location, character, and guest experience across Portugal's most vibrant neighbourhoods.",
+      "ownerEyebrow": "For Owners",
+      "ownerTitle": "Looking to add your property to our portfolio?",
+      "ownerBody": "Join the buildings above. We'll assess your apartment and show you what it could earn — free, no obligation, within 48 hours.",
+      "ownerCta": "Get Your Free Earnings Estimate →",
+      "statsTitle": "Numbers That Speak for Themselves",
+      "calcBadge": "Earn +25%",
+      "calcTitle": "Discover your property's earning potential",
+      "calcSubtitle": "Find out how much your property could earn — free, instant, no obligation.",
+      "calcCta": "Calculate My Earnings"
+    },
     "estimateForm": {
       "addressLabel": "Property Address",
       "addressPlaceholder": "Street, neighbourhood, city",
