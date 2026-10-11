@@ -433,3 +433,42 @@ test("owners layout: 12 stable ids; cards without keys yet are dropped, every ke
   assert.ok(later);
   assert.deepEqual(cardIds(later), [...OWNERS_CARD_IDS]);
 });
+
+// ── Owners media pickers (spec owners-admin-editor S5) ───────────────────────
+
+test("ownersSchema media accepts: services/dashboard animated (4:5 hint), hero/journey image — S5", () => {
+  const media: Record<string, { accept: string; hint?: string }> = {};
+  const walk = (node: FieldNode, path: string) => {
+    if (node.kind === "media") media[path] = { accept: node.accept, hint: node.hint };
+    if (node.kind === "hidden") walk(node.node, path);
+    if (node.kind === "object") for (const f of node.fields) walk(f.node, `${path}.${f.key}`);
+    if (node.kind === "array") walk(node.element, `${path}[]`);
+  };
+  walk(describe(ownersSchema), "owners");
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(media).map(([p, m]) => [p, m.accept])),
+    {
+      "owners.hero.image_media_id": "image",
+      "owners.services.image_media_id": "animated",
+      "owners.journey.steps[].image_media_id": "image",
+      "owners.dashboard.image_media_id": "animated",
+    },
+  );
+  for (const p of ["owners.services.image_media_id", "owners.dashboard.image_media_id"]) {
+    assert.match(media[p]?.hint ?? "", /^Portrait 4:5 — the frame is fixed at 4:5/);
+    assert.match(media[p]?.hint ?? "", /Lottie \(\.lottie or \.json\)/);
+  }
+  assert.match(media["owners.journey.steps[].image_media_id"]?.hint ?? "", /Portrait 3:4/);
+});
+
+test("ownersSchema: services/dashboard media still accept \"\" and a uuid (stored values valid) — S5", () => {
+  const uuid = "3f2b8c1e-9a4d-4e7b-8c2a-1d5e6f7a8b9c";
+  for (const field of [
+    ownersSchema.shape.services.shape.image_media_id,
+    ownersSchema.shape.dashboard.shape.image_media_id,
+  ]) {
+    assert.ok(field.safeParse("").success);
+    assert.ok(field.safeParse(uuid).success);
+    assert.ok(!field.safeParse("not-a-uuid").success);
+  }
+});

@@ -18,6 +18,7 @@ import {
   faqGroupKey,
   fixed,
   iconCard,
+  optionalAnimated,
   optionalIconKey,
   optionalImage,
   statFigure,
@@ -36,10 +37,12 @@ const ownersCta = ctaWithNote.extend({ url: hiddenUrl });
 
 const HERO_IMG_HINT =
   "Full-bleed hero background (a dark overlay is applied). Landscape 16:9 — 1920×1080 px (min 1600×900), JPG or WebP, under 500 KB.";
-const SERVICES_IMG_HINT =
-  "Lifestyle photo for the Services showcase. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
-const DASHBOARD_IMG_HINT =
-  "Image for the owner-dashboard showcase (e.g. an interface/laptop shot). Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
+/**
+ * `services` / `dashboard` side media (spec owners-admin-editor S5): photo, animated WebP,
+ * MP4/WebM loop or Lottie in the fixed 4:5 frame — the same text as Home's guests pitch.
+ */
+const SHOWCASE_MEDIA_HINT =
+  "Portrait 4:5 — the frame is fixed at 4:5, so other ratios are cropped. Photo: 1200×1500 px (min 960×1200), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1080×1350 or 1200×1500, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×1500, under 5 MB. Lottie (.lottie or .json): 4:5 canvas (e.g. 1200×1500).";
 const JOURNEY_STEP_IMG_HINT =
   "Background photo for this step card (dark gradient overlay is applied — busy top area, calmer bottom works best). Portrait 3:4 — recommended 900×1200px, JPG or WebP, under 400 KB.";
 
@@ -161,7 +164,7 @@ export const ownersSchema = z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 4),
-    image_media_id: optionalImage(SERVICES_IMG_HINT),
+    image_media_id: optionalAnimated(SHOWCASE_MEDIA_HINT),
     cta: ownersCta,
     /** Blank label → `pages.owners.servicesBadge`. */
     badge: showcaseBadge,
@@ -190,7 +193,7 @@ export const ownersSchema = z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 4),
-    image_media_id: optionalImage(DASHBOARD_IMG_HINT),
+    image_media_id: optionalAnimated(SHOWCASE_MEDIA_HINT),
     cta: ownersCta,
     /** Blank label → `pages.owners.dashboardBadge`. */
     badge: showcaseBadge,

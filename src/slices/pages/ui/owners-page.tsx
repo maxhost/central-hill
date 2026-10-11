@@ -19,6 +19,7 @@ import { ContactDialog } from "@slices/settings/contract";
 import { getOwnersPage } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { OwnerEstimateForm } from "./components/owner-estimate-form";
+import { sideMedia } from "./components/side-media";
 import { TestimonialsRow } from "./components/testimonials-row";
 import { orMessage, orNamedMessage } from "./or-message";
 import { statBandColumns, statFigureCells } from "./stat-figure-value";
@@ -65,9 +66,9 @@ const DASHBOARD_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=72";
 const DASHBOARD_FALLBACK_ALT = "Owner dashboard showing live revenue and occupancy";
 
-// `services`/`dashboard`'s showcase images: one of `TwoColumnShowcase`'s two `lg:` (1024px)
-// columns — same value Home's `guests-section.tsx` uses for the same component.
-const TWO_COL_SHOWCASE_SIZES = "(max-width: 1024px) 100vw, 560px";
+// `services`/`dashboard`'s showcase media come from `sideMedia()` (spec owners-admin-editor S5,
+// shared with Home's guests pitch): photo / animated WebP / video / Lottie in the 4:5 frame,
+// sized as one of `TwoColumnShowcase`'s two `lg:` columns. No asset → the fallback photo below.
 
 // TEMP: Pexels placeholders (client direction — trying a photo-background treatment on the
 // "growth path" cards; #core/media assets not uploaded yet) — swap for real R2 assets once
@@ -277,13 +278,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
             tone="alt"
             imagePosition="right"
             image={
-              servicesMedia ? (
-                <MediaImage
-                  data={servicesMedia}
-                  className="aspect-[4/5] w-full rounded-sm object-cover"
-                  sizes={TWO_COL_SHOWCASE_SIZES}
-                />
-              ) : (
+              (servicesMedia ? sideMedia(servicesMedia) : null) ?? (
                 // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
                 <img
                   src={SERVICES_FALLBACK_IMG}
@@ -357,13 +352,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
             badgeIcon={badgeIcon(dashboard.badge?.icon_key)}
             imagePosition="left"
             image={
-              dashboardMedia ? (
-                <MediaImage
-                  data={dashboardMedia}
-                  className="aspect-[4/5] w-full rounded-sm object-cover"
-                  sizes={TWO_COL_SHOWCASE_SIZES}
-                />
-              ) : (
+              (dashboardMedia ? sideMedia(dashboardMedia) : null) ?? (
                 // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
                 <img
                   src={DASHBOARD_FALLBACK_IMG}
