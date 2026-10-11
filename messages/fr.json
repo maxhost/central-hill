@@ -1035,7 +1035,7 @@
         "notes": {
           "heroSecondary": "Le bouton secondaire mène toujours à /owners.",
           "searchBar": "La barre de recherche Avantio se configure dans Paramètres.",
-          "stats": "Le titre se modifie ici ; les chiffres proviennent toujours des chiffres de l’entreprise dans Paramètres.",
+          "stats": "Les chiffres se modifient ici. Sans données, le bandeau est masqué.",
           "portfolio": "Les cartes de biens viennent d’Immeubles (à la une, par position).",
           "services": "Les cartes viennent de Services.",
           "faq": "Les questions se modifient dans FAQ.",
@@ -1084,12 +1084,21 @@
         "faq": "FAQ",
         "guests_pitch": "Présentation voyageurs",
         "services_carousel": "Partenaires et services",
-        "dual_cta": "CTA double final"
+        "dual_cta": "CTA double final",
+        "figures": "Données",
+        "to": "Nombre",
+        "prefix": "Préfixe",
+        "suffix": "Suffixe",
+        "group": "Séparateur de milliers"
       },
       "itemLabels": {
         "benefits": "Avantage",
         "assurances": "Garantie",
-        "stats": "Chiffre"
+        "stats": "Chiffre",
+        "figures": "Donnée"
+      },
+      "addLabels": {
+        "figures": "Nouvelle donnée"
       }
     }
   },
@@ -1265,6 +1274,7 @@
       "galleryEmpty": "Aucune image pour l’instant",
       "video": "Vidéo",
       "empty": "Aucune image",
+      "emptyVideo": "Aucune vidéo",
       "moveUp": "Monter",
       "moveDown": "Descendre",
       "uploadError": "Échec du téléversement. Réessayez.",

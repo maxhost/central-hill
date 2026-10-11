@@ -1035,7 +1035,7 @@
         "notes": {
           "heroSecondary": "The secondary button always links to /owners.",
           "searchBar": "The Avantio search bar is configured in Settings.",
-          "stats": "The heading is edited here; the figures still come from the company figures in Settings.",
+          "stats": "Figures are edited here. With no figures, the band is hidden.",
           "portfolio": "Property cards come from Buildings (featured, by position).",
           "services": "Cards come from Services.",
           "faq": "Questions are edited in FAQ.",
@@ -1084,12 +1084,21 @@
         "faq": "FAQ",
         "guests_pitch": "Guests pitch",
         "services_carousel": "Partners & Services",
-        "dual_cta": "Closing dual CTA"
+        "dual_cta": "Closing dual CTA",
+        "figures": "Figures",
+        "to": "Number",
+        "prefix": "Prefix",
+        "suffix": "Suffix",
+        "group": "Thousands separator"
       },
       "itemLabels": {
         "benefits": "Benefit",
         "assurances": "Assurance",
-        "stats": "Figure"
+        "stats": "Figure",
+        "figures": "Figure"
+      },
+      "addLabels": {
+        "figures": "New figure"
       }
     }
   },
@@ -1265,6 +1274,7 @@
       "galleryEmpty": "No images yet",
       "video": "Video",
       "empty": "No image",
+      "emptyVideo": "No video",
       "moveUp": "Move up",
       "moveDown": "Move down",
       "uploadError": "Upload failed. Please try again.",

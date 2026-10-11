@@ -34,7 +34,8 @@ export type PathOnChange = (path: (string | number)[], value: unknown) => void;
  * authored — so a page or key without one renders exactly as before. Keys are labelled
  * globally (the same `headline` / `cta` / `icon_key` reads the same on every page). Array
  * items use the singular `pages.admin.itemLabels.<arrayKey>` ("Benefit 1"), else the array's
- * own label ("Benefits 1", the previous behaviour).
+ * own label ("Benefits 1", the previous behaviour). A variable list's add button reads
+ * `pages.admin.addLabels.<arrayKey>` ("+ New figure", spec S5), else "+ <item label>".
  */
 export function useFieldLabels() {
   const t = useTranslations("pages");
@@ -46,6 +47,11 @@ export function useFieldLabels() {
     item(arrayKey: string | number | undefined, fallback: string): string {
       if (typeof arrayKey !== "string") return fallback;
       const k = `admin.itemLabels.${arrayKey}`;
+      return t.has(k) ? t(k) : fallback;
+    },
+    add(arrayKey: string | number | undefined, fallback: string): string {
+      if (typeof arrayKey !== "string") return fallback;
+      const k = `admin.addLabels.${arrayKey}`;
       return t.has(k) ? t(k) : fallback;
     },
   };
@@ -162,7 +168,7 @@ export function NodeField(props: RenderProps) {
             onClick={() => onChange(path, [...items, emptyValue(node.element)])}
             className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-ink"
           >
-            + {itemLabel}
+            + {labels.add(path.at(-1), itemLabel)}
           </button>
         ) : null}
       </div>
@@ -170,13 +176,14 @@ export function NodeField(props: RenderProps) {
   }
 
   if (node.kind === "boolean") {
-    return (
+    const box = (
       <Checkbox
         label={label}
         checked={Boolean(value)}
         onChange={(e) => onChange(path, e.target.checked)}
       />
     );
+    return node.hint ? <Field hint={node.hint}>{box}</Field> : box;
   }
 
   if (node.kind === "media") {
@@ -228,7 +235,7 @@ export function NodeField(props: RenderProps) {
   // string
   const str = typeof value === "string" ? value : "";
   return (
-    <Field label={label} required={!node.optional} error={errors[errorKey]}>
+    <Field label={label} hint={node.hint} required={!node.optional} error={errors[errorKey]}>
       {node.multiline ? (
         <TextArea
           value={str}

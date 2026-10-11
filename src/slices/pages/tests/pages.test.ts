@@ -4,14 +4,19 @@ import path from "node:path";
 import { test } from "node:test";
 import { translatablePaths } from "@core/validation/primitives";
 import { pageContentSchema } from "../validation";
-import { aboutSchema, guestSchema, homeSchema, translatablePathsByPage } from "../schemas";
+import { aboutSchema, guestSchema, homeSchema, ownersSchema, translatablePathsByPage } from "../schemas";
 import { defaultAbout } from "../schemas/about";
 import { blogSchema, defaultBlog } from "../schemas/blog";
 import { defaultGuides, guidesSchema } from "../schemas/guides";
 import { collectMediaIds, expand, overlayTranslations } from "../server/overlay";
 import { heroPosterSrc } from "../ui/hero-poster";
 import { orMessage } from "../ui/or-message";
-import { formatStatFigure, parseStatValue } from "../ui/stat-figure-value";
+import {
+  formatStatFigure,
+  parseStatValue,
+  statBandColumns,
+  statFigureCells,
+} from "../ui/stat-figure-value";
 
 /**
  * Slice `pages` unit tests — the page schemas' translatable-field contract (ADR 0012 /
@@ -147,6 +152,71 @@ test("parseStatValue rejects values a figure row can't reproduce", () => {
   for (const v of ["", "+", "4.8", "400 000", "1,00", "0400", "12-15", "abc"]) {
     assert.equal(parseStatValue(v), null, JSON.stringify(v));
   }
+});
+
+// ── S5: editable figures band on the Home ─────────────────────────────────────
+/** The 4 rows `scripts/backfill-home-stats.ts` wrote to the production Home row. */
+const PROD_FIGURES = [
+  { to: "60000", prefix: "", suffix: "+", group: true, label: "Bookings Completed" },
+  { to: "12", prefix: "", suffix: "+", group: false, label: "Years of Experience" },
+  { to: "700000", prefix: "", suffix: "+", group: true, label: "Guests Hosted" },
+  { to: "55", prefix: "€", suffix: "M+", group: false, label: "Revenue Generated" },
+];
+const homeWithStats = (stats: unknown) => ({ ...validHome().data, stats });
+
+test("home S5: figures validate as production stores them, empty, absent, or no stats", () => {
+  assert.equal(homeSchema.safeParse(homeWithStats({ figures: PROD_FIGURES })).success, true);
+  assert.equal(homeSchema.safeParse(homeWithStats({ title: "", figures: [] })).success, true);
+  assert.equal(homeSchema.safeParse(homeWithStats({ title: "Trusted" })).success, true);
+  assert.equal(homeSchema.safeParse(validHome().data).success, true, "legacy row without stats");
+});
+
+test("home S5: figures reject more than 8 rows and a non-digit number", () => {
+  const nine = Array.from({ length: 9 }, () => PROD_FIGURES[0]);
+  assert.equal(homeSchema.safeParse(homeWithStats({ figures: nine })).success, false);
+  const eight = Array.from({ length: 8 }, () => PROD_FIGURES[0]);
+  assert.equal(homeSchema.safeParse(homeWithStats({ figures: eight })).success, true);
+  for (const to of ["60,000", "5.5", "", "12+"]) {
+    const bad = [{ ...PROD_FIGURES[0], to }];
+    assert.equal(homeSchema.safeParse(homeWithStats({ figures: bad })).success, false, to);
+  }
+});
+
+test("home S5: desktop columns follow the row count", () => {
+  const expected: [number, number][] = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 3], [7, 4], [8, 4]];
+  for (const [n, cols] of expected) assert.equal(statBandColumns(n), cols, `${n} rows`);
+});
+
+test("home S5: rows map to StatBand cells (same helper as Owners)", () => {
+  assert.deepEqual(statFigureCells(PROD_FIGURES), [
+    { value: "60,000+", label: "Bookings Completed" },
+    { value: "12+", label: "Years of Experience" },
+    { value: "700,000+", label: "Guests Hosted" },
+    { value: "€55M+", label: "Revenue Generated" },
+  ]);
+  // Owners' previous inline derivation, kept here to pin the refactor as output-identical.
+  const legacy = (s: (typeof PROD_FIGURES)[number]) =>
+    `${s.prefix ?? ""}${s.group ? Number(s.to).toLocaleString("en-US") : s.to}${s.suffix ?? ""}`;
+  const noAffix = { to: "400000", group: true, label: "x" };
+  for (const r of [...PROD_FIGURES, noAffix]) {
+    assert.equal(statFigureCells([r])[0]!.value, legacy(r as (typeof PROD_FIGURES)[number]));
+  }
+});
+
+test("home S5: a figure's label is translatable, its number and affixes are not", () => {
+  const paths = translatablePathsByPage.home;
+  assert.ok(paths.includes("stats.figures[].label"));
+  for (const k of ["to", "prefix", "suffix", "group"]) {
+    assert.ok(!paths.includes(`stats.figures[].${k}`), `${k} is shared across locales`);
+  }
+});
+
+test("owners S5: still exactly 4 shared statFigure rows, label still translatable", () => {
+  const stats = ownersSchema.shape.stats;
+  assert.equal(stats.safeParse(PROD_FIGURES).success, true);
+  assert.equal(stats.safeParse(PROD_FIGURES.slice(0, 3)).success, false);
+  assert.ok(translatablePathsByPage.owners.includes("stats[].label"));
+  assert.ok(!translatablePathsByPage.owners.includes("stats[].to"));
 });
 
 // ── S3: optional copy overrides with i18n fallback ────────────────────────────

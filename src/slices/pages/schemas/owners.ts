@@ -13,7 +13,7 @@
  */
 import { z } from "zod";
 import { ctaWithNote, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
-import { between, faqGroupKey, fixed, iconCard, step } from "./_shared";
+import { between, faqGroupKey, fixed, iconCard, statFigure, step } from "./_shared";
 
 /**
  * An image reference that may be left unset. An empty string means "no asset yet" — the
@@ -51,33 +51,6 @@ const planHelper = z.object({
   title: tStr({ max: 120 }),
   copy: tStr({ max: 400 }),
   cta: z.object({ label: tStr({ max: 80 }), url: z.url() }).optional(),
-});
-
-/**
- * One animated figure in the "numbers" band (#numbers). Per-page (each page may want different
- * figures) — NOT the global company stats. `to` is the count-up target as a digit string (the
- * counter reads it via `Number(data-to)`); the displayed figure is derived as
- * prefix + (optionally grouped) to + suffix — so "400000"+group+"+" → "400,000+" and
- * "55"+"€"+"M+" → "€55M+". Only `label` is translated.
- */
-const statFigure = z.object({
-  to: z
-    .string()
-    .regex(/^\d+$/, "Digits only — the count-up target (e.g. 400000).")
-    .max(15)
-    .describe("Count-up target, digits only. Enter 400000 for “400,000+”, 55 for “€55M+”."),
-  prefix: z
-    .string()
-    .max(8)
-    .optional()
-    .describe("Symbol before the number, e.g. “€”. Leave blank for none."),
-  suffix: z
-    .string()
-    .max(8)
-    .optional()
-    .describe("Symbol after the number, e.g. “+” or “M+”. Leave blank for none."),
-  group: z.boolean().describe("Show thousands separators (e.g. 400,000)."),
-  label: tStr({ max: 80 }),
 });
 
 export const ownersSchema = z.object({

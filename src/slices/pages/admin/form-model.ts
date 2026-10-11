@@ -28,8 +28,8 @@ export type FieldNode =
       /** Shown under the control when the catalogue is empty — tells staff where to author. */
       emptyHint: string;
     }
-  | { kind: "boolean" }
-  | { kind: "string"; multiline: boolean; optional: boolean };
+  | { kind: "boolean"; hint?: string }
+  | { kind: "string"; multiline: boolean; optional: boolean; hint?: string };
 
 function isMediaAccept(v: unknown): v is MediaAccept {
   return typeof v === "string" && (MEDIA_ACCEPTS as readonly string[]).includes(v);
@@ -145,7 +145,12 @@ export function describe(schema: z.ZodType, key = ""): FieldNode {
     return { kind: "array", element: describe(element, key), min, max };
   }
 
-  if (base instanceof z.ZodBoolean) return { kind: "boolean" };
+  // `.describe()` may sit on a wrapper (`.optional().describe(…)`) or on the base.
+  const leafHint =
+    (schema as { description?: string }).description ??
+    (base as { description?: string }).description;
+
+  if (base instanceof z.ZodBoolean) return leafHint ? { kind: "boolean", hint: leafHint } : { kind: "boolean" };
 
   const select = SELECT_SOURCES[key];
   if (select) {
@@ -176,7 +181,10 @@ export function describe(schema: z.ZodType, key = ""): FieldNode {
 
   const maxLength = (base as { maxLength?: number | null }).maxLength ?? null;
   const multiline = typeof maxLength === "number" && maxLength > MULTILINE_OVER;
-  return { kind: "string", multiline, optional };
+  // A `.describe()` on a text field becomes its hint (e.g. `statFigure`'s number/prefix/suffix).
+  return leafHint
+    ? { kind: "string", multiline, optional, hint: leafHint }
+    : { kind: "string", multiline, optional };
 }
 
 /** Scaffold an empty value for a node (fills fixed arrays with `min` items). */

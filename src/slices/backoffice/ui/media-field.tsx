@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { UiIcon, cn } from "@core/ui";
 import type { AdminMediaPreview } from "../server/media-actions";
-import { type MediaFieldAccept, acceptAttribute, isAcceptedType } from "./media-accept";
+import { type MediaFieldAccept, acceptAttribute, emptyStateKey, isAcceptedType } from "./media-accept";
 import { reserveUpload, useMediaQueue } from "./media-queue";
 
 /**
@@ -26,9 +26,12 @@ import { reserveUpload, useMediaQueue } from "./media-queue";
 function Thumb({
   preview,
   className,
+  accept = "image",
 }: {
   preview: AdminMediaPreview | null;
   className?: string;
+  /** Words the empty tile: "No video" for a video-only field, else "No image". */
+  accept?: MediaFieldAccept;
 }) {
   const t = useTranslations("backoffice");
   if (preview && preview.mime.startsWith("image/")) {
@@ -37,7 +40,7 @@ function Thumb({
   }
   return (
     <div className={cn("flex h-full w-full items-center justify-center text-xs text-ink-soft", className)}>
-      {preview ? t("media.video") : t("media.empty")}
+      {preview ? t("media.video") : t(emptyStateKey(accept))}
     </div>
   );
 }
@@ -103,7 +106,7 @@ export function MediaField({
     <div className="space-y-2">
       <div className="flex items-center gap-3">
         <div className="size-20 shrink-0 overflow-hidden rounded-md border border-line bg-bg">
-          <Thumb preview={shown} />
+          <Thumb preview={shown} accept={accept} />
         </div>
         <div className="flex flex-wrap gap-2">
           <button

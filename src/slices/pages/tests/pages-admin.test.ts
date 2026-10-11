@@ -126,6 +126,25 @@ test("home S3: the guests-pitch badge icon is an optional icon picker", () => {
   });
 });
 
+test("home S5: figures are a 0–8 list that starts empty; rows are text, number, affixes, toggle", () => {
+  const stats = field(describe(homeSchema), "stats");
+  const figures = field(stats, "figures");
+  assert.equal(figures.kind, "array");
+  if (figures.kind !== "array") return;
+  assert.equal(figures.min, 0);
+  assert.equal(figures.max, 8);
+  assert.deepEqual(applyDefaults(stats, undefined), { title: "", figures: [] });
+  const row = figures.element;
+  assert.equal(row.kind, "object");
+  if (row.kind !== "object") return;
+  assert.deepEqual(row.fields.map((f) => f.key), ["label", "to", "prefix", "suffix", "group"]);
+  // The statFigure `.describe()` hints reach the editor (text + checkbox leaves).
+  const to = field(row, "to");
+  assert.ok(to.kind === "string" && to.hint?.includes("digits only"));
+  assert.ok(field(row, "group").kind === "boolean" && "hint" in field(row, "group"));
+  assert.ok(field(row, "prefix").kind === "string" && "hint" in field(row, "prefix"));
+});
+
 test("fixed-count arrays carry min === max", () => {
   const benefits = field(field(root, "why"), "benefits");
   assert.equal(benefits.kind, "array");

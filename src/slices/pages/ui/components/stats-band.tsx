@@ -8,10 +8,10 @@ import { type StatKey, getGlobals } from "@slices/settings/contract";
  * (`core/ui/stat-band.tsx`, ADR 0033). Reads the figures from the settings singleton
  * (`getGlobals`) — NOT from page `data` (data-model.md → stats = company_settings). The
  * eyebrow/title are UI chrome (`pages` namespace). Renders nothing when settings are
- * unset. Subscribes to the `globals` cache tag transitively via `getGlobals`. Only `HomePage`
- * uses this today — `OwnersPage`'s "numbers" band renders `StatBand` directly with its own
- * per-page `content.stats` figures instead, which deliberately differ from the company-wide
- * ones here (see `pages/README.md`).
+ * unset. Subscribes to the `globals` cache tag transitively via `getGlobals`. **Currently
+ * unused:** `HomePage` was its only caller until spec home-admin-editor S5, which moved the
+ * Home band to its own editable rows (`content.stats.figures`). Kept (not deleted) for any
+ * future company-wide band; Owners/Home both render `StatBand` directly with page figures.
  */
 export async function StatsBand({
   locale,

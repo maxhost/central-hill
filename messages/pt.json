@@ -1035,7 +1035,7 @@
         "notes": {
           "heroSecondary": "O botão secundário leva sempre a /owners.",
           "searchBar": "A barra de pesquisa Avantio configura-se em Definições.",
-          "stats": "O título edita-se aqui; os números continuam a vir dos números da empresa em Definições.",
+          "stats": "Os números editam-se aqui. Sem dados, a faixa não é mostrada.",
           "portfolio": "Os cartões de imóveis vêm de Edifícios (em destaque, por posição).",
           "services": "Os cartões vêm de Serviços.",
           "faq": "As perguntas editam-se em FAQ.",
@@ -1084,12 +1084,21 @@
         "faq": "FAQ",
         "guests_pitch": "Apresentação para hóspedes",
         "services_carousel": "Parceiros e serviços",
-        "dual_cta": "CTA duplo final"
+        "dual_cta": "CTA duplo final",
+        "figures": "Dados",
+        "to": "Número",
+        "prefix": "Prefixo",
+        "suffix": "Sufixo",
+        "group": "Separador de milhares"
       },
       "itemLabels": {
         "benefits": "Vantagem",
         "assurances": "Garantia",
-        "stats": "Número"
+        "stats": "Número",
+        "figures": "Dado"
+      },
+      "addLabels": {
+        "figures": "Novo dado"
       }
     }
   },
@@ -1265,6 +1274,7 @@
       "galleryEmpty": "Ainda sem imagens",
       "video": "Vídeo",
       "empty": "Sem imagem",
+      "emptyVideo": "Sem vídeo",
       "moveUp": "Mover para cima",
       "moveDown": "Mover para baixo",
       "uploadError": "Falha no carregamento. Tente novamente.",

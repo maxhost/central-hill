@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { acceptAttribute, isAcceptedType } from "../ui/media-accept";
+import { acceptAttribute, emptyStateKey, isAcceptedType } from "../ui/media-accept";
 
 /**
  * What each `MediaField` `accept` lets staff pick (pure, no React). Run:
@@ -26,4 +26,10 @@ test("media takes both", () => {
   assert.equal(isAcceptedType("media", "image/png"), true);
   assert.equal(isAcceptedType("media", "video/webm"), true);
   assert.equal(isAcceptedType("media", "application/pdf"), false);
+});
+
+test("the empty tile says 'No video' only for video-only fields", () => {
+  assert.equal(emptyStateKey("video"), "media.emptyVideo");
+  assert.equal(emptyStateKey("image"), "media.empty");
+  assert.equal(emptyStateKey("media"), "media.empty");
 });

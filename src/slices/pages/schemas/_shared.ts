@@ -95,3 +95,35 @@ export const fixed = <T extends z.ZodType>(schema: T, n: number) =>
 /** Range-count array helper — between `min` and `max` repeats. */
 export const between = <T extends z.ZodType>(schema: T, min: number, max: number) =>
   z.array(schema).min(min).max(max);
+
+/**
+ * One animated figure in a "numbers" band. Per-page (each page may want different figures) —
+ * NOT the global company stats. `to` is the count-up target as a digit string (the counter
+ * reads it via `Number(data-to)`); the displayed figure is derived as
+ * prefix + (optionally grouped) to + suffix — so "400000"+group+"+" → "400,000+" and
+ * "55"+"€"+"M+" → "€55M+" (`formatStatFigure` in `ui/stat-figure-value.ts`). Only `label` is
+ * translated [T]; the number and its affixes are shared across locales.
+ *
+ * Shared since spec home-admin-editor S5: Owners uses exactly 4 (`fixed(statFigure, 4)`), the
+ * Home a variable 0–8 (`between(statFigure, 0, 8)`). `label` comes first so the editor shows
+ * the text before the number.
+ */
+export const statFigure = z.object({
+  label: tStr({ max: 80 }),
+  to: z
+    .string()
+    .regex(/^\d+$/, "Digits only — the count-up target (e.g. 400000).")
+    .max(15)
+    .describe("Count-up target, digits only. Enter 400000 for “400,000+”, 55 for “€55M+”."),
+  prefix: z
+    .string()
+    .max(8)
+    .optional()
+    .describe("Symbol before the number, e.g. “€”. Leave blank for none."),
+  suffix: z
+    .string()
+    .max(8)
+    .optional()
+    .describe("Symbol after the number, e.g. “+” or “M+”. Leave blank for none."),
+  group: z.boolean().describe("Show thousands separators (e.g. 400,000)."),
+});

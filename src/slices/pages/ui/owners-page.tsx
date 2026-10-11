@@ -20,6 +20,7 @@ import { getOwnersPage } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { OwnerEstimateForm } from "./components/owner-estimate-form";
 import { TestimonialsRow } from "./components/testimonials-row";
+import { statFigureCells } from "./stat-figure-value";
 
 // Benefit icons are each item's admin-editable `icon_key`, rendered by `core/ui` `<Icon>`
 // (inline Iconoir SVG, ADR 0034).
@@ -144,12 +145,10 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
     .filter(Boolean);
 
   // This page's own per-page figures (`content.stats`, drizzle 0009) — NOT the company-wide
-  // `company_settings` ones `StatsBand`/Home read. Same derivation the old raw-HTML band used:
-  // prefix + (optionally grouped) `to` + suffix, e.g. "400000"+group+"+" → "400,000+".
-  const statCells = stats.map((s) => ({
-    value: `${s.prefix ?? ""}${s.group ? Number(s.to).toLocaleString("en-US") : s.to}${s.suffix ?? ""}`,
-    label: s.label,
-  }));
+  // `company_settings` ones. Same derivation the old raw-HTML band used, now the helper the
+  // Home band shares (spec S5): prefix + (optionally grouped) `to` + suffix, e.g.
+  // "400000"+group+"+" → "400,000+".
+  const statCells = statFigureCells(stats);
 
   return (
     <>
@@ -211,9 +210,9 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
       {/*
        * "Numbers that speak for themselves" — the same reusable, count-up band component Home
        * uses (`core/ui`'s presentational `StatBand` + `CountUp`), fed this page's own
-       * `content.stats` (`statCells` above) rather than the company-wide settings figures
-       * `StatsBand`/Home read — the two happen to differ (e.g. 400,000+ bookings here vs.
-       * Home's live count), so this page keeps its own numbers, just the shared widget. No
+       * `content.stats` (`statCells` above) rather than the company-wide settings figures —
+       * the Home has its own editable rows too (spec S5), so this page keeps its own numbers,
+       * just the shared widget. No
        * `title` → the bare proof band the locked design uses here (Home passes a heading).
        */}
       <div id="numbers" style={{ scrollMarginTop: 130 }}>

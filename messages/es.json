@@ -1035,7 +1035,7 @@
         "notes": {
           "heroSecondary": "El botón secundario siempre lleva a /owners.",
           "searchBar": "El buscador de Avantio se configura en Ajustes.",
-          "stats": "El título se edita aquí; las cifras siguen saliendo de las cifras de la empresa en Ajustes.",
+          "stats": "Las cifras se editan aquí. Sin datos, la banda no se muestra.",
           "portfolio": "Las tarjetas de inmuebles salen de Edificios (destacados, por posición).",
           "services": "Las tarjetas salen de Servicios.",
           "faq": "Las preguntas se editan en FAQ.",
@@ -1084,12 +1084,21 @@
         "faq": "FAQ",
         "guests_pitch": "Presentación para huéspedes",
         "services_carousel": "Partners y servicios",
-        "dual_cta": "CTA doble final"
+        "dual_cta": "CTA doble final",
+        "figures": "Datos",
+        "to": "Número",
+        "prefix": "Prefijo",
+        "suffix": "Sufijo",
+        "group": "Separador de miles"
       },
       "itemLabels": {
         "benefits": "Ventaja",
         "assurances": "Garantía",
-        "stats": "Cifra"
+        "stats": "Cifra",
+        "figures": "Dato"
+      },
+      "addLabels": {
+        "figures": "Nuevo dato"
       }
     }
   },
@@ -1265,6 +1274,7 @@
       "galleryEmpty": "Aún no hay imágenes",
       "video": "Vídeo",
       "empty": "Sin imagen",
+      "emptyVideo": "Sin vídeo",
       "moveUp": "Mover arriba",
       "moveDown": "Mover abajo",
       "uploadError": "Error al subir. Inténtalo de nuevo.",

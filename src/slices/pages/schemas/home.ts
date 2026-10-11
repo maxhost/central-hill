@@ -6,8 +6,8 @@
  * dual-CTA band (the owners pitch and testimonials stay out for now). The featured portfolio
  * is still composed straight from the `buildings` slice, not stored here.
  *
- * Composed (not authored) content: the stats band + dual-CTA contact line →
- * company_settings (settings slice), and the services carousel → the `services` slice
+ * Composed (not authored) content: the dual-CTA contact line → company_settings (settings
+ * slice), and the services carousel → the `services` slice
  * catalogue (ADR 0032) — the page only stores that section's own copy. See
  * docs/data-model.md → Page content model → home.
  */
@@ -15,6 +15,7 @@ import { z } from "zod";
 import { cta, ctaWithNote, seoShape, tStr, tStrOpt } from "@core/validation/primitives";
 import {
   assurance,
+  between,
   faqGroupKey,
   fixed,
   iconCard,
@@ -22,6 +23,7 @@ import {
   optionalImage,
   optionalVideo,
   serviceCategorySlug,
+  statFigure,
 } from "./_shared";
 
 /** Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). */
@@ -36,6 +38,9 @@ const PANEL_IMG_HINT =
 
 /** Exactly three reassurance marks — the strip under the carousel heading. */
 const ASSURANCE_COUNT = 3;
+
+/** Upper bound of the Home figures band (spec S5: 0–8 rows). */
+export const HOME_MAX_FIGURES = 8;
 
 /** One side of the closing owner/guest dual-CTA band (editable copy + background). */
 const ctaPanel = z.object({
@@ -78,10 +83,17 @@ export const homeSchema = z.object({
     cta_secondary: z.object({ label: tStr({ max: 80 }) }),
   }),
   /**
-   * Figures band heading. Blank → `pages.stats.title`. The figures themselves still come
-   * from Settings (company stats) until spec S5 makes them editable here.
+   * Figures band (spec S5). Heading blank → `pages.stats.title`. `figures` are the band's own
+   * rows (0–8, the same `statFigure` as Owners): number + affixes shared across locales,
+   * `label` [T]. No rows (or `figures` absent on a legacy row) → the band is not rendered,
+   * heading included. The Home no longer reads the company figures from Settings.
    */
-  stats: z.object({ title: tStrOpt({ max: 160 }) }).optional(),
+  stats: z
+    .object({
+      title: tStrOpt({ max: 160 }),
+      figures: between(statFigure, 0, HOME_MAX_FIGURES).optional(),
+    })
+    .optional(),
   guests_pitch: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),

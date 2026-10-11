@@ -83,7 +83,8 @@ const HOME_LAYOUT: EditorLayoutItem[] = [
     id: "stats",
     titleKey: `${L}.cards.stats`,
     paths: ["stats"],
-    note: { textKey: `${L}.notes.stats`, link: link("/admin/settings", "settings") },
+    // Figures are edited here since spec S5 — no Settings link any more.
+    note: { textKey: `${L}.notes.stats` },
   },
   { kind: "card", id: "guests_pitch", titleKey: `${L}.cards.guests_pitch`, paths: ["guests_pitch"] },
   {

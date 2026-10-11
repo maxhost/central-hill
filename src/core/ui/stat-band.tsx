@@ -20,6 +20,15 @@ import { Container } from "./container";
  * `.lbl`s per cell — the original reused one class for both lines via an inline style
  * override; `description` is a real second field here instead).
  */
+/** Literal class strings (never built dynamically) so Tailwind generates every one. */
+const LG_COLUMNS = {
+  1: "lg:grid-cols-1",
+  2: "lg:grid-cols-2",
+  3: "lg:grid-cols-3",
+  4: "lg:grid-cols-4",
+  5: "lg:grid-cols-5",
+} as const;
+
 export function StatBand({
   title,
   cells,
@@ -29,8 +38,9 @@ export function StatBand({
   title?: string;
   cells: { value: string; label: string; description?: string }[];
   /** Desktop column count (`lg:grid-cols-N`); mobile stays a fixed 2-up either way. `5` is
-   *  About's founding/apartments/buildings/guests/reservations band. */
-  columns?: 3 | 4 | 5;
+   *  About's founding/apartments/buildings/guests/reservations band. `1`/`2` added
+   *  additively for the Home's variable figures band (spec home-admin-editor S5). */
+  columns?: 1 | 2 | 3 | 4 | 5;
 }) {
   return (
     <section className="bg-feature py-[clamp(56px,8vw,104px)]">
@@ -41,12 +51,13 @@ export function StatBand({
           </h2>
         ) : null}
         <dl
-          className={`grid grid-cols-2 gap-x-8 gap-y-10 text-center ${
-            columns === 3 ? "lg:grid-cols-3" : columns === 5 ? "lg:grid-cols-5" : "lg:grid-cols-4"
-          } ${title ? "mt-[clamp(40px,6vw,72px)]" : ""}`}
+          className={`grid grid-cols-2 gap-x-8 gap-y-10 text-center ${LG_COLUMNS[columns]} ${
+            title ? "mt-[clamp(40px,6vw,72px)]" : ""
+          }`}
         >
-          {cells.map((s) => (
-            <div key={s.label}>
+          {/* Index in the key: the Home's editable rows may repeat a label. */}
+          {cells.map((s, i) => (
+            <div key={`${i}:${s.label}`}>
               <dt className="font-serif text-4xl text-feature-accent md:text-5xl">
                 <CountUp value={s.value} />
               </dt>

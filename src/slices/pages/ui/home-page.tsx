@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { preload } from "react-dom";
 import type { Locale } from "@core/db/columns";
-import { ButtonLink, Hero, Reveal, ScrollDebugProbe } from "@core/ui";
+import { ButtonLink, Hero, Reveal, ScrollDebugProbe, StatBand } from "@core/ui";
 import { AvantioSearchBar } from "@slices/settings/contract";
 import { getHomePage } from "../contract";
 import { heroPosterSrc } from "./hero-poster";
@@ -12,7 +12,7 @@ import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
 import { GuestsSection } from "./components/guests-section";
 import { ServicesCarousel } from "./components/services-carousel";
-import { StatsBand } from "./components/stats-band";
+import { statBandColumns, statFigureCells } from "./stat-figure-value";
 
 // TEMP: external hotlinks (the `mock/home.html` clip + poster) used only until a real hero
 // video is uploaded to R2 and set on the home page in the backoffice — then the resolved
@@ -24,7 +24,7 @@ const HERO_FALLBACK_POSTER =
 
 /**
  * Home page (content-briefs.md → 0 · Home). Composes, in order: video hero · Avantio
- * availability search (settings) · company stats (settings, dark band) · guests pitch
+ * availability search (settings) · figures band (page rows, dark band) · guests pitch
  * (Image Showcase) · featured portfolio (buildings) · services & partners carousel
  * (services slice) · optional FAQ group · owner/guest dual CTA. Static (ISR).
  *
@@ -52,6 +52,7 @@ export async function HomePage({ locale }: { locale: Locale }) {
   // Optional copy overrides (spec S3, rule D1): blank / absent → today's i18n message.
   const portfolio = content.portfolio;
   const faqGroupKey = content.faq_group_key ?? "";
+  const statCells = statFigureCells(content.stats?.figures ?? []);
   // Hero poster (spec S4): the uploaded still, optimized (w=1920) through the same Next image
   // optimizer as `MediaImage`; blank / unresolved → the stock poster. It is the hero's first
   // paint (the LCP candidate), so an uploaded one is preloaded at high priority — the same
@@ -110,13 +111,20 @@ export async function HomePage({ locale }: { locale: Locale }) {
         <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
       </noscript>
 
-      <Reveal label="stats">
-        <StatsBand
-          locale={locale}
-          keys={["bookings", "years", "guests", "revenue"]}
-          title={orMessage(content.stats?.title, t("stats.title"))}
-        />
-      </Reveal>
+      {/*
+       * Figures band (spec S5): the page's own editable rows, no longer the company figures
+       * from Settings. No rows → no band at all (heading included). Desktop columns follow
+       * the row count (`statBandColumns`); mobile stays 2-up.
+       */}
+      {statCells.length > 0 ? (
+        <Reveal label="stats">
+          <StatBand
+            title={orMessage(content.stats?.title, t("stats.title"))}
+            cells={statCells}
+            columns={statBandColumns(statCells.length)}
+          />
+        </Reveal>
+      ) : null}
 
       {/* Guests pitch now sits directly under stats, ahead of the carousel (client feedback). */}
       <Reveal label="guests-pitch">

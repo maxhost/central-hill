@@ -29,3 +29,11 @@ export function acceptAttribute(accept: MediaFieldAccept): string {
 export function isAcceptedType(accept: MediaFieldAccept, mime: string): boolean {
   return (MEDIA_FIELD_ACCEPT[accept] as readonly string[]).includes(mime);
 }
+
+/**
+ * `backoffice` message key for a field's empty-state tile: a video-only field reads
+ * "No video", every other field "No image" (as before).
+ */
+export function emptyStateKey(accept: MediaFieldAccept): "media.emptyVideo" | "media.empty" {
+  return accept === "video" ? "media.emptyVideo" : "media.empty";
+}

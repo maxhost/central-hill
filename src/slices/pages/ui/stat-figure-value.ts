@@ -8,6 +8,8 @@
  *   Settings company-stat value ("65+", "€55M+", "400,000+") into a figure row. It only
  *   returns a row whose `formatStatFigure` reproduces the input **exactly**; anything else
  *   (decimals, spaces as separators, leading zeros, no digits…) → `null`.
+ * - `statFigureCells` maps figure rows to `StatBand` cells (Owners + Home), and
+ *   `statBandColumns` picks the Home band's desktop column count from its row count.
  */
 
 export interface StatFigureNumber {
@@ -26,6 +28,28 @@ const MAX_AFFIX = 8;
 export function formatStatFigure(s: StatFigureNumber): string {
   const n = s.group ? Number(s.to).toLocaleString("en-US") : s.to;
   return `${s.prefix ?? ""}${n}${s.suffix ?? ""}`;
+}
+
+/** A figure row as stored (`statFigure` in `schemas/_shared.ts`). */
+export interface StatFigureRow extends StatFigureNumber {
+  label: string;
+}
+
+/** Figure rows → `StatBand` cells (value via `formatStatFigure`, label as authored). */
+export function statFigureCells(rows: readonly StatFigureRow[]): { value: string; label: string }[] {
+  return rows.map((r) => ({ value: formatStatFigure(r), label: r.label }));
+}
+
+/**
+ * Desktop column count for a band of `n` figures (spec S5): 1–5 → one row of N; 6 → 3 (3×2);
+ * 7–8 → 4 (two rows). Mobile is always 2-up (`StatBand`). `n` ≤ 0 never renders a band; it
+ * maps to 1 only to keep the return type total.
+ */
+export function statBandColumns(n: number): 1 | 2 | 3 | 4 | 5 {
+  if (n <= 1) return 1;
+  if (n === 2 || n === 3 || n === 4 || n === 5) return n;
+  if (n === 6) return 3;
+  return 4;
 }
 
 /** prefix (no digits) · number (plain, or 1–3 digits + `,ddd` groups) · suffix (no digits). */
