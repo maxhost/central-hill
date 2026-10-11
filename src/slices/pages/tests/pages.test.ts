@@ -12,6 +12,7 @@ import { collectMediaIds, expand, overlayTranslations } from "../server/overlay"
 import { heroPosterSrc } from "../ui/hero-poster";
 import { seoMetadataInput } from "../server/metadata-input";
 import { orMessage, orNamedMessage } from "../ui/or-message";
+import { ownersFinalContactLine, settingsContactLine } from "../ui/contact-line";
 import {
   formatStatFigure,
   parseStatValue,
@@ -731,4 +732,73 @@ test("owners S3: each step 2/3 field's admin hint names its current EN default",
   // Blank → that default (same rule as every other optional field).
   assert.equal(orMessage("", en.back ?? ""), "Back");
   assert.equal(orMessage("Return", en.back ?? ""), "Return");
+});
+
+// ── Owners S6: editable closing CTA ──────────────────────────────────────────
+test("owners S6: final_cta validates absent, blank and filled; is translatable but not its image", () => {
+  const finalCta = ownersSchema.shape.final_cta;
+  assert.ok(finalCta.safeParse(undefined).success, "a row saved before S6 validates");
+  const blank = { eyebrow: "", headline: "", body: "", cta_label: "", contact_line: "", image_media_id: "" };
+  assert.ok(finalCta.safeParse(blank).success);
+  assert.ok(
+    finalCta.safeParse({
+      eyebrow: "Start now",
+      headline: "Ready?",
+      body: "Join us.",
+      cta_label: "Get an estimate",
+      contact_line: "Call us",
+      image_media_id: UUID,
+    }).success,
+  );
+  assert.ok(!finalCta.safeParse({ ...blank, eyebrow: "x".repeat(61) }).success, "eyebrow ≤ 60");
+  assert.ok(!finalCta.safeParse({ ...blank, contact_line: "x".repeat(201) }).success, "line ≤ 200");
+  const paths = translatablePathsByPage.owners;
+  for (const k of ["eyebrow", "headline", "body", "cta_label", "contact_line"]) {
+    assert.ok(paths.includes(`final_cta.${k}`), `final_cta.${k} is translatable`);
+  }
+  assert.ok(!paths.includes("final_cta.image_media_id"));
+});
+
+test("owners S6: blank fields name today's EN text, which equals the EN messages", () => {
+  const en = JSON.parse(readFileSync(path.join(process.cwd(), "messages/en.json"), "utf8")).pages.owners;
+  assert.equal(en.finalEyebrow, "Start Earning More Today");
+  assert.equal(en.finalTitle, "Ready to Make Your Property Work for You?");
+  assert.equal(
+    en.finalCopy,
+    "Join the growing number of property owners across Portugal who trust Central Hill Apartments to deliver exceptional results. Start with a free, no-obligation profitability analysis.",
+  );
+  assert.equal(en.finalCta, "Get Your Free Earnings Estimate");
+  const f = ownersSchema.shape.final_cta.unwrap().shape;
+  assert.ok(f.eyebrow.description?.includes(`“${en.finalEyebrow}”`));
+  assert.ok(f.headline.description?.includes(`“${en.finalTitle}”`));
+  assert.ok(f.body.description?.includes(`“${en.finalCopy}”`));
+  assert.ok(f.cta_label.description?.includes(`“${en.finalCta}”`));
+  for (const loc of ["en", "pt", "es", "fr"]) {
+    const m = JSON.parse(readFileSync(path.join(process.cwd(), `messages/${loc}.json`), "utf8")).pages.owners;
+    assert.match(m.finalCall, /\{phone\}/, `${loc} finalCall`);
+    assert.ok(m.finalCopy.includes("Central Hill Apartments"), `${loc} finalCopy`);
+  }
+});
+
+test("owners S6: contact line — field wins, blank → Settings with 'Call', Home unchanged", () => {
+  const settings = { phone: "+351 910 075 725", email: "info@centralhill.pt", whatsapp: "+351 910 075 725" };
+  const call = (phone: string) => `Call ${phone}`;
+  // Today's hardcoded EN line, reproduced from today's Settings values.
+  assert.equal(
+    ownersFinalContactLine("", settings, call),
+    "Call +351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725",
+  );
+  assert.equal(ownersFinalContactLine(undefined, settings, call)?.startsWith("Call "), true);
+  assert.equal(ownersFinalContactLine("Ring us anytime", settings, call), "Ring us anytime");
+  assert.equal(ownersFinalContactLine("  ", null, call), undefined, "no field, no settings → no line");
+  assert.equal(
+    ownersFinalContactLine("", { ...settings, whatsapp: null }, call),
+    "Call +351 910 075 725 · info@centralhill.pt",
+  );
+  // Home's owner panel (no phone wrapper) keeps its exact output.
+  assert.equal(
+    settingsContactLine(settings),
+    "+351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725",
+  );
+  assert.equal(settingsContactLine(null), null);
 });

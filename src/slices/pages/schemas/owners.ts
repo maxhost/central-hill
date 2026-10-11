@@ -43,6 +43,8 @@ const HERO_IMG_HINT =
  */
 const SHOWCASE_MEDIA_HINT =
   "Portrait 4:5 — the frame is fixed at 4:5, so other ratios are cropped. Photo: 1200×1500 px (min 960×1200), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1080×1350 or 1200×1500, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×1500, under 5 MB. Lottie (.lottie or .json): 4:5 canvas (e.g. 1200×1500).";
+const FINAL_CTA_IMG_HINT =
+  "Closing band photo. Portrait 4:5 — 1200×1500 px, JPG or WebP, under 500 KB.";
 const JOURNEY_STEP_IMG_HINT =
   "Background photo for this step card (dark gradient overlay is applied — busy top area, calmer bottom works best). Portrait 3:4 — recommended 900×1200px, JPG or WebP, under 400 KB.";
 
@@ -209,6 +211,27 @@ export const ownersSchema = z.object({
   /** FAQ section heading (the group stays in `faq_group_key`). Blank → `pages.owners.faqTitle`. */
   faq: z
     .object({ title: tStrOpt({ max: 160 }).describe("Leave blank for “Owner Questions, Answered”.") })
+    .optional(),
+  /**
+   * Closing CTA band (`#start`, spec owners-admin-editor S6). Every field is optional: blank →
+   * `pages.owners.finalEyebrow` / `finalTitle` / `finalCopy` / `finalCta`; a blank contact line
+   * is built from Settings (phone · email · WhatsApp); no image → the stock photo.
+   */
+  final_cta: z
+    .object({
+      eyebrow: tStrOpt({ max: 60 }).describe("Leave blank for “Start Earning More Today”."),
+      headline: tStrOpt({ max: 160 }).describe("Leave blank for “Ready to Make Your Property Work for You?”."),
+      body: tStrOpt({ max: 600 }).describe(
+        "Leave blank for “Join the growing number of property owners across Portugal who trust Central Hill Apartments to deliver exceptional results. Start with a free, no-obligation profitability analysis.”",
+      ),
+      cta_label: tStrOpt({ max: 80 }).describe(
+        "The arrow is added automatically. Leave blank for “Get Your Free Earnings Estimate”.",
+      ),
+      contact_line: tStrOpt({ max: 200 }).describe(
+        "Leave blank to build it from Settings (phone · email · WhatsApp).",
+      ),
+      image_media_id: optionalImage(FINAL_CTA_IMG_HINT),
+    })
     .optional(),
 });
 

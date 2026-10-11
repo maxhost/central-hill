@@ -15,9 +15,10 @@ import {
   TwoColumnShowcase,
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
-import { ContactDialog } from "@slices/settings/contract";
+import { ContactDialog, getGlobals } from "@slices/settings/contract";
 import { getOwnersPage } from "../contract";
 import { FaqSection } from "./components/faq-section";
+import { ownersFinalContactLine } from "./contact-line";
 import { OwnerEstimateForm } from "./components/owner-estimate-form";
 import { sideMedia } from "./components/side-media";
 import { TestimonialsRow } from "./components/testimonials-row";
@@ -53,8 +54,8 @@ const HERO_FALLBACK_ALT = "Bright, designer-furnished Lisbon apartment interior"
  * Handled") and `dashboard` ("Always in Sight") use the home's Image-Showcase layout (4 benefit
  * highlights + CTA beside a 4:5 image with a floating badge) — `dashboard` mirrored with the
  * image on the left; `journey` ("Your growth path") uses `core/ui`'s `StepGallery`; the closing
- * CTA ("Start Earning More Today") uses `core/ui`'s `FeatureCtaBand`, still fully hardcoded (no
- * schema field yet — a separate follow-up); `testimonials` is the shared <TestimonialsRow>
+ * CTA ("Start Earning More Today") uses `core/ui`'s `FeatureCtaBand`, editable via `final_cta`
+ * (spec owners-admin-editor S6); `testimonials` is the shared <TestimonialsRow>
  * marquee (the home "Partners & Guests" carousel). Marketing sections are mirrored in the owners
  * schema (editor-ready, drizzle 0005→0007).
  */
@@ -83,15 +84,22 @@ const JOURNEY_FALLBACK_IMGS = [
 // `StepGallery`'s photo cards: one of its 5 (desktop)/2 (tablet)/1 (mobile) grid cells.
 const JOURNEY_STEP_IMG_SIZES = "(max-width: 680px) 100vw, (max-width: 980px) 50vw, 20vw";
 
-// TEMP: Pexels placeholder for the closing CTA band's photo column (no schema field for this
-// section yet — the whole band is still hardcoded, same as before this port).
+// TEMP: Pexels placeholder for the closing CTA band's photo column, used until an asset is set
+// in `final_cta.image_media_id` (spec owners-admin-editor S6).
 const CTA_FALLBACK_IMG =
   "https://images.pexels.com/photos/1732414/pexels-photo-1732414.jpeg?auto=compress&cs=tinysrgb&w=1200";
 const CTA_FALLBACK_ALT = "A Central Hill managed property at golden hour, overlooking the coast";
+// The band's photo column: one of `FeatureCtaBand`'s two columns from 981px (≤ ~570px inside the
+// 7xl container), full width below.
+const CTA_IMG_SIZES = "(max-width: 980px) 100vw, 600px";
 
 export async function OwnersPage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const [page, t] = await Promise.all([getOwnersPage(locale), getTranslations("pages")]);
+  const [page, t, globals] = await Promise.all([
+    getOwnersPage(locale),
+    getTranslations("pages"),
+    getGlobals(locale),
+  ]);
   if (!page) notFound();
 
   const { content, media } = page;
@@ -100,6 +108,12 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
   // Optional copy overrides (spec owners-admin-editor S2): blank / absent → today's i18n message.
   const contact = hero.contact;
   const testimonialsTitle = content.testimonials?.title;
+  // Closing band (spec owners-admin-editor S6): each field or its i18n default.
+  const finalCta = content.final_cta;
+  const finalMedia = media[finalCta?.image_media_id ?? ""];
+  const finalContactLine = ownersFinalContactLine(finalCta?.contact_line, globals, (phone) =>
+    t("owners.finalCall", { phone }),
+  );
 
   const whyItems = why.benefits.map((b) => ({
     icon: <Icon name={b.icon_key} size={28} className="mt-0.5 flex-none text-accent-deep" />,
@@ -387,28 +401,36 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
         </div>
       ) : null}
       {/*
-       * "Start Earning More Today" / "Ready to Make Your Property Work for You?" — `core/ui`'s
-       * new `FeatureCtaBand`, ported 1:1 from the old `.mk`-scoped `.cta-band`/`.cta-wrap` CSS
-       * (the last raw-HTML content on this page — see that component's docstring for why it
-       * isn't built on `TwoColumnShowcase`). Still fully hardcoded, same as before this port:
-       * no schema field exists for this section yet (a separate follow-up), so the image is
-       * always the Pexels fallback and every string is a literal below, not `content.*`.
+       * Closing band — `core/ui`'s `FeatureCtaBand` (ported 1:1 from the old `.mk`-scoped
+       * `.cta-band`/`.cta-wrap` CSS; see its docstring for why it isn't `TwoColumnShowcase`).
+       * Editable via `final_cta` (spec owners-admin-editor S6): blank eyebrow / headline / body /
+       * button → `pages.owners.finalEyebrow` / `finalTitle` / `finalCopy` / `finalCta` (the
+       * " →" is added here; the button always targets `#worth`); blank contact line → built
+       * from Settings ("Call {phone} · email · WhatsApp …"); no image asset → the Pexels photo.
        */}
       <div id="start" style={{ scrollMarginTop: 130 }}>
         <Reveal label="owners-cta">
           <FeatureCtaBand
-            eyebrow="Start Earning More Today"
-            headline="Ready to Make Your Property Work for You?"
-            body="Join the growing number of property owners across Portugal who trust Central Hill Apartments to deliver exceptional results. Start with a free, no-obligation profitability analysis."
-            cta={{ href: "#worth", label: "Get Your Free Earnings Estimate →" }}
-            contactLine="Call +351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725"
+            eyebrow={orMessage(finalCta?.eyebrow, t("owners.finalEyebrow"))}
+            headline={orMessage(finalCta?.headline, t("owners.finalTitle"))}
+            body={orMessage(finalCta?.body, t("owners.finalCopy"))}
+            cta={{ href: "#worth", label: `${orMessage(finalCta?.cta_label, t("owners.finalCta"))} →` }}
+            contactLine={finalContactLine}
             image={
-              // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
-              <img
-                src={CTA_FALLBACK_IMG}
-                alt={CTA_FALLBACK_ALT}
-                className="aspect-[4/5] w-full rounded-sm object-cover"
-              />
+              finalMedia ? (
+                <MediaImage
+                  data={finalMedia.alt ? finalMedia : { ...finalMedia, alt: CTA_FALLBACK_ALT }}
+                  className="aspect-[4/5] w-full rounded-sm object-cover"
+                  sizes={CTA_IMG_SIZES}
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+                <img
+                  src={CTA_FALLBACK_IMG}
+                  alt={CTA_FALLBACK_ALT}
+                  className="aspect-[4/5] w-full rounded-sm object-cover"
+                />
+              )
             }
           />
         </Reveal>

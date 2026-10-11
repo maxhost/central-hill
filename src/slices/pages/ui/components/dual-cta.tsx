@@ -3,6 +3,7 @@ import type { Locale } from "@core/db/columns";
 import { MediaImage, type MediaImageData } from "@core/media";
 import { DualCtaPanels, type DualCtaPanel } from "@core/ui";
 import { avantioBookingUrl, getGlobals } from "@slices/settings/contract";
+import { settingsContactLine } from "../contact-line";
 
 /**
  * Owner/Guest dual call-to-action band (Home) — data composer for the presentational
@@ -74,11 +75,7 @@ export async function DualCta({
   const ownerAsset = owner?.image_media_id ? media[owner.image_media_id] : undefined;
   const guestAsset = guest?.image_media_id ? media[guest.image_media_id] : undefined;
 
-  const ownerContact = globals
-    ? [globals.phone, globals.email, globals.whatsapp ? `WhatsApp ${globals.whatsapp}` : null]
-        .filter(Boolean)
-        .join(" · ")
-    : null;
+  const ownerContact = settingsContactLine(globals);
   const guestContact = globals ? `${globals.phone} · ${globals.email}` : null;
 
   const ownerTitle = owner?.title || t("dualCta.ownerTitle");
