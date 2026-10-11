@@ -1059,6 +1059,21 @@ owner-controlled option that costs nothing.
 0023's dual-CTA block (the guest page keeps its own, separate `dual_cta`). Verified in the browser
 on both the public page and the generated editor.
 
+**Amendment (2026-10-11): the dual-CTA band and the featured portfolio are back; the figures band
+is page content.** The text above is kept as the record of the 2026-09-12 decision, but two of its
+removals no longer hold:
+- **Restored (client direction, `b8693db`, 2026-09-28).** The closing owner/guest **dual-CTA
+  band** is back in `homeSchema` (`dual_cta{owner,guest}{image_media_id?, eyebrow, title, body,
+  cta_label}`; `components/dual-cta.tsx` and `pages.dualCta.*` recovered from `628d8ff`) and the
+  **featured portfolio** is composed into Home again from `buildings`. The owners pitch and the
+  testimonials row stay out.
+- **Figures band (spec `docs/specs/home-admin-editor.md`, S5, 2026-10-11).** Home's stats band no
+  longer reads the company figures from `company_settings`: it renders the page's own
+  `stats.figures` rows (0–8, edited in the Home editor's "Figures" card); no rows → no band.
+- The current composition is: hero · Avantio search · figures band · guests pitch · featured
+  portfolio · services & partners carousel (ADR 0032) · optional FAQ · dual CTA. See
+  `docs/data-model.md` → Page content model → home.
+
 ---
 
 ## 0032 — Home gains a services & partners carousel <a id="0032"></a>

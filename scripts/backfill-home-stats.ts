@@ -28,8 +28,10 @@
  * the admin strips it (Zod drops unknown keys). Deploy S5 right after `--apply`, or re-run this
  * script after the deploy.
  *
- * ISR: the row is written directly; the public page picks it up on its next revalidation (or
- * after any save in /admin/pages/home — which, before S5, would strip it, see above).
+ * Cache: the row is written directly, but the page data is `unstable_cache`d under the
+ * `page:home` tag with no time-based revalidate — the public page only shows the figures
+ * after a save in /admin/pages/home busts that tag (before S5, that save would strip them,
+ * see above; from S5 on, press Save without changes).
  *
  *   pnpm tsx --env-file=.env.local --tsconfig scripts/tsconfig.json scripts/backfill-home-stats.ts           # dry run (default, read-only)
  *   pnpm tsx --env-file=.env.local --tsconfig scripts/tsconfig.json scripts/backfill-home-stats.ts --apply   # write

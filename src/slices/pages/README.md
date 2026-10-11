@@ -19,9 +19,12 @@ foreign tables**. See `docs/vertical-slices.md` → S9.
 
 **Page schemas** (`schemas/`): one fixed Zod schema per page (`home`, `owners`, `real-estate`,
 `about`, `guest`) composed from `_shared.ts` (`iconCard`, `assurance`, `step`, `titledItem`,
-`faqGroupKey`, `serviceCategorySlug`, fixed/range array helpers). `schemas/index.ts` maps `key → schema` (`pageSchemas`) and derives
+`faqGroupKey`, `serviceCategorySlug`, `optionalIconKey`, `statFigure`, the media helpers
+`optionalImage` / `optionalVideo` / `optionalAnimated`, and the `fixed` / `between` array helpers). `schemas/index.ts` maps `key → schema` (`pageSchemas`) and derives
 `translatablePathsByPage` (the [T] leaf paths the translation pipeline extracts). Repeating
-groups are **fixed-count arrays** (e.g. exactly 6 benefits) — the admin form shows N slots.
+groups are **fixed-count arrays** (e.g. exactly 6 benefits) — the admin form shows N slots —
+except bounded `between(min,max)` lists (Owners `plans.tiers` 1–4, Home `stats.figures` 0–8),
+which the form edits with "+ add" / remove.
 
 ## Contract (`contract.ts`)
 
@@ -38,12 +41,21 @@ Sidebar CTAs of the detail pages (never null — they fall back to `defaultBlog`
 Each returns `PageResult<T> = { content, media, ogImage }`:
 - `content` — the page's fixed schema with every [T] leaf resolved for the locale (approved
   target, else source `en`);
-- `media` — `Record<mediaId, MediaImageData>` for every `*_media_id` referenced in `content`
-  (hero videos read `.url`);
+- `media` — `Record<mediaId, PageMedia>` for every `*_media_id` referenced in `content`.
+  `PageMedia = MediaImageData & { mime? }` (spec home-admin-editor S6): hero videos read `.url`,
+  and `.mime` tells image / video / Lottie apart (absent on a page cached before S6 → treat as an
+  image);
 - `ogImage` — the optional social-card override.
 
+Metadata: `buildHomeMetadata(locale)` (`server/metadata.ts`) is the Home route's whole
+`generateMetadata` body — `seo.meta_title` / `seo.meta_description` with the
+`pages.home.metaTitle` / `metaDescription` fallback when blank, canonical `/<locale>`, hreflang for
+every locale + `x-default` → `/`, and the optional OG image. `src/app/[locale]/page.tsx` just calls it.
+
 Cache tag: `PAGE_TAGS.page(key)` = `page:<key>` (one singleton per page). Reads are
-`unstable_cache`-wrapped. The **embedded** slice data (featured buildings, testimonials, faq,
+`unstable_cache`-wrapped with that tag and **no time-based `revalidate`**: the route's hourly ISR
+re-renders from the same cached entry, so a direct DB write (script/SQL) stays invisible until the
+tag is busted — i.e. until someone presses Save in the page editor (`revalidatePage`). The **embedded** slice data (featured buildings, testimonials, faq,
 settings) is fetched by the page-section components through those slices' own cached+tagged
 queries, so a publish there busts the composed page automatically (Next associates a route's
 full-route cache with every data-cache tag read during render) — this slice doesn't re-declare
@@ -67,7 +79,8 @@ here). Neither is a `ui/components/` piece. Other shared pieces in `ui/component
   submitting nothing, see below). `OwnerEstimateForm` is exported via `contract.ts` so other
   slices can reuse the exact same wizard — Buildings' listing "earnings calculator" does,
   parameterizing only step 1's copy (steps 2/3 were already identical on both pages);
-- data-composing (`stats-band.tsx` → settings, `testimonials-row.tsx` → testimonials,
+- data-composing (`stats-band.tsx` → settings — **unused since spec home-admin-editor S5**, kept
+  for a possible company-wide band; `testimonials-row.tsx` → testimonials,
   `featured-portfolio.tsx` → buildings, `services-carousel.tsx` → services, `faq-section.tsx`
   → faq, `lead-cta.tsx` → settings contact).
 
@@ -79,8 +92,9 @@ admin `position` and capped at 12. It renders `null` when that block is absent (
 saved before the section existed) or when no published service matches.
 
 `featured-portfolio.tsx` and `testimonials-row.tsx` take **optional** heading/CTA overrides
-(`eyebrow`, `title`, `intro`, `ctaLabel`, `ctaNote`, `ctaHref`). **Home no longer renders either
-of them** (ADR 0031); Owners passes none and keeps the shared `pages.portfolio.*` /
+(`eyebrow`, `title`, `intro`, `ctaLabel`, `ctaNote`, `ctaHref`; `FeaturedPortfolio` also takes
+`viewLabel`, the card button text, spec S3). Home renders `FeaturedPortfolio` again (restored
+after ADR 0031, `b8693db`) with its editable `portfolio.*` copy, but not `TestimonialsRow`; Owners passes none and keeps the shared `pages.portfolio.*` /
 `pages.reviews.*` copy; the Guests page passes its
 admin-authored `guest.portfolio` block and `pages.reviews.titleGuests`. Both render `null` when
 the underlying slice has nothing published, so the section disappears rather than showing empty.
@@ -111,10 +125,11 @@ earnings form, an animated "numbers" band — still this page's own `stats[×4]
 {to,prefix?,suffix?,group,label}` (drizzle 0009), but now rendered as real JSX through the same
 reusable, count-up band Home uses (`core/ui`'s presentational `StatBand` + `CountUp`, wrapped in
 `<Reveal>`; `#numbers` anchor on its own wrapper div since it sits outside `.mk`) instead of the
-raw-HTML grid + `owner-stats-counter.tsx`'s `[data-count]`-scanning counter. Home's own stats
-band (`stats-band.tsx` → `StatsBand`) reads different, company-wide figures from
-`company_settings` — the two happen to differ, so Owners deliberately keeps its own numbers,
-just the shared widget. `owner-stats-counter.tsx` is otherwise unaffected and still shared with
+raw-HTML grid + `owner-stats-counter.tsx`'s `[data-count]`-scanning counter. *(Superseded
+2026-10-11, spec home-admin-editor S5: Home no longer reads the company figures from
+`company_settings` through `StatsBand`; it has its own editable `stats.figures` rows, the same
+`statFigure` shape as Owners, and both pages map them with the shared `statFigureCells` — see
+"Home content model" below. Each page still keeps its own numbers.)* `owner-stats-counter.tsx` is otherwise unaffected and still shared with
 **About**, which still uses the raw-markup `.mk` stats grid. Then the full marketing flow — `why`
 ("Why property owners trust us") is likewise now real JSX: `core/ui`'s new `EditorialSplit`
 (sticky headline + CTAs beside a hairline `benefits[×6]` list — the layout ADR 0022 called
@@ -549,13 +564,75 @@ Moving that load elsewhere is a separate decision.
 prerendering `/[locale]/guests` throws on the missing `portfolio` / `dual_cta` blocks. A stale
 `.next/cache` from a pre-migration build causes the same failure locally — clear it and rebuild.
 
-The Home `guests_pitch.image_media_id` and `dual_cta.*.image_media_id` are **optional images**
-(`""` allowed): until an R2 asset is uploaded the render falls back to an approved mock photo,
-so the section never renders empty. `hero.video_media_id` is likewise optional (`optionalVideo`,
-`""` → `HERO_FALLBACK_VIDEO`); its admin picker accepts MP4 / WebM only (`accept: "video"`).
-
 All cross-slice data is read **through contracts only** (golden rule 2) — e.g. the featured
 portfolio builds its own card from `BuildingSummary` rather than importing buildings' UI.
+
+### Home content model (spec `docs/specs/home-admin-editor.md`, 2026-10-11)
+
+Everything visible on Home that isn't a catalogue component (Avantio search, building cards,
+service cards, FAQ questions) is editable in `/admin/pages/home`. All fields added by the spec
+are **optional** (a row saved before them still validates and renders as before). Full field
+table with types and [T]/shared classes: `docs/data-model.md` → Page content model → home.
+
+| Section | Fields (`schemas/home.ts`) | Blank / absent → |
+|---|---|---|
+| SEO | `seo?{meta_title? ≤70, meta_description? ≤200}` + the `og_image_media_id` column | i18n `pages.home.metaTitle` / `metaDescription`; no OG |
+| Hero | `video_media_id` (`optionalVideo`: `""` \| uuid, MP4/WebM), `poster_media_id?` (image), `eyebrow?`, `headline`, `subtitle?`, `cta_primary{label,url}`, `cta_secondary{label}` | `HERO_FALLBACK_VIDEO` / `HERO_FALLBACK_POSTER`; eyebrow → `pages.home.heroEyebrow`; secondary href fixed to `/<locale>/owners` |
+| Figures | `stats?{title?, figures? (0–8 × statFigure)}` | title → `pages.stats.title`; **no rows → no band** (heading included) |
+| Guests pitch | `headline`, `subheadline?`, `benefits[×4]`, `image_media_id` (`optionalAnimated`), `cta{label,url,note?}`, `badge?{label?, icon_key?}` | stock Unsplash photo; badge label → `cta.note`, icon → `check` |
+| Portfolio | `portfolio?{title?, cta_label?, card_view_label?}` (cards come from `buildings`) | `pages.portfolio.title` / `viewAll` / `view` |
+| Services carousel | `services_carousel{eyebrow?, headline, assurances[×3], service_category_slug?}` (ADR 0032) | section hidden without cards |
+| FAQ | `faq_group_key` (root) + `faq?{title?}` | no FAQ; title → `pages.faqTitle` |
+| Dual CTA | `dual_cta{owner,guest}{image_media_id, eyebrow, title, body, cta_label}` | mock photos; links fixed (`/owners`, Avantio); contact line from Settings |
+
+**i18n fallback rule (D1).** Until the per-locale editor tabs exist, staff edit EN only. Every
+optional text goes through `orMessage(value, t(...))` (`ui/or-message.ts`): empty, whitespace-only
+or absent → the current i18n message in the **visitor's** locale (already translated ×4); filled →
+that text, resolved through the translation overlay (approved target, else the EN source — so a
+filled field shows EN on every locale until it is translated).
+
+**Media `accept`.** Each media field declares what its picker takes via `.meta({ media_accept })`
+(`schemas/media-accept.ts`, `withMediaAccept`): `hero.video_media_id` → `"video"` (MP4/WebM; also
+the Guest page's hero video), `guests_pitch.image_media_id` → `"animated"` (JPG/PNG/WebP incl.
+animated, AVIF, MP4/WebM, Lottie `.json`/`.lottie`), everything else → `"image"` (default). Hints
+(`.describe()`) carry the recommended sizes per kind.
+
+**Public render.**
+- Hero poster: `heroPosterSrc` (`ui/hero-poster.ts`) runs the uploaded still through
+  `next/image`'s `getImageProps` (w=1920 candidate) and `home-page.tsx` preloads it at high
+  priority (the LCP candidate); on any failure → raw URL; none → stock poster. The `<source>` is
+  always typed `video/mp4`.
+- Figures: `statFigureCells(content.stats.figures)` → `core/ui` `StatBand`, columns from
+  `statBandColumns(n)` (1–5 → N, 6 → 3, 7–8 → 4; mobile 2-up). Home **no longer** uses `StatsBand`
+  (Settings figures); that composer has no caller now.
+- Guests pitch side media (`guests-section.tsx`), chosen by `PageMedia.mime`, same 4:5 frame:
+  `image/*` → `MediaImage` (every **WebP** with `unoptimized`, because an animated one must not
+  pass through an optimizer and the asset row has no "animated" flag); `video/*` → `LoopVideo`
+  (muted loop, no controls, stops on its first frame under reduced motion); Lottie →
+  `LottiePlayer` client island, which dynamic-imports `@lottiefiles/dotlottie-web` (pinned
+  `0.80.0`) only when a Lottie renders (its WASM renderer loads from jsdelivr). Unknown mime →
+  stock photo. ⚠️ A Lottie needs the R2 bucket's GET CORS rule to play
+  (`docs/specs/r2-runbook.md` → A5).
+- Badge: `badge.label` (blank → `cta.note`) and `badge.icon_key` (blank → `check`) go to
+  `TwoColumnShowcase`'s `badge` / `badgeIcon`.
+
+**`statFigure` (shared).** `schemas/_shared.ts`: `{label [T] ≤80, to (digits ≤15), prefix? ≤8,
+suffix? ≤8, group: bool}`. Owners uses `fixed(statFigure, 4)`, Home `between(statFigure, 0, 8)`
+(`HOME_MAX_FIGURES`). Helpers in `ui/stat-figure-value.ts` (pure): `formatStatFigure` (prefix +
+optionally en-US-grouped `to` + suffix: "400000"+group+"+" → "400,000+"), its inverse
+`parseStatValue` (only returns a row that formats back to the exact input, else `null`),
+`statFigureCells` (rows → `StatBand` cells, used by Owners and Home) and `statBandColumns`. Only
+`stats.figures.*.label` is translatable; number and affixes are shared.
+
+**`scripts/backfill-home-stats.ts`** (one-off, idempotent; dry run by default, `--apply` to write):
+copied the 4 company figures from Settings into `data.stats.figures` (EN label inline; existing
+PT/ES/FR label translations copied as `block:stats.figures.<i>.label` rows, keeping their state)
+so the band didn't vanish at the S5 deploy. It does nothing if figures already exist. It writes the
+DB directly, so the public page only shows the result after the `page:home` tag is busted — press
+Save (no changes) on `/admin/pages/home` after running it.
+
+**Editor.** `admin/layout.ts` renders Home as 8 cards in page order (see "Backoffice" below), with
+readable labels and "+ New figure" for the figures list.
 
 ### Icons on `core/ui` `<Icon>` — Home, Guests, About (ADR 0034)
 
@@ -629,7 +706,8 @@ no-submit behaviour (a verified 0-diff DOM/behaviour inventory, bar the a11y add
 `/[locale]` (home), `/owners`, `/guests`, `/real-estate`, `/about` — each ISR (`revalidate =
 3600`), prebuilds all 4 locales, and emits canonical + `hreflang` alternates via
 `buildMetadata`. Page meta titles/descriptions come from the `pages` i18n namespace; the OG
-image override comes from the page row.
+image override comes from the page row. Home is the exception: its `generateMetadata` is
+`buildHomeMetadata` from the contract (editable `seo.*`, i18n fallback).
 
 ## i18n
 
@@ -659,10 +737,10 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
   schema** into a serializable `FieldNode` tree; `emptyValue` / `applyDefaults` scaffold a `data`
   object (fixed-count arrays padded to length); `humanizeKey` makes labels. Leaf mapping:
   `*_media_id` → media picker (a `.describe()` on the media schema becomes the uploader hint:
-  recommended size/format; its **`accept`** — `"image"` | `"video"` — comes from `.meta({
-  media_accept })`, set with `withMediaAccept` / `optionalVideo` from `schemas/media-accept.ts` /
-  `_shared.ts`; no metadata → `"image"`; the editor passes it to `MediaField accept`. New kinds,
-  e.g. `"animated"`, extend `MEDIA_ACCEPTS` and backoffice's accept map together), `faq_group_key` → **select** dropdown (a `SELECT_SOURCES` key →
+  recommended size/format; its **`accept`** — `"image"` | `"video"` | `"animated"` — comes from
+  `.meta({ media_accept })`, set with `withMediaAccept` / `optionalVideo` / `optionalAnimated`
+  from `schemas/media-accept.ts` / `_shared.ts`; no metadata → `"image"`; the editor passes it to
+  `MediaField accept`. A new kind extends `MEDIA_ACCEPTS` and backoffice's accept map together), `faq_group_key` → **select** dropdown (a `SELECT_SOURCES` key →
   catalogue heuristic, mirroring the media one; `.describe()` becomes the picker hint), ZodBoolean
   → checkbox, ZodString → text (textarea when long). The `select` options are *not* in the schema:
   `getPageEditModel` fills them server-side from another slice's contract (today
@@ -675,7 +753,24 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
   **No translation-table writes** — source lives in `data`; target locales are S14's job.
 - `admin/ui/` — `list.tsx` (server; no status column — pages are always live), `page-editor.tsx`
   (client island; the social-share image + nested `data` edited immutably by path),
-  `schema-fields.tsx` (recursive `FieldNode` renderer, surfaces media `hint`s).
+  `schema-fields.tsx` (recursive `FieldNode` renderer, surfaces media `hint`s and, since S5,
+  the `.describe()` hint of text/checkbox fields). Save is disabled (and `onSubmit` returns early)
+  while the media queue `isPreparing`, flushing or saving, with the "Wait until the media is
+  ready." hint (spec S2).
+- `admin/layout.ts` (pure, tested) — per-page **editor layout** (spec home-admin-editor S2; only
+  `home` has one). An ordered list of cards with **stable ids** — `seo`, `hero`, `stats`,
+  `guests_pitch`, `portfolio`, `services_carousel`, `faq`, `dual_cta` (never rename one: they will
+  be the unit of the translation arc's per-section "Translate with AI") — each listing the `data`
+  root keys it renders, plus read-only rows/notes (the Avantio search bar → Settings; notes with
+  links to Buildings / Services / FAQ / Settings; "the secondary button always links to /owners").
+  The `seo` card also hosts the OG image. `faq` groups `faq_group_key` + `faq`. `resolveEditorLayout`
+  drops paths the schema lacks and appends every unclaimed root key to an **"Other"** card, so a
+  field added to a schema can never disappear. Pages without a layout keep one card per root key.
+- **Readable labels** (`useFieldLabels` in `schema-fields.tsx`, spec S3): a field key resolves to
+  `pages.admin.labels.<key>` (4 locales; keys are global, e.g. `headline` → "Title", `to` →
+  "Number"), else `humanizeKey`. Array items use `pages.admin.itemLabels.<arrayKey>` ("Benefit 1",
+  "Figure 2"), else the array label; the add button uses `pages.admin.addLabels.<arrayKey>`
+  ("+ New figure"), else "+ <item label>". Card titles/notes live under `pages.admin.layout.*`.
 
 Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton from the schema.
 
@@ -685,13 +780,19 @@ Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton f
 - **Richer JSON-LD** (`Organization`/`LocalBusiness`/`FAQPage`/`Service`): belongs in
   `core/seo` (**S13**, ADR — golden rule 3), not hand-written here.
 - **Translation review** of page [T] blocks: **S14**, on the `core/i18n` seam.
+- **Home editor open items** (editable URL fields, R2 GET CORS for Lottie, per-locale tabs with
+  stable row ids, …): `docs/specs/home-admin-editor.md` → "Abiertos".
 
 ## Tests
 
 `tests/pages.test.ts` — the per-page translatable-path contract + the pure overlay logic
 (`expand`, `overlayTranslations` with source fallback, `collectMediaIds`) + schema validation
-(fixed-count arity, unknown key). `tests/pages-admin.test.ts` — the schema → form model
-(`describe` leaf/array detection, `emptyValue`/`applyDefaults` scaffolding, `humanizeKey`). Run:
+(fixed-count arity, unknown key), plus the Home additions (legacy rows and blanks validate,
+`orMessage` fallback, translatable paths incl. `stats.figures.*.label` and excluding `icon_key`,
+`formatStatFigure` ↔ `parseStatValue` round-trip, `statFigureCells`, `statBandColumns`, hero
+poster). `tests/pages-admin.test.ts` — the schema → form model (`describe` leaf/array detection,
+`emptyValue`/`applyDefaults` scaffolding, `humanizeKey`, media `accept` per field) and the editor
+layout (card placement, "Other" fallback). Run:
 `npx tsx --test src/slices/pages/tests/pages.test.ts src/slices/pages/tests/pages-admin.test.ts`.
 
 ### `blog` and `guides` rows: the detail-page sidebar CTAs (session 5)

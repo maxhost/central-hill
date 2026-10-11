@@ -22,6 +22,9 @@ presign ✓ · PUT ✓ 200 · public GET ✓ (immutable cache directive stored) 
 (640→622 B, 1200→1880 B) · delete ✓ 404
 ```
 
+**Update (2026-10-11): one owner item reopened — A5**, a GET/HEAD CORS rule for public reads,
+needed only by the Lottie player (see A5 below).
+
 **The backoffice can now accept its first real upload.** Re-run that probe any time the token,
 the CORS policy, `R2_PUBLIC_BASE_URL` or the build environment changes:
 
@@ -140,6 +143,33 @@ Notes:
 - **Vercel preview deployments get a unique URL each time**, and CORS origins cannot be wildcarded
   mid-string. So uploads will work **locally and in production, not from a preview deploy**. That is
   acceptable — the backoffice is staff-only and previews are for review — but don't file it as a bug.
+
+### A5. CORS for public reads (Lottie) ⏳ OPEN (found 2026-10-11)
+
+A4 covers the admin's **PUT**. Public **reads** never needed CORS: `<img>`/`<video>` load
+cross-origin without it. The Lottie player (Home guests-pitch side media, spec
+`docs/specs/home-admin-editor.md` S6) is different: `@lottiefiles/dotlottie-web` **`fetch()`es** the
+`.json`/`.lottie`, and the public `r2.dev` URL currently answers with **no**
+`Access-Control-Allow-Origin`, so the browser blocks it. Verified 2026-10-11: a `.lottie` uploads,
+validates and saves, but the frame stays empty on the public page.
+
+Fix (dashboard, not code): add a second rule to the bucket's CORS policy, keeping the PUT rule:
+
+```json
+{
+  "AllowedOrigins": [
+    "http://localhost:3000",
+    "https://central-hill-umber.vercel.app"
+  ],
+  "AllowedMethods": ["GET", "HEAD"],
+  "AllowedHeaders": ["*"],
+  "MaxAgeSeconds": 86400
+}
+```
+
+Add the production domain (and any other public origin) here too. Check with
+`curl -sI -H "Origin: <site origin>" "$R2_PUBLIC_BASE_URL/<key of a .lottie>"` → the response
+must carry `access-control-allow-origin`. Until then, don't use a Lottie on the live Home.
 
 ---
 

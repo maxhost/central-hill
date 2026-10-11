@@ -1,6 +1,6 @@
 # Spec + plan — Admin Home editable sección a sección
 
-**Fecha:** 2026-10-11 (rev. 2, con las decisiones del owner) · **Slice principal:** `pages` · **Estado:** aprobado para implementar
+**Fecha:** 2026-10-11 (rev. 2, con las decisiones del owner) · **Slice principal:** `pages` · **Estado:** **completado (2026-10-11)** — ver "Estado final" al final
 
 ## Objetivo
 
@@ -273,3 +273,61 @@ script tras el deploy.
 - **URLs:** no editables desde el admin Home por ahora; las dos existentes se mantienen (ver arriba).
 - **D3:** sin casilla; la Home sólo muestra cifras si se cargan en su editor, en filas variables (0–8)
   con "+ Nuevo dato".
+
+---
+
+## Estado final (2026-10-11)
+
+Todas las sesiones están entregadas. Commits:
+
+| Sesión | Commit | Qué entró |
+|---|---|---|
+| Spec | `60394f6` | Este documento + plan por sesiones |
+| S1 | `bd76f81` | `accept` en el nodo `media` (`.meta({ media_accept })`); `hero.video_media_id` opcional y sólo vídeo (Home y Guest); rechazo en cliente (`media.wrongType`) |
+| S2 | `45c3b93` | `admin/layout.ts` con las 8 tarjetas (`id` estable) + "Otros"; notas con enlaces; Guardar bloqueado mientras se preparan medios (`isPreparing`) |
+| S2 (seguimiento) | `f9eb9d3` | El mismo bloqueo de Guardar en los otros 7 formularios con medios (Settings, Buildings, Apartments, Blog post/autor, Services, Cities) |
+| S3 | `b8556af` | `seo.*` + `buildHomeMetadata`, `hero.eyebrow`, `stats.title`, `portfolio.*`, `faq.title`, `guests_pitch.badge.*`; fallback i18n (`orMessage`); etiquetas legibles del editor |
+| S4 | `ae81fad` | `hero.poster_media_id` (`getImageProps`, w=1920, preload) + `scripts/backfill-home-stats.ts` |
+| S5 | `d60c838` | `statFigure` en `_shared.ts`, `stats.figures` 0–8 con "+ New figure", `StatBand.columns` 1–5; la Home deja de leer las cifras de Settings |
+| S6 | `6a48a1f` | Medio lateral del pitch: MP4/WebM, WebP animado (sin aplanar) y Lottie `.json`/`.lottie` (ingest con validación, tile "Lottie", player diferido) |
+| S7 | — | Documentación: `pages/README.md`, `backoffice/README.md`, `docs/data-model.md`, `docs/architecture.md` (tipos de medio), `docs/specs/r2-runbook.md` (A5), `home-component-library/03-stat-band.md`, enmienda a ADR 0031 y este cierre |
+
+### Verificación hecha
+
+- **S1:** subida real de un MP4 al hero → objeto en R2 → guardar → la Home lo muestra tras la
+  revalidación.
+- **S6:** subida real de un MP4 y de un WebP animado al medio lateral del pitch: ambos se guardan y se
+  reproducen (el WebP conserva sus 12 frames).
+- **Lottie:** subida + validación verificadas contra R2 con un `.lottie` real (el rechazo y borrado
+  de un archivo que no es Lottie está cubierto por tests de `core/media`). La reproducción en la página pública queda bloqueada **sólo**
+  por el CORS del bucket (la URL pública `r2.dev` no envía `Access-Control-Allow-Origin` y el player
+  hace `fetch`). **Aceptado por el owner como superado.**
+- **S7 (repaso final):** con los 9 textos nuevos rellenos desde el admin, `/en` y `/pt` muestran los 8
+  visibles y el `<title>` cambia (el título de FAQ no se pinta porque la Home no tiene grupo FAQ
+  elegido, comportamiento esperado); al vaciarlos, ambos idiomas vuelven a sus textos i18n y la fila
+  `home` queda idéntica a la instantánea previa. Con los campos vacíos la Home es igual a la de antes
+  del spec (comprobado en S3–S5 en los 4 idiomas).
+- typecheck + lint + tests básicos de la superficie tocada en cada sesión (incl. los tests de entradas
+  de medios: qué acepta y qué rechaza cada campo).
+
+## Abiertos (para decidir después)
+
+1. **URLs editables en el admin de la Home.** `hero.cta_primary.url` y `guests_pitch.cta.url` siguen
+   en el formulario, frente a la decisión del owner de "URLs no editables". Decidir si se ocultan del
+   editor y pasan a fijas en código (como el botón secundario del hero).
+2. **CORS GET del bucket R2.** Hace falta una regla GET/HEAD con los orígenes del sitio para que el
+   Lottie se reproduzca en producción (`docs/specs/r2-runbook.md` → A5). Hasta entonces, no usar
+   Lottie en la Home pública.
+3. **Galería con selección múltiple:** si falla una parte de la selección, los archivos que sí se
+   reservaron quedan en cola como huérfanos.
+4. **Todo WebP del campo del pitch se sirve sin optimizar** (`unoptimized`), animado o no: el asset no
+   tiene marca de "animado". Opción: guardar esa marca en el ingest (ya se detecta) y optimizar sólo
+   los WebP estáticos.
+5. **WASM de dotLottie desde jsdelivr.** `@lottiefiles/dotlottie-web` descarga su renderer WASM de un
+   CDN externo; se podría servir desde el propio sitio.
+6. **Arco de traducción por pestañas** (modelo ya descrito arriba), incluido el **id estable por fila**
+   para listas variables (`stats.figures`) para que las traducciones no se desalineen al borrar o
+   reordenar filas en EN.
+7. **Paso post-deploy:** pulsar **Guardar** (sin cambios) en `/admin/pages/home` para que aparezca la
+   banda de cifras. El script de pre-carga escribe directo en la DB y la lectura cacheada (tag
+   `page:home`, sin `revalidate` por tiempo) no lo ve hasta que se invalida el tag.

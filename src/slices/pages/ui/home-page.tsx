@@ -75,7 +75,8 @@ export async function HomePage({ locale }: { locale: Locale }) {
           >
             <source
               src={media[hero.video_media_id]?.url ?? HERO_FALLBACK_VIDEO}
-              type="video/mp4"
+              // The picker takes MP4 or WebM — declare the uploaded asset's real type.
+              type={media[hero.video_media_id]?.mime ?? "video/mp4"}
             />
           </video>
         }

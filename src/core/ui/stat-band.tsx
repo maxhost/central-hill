@@ -5,9 +5,10 @@ import { Container } from "./container";
  * Presentational stats band (ADR 0033, `docs/specs/home-component-library/03-stat-band.md`):
  * a full-bleed dark feature (cacao) band holding an optional centred title in cream, then a
  * grid of count-up figures in warm cream (`feature-accent`) below it. No data fetching, no
- * i18n, no `Locale` — every cell arrives already resolved. The data-fetching half (reading
- * the settings singleton, filtering by `StatKey[]`, resolving the title string) stays in the
- * slice composer (`src/slices/pages/ui/components/stats-band.tsx`), which renders this.
+ * i18n, no `Locale` — every cell arrives already resolved by the caller. Home and Owners
+ * build their cells from their own page rows (`statFigureCells` in slice `pages`); the
+ * Settings-backed composer (`src/slices/pages/ui/components/stats-band.tsx`) is currently
+ * unused.
  *
  * No `durationMs` prop: `CountUp` (`./motion/count-up.tsx`) still hardcodes its 4000ms
  * duration as a module constant, not a prop (per `01-motion-primitives.md`) — out of scope

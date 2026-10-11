@@ -60,6 +60,29 @@ This is recorded in `docs/decisions/0002-rendering-isr.md`.
 - **Backoffice pages:** dynamic, `no-store`; read live from Neon.
 - **Images:** stored in R2, served through the image pipeline (responsive `srcset`, AVIF/WebP,
   lazy, explicit dimensions to keep CLS ~0). See `src/core/media`.
+- **Media kinds (`core/media`, spec `docs/specs/home-admin-editor.md` S6).** The upload pipeline
+  (presign → browser PUT to R2 → finalize) knows three kinds, by mime (`src/core/media/mime.ts`, shared
+  by the server ingest and the admin picker):
+  - **image** — `image/jpeg|png|webp|avif`, ≤15 MB; normalised on finalize (sharp, ≤3000px, EXIF),
+    blurhash computed. An **animated WebP** (more than one frame) is detected and **stored as
+    uploaded** — never re-encoded, which would keep only the first frame; its `width`/`height` are one
+    frame's, its blurhash the first frame's.
+  - **video** — `video/mp4|webm`, ≤200 MB; stored as uploaded, no dimensions/blurhash.
+  - **Lottie** — canonical mimes `application/json` (`.json`) and `application/zip+dotlottie`
+    (`.lottie`), ≤10 MB. A `.lottie` usually reaches the browser with no `File.type`, so the mime is
+    derived from the **extension** (`canonicalMediaMime`) in the browser and again in presign (the
+    server never trusts the client); the signed mime is what R2 stores and serves. The extension must
+    match the mime. On finalize the file is **validated structurally** (`server/inspect.ts`): JSON
+    must be an object with `v`, `w`, `h`, `layers`; `.lottie` must be a zip with a root
+    `manifest.json`. An invalid file is **deleted from R2** and the upload rejected, so no row ever
+    points at it. No sharp, no blurhash; `width`/`height` = the canvas when readable.
+  - `MediaImage` takes an **`unoptimized`** prop (serves the original bytes, skipping the optimizer)
+    for an image that may be animated; the Home guests-pitch renders every WebP that way because the
+    row carries no "animated" flag.
+  - ⚠️ **Open infra item (verified 2026-10-11):** the public `r2.dev` bucket URL sends no CORS
+    headers. Images/videos don't need them, but the Lottie player `fetch()`es the file, so a Lottie
+    uploads and validates yet **cannot play** until the bucket gets a **GET/HEAD** CORS rule for the
+    site origins. See `docs/specs/r2-runbook.md` → A5.
 
 ## 4. Internationalization
 

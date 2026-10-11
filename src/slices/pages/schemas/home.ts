@@ -3,8 +3,9 @@
  *
  * Home was reduced to a guest-facing funnel by ADR 0031 (owners pitch + dual-CTA removed);
  * client direction has since restored the featured portfolio and the closing owner/guest
- * dual-CTA band (the owners pitch and testimonials stay out for now). The featured portfolio
- * is still composed straight from the `buildings` slice, not stored here.
+ * dual-CTA band (the owners pitch and testimonials stay out for now). The featured portfolio's
+ * cards come straight from the `buildings` slice; only its copy (`portfolio.*`) is stored
+ * here (spec home-admin-editor S3).
  *
  * Composed (not authored) content: the dual-CTA contact line → company_settings (settings
  * slice), and the services carousel → the `services` slice

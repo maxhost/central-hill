@@ -68,3 +68,19 @@ Split into two pieces, per the overview's ground rule:
 - [ ] Band still renders `null` end-to-end when `getGlobals` returns nothing or all keys are empty
       (verify by temporarily clearing settings in a local DB check, or by code inspection of the
       composer's early-return logic).
+
+## Amendment (2026-10-11) — as shipped today
+
+This spec describes the 2026-09 extraction; two things have since changed (spec
+`docs/specs/home-admin-editor.md`, S5):
+
+- **`StatBand.columns`** (`src/core/ui/stat-band.tsx`) is now `1 | 2 | 3 | 4 | 5` (default `4`),
+  mapped to literal `lg:grid-cols-N` classes so Tailwind generates each one. Mobile stays 2-up.
+  Additive: Owners/About/Buildings keep their previous value. Each cell's React key includes its
+  index, because labels may repeat. The optional per-cell `description` (Buildings' listing) is
+  unchanged.
+- **Home no longer goes through the `StatsBand` composer.** `home-page.tsx` renders `StatBand`
+  directly with the page's own `stats.figures` rows (`statFigureCells`), the column count from
+  `statBandColumns(n)` (1–5 → N, 6 → 3, 7–8 → 4) and no band at all when there are no rows. The
+  settings-backed `pages/ui/components/stats-band.tsx` (`StatsBand`) has **no caller** now; it is
+  kept for a possible future company-wide band.

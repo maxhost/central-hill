@@ -55,7 +55,8 @@ export {
  * admin UI lives here per ADR 0018; consuming slices import the fields and pass
  * resolved previews via {@link resolveMediaPreviews} from their server screens.
  * `accept` picks what the dialog offers (and the client check allows): `"image"`
- * (default), `"video"` (MP4/WebM — background loops) or `"media"` (either).
+ * (default), `"video"` (MP4/WebM — background loops), `"media"` (either) or `"animated"`
+ * (images incl. animated WebP, MP4/WebM, Lottie `.json`/`.lottie` — spec S6).
  */
 export { MediaField, MediaGalleryField } from "./ui/media-field";
 export type { MediaFieldAccept } from "./ui/media-accept";
@@ -75,8 +76,9 @@ export { IconField, SpriteIcon } from "./ui/icon-field";
  * Busy signal (spec home-admin-editor S2): `useMediaQueue().isPreparing` is true while a
  * picked file is still being reserved (the field's value does not hold the new id yet).
  * Forms MUST disable Save and early-return from their submit handler while it is true;
- * show `backoffice.media.waitForMedia` next to the button. Wired today in the `pages`
- * editor only.
+ * show `backoffice.media.waitForMedia` next to the button. Wired in every form with a
+ * `MediaField`: the pages editor plus settings, buildings, blog post/author, apartments,
+ * services and cities (f9eb9d3).
  */
 export { MediaQueueProvider, useMediaQueue } from "./ui/media-queue";
 export type { MediaQueueApi } from "./ui/media-queue";

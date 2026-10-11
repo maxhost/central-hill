@@ -82,7 +82,6 @@ has a known, validated schema (Zod in code) that both renders the admin form and
 page_content
   id        uuid pk
   key       text unique   -- 'home' | 'owners' | 'real_estate' | 'about' | 'guest' | 'blog' | 'guides'
-  status    text          -- draft | published
   data      jsonb         -- SOURCE-locale values, validated against the page's fixed schema
   og_image_media_id  uuid null
 ```
@@ -92,24 +91,65 @@ page_content
   `block:owners_benefits.0.title`). The page schema declares which leaf paths are **[T]**.
 - Repeating groups are **fixed-count arrays** in the schema (e.g. exactly 6 benefit cards) — the form
   shows a fixed number of slots, never "add block".
+  Exceptions are **bounded** lists (`between(min,max)`, e.g. Owners `plans.tiers[1..4]`, Home
+  `stats.figures[0..8]`): the editor shows "+ add" / remove within the bounds.
 - Values that are inherently dynamic/shared are **not** copied into `data`; they reference other
   slices at render time (see per-page notes).
 - On save+publish → `revalidatePath('/{locale}/<page>')` for all 4 locales.
 
 ### Per-page schemas (fields condensed; all prose fields are [T])
 
-- **home**: `hero{video_media_id, headline, subtitle, cta_primary{label,url}, cta_secondary{label,url}}`;
-  `guests_pitch{headline, subheadline, benefits[×4]{icon_key,title,description}, image_media_id, cta{label,url,note}}`;
-  `faq_group_key`.
-  → Stats band = **company_settings**. Nothing else is composed in.
-  **ADR 0032** added `services_carousel{eyebrow?, headline, assurances[×3]{icon_key,label},
-  service_category_slug?}` — section copy only: the cards are the published rows of slice `services`
-  (filtered to `service_category_slug` when set), never authored here.
-  **Reduced by ADR 0031** to hero · booking search · stats · guests pitch: `owners_pitch`, `story`
-  and `dual_cta` were removed from the schema, and the featured portfolio and testimonials are no
-  longer composed into Home (they still render on the owners and guest pages). Rows written before
-  that change may still carry the removed keys — the schema strips them on read, and the first save
-  drops them for good.
+- **home** (as shipped by `docs/specs/home-admin-editor.md`, 2026-10-11; `src/slices/pages/schemas/home.ts`).
+  **[T]** = translatable text (EN source in `data`, other locales via `translation` rows);
+  **C** = shared across locales (media, icons, numbers, URLs, selectors). `?` = optional; every
+  optional text and media field is blank-tolerant (`""` or absent behaves the same).
+
+  | Path | Type | Class | Blank / absent → |
+  |---|---|---|---|
+  | `seo?.meta_title?` | string ≤70 (`seoShape`) | T | i18n `pages.home.metaTitle` |
+  | `seo?.meta_description?` | string ≤200 (`seoShape`) | T | i18n `pages.home.metaDescription` |
+  | *(column)* `og_image_media_id` | image | C | no OG override |
+  | `hero.video_media_id` | `"" \| uuid`, video (MP4/WebM) | C | stock Pexels clip |
+  | `hero.poster_media_id?` | `"" \| uuid`, image | C | stock Unsplash poster |
+  | `hero.eyebrow?` | string ≤60 | T | i18n `pages.home.heroEyebrow` |
+  | `hero.headline` | string ≤160, **required** | T | — |
+  | `hero.subtitle?` | string ≤280 | T | omitted |
+  | `hero.cta_primary{label, url}` | label ≤80 **required**; `url` absolute URL **required** | label T · url C | — |
+  | `hero.cta_secondary{label}` | string ≤80, **required** (href fixed in code: `/<locale>/owners`) | T | — |
+  | `stats?.title?` | string ≤160 | T | i18n `pages.stats.title` |
+  | `stats?.figures?` | 0–8 × `statFigure{label ≤80, to (digits ≤15), prefix? ≤8, suffix? ≤8, group: bool}` | `label` T · rest C | **no rows → no band** (heading included) |
+  | `guests_pitch.headline` | string ≤160, **required** | T | — |
+  | `guests_pitch.subheadline?` | string ≤280 | T | omitted |
+  | `guests_pitch.benefits` | exactly 4 × `{icon_key, title ≤120, description ≤400}` | icon C · text T | — |
+  | `guests_pitch.image_media_id` | `"" \| uuid`; image (incl. animated WebP), MP4/WebM or Lottie (`.json`/`.lottie`) | C | stock Unsplash photo |
+  | `guests_pitch.cta{label, url, note?}` | label ≤80, url absolute URL, note ≤160 | label/note T · url C | — |
+  | `guests_pitch.badge?.label?` | string ≤120 | T | `guests_pitch.cta.note` |
+  | `guests_pitch.badge?.icon_key?` | `"" \| icon key` | C | `check` |
+  | `portfolio?.title?` | string ≤160 | T | i18n `pages.portfolio.title` |
+  | `portfolio?.cta_label?` | string ≤80 | T | i18n `pages.portfolio.viewAll` |
+  | `portfolio?.card_view_label?` | string ≤40 | T | i18n `pages.portfolio.view` |
+  | `services_carousel{eyebrow?, headline, assurances[×3]{icon_key, label ≤60}, service_category_slug?}` | ADR 0032 | text T · icon/slug C | section hidden if the block is absent or no service matches |
+  | `faq_group_key?` | `"" \| faq_group.key` | C | no FAQ |
+  | `faq?.title?` | string ≤160 | T | i18n `pages.faqTitle` |
+  | `dual_cta.{owner,guest}{image_media_id, eyebrow ≤60, title ≤160, body ≤400, cta_label ≤60}` | text required; image `"" \| uuid` | text T · image C | blank image → mock photo; links fixed in code (`/owners`, Avantio) |
+
+  → Composed, not stored: featured portfolio cards = **buildings** (featured, by position);
+  services carousel cards = **services** (ADR 0032); FAQ questions = **faq**; dual-CTA contact line
+  = **company_settings**; Avantio search bar = **settings**. **The figures band is page content**
+  since spec S5 — Home no longer reads `company_settings` stats (`scripts/backfill-home-stats.ts`
+  pre-filled the live row with the 4 company figures, idempotently).
+  → **Language rule (D1)** until the per-locale editor tabs exist: staff edit EN only. A blank
+  optional text renders the i18n message of the visitor's locale (`orMessage`); a filled one renders
+  that text, resolved through the `translation` overlay (approved target, else EN source).
+  → History: ADR 0031 (2026-09-12) cut Home to a guest funnel; ADR 0032 added the services carousel;
+  `b8693db` (2026-09-28, client direction) restored `dual_cta` and the featured portfolio; spec
+  `home-admin-editor` (2026-10-11) added every optional field above. Rows written before a field
+  existed still validate (all additions are optional), and keys the schema doesn't know are stripped
+  on the next save.
+  → **Caching:** `getHomePage` is `unstable_cache`-wrapped with tag `page:home` and **no time-based
+  `revalidate`** (the route's `revalidate = 3600` re-renders from the same cached data entry). A
+  direct DB write (script, SQL) is therefore invisible on the public site until the tag is busted —
+  i.e. until an admin presses **Save** on `/admin/pages/home` (`revalidatePage("home")`).
 - **owners**: `hero{image_media_id, headline, copy}`; `earnings_form{badge, headline, subheadline, cta_label, note}`
   (the form *fields* are fixed in code → `lead.kind='earnings_estimate'`; the `badge` — "★ Earn +25%" —
   is highlighted inside the form card); `why{headline, subheadline?, benefits[×6]{icon_key,title,description},
@@ -296,6 +336,11 @@ default; Home/Guest/About start blank.
 ### Slice `media` (kernel-adjacent, owned by `core/media` + thin admin)
 - **media_asset**: `id, r2_key, mime, width, height, blurhash?, credit?`. **[T]** `alt`. (Video assets
   for heroes are referenced the same way; the player/poster is chosen by mime in the UI.)
+  Three kinds by `mime` (spec home-admin-editor S6): **image** (`image/jpeg|png|webp|avif`; an
+  animated WebP is stored as uploaded, `width`/`height` = one frame), **video** (`video/mp4|webm`,
+  no dimensions/blurhash) and **Lottie** (`application/json` for `.json`, `application/zip+dotlottie`
+  for `.lottie`; `width`/`height` = the animation canvas when readable, no blurhash). There is no
+  "animated" flag on the row.
 
 ### Slice `auth` (kernel `core/auth`)
 - Better Auth tables (`user`, `session`, `account`, `verification`) + `staff_role`.

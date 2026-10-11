@@ -78,10 +78,37 @@ row is treated as not-staff.
   is the render-ready view. **ADR 0018 places the media admin UI here**; consuming
   slices import the fields via this contract and never touch `core/media` ingest
   directly (those kernel functions are `server-only` + ungated by design).
-  `accept` (`ui/media-accept.ts`, pure + tested) picks what a field takes: `"image"` (default,
-  JPEG/PNG/WebP/AVIF), `"video"` (MP4/WebM — background loops, e.g. the Home hero) or
-  `"media"` (either). It sets the file dialog filter **and** a client check on the picked
-  file (`backoffice.media.wrongType`); `core/media` ingest stays the authority.
+  `accept` (`ui/media-accept.ts`, pure + tested; type `MediaFieldAccept` in the contract) picks
+  what a field takes:
+  - `"image"` (default) — JPEG/PNG/WebP/AVIF;
+  - `"video"` — MP4/WebM (background loops, e.g. the Home hero);
+  - `"media"` — image or video;
+  - `"animated"` — image (incl. animated WebP), MP4/WebM **or Lottie** (`.json` / `.lottie`):
+    the Home guests-pitch side media only (spec `home-admin-editor` S6).
+
+  The lists reuse `core/media/mime.ts`, so they stay a subset of what ingest allows. `accept`
+  sets the file dialog filter (`acceptAttribute`; Lottie fields also list `.lottie,.json`,
+  since the OS knows no type for a dotLottie) **and** a client check on the picked file
+  (`isAcceptedType`), refused with `backoffice.media.wrongType` ("That file type isn't allowed
+  here."). Before the check, the file's type is **normalised** (`pickedFileType` →
+  `canonicalMediaMime`): `.lottie` → `application/zip+dotlottie`, `.json` → `application/json`,
+  whatever the browser reported (a `.lottie` usually reports none). Presign repeats the same
+  normalisation server-side; `core/media` ingest stays the authority (it also validates a
+  Lottie's structure on finalize).
+
+  Tiles: a non-image preview shows a labelled tile, "Lottie" (`media.lottie`) or "Video"
+  (`media.video`) (`previewLabelKey`); an empty video-only field reads "No video"
+  (`media.emptyVideo`), every other empty field "No image" (`emptyStateKey`).
+- **Media queue busy signal** (`ui/media-queue.tsx`, `ui/media-busy.ts`, spec `home-admin-editor`
+  S2). Picking a file first reserves the upload (a presign round-trip); until that settles, the
+  form's value does not hold the new id, so an early Save would persist the form without it.
+  `useMediaQueue().track(work)` counts each pick as one in-flight reservation (released when it
+  resolves **or** throws — `trackReservation`) and `isPreparing` is true while the count is above
+  zero; `MediaField`/`MediaGalleryField` wrap every pick in `track` until their `onChange` has
+  run. **All 8 media forms gate Save on it** (button disabled + `onSubmit` returns early, with
+  the shared `media.waitForMedia` hint "Wait until the media is ready."): the pages editor
+  (`45c3b93`) and Settings, Buildings, Apartments, Blog post, Blog author, Services and Cities
+  (`f9eb9d3`). A new media form must do the same.
 
 Backoffice routes are **dynamic** (auth) — no ISR, no cache tags.
 
@@ -112,5 +139,7 @@ user via Better Auth and grants a `staff_role` (default `admin`).
 ## Tests
 
 `tests/backoffice.test.ts` — `composeAdminNav` grouping / ordering / role
-filtering / empty-group drop. Run:
+filtering / empty-group drop. `tests/media-accept.test.ts` — what each `accept` kind takes and
+refuses (incl. `.lottie` / `.json` normalisation, tiles); `tests/media-busy.test.ts` — the
+reservation counter. Run:
 `npx tsx --test src/slices/backoffice/tests/backoffice.test.ts`.
