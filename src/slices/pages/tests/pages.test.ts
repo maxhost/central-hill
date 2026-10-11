@@ -649,3 +649,79 @@ test("seoMetadataInput: falls back to i18n, uses seo fields + OG, keeps canonica
   assert.equal(filled.description, "Managed rentals.");
   assert.deepEqual(filled.images, [{ url: og.url, width: 1200, height: 630, alt: "Owners" }]);
 });
+
+// ── Owners S3: estimate form — fixed i18n strings + editable steps 2/3 ──────
+const ESTIMATE_LOCALES = ["en", "pt", "es", "fr"] as const;
+function estimateFormMessages(locale: string): Record<string, string> {
+  const all = JSON.parse(readFileSync(path.resolve(process.cwd(), `messages/${locale}.json`), "utf8"));
+  return all.pages.estimateForm;
+}
+/** The ICU arguments and rich-text tags a message uses (what must match across locales). */
+function icuShape(message: string | undefined = ""): string {
+  const args = [...message.matchAll(/\{\s*(\w+)/g)].map((m) => `{${m[1]}}`);
+  const tags = [...message.matchAll(/<\/?(\w+)>/g)].map((m) => m[0]);
+  return [...args, ...tags].sort().join(" ");
+}
+
+test("owners S3: every pages.estimateForm key exists in all 4 locales with the same args/tags", () => {
+  const en = estimateFormMessages("en");
+  const keys = Object.keys(en).sort();
+  assert.ok(keys.length >= 22, "the form's fixed strings + step 2/3 defaults");
+  for (const locale of ESTIMATE_LOCALES) {
+    const msgs = estimateFormMessages(locale);
+    assert.deepEqual(Object.keys(msgs).sort(), keys, `${locale}: same keys as en`);
+    for (const k of keys) {
+      assert.ok(typeof msgs[k] === "string" && msgs[k].trim() !== "", `${locale}.${k} is non-empty`);
+      assert.equal(icuShape(msgs[k]), icuShape(en[k]), `${locale}.${k}: same ICU args/tags as en`);
+    }
+  }
+  assert.equal(icuShape(en.agreeTerms), "</terms> <terms>");
+  assert.equal(icuShape(en.agreePrivacy), "</privacy> <privacy>");
+});
+
+test("owners S3: the step 2/3 copy is optional, blank-tolerant, capped and translatable", () => {
+  const form = ownersSchema.shape.earnings_form;
+  const base = { headline: "Get your study", cta_label: "Request my study" };
+  assert.ok(form.safeParse(base).success, "a legacy earnings_form without the new keys validates");
+  const blank = {
+    ...base,
+    contact_step: { title: "", lede: "", submit_label: "", back_label: "" },
+    done_step: { title: "", body: "" },
+  };
+  assert.ok(form.safeParse(blank).success, "blank fields (editor scaffold) validate");
+  assert.ok(form.safeParse({ ...base, contact_step: {}, done_step: {} }).success);
+  assert.ok(!form.safeParse({ ...base, contact_step: { back_label: "x".repeat(31) } }).success, "back ≤ 30");
+  assert.ok(!form.safeParse({ ...base, done_step: { body: "x".repeat(401) } }).success, "body ≤ 400");
+  const paths = translatablePathsByPage.owners;
+  for (const p of [
+    "earnings_form.contact_step.title",
+    "earnings_form.contact_step.lede",
+    "earnings_form.contact_step.submit_label",
+    "earnings_form.contact_step.back_label",
+    "earnings_form.done_step.title",
+    "earnings_form.done_step.body",
+  ]) {
+    assert.ok(paths.includes(p), `expected translatable path ${p}`);
+  }
+});
+
+test("owners S3: each step 2/3 field's admin hint names its current EN default", () => {
+  const en = estimateFormMessages("en");
+  const { contact_step, done_step } = ownersSchema.shape.earnings_form.shape;
+  const contact = contact_step.unwrap().shape;
+  const done = done_step.unwrap().shape;
+  const pairs: [string | undefined, string | undefined][] = [
+    [contact.title.description, en.contactTitle],
+    [contact.lede.description, en.contactLede],
+    [contact.submit_label.description, en.submit],
+    [contact.back_label.description, en.back],
+    [done.title.description, en.doneTitle],
+    [done.body.description, en.doneBody],
+  ];
+  for (const [hint, message] of pairs) {
+    assert.ok(hint?.includes(`Leave blank for “${message}`), `hint "${hint}" names "${message}"`);
+  }
+  // Blank → that default (same rule as every other optional field).
+  assert.equal(orMessage("", en.back ?? ""), "Back");
+  assert.equal(orMessage("Return", en.back ?? ""), "Return");
+});

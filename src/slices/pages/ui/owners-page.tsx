@@ -211,6 +211,12 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
             subheadline={earnings_form.subheadline}
             ctaLabel={earnings_form.cta_label}
             note={earnings_form.note}
+            contactTitle={earnings_form.contact_step?.title}
+            contactLede={earnings_form.contact_step?.lede}
+            submitLabel={earnings_form.contact_step?.submit_label}
+            backLabel={earnings_form.contact_step?.back_label}
+            doneTitle={earnings_form.done_step?.title}
+            doneBody={earnings_form.done_step?.body}
           />
         }
       />

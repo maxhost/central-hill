@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   FormButton,
   FormCard,
@@ -14,6 +15,7 @@ import {
   FormStepper,
   UiIcon,
 } from "@core/ui";
+import { orMessage } from "../or-message";
 
 /**
  * The Owners-hero "earnings estimate" card — a 3-step wizard (1: property, 2: contact details,
@@ -21,7 +23,7 @@ import {
  * (the same field/label/control/button/focus look as Real Estate's `#deal-enquiry` form — a
  * deliberate, user-approved style unification; it used to carry its own `h-11`-input design).
  *
- * Structure, copy and behaviour are unchanged from the pre-unification version: same steps,
+ * Structure and behaviour are unchanged from the pre-unification version: same steps,
  * fields, ids/names/types/placeholders/options, same initial state (step 1, 1 property,
  * "Studio", "+351"), same navigation (Next → / ← Back, clamped 1…3, no validation — nothing is
  * `required`), the − / + count never below 1 (no max), and it still **submits nothing** (no
@@ -39,12 +41,21 @@ import {
  * properties/bedrooms pair stays two-up at every width (`FormRow stack={false}`), as before.
  *
  * Second consumer: Buildings' listing "earnings calculator" (`buildings-listing.tsx`) —
- * exported via `pages/contract.ts` since that's a different slice (golden rule 2). Only
- * step 1's copy (`badge`/`headline`/`subheadline`/`ctaLabel`/`note`) is parameterized because
- * that's the only part that ever differed between the two pages' original markup; steps 2
- * ("Your contact details") and 3 ("Request received") were already byte-for-byte identical
- * on both, so they stay fixed here rather than becoming props nobody would vary. Copy is
- * hardcoded English (as before — not i18n'd; step 1's comes from the caller).
+ * exported via `pages/contract.ts` since that's a different slice (golden rule 2).
+ *
+ * Copy (spec owners-admin-editor S3):
+ * - Step 1's `badge`/`headline`/`subheadline`/`ctaLabel`/`note` come from the caller (the
+ *   only part that ever differed between the two hosts); "→" is appended to `ctaLabel` here.
+ * - Steps 2–3's headings, intro, buttons and confirmation text are optional props
+ *   (`contactTitle`/`contactLede`/`submitLabel`/`backLabel`/`doneTitle`/`doneBody` — Owners
+ *   passes its `earnings_form.contact_step` / `done_step` fields). Blank / absent → the
+ *   `pages.estimateForm.*` message of the visitor's locale (`orMessage`). The "→" / "←" arrows
+ *   are added here, never part of the text. Buildings passes none, so it shows the i18n copy.
+ * - Everything else — field labels, placeholders, the "Studio" option, the phone-code and
+ *   stepper aria-labels, the two consent sentences (links via `t.rich`) — is fixed, not
+ *   editable, and translated in `pages.estimateForm.*` (EN is the original markup's text).
+ *   Read client-side with `useTranslations`: the locale layout's `NextIntlClientProvider` has
+ *   no `messages` prop, so next-intl v4 forwards the request's full message catalog.
  */
 
 const STEPS = 3;
@@ -59,7 +70,8 @@ const PHONE_CODES = [
   { value: "+55", label: "🇧🇷 +55" },
 ];
 
-const BEDROOMS = ["Studio", "1", "2", "3", "4", "5", "6+"];
+/** Bedroom options after the translated "Studio" (numbers aren't translated). */
+const BEDROOM_COUNTS = ["1", "2", "3", "4", "5", "6+"];
 
 const headingClass = "mb-2 text-[26px] leading-[1.5]";
 const ledeClass = "mb-[22px] text-sm text-ink-soft";
@@ -71,13 +83,32 @@ export function OwnerEstimateForm({
   subheadline,
   ctaLabel,
   note,
+  contactTitle,
+  contactLede,
+  submitLabel,
+  backLabel,
+  doneTitle,
+  doneBody,
 }: {
   badge?: string;
   headline: string;
   subheadline?: string;
   ctaLabel: string;
   note?: string;
+  /** Step 2 heading. Blank / absent → `pages.estimateForm.contactTitle`. */
+  contactTitle?: string;
+  /** Step 2 intro line. Blank / absent → `pages.estimateForm.contactLede`. */
+  contactLede?: string;
+  /** Step 2 submit button text, without the arrow ("→" is appended). Blank → `…submit`. */
+  submitLabel?: string;
+  /** Step 2 back link text, without the arrow ("←" is prefixed). Blank → `…back`. */
+  backLabel?: string;
+  /** Step 3 heading. Blank / absent → `pages.estimateForm.doneTitle`. */
+  doneTitle?: string;
+  /** Step 3 text. Blank / absent → `pages.estimateForm.doneBody`. */
+  doneBody?: string;
 }) {
+  const t = useTranslations("pages.estimateForm");
   const [step, setStep] = useState(1);
   const [properties, setProperties] = useState(1);
   const next = () => setStep((s) => Math.min(STEPS, s + 1));
@@ -97,12 +128,12 @@ export function OwnerEstimateForm({
         <h3 className={headingClass}>{headline}</h3>
         {subheadline ? <p className={ledeClass}>{subheadline}</p> : null}
 
-        <FormField label="Property Address" htmlFor="addr">
-          <FormInput id="addr" type="text" placeholder="Street, neighbourhood, city" autoComplete="off" />
+        <FormField label={t("addressLabel")} htmlFor="addr">
+          <FormInput id="addr" type="text" placeholder={t("addressPlaceholder")} autoComplete="off" />
         </FormField>
 
         <FormRow stack={false}>
-          <FormField label="Nº of Properties" labelId="nprop-label">
+          <FormField label={t("propertiesLabel")} labelId="nprop-label">
             <FormStepper
               aria-labelledby="nprop-label"
               data-stepper
@@ -113,12 +144,12 @@ export function OwnerEstimateForm({
               min={1}
               id="nprop"
               name="nprop"
-              decrementLabel="Decrease number of properties"
-              incrementLabel="Increase number of properties"
+              decrementLabel={t("decreaseProperties")}
+              incrementLabel={t("increaseProperties")}
             />
           </FormField>
-          <FormField label="Nº of Bedrooms" htmlFor="nbed">
-            <FormSelect id="nbed" options={BEDROOMS} chevron />
+          <FormField label={t("bedroomsLabel")} htmlFor="nbed">
+            <FormSelect id="nbed" options={[t("studio"), ...BEDROOM_COUNTS]} chevron />
           </FormField>
         </FormRow>
 
@@ -129,37 +160,41 @@ export function OwnerEstimateForm({
       </div>
 
       <div data-panel="2" hidden={step !== 2}>
-        <h3 className={headingClass}>Your contact details</h3>
-        <p className={ledeClass}>Almost there — tell us how to reach you with the study.</p>
+        <h3 className={headingClass}>{orMessage(contactTitle, t("contactTitle"))}</h3>
+        <p className={ledeClass}>{orMessage(contactLede, t("contactLede"))}</p>
 
-        <FormField label="Full Name" htmlFor="fname">
-          <FormInput id="fname" type="text" placeholder="Jane Doe" autoComplete="name" />
+        <FormField label={t("nameLabel")} htmlFor="fname">
+          <FormInput id="fname" type="text" placeholder={t("namePlaceholder")} autoComplete="name" />
         </FormField>
-        <FormField label="Email" htmlFor="femail">
-          <FormInput id="femail" type="email" placeholder="jane@example.com" autoComplete="email" />
+        <FormField label={t("emailLabel")} htmlFor="femail">
+          <FormInput id="femail" type="email" placeholder={t("emailPlaceholder")} autoComplete="email" />
         </FormField>
-        <FormField label="Phone" htmlFor="fphone">
+        <FormField label={t("phoneLabel")} htmlFor="fphone">
           <div className="flex gap-[10px]">
             <div className="w-[124px] flex-none">
-              <FormSelect id="fphone-code" aria-label="Country code" defaultValue="+351" options={PHONE_CODES} chevron />
+              <FormSelect id="fphone-code" aria-label={t("phoneCodeLabel")} defaultValue="+351" options={PHONE_CODES} chevron />
             </div>
-            <FormInput id="fphone" type="tel" placeholder="912 345 678" autoComplete="tel" className="min-w-0 flex-1" />
+            <FormInput id="fphone" type="tel" placeholder={t("phonePlaceholder")} autoComplete="tel" className="min-w-0 flex-1" />
           </div>
         </FormField>
 
         <FormCheckbox>
-          I agree to the{" "}
-          <a href="#" className={linkClass}>
-            Terms &amp; Conditions
-          </a>
-          .
+          {t.rich("agreeTerms", {
+            terms: (chunks) => (
+              <a href="#" className={linkClass}>
+                {chunks}
+              </a>
+            ),
+          })}
         </FormCheckbox>
         <FormCheckbox>
-          I agree to the{" "}
-          <a href="#" className={linkClass}>
-            Privacy Policy
-          </a>{" "}
-          and consent to being contacted.
+          {t.rich("agreePrivacy", {
+            privacy: (chunks) => (
+              <a href="#" className={linkClass}>
+                {chunks}
+              </a>
+            ),
+          })}
         </FormCheckbox>
 
         <div className="mt-[6px] flex items-center gap-[14px]">
@@ -169,10 +204,10 @@ export function OwnerEstimateForm({
             onClick={back}
             className="flex-none cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold text-ink-soft transition-colors hover:text-accent-deep focus-visible:text-accent-deep focus-visible:underline focus-visible:outline-none"
           >
-            ← Back
+            {`← ${orMessage(backLabel, t("back"))}`}
           </button>
           <FormButton data-wiz-next onClick={next}>
-            Submit request →
+            {`${orMessage(submitLabel, t("submit"))} →`}
           </FormButton>
         </div>
       </div>
@@ -185,11 +220,8 @@ export function OwnerEstimateForm({
             strokeWidth={1.8}
             className="mb-[18px] inline-block rounded-full border border-line p-3 text-accent"
           />
-          <h3 className="mb-2.5 text-[26px] leading-[1.5]">Request received</h3>
-          <p className="text-[14.5px] leading-[1.6] text-ink-soft">
-            Thank you — our team will review your property and get back to you within 48 hours with your
-            free profitability study.
-          </p>
+          <h3 className="mb-2.5 text-[26px] leading-[1.5]">{orMessage(doneTitle, t("doneTitle"))}</h3>
+          <p className="text-[14.5px] leading-[1.6] text-ink-soft">{orMessage(doneBody, t("doneBody"))}</p>
         </div>
       </div>
     </FormCard>
