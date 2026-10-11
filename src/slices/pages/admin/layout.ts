@@ -44,7 +44,13 @@ export const OWNERS_CARD_IDS = [
   "final_cta",
 ] as const;
 
-export type EditorCardId = (typeof HOME_CARD_IDS)[number] | (typeof OWNERS_CARD_IDS)[number];
+/** Stable card ids of the Buildings listing editor, in page order (spec buildings-admin-editor). */
+export const BUILDINGS_CARD_IDS = ["seo", "hero", "owner_panel", "stats", "calculator"] as const;
+
+export type EditorCardId =
+  | (typeof HOME_CARD_IDS)[number]
+  | (typeof OWNERS_CARD_IDS)[number]
+  | (typeof BUILDINGS_CARD_IDS)[number];
 
 /** Id of the fallback card that collects root keys no card claims. */
 export const OTHER_CARD_ID = "other";
@@ -203,9 +209,53 @@ const OWNERS_LAYOUT: EditorLayoutItem[] = [
   },
 ];
 
+/**
+ * Buildings listing (spec buildings-admin-editor → "Editor: formulario sección a sección").
+ * The building cards between the hero and the owner panel are the catalogue (info row).
+ */
+const BUILDINGS_LAYOUT: EditorLayoutItem[] = [
+  {
+    kind: "card",
+    id: "seo",
+    titleKey: `${L}.cards.seo`,
+    paths: ["seo"],
+    note: { textKey: `${L}.notes.seoLimits` },
+    hostsOgImage: true,
+  },
+  { kind: "card", id: "hero", titleKey: `${L}.cards.hero`, paths: ["hero"] },
+  {
+    kind: "info",
+    id: "buildings_grid",
+    titleKey: `${L}.cards.buildingsGrid`,
+    note: { textKey: `${L}.notes.buildingsGrid`, link: link("/admin/buildings", "buildings") },
+  },
+  {
+    kind: "card",
+    id: "owner_panel",
+    titleKey: `${L}.cards.owner_panel`,
+    paths: ["owner_panel"],
+    note: { textKey: `${L}.notes.ownerPanel`, link: link("/admin/settings", "settings") },
+  },
+  {
+    kind: "card",
+    id: "stats",
+    titleKey: `${L}.cards.stats`,
+    paths: ["stats"],
+    note: { textKey: `${L}.notes.stats` },
+  },
+  {
+    kind: "card",
+    id: "calculator",
+    titleKey: `${L}.cards.calculator`,
+    paths: ["calculator"],
+    note: { textKey: `${L}.notes.earningsForm` },
+  },
+];
+
 const LAYOUTS: Partial<Record<string, EditorLayoutItem[]>> = {
   home: HOME_LAYOUT,
   owners: OWNERS_LAYOUT,
+  buildings: BUILDINGS_LAYOUT,
 };
 
 /**

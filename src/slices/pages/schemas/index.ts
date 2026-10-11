@@ -1,6 +1,7 @@
 /**
  * Registry of the editable fixed pages (ADR 0012): the five marketing pages plus `blog` and
- * `guides`, which hold the copy those sections show outside their posts/guides. Maps each `page_content.key`
+ * `guides`, which hold the copy those sections show outside their posts/guides, and `buildings` (the
+ * listing page, spec buildings-admin-editor). Maps each `page_content.key`
  * to its fixed Zod schema, and derives the translatable leaf paths the translation
  * pipeline must extract per page.
  */
@@ -13,9 +14,10 @@ import { aboutSchema } from "./about";
 import { guestSchema } from "./guest";
 import { blogSchema } from "./blog";
 import { guidesSchema } from "./guides";
+import { buildingsSchema } from "./buildings";
 
 /** `page_content.key` enum — one row per key. */
-export const pageKey = z.enum(["home", "owners", "real_estate", "about", "guest", "blog", "guides"]);
+export const pageKey = z.enum(["home", "owners", "real_estate", "about", "guest", "blog", "guides", "buildings"]);
 export type PageKey = z.infer<typeof pageKey>;
 
 /** key → the fixed schema that validates that page's `data` jsonb. */
@@ -27,6 +29,7 @@ export const pageSchemas = {
   guest: guestSchema,
   blog: blogSchema,
   guides: guidesSchema,
+  buildings: buildingsSchema,
 } as const satisfies Record<PageKey, z.ZodType>;
 
 /** key → translatable leaf paths (with `[]` array wildcards) for the pipeline. */
@@ -38,6 +41,7 @@ export const translatablePathsByPage: Record<PageKey, string[]> = {
   guest: translatablePaths(guestSchema),
   blog: translatablePaths(blogSchema),
   guides: translatablePaths(guidesSchema),
+  buildings: translatablePaths(buildingsSchema),
 };
 
 export {
@@ -48,6 +52,7 @@ export {
   guestSchema,
   blogSchema,
   guidesSchema,
+  buildingsSchema,
 };
 export type { HomeContent } from "./home";
 export type { OwnersContent } from "./owners";
@@ -56,3 +61,4 @@ export type { AboutContent } from "./about";
 export type { GuestContent } from "./guest";
 export type { BlogContent } from "./blog";
 export type { GuidesContent } from "./guides";
+export type { BuildingsContent } from "./buildings";

@@ -5,7 +5,7 @@
  */
 import { z } from "zod";
 import { iconKey } from "@core/validation/icon-key";
-import { mediaId, tStr } from "@core/validation/primitives";
+import { mediaId, tStr, tStrOpt } from "@core/validation/primitives";
 import { withMediaAccept } from "./media-accept";
 
 /** The ubiquitous "icon + title + description" card (benefits, features…). */
@@ -135,3 +135,30 @@ export const statFigure = z.object({
     .describe("Symbol after the number, e.g. “+” or “M+”. Leave blank for none."),
   group: z.boolean().describe("Show thousands separators (e.g. 400,000)."),
 });
+
+/**
+ * Earnings-estimate wizard, step 2 ("contact details") copy overrides. Blank →
+ * `pages.estimateForm.contactTitle` / `contactLede` / `submit` / `back`; the "→" / "←" arrows
+ * are added in code. Moved here unchanged from `owners.ts` (spec buildings-admin-editor) so
+ * Owners' `earnings_form` and Buildings' `calculator` share one shape.
+ */
+export const estimateContactStep = z
+  .object({
+    title: tStrOpt({ max: 120 }).describe("Leave blank for “Your contact details”."),
+    lede: tStrOpt({ max: 280 }).describe(
+      "Leave blank for “Almost there — tell us how to reach you with the study.”",
+    ),
+    submit_label: tStrOpt({ max: 60 }).describe("The arrow is added automatically. Leave blank for “Submit request”."),
+    back_label: tStrOpt({ max: 30 }).describe("The arrow is added automatically. Leave blank for “Back”."),
+  })
+  .optional();
+
+/** Step 3 ("request received") copy overrides. Blank → `pages.estimateForm.doneTitle` / `doneBody`. */
+export const estimateDoneStep = z
+  .object({
+    title: tStrOpt({ max: 120 }).describe("Leave blank for “Request received”."),
+    body: tStrOpt({ max: 400 }).describe(
+      "Leave blank for “Thank you — our team will review your property and get back to you within 48 hours with your free profitability study.”",
+    ),
+  })
+  .optional();

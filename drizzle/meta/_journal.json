@@ -120,6 +120,13 @@
       "when": 1791394711545,
       "tag": "0016_pages_blog_guides_rows",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791395711545,
+      "tag": "0017_pages_buildings_row",
+      "breakpoints": true
     }
   ]
 }

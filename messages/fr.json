@@ -1038,7 +1038,8 @@
         "about": "À propos",
         "guest": "Page voyageurs",
         "blog": "Blog",
-        "guides": "Guides"
+        "guides": "Guides",
+        "buildings": "Immeubles"
       },
       "sections": {
         "publish": "Publication",
@@ -1068,7 +1069,10 @@
           "journey": "Parcours de croissance",
           "dashboard": "Toujours sous les yeux",
           "testimonials": "Témoignages",
-          "final_cta": "CTA final"
+          "final_cta": "CTA final",
+          "buildingsGrid": "Immeubles",
+          "owner_panel": "Panneau propriétaires",
+          "calculator": "Calculateur de revenus"
         },
         "notes": {
           "heroSecondary": "Le bouton secondaire mène toujours à /owners.",
@@ -1083,7 +1087,9 @@
           "earningsForm": "Les libellés, les placeholders et les cases à cocher du formulaire sont fixes et traduits automatiquement. Le formulaire n’envoie pas encore de demandes.",
           "plans": "Utilisez '{name}' dans le texte du bouton pour le nom de la formule.",
           "testimonials": "Les avis proviennent de Témoignages.",
-          "finalCta": "Laissez la ligne de contact vide pour la générer depuis les Paramètres."
+          "finalCta": "Laissez la ligne de contact vide pour la générer depuis les Paramètres.",
+          "buildingsGrid": "Les cartes des immeubles proviennent d’Immeubles.",
+          "ownerPanel": "Le bouton fait défiler jusqu’au calculateur de revenus. Laissez la ligne de contact vide pour la générer depuis les Paramètres."
         },
         "links": {
           "settings": "Ouvrir Paramètres",
@@ -1161,7 +1167,10 @@
         "intro": "Texte d’introduction",
         "testimonials": "Témoignages",
         "final_cta": "CTA final",
-        "contact_line": "Ligne de contact"
+        "contact_line": "Ligne de contact",
+        "owner_panel": "Panneau propriétaires",
+        "calculator": "Calculateur de revenus",
+        "media_media_id": "Photo / vidéo / animation"
       },
       "itemLabels": {
         "benefits": "Avantage",

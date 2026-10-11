@@ -1038,7 +1038,8 @@
         "about": "Acerca de",
         "guest": "Página de huéspedes",
         "blog": "Blog",
-        "guides": "Guías"
+        "guides": "Guías",
+        "buildings": "Edificios"
       },
       "sections": {
         "publish": "Publicación",
@@ -1068,7 +1069,10 @@
           "journey": "Camino de crecimiento",
           "dashboard": "Siempre a la vista",
           "testimonials": "Testimonios",
-          "final_cta": "CTA final"
+          "final_cta": "CTA final",
+          "buildingsGrid": "Edificios",
+          "owner_panel": "Panel para propietarios",
+          "calculator": "Calculadora de ganancias"
         },
         "notes": {
           "heroSecondary": "El botón secundario siempre lleva a /owners.",
@@ -1083,7 +1087,9 @@
           "earningsForm": "Las etiquetas, los placeholders y las casillas del formulario son fijos y se traducen automáticamente. El formulario aún no envía solicitudes.",
           "plans": "Usa '{name}' en el texto del botón para el nombre del plan.",
           "testimonials": "Las reseñas vienen de Testimonios.",
-          "finalCta": "Deja la línea de contacto en blanco para generarla desde Ajustes."
+          "finalCta": "Deja la línea de contacto en blanco para generarla desde Ajustes.",
+          "buildingsGrid": "Las tarjetas de edificios vienen de Edificios.",
+          "ownerPanel": "El botón lleva a la calculadora de ganancias. Deja la línea de contacto en blanco para generarla desde Ajustes."
         },
         "links": {
           "settings": "Abrir Ajustes",
@@ -1161,7 +1167,10 @@
         "intro": "Texto de introducción",
         "testimonials": "Testimonios",
         "final_cta": "CTA final",
-        "contact_line": "Línea de contacto"
+        "contact_line": "Línea de contacto",
+        "owner_panel": "Panel para propietarios",
+        "calculator": "Calculadora de ganancias",
+        "media_media_id": "Foto / vídeo / animación"
       },
       "itemLabels": {
         "benefits": "Ventaja",

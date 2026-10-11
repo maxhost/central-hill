@@ -1038,7 +1038,8 @@
         "about": "About",
         "guest": "Guest landing",
         "blog": "Blog",
-        "guides": "Guides"
+        "guides": "Guides",
+        "buildings": "Buildings"
       },
       "sections": {
         "publish": "Publish",
@@ -1068,7 +1069,10 @@
           "journey": "Growth path",
           "dashboard": "Always in sight",
           "testimonials": "Testimonials",
-          "final_cta": "Closing CTA"
+          "final_cta": "Closing CTA",
+          "buildingsGrid": "Buildings",
+          "owner_panel": "For owners panel",
+          "calculator": "Earnings calculator"
         },
         "notes": {
           "heroSecondary": "The secondary button always links to /owners.",
@@ -1083,7 +1087,9 @@
           "earningsForm": "Field labels, placeholders and checkboxes are fixed and translated automatically. The form doesn't send leads yet.",
           "plans": "Use '{name}' in the button text for the plan name.",
           "testimonials": "Reviews come from Testimonials.",
-          "finalCta": "Leave the contact line blank to build it from Settings."
+          "finalCta": "Leave the contact line blank to build it from Settings.",
+          "buildingsGrid": "The building cards come from Buildings.",
+          "ownerPanel": "The button scrolls to the earnings calculator. Leave the contact line blank to build it from Settings."
         },
         "links": {
           "settings": "Open Settings",
@@ -1161,7 +1167,10 @@
         "intro": "Intro text",
         "testimonials": "Testimonials",
         "final_cta": "Closing CTA",
-        "contact_line": "Contact line"
+        "contact_line": "Contact line",
+        "owner_panel": "For owners panel",
+        "calculator": "Earnings calculator",
+        "media_media_id": "Photo / video / animation"
       },
       "itemLabels": {
         "benefits": "Benefit",

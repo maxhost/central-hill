@@ -8,7 +8,14 @@ import { withMediaAccept } from "../schemas/media-accept";
 import { adminHidden } from "../schemas/admin-hidden";
 import { ownersSchema } from "../schemas/owners";
 import { type FieldNode, applyDefaults, describe, emptyValue, humanizeKey } from "../admin/form-model";
-import { HOME_CARD_IDS, OTHER_CARD_ID, OWNERS_CARD_IDS, resolveEditorLayout } from "../admin/layout";
+import { buildingsSchema, defaultBuildings } from "../schemas/buildings";
+import {
+  BUILDINGS_CARD_IDS,
+  HOME_CARD_IDS,
+  OTHER_CARD_ID,
+  OWNERS_CARD_IDS,
+  resolveEditorLayout,
+} from "../admin/layout";
 
 /**
  * Slice `pages` backoffice (S12, ADR 0012) — the schema → form model. Pure (walks a
@@ -474,4 +481,79 @@ test("ownersSchema: services/dashboard media still accept \"\" and a uuid (store
     assert.ok(field.safeParse(uuid).success);
     assert.ok(!field.safeParse("not-a-uuid").success);
   }
+});
+
+// ── Buildings listing editor (spec buildings-admin-editor S1) ────────────────
+
+test("buildingsSchema: defaultBuildings, a scaffolded blank row and a filled row validate", () => {
+  assert.ok(buildingsSchema.safeParse(defaultBuildings).success, "defaultBuildings");
+  assert.equal(defaultBuildings.stats?.figures.length, 3);
+  // A never-authored row: the editor scaffolds blanks (0 figures), which must save.
+  const blank = applyDefaults(describe(buildingsSchema), {});
+  assert.ok(buildingsSchema.safeParse(blank).success, "applyDefaults({})");
+  assert.ok(buildingsSchema.safeParse({}).success, "absent sections");
+  // The default row opens with its 3 figures and still validates once scaffolded.
+  assert.ok(buildingsSchema.safeParse(applyDefaults(describe(buildingsSchema), defaultBuildings)).success);
+  const uuid = "3f2b8c1e-9a4d-4e7b-8c2a-1d5e6f7a8b9c";
+  const filled = {
+    seo: { meta_title: "Buildings", meta_description: "Our buildings." },
+    hero: {
+      image_media_id: uuid,
+      eyebrow: "Lisbon",
+      headline: "Prime locations",
+      copy: "Copy.",
+      contact: { label: "Contact", title: "Write to us", intro: "Hi." },
+    },
+    owner_panel: { eyebrow: "Owners", title: "Join", body: "Body.", cta_label: "Estimate", contact_line: "Call us" },
+    stats: { title: "Numbers", figures: [{ label: "Stays", to: "10", group: false, description: "So far" }] },
+    calculator: {
+      badge: "+25%",
+      headline: "Earn more",
+      subheadline: "Free.",
+      cta_label: "Calculate",
+      contact_step: { title: "Contact", lede: "Lede", submit_label: "Send", back_label: "Back" },
+      done_step: { title: "Done", body: "Thanks." },
+      media_media_id: uuid,
+    },
+  };
+  assert.ok(buildingsSchema.safeParse(filled).success, "filled row");
+  const nine = { figures: Array.from({ length: 9 }, () => filled.stats.figures[0]) };
+  assert.ok(!buildingsSchema.safeParse({ stats: nine }).success, "max 8 figures");
+  assert.ok(!buildingsSchema.safeParse({ calculator: { media_media_id: "not-a-uuid" } }).success);
+});
+
+test("buildingsSchema media accepts: hero image (16:9), calculator animated (4:5)", () => {
+  const media: Record<string, { accept: string; hint?: string }> = {};
+  const walk = (node: FieldNode, path: string) => {
+    if (node.kind === "media") media[path] = { accept: node.accept, hint: node.hint };
+    if (node.kind === "hidden") walk(node.node, path);
+    if (node.kind === "object") for (const f of node.fields) walk(f.node, `${path}.${f.key}`);
+    if (node.kind === "array") walk(node.element, `${path}[]`);
+  };
+  walk(describe(buildingsSchema), "buildings");
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(media).map(([p, m]) => [p, m.accept])),
+    { "buildings.hero.image_media_id": "image", "buildings.calculator.media_media_id": "animated" },
+  );
+  assert.match(media["buildings.hero.image_media_id"]?.hint ?? "", /16:9/);
+  assert.match(media["buildings.calculator.media_media_id"]?.hint ?? "", /^Portrait 4:5 — the frame is fixed at 4:5/);
+});
+
+test("buildings layout: 5 stable ids, grid info after hero, every key placed once", () => {
+  assert.deepEqual([...BUILDINGS_CARD_IDS], ["seo", "hero", "owner_panel", "stats", "calculator"]);
+  const rootKeys = Object.keys(buildingsSchema.shape);
+  const layout = resolveEditorLayout("buildings", rootKeys);
+  assert.ok(layout);
+  assert.deepEqual(cardIds(layout), [...BUILDINGS_CARD_IDS]);
+  const ids = layout.map((i) => i.id);
+  assert.equal(ids.indexOf("buildings_grid"), ids.indexOf("hero") + 1);
+  const grid = layout.find((i) => i.id === "buildings_grid");
+  assert.equal(grid?.note?.link?.href, "/admin/buildings");
+  const panel = layout.find((i) => i.id === "owner_panel");
+  assert.equal(panel?.note?.link?.href, "/admin/settings");
+  const seo = layout.find((i) => i.id === "seo");
+  assert.ok(seo && seo.kind === "card" && seo.hostsOgImage);
+  const rendered = layout.flatMap((i) => (i.kind === "card" ? i.paths : []));
+  assert.deepEqual([...rendered].sort(), [...rootKeys].sort());
+  assert.ok(!cardIds(layout).includes(OTHER_CARD_ID));
 });

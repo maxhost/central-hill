@@ -8,6 +8,7 @@ import { aboutSchema, guestSchema, homeSchema, ownersSchema, translatablePathsBy
 import { defaultAbout } from "../schemas/about";
 import { blogSchema, defaultBlog } from "../schemas/blog";
 import { defaultGuides, guidesSchema } from "../schemas/guides";
+import { defaultBuildings } from "../schemas/buildings";
 import { collectMediaIds, expand, overlayTranslations } from "../server/overlay";
 import { heroPosterSrc } from "../ui/hero-poster";
 import { seoMetadataInput } from "../server/metadata-input";
@@ -801,4 +802,47 @@ test("owners S6: contact line — field wins, blank → Settings with 'Call', Ho
     "+351 910 075 725 · info@centralhill.pt · WhatsApp +351 910 075 725",
   );
   assert.equal(settingsContactLine(null), null);
+});
+
+// ── Buildings listing (spec buildings-admin-editor S1) ───────────────────────
+
+test("buildings S1: texts are translatable; media, numbers and affixes are not", () => {
+  const paths = translatablePathsByPage.buildings;
+  for (const p of [
+    "seo.meta_title",
+    "seo.meta_description",
+    "hero.eyebrow",
+    "hero.headline",
+    "hero.copy",
+    "hero.contact.label",
+    "owner_panel.title",
+    "owner_panel.contact_line",
+    "stats.title",
+    "stats.figures[].label",
+    "stats.figures[].description",
+    "calculator.badge",
+    "calculator.cta_label",
+    "calculator.contact_step.lede",
+    "calculator.done_step.body",
+  ]) {
+    assert.ok(paths.includes(p), `${p} is translatable`);
+  }
+  for (const p of [
+    "hero.image_media_id",
+    "calculator.media_media_id",
+    "stats.figures[].to",
+    "stats.figures[].prefix",
+    "stats.figures[].suffix",
+    "stats.figures[].group",
+  ]) {
+    assert.ok(!paths.includes(p), `${p} is shared across locales`);
+  }
+});
+
+test("buildings S1: migration 0017 inserts exactly defaultBuildings", () => {
+  const sql = readFileSync(path.resolve(process.cwd(), "drizzle/0017_pages_buildings_row.sql"), "utf8");
+  const json = /\('buildings', '(.*)'::jsonb\)/.exec(sql)?.[1];
+  assert.ok(json, "the buildings row literal");
+  assert.deepEqual(JSON.parse(json), defaultBuildings);
+  assert.match(sql, /ON CONFLICT \("key"\) DO NOTHING/);
 });

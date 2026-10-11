@@ -15,6 +15,8 @@ import { z } from "zod";
 import { ctaWithNote, seoShape, tStr, tStrOpt, url } from "@core/validation/primitives";
 import {
   between,
+  estimateContactStep,
+  estimateDoneStep,
   faqGroupKey,
   fixed,
   iconCard,
@@ -124,27 +126,12 @@ export const ownersSchema = z.object({
     /**
      * Step 2 ("contact details") copy (spec owners-admin-editor S3). Blank →
      * `pages.estimateForm.contactTitle` / `contactLede` / `submit` / `back`. The "→" / "←"
-     * arrows are added in code, like step 1's `cta_label`.
+     * arrows are added in code, like step 1's `cta_label`. Shape shared with Buildings'
+     * calculator (`_shared.ts`).
      */
-    contact_step: z
-      .object({
-        title: tStrOpt({ max: 120 }).describe("Leave blank for “Your contact details”."),
-        lede: tStrOpt({ max: 280 }).describe(
-          "Leave blank for “Almost there — tell us how to reach you with the study.”",
-        ),
-        submit_label: tStrOpt({ max: 60 }).describe("The arrow is added automatically. Leave blank for “Submit request”."),
-        back_label: tStrOpt({ max: 30 }).describe("The arrow is added automatically. Leave blank for “Back”."),
-      })
-      .optional(),
+    contact_step: estimateContactStep,
     /** Step 3 ("request received") copy. Blank → `pages.estimateForm.doneTitle` / `doneBody`. */
-    done_step: z
-      .object({
-        title: tStrOpt({ max: 120 }).describe("Leave blank for “Request received”."),
-        body: tStrOpt({ max: 400 }).describe(
-          "Leave blank for “Thank you — our team will review your property and get back to you within 48 hours with your free profitability study.”",
-        ),
-      })
-      .optional(),
+    done_step: estimateDoneStep,
   }),
   /**
    * Animated "numbers" band (#numbers) — per-page figures, not the global company stats.
