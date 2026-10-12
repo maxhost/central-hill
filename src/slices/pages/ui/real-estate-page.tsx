@@ -4,6 +4,7 @@ import { MediaImage } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import {
   ButtonLink,
+  buttonClassName,
   ChecklistCards,
   EditorialSplit,
   Hero,
@@ -24,6 +25,7 @@ import {
 import { DealEnquirySection } from "./components/deal-enquiry-section";
 import { FaqSection } from "./components/faq-section";
 import { SIDE_MEDIA_CLASS, sideMedia } from "./components/side-media";
+import { capabilityStatementHref } from "./capability-statement";
 import { orMessage } from "./or-message";
 
 /**
@@ -128,9 +130,9 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
   const dealStructures = content.deal_structures ?? defaultDealStructures;
   const hero = content.hero;
   const heroMedia = media[hero.image_media_id];
-  // Optional capability-statement asset behind the hero's secondary CTA (e.g. a PDF). If
-  // no asset is set, the button keeps the design's in-page anchor.
-  const capStmtUrl = media[hero.capability_statement_media_id ?? ""]?.url || "#deal-enquiry";
+  // Optional capability-statement PDF behind the hero's secondary CTA (spec S4). Only a PDF
+  // becomes the link (new tab); otherwise the button keeps the design's in-page anchor.
+  const capStmtPdf = capabilityStatementHref(media[hero.capability_statement_media_id ?? ""]);
   const partners = content.partners;
   const partnerItems = partners.benefits.map((b) => ({
     icon: <Icon name={b.icon_key} size={28} className="mt-0.5 flex-none text-accent-deep" />,
@@ -201,9 +203,22 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         actions={
           <>
             <ButtonLink href="#deal-enquiry">{`${hero.cta_primary.label} →`}</ButtonLink>
-            <ButtonLink href={capStmtUrl} variant="light">
-              {`${hero.cta_secondary.label} →`}
-            </ButtonLink>
+            {capStmtPdf ? (
+              // A plain `<a>`: a download target, not a route — no prefetch, and a new tab even
+              // for the dev fallback's relative URL (`ButtonLink` only does that for http(s)).
+              <a
+                href={capStmtPdf}
+                target="_blank"
+                rel="noopener"
+                className={buttonClassName("light")}
+              >
+                {`${hero.cta_secondary.label} →`}
+              </a>
+            ) : (
+              <ButtonLink href="#deal-enquiry" variant="light">
+                {`${hero.cta_secondary.label} →`}
+              </ButtonLink>
+            )}
           </>
         }
       />

@@ -14,6 +14,7 @@ import { z } from "zod";
 import { ctaWithNote, mediaId, seoShape, tStr, tStrOpt, url } from "@core/validation/primitives";
 import { between, faqGroupKey, fixed, iconCard, optionalAnimated, optionalImage } from "./_shared";
 import { adminHidden } from "./admin-hidden";
+import { withMediaAccept } from "./media-accept";
 
 /**
  * A button URL kept in `data` but hidden in the editor (spec real-estate-admin-editor →
@@ -29,6 +30,9 @@ const heroCta = z.object({ label: tStr({ max: 80 }), url: hiddenUrl });
 
 const HERO_IMG_HINT =
   "Full-bleed hero background (a dark overlay is applied). Landscape 16:9 — 1920×1080 px (min 1600×900), JPG or WebP, under 500 KB.";
+/** Hero button 2's download (spec real-estate-admin-editor S4) — `accept: "document"`. */
+export const CAPABILITY_STATEMENT_HINT =
+  "Capability statement downloaded by hero button 2. PDF, under 20 MB. Leave blank and the button scrolls to the enquiry form.";
 /**
  * `capabilities` / `asset_management` side media (spec real-estate-admin-editor S3): photo,
  * animated WebP, MP4/WebM loop or Lottie in the fixed 4:5 frame — the same text as Home's guests
@@ -55,8 +59,13 @@ export const realEstateSchema = z.object({
     positioning: tStr({ max: 600 }),
     // `"" | uuid` since spec real-estate-admin-editor S1: the editor scaffolds an unset media
     // field as "" (`applyDefaults`), which a bare uuid rejected on save. "" → the button
-    // scrolls to `#deal-enquiry` (as when unset). PDF `accept` + hint arrive in S4.
-    capability_statement_media_id: z.union([z.literal(""), mediaId]).optional(),
+    // scrolls to `#deal-enquiry` (as when unset). S4: the picker takes a PDF only.
+    capability_statement_media_id: withMediaAccept(
+      z.union([z.literal(""), mediaId]),
+      "document",
+    )
+      .describe(CAPABILITY_STATEMENT_HINT)
+      .optional(),
     cta_primary: heroCta,
     cta_secondary: heroCta,
   }),

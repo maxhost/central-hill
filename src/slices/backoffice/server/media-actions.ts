@@ -30,6 +30,11 @@ export interface AdminMediaPreview {
   width: number | null;
   height: number | null;
   mime: string;
+  /**
+   * The picked file's name, set only on a local (not yet uploaded) preview — a document
+   * tile shows it. Persisted previews leave it unset; their URL ends in the filename.
+   */
+  name?: string;
 }
 
 /**

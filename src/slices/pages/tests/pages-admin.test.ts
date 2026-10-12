@@ -26,6 +26,7 @@ import {
   defaultTrackRecord,
   realEstateSchema,
 } from "../schemas/real-estate";
+import { capabilityStatementHref } from "../ui/capability-statement";
 
 /**
  * Slice `pages` backoffice (S12, ADR 0012) — the schema → form model. Pure (walks a
@@ -735,4 +736,35 @@ test("realEstateSchema: capabilities/asset_management media still accept \"\" an
     assert.ok(field.safeParse(uuid).success);
     assert.ok(!field.safeParse("not-a-uuid").success);
   }
+});
+
+// ── Real Estate capability statement (spec real-estate-admin-editor S4) ──────
+
+test("realEstateSchema: capability statement picker is `document` (PDF) with the hint — S4", () => {
+  const node = nodeAt(describe(realEstateSchema), ["hero", "capability_statement_media_id"]);
+  assert.equal(node.kind, "media");
+  if (node.kind !== "media") return;
+  assert.equal(node.accept, "document");
+  assert.equal(
+    node.hint,
+    "Capability statement downloaded by hero button 2. PDF, under 20 MB. Leave blank and the button scrolls to the enquiry form.",
+  );
+});
+
+test("realEstateSchema: capability statement stays optional and \"\"-tolerant — S4", () => {
+  const field = realEstateSchema.shape.hero.shape.capability_statement_media_id;
+  assert.ok(field.safeParse(undefined).success);
+  assert.ok(field.safeParse("").success);
+  assert.ok(field.safeParse("3f2b8c1e-9a4d-4e7b-8c2a-1d5e6f7a8b9c").success);
+  assert.ok(!field.safeParse("not-a-uuid").success);
+});
+
+test("capabilityStatementHref: only a PDF with a url becomes the link — S4", () => {
+  const url = "https://media.example/3f2b/capability.pdf";
+  assert.equal(capabilityStatementHref({ url, mime: "application/pdf" }), url);
+  assert.equal(capabilityStatementHref(undefined), null);
+  assert.equal(capabilityStatementHref({ url: "", mime: "application/pdf" }), null);
+  assert.equal(capabilityStatementHref({ url: "https://media.example/x.jpg", mime: "image/jpeg" }), null);
+  assert.equal(capabilityStatementHref({ url: "https://media.example/x.mp4", mime: "video/mp4" }), null);
+  assert.equal(capabilityStatementHref({ url }), null);
 });

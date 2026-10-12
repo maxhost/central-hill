@@ -12,8 +12,10 @@ import type { z } from "zod";
  * metadata → `"image"`. To add a kind, extend this tuple **and** the `MediaField` accept
  * map in slice `backoffice` together. `"animated"` (S6) = images (incl. animated WebP),
  * MP4/WebM and Lottie (`.json` / `.lottie`) — the Home guests-pitch side media only.
+ * `"document"` (spec real-estate-admin-editor S4) = a PDF only — the Real Estate capability
+ * statement behind hero button 2.
  */
-export const MEDIA_ACCEPTS = ["image", "video", "animated"] as const;
+export const MEDIA_ACCEPTS = ["image", "video", "animated", "document"] as const;
 export type MediaAccept = (typeof MEDIA_ACCEPTS)[number];
 
 /** The `.meta()` key the accept lives under (namespaced: it shares zod's global registry). */

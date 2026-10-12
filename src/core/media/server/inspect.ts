@@ -155,3 +155,31 @@ export function inspectDotLottie(bytes: Uint8Array): LottieInfo {
     return { width: null, height: null };
   }
 }
+
+// ── Documents (PDF) ──────────────────────────────────────────────────────────
+
+/** 20 MB — a capability statement / brochure (spec real-estate-admin-editor S4). */
+export const MAX_DOCUMENT_BYTES = 20 * 1024 * 1024;
+
+/** Every PDF begins with this header (`%PDF-1.7`, `%PDF-2.0`, …). */
+const PDF_MAGIC = "%PDF-";
+/** How many leading bytes `assertPdf` needs — finalize only reads this much from R2. */
+export const PDF_MAGIC_LENGTH = PDF_MAGIC.length;
+
+/** Do these (leading) bytes start with the `%PDF-` header? */
+export function isPdfBytes(bytes: Uint8Array): boolean {
+  if (bytes.length < PDF_MAGIC.length) return false;
+  for (let i = 0; i < PDF_MAGIC.length; i++) {
+    if (bytes[i] !== PDF_MAGIC.charCodeAt(i)) return false;
+  }
+  return true;
+}
+
+/**
+ * Validate an uploaded PDF by its magic bytes: a file renamed to `.pdf` (or sent with a
+ * forged `application/pdf`) is rejected. Structure beyond the header is not parsed — the
+ * file is only ever served for download, never rendered or processed server-side.
+ */
+export function assertPdf(bytes: Uint8Array): void {
+  if (!isPdfBytes(bytes)) throw new Error("Not a PDF document: the file has no %PDF- header.");
+}

@@ -603,7 +603,10 @@ filled field shows EN on every locale until it is translated).
 **Media `accept`.** Each media field declares what its picker takes via `.meta({ media_accept })`
 (`schemas/media-accept.ts`, `withMediaAccept`): `hero.video_media_id` → `"video"` (MP4/WebM; also
 the Guest page's hero video), `guests_pitch.image_media_id` → `"animated"` (JPG/PNG/WebP incl.
-animated, AVIF, MP4/WebM, Lottie `.json`/`.lottie`), everything else → `"image"` (default). Hints
+animated, AVIF, MP4/WebM, Lottie `.json`/`.lottie`), Real Estate's
+`hero.capability_statement_media_id` → `"document"` (PDF only; hero button 2 links to it in a new
+tab via `ui/capability-statement.ts` only when the resolved asset is a PDF, else `#deal-enquiry`),
+everything else → `"image"` (default). Hints
 (`.describe()`) carry the recommended sizes per kind.
 
 **Public render.**
@@ -873,7 +876,7 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
   schema** into a serializable `FieldNode` tree; `emptyValue` / `applyDefaults` scaffold a `data`
   object (fixed-count arrays padded to length); `humanizeKey` makes labels. Leaf mapping:
   `*_media_id` → media picker (a `.describe()` on the media schema becomes the uploader hint:
-  recommended size/format; its **`accept`** — `"image"` | `"video"` | `"animated"` — comes from
+  recommended size/format; its **`accept`** — `"image"` | `"video"` | `"animated"` | `"document"` — comes from
   `.meta({ media_accept })`, set with `withMediaAccept` / `optionalVideo` / `optionalAnimated`
   from `schemas/media-accept.ts` / `_shared.ts`; no metadata → `"image"`; the editor passes it to
   `MediaField accept`. A new kind extends `MEDIA_ACCEPTS` and backoffice's accept map together), `faq_group_key` → **select** dropdown (a `SELECT_SOURCES` key →

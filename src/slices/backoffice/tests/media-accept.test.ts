@@ -5,7 +5,9 @@ import {
   acceptAttribute,
   emptyStateKey,
   isAcceptedType,
+  isDocumentPreview,
   pickedFileType,
+  previewFilename,
   previewLabelKey,
 } from "../ui/media-accept";
 
@@ -79,4 +81,32 @@ test("non-image previews are labelled Lottie or Video", () => {
   assert.equal(previewLabelKey(DOTLOTTIE_MIME), "media.lottie");
   assert.equal(previewLabelKey(LOTTIE_JSON_MIME), "media.lottie");
   assert.equal(previewLabelKey("video/mp4"), "media.video");
+});
+
+// ── Real Estate S4: the capability-statement `document` field ────────────────
+
+test("document takes a PDF only (also by .pdf extension with no reported type)", () => {
+  assert.equal(isAcceptedType("document", "application/pdf"), true);
+  assert.equal(isAcceptedType("document", pickedFileType({ name: "Capability.PDF", type: "" })), true);
+  for (const no of ["image/jpeg", "image/webp", "video/mp4", LOTTIE_JSON_MIME, DOTLOTTIE_MIME, "application/zip", ""]) {
+    assert.equal(isAcceptedType("document", no), false, no);
+  }
+  assert.equal(acceptAttribute("document"), "application/pdf,.pdf");
+  assert.equal(emptyStateKey("document"), "media.emptyDocument");
+});
+
+test("no other field starts offering PDFs", () => {
+  const pdf = pickedFileType({ name: "statement.pdf", type: "application/pdf" });
+  for (const accept of ["image", "video", "media", "animated"] as const) {
+    assert.equal(isAcceptedType(accept, pdf), false, accept);
+    assert.equal(acceptAttribute(accept).includes("pdf"), false, accept);
+  }
+});
+
+test("a PDF preview is a document tile named after its file", () => {
+  assert.equal(previewLabelKey("application/pdf"), "media.document");
+  assert.equal(isDocumentPreview({ mime: "application/pdf" }), true);
+  assert.equal(isDocumentPreview({ mime: "image/jpeg" }), false);
+  assert.equal(previewFilename({ url: "blob:http://localhost/abc", name: "Capability Statement.pdf" }), "Capability Statement.pdf");
+  assert.equal(previewFilename({ url: "https://media.example/3f2b/capability-statement.pdf" }), "capability-statement.pdf");
 });

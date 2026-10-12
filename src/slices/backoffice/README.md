@@ -84,7 +84,9 @@ row is treated as not-staff.
   - `"video"` — MP4/WebM (background loops, e.g. the Home hero);
   - `"media"` — image or video;
   - `"animated"` — image (incl. animated WebP), MP4/WebM **or Lottie** (`.json` / `.lottie`):
-    the Home guests-pitch side media only (spec `home-admin-editor` S6).
+    the Home guests-pitch side media only (spec `home-admin-editor` S6);
+  - `"document"` — PDF only (`.pdf`): the Real Estate capability statement (spec
+    `real-estate-admin-editor` S4). No other accept takes a PDF.
 
   The lists reuse `core/media/mime.ts`, so they stay a subset of what ingest allows. `accept`
   sets the file dialog filter (`acceptAttribute`; Lottie fields also list `.lottie,.json`,
@@ -98,7 +100,10 @@ row is treated as not-staff.
 
   Tiles: a non-image preview shows a labelled tile, "Lottie" (`media.lottie`) or "Video"
   (`media.video`) (`previewLabelKey`); an empty video-only field reads "No video"
-  (`media.emptyVideo`), every other empty field "No image" (`emptyStateKey`).
+  (`media.emptyVideo`), every other empty field "No image" (`emptyStateKey`). A PDF shows a file
+  glyph + "PDF" (`media.document`) and, under the field, its filename as a new-tab link
+  (`previewFilename`: the picked file's `name` on a local preview, else the URL's last segment);
+  an empty document field reads "No PDF" (`media.emptyDocument`).
 - **Media queue busy signal** (`ui/media-queue.tsx`, `ui/media-busy.ts`, spec `home-admin-editor`
   S2). Picking a file first reserves the upload (a presign round-trip); until that settles, the
   form's value does not hold the new id, so an early Save would persist the form without it.

@@ -1,22 +1,27 @@
 import "server-only";
-import { HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { encode } from "blurhash";
 import { eq } from "drizzle-orm";
 import { db } from "@core/db/client";
 import {
+  DOCUMENT_EXTENSION,
   IMAGE_MIMES,
   LOTTIE_EXTENSION,
   LOTTIE_JSON_MIME,
   VIDEO_MIMES,
   canonicalMediaMime,
   fileExtension,
+  isDocumentMime,
   isLottieMime,
 } from "../mime";
 import type { MediaAsset } from "../queries";
 import { media_asset } from "../schema";
 import {
+  MAX_DOCUMENT_BYTES,
   MAX_LOTTIE_BYTES,
+  PDF_MAGIC_LENGTH,
+  assertPdf,
   frameDimensions,
   inspectDotLottie,
   inspectLottieJson,
@@ -99,19 +104,23 @@ async function loadSharp() {
 /**
  * `lottie` (spec home-admin-editor S6): a vector animation, as Lottie JSON (`.json`) or
  * dotLottie (`.lottie`). Never touched by sharp; validated structurally on finalize.
+ * `document` (spec real-estate-admin-editor S4): a PDF (`.pdf`) offered for download.
+ * Never touched by sharp, no dimensions/blurhash; its `%PDF-` header is checked on finalize.
  */
-type MediaKind = "image" | "video" | "lottie";
+type MediaKind = "image" | "video" | "lottie" | "document";
 
 function mediaKind(mime: string): MediaKind {
   if (IMAGE_MIME.has(mime)) return "image";
   if (VIDEO_MIME.has(mime)) return "video";
   if (isLottieMime(mime)) return "lottie";
+  if (isDocumentMime(mime)) return "document";
   throw new Error(`Unsupported media type: ${mime || "(none)"}`);
 }
 
 function maxBytesFor(kind: MediaKind): number {
   if (kind === "video") return MAX_VIDEO_BYTES;
   if (kind === "lottie") return MAX_LOTTIE_BYTES;
+  if (kind === "document") return MAX_DOCUMENT_BYTES;
   return MAX_IMAGE_BYTES;
 }
 
@@ -173,6 +182,11 @@ export async function presignUpload(input: PresignInput): Promise<PresignResult>
     if (fileExtension(input.filename) !== expected) {
       throw new Error("A Lottie animation must be uploaded as a .json or .lottie file.");
     }
+  }
+  // Unreachable today (`canonicalMediaMime` only yields a PDF mime for `.pdf`), but the r2
+  // key must keep describing the bytes if that mapping ever changes.
+  if (kind === "document" && fileExtension(input.filename) !== DOCUMENT_EXTENSION) {
+    throw new Error("A document must be uploaded as a .pdf file.");
   }
   if (input.size > maxBytesFor(kind)) {
     throw new Error(`File too large for ${kind}: ${input.size} bytes.`);
@@ -326,6 +340,34 @@ async function inspectLottie(r2Key: string, mime: string) {
   }
 }
 
+/**
+ * Validate an uploaded PDF from its first bytes only (a ranged GET — the document can be
+ * 20 MB and only the header matters); a file that is not a PDF is deleted from R2 and
+ * rejected, exactly like an invalid Lottie, so no row ever points at it.
+ */
+async function inspectDocument(r2Key: string, size: number): Promise<void> {
+  // Too short to hold the header (a ranged GET on an empty object is a 416): reject as is.
+  const head =
+    size < PDF_MAGIC_LENGTH
+      ? new Uint8Array()
+      : await (async () => {
+          const res = await r2Client().send(
+            new GetObjectCommand({
+              Bucket: r2Bucket(),
+              Key: r2Key,
+              Range: `bytes=0-${PDF_MAGIC_LENGTH - 1}`,
+            }),
+          );
+          return res.Body ? await res.Body.transformToByteArray() : new Uint8Array();
+        })();
+  try {
+    assertPdf(head);
+  } catch (e) {
+    await r2Delete(r2Key);
+    throw e;
+  }
+}
+
 export async function finalizeUpload(input: FinalizeInput): Promise<MediaAsset> {
   // 1. Verify the object actually landed and read its real type/size.
   const head = await r2Client().send(
@@ -355,6 +397,8 @@ export async function finalizeUpload(input: FinalizeInput): Promise<MediaAsset> 
     const info = await inspectLottie(input.r2Key, mime);
     width = info.width;
     height = info.height;
+  } else if (kind === "document") {
+    await inspectDocument(input.r2Key, size); // width/height/blurhash stay null
   }
 
   // 3. Insert the row (idempotent: a retried finalize returns the existing asset).

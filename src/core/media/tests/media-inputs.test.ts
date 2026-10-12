@@ -2,12 +2,15 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { deflateRawSync } from "node:zlib";
 import sharp from "sharp";
-import { DOTLOTTIE_MIME, LOTTIE_JSON_MIME, canonicalMediaMime } from "../mime";
+import { DOTLOTTIE_MIME, LOTTIE_JSON_MIME, PDF_MIME, canonicalMediaMime, isDocumentMime } from "../mime";
 import {
+  MAX_DOCUMENT_BYTES,
+  assertPdf,
   frameDimensions,
   inspectDotLottie,
   inspectLottieJson,
   isAnimatedImage,
+  isPdfBytes,
 } from "../server/inspect";
 
 /**
@@ -109,4 +112,24 @@ test("animated WebP: detected, and its height is one frame, not the strip", asyn
   const meta = await sharp(still).metadata();
   assert.equal(isAnimatedImage(meta), false);
   assert.deepEqual(frameDimensions(meta), { width: w, height: h });
+});
+
+// ── Documents (spec real-estate-admin-editor S4) ─────────────────────────────
+
+test("extension → PDF mime, whatever the browser reported", () => {
+  assert.equal(canonicalMediaMime("x.pdf", ""), PDF_MIME);
+  assert.equal(canonicalMediaMime("Statement.PDF", "application/octet-stream"), PDF_MIME);
+  assert.equal(canonicalMediaMime("photo.jpg", "image/jpeg"), "image/jpeg");
+  assert.equal(isDocumentMime(PDF_MIME), true);
+  assert.equal(isDocumentMime("image/jpeg"), false);
+  assert.equal(MAX_DOCUMENT_BYTES, 20 * 1024 * 1024);
+});
+
+test("PDF magic bytes: a real header passes; a renamed non-PDF is rejected", () => {
+  assert.equal(isPdfBytes(Buffer.from("%PDF-1.7\n%âãÏÓ")), true);
+  assert.doesNotThrow(() => assertPdf(Buffer.from("%PDF-")));
+  for (const bad of ["", "%PDF", "<html>%PDF-1.7", "PK\u0003\u0004", JSON.stringify(LOTTIE)]) {
+    assert.equal(isPdfBytes(Buffer.from(bad)), false, bad);
+    assert.throws(() => assertPdf(Buffer.from(bad)), /Not a PDF document/);
+  }
 });

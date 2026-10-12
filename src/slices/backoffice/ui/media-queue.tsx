@@ -353,6 +353,7 @@ export async function reserveUpload(
       width: null,
       height: null,
       mime: pickedFileType(file),
+      name: file.name,
     },
   };
 }

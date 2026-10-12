@@ -10,6 +10,10 @@
  * reservation, and again server-side in presign (never trusting the client). The
  * canonical mime is what gets signed into the R2 PUT, so it is also the `Content-Type`
  * R2 serves the object with and the `mime` recorded on the `media_asset` row.
+ *
+ * Spec real-estate-admin-editor S4 adds a fourth kind, **document** (`application/pdf`) —
+ * the Real Estate capability statement. Browsers report PDFs reliably, but `.pdf` is
+ * canonicalised by extension too, for the same "never trust the client" reason.
  */
 
 export const IMAGE_MIMES = ["image/jpeg", "image/png", "image/webp", "image/avif"] as const;
@@ -27,6 +31,16 @@ export const LOTTIE_EXTENSION: Record<(typeof LOTTIE_MIMES)[number], string> = {
   [DOTLOTTIE_MIME]: "lottie",
 };
 
+/** Documents (spec real-estate-admin-editor S4): PDF only. Never an image — no sharp, no dimensions. */
+export const PDF_MIME = "application/pdf";
+export const DOCUMENT_MIMES = [PDF_MIME] as const;
+/** The extension a document must be stored under (the r2 key keeps describing the bytes). */
+export const DOCUMENT_EXTENSION = "pdf";
+
+export function isDocumentMime(mime: string | null | undefined): boolean {
+  return mime === PDF_MIME;
+}
+
 export function isLottieMime(mime: string | null | undefined): boolean {
   return mime === LOTTIE_JSON_MIME || mime === DOTLOTTIE_MIME;
 }
@@ -39,7 +53,8 @@ export function fileExtension(filename: string): string {
 
 /**
  * The canonical mime for an uploaded file: Lottie by extension (`.lottie` → dotLottie,
- * `.json` → Lottie JSON), whatever the browser reported; everything else as reported.
+ * `.json` → Lottie JSON) and PDF by extension (`.pdf` → `application/pdf`), whatever the
+ * browser reported; everything else as reported.
  */
 export function canonicalMediaMime(filename: string, reported: string): string {
   switch (fileExtension(filename)) {
@@ -47,6 +62,8 @@ export function canonicalMediaMime(filename: string, reported: string): string {
       return DOTLOTTIE_MIME;
     case "json":
       return LOTTIE_JSON_MIME;
+    case DOCUMENT_EXTENSION:
+      return PDF_MIME;
     default:
       return reported;
   }

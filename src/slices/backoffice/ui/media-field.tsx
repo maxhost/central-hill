@@ -9,7 +9,9 @@ import {
   acceptAttribute,
   emptyStateKey,
   isAcceptedType,
+  isDocumentPreview,
   pickedFileType,
+  previewFilename,
   previewLabelKey,
 } from "./media-accept";
 import { reserveUpload, useMediaQueue } from "./media-queue";
@@ -29,7 +31,34 @@ import { reserveUpload, useMediaQueue } from "./media-queue";
  * preview is a local object URL, because there is nothing on R2 to point at yet.
  */
 
-/** Small visual: image thumbnail, or a labelled tile for video / Lottie. */
+/**
+ * Iconoir `page` outline for a document tile. Inline because `UiIcon`'s set has no file
+ * glyph and the catalogue `Icon` is server-only; decorative (the tile carries a label).
+ */
+function DocumentGlyph() {
+  return (
+    <svg
+      aria-hidden="true"
+      width={24}
+      height={24}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M4 21.4V2.6a.6.6 0 0 1 .6-.6h11.652a.6.6 0 0 1 .424.176l3.148 3.148A.6.6 0 0 1 20 5.75V21.4a.6.6 0 0 1-.6.6H4.6a.6.6 0 0 1-.6-.6Z" />
+      <path d="M8 10h8M8 18h8M8 14h4" />
+      <path d="M16 2v3.4a.6.6 0 0 0 .6.6H20" />
+    </svg>
+  );
+}
+
+/**
+ * Small visual: image thumbnail, a file tile for a document (PDF — no dimensions), or a
+ * labelled tile for video / Lottie.
+ */
 function Thumb({
   preview,
   className,
@@ -44,6 +73,19 @@ function Thumb({
   if (preview && preview.mime.startsWith("image/")) {
     // eslint-disable-next-line @next/next/no-img-element -- admin preview, not public render path
     return <img src={preview.url} alt="" className={cn("h-full w-full object-cover", className)} />;
+  }
+  if (preview && isDocumentPreview(preview)) {
+    return (
+      <div
+        className={cn(
+          "flex h-full w-full flex-col items-center justify-center gap-1 text-xs text-ink-soft",
+          className,
+        )}
+      >
+        <DocumentGlyph />
+        {t(previewLabelKey(preview.mime))}
+      </div>
+    );
   }
   return (
     <div className={cn("flex h-full w-full items-center justify-center text-xs text-ink-soft", className)}>
@@ -65,8 +107,8 @@ export function MediaField({
   preview?: AdminMediaPreview | null;
   onChange: (id: string | null, preview: AdminMediaPreview | null) => void;
   /**
-   * What the picker takes: `image` (default), `video` (MP4/WebM), `media` (either) or
-   * `animated` (images, video and Lottie).
+   * What the picker takes: `image` (default), `video` (MP4/WebM), `media` (either),
+   * `animated` (images, video and Lottie) or `document` (PDF only).
    */
   accept?: MediaFieldAccept;
 }) {
@@ -154,6 +196,17 @@ export function MediaField({
           e.target.value = "";
         }}
       />
+      {shown && isDocumentPreview(shown) ? (
+        // A document has no thumbnail worth the name: show which file it is, openable.
+        <a
+          href={shown.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block max-w-full truncate text-xs text-ink underline underline-offset-2 hover:text-ink-soft"
+        >
+          {previewFilename(shown)}
+        </a>
+      ) : null}
       {!error && value && queue.isQueued(value) ? (
         <p className="text-xs text-ink-soft">{t("media.queuedNote")}</p>
       ) : null}
