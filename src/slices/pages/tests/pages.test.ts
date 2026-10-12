@@ -20,7 +20,7 @@ import { collectMediaIds, expand, overlayTranslations } from "../server/overlay"
 import { heroPosterSrc } from "../ui/hero-poster";
 import { seoMetadataInput } from "../server/metadata-input";
 import { orMessage, orNamedMessage } from "../ui/or-message";
-import { ownersFinalContactLine, settingsContactLine } from "../ui/contact-line";
+import { enquiryContactLines, ownersFinalContactLine, settingsContactLine } from "../ui/contact-line";
 import {
   describedStatFigureCells,
   formatStatFigure,
@@ -1058,4 +1058,93 @@ test("real estate S2: EN meta matches the route's former hardcoded metadata; new
     const note = pages.admin.layout.notes.dealStructuresFeatured;
     assert.ok(typeof note === "string" && note.trim() !== "", `${l}: notes.dealStructuresFeatured`);
   }
+});
+
+// ── Real Estate S5: enquiry copy, fixed form i18n, Settings contact lines ────
+const readPages = (l: string) =>
+  JSON.parse(readFileSync(path.join(process.cwd(), `messages/${l}.json`), "utf8")).pages;
+
+test("real estate S5: deal_enquiry is optional, blank-tolerant, capped and translatable", () => {
+  const field = realEstateSchema.shape.deal_enquiry;
+  assert.ok(field.safeParse(undefined).success, "a row saved before S5 validates");
+  assert.ok(field.safeParse({}).success);
+  const blank = { headline: "", lede: "", contact_title: "", submit_label: "", note: "" };
+  assert.ok(field.safeParse(blank).success, "blank fields (editor scaffold) validate");
+  assert.ok(!field.safeParse({ headline: "x".repeat(161) }).success, "headline ≤ 160");
+  assert.ok(!field.safeParse({ lede: "x".repeat(601) }).success, "lede ≤ 600");
+  assert.ok(!field.safeParse({ contact_title: "x".repeat(121) }).success, "contact title ≤ 120");
+  assert.ok(!field.safeParse({ submit_label: "x".repeat(81) }).success, "submit ≤ 80");
+  assert.ok(!field.safeParse({ note: "x".repeat(201) }).success, "note ≤ 200");
+  const paths = translatablePathsByPage.real_estate;
+  for (const k of ["headline", "lede", "contact_title", "submit_label", "note"]) {
+    assert.ok(paths.includes(`deal_enquiry.${k}`), `expected translatable path deal_enquiry.${k}`);
+  }
+});
+
+test("real estate S5: each deal_enquiry hint names its EN default; EN defaults = the former copy", () => {
+  const en = readPages("en");
+  assert.equal(en.realEstate.enquiryTitle, "Ready to Explore a Partnership?");
+  assert.equal(en.realEstate.enquiryContactTitle, "Contact Our Institutional Team Directly");
+  assert.equal(en.dealEnquiryForm.submit, "Submit Partnership Enquiry");
+  assert.equal(en.dealEnquiryForm.note, "A senior member of our institutional team will respond within 24 hours.");
+  const s = realEstateSchema.shape.deal_enquiry.unwrap().shape;
+  const pairs: [string | undefined, string][] = [
+    [s.headline.description, en.realEstate.enquiryTitle],
+    [s.lede.description, en.realEstate.enquiryLede],
+    [s.contact_title.description, en.realEstate.enquiryContactTitle],
+    [s.submit_label.description, en.dealEnquiryForm.submit],
+    [s.note.description, en.dealEnquiryForm.note],
+  ];
+  for (const [hint, message] of pairs) {
+    assert.ok(hint?.includes(`Leave blank for “${message}”`), `hint "${hint}" names "${message}"`);
+  }
+});
+
+test("real estate S5: every pages.dealEnquiryForm / new realEstate key exists in all 4 locales", () => {
+  const en = readPages("en");
+  const formKeys = Object.keys(en.dealEnquiryForm).sort();
+  assert.ok(formKeys.length >= 40, "group titles, tags, labels, placeholders, options, submit, note");
+  const reKeys = [
+    "enquiryTitle", "enquiryLede", "enquiryContactTitle",
+    "contactEmail", "contactPhone", "contactLinkedin", "contactLinkedinText",
+  ];
+  for (const l of ["en", "pt", "es", "fr"]) {
+    const pages = readPages(l);
+    assert.deepEqual(Object.keys(pages.dealEnquiryForm).sort(), formKeys, `${l}: same dealEnquiryForm keys as en`);
+    for (const k of formKeys) {
+      const v = pages.dealEnquiryForm[k];
+      assert.ok(typeof v === "string" && v.trim() !== "", `${l}: pages.dealEnquiryForm.${k}`);
+      assert.equal(icuShape(v), icuShape(en.dealEnquiryForm[k]), `${l}.${k}: same ICU args as en`);
+    }
+    for (const k of reKeys) {
+      const v = pages.realEstate[k];
+      assert.ok(typeof v === "string" && v.trim() !== "", `${l}: pages.realEstate.${k}`);
+    }
+    const note = pages.admin.layout.notes.dealEnquiry;
+    assert.ok(typeof note === "string" && note.trim() !== "", `${l}: notes.dealEnquiry`);
+  }
+});
+
+test("real estate S5: enquiry contact lines come from Settings; missing data → line omitted", () => {
+  const labels = { email: "Email:", phone: "Tel:", linkedin: "LinkedIn:", linkedinText: "Central Hill Apartments" };
+  const full = {
+    email: "info@centralhill.pt",
+    phone: "+351 910 075 725",
+    social: { linkedin: "https://linkedin.com/company/centralhill" },
+  };
+  assert.deepEqual(enquiryContactLines(full, labels), [
+    { label: "Email:", href: "mailto:info@centralhill.pt", text: "info@centralhill.pt" },
+    { label: "Tel:", href: "tel:+351910075725", text: "+351 910 075 725" },
+    { label: "LinkedIn:", href: "https://linkedin.com/company/centralhill", text: "Central Hill Apartments" },
+  ]);
+  assert.deepEqual(
+    enquiryContactLines({ email: "", phone: "+351 910 075 725", social: {} }, labels).map((l) => l.label),
+    ["Tel:"],
+    "no email and no LinkedIn → only the phone line",
+  );
+  assert.deepEqual(
+    enquiryContactLines({ email: "a@b.pt", phone: " ", social: { linkedin: "" } }, labels).map((l) => l.href),
+    ["mailto:a@b.pt"],
+  );
+  assert.deepEqual(enquiryContactLines(null, labels), [], "no settings → no lines");
 });

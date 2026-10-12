@@ -270,9 +270,9 @@ const BUILDINGS_LAYOUT: EditorLayoutItem[] = [
 
 /**
  * Real Estate (spec real-estate-admin-editor → "Editor: formulario sección a sección"). Some
- * root keys only arrive in later sessions (`seo` S2, `faq` S2, `deal_enquiry` S5); until then
- * their cards are dropped by `resolveEditorLayout` (the SEO card stays: it hosts the OG image;
- * the FAQ card stays: it already claims `faq_group_key`).
+ * root keys arrived in later sessions (`seo` S2, `faq` S2, `deal_enquiry` S5); a card whose
+ * key is missing is dropped by `resolveEditorLayout` (the SEO card stays: it hosts the OG
+ * image; the FAQ card stays: it claims `faq_group_key`).
  */
 const REAL_ESTATE_LAYOUT: EditorLayoutItem[] = [
   {
@@ -326,6 +326,7 @@ const REAL_ESTATE_LAYOUT: EditorLayoutItem[] = [
     id: "deal_enquiry",
     titleKey: `${L}.cards.deal_enquiry`,
     paths: ["deal_enquiry"],
+    note: { textKey: `${L}.notes.dealEnquiry`, link: link("/admin/settings", "settings") },
   },
 ];
 

@@ -1,8 +1,8 @@
 /**
  * `real_estate` page content schema (ADR 0012). Source-locale values only.
  *
- * Most of the page body (asset-classes / enquiry) is still a STATIC marketing layout in the
- * renderer (`ui/real-estate-page.tsx`). The DB-driven, editable parts are the **hero**, the
+ * The enquiry form's fields are fixed i18n (`pages.dealEnquiryForm.*`); its headline, lede,
+ * contact title, button and note are the optional `deal_enquiry` copy (spec S5). The DB-driven, editable parts are the **hero**, the
  * **partners** section ("Built for Institutional Partners" — an Editorial-Split block
  * modelled on the Owners "why" section: sticky title + two CTAs beside a four-item
  * benefit list), the **market** section ("Portugal: One of Europe's Strongest Hospitality
@@ -216,6 +216,27 @@ export const realEstateSchema = z.object({
   /** FAQ section heading (the group stays in `faq_group_key`). Blank → `pages.realEstate.faqTitle`. */
   faq: z
     .object({ title: tStrOpt({ max: 160 }).describe("Leave blank for “Investor Questions, Answered”.") })
+    .optional(),
+  /**
+   * Closing "Ready to Explore a Partnership?" section (`#deal-enquiry`, spec
+   * real-estate-admin-editor S5). Every field is optional copy: blank / absent → the i18n
+   * message of the visitor's locale (`pages.realEstate.enquiry*`, `pages.dealEnquiryForm.*`).
+   * The form fields and the contact lines (from Settings) are not edited here.
+   */
+  deal_enquiry: z
+    .object({
+      headline: tStrOpt({ max: 160 }).describe("Leave blank for “Ready to Explore a Partnership?”"),
+      lede: tStrOpt({ max: 600 }).describe(
+        "Leave blank for “Whether you represent an investment fund, a development company, a large property operator, or a corporate seeking managed accommodation — we want to hear from you. Complete the enquiry form below and one of our senior team will respond within 24 hours.”",
+      ),
+      contact_title: tStrOpt({ max: 120 }).describe("Leave blank for “Contact Our Institutional Team Directly”."),
+      submit_label: tStrOpt({ max: 80 }).describe(
+        "The arrow is added automatically. Leave blank for “Submit Partnership Enquiry”.",
+      ),
+      note: tStrOpt({ max: 200 }).describe(
+        "Leave blank for “A senior member of our institutional team will respond within 24 hours.”",
+      ),
+    })
     .optional(),
 });
 

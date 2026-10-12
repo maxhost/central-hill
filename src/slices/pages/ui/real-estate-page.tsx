@@ -50,8 +50,9 @@ import { orMessage } from "./or-message";
  *   metrics (`clamp(72px,10vw,150px)` vertical padding, a 1240px/28px column, 84px scroll
  *   margin).
  * - `#faq`: the shared `FaqSection` island, picked by `faq_group_key`.
- * - `#deal-enquiry`: `DealEnquirySection` (`EnquirySplit` + form-card primitives). Its form does
- *   not submit yet and its copy is hardcoded English; wiring it to the leads slice is a separate
+ * - `#deal-enquiry`: `DealEnquirySection` (`EnquirySplit` + form-card primitives). Its copy is
+ *   `deal_enquiry` (blank → i18n), its form fields are fixed i18n and its contact lines come from
+ *   Settings (spec S5). The form does not submit yet; wiring it to the leads slice is a separate
  *   task.
  *
  * Entrance motion is `core/ui`'s `Reveal` throughout: call-site wrappers, plus
@@ -432,9 +433,10 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * "Ready to Explore a Partnership?" (`#deal-enquiry`, SECTION 10):
        * `DealEnquirySection` (core/ui's `EnquirySplit` + form-card primitives; the
        * section shell, 1240px/28px wrap and per-column reveal live in `EnquirySplit`). Replaced the
-       * raw `BODY_BOTTOM` markup + its `.enquiry`/`.form-card`/`.ffield`/`.facc` CSS.
+       * raw `BODY_BOTTOM` markup + its `.enquiry`/`.form-card`/`.ffield`/`.facc` CSS. Copy from
+       * `content.deal_enquiry` (blank → i18n), contact lines from Settings (spec S5).
        */}
-      <DealEnquirySection />
+      <DealEnquirySection locale={locale} content={content.deal_enquiry} />
     </>
   );
 }

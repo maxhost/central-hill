@@ -655,7 +655,7 @@ test("realEstateSchema: hero image is optional (\"\" validates) with the hero hi
   }
 });
 
-test("real estate layout: 11 stable ids; missing keys dropped (SEO + FAQ kept); every key placed once", () => {
+test("real estate layout: 11 stable ids, all 11 cards shown (S5); every key placed once", () => {
   assert.deepEqual([...REAL_ESTATE_CARD_IDS], [
     "seo", "hero", "partners", "capabilities", "asset_management", "deal_structures", "market",
     "track_record", "process", "faq", "deal_enquiry",
@@ -663,8 +663,9 @@ test("real estate layout: 11 stable ids; missing keys dropped (SEO + FAQ kept); 
   const rootKeys = Object.keys(realEstateSchema.shape);
   const layout = resolveEditorLayout("real_estate", rootKeys);
   assert.ok(layout);
-  // `seo` and `faq` (title) exist since S2; `deal_enquiry` doesn't exist yet.
-  assert.deepEqual(cardIds(layout), REAL_ESTATE_CARD_IDS.filter((id) => id !== "deal_enquiry"));
+  // `seo` and `faq` (title) exist since S2, `deal_enquiry` since S5 → every card is shown.
+  assert.deepEqual(cardIds(layout), [...REAL_ESTATE_CARD_IDS]);
+  assert.equal(layout.length, 11);
   const seo = layout.find((i) => i.id === "seo");
   assert.ok(seo && seo.kind === "card" && seo.hostsOgImage);
   assert.deepEqual(seo.paths, ["seo"]);
@@ -678,13 +679,15 @@ test("real estate layout: 11 stable ids; missing keys dropped (SEO + FAQ kept); 
   assert.deepEqual([...rendered].sort(), [...rootKeys].sort());
   assert.equal(new Set(rendered).size, rendered.length);
   assert.ok(!cardIds(layout).includes(OTHER_CARD_ID));
-  const later = resolveEditorLayout("real_estate", [...rootKeys, "deal_enquiry"]);
-  assert.ok(later);
-  assert.deepEqual(cardIds(later), [...REAL_ESTATE_CARD_IDS]);
+  const enquiry = layout.find((i) => i.id === "deal_enquiry");
+  assert.ok(enquiry && enquiry.kind === "card");
+  assert.deepEqual(enquiry.paths, ["deal_enquiry"]);
+  assert.equal(enquiry.note?.textKey, "admin.layout.notes.dealEnquiry");
+  assert.equal(enquiry.note?.link?.href, "/admin/settings");
 });
 
 test("real estate layout + labels: every i18n key exists in the 4 locales", () => {
-  const layout = resolveEditorLayout("real_estate", [...Object.keys(realEstateSchema.shape), "deal_enquiry"]);
+  const layout = resolveEditorLayout("real_estate", Object.keys(realEstateSchema.shape));
   assert.ok(layout);
   const keys = layout.flatMap((i) => [
     i.titleKey,
@@ -695,7 +698,7 @@ test("real estate layout + labels: every i18n key exists in the 4 locales", () =
     "partners", "capabilities", "asset_management", "deal_structures", "models", "tagline",
     "featured", "feature_label", "points", "market", "fundamentals", "regulatory", "thesis",
     "track_record", "tiles", "caption", "process", "positioning", "capability_statement_media_id",
-    "deal_enquiry", "contact_title", "value",
+    "deal_enquiry", "contact_title", "value", "headline", "lede", "submit_label", "note",
   ]) keys.push(`admin.labels.${k}`);
   for (const k of ["models", "points", "tiles", "steps", "benefits"]) keys.push(`admin.itemLabels.${k}`);
   for (const k of ["points", "tiles", "steps"]) keys.push(`admin.addLabels.${k}`);
