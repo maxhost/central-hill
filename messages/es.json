@@ -1129,7 +1129,15 @@
           "final_cta": "CTA final",
           "buildingsGrid": "Edificios",
           "owner_panel": "Panel para propietarios",
-          "calculator": "Calculadora de ganancias"
+          "calculator": "Calculadora de ganancias",
+          "partners": "Para socios institucionales",
+          "capabilities": "Gestión de nivel institucional",
+          "asset_management": "Tipos de activo",
+          "deal_structures": "Estructuras de acuerdo",
+          "market": "Por qué Portugal",
+          "track_record": "Trayectoria",
+          "process": "Proceso",
+          "deal_enquiry": "Solicitud de contacto"
         },
         "notes": {
           "heroSecondary": "El botón secundario siempre lleva a /owners.",
@@ -1146,7 +1154,9 @@
           "testimonials": "Las reseñas vienen de Testimonios.",
           "finalCta": "Deja la línea de contacto en blanco para generarla desde Ajustes.",
           "buildingsGrid": "Las tarjetas de edificios vienen de Edificios.",
-          "ownerPanel": "El botón lleva a la calculadora de ganancias. Deja la línea de contacto en blanco para generarla desde Ajustes."
+          "ownerPanel": "El botón lleva a la calculadora de ganancias. Deja la línea de contacto en blanco para generarla desde Ajustes.",
+          "realEstateHero": "El botón 2 descarga el PDF; sin PDF, baja hasta el formulario de contacto.",
+          "processSteps": "Los números de los pasos siguen el orden."
         },
         "links": {
           "settings": "Abrir Ajustes",
@@ -1227,7 +1237,29 @@
         "contact_line": "Línea de contacto",
         "owner_panel": "Panel para propietarios",
         "calculator": "Calculadora de ganancias",
-        "media_media_id": "Foto / vídeo / animación"
+        "media_media_id": "Foto / vídeo / animación",
+        "partners": "Socios institucionales",
+        "capabilities": "Gestión de nivel institucional",
+        "asset_management": "Tipos de activo",
+        "deal_structures": "Estructuras de acuerdo",
+        "models": "Modelos",
+        "tagline": "Frase corta",
+        "featured": "Destacado",
+        "feature_label": "Texto de la etiqueta",
+        "points": "Puntos",
+        "market": "Por qué Portugal",
+        "fundamentals": "Tarjeta de fundamentos",
+        "regulatory": "Tarjeta regulatoria",
+        "thesis": "Tesis de inversión",
+        "track_record": "Trayectoria",
+        "tiles": "Tarjetas",
+        "caption": "Leyenda",
+        "process": "Proceso",
+        "positioning": "Texto de posicionamiento",
+        "capability_statement_media_id": "Capability statement (PDF)",
+        "deal_enquiry": "Solicitud de contacto",
+        "contact_title": "Título del contacto",
+        "value": "Cifra"
       },
       "itemLabels": {
         "benefits": "Ventaja",
@@ -1237,13 +1269,19 @@
         "tiers": "Plan",
         "features": "Característica",
         "steps": "Paso",
-        "helpers": "Banda de ayuda"
+        "helpers": "Banda de ayuda",
+        "models": "Modelo",
+        "points": "Punto",
+        "tiles": "Tarjeta"
       },
       "addLabels": {
         "figures": "Nuevo dato",
         "tiers": "Nuevo plan",
         "features": "Nueva característica",
-        "stats": "Nuevo dato"
+        "stats": "Nuevo dato",
+        "points": "Nuevo punto",
+        "tiles": "Nueva tarjeta",
+        "steps": "Nuevo paso"
       }
     }
   },

@@ -1129,7 +1129,15 @@
           "final_cta": "CTA final",
           "buildingsGrid": "Edifícios",
           "owner_panel": "Painel para proprietários",
-          "calculator": "Calculadora de rendimentos"
+          "calculator": "Calculadora de rendimentos",
+          "partners": "Para parceiros institucionais",
+          "capabilities": "Gestão de nível institucional",
+          "asset_management": "Tipos de ativo",
+          "deal_structures": "Estruturas de negócio",
+          "market": "Porquê Portugal",
+          "track_record": "Historial",
+          "process": "Processo",
+          "deal_enquiry": "Pedido de contacto"
         },
         "notes": {
           "heroSecondary": "O botão secundário leva sempre a /owners.",
@@ -1146,7 +1154,9 @@
           "testimonials": "As avaliações vêm de Testemunhos.",
           "finalCta": "Deixe a linha de contacto em branco para a gerar a partir de Definições.",
           "buildingsGrid": "Os cartões dos edifícios vêm de Edifícios.",
-          "ownerPanel": "O botão leva à calculadora de rendimentos. Deixe a linha de contacto em branco para a gerar a partir de Definições."
+          "ownerPanel": "O botão leva à calculadora de rendimentos. Deixe a linha de contacto em branco para a gerar a partir de Definições.",
+          "realEstateHero": "O botão 2 descarrega o PDF; sem PDF, desloca até ao formulário de contacto.",
+          "processSteps": "Os números dos passos seguem a ordem."
         },
         "links": {
           "settings": "Abrir Definições",
@@ -1227,7 +1237,29 @@
         "contact_line": "Linha de contacto",
         "owner_panel": "Painel para proprietários",
         "calculator": "Calculadora de rendimentos",
-        "media_media_id": "Foto / vídeo / animação"
+        "media_media_id": "Foto / vídeo / animação",
+        "partners": "Parceiros institucionais",
+        "capabilities": "Gestão de nível institucional",
+        "asset_management": "Tipos de ativo",
+        "deal_structures": "Estruturas de negócio",
+        "models": "Modelos",
+        "tagline": "Frase curta",
+        "featured": "Em destaque",
+        "feature_label": "Texto do selo",
+        "points": "Pontos",
+        "market": "Porquê Portugal",
+        "fundamentals": "Cartão de fundamentos",
+        "regulatory": "Cartão regulatório",
+        "thesis": "Tese de investimento",
+        "track_record": "Historial",
+        "tiles": "Cartões",
+        "caption": "Legenda",
+        "process": "Processo",
+        "positioning": "Texto de posicionamento",
+        "capability_statement_media_id": "Capability statement (PDF)",
+        "deal_enquiry": "Pedido de contacto",
+        "contact_title": "Título do contacto",
+        "value": "Número"
       },
       "itemLabels": {
         "benefits": "Vantagem",
@@ -1237,13 +1269,19 @@
         "tiers": "Plano",
         "features": "Característica",
         "steps": "Passo",
-        "helpers": "Faixa de ajuda"
+        "helpers": "Faixa de ajuda",
+        "models": "Modelo",
+        "points": "Ponto",
+        "tiles": "Cartão"
       },
       "addLabels": {
         "figures": "Novo dado",
         "tiers": "Novo plano",
         "features": "Nova característica",
-        "stats": "Novo dado"
+        "stats": "Novo dado",
+        "points": "Novo ponto",
+        "tiles": "Novo cartão",
+        "steps": "Novo passo"
       }
     }
   },

@@ -1129,7 +1129,15 @@
           "final_cta": "Closing CTA",
           "buildingsGrid": "Buildings",
           "owner_panel": "For owners panel",
-          "calculator": "Earnings calculator"
+          "calculator": "Earnings calculator",
+          "partners": "Built for institutional partners",
+          "capabilities": "Institutional-grade management",
+          "asset_management": "Asset types",
+          "deal_structures": "Deal structures",
+          "market": "Why Portugal",
+          "track_record": "Track record",
+          "process": "Process",
+          "deal_enquiry": "Enquiry"
         },
         "notes": {
           "heroSecondary": "The secondary button always links to /owners.",
@@ -1146,7 +1154,9 @@
           "testimonials": "Reviews come from Testimonials.",
           "finalCta": "Leave the contact line blank to build it from Settings.",
           "buildingsGrid": "The building cards come from Buildings.",
-          "ownerPanel": "The button scrolls to the earnings calculator. Leave the contact line blank to build it from Settings."
+          "ownerPanel": "The button scrolls to the earnings calculator. Leave the contact line blank to build it from Settings.",
+          "realEstateHero": "Button 2 downloads the PDF; without a PDF it scrolls to the enquiry form.",
+          "processSteps": "Step numbers follow the order."
         },
         "links": {
           "settings": "Open Settings",
@@ -1227,7 +1237,29 @@
         "contact_line": "Contact line",
         "owner_panel": "For owners panel",
         "calculator": "Earnings calculator",
-        "media_media_id": "Photo / video / animation"
+        "media_media_id": "Photo / video / animation",
+        "partners": "Institutional partners",
+        "capabilities": "Institutional-grade management",
+        "asset_management": "Asset types",
+        "deal_structures": "Deal structures",
+        "models": "Models",
+        "tagline": "Tagline",
+        "featured": "Featured (highlighted)",
+        "feature_label": "Badge text",
+        "points": "Points",
+        "market": "Why Portugal",
+        "fundamentals": "Fundamentals card",
+        "regulatory": "Regulatory card",
+        "thesis": "Investment thesis",
+        "track_record": "Track record",
+        "tiles": "Tiles",
+        "caption": "Caption",
+        "process": "Process",
+        "positioning": "Positioning text",
+        "capability_statement_media_id": "Capability statement (PDF)",
+        "deal_enquiry": "Enquiry",
+        "contact_title": "Contact title",
+        "value": "Figure"
       },
       "itemLabels": {
         "benefits": "Benefit",
@@ -1237,13 +1269,19 @@
         "tiers": "Plan",
         "features": "Feature",
         "steps": "Step",
-        "helpers": "Help band"
+        "helpers": "Help band",
+        "models": "Model",
+        "points": "Point",
+        "tiles": "Tile"
       },
       "addLabels": {
         "figures": "New figure",
         "tiers": "New plan",
         "features": "New feature",
-        "stats": "New figure"
+        "stats": "New figure",
+        "points": "New point",
+        "tiles": "New tile",
+        "steps": "New step"
       }
     }
   },

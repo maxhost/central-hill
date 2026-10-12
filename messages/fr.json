@@ -1129,7 +1129,15 @@
           "final_cta": "CTA final",
           "buildingsGrid": "Immeubles",
           "owner_panel": "Panneau propriétaires",
-          "calculator": "Calculateur de revenus"
+          "calculator": "Calculateur de revenus",
+          "partners": "Pour les partenaires institutionnels",
+          "capabilities": "Gestion de niveau institutionnel",
+          "asset_management": "Types d’actifs",
+          "deal_structures": "Structures de partenariat",
+          "market": "Pourquoi le Portugal",
+          "track_record": "Résultats",
+          "process": "Processus",
+          "deal_enquiry": "Demande de contact"
         },
         "notes": {
           "heroSecondary": "Le bouton secondaire mène toujours à /owners.",
@@ -1146,7 +1154,9 @@
           "testimonials": "Les avis proviennent de Témoignages.",
           "finalCta": "Laissez la ligne de contact vide pour la générer depuis les Paramètres.",
           "buildingsGrid": "Les cartes des immeubles proviennent d’Immeubles.",
-          "ownerPanel": "Le bouton fait défiler jusqu’au calculateur de revenus. Laissez la ligne de contact vide pour la générer depuis les Paramètres."
+          "ownerPanel": "Le bouton fait défiler jusqu’au calculateur de revenus. Laissez la ligne de contact vide pour la générer depuis les Paramètres.",
+          "realEstateHero": "Le bouton 2 télécharge le PDF ; sans PDF, il fait défiler jusqu’au formulaire de contact.",
+          "processSteps": "Les numéros des étapes suivent l’ordre."
         },
         "links": {
           "settings": "Ouvrir Paramètres",
@@ -1227,7 +1237,29 @@
         "contact_line": "Ligne de contact",
         "owner_panel": "Panneau propriétaires",
         "calculator": "Calculateur de revenus",
-        "media_media_id": "Photo / vidéo / animation"
+        "media_media_id": "Photo / vidéo / animation",
+        "partners": "Partenaires institutionnels",
+        "capabilities": "Gestion de niveau institutionnel",
+        "asset_management": "Types d’actifs",
+        "deal_structures": "Structures de partenariat",
+        "models": "Modèles",
+        "tagline": "Accroche",
+        "featured": "Mis en avant",
+        "feature_label": "Texte du badge",
+        "points": "Points",
+        "market": "Pourquoi le Portugal",
+        "fundamentals": "Carte fondamentaux",
+        "regulatory": "Carte réglementaire",
+        "thesis": "Thèse d’investissement",
+        "track_record": "Résultats",
+        "tiles": "Cartes",
+        "caption": "Légende",
+        "process": "Processus",
+        "positioning": "Texte de positionnement",
+        "capability_statement_media_id": "Capability statement (PDF)",
+        "deal_enquiry": "Demande de contact",
+        "contact_title": "Titre du contact",
+        "value": "Chiffre"
       },
       "itemLabels": {
         "benefits": "Avantage",
@@ -1237,13 +1269,19 @@
         "tiers": "Formule",
         "features": "Caractéristique",
         "steps": "Étape",
-        "helpers": "Bandeau d’aide"
+        "helpers": "Bandeau d’aide",
+        "models": "Modèle",
+        "points": "Point",
+        "tiles": "Carte"
       },
       "addLabels": {
         "figures": "Nouvelle donnée",
         "tiers": "Nouvelle formule",
         "features": "Nouvelle caractéristique",
-        "stats": "Nouvelle donnée"
+        "stats": "Nouvelle donnée",
+        "points": "Nouveau point",
+        "tiles": "Nouvelle carte",
+        "steps": "Nouvelle étape"
       }
     }
   },

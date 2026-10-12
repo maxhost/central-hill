@@ -11,15 +11,24 @@
  * model → real_estate.
  */
 import { z } from "zod";
-import { ctaWithNote, mediaId, tStr, tStrOpt } from "@core/validation/primitives";
-import { between, faqGroupKey, fixed, iconCard } from "./_shared";
+import { ctaWithNote, mediaId, tStr, tStrOpt, url } from "@core/validation/primitives";
+import { between, faqGroupKey, fixed, iconCard, optionalImage } from "./_shared";
+import { adminHidden } from "./admin-hidden";
 
 /**
- * An image reference that may be left unset. An empty string means "no asset yet" — the
- * public render falls back to the approved mock photo (R2 isn't wired yet). Accepts a
- * `media_asset.id` once uploaded. `.describe()` becomes the admin uploader hint.
+ * A button URL kept in `data` but hidden in the editor (spec real-estate-admin-editor →
+ * "Campos ocultos en el editor"): where a button points is decided in code (the render uses
+ * `#deal-enquiry` / `#deal-structures` / the capability-statement PDF), so staff never see or
+ * edit it. The stored value round-trips unchanged on save.
  */
-const optionalImage = (hint: string) => z.union([z.literal(""), mediaId]).describe(hint);
+const hiddenUrl = adminHidden(url);
+/** Local variant of the kernel `ctaWithNote` with its `url` hidden in the editor. */
+const realEstateCta = ctaWithNote.extend({ url: hiddenUrl });
+/** The hero's `{ label, url }` buttons, with the `url` hidden in the editor. */
+const heroCta = z.object({ label: tStr({ max: 80 }), url: hiddenUrl });
+
+const HERO_IMG_HINT =
+  "Full-bleed hero background (a dark overlay is applied). Landscape 16:9 — 1920×1080 px (min 1600×900), JPG or WebP, under 500 KB.";
 const ASSET_IMG_HINT =
   "Lifestyle photo for the Asset Types showcase. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
 const CAPABILITIES_IMG_HINT =
@@ -27,13 +36,17 @@ const CAPABILITIES_IMG_HINT =
 
 export const realEstateSchema = z.object({
   hero: z.object({
-    image_media_id: mediaId,
+    // Optional since spec real-estate-admin-editor S1: "" → the stock hero photo.
+    image_media_id: optionalImage(HERO_IMG_HINT),
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
     positioning: tStr({ max: 600 }),
-    capability_statement_media_id: mediaId.optional(),
-    cta_primary: z.object({ label: tStr({ max: 80 }), url: z.url() }),
-    cta_secondary: z.object({ label: tStr({ max: 80 }), url: z.url() }),
+    // `"" | uuid` since spec real-estate-admin-editor S1: the editor scaffolds an unset media
+    // field as "" (`applyDefaults`), which a bare uuid rejected on save. "" → the button
+    // scrolls to `#deal-enquiry` (as when unset). PDF `accept` + hint arrive in S4.
+    capability_statement_media_id: z.union([z.literal(""), mediaId]).optional(),
+    cta_primary: heroCta,
+    cta_secondary: heroCta,
   }),
   // "Built for Institutional Partners" — Editorial Split (sticky headline + subheadline +
   // two CTAs beside a hairline benefit list). Mirrors the Owners `why` section; the four
@@ -43,8 +56,9 @@ export const realEstateSchema = z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 4),
-    cta_primary: ctaWithNote,
-    cta_secondary: ctaWithNote,
+    cta_primary: realEstateCta,
+    // `EditorialSplit` only renders the primary CTA's note → this one is hidden too.
+    cta_secondary: realEstateCta.extend({ note: adminHidden(ctaWithNote.shape.note) }),
   }),
   // "Institutional-Grade Management, End to End" — Image Showcase, MIRRORED (image on the
   // LEFT, text on the right): headline + subheadline + three capability highlights (single
@@ -57,7 +71,7 @@ export const realEstateSchema = z.object({
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 3),
     image_media_id: optionalImage(CAPABILITIES_IMG_HINT),
-    cta: ctaWithNote,
+    cta: realEstateCta,
   }),
   // "A Management Partner for Every Asset Type" — Image Showcase (the home guests-pitch /
   // owners services layout): headline + subheadline + six benefit highlights (2-col grid) +
@@ -68,7 +82,7 @@ export const realEstateSchema = z.object({
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 6),
     image_media_id: optionalImage(ASSET_IMG_HINT),
-    cta: ctaWithNote,
+    cta: realEstateCta,
   }),
   // "Deal Structures Built Around Your Risk Profile" — the three partnership-model cards
   // (Fixed Rent / Management Commission / Hybrid). Each card is a name + tagline + a bullet

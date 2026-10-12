@@ -47,10 +47,26 @@ export const OWNERS_CARD_IDS = [
 /** Stable card ids of the Buildings listing editor, in page order (spec buildings-admin-editor). */
 export const BUILDINGS_CARD_IDS = ["seo", "hero", "owner_panel", "stats", "calculator"] as const;
 
+/** Stable card ids of the Real Estate editor, in page order (spec real-estate-admin-editor). */
+export const REAL_ESTATE_CARD_IDS = [
+  "seo",
+  "hero",
+  "partners",
+  "capabilities",
+  "asset_management",
+  "deal_structures",
+  "market",
+  "track_record",
+  "process",
+  "faq",
+  "deal_enquiry",
+] as const;
+
 export type EditorCardId =
   | (typeof HOME_CARD_IDS)[number]
   | (typeof OWNERS_CARD_IDS)[number]
-  | (typeof BUILDINGS_CARD_IDS)[number];
+  | (typeof BUILDINGS_CARD_IDS)[number]
+  | (typeof REAL_ESTATE_CARD_IDS)[number];
 
 /** Id of the fallback card that collects root keys no card claims. */
 export const OTHER_CARD_ID = "other";
@@ -252,10 +268,71 @@ const BUILDINGS_LAYOUT: EditorLayoutItem[] = [
   },
 ];
 
+/**
+ * Real Estate (spec real-estate-admin-editor → "Editor: formulario sección a sección"). Some
+ * root keys only arrive in later sessions (`seo` S2, `faq` S2, `deal_enquiry` S5); until then
+ * their cards are dropped by `resolveEditorLayout` (the SEO card stays: it hosts the OG image;
+ * the FAQ card stays: it already claims `faq_group_key`).
+ */
+const REAL_ESTATE_LAYOUT: EditorLayoutItem[] = [
+  {
+    kind: "card",
+    id: "seo",
+    titleKey: `${L}.cards.seo`,
+    paths: ["seo"],
+    note: { textKey: `${L}.notes.seoLimits` },
+    hostsOgImage: true,
+  },
+  {
+    kind: "card",
+    id: "hero",
+    titleKey: `${L}.cards.hero`,
+    paths: ["hero"],
+    note: { textKey: `${L}.notes.realEstateHero` },
+  },
+  { kind: "card", id: "partners", titleKey: `${L}.cards.partners`, paths: ["partners"] },
+  { kind: "card", id: "capabilities", titleKey: `${L}.cards.capabilities`, paths: ["capabilities"] },
+  {
+    kind: "card",
+    id: "asset_management",
+    titleKey: `${L}.cards.asset_management`,
+    paths: ["asset_management"],
+  },
+  {
+    kind: "card",
+    id: "deal_structures",
+    titleKey: `${L}.cards.deal_structures`,
+    paths: ["deal_structures"],
+  },
+  { kind: "card", id: "market", titleKey: `${L}.cards.market`, paths: ["market"] },
+  { kind: "card", id: "track_record", titleKey: `${L}.cards.track_record`, paths: ["track_record"] },
+  {
+    kind: "card",
+    id: "process",
+    titleKey: `${L}.cards.process`,
+    paths: ["process"],
+    note: { textKey: `${L}.notes.processSteps` },
+  },
+  {
+    kind: "card",
+    id: "faq",
+    titleKey: `${L}.cards.faq`,
+    paths: ["faq_group_key", "faq"],
+    note: { textKey: `${L}.notes.faq`, link: link("/admin/faq", "faq") },
+  },
+  {
+    kind: "card",
+    id: "deal_enquiry",
+    titleKey: `${L}.cards.deal_enquiry`,
+    paths: ["deal_enquiry"],
+  },
+];
+
 const LAYOUTS: Partial<Record<string, EditorLayoutItem[]>> = {
   home: HOME_LAYOUT,
   owners: OWNERS_LAYOUT,
   buildings: BUILDINGS_LAYOUT,
+  real_estate: REAL_ESTATE_LAYOUT,
 };
 
 /**

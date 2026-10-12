@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 import { z } from "zod";
 import { mediaId, tStr } from "@core/validation/primitives";
@@ -14,8 +16,16 @@ import {
   HOME_CARD_IDS,
   OTHER_CARD_ID,
   OWNERS_CARD_IDS,
+  REAL_ESTATE_CARD_IDS,
   resolveEditorLayout,
 } from "../admin/layout";
+import {
+  defaultCapabilities,
+  defaultDealStructures,
+  defaultProcess,
+  defaultTrackRecord,
+  realEstateSchema,
+} from "../schemas/real-estate";
 
 /**
  * Slice `pages` backoffice (S12, ADR 0012) — the schema → form model. Pure (walks a
@@ -556,4 +566,142 @@ test("buildings layout: 5 stable ids, grid info after hero, every key placed onc
   const rendered = layout.flatMap((i) => (i.kind === "card" ? i.paths : []));
   assert.deepEqual([...rendered].sort(), [...rootKeys].sort());
   assert.ok(!cardIds(layout).includes(OTHER_CARD_ID));
+});
+
+// ── Real Estate: hidden fields + layout (spec real-estate-admin-editor S1) ───
+
+const RE_CTA = { label: "Go", url: "https://example.com/re", note: "Partner note" };
+const RE_SAMPLE = {
+  hero: {
+    image_media_id: "",
+    headline: "H",
+    subheadline: "S",
+    positioning: "P",
+    cta_primary: { label: "Enquire", url: "https://example.com/a" },
+    cta_secondary: { label: "Download", url: "https://example.com/b" },
+  },
+  partners: {
+    headline: "Partners",
+    benefits: Array(4).fill(ICON),
+    cta_primary: RE_CTA,
+    cta_secondary: { label: "Structures", url: "https://example.com/c", note: "never shown" },
+  },
+  capabilities: defaultCapabilities,
+  asset_management: { headline: "A", benefits: Array(6).fill(ICON), image_media_id: "", cta: RE_CTA },
+  deal_structures: defaultDealStructures,
+  market: {
+    headline: "M",
+    stats: Array.from({ length: 3 }, (_, i) => ({ value: `${i}`, label: `L${i}` })),
+    fundamentals: { title: "F", body: ["a", "b"] },
+    regulatory: { title: "R", body: "r" },
+    thesis: { title: "T", points: ["1", "2", "3"] },
+  },
+  track_record: defaultTrackRecord,
+  process: defaultProcess,
+  faq_group_key: "",
+};
+
+const RE_HIDDEN = [
+  ["hero", "cta_primary", "url"],
+  ["hero", "cta_secondary", "url"],
+  ["partners", "cta_primary", "url"],
+  ["partners", "cta_secondary", "url"],
+  ["partners", "cta_secondary", "note"],
+  ["capabilities", "cta", "url"],
+  ["asset_management", "cta", "url"],
+];
+
+test("realEstateSchema: URLs and partners' secondary note are hidden; labels stay visible", () => {
+  const root = describe(realEstateSchema);
+  for (const p of RE_HIDDEN) assert.equal(nodeAt(root, p).kind, "hidden", p.join("."));
+  for (const p of [
+    ["hero", "cta_primary", "label"],
+    ["hero", "cta_secondary", "label"],
+    ["partners", "cta_primary", "label"],
+    ["partners", "cta_primary", "note"],
+    ["partners", "cta_secondary", "label"],
+    ["capabilities", "cta", "label"],
+    ["capabilities", "cta", "note"],
+    ["asset_management", "cta", "label"],
+    ["asset_management", "cta", "note"],
+  ]) {
+    assert.equal(nodeAt(root, p).kind, "string", p.join("."));
+  }
+});
+
+test("realEstateSchema: hidden values round-trip through applyDefaults and still validate on save", () => {
+  const root = describe(realEstateSchema);
+  const formData = applyDefaults(root, RE_SAMPLE) as typeof RE_SAMPLE;
+  const parsed = realEstateSchema.safeParse(formData);
+  assert.ok(parsed.success, JSON.stringify(parsed.error?.issues));
+  const get = (obj: unknown, p: string[]) =>
+    p.reduce<unknown>((o, k) => (o as Record<string, unknown>)[k], obj);
+  for (const p of RE_HIDDEN) {
+    const original = get(RE_SAMPLE, p);
+    assert.ok(original, p.join("."));
+    assert.equal(get(formData, p), original, `applyDefaults ${p.join(".")}`);
+    assert.equal(get(parsed.data, p), original, `parsed ${p.join(".")}`);
+  }
+});
+
+test("realEstateSchema: hero image is optional (\"\" validates) with the hero hint", () => {
+  assert.ok(realEstateSchema.shape.hero.shape.image_media_id.safeParse("").success);
+  const hero = nodeAt(describe(realEstateSchema), ["hero", "image_media_id"]);
+  assert.equal(hero.kind, "media");
+  if (hero.kind === "media") {
+    assert.equal(hero.accept, "image");
+    assert.match(hero.hint ?? "", /^Full-bleed hero background .*16:9 — 1920×1080 px/);
+  }
+});
+
+test("real estate layout: 11 stable ids; missing keys dropped (SEO + FAQ kept); every key placed once", () => {
+  assert.deepEqual([...REAL_ESTATE_CARD_IDS], [
+    "seo", "hero", "partners", "capabilities", "asset_management", "deal_structures", "market",
+    "track_record", "process", "faq", "deal_enquiry",
+  ]);
+  const rootKeys = Object.keys(realEstateSchema.shape);
+  const layout = resolveEditorLayout("real_estate", rootKeys);
+  assert.ok(layout);
+  // Today `seo`, `faq` (title) and `deal_enquiry` don't exist yet.
+  assert.deepEqual(cardIds(layout), REAL_ESTATE_CARD_IDS.filter((id) => id !== "deal_enquiry"));
+  const seo = layout.find((i) => i.id === "seo");
+  assert.ok(seo && seo.kind === "card" && seo.hostsOgImage && seo.paths.length === 0);
+  const faq = layout.find((i) => i.id === "faq");
+  assert.ok(faq && faq.kind === "card");
+  assert.deepEqual(faq.paths, ["faq_group_key"]);
+  assert.equal(faq.note?.link?.href, "/admin/faq");
+  const rendered = layout.flatMap((i) => (i.kind === "card" ? i.paths : []));
+  assert.deepEqual([...rendered].sort(), [...rootKeys].sort());
+  assert.equal(new Set(rendered).size, rendered.length);
+  assert.ok(!cardIds(layout).includes(OTHER_CARD_ID));
+  const later = resolveEditorLayout("real_estate", [...rootKeys, "seo", "faq", "deal_enquiry"]);
+  assert.ok(later);
+  assert.deepEqual(cardIds(later), [...REAL_ESTATE_CARD_IDS]);
+});
+
+test("real estate layout + labels: every i18n key exists in the 4 locales", () => {
+  const layout = resolveEditorLayout("real_estate", [
+    ...Object.keys(realEstateSchema.shape), "seo", "faq", "deal_enquiry",
+  ]);
+  assert.ok(layout);
+  const keys = layout.flatMap((i) => [
+    i.titleKey,
+    ...(i.note ? [i.note.textKey] : []),
+    ...(i.note?.link ? [i.note.link.labelKey] : []),
+  ]);
+  for (const k of [
+    "partners", "capabilities", "asset_management", "deal_structures", "models", "tagline",
+    "featured", "feature_label", "points", "market", "fundamentals", "regulatory", "thesis",
+    "track_record", "tiles", "caption", "process", "positioning", "capability_statement_media_id",
+    "deal_enquiry", "contact_title", "value",
+  ]) keys.push(`admin.labels.${k}`);
+  for (const k of ["models", "points", "tiles", "steps", "benefits"]) keys.push(`admin.itemLabels.${k}`);
+  for (const k of ["points", "tiles", "steps"]) keys.push(`admin.addLabels.${k}`);
+  for (const locale of ["en", "pt", "es", "fr"]) {
+    const pages = JSON.parse(readFileSync(path.join(process.cwd(), `messages/${locale}.json`), "utf8")).pages;
+    for (const k of keys) {
+      const v = k.split(".").reduce<unknown>((o, part) => (o as Record<string, unknown> | undefined)?.[part], pages);
+      assert.equal(typeof v, "string", `${locale}: pages.${k}`);
+    }
+  }
 });
