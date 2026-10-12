@@ -303,6 +303,7 @@ const REAL_ESTATE_LAYOUT: EditorLayoutItem[] = [
     id: "deal_structures",
     titleKey: `${L}.cards.deal_structures`,
     paths: ["deal_structures"],
+    note: { textKey: `${L}.notes.dealStructuresFeatured` },
   },
   { kind: "card", id: "market", titleKey: `${L}.cards.market`, paths: ["market"] },
   { kind: "card", id: "track_record", titleKey: `${L}.cards.track_record`, paths: ["track_record"] },

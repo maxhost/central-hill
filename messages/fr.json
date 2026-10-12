@@ -1059,13 +1059,16 @@
       "activitiesEyebrow": "Que Faire"
     },
     "realEstate": {
-      "metaTitle": "Immobilier et Investissement — Central Hill",
-      "metaDescription": "Gestion hôtelière et partenariats d'investissement de niveau institutionnel au Portugal — classes d'actifs, modèles et un historique éprouvé.",
+      "metaTitle": "Partenariats Immobiliers — Central Hill",
+      "metaDescription": "Central Hill Apartments est le partenaire de gestion hôtelière des fonds d'investissement, promoteurs immobiliers, opérateurs de grande envergure et entreprises en quête de rendements de niveau institutionnel pour leurs actifs au Portugal.",
       "partnersEyebrow": "Avec Qui Nous Travaillons",
       "enquiryEyebrow": "Discutons",
       "enquiryCta": "Démarrer une Conversation",
       "featuredModel": "Recommandé",
-      "faqTitle": "Questions des Investisseurs, Répondues"
+      "faqTitle": "Questions des Investisseurs, Répondues",
+      "heroAlt": "Vue aérienne de l'horizon historique de Lisbonne et de ses toits au crépuscule",
+      "capabilitiesAlt": "L'équipe de gestion de Central Hill analysant les tableaux de bord de performance du portefeuille",
+      "assetsAlt": "Appartement géré meublé par des designers dans un immeuble de Lisbonne"
     },
     "about": {
       "metaTitle": "À Propos — Central Hill",
@@ -1156,7 +1159,8 @@
           "buildingsGrid": "Les cartes des immeubles proviennent d’Immeubles.",
           "ownerPanel": "Le bouton fait défiler jusqu’au calculateur de revenus. Laissez la ligne de contact vide pour la générer depuis les Paramètres.",
           "realEstateHero": "Le bouton 2 télécharge le PDF ; sans PDF, il fait défiler jusqu’au formulaire de contact.",
-          "processSteps": "Les numéros des étapes suivent l’ordre."
+          "processSteps": "Les numéros des étapes suivent l’ordre.",
+          "dealStructuresFeatured": "Une carte mise en avant sans texte de badge affiche « Recommandé »."
         },
         "links": {
           "settings": "Ouvrir Paramètres",

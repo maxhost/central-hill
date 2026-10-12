@@ -1059,13 +1059,16 @@
       "activitiesEyebrow": "Qué Hacer"
     },
     "realEstate": {
-      "metaTitle": "Inmobiliario e Inversión — Central Hill",
-      "metaDescription": "Gestión hotelera y alianzas de inversión de nivel institucional en Portugal — clases de activos, modelos y una trayectoria probada.",
+      "metaTitle": "Alianzas Inmobiliarias — Central Hill",
+      "metaDescription": "Central Hill Apartments es el socio de gestión hotelera de fondos de inversión, promotores inmobiliarios, operadores a gran escala y clientes corporativos que buscan rentabilidades de nivel institucional para sus activos en Portugal.",
       "partnersEyebrow": "Con Quién Trabajamos",
       "enquiryEyebrow": "Hablemos",
       "enquiryCta": "Iniciar una Conversación",
       "featuredModel": "Recomendado",
-      "faqTitle": "Preguntas de Inversores, Resueltas"
+      "faqTitle": "Preguntas de Inversores, Resueltas",
+      "heroAlt": "Vista aérea del horizonte histórico de Lisboa y sus tejados al atardecer",
+      "capabilitiesAlt": "Equipo de gestión de Central Hill revisando paneles de rendimiento de la cartera",
+      "assetsAlt": "Apartamento gestionado con mobiliario de diseño en un edificio de Lisboa"
     },
     "about": {
       "metaTitle": "Sobre Nosotros — Central Hill",
@@ -1156,7 +1159,8 @@
           "buildingsGrid": "Las tarjetas de edificios vienen de Edificios.",
           "ownerPanel": "El botón lleva a la calculadora de ganancias. Deja la línea de contacto en blanco para generarla desde Ajustes.",
           "realEstateHero": "El botón 2 descarga el PDF; sin PDF, baja hasta el formulario de contacto.",
-          "processSteps": "Los números de los pasos siguen el orden."
+          "processSteps": "Los números de los pasos siguen el orden.",
+          "dealStructuresFeatured": "Una tarjeta destacada sin texto en la etiqueta muestra “Recomendado”."
         },
         "links": {
           "settings": "Abrir Ajustes",

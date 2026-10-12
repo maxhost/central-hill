@@ -11,7 +11,7 @@
  * model → real_estate.
  */
 import { z } from "zod";
-import { ctaWithNote, mediaId, tStr, tStrOpt, url } from "@core/validation/primitives";
+import { ctaWithNote, mediaId, seoShape, tStr, tStrOpt, url } from "@core/validation/primitives";
 import { between, faqGroupKey, fixed, iconCard, optionalImage } from "./_shared";
 import { adminHidden } from "./admin-hidden";
 
@@ -34,7 +34,14 @@ const ASSET_IMG_HINT =
 const CAPABILITIES_IMG_HINT =
   "Photo for the Institutional-Grade Management showcase (rendered on the LEFT). Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
 
+/*
+ * Optional copy added by spec `real-estate-admin-editor` S2 (`seo`, `faq`). Both are optional
+ * and blank-tolerant: empty / absent → the page renders the current i18n message of the
+ * visitor's locale, so a row saved before these keys existed renders exactly as before.
+ */
 export const realEstateSchema = z.object({
+  /** Search/social meta for `/<locale>/real-estate`. Blank → `pages.realEstate.metaTitle` / `metaDescription`. */
+  seo: z.object({ ...seoShape }).optional(),
   hero: z.object({
     // Optional since spec real-estate-admin-editor S1: "" → the stock hero photo.
     image_media_id: optionalImage(HERO_IMG_HINT),
@@ -100,7 +107,10 @@ export const realEstateSchema = z.object({
         tagline: tStr({ max: 120 }),
         /** Highlight this card (accent border + badge). Typically only one card. */
         featured: z.boolean(),
-        /** Badge text shown when `featured` (e.g. "Most Flexible"); blank = no badge. */
+        /**
+         * Badge text shown when `featured` (e.g. "Most Flexible"). Blank on a featured card →
+         * `pages.realEstate.featuredModel` ("Recommended", spec real-estate-admin-editor S2).
+         */
         feature_label: tStrOpt({ max: 40 }),
         /** The card's bullet list of contract terms (3–10 points). */
         points: between(tStr({ max: 200 }), 3, 10),
@@ -189,6 +199,10 @@ export const realEstateSchema = z.object({
   }),
   /** Optional FAQ group to show on the page (blank = none). */
   faq_group_key: faqGroupKey,
+  /** FAQ section heading (the group stays in `faq_group_key`). Blank → `pages.realEstate.faqTitle`. */
+  faq: z
+    .object({ title: tStrOpt({ max: 160 }).describe("Leave blank for “Investor Questions, Answered”.") })
+    .optional(),
 });
 
 export type RealEstateContent = z.infer<typeof realEstateSchema>;

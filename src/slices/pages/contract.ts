@@ -130,6 +130,14 @@ export { buildOwnersMetadata } from "./server/metadata";
 export { buildBuildingsMetadata } from "./server/metadata";
 
 /**
+ * The Real Estate route's `generateMetadata` body (spec `real-estate-admin-editor` S2), same
+ * shape as `buildOwnersMetadata`: `seo.*` with the `pages.realEstate.*` i18n fallback, canonical
+ * `/<locale>/real-estate` + hreflang (incl. `x-default` → `/real-estate`) + optional OG image.
+ * `src/app/[locale]/real-estate/page.tsx` just calls it.
+ */
+export { buildRealEstateMetadata } from "./server/metadata";
+
+/**
  * The Buildings listing's editable sections (spec `buildings-admin-editor` S2) — server
  * components the slice `buildings` listing composes around its own building grid:
  * hero → (grid) → owner panel → stats → calculator. Each takes the page read once with

@@ -662,27 +662,28 @@ test("real estate layout: 11 stable ids; missing keys dropped (SEO + FAQ kept); 
   const rootKeys = Object.keys(realEstateSchema.shape);
   const layout = resolveEditorLayout("real_estate", rootKeys);
   assert.ok(layout);
-  // Today `seo`, `faq` (title) and `deal_enquiry` don't exist yet.
+  // `seo` and `faq` (title) exist since S2; `deal_enquiry` doesn't exist yet.
   assert.deepEqual(cardIds(layout), REAL_ESTATE_CARD_IDS.filter((id) => id !== "deal_enquiry"));
   const seo = layout.find((i) => i.id === "seo");
-  assert.ok(seo && seo.kind === "card" && seo.hostsOgImage && seo.paths.length === 0);
+  assert.ok(seo && seo.kind === "card" && seo.hostsOgImage);
+  assert.deepEqual(seo.paths, ["seo"]);
   const faq = layout.find((i) => i.id === "faq");
   assert.ok(faq && faq.kind === "card");
-  assert.deepEqual(faq.paths, ["faq_group_key"]);
+  assert.deepEqual(faq.paths, ["faq_group_key", "faq"]);
+  const deals = layout.find((i) => i.id === "deal_structures");
+  assert.equal(deals?.note?.textKey, "admin.layout.notes.dealStructuresFeatured");
   assert.equal(faq.note?.link?.href, "/admin/faq");
   const rendered = layout.flatMap((i) => (i.kind === "card" ? i.paths : []));
   assert.deepEqual([...rendered].sort(), [...rootKeys].sort());
   assert.equal(new Set(rendered).size, rendered.length);
   assert.ok(!cardIds(layout).includes(OTHER_CARD_ID));
-  const later = resolveEditorLayout("real_estate", [...rootKeys, "seo", "faq", "deal_enquiry"]);
+  const later = resolveEditorLayout("real_estate", [...rootKeys, "deal_enquiry"]);
   assert.ok(later);
   assert.deepEqual(cardIds(later), [...REAL_ESTATE_CARD_IDS]);
 });
 
 test("real estate layout + labels: every i18n key exists in the 4 locales", () => {
-  const layout = resolveEditorLayout("real_estate", [
-    ...Object.keys(realEstateSchema.shape), "seo", "faq", "deal_enquiry",
-  ]);
+  const layout = resolveEditorLayout("real_estate", [...Object.keys(realEstateSchema.shape), "deal_enquiry"]);
   assert.ok(layout);
   const keys = layout.flatMap((i) => [
     i.titleKey,

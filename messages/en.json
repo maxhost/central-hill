@@ -1059,13 +1059,16 @@
       "activitiesEyebrow": "What To Do"
     },
     "realEstate": {
-      "metaTitle": "Real Estate & Investment — Central Hill",
-      "metaDescription": "Institutional-grade hospitality management and investment partnerships across Portugal — asset classes, models, and a proven track record.",
+      "metaTitle": "Real Estate Partnerships — Central Hill",
+      "metaDescription": "Central Hill Apartments is the hospitality management partner for investment funds, real estate developers, large-scale operators, and corporate clients seeking institutional-grade returns on their assets in Portugal.",
       "partnersEyebrow": "Who We Work With",
       "enquiryEyebrow": "Let's Talk",
       "enquiryCta": "Start a Conversation",
       "featuredModel": "Recommended",
-      "faqTitle": "Investor Questions, Answered"
+      "faqTitle": "Investor Questions, Answered",
+      "heroAlt": "Aerial view of Lisbon's historic skyline and tiled rooftops at dusk",
+      "capabilitiesAlt": "Central Hill's management team reviewing portfolio performance dashboards",
+      "assetsAlt": "Designer-furnished managed apartment in a Lisbon building"
     },
     "about": {
       "metaTitle": "About Us — Central Hill",
@@ -1156,7 +1159,8 @@
           "buildingsGrid": "The building cards come from Buildings.",
           "ownerPanel": "The button scrolls to the earnings calculator. Leave the contact line blank to build it from Settings.",
           "realEstateHero": "Button 2 downloads the PDF; without a PDF it scrolls to the enquiry form.",
-          "processSteps": "Step numbers follow the order."
+          "processSteps": "Step numbers follow the order.",
+          "dealStructuresFeatured": "A featured card without a badge text shows “Recommended”."
         },
         "links": {
           "settings": "Open Settings",

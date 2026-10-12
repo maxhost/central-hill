@@ -23,6 +23,7 @@ import {
 } from "../schemas/real-estate";
 import { DealEnquirySection } from "./components/deal-enquiry-section";
 import { FaqSection } from "./components/faq-section";
+import { orMessage } from "./or-message";
 
 /**
  * Real Estate page: the institutional-partnerships landing, built from `mock/real-estate.html`
@@ -58,15 +59,14 @@ import { FaqSection } from "./components/faq-section";
 
 // Image fallbacks = the approved mock photo, used 1:1 until a real R2 asset is set in the
 // backoffice (the seeded `*_media_id` has no uploaded asset yet → resolved media is absent).
+// Their alts (also used for an uploaded asset without alt text) are i18n since spec
+// `real-estate-admin-editor` S2: `pages.realEstate.heroAlt` / `capabilitiesAlt` / `assetsAlt`.
 const HERO_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70";
-const HERO_FALLBACK_ALT = "Aerial view of Lisbon's historic skyline and tiled rooftops at dusk";
 const ASSET_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=72";
-const ASSET_FALLBACK_ALT = "Designer-furnished managed apartment in a Lisbon building";
 const CAP_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=72";
-const CAP_FALLBACK_ALT = "Central Hill's management team reviewing portfolio performance dashboards";
 
 // `#capabilities`/`#manage`'s images: one of `TwoColumnShowcase`'s two `lg:` (1024px) columns — the same value
 // Owners (`TWO_COL_SHOWCASE_SIZES`) and Home's `guests-section.tsx` use for the same component.
@@ -99,6 +99,9 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
+  const heroFallbackAlt = t("realEstate.heroAlt");
+  const capFallbackAlt = t("realEstate.capabilitiesAlt");
+  const assetFallbackAlt = t("realEstate.assetsAlt");
   const faqGroupKey = content.faq_group_key ?? "";
   const market = content.market;
   const trackRecord = content.track_record ?? defaultTrackRecord;
@@ -147,7 +150,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         background={
           heroMedia?.url && heroMedia.width > 0 && heroMedia.height > 0 ? (
             <MediaImage
-              data={{ ...heroMedia, alt: heroMedia.alt || HERO_FALLBACK_ALT }}
+              data={{ ...heroMedia, alt: heroMedia.alt || heroFallbackAlt }}
               className="absolute inset-0 -z-10 h-full w-full object-cover"
               sizes="100vw"
               priority // full-bleed hero — the LCP element on this page
@@ -156,7 +159,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
             // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
             <img
               src={heroMedia?.url || HERO_FALLBACK_IMG}
-              alt={heroMedia?.alt || HERO_FALLBACK_ALT}
+              alt={heroMedia?.alt || heroFallbackAlt}
               className="absolute inset-0 -z-10 h-full w-full object-cover"
               loading="eager"
               fetchPriority="high"
@@ -245,7 +248,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
             image={
               capMedia?.url && capMedia.width > 0 && capMedia.height > 0 ? (
                 <MediaImage
-                  data={{ ...capMedia, alt: capMedia.alt || CAP_FALLBACK_ALT }}
+                  data={{ ...capMedia, alt: capMedia.alt || capFallbackAlt }}
                   className="aspect-[4/5] w-full rounded-sm object-cover"
                   sizes={TWO_COL_SHOWCASE_SIZES}
                 />
@@ -253,7 +256,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
                 // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
                 <img
                   src={capMedia?.url || CAP_FALLBACK_IMG}
-                  alt={capMedia?.alt || CAP_FALLBACK_ALT}
+                  alt={capMedia?.alt || capFallbackAlt}
                   className="aspect-[4/5] w-full rounded-sm object-cover"
                   loading="lazy"
                   decoding="async"
@@ -295,7 +298,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
             image={
               assetMedia?.url && assetMedia.width > 0 && assetMedia.height > 0 ? (
                 <MediaImage
-                  data={{ ...assetMedia, alt: assetMedia.alt || ASSET_FALLBACK_ALT }}
+                  data={{ ...assetMedia, alt: assetMedia.alt || assetFallbackAlt }}
                   className="aspect-[4/5] w-full rounded-sm object-cover"
                   sizes={TWO_COL_SHOWCASE_SIZES}
                 />
@@ -303,7 +306,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
                 // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
                 <img
                   src={assetMedia?.url || ASSET_FALLBACK_IMG}
-                  alt={assetMedia?.alt || ASSET_FALLBACK_ALT}
+                  alt={assetMedia?.alt || assetFallbackAlt}
                   className="aspect-[4/5] w-full rounded-sm object-cover"
                   loading="lazy"
                   decoding="async"
@@ -338,7 +341,9 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
                 tagline: m.tagline,
                 points: m.points,
                 featured: m.featured,
-                featureLabel: m.feature_label,
+                // Spec real-estate-admin-editor S2: a featured card with no badge text gets the
+                // i18n "Recommended" badge; a non-featured card never shows one.
+                featureLabel: m.feature_label || (m.featured ? t("realEstate.featuredModel") : ""),
               }))}
             />
           </Reveal>
@@ -410,14 +415,15 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
       </div>
       {/*
        * The institutional FAQ (former SECTION 9) — the shared, editable `<FaqSection>` island
-       * chosen per page via `faq_group_key`.
+       * chosen per page via `faq_group_key`. Its heading is `faq.title` (blank → the i18n
+       * `realEstate.faqTitle`, spec real-estate-admin-editor S2).
        */}
       {faqGroupKey ? (
         <div id="faq" style={{ scrollMarginTop: 130 }}>
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
-            title={t("realEstate.faqTitle")}
+            title={orMessage(content.faq?.title, t("realEstate.faqTitle"))}
           />
         </div>
       ) : null}

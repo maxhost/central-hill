@@ -4,7 +4,14 @@ import path from "node:path";
 import { test } from "node:test";
 import { translatablePaths } from "@core/validation/primitives";
 import { pageContentSchema } from "../validation";
-import { aboutSchema, guestSchema, homeSchema, ownersSchema, translatablePathsByPage } from "../schemas";
+import {
+  aboutSchema,
+  guestSchema,
+  homeSchema,
+  ownersSchema,
+  realEstateSchema,
+  translatablePathsByPage,
+} from "../schemas";
 import { defaultAbout } from "../schemas/about";
 import { blogSchema, defaultBlog } from "../schemas/blog";
 import { defaultGuides, guidesSchema } from "../schemas/guides";
@@ -974,4 +981,81 @@ test("buildings S2: figures → cells keep descriptions; 3 figures → 3 columns
     "a blank description adds no second line",
   );
   assert.deepEqual(describedStatFigureCells([]), [], "no figures → no band");
+});
+
+// ── Real Estate S2: SEO, FAQ title, featured badge and fallback alts ─────────
+test("real estate S2: `seo` and `faq` are optional, blank-tolerant, capped and translatable", () => {
+  const { seo, faq } = realEstateSchema.shape;
+  assert.ok(seo.safeParse(undefined).success, "a legacy row without `seo` validates");
+  assert.ok(seo.safeParse({ meta_title: "", meta_description: "" }).success);
+  assert.ok(seo.safeParse({ meta_title: "Real Estate", meta_description: "Partnerships." }).success);
+  assert.ok(faq.safeParse(undefined).success, "a legacy row without `faq` validates");
+  assert.ok(faq.safeParse({ title: "" }).success && faq.safeParse({}).success);
+  assert.ok(faq.safeParse({ title: "Investor FAQ" }).success);
+  assert.ok(!faq.safeParse({ title: "x".repeat(161) }).success, "title ≤ 160");
+  const paths = translatablePathsByPage.real_estate;
+  for (const p of ["seo.meta_title", "seo.meta_description", "faq.title"]) {
+    assert.ok(paths.includes(p), `expected translatable path ${p}`);
+  }
+});
+
+test("real estate S2: a blank FAQ title / badge renders the i18n message", () => {
+  assert.equal(orMessage(undefined, "Investor Questions, Answered"), "Investor Questions, Answered");
+  assert.equal(orMessage(" ", "Investor Questions, Answered"), "Investor Questions, Answered");
+  assert.equal(orMessage("Your questions", "Investor Questions, Answered"), "Your questions");
+});
+
+test("seoMetadataInput: /real-estate falls back to i18n and builds canonical + hreflang", () => {
+  const input = seoMetadataInput({
+    locale: "es",
+    path: "/real-estate",
+    seo: undefined,
+    ogImage: null,
+    fallbackTitle: "Alianzas Inmobiliarias — Central Hill",
+    fallbackDescription: "Descripción.",
+  });
+  assert.equal(input.title, "Alianzas Inmobiliarias — Central Hill");
+  assert.equal(input.description, "Descripción.");
+  assert.equal(input.canonicalPath, "/es/real-estate");
+  assert.deepEqual(input.languages, {
+    "x-default": "/real-estate",
+    en: "/en/real-estate",
+    pt: "/pt/real-estate",
+    es: "/es/real-estate",
+    fr: "/fr/real-estate",
+  });
+  assert.equal(input.images, undefined);
+  const blank = seoMetadataInput({
+    locale: "en",
+    path: "/real-estate",
+    seo: { meta_title: " ", meta_description: "" },
+    ogImage: undefined,
+    fallbackTitle: "Real Estate Partnerships — Central Hill",
+    fallbackDescription: "d",
+  });
+  assert.equal(blank.title, "Real Estate Partnerships — Central Hill");
+  assert.equal(blank.canonicalPath, "/en/real-estate");
+});
+
+test("real estate S2: EN meta matches the route's former hardcoded metadata; new keys in 4 locales", () => {
+  const read = (l: string) =>
+    JSON.parse(readFileSync(path.join(process.cwd(), `messages/${l}.json`), "utf8")).pages;
+  const en = read("en").realEstate;
+  assert.equal(en.metaTitle, "Real Estate Partnerships — Central Hill");
+  assert.equal(
+    en.metaDescription,
+    "Central Hill Apartments is the hospitality management partner for investment funds, real estate developers, large-scale operators, and corporate clients seeking institutional-grade returns on their assets in Portugal.",
+  );
+  assert.equal(en.heroAlt, "Aerial view of Lisbon's historic skyline and tiled rooftops at dusk");
+  assert.equal(en.capabilitiesAlt, "Central Hill's management team reviewing portfolio performance dashboards");
+  assert.equal(en.assetsAlt, "Designer-furnished managed apartment in a Lisbon building");
+  for (const l of ["en", "pt", "es", "fr"]) {
+    const pages = read(l);
+    for (const k of ["metaTitle", "metaDescription", "featuredModel", "faqTitle", "heroAlt", "capabilitiesAlt", "assetsAlt"]) {
+      const v = pages.realEstate[k];
+      assert.ok(typeof v === "string" && v.trim() !== "", `${l}: pages.realEstate.${k}`);
+    }
+    const note = pages.admin.layout.notes.dealStructuresFeatured;
+    assert.ok(typeof note === "string" && note.trim() !== "", `${l}: notes.dealStructuresFeatured`);
+  }
 });
