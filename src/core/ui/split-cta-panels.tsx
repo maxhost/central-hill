@@ -1,7 +1,8 @@
+import type { ReactNode } from "react";
 import { buttonClassName } from "./button";
 import { cn } from "./cn";
 
-export type SplitCtaPanel = {
+type SplitCtaPanelBase = {
   /**
    * `light` = warm-white surface panel with an ink (`.btn-solid`) button — the guest side;
    * `dark` = feature-band panel with an accent (`.btn-accent`) button — the owner side.
@@ -10,16 +11,26 @@ export type SplitCtaPanel = {
   eyebrow?: string;
   title: string;
   body?: string;
-  cta: {
-    href: string;
-    /** Pre-translated button label — the panel appends the trailing " →". */
-    label: string;
-    /** Opens in a new tab with `rel="noopener noreferrer"`. Off by default (the original is a plain `<a>`). */
-    external?: boolean;
-  };
   /** Small line under the button (e.g. phone · email · WhatsApp). Omitted when empty. */
   contactLine?: string;
 };
+
+/** The panel's standard button: a plain `<a>` styled by the tone. */
+type SplitCtaLink = {
+  href: string;
+  /** Pre-translated button label — the panel appends the trailing " →". */
+  label: string;
+  /** Opens in a new tab with `rel="noopener noreferrer"`. Off by default (the original is a plain `<a>`). */
+  external?: boolean;
+};
+
+/**
+ * One panel. Either a `cta` link (the default `<a>` button) or an `action` node rendered in the
+ * button's place (e.g. a client island that opens a dialog — Guests' owner panel). To look like
+ * the standard button, style it with `splitCtaButtonClassName(tone)` and append the " →" itself.
+ */
+export type SplitCtaPanel = SplitCtaPanelBase &
+  ({ cta: SplitCtaLink; action?: never } | { cta?: never; action: ReactNode });
 
 const TONE = {
   light: {
@@ -39,6 +50,14 @@ const TONE = {
     contact: "text-on-feature-soft",
   },
 } as const;
+
+/**
+ * The class of a panel's standard button for the given tone (`solid` on light, `primary` on
+ * dark) — so a caller's `action` node can render the exact same button.
+ */
+export function splitCtaButtonClassName(tone: SplitCtaPanel["tone"]): string {
+  return buttonClassName(TONE[tone].button);
+}
 
 /**
  * Hairline grid of one or two solid-color CTA panels — the mock's closing `.dual` band: a
@@ -66,7 +85,9 @@ const TONE = {
  * Bending either to this shape would change their existing consumers' render.
  *
  * The buttons are `buttonClassName` (ADR 0035): `solid` on the light panel, `primary` on the dark
- * one, rendered as a plain `<a>`. The button is an inline-flex box in a block panel, so a long
+ * one, rendered as a plain `<a>` (exported as `splitCtaButtonClassName(tone)`). A panel may pass
+ * `action` instead of `cta`: that node is rendered in the button's place, untouched (Guests'
+ * owner panel puts the settings `ContactDialog` trigger there, styled with the same class). The button is an inline-flex box in a block panel, so a long
  * label wraps inside it on narrow panels (Guests' owner CTA at 390px) — same as the original.
  *
  * Purely presentational, per the `core/ui` ground rule: no i18n, no fetching, no domain
@@ -113,13 +134,17 @@ export function SplitCtaPanels({
               {p.title}
             </h3>
             {p.body ? <p className={cn("mb-6", t.body)}>{p.body}</p> : null}
-            <a
-              href={p.cta.href}
-              {...(p.cta.external ? { target: "_blank", rel: "noopener noreferrer" } : null)}
-              className={buttonClassName(t.button)}
-            >
-              {`${p.cta.label} →`}
-            </a>
+            {p.cta ? (
+              <a
+                href={p.cta.href}
+                {...(p.cta.external ? { target: "_blank", rel: "noopener noreferrer" } : null)}
+                className={buttonClassName(t.button)}
+              >
+                {`${p.cta.label} →`}
+              </a>
+            ) : (
+              p.action
+            )}
             {p.contactLine ? (
               <div className={cn("mt-5 text-[13px] tracking-[0.03em]", t.contact)}>{p.contactLine}</div>
             ) : null}

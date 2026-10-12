@@ -10,6 +10,8 @@ import { withMediaAccept } from "../schemas/media-accept";
 import { adminHidden } from "../schemas/admin-hidden";
 import { ownersSchema } from "../schemas/owners";
 import { guestSchema } from "../schemas/guest";
+import { buttonClassName } from "@core/ui/button";
+import { splitCtaButtonClassName } from "@core/ui/split-cta-panels";
 import { type FieldNode, applyDefaults, describe, emptyValue, humanizeKey } from "../admin/form-model";
 import { buildingsSchema, defaultBuildings } from "../schemas/buildings";
 import {
@@ -997,4 +999,42 @@ test("teaser card background: uploaded (optimized, CSS-safe) → else stock by p
   // Unquoted CSS url(...) safety.
   assert.equal(cssUrlSafe("https://m.example/a (1)'s \\\"x\".jpg"), "https://m.example/a%20%281%29%27s%20%5C%22x%22.jpg");
   assert.equal(cardBgSrc({ ...asset, url: "https://m.example/a (1).jpg" }, stock, optimize), "/_next/image?url=https%3A%2F%2Fm.example%2Fa%20%281%29.jpg&w=1200&q=75");
+});
+
+// ── Guests landing: owner dual-CTA opens the contact dialog (spec guests-admin-editor S5) ──
+
+test("guestSchema S5: owner panel shows contact title/intro, its URL stays hidden; guest panel unchanged", () => {
+  const root = describe(guestSchema);
+  for (const k of ["title", "intro"]) {
+    assert.equal(nodeAt(root, ["dual_cta", "owner", "contact", k]).kind, "string", `owner.contact.${k}`);
+  }
+  assert.equal(nodeAt(root, ["dual_cta", "owner", "cta", "url"]).kind, "hidden");
+  assert.equal(nodeAt(root, ["dual_cta", "owner", "cta", "label"]).kind, "string");
+  const guest = nodeAt(root, ["dual_cta", "guest"]);
+  assert.ok(guest.kind === "object" && !guest.fields.some((f) => f.key === "contact"), "guest panel has no contact");
+  // Blank hints name the header dialog's EN texts.
+  const en = JSON.parse(readFileSync(path.join(process.cwd(), "messages/en.json"), "utf8")).settings.contactDialog;
+  const contact = guestSchema.shape.dual_cta.shape.owner.shape.contact.unwrap().shape;
+  assert.ok((contact.title.description ?? "").includes(`“${en.title}”`));
+  assert.ok((contact.intro.description ?? "").includes(`“${en.intro}”`));
+});
+
+test("guestSchema S5: old rows (no contact), blank and filled contact copy validate; caps enforced", () => {
+  assert.ok(guestSchema.safeParse(GUEST_SAMPLE).success, "legacy row");
+  const withContact = (contact: Record<string, string>) => ({
+    ...GUEST_SAMPLE,
+    dual_cta: { ...GUEST_SAMPLE.dual_cta, owner: { ...GUEST_SAMPLE.dual_cta.owner, contact } },
+  });
+  assert.ok(guestSchema.safeParse(withContact({ title: "", intro: "" })).success, "blank");
+  const filled = guestSchema.safeParse(withContact({ title: "List with us", intro: "Tell us about your flat." }));
+  assert.ok(filled.success, JSON.stringify(filled.error?.issues));
+  assert.equal(guestSchema.safeParse(withContact({ title: "x".repeat(81) })).success, false, "title ≤ 80");
+  assert.equal(guestSchema.safeParse(withContact({ intro: "x".repeat(281) })).success, false, "intro ≤ 280");
+  const scaffolded = guestSchema.safeParse(applyDefaults(describe(guestSchema), GUEST_SAMPLE));
+  assert.ok(scaffolded.success, JSON.stringify(scaffolded.error?.issues));
+});
+
+test("SplitCtaPanels button class per tone matches the panel's own button (S5)", () => {
+  assert.equal(splitCtaButtonClassName("dark"), buttonClassName("primary"));
+  assert.equal(splitCtaButtonClassName("light"), buttonClassName("solid"));
 });

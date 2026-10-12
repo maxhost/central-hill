@@ -1238,7 +1238,7 @@
           "ctaServices": "The button always opens Services.",
           "ctaGuides": "The button always opens Guides.",
           "guestTestimonials": "Reviews come from Testimonials (audience Guest).",
-          "guestDualCta": "The guest button always opens Buildings and the owner button Owners. The contact line comes from Settings."
+          "guestDualCta": "The guest button always opens Buildings; the owner button opens the contact form. The contact line comes from Settings."
         },
         "links": {
           "settings": "Open Settings",

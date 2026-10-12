@@ -83,7 +83,7 @@ export { ChecklistCards, type ChecklistCard } from "./checklist-cards";
 /** Borderless rounded photo mosaic (`2fr 1fr 1fr`, first photo a 2-row lead tile; 2 cols ≤680px) — caller-built images; `adaptive` = count-aware 1/2/3/4/5+ layouts at fixed heights + bottom-right `overlay` slot. */
 export { MosaicGallery, MOSAIC_ADAPTIVE_MAX } from "./mosaic-gallery";
 /** Hairline grid of 1–2 solid CTA panels (light `surface` / dark `feature`): eyebrow, serif title, body, ink or accent button, contact line. */
-export { SplitCtaPanels, type SplitCtaPanel } from "./split-cta-panels";
+export { SplitCtaPanels, splitCtaButtonClassName, type SplitCtaPanel } from "./split-cta-panels";
 /** Editorial intro split: serif headline + lede + paragraphs + optional inline accent badge (caller icon) beside one full-height cover image (1.05fr/.95fr → 1 col ≤880px). */
 export { IntroSplit, type IntroSplitBadge } from "./intro-split";
 /** Standard section head (mock `.sec-head`): optional uppercase eyebrow, serif `<h2>` title, optional lede; left or centred, 720px max. */

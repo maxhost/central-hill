@@ -1238,7 +1238,7 @@
           "ctaServices": "Le bouton ouvre toujours Services.",
           "ctaGuides": "Le bouton ouvre toujours Guides.",
           "guestTestimonials": "Les avis viennent de Témoignages (public Voyageur).",
-          "guestDualCta": "Le bouton voyageur ouvre toujours Immeubles et le bouton propriétaire Propriétaires. La ligne de contact vient des Paramètres."
+          "guestDualCta": "Le bouton voyageur ouvre toujours Immeubles ; le bouton propriétaire ouvre le formulaire de contact. La ligne de contact vient des Paramètres."
         },
         "links": {
           "settings": "Ouvrir Paramètres",

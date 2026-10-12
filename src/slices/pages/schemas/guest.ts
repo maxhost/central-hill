@@ -75,6 +75,22 @@ const dualPanel = z.object({
   cta: guestCta,
 });
 
+/**
+ * The owner side (S5): its button opens the contact dialog (the header's `ContactDialog`), so it
+ * also carries the dialog's optional copy. Blank / absent → `settings.contactDialog.title` /
+ * `intro`, exactly the header dialog's texts.
+ */
+const ownerPanel = dualPanel.extend({
+  contact: z
+    .object({
+      title: tStrOpt({ max: 80 }).describe("Title of the contact dialog the button opens. Leave blank for “Contact us”."),
+      intro: tStrOpt({ max: 280 }).describe(
+        "Intro line of the contact dialog. Leave blank for “Send us a message and our team will get back to you shortly.”",
+      ),
+    })
+    .optional(),
+});
+
 /*
  * Optional copy overrides added by spec `guests-admin-editor` S2 (`seo`, `testimonials`, `faq`).
  * Every one is optional and blank-tolerant: empty / absent → the page renders the current i18n
@@ -135,10 +151,13 @@ export const guestSchema = z.object({
     items: fixed(teaserCard, 6),
     cta: guestCtaWithNote,
   }),
-  /** Closing band: guest panel left, owner panel right (mock order). Contact line = settings. */
+  /**
+   * Closing band: guest panel left, owner panel right (mock order). Contact line = settings.
+   * The owner button opens the contact dialog (S5); its stored `cta.url` is unused.
+   */
   dual_cta: z.object({
     guest: dualPanel,
-    owner: dualPanel,
+    owner: ownerPanel,
   }),
   /**
    * Testimonials heading (the reviews come from the testimonials slice, `audience='guest'`).

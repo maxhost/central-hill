@@ -10,9 +10,10 @@ import {
   Reveal,
   SectionHead,
   SplitCtaPanels,
+  splitCtaButtonClassName,
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
-import { getGlobals } from "@slices/settings/contract";
+import { ContactDialog, getGlobals } from "@slices/settings/contract";
 import { getGuestPage, type PageMedia } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
@@ -46,7 +47,8 @@ import { orMessage } from "./or-message";
  *   (blank → `pages.reviews.eyebrow` / `titleGuests`, no intro).
  * - `#faq`: the shared `FaqSection` island, picked by `faq_group_key` (only when set); title
  *   from `faq.title` (blank → `pages.faqTitle`).
- * - Closing dual CTA: `SplitCtaPanels`, contact lines from company_settings (`getGlobals`).
+ * - Closing dual CTA: `SplitCtaPanels`, contact lines from company_settings (`getGlobals`); the
+ *   owner button is the settings `ContactDialog` (`dual_cta.owner.contact`, blank → header texts).
  * Every section, including the shared slice ones (portfolio, testimonials, FAQ), uses the same
  * shell (`clamp(72px,10vw,150px)` vertical padding, 84px scroll margin, a 1240px/28px column)
  * and `core/ui`'s `SectionHead`.
@@ -109,8 +111,6 @@ function ctaRoutes(locale: Locale) {
     buildings: `/${locale}/buildings`,
     services: `/${locale}/services`,
     guides: `/${locale}/guides`,
-    // S5 turns the owner panel's button into the contact dialog; until then it opens Owners.
-    owners: `/${locale}/owners`,
   };
 }
 
@@ -156,10 +156,12 @@ function dualCtaContactLines(globals: Awaited<ReturnType<typeof getGlobals>>): {
 
 export async function GuestPage({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const [page, globals, t] = await Promise.all([
+  const [page, globals, t, tSettings] = await Promise.all([
     getGuestPage(locale),
     getGlobals(locale),
     getTranslations("pages"),
+    // The owner dual-CTA button opens the header's contact dialog; blank copy → its texts.
+    getTranslations("settings"),
   ]);
   if (!page) notFound();
 
@@ -409,8 +411,10 @@ export async function GuestPage({ locale }: { locale: Locale }) {
       {/*
        * Closing guest/owner dual CTA: `core/ui`'s `SplitCtaPanels` (see its docstring for why
        * it's neither `DualCtaPanels` nor `FeaturePanel`) in the plain section shell, one `Reveal`.
-       * React escapes the admin copy; the guest button opens Buildings and the owner button
-       * Owners (fixed routes, `ctaRoutes`); an empty contact line is omitted by the component.
+       * React escapes the admin copy; the guest button opens Buildings (fixed route, `ctaRoutes`)
+       * and the owner button is the settings `ContactDialog` (the header's dialog, same texts
+       * unless overridden), styled with the dark panel's own button class and "→" so it looks
+       * identical; an empty contact line is omitted by the component.
        */}
       <section className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
@@ -430,7 +434,15 @@ export async function GuestPage({ locale }: { locale: Locale }) {
                   eyebrow: dualCta.owner.eyebrow,
                   title: dualCta.owner.title,
                   body: dualCta.owner.body,
-                  cta: { href: routes.owners, label: dualCta.owner.cta.label },
+                  action: (
+                    <ContactDialog
+                      label={`${dualCta.owner.cta.label} →`}
+                      title={orMessage(dualCta.owner.contact?.title, tSettings("contactDialog.title"))}
+                      intro={orMessage(dualCta.owner.contact?.intro, tSettings("contactDialog.intro"))}
+                      source="guests-dual-cta"
+                      triggerClassName={splitCtaButtonClassName("dark")}
+                    />
+                  ),
                   contactLine: contactLines.owner,
                 },
               ]}

@@ -1238,7 +1238,7 @@
           "ctaServices": "O botão abre sempre Serviços.",
           "ctaGuides": "O botão abre sempre Guias.",
           "guestTestimonials": "As avaliações vêm de Testemunhos (público Hóspede).",
-          "guestDualCta": "O botão do hóspede abre sempre Edifícios e o do proprietário Proprietários. A linha de contacto vem das Definições."
+          "guestDualCta": "O botão do hóspede abre sempre Edifícios; o do proprietário abre o formulário de contacto. A linha de contacto vem das Definições."
         },
         "links": {
           "settings": "Abrir Definições",

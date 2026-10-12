@@ -11,7 +11,8 @@ import { UiIcon, buttonClassName, cn } from "@core/ui";
  * clicking it opens the same message form used at the bottom of the Real Estate page
  * (the leads `ContactForm`, `kind = "contact"`). On submit the leads pipeline persists
  * the lead and emails staff (`LEAD_NOTIFY_TO` → partners@centralhill.pt). Also reused as
- * a hero CTA on the Owners page (`source="owners-hero"`).
+ * a hero CTA on the Owners page (`source="owners-hero"`) and as the owner button of the
+ * Guests closing dual CTA (`source="guests-dual-cta"`, `triggerClassName`).
  *
  * Pure client island: a button + a modal dialog (Escape / backdrop to close, focus
  * moved in on open, body scroll locked). The dialog itself is portaled to `document.body`
@@ -27,6 +28,7 @@ export function ContactDialog({
   variant = "link",
   icon,
   source = "header-contact",
+  triggerClassName,
 }: {
   label: string;
   title: string;
@@ -41,6 +43,12 @@ export function ContactDialog({
   icon?: ReactNode;
   /** Lead source tag stored with the submission; defaults to the header trigger's own tag. */
   source?: string;
+  /**
+   * Replaces the variant's trigger classes with this one (e.g. Guests' dual-CTA owner panel
+   * passes `splitCtaButtonClassName("dark")` so the trigger matches the panel's button). The
+   * label renders as given. Omitted → the `variant` styling, unchanged.
+   */
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -68,13 +76,16 @@ export function ContactDialog({
         aria-label={variant === "icon" ? label : undefined}
         title={variant === "icon" ? label : undefined}
         data-icon-btn={variant === "icon" ? "" : undefined}
-        className={cn(
-          variant === "button" && buttonClassName("outline"),
-          variant === "light" && buttonClassName("light"),
-          variant === "icon" &&
-            "inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface hover:text-ink",
-          variant === "link" && "text-sm text-ink-soft transition-colors hover:text-ink",
-        )}
+        className={
+          triggerClassName ??
+          cn(
+            variant === "button" && buttonClassName("outline"),
+            variant === "light" && buttonClassName("light"),
+            variant === "icon" &&
+              "inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface hover:text-ink",
+            variant === "link" && "text-sm text-ink-soft transition-colors hover:text-ink",
+          )
+        }
       >
         {variant === "icon" ? (
           (icon ?? <UiIcon name="mail" size={20} />)
