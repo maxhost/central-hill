@@ -1,5 +1,13 @@
 # Spec — Wire the Guests page (`/[locale]/guests`) to the backoffice
 
+> **Superseded in part (2026-10-12) by [`guests-admin-editor.md`](./guests-admin-editor.md).**
+> Button URLs are no longer used: every `cta.url` is hidden in the editor (`admin_hidden`) and the
+> render sends each button to a fixed locale-relative route (`/{locale}/buildings`, `/services`,
+> `/guides`; the closing owner button opens the contact dialog) — `localizeUrl` was deleted. The
+> editor layout, SEO, hero poster, welcome media/alt/icon, teaser card photos, testimonials heading,
+> FAQ title and dual-CTA dialog copy described there replace the corresponding sections below. Field
+> reference: `docs/data-model.md` → guest; `src/slices/pages/README.md` → "Guests content model".
+
 > **Slice:** `pages` (S9) · **Page key:** `guest` · **Route:** `src/app/[locale]/guests/page.tsx`
 > **Status:** ✅ IMPLEMENTED (2026-09-10) · **Migration:** `0012` (applied)
 > All nine sections are DB-driven; `typecheck`, `lint`, the 13 slice tests and a full

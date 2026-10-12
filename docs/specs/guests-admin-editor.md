@@ -1,6 +1,6 @@
 # Spec + plan — Admin Guests editable sección a sección
 
-**Fecha:** 2026-10-11 · **Slice principal:** `pages` · **Estado:** propuesto
+**Fecha:** 2026-10-11 · **Slice principal:** `pages` · **Estado:** completado (S1–S5; S6 docs)
 **Precedentes:** `home-admin-editor.md`, `owners-admin-editor.md`, `real-estate-admin-editor.md` (mismo
 proceso, mismas piezas reutilizables). Base técnica: `guest-page-db-wiring.md` (migración `0012`).
 
@@ -204,3 +204,77 @@ los campos ocultos. Cada sesión cabe en 10–15 minutos.
 - Número de tarjetas de Why (4) y de los teasers (6): siguen fijos.
 - Arco de traducción por pestañas (EN/PT/ES/FR en el editor).
 - Cambiar los destinos de los botones desde el admin.
+
+---
+
+## Estado final (2026-10-12)
+
+Las sesiones S1–S5 están entregadas; S6 cierra la documentación. Commits:
+
+| Sesión | Commit | Qué entró |
+|---|---|---|
+| Spec | `ef12d31` | Este documento + plan por sesiones |
+| S1 | `bc0f7e0` | Variantes locales `guestCta` / `guestCtaWithNote` con la URL `admin_hidden` (7 campos). Render con destinos fijos por idioma (`ctaRoutes(locale)`); `localizeUrl` borrado. Se pinta `portfolio.cta.note`. `GUEST_LAYOUT` (10 tarjetas + "Other"), notas y enlaces, etiquetas e `itemLabels` (4 idiomas) |
+| S2 | `71f22fb` | `seo.*` + `buildGuestMetadata` (contrato); la ruta sólo lo llama. `testimonials.{eyebrow,title,intro}` (+ prop `intro` en `TestimonialsRow`) y `faq.title`, con fallback i18n vía `orMessage` |
+| S3 | `8be3252` | `hero.poster_media_id` (`heroPosterSrc`) y `type` del `<source>` por mime. `welcome.image_media_id` → `optionalAnimated` con `sideMedia()`; `welcome.image_alt` (→ alt del asset → `pages.guests.welcomeAlt`, 4 idiomas); `welcome.guarantee_icon_key` |
+| S4 | `f9e9677` | `image_media_id` opcional en las 12 tarjetas de los teasers (hint 3:2); `ui/optimized-src.ts` (`optimizedSrc`, `cssUrlSafe`, `cardBgSrc`); fallback Pexels por posición |
+| S5 | `f4b9b83` | `SplitCtaPanels.action` + `splitCtaButtonClassName` (`core/ui`), `ContactDialog.triggerClassName` (`settings`), `dual_cta.owner.contact.{title,intro}`; el botón owner del CTA final abre el modal (`source = "guests-dual-cta"`) |
+| S6 | — | Documentación: `pages/README.md` ("Guests content model"), `docs/data-model.md` → guest, README de `settings`, aviso en `guest-page-db-wiring.md` y este cierre |
+
+### Desviaciones y hallazgos durante la implementación
+
+- **D1 confirmada:** rutas fijas relativas con el idioma activo (`/{locale}/buildings`, `/services`,
+  `/guides`) en vez de las URLs absolutas `https://central-hill-umber.vercel.app/en/…`. Los `cta.url`
+  guardados se conservan (ocultos) pero el render no los usa.
+- **S1:**
+  - `portfolio.cta.note` está **vacío en PROD**, así que la nota del portfolio no se ve hasta que
+    alguien la rellene en el editor (el render ya la pinta cuando hay texto).
+  - Además de las notas de la tabla del editor, las tarjetas Why y Portfolio llevan también la nota
+    "The button always opens Buildings" (Portfolio, junto a la de Buildings destacados).
+- **S3:**
+  - El hint de `welcome.image_media_id` se corrigió de 4:5 a **horizontal 3:2**: la celda de
+    `IntroSplit` mide ~540×380 en escritorio y es una franja a todo el ancho de 280 px de alto a
+    ≤880px.
+  - `admin/form-model.ts` trata ahora también `*_icon_key` (no sólo `icon_key`) como selector de
+    icono, para `welcome.guarantee_icon_key`.
+  - El envoltorio del medio de Welcome (`welcomeSideMedia`) quita el radio de `sideMedia()` (la foto
+    de esta página siempre ha sido de esquinas rectas) y mantiene el *cover* de la celda. Un asset
+    de imagen sin dimensiones cae a un `<img>` simple, como antes.
+- **S4:**
+  - Nuevo `src/slices/pages/ui/optimized-src.ts`: `optimizedSrc(asset, w, h)` (un candidato de
+    `getImageProps`, URL cruda si el optimizador falla), `cssUrlSafe` (para el `url(...)` sin comillas
+    de `PhotoFeatureGrid`) y `cardBgSrc` (asset optimizado o Pexels de esa posición).
+    `heroPosterSrc` ahora delega en `optimizedSrc`.
+  - Tamaños medidos de las tarjetas: ~377×260 en la rejilla de 3 columnas de escritorio, ~360×260 a
+    2 columnas y hasta ~584×260 a 1 columna; se pide una caja de 600×400 CSS → candidato `w=1200`.
+- **S5:**
+  - `SplitCtaPanels`: cada panel lleva `cta` **o** `action` (un `ReactNode` que sustituye al enlace);
+    `splitCtaButtonClassName(tone)` exporta la clase del botón estándar. Sin `action`, igual que antes.
+  - `ContactDialog.triggerClassName`: sustituye las clases del `variant` (Guests pasa
+    `splitCtaButtonClassName("dark")` y añade la "→"). Sin la prop, header y hero de Owners quedan igual.
+  - El lead usa `source = "guests-dual-cta"`: es un string libre, **leads no se tocó**.
+  - El grupo `faq` (`faq_group_key`) está **sin asignar en PROD**, así que la sección FAQ no aparece
+    en `/guests` hasta que se elija un grupo en el editor.
+
+### Verificación hecha
+
+- **Tests por sesión** (`pages/tests/pages-admin.test.ts`, `pages/tests/pages.test.ts`): URLs
+  ocultas (nodos `hidden`, se guardan sin cambios), layout de 10 ids sin claves perdidas, fallbacks
+  `orMessage` de SEO / testimonios / FAQ, `seoMetadataInput` de `/guests`, `accept` de cada medio
+  (poster `image`, welcome `animated`, tarjetas `image`), orden del alt, `cardBgSrc` por posición y
+  `dual_cta.owner.contact` opcional.
+- **Revisión del coordinador en cada sesión**: diff, typecheck + lint + tests, y el admin real y la
+  página pública en Playwright headed **sin guardar**.
+- **Las sesiones no escriben en DB / R2.** Sin migración ni pre-carga: todos los campos nuevos son
+  opcionales.
+- QA PROD: pendiente (la hará el owner; el clasificador del modo automático bloqueó el guardado de prueba el 2026-10-12, sin escrituras).
+
+## Abiertos (para decidir después)
+
+1. **Prueba real de guardado en PROD** con subidas (poster del hero, medio de Welcome —imagen, vídeo,
+   WebP animado y Lottie— y fotos de las tarjetas de los teasers). Pendiente (ver "QA PROD").
+2. **`portfolio.cta.note` vacío y FAQ sin grupo en PROD**: contenido, no código; se rellena desde el editor.
+3. **Arco de traducción por pestañas** (`home-admin-editor.md` → "Modelo de traducción por pestañas").
+   Hasta entonces el contenido de la DB sale en EN en PT/ES/FR.
+4. **Post-deploy: no hace falta nada.** Sin migración ni escrituras en DB; con los campos vacíos la
+   página renderiza los fallbacks.

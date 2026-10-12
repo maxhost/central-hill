@@ -101,7 +101,11 @@ the primary nav links plus a ghost **Book Now** CTA (→ `avantioBookingUrl`) se
 (3) a top-right **utilities** cluster — an **owner-login / account** icon
 (→ `AVANTIO_OWNERS_LOGIN_URL`), a **contact** icon (`ui/components/contact-dialog.tsx`,
 `variant="icon"` — a client modal embedding the leads `ContactForm`, `kind="contact"`; staff
-email goes to `LEAD_NOTIFY_TO`), and the **language dropdown** (`ui/components/locale-switcher.tsx`
+email goes to `LEAD_NOTIFY_TO`; exported through the contract and reused as the Owners hero CTA,
+`source="owners-hero"`, and as the owner button of the Guests closing dual CTA,
+`source="guests-dual-cta"` with `title`/`intro` from the guest page and the additive
+`triggerClassName` prop — it replaces the `variant` trigger classes, e.g. with `core/ui`'s
+`splitCtaButtonClassName("dark")`; omitted → unchanged), and the **language dropdown** (`ui/components/locale-switcher.tsx`
 — globe + current locale + chevron; opens a menu of the four locales, selected + hover highlighted
 with the hero accent; a `tone` adapts it to the dark footer). Over a page hero the ghost CTA shows
 a white hairline that fills white on hover (chrome rule in `globals.css`, keyed by

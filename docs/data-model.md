@@ -234,18 +234,42 @@ page_content
   (card destinations fixed by position: buildings / owners / real estate; form → `lead.kind='contact'`).
   Blank images fall back to the mock photos. → Office block = **company_settings**.
   Team/departments, partners, certifications, stats, "founded 2012" are **static copy here** — no entities.
-- **guest**: `hero{video_media_id?, eyebrow, headline, subheadline, cta{label,url}}`;
-  `welcome{headline, lede, copy, guarantee_label, image_media_id?}`;
-  `why{eyebrow, headline, intro, benefits[×4]{icon_key,title,description}, cta{label,url,note}}`;
-  `portfolio{eyebrow, headline, intro, cta{label,url,note}}` (headings/CTA only — the cards come
-  from buildings); `services_teaser{eyebrow, headline, intro, items[×6]{icon_key,title,description}, cta{label,url,note}}`;
-  `activities_teaser{eyebrow, headline, intro, items[×6]{icon_key,title,description}, cta{label,url,note}}`;
-  `dual_cta{guest,owner}{eyebrow, title, body, cta{label,url}}` (panel copy only — the contact
-  line is company_settings). Wired to the front in drizzle 0012 (`docs/specs/guest-page-db-wiring.md`).
-  → Featured portfolio = **buildings**; reviews = **testimonials** (audience=guest, managed in
-  `/admin/testimonials`; the page stores **no** testimonials block — its heading is i18n chrome,
-  `pages.reviews.titleGuests`); dual-CTA contact = **company_settings**; FAQ = **faq** via
-  `faq_group_key`. The two `*_media_id` are optional (`""` = fall back to the approved mock asset).
+- **guest** (as shipped by `docs/specs/guests-admin-editor.md`, 2026-10-12;
+  `src/slices/pages/schemas/guest.ts`). Same notation as owners. Base shape wired to the front in
+  drizzle 0012 (`docs/specs/guest-page-db-wiring.md`); every field the guests spec added is optional
+  and blank-tolerant (no migration, no backfill). **Hidden** = `admin_hidden` (kept and saved back
+  unchanged, not shown in the editor, **unused by the render**: every button target is fixed in code,
+  locale-relative — `/{locale}/buildings`, `/services`, `/guides`; the owner button opens the contact dialog).
+
+  | Path | Type | Class | Blank / absent → |
+  |---|---|---|---|
+  | `seo?.meta_title?` / `seo?.meta_description?` | ≤70 / ≤200 (`seoShape`) | T | i18n `pages.guests.metaTitle` / `metaDescription` |
+  | *(column)* `og_image_media_id` | image | C | no OG override |
+  | `hero{eyebrow? ≤80, headline ≤160, subheadline? ≤280}` | | T | — |
+  | `hero.video_media_id` | `"" \| uuid`, video (MP4/WebM; `<source type>` from the mime) | C | stock clip |
+  | `hero.poster_media_id?` | `"" \| uuid`, image (Home's poster hint) | C | stock Unsplash poster |
+  | `hero.cta{label ≤80, url}` | **`url` hidden** | label T · url C | — (target `/{locale}/buildings`) |
+  | `welcome{headline ≤160, lede ≤400, copy ≤1200, guarantee_label? ≤120}` | `copy` split into paragraphs on blank lines | T | guarantee line omitted |
+  | `welcome.guarantee_icon_key` | `"" \| icon key` | C | `percentage-circle` |
+  | `welcome.image_media_id` | `"" \| uuid`; image (incl. animated WebP), MP4/WebM or Lottie (`optionalAnimated`, 3:2) | C | stock Unsplash photo |
+  | `welcome.image_alt?` | ≤160 | T | the asset's alt → i18n `pages.guests.welcomeAlt` |
+  | `why{eyebrow?, headline, intro?, benefits[×4]{icon_key,title,description}, cta{label, url, note?}}` | **`cta.url` hidden** | text T · icon/url C | — (target `/{locale}/buildings`) |
+  | `portfolio{eyebrow?, headline, intro?, cta{label, url, note?}}` | headings/CTA only; **`cta.url` hidden**; `cta.note` now rendered | T | no note (target `/{locale}/buildings`) |
+  | `services_teaser` / `activities_teaser` `{eyebrow?, headline, intro?, items[×6]{icon_key, title, description, image_media_id?}, cta{label, url, note?}}` | card photo `"" \| uuid` image (3:2); **`cta.url` hidden** | text T · icon/image/url C | the Pexels photo at that position (targets `/{locale}/services` / `/{locale}/guides`) |
+  | `testimonials?{eyebrow? ≤60, title? ≤160, intro? ≤400}` | heading only | T | i18n `pages.reviews.eyebrow` / `titleGuests`; no intro |
+  | `faq_group_key?` / `faq?.title?` ≤160 | group key / heading | C / T | no FAQ / i18n `pages.faqTitle` |
+  | `dual_cta.{guest,owner}{eyebrow? ≤60, title ≤160, body ≤400, cta{label, url}}` | panel copy; **`cta.url` hidden** | text T · url C | — (guest → `/{locale}/buildings`; owner → contact dialog) |
+  | `dual_cta.owner.contact?{title? ≤80, intro? ≤280}` | copy of the dialog the owner button opens | T | i18n `settings.contactDialog.title` / `intro` |
+
+  → Composed, not stored: featured portfolio = **buildings**; reviews = **testimonials**
+  (audience=guest, managed in `/admin/testimonials`; only the heading is stored here); FAQ questions =
+  **faq** via `faq_group_key`; dual-CTA contact line = **company_settings**. The owner button's lead is
+  `lead.kind='contact'`, `source_page='guests-dual-cta'`.
+  → Same language rule (D1) and caching as home: EN only until the per-locale tabs exist;
+  `getGuestPage` is tagged `page:guest`, busted by Save on `/admin/pages/guest`.
+  → History: drizzle 0012 wired the page to the DB (with `localizeUrl` rewriting the stored absolute
+  `/en/…` URLs — removed by the guests spec); spec `guests-admin-editor` (2026-10-12) added every
+  optional field above and the hidden URLs.
 
 - **blog** (drizzle 0016): `post_aside{eyebrow?, title, body?, cta_label}` — the CTA under the
   "In this article" TOC of every post. Destination fixed in code (locale `/owners`); a post's own

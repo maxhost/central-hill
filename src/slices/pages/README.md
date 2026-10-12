@@ -102,7 +102,8 @@ saved before the section existed) or when no published service matches.
 `viewLabel`, the card button text, spec S3). Home renders `FeaturedPortfolio` again (restored
 after ADR 0031, `b8693db`) with its editable `portfolio.*` copy, but not `TestimonialsRow`; Owners passes none and keeps the shared `pages.portfolio.*` /
 `pages.reviews.*` copy; the Guests page passes its
-admin-authored `guest.portfolio` block and `pages.reviews.titleGuests`. Both render `null` when
+admin-authored `guest.portfolio` block (incl. `cta.note`) and its optional `testimonials` heading
+(`eyebrow` / `title` / `intro`, blank → `pages.reviews.eyebrow` / `titleGuests` / no intro). Both render `null` when
 the underlying slice has nothing published, so the section disappears rather than showing empty.
 
 The **Owners** page (`owners-page.tsx`) is **DB-driven** (mock embedded 1:1, but every section now
@@ -439,8 +440,10 @@ come from `page_content`; the featured portfolio comes from **buildings**, the r
 testimonials block), the optional FAQ from **faq**, and the dual-CTA contact line from
 **company_settings**. `icon_key` renders directly as an Iconoir glyph (`iconoir-<key>`; the
 stylesheet is loaded by `mock.css`'s `@import`), with `iconoir-sparks` as the fallback for unknown keys.
-`localizeUrl` rewrites the stored absolute `/en/…` CTA links to the active locale, because
-`cta.url` is `z.url()` and relative paths cannot be stored.
+Every button goes to a **fixed locale-relative route** decided in code (`ctaRoutes(locale)`:
+`/{locale}/buildings`, `/services`, `/guides`; the closing owner button opens the contact dialog) —
+the stored `cta.url`s are hidden in the editor and unused (spec `guests-admin-editor`, see "Guests
+content model" below; the former rewrite of stored absolute `/en/…` URLs is gone).
 
 Its **hero is real JSX now**: `core/ui`'s `<Hero compact align="center">` with **exactly** the
 Buildings-listing / Real Estate hero configuration (`buildings-listing.tsx`: 1600px/40px wrap,
@@ -450,11 +453,9 @@ outside and before `.mk` (followed by the Welcome intro, see below). Its `backgr
 h-full w-full object-cover`), so the poster/video load the same way as before. Cross-page
 consistency was chosen over 1:1 fidelity to this page's own mock overrides, which differed by a
 hair (`.46/.36/.8` scrim, `#ecdcc2` 600/.18em eyebrow, 1.08 h1 leading, 19px `#f1ece2` lede).
-Still DB-driven (`hero.eyebrow` → eyebrow, `headline` → h1, `subheadline` → p, `cta` →
-`localizeUrl`, `video_media_id` → the R2 url or `HERO_FALLBACK_VIDEO`); the CTA's stored
-absolute `centralhill.pt` URL now opens in a new tab (`ButtonLink`'s rule, same as the teasers'
-CTAs). The former `.mk[data-page="guests"] .hero` overrides are removed (`localizeUrl` stays —
-every CTA on the page still uses it).
+Still DB-driven (`hero.eyebrow` → eyebrow, `headline` → h1, `subheadline` → p, `cta.label` → the button to
+`/{locale}/buildings`, `video_media_id` → the R2 url or `HERO_FALLBACK_VIDEO`). The former
+`.mk[data-page="guests"] .hero` overrides are removed.
 
 The "Welcome to Central Hill" **intro is real JSX now** too: `core/ui`'s new `IntroSplit` (serif
 headline + 18px/62ch lede + ink-soft paragraphs + optional inline accent guarantee line with a
@@ -485,12 +486,12 @@ its defining index), **not** `IconFeatureGrid` (own band + heading, icon circle 
 (`.alt`-tinted section, 1240px/28px column, outside `.mk`), its `sec-head` raw (`whySecHead()`)
 in its own small `.mk[data-page="guests"]` wrapper, cards + CTA in one `Reveal` (the per-card
 `.reveal-stagger` becomes one fade, as for the teasers). Still DB-driven: `why.benefits`
-(Iconoir via `iconClass`), `why.cta` → `localizeUrl`, `cta.note` omitted when empty. Deliberate
+(Iconoir via `iconClass`), `why.cta` → `/{locale}/buildings`, `cta.note` omitted when empty. Deliberate
 deviations: (1) columns are 4 → 2 (≤980px) → 1 (≤680px) — the original inline
 `grid-template-columns:repeat(4,1fr)` (also in `mock/guest.html`) overrode `.grid-3`'s media
 queries, keeping 4 ~146px columns at 390px and overflowing the viewport; (2) the CTA is
 `ButtonLink` primary (6px radius, 44px tall vs the raw `.btn-accent`'s 3px/52px, and it opens the
-absolute `centralhill.pt` URL in a new tab), as for the teasers. `bodyTop`, `iconCards`, `ctaRow`,
+fixed route), as for the teasers. `bodyTop`, `iconCards`, `ctaRow`,
 `escAttr` and the `.bcard`/`.ico` `PAGE_STYLE` rules are deleted; the `.mk[data-page="guests"]`
 wrapper that held `bodyTop` stays, markup-less (same as Real Estate's first one), carrying
 `PAGE_STYLE`, the `<noscript>` un-hide rule and `ScrollReveal` for the raw sec-heads.
@@ -521,7 +522,7 @@ The immediately adjacent "The Best of Portugal" **what-to-do teaser is real JSX 
 kept raw through `secHead()` (`activitiesTeaserSecHead`) in its own small
 `.mk[data-page="guests"]` wrapper, one `Reveal` around grid + CTA, all outside `.mk`. Items are
 still `activities_teaser.items` (icon/title/description, Iconoir via `iconClass`) with
-`ACTIVITIES_TEASER_BG` photos by position; the CTA still goes through `localizeUrl`. Only two
+`ACTIVITIES_TEASER_BG` photos by position; the CTA goes to `/{locale}/guides`. Only two
 differences from the services call site, both carried over from the original markup: no `.alt`
 tint (the original was a plain `<section>`, keeping the page's alternating bands) and
 `cta.variant: "ghost"` (the original `btn-ghost`). The old `bodyActivitiesTeaser()` string, its
@@ -820,6 +821,67 @@ The header's Real Estate sub-nav labels are i18n too (`settings.subnav.realEstat
 EN (besides the Settings contact and the sub-nav's "Portugal- " typo fix); PT/ES/FR get metadata,
 fallback alts, FAQ title, the whole enquiry block and the sub-nav translated.
 
+### Guests content model (spec `docs/specs/guests-admin-editor.md`, 2026-10-12)
+
+Everything visible on `/<locale>/guests` except catalogue components (featured building cards,
+testimonial cards with their badge, FAQ questions) is editable in `/admin/pages/guest`. All fields
+the spec added are **optional** and blank-tolerant (no migration, no backfill; a row saved before
+them renders as before). Same D1 rule as Home/Owners: EN only for now, blank → the visitor's locale
+i18n message through `orMessage`. Full field table: `docs/data-model.md` → guest.
+
+| Section | New / changed fields (`schemas/guest.ts`) | Blank / absent → |
+|---|---|---|
+| SEO | `seo?{meta_title?, meta_description?}` + `og_image_media_id` column | `pages.guests.metaTitle` / `metaDescription`; no OG |
+| Hero | `poster_media_id?` (`optionalImage`, Home's poster hint); video `<source type>` = the asset's mime | stock Unsplash poster; `video/mp4` |
+| Welcome | `image_media_id` → `optionalAnimated` (3:2 hint), `image_alt?` ≤160, `guarantee_icon_key` (`optionalIconKey`) | stock photo; alt → asset alt → `pages.guests.welcomeAlt`; `percentage-circle` |
+| Portfolio | *(existing)* `cta.note` — now rendered | no note (empty in PROD today) |
+| Services / What to do | `items[×6].image_media_id?` (local `teaserCard = iconCard.extend(…)`, 3:2 hint) | the Pexels photo at that position |
+| Testimonials | `testimonials?{eyebrow? ≤60, title? ≤160, intro? ≤400}` (+ `TestimonialsRow intro?`) | `pages.reviews.eyebrow` / `titleGuests`; no intro |
+| FAQ | `faq_group_key` (root, existing) + `faq?{title? ≤160}` | no FAQ (no group set in PROD today); `pages.faqTitle` |
+| Dual CTA | `dual_cta.owner.contact?{title? ≤80, intro? ≤280}` | `settings.contactDialog.title` / `intro` (the header dialog's copy) |
+
+**Hidden fields (`admin_hidden`).** Local `guestCta = cta.extend({ url: hiddenUrl })` and
+`guestCtaWithNote = ctaWithNote.extend({ url: hiddenUrl })`: hidden are `hero.cta.url`,
+`why.cta.url`, `portfolio.cta.url`, `services_teaser.cta.url`, `activities_teaser.cta.url`,
+`dual_cta.guest.cta.url`, `dual_cta.owner.cta.url`. They round-trip unchanged on save but the render
+ignores them: `ctaRoutes(locale)` in `guest-page.tsx` fixes hero / why / portfolio / dual guest →
+`/{locale}/buildings`, services teaser → `/{locale}/services`, what to do → `/{locale}/guides`
+(locale-relative, decision D1; `localizeUrl` was deleted).
+
+**Media.** Hero poster → `heroPosterSrc` (now a thin wrapper over `optimizedSrc`). Welcome →
+`welcomeSideMedia()`: `sideMedia()` (image / `unoptimized` WebP / `LoopVideo` / `LottiePlayer`) in a
+wrapper that keeps `IntroSplit`'s cover rule and drops `sideMedia`'s radius; a dimensionless image
+row degrades to a plain `<img>`. Teaser cards → `cardBgSrc` (`ui/optimized-src.ts`):
+- `optimizedSrc(asset, cssW, cssH)` — one `next/image` `getImageProps` candidate (the 2x one), for
+  places that take a single URL (`<video poster>`, CSS `background-image`); raw asset URL if the
+  optimizer config is missing (degrade, never 500); `null` without an asset.
+- `cssUrlSafe(url)` — percent-encodes whitespace, parentheses, quotes and backslashes for
+  `PhotoFeatureGrid`'s unquoted `url(...)`.
+- `cardBgSrc(asset, fallback)` — 600×400 CSS box (→ `w=1200`; cards measure ~377×260 desktop,
+  up to ~584×260 at 1 column) or the stock photo at that position.
+
+**Closing dual CTA.** The guest panel links to `/{locale}/buildings`. The owner panel passes
+`SplitCtaPanels`' new `action` slot instead of `cta`: the settings `ContactDialog`
+(`label` = `owner.cta.label` + " →", `title` / `intro` = `owner.contact.*` or the header's i18n,
+`source="guests-dual-cta"`, `triggerClassName={splitCtaButtonClassName("dark")}` so it looks exactly
+like the panel's button). The lead is `kind="contact"`; `source` is a plain string (leads unchanged).
+The contact line still comes from Settings (`dualCtaContactLines`).
+
+**Contract.** `buildGuestMetadata(locale)` (`server/metadata.ts`, via `seoMetadataInput`):
+`seo.*` → i18n fallback, canonical `/<locale>/guests`, hreflang + `x-default`, optional OG. The
+route `src/app/[locale]/guests/page.tsx` only calls it.
+
+**Editor.** `GUEST_LAYOUT` (`admin/layout.ts`), `GUEST_CARD_IDS` = `seo` (OG image, 70/200 note),
+`hero` ("always opens Buildings"), `welcome`, `why` ("always opens Buildings"), `portfolio`
+(featured-buildings + Buildings note, link), `services_teaser` / `activities_teaser` ("always opens
+Services / Guides"), `testimonials` (link to Testimonials), `faq` (`faq_group_key` + `faq`, link to
+`/admin/faq`), `dual_cta` (contact-form + Settings note, link), plus "Other". `form-model.ts` maps
+`*_icon_key` (not only `icon_key`) to the icon picker. Labels / `itemLabels` in `pages.admin.*` (4 locales).
+
+With every new field blank the page matches the pre-spec render in all 4 locales, except the three
+intended changes: buttons go to fixed per-locale routes, the portfolio note renders when set, and
+the closing owner button opens the contact dialog instead of navigating to `/owners`.
+
 ### Icons on `core/ui` `<Icon>` — Home, Guests, About (ADR 0034)
 
 Supersedes the `iconClass` / `mock.css` notes above for these three pages. Home's
@@ -954,7 +1016,8 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
 - `admin/layout.ts` (pure, tested) — per-page **editor layout** (spec home-admin-editor S2; `home`
   and, since spec owners-admin-editor S1, `owners` — see "Owners content model" for its 12 cards;
   since spec buildings-admin-editor S1, `buildings` — see "Buildings content model"; since spec
-  real-estate-admin-editor S1, `real_estate` — see "Real Estate content model"). An ordered list of cards with **stable ids** — `seo`, `hero`, `stats`,
+  real-estate-admin-editor S1, `real_estate` — see "Real Estate content model"; since spec
+  guests-admin-editor S1, `guest` — see "Guests content model"). An ordered list of cards with **stable ids** — `seo`, `hero`, `stats`,
   `guests_pitch`, `portfolio`, `services_carousel`, `faq`, `dual_cta` (never rename one: they will
   be the unit of the translation arc's per-section "Translate with AI") — each listing the `data`
   root keys it renders, plus read-only rows/notes (the Avantio search bar → Settings; notes with
@@ -985,6 +1048,8 @@ Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton f
   header sub-nav, …): `docs/specs/owners-admin-editor.md` → "Abiertos".
 - **Real Estate editor open items** (real PDF/WebM upload not yet tested in PROD, enquiry form not
   sending, Owners/About sub-navs still EN, …): `docs/specs/real-estate-admin-editor.md` → "Abiertos".
+- **Guests editor open items** (real PROD save with uploads in poster / welcome / teaser cards,
+  empty portfolio note and unset FAQ group in PROD, …): `docs/specs/guests-admin-editor.md` → "Abiertos".
 
 ## Tests
 
@@ -1000,12 +1065,15 @@ additions (`buildingsSchema` with `defaultBuildings` / blank / filled rows, migr
 panel contact line, `seoMetadataInput` for `/buildings`, `describedStatFigureCells` + 3 columns),
 plus the Real Estate additions (`seo` / `faq` / `deal_enquiry` optional and translatable, i18n
 fallbacks, EN meta = the route's former literals, `seoMetadataInput` for `/real-estate`,
-`pages.dealEnquiryForm.*` + new `pages.realEstate.*` keys ×4, `enquiryContactLines`). `tests/pages-admin.test.ts` — the schema → form model (`describe` leaf/array detection,
+`pages.dealEnquiryForm.*` + new `pages.realEstate.*` keys ×4, `enquiryContactLines`), plus the
+Guests additions (`seo` / `testimonials` / `faq` fallbacks, `seoMetadataInput` for `/guests`). `tests/pages-admin.test.ts` — the schema → form model (`describe` leaf/array detection,
 `emptyValue`/`applyDefaults` scaffolding, `humanizeKey`, media `accept` per field, `admin_hidden`
 nodes and hidden values round-tripping on save) and the editor layouts (card placement, "Other"
 fallback, Owners' 12 ids, Buildings' 5 ids + grid info row, media `accept` hero `image` /
 calculator `animated`; Real Estate's hidden URLs/note, 11 ids, accepts `animated` /
-`document` and `capabilityStatementHref`). Run:
+`document` and `capabilityStatementHref`; Guests' 7 hidden URLs, 10 ids, accepts poster `image` /
+welcome `animated` / teaser cards `image`, alt order, `cardBgSrc` fallback by position and the
+optional `dual_cta.owner.contact`). Run:
 `npx tsx --test src/slices/pages/tests/pages.test.ts src/slices/pages/tests/pages-admin.test.ts`.
 
 ### `blog` and `guides` rows: the detail-page sidebar CTAs (session 5)
