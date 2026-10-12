@@ -190,18 +190,40 @@ page_content
   → History: drizzle 0004→0010 restored/restyled the sections (eyebrows dropped, hero badge moved into the
   form, Editorial-Split `why`, Image-Showcase `services`/`dashboard`, plans ≤4, one helper band); spec
   `owners-admin-editor` (2026-10-11) added every optional field above and the hidden fields.
-- **real_estate**: `hero{image_media_id, headline, subheadline, positioning, capability_statement_media_id, cta_primary{label,url}, cta_secondary{label,url}}`;
-  `partners{headline, subheadline, benefits[4]{icon_key, title, description}, cta_primary{label,url,note}, cta_secondary{label,url,note}}`
-  ("Built for Institutional Partners" — Editorial Split, modelled on owners `why`; benefit icons are
-  positional in the renderer, `icon_key` stored but not rendered);
-  `asset_management{headline, subheadline, benefits[6]{icon_key, title, description}, image_media_id, cta{label,url,note}}`
-  ("A Management Partner for Every Asset Type" — Image Showcase: 4:5 image + six benefit highlights (2-col grid) +
-  CTA badge, modelled on the home guests-pitch / owners services; `image_media_id` may be blank →
-  fallback photo); `faq_group_key` → FAQ group `real_estate` referenced. The rest of the page
-  (capabilities, deal structures, market, track record, process, enquiry form) is **static marketing copy in the renderer**, not
-  schema-driven (client direction — those sections were removed from the editable schema; re-add here
-  if one becomes DB-driven). Enquiry form fields
-  are fixed in code → `lead.kind='deal_enquiry'`.
+- **real_estate** (as shipped by `docs/specs/real-estate-admin-editor.md`, 2026-10-11;
+  `src/slices/pages/schemas/real-estate.ts`). Same notation as owners. Every field the spec added is
+  optional and blank-tolerant (no migration, no backfill). **Hidden** = `admin_hidden` (kept and saved
+  back unchanged, not shown in the editor; button targets are decided in code).
+
+  | Path | Type | Class | Blank / absent → |
+  |---|---|---|---|
+  | `seo?.meta_title?` / `seo?.meta_description?` | ≤70 / ≤200 (`seoShape`) | T | i18n `pages.realEstate.metaTitle` / `metaDescription` |
+  | *(column)* `og_image_media_id` | image | C | no OG override |
+  | `hero.image_media_id` | `"" \| uuid`, image (**optional** since the spec) | C | stock Unsplash photo, alt i18n `pages.realEstate.heroAlt` |
+  | `hero{headline ≤160, subheadline? ≤280, positioning ≤600}` | required except `subheadline` | T | — |
+  | `hero.capability_statement_media_id?` | `"" \| uuid`, **document (PDF only)** | C | button 2 → `#deal-enquiry` |
+  | `hero.cta_primary` / `cta_secondary` `{label ≤80, url}` | **`url` hidden** | label T · url C | — (targets: `#deal-enquiry` / the PDF) |
+  | `partners{headline, subheadline?, benefits[×4]{icon_key,title,description}, cta_primary, cta_secondary}` | CTAs `{label, url, note?}`; **`url` hidden**, **`cta_secondary.note` hidden** (never rendered) | text T · icon/url C | — (targets `#deal-enquiry` / `#deal-structures`) |
+  | `capabilities{headline, subheadline?, benefits[×3], cta{label, url, note?}}` / `asset_management{… benefits[×6] …}` | **`cta.url` hidden** | text T · icon/url C | — (target `#deal-enquiry`) |
+  | `capabilities.image_media_id` / `asset_management.image_media_id` | `"" \| uuid`; image (incl. animated WebP), MP4/WebM or Lottie (`optionalAnimated`, 4:5) | C | stock photos, alts i18n `pages.realEstate.capabilitiesAlt` / `assetsAlt` |
+  | `deal_structures{headline, subheadline?, models[×3]{name, tagline, featured, feature_label? ≤40, points[3..10]}, note?}` | | text T · `featured` C | featured card without label → i18n `pages.realEstate.featuredModel` |
+  | `market{headline, subheadline?, stats[×3]{value,label}, fundamentals{title, body[×2]}, regulatory{title, body}, thesis{title, points[3..8]}}` | | T | — |
+  | `track_record{headline, subheadline?, tiles[3..6]{value, label, caption?}}` | count-up derived from `value` | T | — |
+  | `process{headline, subheadline?, cta{label}, steps[3..8]{title, description}}` | step numbers from order | T | — |
+  | `faq_group_key?` / `faq?.title?` ≤160 | group key / heading | C / T | no FAQ / i18n `pages.realEstate.faqTitle` |
+  | `deal_enquiry?{headline? ≤160, lede? ≤600, contact_title? ≤120, submit_label? ≤80, note? ≤200}` | closing `#deal-enquiry` copy | T | i18n `pages.realEstate.enquiryTitle` / `enquiryLede` / `enquiryContactTitle`; `pages.dealEnquiryForm.submit` / `note` |
+
+  → Composed, not stored: FAQ questions = **faq** (group `real_estate`); enquiry contact lines
+  (email, phone, LinkedIn) = **company_settings** (`email`, `phone`, `social.linkedin`; a missing value
+  drops its line). The enquiry form's labels/placeholders/options are fixed i18n
+  (`pages.dealEnquiryForm.*`) with stable EN option values; the form does **not** send yet
+  (`lead.kind='deal_enquiry'` pending).
+  → Same language rule (D1) and caching as home: EN only until the per-locale tabs exist;
+  `getRealEstatePage` is tagged `page:real_estate`, busted by Save on `/admin/pages/real_estate`.
+  → History: capabilities / deal structures / market / track record / process became DB-driven with
+  canonical defaults (`defaultCapabilities`, …, `scripts/backfill-real-estate-sections.ts`); spec
+  `real-estate-admin-editor` (2026-10-11) added every optional field above, the hidden fields and the
+  `document` media kind.
 - **about**: `hero{image_media_id?, eyebrow, headline, mission}`; `story{eyebrow, headline, narrative[×3], image_media_id?}`;
   `stats[×5]{value,label}`; `serve{eyebrow, headline, intro, audiences[×3]{icon_key,title,description,image_media_id?}}`;
   `values{eyebrow, headline, intro, items[×4]{title,description}}`;

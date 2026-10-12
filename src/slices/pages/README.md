@@ -765,6 +765,61 @@ leads yet), plus the read-only `buildings_grid` info row (link to `/admin/buildi
 hero and "Other" for unclaimed keys. `EditorCardId` includes these ids. Labels / `itemLabels` /
 `addLabels` in `pages.admin.*` (4 locales).
 
+### Real Estate content model (spec `docs/specs/real-estate-admin-editor.md`, 2026-10-11)
+
+Everything visible on `/<locale>/real-estate` except catalogue components (FAQ questions) and the
+enquiry form's fields is editable in `/admin/pages/real_estate`. All fields the spec added are
+**optional** and blank-tolerant (no migration, no backfill; a row saved before them renders as
+before). Same D1 rule as Home/Owners: EN only for now, blank → the visitor's locale i18n message
+through `orMessage`. Full field table: `docs/data-model.md` → real_estate.
+
+| Section | New / changed fields (`schemas/real-estate.ts`) | Blank / absent → |
+|---|---|---|
+| SEO | `seo?{meta_title?, meta_description?}` + `og_image_media_id` column | `pages.realEstate.metaTitle` / `metaDescription` (EN = the route's former literals); no OG |
+| Hero | `image_media_id` now optional (`"" \| uuid`, Owners' hero hint); `capability_statement_media_id` `"" \| uuid`, `accept: "document"` | stock photo, alt `pages.realEstate.heroAlt`; button 2 → `#deal-enquiry` |
+| Capabilities / Asset types | `image_media_id` → `optionalAnimated` (4:5 hint; capabilities' says "LEFT") | stock photos, alts `pages.realEstate.capabilitiesAlt` / `assetsAlt` |
+| Deal structures | *(existing)* `models[].feature_label` | featured card without label → `pages.realEstate.featuredModel` ("Recommended") |
+| FAQ | `faq_group_key` (root) + `faq?{title?}` | no FAQ; `pages.realEstate.faqTitle` |
+| Enquiry | `deal_enquiry?{headline?, lede?, contact_title?, submit_label?, note?}` (each hint names its EN default) | `pages.realEstate.enquiryTitle` / `enquiryLede` / `enquiryContactTitle`; `pages.dealEnquiryForm.submit` / `note` |
+
+**Hidden fields (`admin_hidden`).** Local `realEstateCta = ctaWithNote.extend({ url: hiddenUrl })`
+and the hero's `{ label, url: hiddenUrl }`: hidden are `hero.cta_primary/secondary.url`,
+`partners.cta_primary/secondary.url`, `partners.cta_secondary.note` (`EditorialSplit` only paints
+the primary note), `capabilities.cta.url`, `asset_management.cta.url`. Targets are fixed in code
+(`#deal-enquiry`, `#deal-structures`, the PDF).
+
+**Media.** Capabilities / asset types render through `sideMedia()` (image / `unoptimized` WebP /
+`LoopVideo` / `LottiePlayer`). The capability statement's `document` accept is described under
+"Home content model" → Media `accept` (`ui/capability-statement.ts`: only a resolved PDF becomes
+the link, `target="_blank"`; anything else → `#deal-enquiry`).
+
+**Contract.** `buildRealEstateMetadata(locale)` (`server/metadata.ts`, via `seoMetadataInput`):
+`seo.*` → i18n fallback, canonical `/<locale>/real-estate`, hreflang + `x-default`, optional OG.
+The route `src/app/[locale]/real-estate/page.tsx` only calls it.
+
+**Enquiry (`ui/components/deal-enquiry-section.tsx`).** The editable copy arrives as props with
+the i18n defaults; the form's group titles, tags, labels, placeholders and select options are
+fixed i18n `pages.dealEnquiryForm.*` (4 locales). Select options are `{ value, label }` with stable
+EN values (`apartments`, `apart_hotel`, `hotel`, `mixed`, `corporate_housing`; `operating`,
+`in_development`, `acquisition`; `fixed_rent`, `management_commission`, `hybrid`, `open`), ready
+for `lead.kind='deal_enquiry'`. Field `id`/`name`s are unchanged. **The form still sends nothing.**
+The contact block comes from **Settings** via `enquiryContactLines` (`ui/contact-line.ts`, pure):
+`email` → `mailto:`, `phone` → `tel:` (spaces stripped), `social.linkedin` with the fixed text
+`pages.realEstate.contactLinkedinText`; labels `pages.realEstate.contactEmail` / `contactPhone` /
+`contactLinkedin`; a missing Settings value drops its line. (Accepted change vs. the old literals:
+email `info@centralhill.pt`, LinkedIn a real URL instead of `#`.)
+
+**Editor.** `REAL_ESTATE_LAYOUT` (`admin/layout.ts`), `REAL_ESTATE_CARD_IDS` = `seo` (OG image,
+70/200 note), `hero` (button-2/PDF note), `partners`, `capabilities`, `asset_management`,
+`deal_structures` ("Recommended" note), `market`, `track_record`, `process` (step numbers note),
+`faq` (`faq_group_key` + `faq`, link to `/admin/faq`), `deal_enquiry` (Settings note + link; fixed
+form / no sending note), plus "Other". Labels / `itemLabels` / `addLabels` in `pages.admin.*` (4 locales).
+
+The header's Real Estate sub-nav labels are i18n too (`settings.subnav.realEstate.*`, slice
+`settings`, see its README). With every new field blank the page is the same as before the spec in
+EN (besides the Settings contact and the sub-nav's "Portugal- " typo fix); PT/ES/FR get metadata,
+fallback alts, FAQ title, the whole enquiry block and the sub-nav translated.
+
 ### Icons on `core/ui` `<Icon>` — Home, Guests, About (ADR 0034)
 
 Supersedes the `iconClass` / `mock.css` notes above for these three pages. Home's
@@ -898,7 +953,8 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
   ready." hint (spec S2).
 - `admin/layout.ts` (pure, tested) — per-page **editor layout** (spec home-admin-editor S2; `home`
   and, since spec owners-admin-editor S1, `owners` — see "Owners content model" for its 12 cards;
-  since spec buildings-admin-editor S1, `buildings` — see "Buildings content model"). An ordered list of cards with **stable ids** — `seo`, `hero`, `stats`,
+  since spec buildings-admin-editor S1, `buildings` — see "Buildings content model"; since spec
+  real-estate-admin-editor S1, `real_estate` — see "Real Estate content model"). An ordered list of cards with **stable ids** — `seo`, `hero`, `stats`,
   `guests_pitch`, `portfolio`, `services_carousel`, `faq`, `dual_cta` (never rename one: they will
   be the unit of the translation arc's per-section "Translate with AI") — each listing the `data`
   root keys it renders, plus read-only rows/notes (the Avantio search bar → Settings; notes with
@@ -927,6 +983,8 @@ Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton f
 - **Owners editor open items** (real video/Lottie upload test, Buildings' step-1 English copy — closed by the Buildings spec,
   estimate form not sending leads, dead `#` links, mixed testimonials, leftover EN fallback alts /
   header sub-nav, …): `docs/specs/owners-admin-editor.md` → "Abiertos".
+- **Real Estate editor open items** (real PDF/WebM upload not yet tested in PROD, enquiry form not
+  sending, Owners/About sub-navs still EN, …): `docs/specs/real-estate-admin-editor.md` → "Abiertos".
 
 ## Tests
 
@@ -939,11 +997,15 @@ poster), plus the Owners additions (`orNamedMessage`, `seoMetadataInput`, `pages
 keys ×4 with matching ICU args, 0–8 `stats`, `final_cta` + contact line), plus the Buildings
 additions (`buildingsSchema` with `defaultBuildings` / blank / filled rows, migration 0017 =
 `defaultBuildings`, `pages.buildings.*` ×4 with EN = the old literals, `orMessage` fallbacks, owner
-panel contact line, `seoMetadataInput` for `/buildings`, `describedStatFigureCells` + 3 columns). `tests/pages-admin.test.ts` — the schema → form model (`describe` leaf/array detection,
+panel contact line, `seoMetadataInput` for `/buildings`, `describedStatFigureCells` + 3 columns),
+plus the Real Estate additions (`seo` / `faq` / `deal_enquiry` optional and translatable, i18n
+fallbacks, EN meta = the route's former literals, `seoMetadataInput` for `/real-estate`,
+`pages.dealEnquiryForm.*` + new `pages.realEstate.*` keys ×4, `enquiryContactLines`). `tests/pages-admin.test.ts` — the schema → form model (`describe` leaf/array detection,
 `emptyValue`/`applyDefaults` scaffolding, `humanizeKey`, media `accept` per field, `admin_hidden`
 nodes and hidden values round-tripping on save) and the editor layouts (card placement, "Other"
 fallback, Owners' 12 ids, Buildings' 5 ids + grid info row, media `accept` hero `image` /
-calculator `animated`). Run:
+calculator `animated`; Real Estate's hidden URLs/note, 11 ids, accepts `animated` /
+`document` and `capabilityStatementHref`). Run:
 `npx tsx --test src/slices/pages/tests/pages.test.ts src/slices/pages/tests/pages-admin.test.ts`.
 
 ### `blog` and `guides` rows: the detail-page sidebar CTAs (session 5)

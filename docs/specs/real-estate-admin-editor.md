@@ -1,6 +1,6 @@
 # Spec + plan — Admin Real Estate editable sección a sección
 
-**Fecha:** 2026-10-11 · **Slice principal:** `pages` · **Estado:** spec aprobado, sesiones pendientes
+**Fecha:** 2026-10-11 · **Slice principal:** `pages` · **Estado:** completado (S1–S7, 2026-10-11)
 **Precedentes:** `docs/specs/home-admin-editor.md`, `docs/specs/owners-admin-editor.md` (mismo proceso, mismas
 piezas reutilizables: `admin_hidden`, `side-media.tsx`, `contact-line.ts`, `seoMetadataInput`, `orMessage`)
 
@@ -269,3 +269,87 @@ campos ocultos. Cada sesión cabe en 10–15 minutos.
 **Decididas por el coordinador (revisables):** `partners.cta_secondary.note` se oculta (no se pinta en
 ningún sitio). `featuredModel` se usa como fallback del badge de un modelo destacado sin texto. El hero sigue
 siendo sólo foto (no animada). Sólo se traduce el submenú de Real Estate, no los de Owners y About.
+
+---
+
+## Estado final (2026-10-11)
+
+Todas las sesiones están entregadas. Commits:
+
+| Sesión | Commit | Qué entró |
+|---|---|---|
+| Spec | `e609c22` | Este documento + plan por sesiones |
+| S1 | `e789678` | Variantes locales `realEstateCta` / `heroCta` con la URL `admin_hidden`; `partners.cta_secondary.note` oculta. `REAL_ESTATE_LAYOUT` con las 11 tarjetas + "Other", notas y enlaces. Etiquetas legibles, `itemLabels` / `addLabels` (4 idiomas). `hero.image_media_id` opcional con el hint del hero de Owners |
+| S2 | `acf86cb` | `seo.*` + `buildRealEstateMetadata` (contrato); la ruta sólo lo llama (EN de `metaTitle` / `metaDescription` = el title/description que tenía la ruta). `faq.title` con fallback, fallback `featuredModel` del badge destacado, alts de respaldo → `pages.realEstate.{heroAlt, capabilitiesAlt, assetsAlt}` (4 idiomas) |
+| S3 | `91980a4` | `capabilities.image_media_id` y `asset_management.image_media_id` → `optionalAnimated` (hint 4:5), render con `sideMedia()` |
+| S4 | `51b3801` | Tipo de medio `document` (PDF): `core/media` (mime, límite, comprobación `%PDF-` al finalizar, sin sharp) y backoffice (accept, vista de archivo sin miniatura). `capability_statement_media_id` acepta `document` + hint; `capabilityStatementHref`: sólo un PDF resuelto es el enlace del botón 2 (pestaña nueva), si no `#deal-enquiry` |
+| S5 | `dce6e24` | `deal_enquiry.*` editables con fallback i18n; formulario en `pages.dealEnquiryForm.*` (4 idiomas) con valores estables en los selects (`FormSelect` ya admitía `{ value, label }`, `core/ui` no se tocó); contacto desde Settings (`enquiryContactLines` en `ui/contact-line.ts`) |
+| S6 | `ec1b988` | Submenú Real Estate del header → `settings.subnav.realEstate.*` (4 idiomas) desde `settings/ui/subnav-sections.ts`; hrefs iguales; corregido "Portugal- " |
+| S7 | — | Recorrido de `/real-estate` con todo vacío en los 4 idiomas (sólo lectura) y documentación: `pages/README.md` ("Real Estate content model"), `docs/data-model.md` → real_estate y este cierre |
+
+### Verificación hecha
+
+- **Tests por sesión** (`pages/tests/pages-admin.test.ts`, `pages/tests/pages.test.ts`,
+  `settings/tests/subnav.test.ts`, `core/media/tests/media-inputs.test.ts`,
+  `backoffice/tests/media-accept.test.ts`):
+  - **S1:** URLs y la nota secundaria de partners son nodos `hidden` y las etiquetas no; los valores
+    ocultos hacen el viaje por `applyDefaults` y validan al guardar; `hero.image_media_id` acepta `""`
+    con su hint; el layout tiene 11 ids estables y cada clave se coloca una sola vez; etiquetas en 4 idiomas.
+  - **S2:** `seo` y `faq` opcionales, con límite y traducibles; vacío → mensaje i18n (título del FAQ,
+    badge); `seoMetadataInput` para `/real-estate` (canonical + hreflang); el EN de la meta coincide con
+    el literal anterior de la ruta; claves nuevas en 4 idiomas.
+  - **S3:** `accept` `animated` con hint 4:5 en capabilities / asset types, `image` en el hero; `""` y
+    uuid siguen siendo válidos.
+  - **S4:** `document` sólo acepta PDF; un no-PDF con extensión `.pdf` se rechaza al finalizar; los
+    otros accept no cambian; el campo sigue siendo opcional y tolera `""`; `capabilityStatementHref`.
+  - **S5:** `deal_enquiry` opcional, con límite y traducible; cada hint nombra su EN por defecto (= copy
+    anterior); todas las claves `pages.dealEnquiryForm.*` y las nuevas `pages.realEstate.*` en 4 idiomas
+    con los mismos argumentos; línea de contacto omitida si falta el dato en Settings.
+  - **S6:** las 10 claves existen y no están vacías en los 4 idiomas; el EN coincide con el literal
+    anterior salvo el typo.
+  - Al cierre: `pnpm typecheck` 0, `pnpm lint` 0 (5 warnings ajenos al spec), 156 tests en verde (exit 0).
+- **Revisión del coordinador en cada sesión**, según el protocolo del plan: diff, typecheck + lint +
+  tests, y el admin real y la página pública en Playwright headed **sin guardar**.
+- **S7, recorrido de sólo lectura con todos los campos nuevos vacíos** (estado actual de la DB, dev
+  server local, HTML servidor):
+  - `/{en,pt,es,fr}/real-estate` → 200, con las 10 secciones (`#top #partners #capabilities #manage
+    #deal-structures #market #track-record #process #faq #deal-enquiry`).
+  - **EN:** los textos fijos de la versión anterior al spec (`b5e83d2`: title/description de la ruta
+    —también en OG—, alts de `real-estate-page.tsx`, título del FAQ, todo `deal-enquiry-section.tsx`
+    —título, texto, contacto, ~30 labels/placeholders/opciones, botón y nota— y los 10 labels del
+    submenú en `site-header.tsx`) aparecen tal cual. Únicas diferencias, las aceptadas: el email del
+    contacto pasa a `info@centralhill.pt`, LinkedIn enlaza a `https://linkedin.com/company/centralhill`
+    (antes `#`) y el submenú dice "Portugal Market Opportunity". El badge destacado sigue siendo
+    "Most Flexible" (de la DB). Sin PDF, los dos botones del hero van a `#deal-enquiry`.
+  - **PT/ES/FR:** `<title>`, meta/OG description, alts de respaldo, título del FAQ, todo el bloque de
+    enquiry (título, texto, título y labels del contacto —"Tel.:", "E-mail :"—, grupos, labels,
+    placeholders, opciones de los selects con los mismos `value` EN, botón y nota) y el submenú de
+    Real Estate salen traducidos.
+  - Lo que sigue en inglés en PT/ES/FR es contenido de la DB (EN, esperado: sólo se edita en EN):
+    hero (eyebrow "Real Estate Partnerships", título, botones), todas las secciones, el badge "Most
+    Flexible" y las preguntas del FAQ (catálogo `faq`). También, por diseño, "Central Hill Apartments"
+    (texto del enlace LinkedIn, marca), el placeholder `+351 …` y las opciones que se escriben igual
+    ("Hotel", "Apart-hotel"). Fuera de este spec: los submenús de Owners y About del header (ver Abiertos).
+- **Las sesiones no escriben en DB / R2.** Ninguna añadió migraciones ni scripts de pre-carga: todos
+  los campos nuevos son opcionales.
+- **Prueba real en PROD (guardar, subir un WebM y un PDF): la hace el owner.**
+
+## Abiertos (para decidir después)
+
+1. **Subida real a R2 de un PDF y un WebM sin probar.** Pendiente de la prueba en PROD (plan S7):
+   PDF al capability statement (comprobación `%PDF-` y botón 2 en pestaña nueva) y WebM a capabilities.
+   El WebP animado y el Lottie usan el mismo `sideMedia()` verificado en Home/Owners (el Lottie depende
+   del CORS GET del bucket, Home abierto nº 2).
+2. **El formulario de enquiry no envía.** Leads ya tiene `kind = 'deal_enquiry'` y los selects tienen
+   valores estables en inglés; conectarlo es otra decisión.
+3. **Submenús de Owners y About del header siguen en inglés fijo** (`OWNERS_SECTIONS` /
+   `ABOUT_SECTIONS` en `settings/ui/site-header.tsx`; verificado en `/pt`). Mismo cambio que S6.
+4. **Arco de traducción por pestañas** (`home-admin-editor.md` → "Modelo de traducción por pestañas").
+   Hasta entonces el contenido de la DB sale en EN en PT/ES/FR.
+5. **Post-deploy: no hace falta nada.** Sin migración, sin pre-carga ni escrituras en DB; con los campos
+   vacíos la página renderiza los fallbacks i18n. El deploy regenera la página ISR y el layout (submenú).
+6. **Claves i18n muertas** en `pages.realEstate`: `partnersEyebrow`, `enquiryEyebrow`, `enquiryCta`
+   (ningún código las lee; las de `services.detail.*` con el mismo nombre son otras). Borrarlas o darles
+   uso queda para el arco de traducción.
+7. **Comentario de cabecera de `schemas/real-estate.ts` obsoleto**: dice que sólo hero, partners,
+   market y FAQ son editables (hoy lo es todo). Sólo es un comentario.
