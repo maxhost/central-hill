@@ -14,7 +14,7 @@ import {
   TwoColumnShowcase,
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
-import { getRealEstatePage } from "../contract";
+import { getRealEstatePage, type PageMedia } from "../contract";
 import {
   defaultCapabilities,
   defaultDealStructures,
@@ -23,6 +23,7 @@ import {
 } from "../schemas/real-estate";
 import { DealEnquirySection } from "./components/deal-enquiry-section";
 import { FaqSection } from "./components/faq-section";
+import { SIDE_MEDIA_CLASS, sideMedia } from "./components/side-media";
 import { orMessage } from "./or-message";
 
 /**
@@ -38,8 +39,9 @@ import { orMessage } from "./or-message";
  * - `#partners` and `#process`: `EditorialSplit` with Owners' `#why` configuration. It has its
  *   own internal `Reveal`s. `#process` passes zero-padded step numbers through the items' `icon`
  *   slot.
- * - `#capabilities` (`tone="alt"`, image left) and `#manage`: `TwoColumnShowcase` with Owners'
- *   `#technology`/`#services` configuration.
+ * - `#capabilities` (`tone="alt"`, media left) and `#manage`: `TwoColumnShowcase` with Owners'
+ *   `#technology`/`#services` configuration. Their side media (photo, animated WebP, video loop or
+ *   Lottie) go through the shared `sideMedia()`, as on Owners, with the stock photo as fallback.
  * - `#deal-structures` (centred head, warm `alt` band), `#market` and `#track-record` (`alt`
  *   band): `SectionHead` above `ChecklistCards` (plus the disclaimer note), `StatBento` and
  *   `StatTiles` respectively. Each sits in a hand-written section shell that keeps the mock's
@@ -68,9 +70,27 @@ const ASSET_FALLBACK_IMG =
 const CAP_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=72";
 
-// `#capabilities`/`#manage`'s images: one of `TwoColumnShowcase`'s two `lg:` (1024px) columns — the same value
-// Owners (`TWO_COL_SHOWCASE_SIZES`) and Home's `guests-section.tsx` use for the same component.
-const TWO_COL_SHOWCASE_SIZES = "(max-width: 1024px) 100vw, 560px";
+// `#capabilities`/`#manage`'s side media (spec real-estate-admin-editor S3): photo, animated WebP,
+// MP4/WebM loop or Lottie in the fixed 4:5 frame via the shared `sideMedia()` — the element Home's
+// guests pitch and Owners' `services`/`dashboard` use, sized as one of `TwoColumnShowcase`'s two
+// `lg:` columns (`SIDE_MEDIA_SIZES`). An uploaded asset without alt text gets the section's i18n
+// alt. No asset (or an image row without dimensions, as before S3) → the stock photo above.
+function showcaseMedia(m: PageMedia | undefined, fallbackSrc: string, fallbackAlt: string) {
+  const isImage = (m?.mime ?? "image/").startsWith("image/");
+  const usable = m?.url && (!isImage || (m.width > 0 && m.height > 0));
+  return (
+    (usable ? sideMedia({ ...m, alt: m.alt || fallbackAlt }) : null) ?? (
+      // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
+      <img
+        src={m?.url || fallbackSrc}
+        alt={m?.alt || fallbackAlt}
+        className={SIDE_MEDIA_CLASS}
+        loading="lazy"
+        decoding="async"
+      />
+    )
+  );
+}
 
 // Shell shared by `#deal-structures`/`#market`/`#track-record`: the mock's `section` padding and
 // 84px scroll margin, its 1240px/28px `.wrap` column, and its warm `.alt` band (the same
@@ -245,24 +265,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
             badge={capabilities.cta.note || undefined}
             tone="alt"
             imagePosition="left"
-            image={
-              capMedia?.url && capMedia.width > 0 && capMedia.height > 0 ? (
-                <MediaImage
-                  data={{ ...capMedia, alt: capMedia.alt || capFallbackAlt }}
-                  className="aspect-[4/5] w-full rounded-sm object-cover"
-                  sizes={TWO_COL_SHOWCASE_SIZES}
-                />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
-                <img
-                  src={capMedia?.url || CAP_FALLBACK_IMG}
-                  alt={capMedia?.alt || capFallbackAlt}
-                  className="aspect-[4/5] w-full rounded-sm object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
-              )
-            }
+            image={showcaseMedia(capMedia, CAP_FALLBACK_IMG, capFallbackAlt)}
           />
         </Reveal>
       </div>
@@ -295,24 +298,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
             }
             badge={assets.cta.note || undefined}
             imagePosition="right"
-            image={
-              assetMedia?.url && assetMedia.width > 0 && assetMedia.height > 0 ? (
-                <MediaImage
-                  data={{ ...assetMedia, alt: assetMedia.alt || assetFallbackAlt }}
-                  className="aspect-[4/5] w-full rounded-sm object-cover"
-                  sizes={TWO_COL_SHOWCASE_SIZES}
-                />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
-                <img
-                  src={assetMedia?.url || ASSET_FALLBACK_IMG}
-                  alt={assetMedia?.alt || assetFallbackAlt}
-                  className="aspect-[4/5] w-full rounded-sm object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
-              )
-            }
+            image={showcaseMedia(assetMedia, ASSET_FALLBACK_IMG, assetFallbackAlt)}
           />
         </Reveal>
       </div>

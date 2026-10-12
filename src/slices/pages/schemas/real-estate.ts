@@ -12,7 +12,7 @@
  */
 import { z } from "zod";
 import { ctaWithNote, mediaId, seoShape, tStr, tStrOpt, url } from "@core/validation/primitives";
-import { between, faqGroupKey, fixed, iconCard, optionalImage } from "./_shared";
+import { between, faqGroupKey, fixed, iconCard, optionalAnimated, optionalImage } from "./_shared";
 import { adminHidden } from "./admin-hidden";
 
 /**
@@ -29,10 +29,15 @@ const heroCta = z.object({ label: tStr({ max: 80 }), url: hiddenUrl });
 
 const HERO_IMG_HINT =
   "Full-bleed hero background (a dark overlay is applied). Landscape 16:9 — 1920×1080 px (min 1600×900), JPG or WebP, under 500 KB.";
-const ASSET_IMG_HINT =
-  "Lifestyle photo for the Asset Types showcase. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
-const CAPABILITIES_IMG_HINT =
-  "Photo for the Institutional-Grade Management showcase (rendered on the LEFT). Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
+/**
+ * `capabilities` / `asset_management` side media (spec real-estate-admin-editor S3): photo,
+ * animated WebP, MP4/WebM loop or Lottie in the fixed 4:5 frame — the same text as Home's guests
+ * pitch and Owners' services/dashboard (`SHOWCASE_MEDIA_HINT`).
+ */
+const SHOWCASE_MEDIA_HINT =
+  "Portrait 4:5 — the frame is fixed at 4:5, so other ratios are cropped. Photo: 1200×1500 px (min 960×1200), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1080×1350 or 1200×1500, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×1500, under 5 MB. Lottie (.lottie or .json): 4:5 canvas (e.g. 1200×1500).";
+/** Capabilities' media sits on the LEFT of the section; the guidance is the shared one. */
+const CAPABILITIES_MEDIA_HINT = `${SHOWCASE_MEDIA_HINT} Rendered on the LEFT of the section.`;
 
 /*
  * Optional copy added by spec `real-estate-admin-editor` S2 (`seo`, `faq`). Both are optional
@@ -69,26 +74,26 @@ export const realEstateSchema = z.object({
   }),
   // "Institutional-Grade Management, End to End" — Image Showcase, MIRRORED (image on the
   // LEFT, text on the right): headline + subheadline + three capability highlights (single
-  // column, longer copy) + CTA beside a 4:5 photo with an optional floating reassurance badge
-  // (the CTA note). Same DB-driven shape as `asset_management`; the renderer flips the columns
+  // column, longer copy) + CTA beside 4:5 side media (photo / animated WebP / video / Lottie)
+  // with an optional floating reassurance badge (the CTA note). Same DB-driven shape as `asset_management`; the renderer flips the columns
   // via the `reverse` modifier. Each benefit's `icon_key` is rendered (`core/ui` `<Icon>`).
   // See `ui/real-estate-page.tsx`.
   capabilities: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 3),
-    image_media_id: optionalImage(CAPABILITIES_IMG_HINT),
+    image_media_id: optionalAnimated(CAPABILITIES_MEDIA_HINT),
     cta: realEstateCta,
   }),
   // "A Management Partner for Every Asset Type" — Image Showcase (the home guests-pitch /
   // owners services layout): headline + subheadline + six benefit highlights (2-col grid) +
-  // CTA beside a 4:5 lifestyle image with a floating reassurance badge (the CTA note). Each
-  // benefit's `icon_key` is rendered (`core/ui` `<Icon>`).
+  // CTA beside 4:5 side media (photo / animated WebP / video / Lottie) with a floating
+  // reassurance badge (the CTA note). Each benefit's `icon_key` is rendered (`core/ui` `<Icon>`).
   asset_management: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
     benefits: fixed(iconCard, 6),
-    image_media_id: optionalImage(ASSET_IMG_HINT),
+    image_media_id: optionalAnimated(SHOWCASE_MEDIA_HINT),
     cta: realEstateCta,
   }),
   // "Deal Structures Built Around Your Risk Profile" — the three partnership-model cards

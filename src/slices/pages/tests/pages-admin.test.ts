@@ -706,3 +706,33 @@ test("real estate layout + labels: every i18n key exists in the 4 locales", () =
     }
   }
 });
+
+// ── Real Estate showcase media (spec real-estate-admin-editor S3) ────────────
+
+test("realEstateSchema media accepts: capabilities/asset_management animated (4:5 hint), hero image — S3", () => {
+  const root = describe(realEstateSchema);
+  const hero = nodeAt(root, ["hero", "image_media_id"]);
+  assert.ok(hero.kind === "media" && hero.accept === "image");
+  for (const section of ["capabilities", "asset_management"]) {
+    const node = nodeAt(root, [section, "image_media_id"]);
+    assert.equal(node.kind, "media", section);
+    if (node.kind !== "media") continue;
+    assert.equal(node.accept, "animated", section);
+    assert.match(node.hint ?? "", /^Portrait 4:5 — the frame is fixed at 4:5/, section);
+    assert.match(node.hint ?? "", /Lottie \(\.lottie or \.json\)/, section);
+  }
+  const caps = nodeAt(root, ["capabilities", "image_media_id"]);
+  assert.match(caps.kind === "media" ? caps.hint ?? "" : "", /LEFT/);
+});
+
+test("realEstateSchema: capabilities/asset_management media still accept \"\" and a uuid — S3", () => {
+  const uuid = "3f2b8c1e-9a4d-4e7b-8c2a-1d5e6f7a8b9c";
+  for (const field of [
+    realEstateSchema.shape.capabilities.shape.image_media_id,
+    realEstateSchema.shape.asset_management.shape.image_media_id,
+  ]) {
+    assert.ok(field.safeParse("").success);
+    assert.ok(field.safeParse(uuid).success);
+    assert.ok(!field.safeParse("not-a-uuid").success);
+  }
+});
