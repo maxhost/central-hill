@@ -315,6 +315,11 @@ export function BuildingForm({
         <p className="text-sm text-ink-soft">{t("admin.formSubtitle")}</p>
       )}
 
+      {/*
+       * Cards follow the public building page top to bottom (spec
+       * building-detail-admin-editor, S3): Status · Hero · Gallery · The Building ·
+       * Amenities · FAQ · Booking · Listing card · Map location · SEO.
+       */}
       <AdminCard title={t("admin.sections.status")}>
         <FieldGrid>
           <Field label={t("admin.fields.status")}>
@@ -341,20 +346,30 @@ export function BuildingForm({
           </Field>
         </FieldGrid>
         <div className="mt-4 flex flex-wrap gap-6">
-          <Checkbox
-            label={t("admin.fields.isFeatured")}
-            checked={state.is_featured}
-            onChange={(e) => set("is_featured", e.target.checked)}
-          />
-          <Checkbox
-            label={t("admin.fields.isNew")}
-            checked={state.is_new}
-            onChange={(e) => set("is_new", e.target.checked)}
-          />
+          <div>
+            <Checkbox
+              label={t("admin.fields.isFeatured")}
+              checked={state.is_featured}
+              onChange={(e) => set("is_featured", e.target.checked)}
+            />
+            <p className="mt-1 text-xs text-ink-soft">
+              {t("admin.fields.isFeaturedHint")}
+            </p>
+          </div>
+          <div>
+            <Checkbox
+              label={t("admin.fields.isNew")}
+              checked={state.is_new}
+              onChange={(e) => set("is_new", e.target.checked)}
+            />
+            <p className="mt-1 text-xs text-ink-soft">
+              {t("admin.fields.isNewHint")}
+            </p>
+          </div>
         </div>
       </AdminCard>
 
-      <AdminCard title={t("admin.sections.identity")}>
+      <AdminCard title={t("admin.sections.hero")}>
         <div className="space-y-4">
           <Field label={t("admin.fields.name")} required error={err("name")}>
             <TextInput
@@ -365,7 +380,7 @@ export function BuildingForm({
           <Field
             label={t("admin.fields.slug")}
             required
-            hint={t("admin.fields.slugHint")}
+            hint={t("admin.fields.slugPublicHint")}
             error={err("slug")}
           >
             <TextInput
@@ -373,60 +388,35 @@ export function BuildingForm({
               onChange={(e) => set("slug", e.target.value)}
             />
           </Field>
-          <Field
-            label={t("admin.fields.headline")}
-            required
-            error={err("headline")}
-          >
-            <TextInput
-              value={state.headline}
-              onChange={(e) => set("headline", e.target.value)}
-            />
-          </Field>
-          <Field
-            label={t("admin.fields.teaser")}
-            required
-            error={err("teaser")}
-          >
-            <TextArea
-              value={state.teaser}
-              onChange={(e) => set("teaser", e.target.value)}
-            />
-          </Field>
-        </div>
-      </AdminCard>
-
-      <AdminCard title={t("admin.sections.location")}>
-        <FieldGrid>
-          <Field label={t("admin.fields.city")} required error={err("city_id")}>
-            <Select
-              value={state.city_id}
-              onChange={(e) => onCityChange(e.target.value)}
-            >
-              <option value="">{t("admin.fields.choose")}</option>
-              {locations.cities.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label={t("admin.fields.neighbourhood")}>
-            <Select
-              value={state.neighbourhood_id}
-              onChange={(e) => set("neighbourhood_id", e.target.value)}
-              disabled={!state.city_id}
-            >
-              <option value="">{t("admin.fields.none")}</option>
-              {neighbourhoods.map((n) => (
-                <option key={n.id} value={n.id}>
-                  {n.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-        </FieldGrid>
-        <div className="mt-4">
+          <FieldGrid>
+            <Field label={t("admin.fields.city")} required error={err("city_id")}>
+              <Select
+                value={state.city_id}
+                onChange={(e) => onCityChange(e.target.value)}
+              >
+                <option value="">{t("admin.fields.choose")}</option>
+                {locations.cities.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t("admin.fields.neighbourhood")}>
+              <Select
+                value={state.neighbourhood_id}
+                onChange={(e) => set("neighbourhood_id", e.target.value)}
+                disabled={!state.city_id}
+              >
+                <option value="">{t("admin.fields.none")}</option>
+                {neighbourhoods.map((n) => (
+                  <option key={n.id} value={n.id}>
+                    {n.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </FieldGrid>
           <Field
             label={t("admin.fields.streetAddress")}
             required
@@ -437,29 +427,6 @@ export function BuildingForm({
               onChange={(e) => set("street_address", e.target.value)}
             />
           </Field>
-        </div>
-        <FieldGrid className="mt-4">
-          <Field label={t("admin.fields.latitude")} error={err("latitude")}>
-            <TextInput
-              type="number"
-              step="any"
-              value={state.latitude}
-              onChange={(e) => set("latitude", e.target.value)}
-            />
-          </Field>
-          <Field label={t("admin.fields.longitude")} error={err("longitude")}>
-            <TextInput
-              type="number"
-              step="any"
-              value={state.longitude}
-              onChange={(e) => set("longitude", e.target.value)}
-            />
-          </Field>
-        </FieldGrid>
-      </AdminCard>
-
-      <AdminCard title={t("admin.sections.media")}>
-        <div className="space-y-5">
           <Field
             label={t("admin.fields.cover")}
             hint={t("admin.fields.coverHint")}
@@ -471,31 +438,38 @@ export function BuildingForm({
               onChange={(id) => set("cover_media_id", id ?? "")}
             />
           </Field>
-          <Field
-            label={t("admin.fields.ogImage")}
-            hint={t("admin.fields.ogImageHint")}
-          >
-            <MediaField
-              value={state.og_image_media_id || null}
-              preview={previews[state.og_image_media_id] ?? null}
-              onChange={(id) => set("og_image_media_id", id ?? "")}
-            />
-          </Field>
-          <Field label={t("admin.fields.gallery")}>
-            <MediaGalleryField
-              value={state.gallery}
-              previews={previews}
-              onChange={(ids) => set("gallery", ids)}
-            />
-          </Field>
         </div>
       </AdminCard>
 
-      <AdminCard title={t("admin.sections.descriptions")}>
+      <AdminCard title={t("admin.sections.gallery")}>
+        <Field
+          label={t("admin.fields.gallery")}
+          hint={t("admin.fields.galleryHint")}
+        >
+          <MediaGalleryField
+            value={state.gallery}
+            previews={previews}
+            onChange={(ids) => set("gallery", ids)}
+          />
+        </Field>
+      </AdminCard>
+
+      <AdminCard title={t("admin.sections.theBuilding")}>
         <div className="space-y-4">
+          <Field
+            label={t("admin.fields.headline")}
+            required
+            error={err("headline")}
+          >
+            <TextInput
+              value={state.headline}
+              onChange={(e) => set("headline", e.target.value)}
+            />
+          </Field>
           <Field
             label={t("admin.fields.descriptionIntro")}
             required
+            hint={t("admin.fields.descriptionIntroHint")}
             error={err("description_intro")}
           >
             <TextArea
@@ -504,7 +478,10 @@ export function BuildingForm({
               onChange={(e) => set("description_intro", e.target.value)}
             />
           </Field>
-          <Field label={t("admin.fields.descriptionNeighbourhood")}>
+          <Field
+            label={t("admin.fields.descriptionNeighbourhood")}
+            hint={t("admin.fields.descriptionNeighbourhoodHint")}
+          >
             <TextArea
               rows={5}
               value={state.description_neighbourhood}
@@ -515,6 +492,15 @@ export function BuildingForm({
       </AdminCard>
 
       <AdminCard title={t("admin.sections.amenities")}>
+        <p className="mb-4 text-xs text-ink-soft">
+          {t.rich("admin.sectionHints.amenities", {
+            link: (chunks) => (
+              <Link href="/admin/amenities" className="underline hover:text-ink">
+                {chunks}
+              </Link>
+            ),
+          })}
+        </p>
         {amenities.length === 0 ? (
           <p className="text-sm text-ink-soft">{t("admin.noAmenities")}</p>
         ) : (
@@ -543,6 +529,9 @@ export function BuildingForm({
       </AdminCard>
 
       <AdminCard title={t("admin.sections.faq")}>
+        <p className="mb-4 text-xs text-ink-soft">
+          {t("admin.sectionHints.faq")}
+        </p>
         <div className="space-y-4">
           {state.faq.map((item, index) => (
             <div key={index} className="rounded-md border border-line p-4">
@@ -604,16 +593,6 @@ export function BuildingForm({
       </AdminCard>
 
       <AdminCard title={t("admin.sections.booking")}>
-        <div className="mb-4">
-          <Checkbox
-            label={t("admin.fields.bookingEnabled")}
-            checked={state.booking_enabled}
-            onChange={(e) => set("booking_enabled", e.target.checked)}
-          />
-          <p className="mt-1 text-xs text-ink-soft">
-            {t("admin.fields.bookingEnabledHint")}
-          </p>
-        </div>
         <FieldGrid>
           <Field label={t("admin.fields.avantioId")} error={err("avantio_id")}>
             <TextInput
@@ -629,6 +608,54 @@ export function BuildingForm({
             <TextInput
               value={state.avantio_url}
               onChange={(e) => set("avantio_url", e.target.value)}
+            />
+          </Field>
+        </FieldGrid>
+        <div className="mt-4">
+          <Checkbox
+            label={t("admin.fields.bookingEnabled")}
+            checked={state.booking_enabled}
+            onChange={(e) => set("booking_enabled", e.target.checked)}
+          />
+          <p className="mt-1 text-xs text-ink-soft">
+            {t("admin.fields.bookingEnabledHint")}
+          </p>
+        </div>
+      </AdminCard>
+
+      <AdminCard title={t("admin.sections.listingCard")}>
+        <Field
+          label={t("admin.fields.teaser")}
+          required
+          hint={t("admin.fields.teaserHint")}
+          error={err("teaser")}
+        >
+          <TextArea
+            value={state.teaser}
+            onChange={(e) => set("teaser", e.target.value)}
+          />
+        </Field>
+      </AdminCard>
+
+      <AdminCard title={t("admin.sections.map")}>
+        <p className="mb-4 text-xs text-ink-soft">
+          {t("admin.sectionHints.map")}
+        </p>
+        <FieldGrid>
+          <Field label={t("admin.fields.latitude")} error={err("latitude")}>
+            <TextInput
+              type="number"
+              step="any"
+              value={state.latitude}
+              onChange={(e) => set("latitude", e.target.value)}
+            />
+          </Field>
+          <Field label={t("admin.fields.longitude")} error={err("longitude")}>
+            <TextInput
+              type="number"
+              step="any"
+              value={state.longitude}
+              onChange={(e) => set("longitude", e.target.value)}
             />
           </Field>
         </FieldGrid>
@@ -649,6 +676,16 @@ export function BuildingForm({
             <TextArea
               value={state.meta_description}
               onChange={(e) => set("meta_description", e.target.value)}
+            />
+          </Field>
+          <Field
+            label={t("admin.fields.ogImage")}
+            hint={t("admin.fields.ogImageHint")}
+          >
+            <MediaField
+              value={state.og_image_media_id || null}
+              preview={previews[state.og_image_media_id] ?? null}
+              onChange={(id) => set("og_image_media_id", id ?? "")}
             />
           </Field>
         </div>

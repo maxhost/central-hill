@@ -82,7 +82,7 @@ import { getBuildingBySlug } from "../server/queries";
  * underlined "Check availability →" CTA; 3→2→1 columns at 980/680px), replacing the old
  * `apartmentCardHtml()`/`.pcard` strings and the `.pspecs`/`.pspec`/`.check`/`.powered` rules
  * in `PAGE_STYLE`. Not `PropertyCard` (different padding/type scale, no zoom, text meta line,
- * `next/link` — see `UnitCard`'s docstring). The section shell, sec-head and the `#book`
+ * `next/link` — see `UnitCard`'s docstring). The section shell, sec-head and the
  * "Booking powered by Avantio" line are inline JSX here (no `.mk`, so no `.mk` reset trap and
  * no `data-page` hook needed — nothing on this page keys off it for scroll-reveal; the old
  * `.reveal` classes were neutralised by `mock.css`, so the section was and stays static).
@@ -95,8 +95,9 @@ import { getBuildingBySlug } from "../server/queries";
  * right), replacing the old `bookband` string in `bodyHtml()` and the `.mk .bookband*` rules in
  * `PAGE_STYLE`. Not `FeaturePanel`/`FeatureCtaBand`/`CalloutBand`, and its button is a literal
  * `.btn.btn-accent` port rather than `ButtonLink` (see `ActionBand`'s docstring). Rendered
- * after the FAQ (section order unchanged), on every building; static (the old `.reveal` was
- * neutralised). Verified computed-style- and screenshot-identical to the pre-extraction render
+ * after the FAQ (section order unchanged), on every building, inside the `#book` anchor (spec
+ * building-detail-admin-editor, D7); without a building Avantio URL it drops its CTA and note.
+ * Static (the old `.reveal` was neutralised). Verified computed-style- and screenshot-identical to the pre-extraction render
  * at 1440/834/390, hover included.
  *
  * **"Amenities" is real JSX** too — the standard page shell + `core/ui`'s `SectionHead` (title
@@ -123,8 +124,8 @@ import { getBuildingBySlug } from "../server/queries";
  * - no R2 cover yet → a Warm-Editorial placeholder SVG is shown (building + per-unit);
  * - empty gallery / amenities / FAQ → that section is omitted (never an empty shell);
  * - no published apartments yet → the "Apartments in this Building" grid is omitted.
- * The Avantio booking CTA links to a unit's `avantio_url` (or the building's), falling
- * back to the in-page `#book` band when no engine handle is set.
+ * A unit card links to its own `avantio_url`, else to the in-page `#book` band, whose button
+ * is the building's Avantio URL (no button at all when the building has none either).
  */
 
 /** Split source prose into paragraph strings (blank lines or newlines split) for
@@ -384,7 +385,7 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
        * Real JSX — "Apartments in this Building": `core/ui`'s new `UnitCard`/`UnitCardGrid`
        * (see that file's docstring for why not `PropertyCard`), with the section shell (alt
        * band, `--section-y` rhythm, 1240px/28px column), sec-head and the "Booking powered by
-       * Avantio" line (`#book`, the cards' fallback anchor) ported 1:1 from the old `.mk`
+       * Avantio" line ported 1:1 from the old `.mk`
        * `section.alt`/`.wrap`/`.sec-head`/`.eyebrow`/`h2.section-title`/`.lede`/`.powered`
        * CSS. Rendered *outside* `.mk` (cascade-layers trap — see `SpecStrip`'s docstring).
        * No `Reveal`: the old `.reveal` classes were neutralised by `mock.css` and this page
@@ -418,7 +419,7 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
                 />
               ))}
             </UnitCardGrid>
-            <div id="book" className="mt-[30px] text-center text-[12.5px] tracking-[0.04em] text-ink-soft">
+            <div className="mt-[30px] text-center text-[12.5px] tracking-[0.04em] text-ink-soft">
               {AL.poweredBy}
             </div>
           </div>
@@ -463,16 +464,21 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
        * and why the button isn't `ButtonLink`), replacing the old `.mk` `bookband` string and its
        * `.mk .bookband*` rules. Rendered *outside* `.mk` (cascade-layers trap — see `SpecStrip`'s
        * docstring), after the FAQ so the section order is unchanged.
-       * Always rendered. The CTA links to the building's Avantio URL in a new tab, or falls back
-       * to the in-page `#book` anchor. Static, like the original (its `.reveal` was neutralised).
+       * Always rendered, wrapped in the `#book` anchor (the fallback target of unit cards without
+       * their own URL — D7). The CTA opens the building's Avantio URL in a new tab; with no URL the
+       * band renders without CTA and note (the note talks about Avantio). Static, like the
+       * original (its `.reveal` was neutralised).
        */}
-      <ActionBand
-        eyebrow={L.bookEyebrow}
-        title={L.bookTitle}
-        body={L.bookIntro}
-        cta={{ href: detail.avantio.url ?? "#book", label: L.bookCta, external: Boolean(detail.avantio.url) }}
-        note={L.bookNote}
-      />
+      <div id="book" className="scroll-mt-[84px]">
+        <ActionBand
+          eyebrow={L.bookEyebrow}
+          title={L.bookTitle}
+          body={L.bookIntro}
+          {...(detail.avantio.url
+            ? { cta: { href: detail.avantio.url, label: L.bookCta, external: true }, note: L.bookNote }
+            : null)}
+        />
+      </div>
     </Fragment>
   );
 }

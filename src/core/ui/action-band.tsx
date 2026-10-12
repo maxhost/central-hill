@@ -11,7 +11,8 @@ export type ActionBandCta = {
 /**
  * Full-bleed dark "feature" band (`bg-feature`/`text-on-feature*`) with copy on the left —
  * eyebrow, serif `<h2>`, short supporting line — and an action column on the right: one solid
- * accent button with a small note under it. The two sides wrap onto separate rows (copy above,
+ * accent button with a small note under it. `cta` is optional: without it the whole action column
+ * (button and note) is omitted and the band is copy only. The two sides wrap onto separate rows (copy above,
  * action below) when they no longer fit side by side. First built extracting
  * `building-detail.tsx`'s closing "Book an apartment in this building" band (`bookband` in
  * `bodyHtml()`), ported 1:1 from the live `.mk`-scoped `.bookband`/`.inner`/`.eyebrow`/`h2`/
@@ -54,8 +55,8 @@ export function ActionBand({
   eyebrow?: string;
   title: string;
   body?: string;
-  cta: ActionBandCta;
-  /** Small line under the button (e.g. "Real-time availability & pricing via Avantio."). */
+  cta?: ActionBandCta;
+  /** Small line under the button (e.g. "Real-time availability & pricing via Avantio."); only rendered with a `cta`. */
   note?: string;
 }) {
   return (
@@ -71,16 +72,18 @@ export function ActionBand({
             </h2>
             {body ? <p className="max-w-[46ch] text-[15px] text-on-feature-soft">{body}</p> : null}
           </div>
-          <div className="flex flex-col items-start gap-3">
-            <a
-              href={cta.href}
-              {...(cta.external ? { target: "_blank", rel: "noopener noreferrer" } : null)}
-              className={buttonClassName("primary")}
-            >
-              {`${cta.label} →`}
-            </a>
-            {note ? <span className="text-[12.5px] tracking-[0.02em] text-on-feature-soft">{note}</span> : null}
-          </div>
+          {cta ? (
+            <div className="flex flex-col items-start gap-3">
+              <a
+                href={cta.href}
+                {...(cta.external ? { target: "_blank", rel: "noopener noreferrer" } : null)}
+                className={buttonClassName("primary")}
+              >
+                {`${cta.label} →`}
+              </a>
+              {note ? <span className="text-[12.5px] tracking-[0.02em] text-on-feature-soft">{note}</span> : null}
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

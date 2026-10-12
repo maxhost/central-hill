@@ -284,14 +284,15 @@
       },
       "sections": {
         "status": "Estado y visibilidad",
-        "identity": "Identidad",
-        "location": "Ubicación",
-        "media": "Multimedia",
-        "descriptions": "Descripciones",
         "amenities": "Comodidades",
         "faq": "FAQ",
         "booking": "Reservas",
-        "seo": "SEO"
+        "seo": "SEO",
+        "hero": "Hero",
+        "gallery": "Galería",
+        "theBuilding": "El edificio",
+        "listingCard": "Tarjeta del listado",
+        "map": "Ubicación en el mapa"
       },
       "fields": {
         "status": "Estado",
@@ -313,7 +314,7 @@
         "longitude": "Longitud",
         "cover": "Imagen de portada",
         "ogImage": "Imagen para compartir",
-        "ogImageHint": "Opcional; usa la portada por defecto.",
+        "ogImageHint": "1200×630 px. Déjalo en blanco para usar la portada.",
         "gallery": "Galería",
         "descriptionIntro": "El edificio",
         "descriptionNeighbourhood": "El barrio",
@@ -324,9 +325,16 @@
         "metaTitle": "Meta título",
         "metaDescription": "Meta descripción",
         "bookingEnabled": "Activar Booking",
-        "bookingEnabledHint": "Si está activo, el botón “Ver más” de la card abre el Avantio URL de abajo en una pestaña nueva, en vez de la página de detalle.",
-        "avantioUrlHint": "Enlace de reserva externo al que redirige la card cuando Booking está activo.",
-        "coverHint": "Opcional — se muestra un marcador hasta que subas una."
+        "bookingEnabledHint": "La tarjeta del listado enlaza directamente a Avantio en lugar de a esta página.",
+        "avantioUrlHint": "Botón de la banda de reserva y alternativa para los apartamentos sin enlace propio.",
+        "coverHint": "Fondo del hero y foto de la tarjeta. Horizontal 16:9, mínimo 2400×1350 px.",
+        "isFeaturedHint": "Solo en el listado.",
+        "isNewHint": "Muestra la etiqueta ★ Nuevo en el hero y en la tarjeta del listado.",
+        "slugPublicHint": "Minúsculas, palabras separadas por guiones. Cambiarlo cambia la URL pública.",
+        "galleryHint": "Mosaico bajo el hero. Horizontal 4:3, mínimo 1600×1200 px. La primera foto es la pieza grande.",
+        "descriptionIntroHint": "Un párrafo por línea.",
+        "descriptionNeighbourhoodHint": "Un párrafo por línea. Déjalo en blanco para ocultar “El Barrio”.",
+        "teaserHint": "Se muestra en la tarjeta de /buildings y como descripción SEO por defecto."
       },
       "errors": {
         "coverRequired": "Se requiere una imagen de portada.",
@@ -370,7 +378,12 @@
         "tabsLabel": "Secciones del edificio",
         "viewOnSite": "Ver en la web"
       },
-      "apartmentsCountTitle": "{published} publicados de {total}"
+      "apartmentsCountTitle": "{published} publicados de {total}",
+      "sectionHints": {
+        "amenities": "Crea o renombra comodidades en <link>Comodidades</link>.",
+        "faq": "Déjalo vacío para ocultar la sección FAQ.",
+        "map": "Todavía no se muestra en la web."
+      }
     },
     "home": "Inicio",
     "statNeighbourhood": "Barrio",

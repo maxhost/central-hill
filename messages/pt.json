@@ -284,14 +284,15 @@
       },
       "sections": {
         "status": "Estado e visibilidade",
-        "identity": "Identidade",
-        "location": "Localização",
-        "media": "Multimédia",
-        "descriptions": "Descrições",
         "amenities": "Comodidades",
         "faq": "FAQ",
         "booking": "Reservas",
-        "seo": "SEO"
+        "seo": "SEO",
+        "hero": "Hero",
+        "gallery": "Galeria",
+        "theBuilding": "O edifício",
+        "listingCard": "Cartão da listagem",
+        "map": "Localização no mapa"
       },
       "fields": {
         "status": "Estado",
@@ -313,7 +314,7 @@
         "longitude": "Longitude",
         "cover": "Imagem de capa",
         "ogImage": "Imagem de partilha social",
-        "ogImageHint": "Opcional; usa a capa por omissão.",
+        "ogImageHint": "1200×630 px. Deixe em branco para usar a capa.",
         "gallery": "Galeria",
         "descriptionIntro": "O edifício",
         "descriptionNeighbourhood": "O bairro",
@@ -324,9 +325,16 @@
         "metaTitle": "Meta título",
         "metaDescription": "Meta descrição",
         "bookingEnabled": "Ativar reservas",
-        "bookingEnabledHint": "Quando ativo, o “Ver mais” do cartão abre o URL Avantio abaixo num novo separador, em vez da página de detalhe.",
-        "avantioUrlHint": "Link de reserva externo para onde o cartão redireciona quando as reservas estão ativas.",
-        "coverHint": "Opcional — mostra-se um marcador até carregar uma imagem."
+        "bookingEnabledHint": "O cartão da listagem liga diretamente ao Avantio em vez desta página.",
+        "avantioUrlHint": "Botão da faixa de reserva e alternativa para os apartamentos sem link próprio.",
+        "coverHint": "Fundo do hero e foto do cartão. Horizontal 16:9, mínimo 2400×1350 px.",
+        "isFeaturedHint": "Apenas na listagem.",
+        "isNewHint": "Mostra a etiqueta ★ Novo no hero e no cartão da listagem.",
+        "slugPublicHint": "Minúsculas, palavras separadas por hífens. Alterá-lo muda o URL público.",
+        "galleryHint": "Mosaico por baixo do hero. Horizontal 4:3, mínimo 1600×1200 px. A primeira foto é a peça grande.",
+        "descriptionIntroHint": "Um parágrafo por linha.",
+        "descriptionNeighbourhoodHint": "Um parágrafo por linha. Deixe em branco para ocultar “O Bairro”.",
+        "teaserHint": "Aparece no cartão de /buildings e como descrição SEO por omissão."
       },
       "errors": {
         "coverRequired": "É obrigatória uma imagem de capa.",
@@ -370,7 +378,12 @@
         "tabsLabel": "Secções do edifício",
         "viewOnSite": "Ver no site"
       },
-      "apartmentsCountTitle": "{published} publicados de {total}"
+      "apartmentsCountTitle": "{published} publicados de {total}",
+      "sectionHints": {
+        "amenities": "Crie ou renomeie comodidades em <link>Comodidades</link>.",
+        "faq": "Deixe vazio para ocultar a secção FAQ.",
+        "map": "Ainda não aparece no site."
+      }
     },
     "home": "Início",
     "statNeighbourhood": "Bairro",

@@ -284,14 +284,15 @@
       },
       "sections": {
         "status": "Status & visibility",
-        "identity": "Identity",
-        "location": "Location",
-        "media": "Media",
-        "descriptions": "Descriptions",
         "amenities": "Amenities",
         "faq": "FAQ",
         "booking": "Booking",
-        "seo": "SEO"
+        "seo": "SEO",
+        "hero": "Hero",
+        "gallery": "Gallery",
+        "theBuilding": "The Building",
+        "listingCard": "Listing card",
+        "map": "Map location"
       },
       "fields": {
         "status": "Status",
@@ -313,7 +314,7 @@
         "longitude": "Longitude",
         "cover": "Cover image",
         "ogImage": "Social share image",
-        "ogImageHint": "Optional; falls back to the cover.",
+        "ogImageHint": "1200×630 px. Leave blank to use the cover.",
         "gallery": "Gallery",
         "descriptionIntro": "The building",
         "descriptionNeighbourhood": "The neighbourhood",
@@ -324,9 +325,16 @@
         "metaTitle": "Meta title",
         "metaDescription": "Meta description",
         "bookingEnabled": "Enable booking",
-        "bookingEnabledHint": "When on, the card’s “View more” opens the Avantio URL below in a new tab instead of the detail page.",
-        "avantioUrlHint": "External booking link the card redirects to when booking is enabled.",
-        "coverHint": "Optional — a placeholder is shown until you upload one."
+        "bookingEnabledHint": "Listing card links straight to Avantio instead of this page.",
+        "avantioUrlHint": "Book band button, and fallback for apartments without their own link.",
+        "coverHint": "Hero background and card photo. Landscape 16:9, at least 2400×1350 px.",
+        "isFeaturedHint": "Listing only.",
+        "isNewHint": "Shows the ★ New flag on the hero and the listing card.",
+        "slugPublicHint": "Lowercase, words separated by hyphens. Changing it changes the public URL.",
+        "galleryHint": "Mosaic under the hero. Landscape 4:3, at least 1600×1200 px. The first photo is the large tile.",
+        "descriptionIntroHint": "One paragraph per line.",
+        "descriptionNeighbourhoodHint": "One paragraph per line. Leave blank to hide “The Neighbourhood”.",
+        "teaserHint": "Shown on the /buildings card and as the SEO description fallback."
       },
       "errors": {
         "coverRequired": "A cover image is required.",
@@ -370,7 +378,12 @@
         "tabsLabel": "Building sections",
         "viewOnSite": "View on site"
       },
-      "apartmentsCountTitle": "{published} published of {total}"
+      "apartmentsCountTitle": "{published} published of {total}",
+      "sectionHints": {
+        "amenities": "Create or rename amenities in <link>Amenities</link>.",
+        "faq": "Leave empty to hide the FAQ section.",
+        "map": "Not shown on the site yet."
+      }
     },
     "home": "Home",
     "statNeighbourhood": "Neighbourhood",
