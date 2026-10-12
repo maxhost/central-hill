@@ -852,7 +852,11 @@
         "building": "Immeuble",
         "status": "Statut",
         "bedrooms": "Chambres",
-        "guests": "Voyageurs"
+        "guests": "Voyageurs",
+        "order": "Ordre",
+        "photo": "Photo",
+        "specs": "Caractéristiques",
+        "avantio": "Avantio"
       },
       "status": {
         "draft": "Brouillon",
@@ -878,7 +882,7 @@
         "slug": "Slug",
         "slugHint": "Minuscules, mots séparés par des traits d'union.",
         "badge": "Badge",
-        "badgeHint": "Étiquette marketing facultative, ex. “Penthouse”.",
+        "badgeHint": "Libellé court sur la carte (p. ex. Terrasse). Laissez vide pour aucun.",
         "bedrooms": "Chambres",
         "bathrooms": "Salles de bain",
         "maxGuests": "Voyageurs max.",
@@ -894,15 +898,29 @@
         "avantioUrl": "URL Avantio",
         "metaTitle": "Méta-titre",
         "metaDescription": "Méta-description",
-        "coverHint": "Optionnel — un visuel par défaut s’affiche en attendant.",
-        "avantioUrlHint": "Lien de réservation du bouton « Vérifier les disponibilités » de la carte."
+        "coverHint": "Photo de la carte, 4:3, au moins 1200×900 px. Laissez vide pour le visuel par défaut.",
+        "avantioUrlHint": "Laissez vide pour utiliser le lien de réservation de l’immeuble."
       },
       "errors": {
         "coverRequired": "Une image de couverture est requise.",
-        "slugConflict": "Ce slug est déjà utilisé."
+        "slugConflict": "Ce slug est déjà utilisé.",
+        "buildingChange": "Un appartement ne peut pas changer d’immeuble."
       },
       "buildingEmpty": "Aucun appartement dans cet immeuble pour l’instant",
-      "buildingEmptyHint": "Ajoutez le premier appartement pour l’afficher sur la page de l’immeuble."
+      "buildingEmptyHint": "Ajoutez le premier appartement pour l’afficher sur la page de l’immeuble.",
+      "backToApartments": "Appartements",
+      "specs": {
+        "bedrooms": "{count} ch.",
+        "beds": "{count, plural, one {# lit} other {# lits}}",
+        "guests": "{count, plural, one {# voyageur} other {# voyageurs}}",
+        "size": "{size} m²"
+      },
+      "avantio": {
+        "own": "Lien propre",
+        "usesBuilding": "— utilise celui de l’immeuble"
+      },
+      "noPhoto": "Pas de photo",
+      "noPublishedWarning": "La section <em>Apartments in this Building</em> reste masquée tant qu’aucun appartement n’est publié."
     }
   },
   "pages": {

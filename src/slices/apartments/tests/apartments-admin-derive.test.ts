@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { PgDialect } from "drizzle-orm/pg-core";
-import { apartmentListWhere, tallyApartmentCounts } from "../admin/derive";
+import {
+  apartmentListWhere,
+  isBuildingChange,
+  nextApartmentPosition,
+  planApartmentMove,
+  sortApartmentSlots,
+  tallyApartmentCounts,
+} from "../admin/derive";
 
 /**
  * Slice `apartments` backoffice — pure helpers behind `countApartmentsByBuilding()`
@@ -50,4 +57,70 @@ test("list filter: buildingId → building_id = $1 bound to that id", () => {
   const query = new PgDialect().sqlToQuery(where);
   assert.match(query.sql, /"building_id" = \$1/);
   assert.deepEqual(query.params, [A]);
+});
+
+/* ── S2: ordering inside a building, create position, D6 guard ─────────────────── */
+
+const slots = [
+  { id: "a", position: 0 },
+  { id: "b", position: 1 },
+  { id: "c", position: 2 },
+];
+
+test("move: up swaps with the previous neighbour; only changed rows returned", () => {
+  assert.deepEqual(planApartmentMove(slots, "b", "up"), [
+    { id: "b", position: 0 },
+    { id: "a", position: 1 },
+  ]);
+});
+
+test("move: down swaps with the next neighbour", () => {
+  assert.deepEqual(planApartmentMove(slots, "b", "down"), [
+    { id: "c", position: 1 },
+    { id: "b", position: 2 },
+  ]);
+});
+
+test("move: no-op at the ends and for an unknown id", () => {
+  assert.equal(planApartmentMove(slots, "a", "up"), null);
+  assert.equal(planApartmentMove(slots, "c", "down"), null);
+  assert.equal(planApartmentMove(slots, "zzz", "up"), null);
+  assert.equal(planApartmentMove([], "a", "down"), null);
+});
+
+test("move: input order does not matter — neighbour is by position (same building list)", () => {
+  const shuffled = [slots[2]!, slots[0]!, slots[1]!];
+  assert.deepEqual(planApartmentMove(shuffled, "c", "up"), [
+    { id: "c", position: 1 },
+    { id: "b", position: 2 },
+  ]);
+});
+
+test("move: normalizes gapped / duplicate positions to 0..n-1 (id tiebreaker)", () => {
+  const messy = [
+    { id: "b", position: 5 },
+    { id: "a", position: 5 },
+    { id: "c", position: 9 },
+  ];
+  assert.deepEqual(
+    sortApartmentSlots(messy).map((s) => s.id),
+    ["a", "b", "c"],
+  );
+  // c moves above b → a, c, b renumbered 0, 1, 2.
+  assert.deepEqual(planApartmentMove(messy, "c", "up"), [
+    { id: "a", position: 0 },
+    { id: "c", position: 1 },
+    { id: "b", position: 2 },
+  ]);
+});
+
+test("create position: max + 1 of the building; 0 when it has none", () => {
+  assert.equal(nextApartmentPosition([]), 0);
+  assert.equal(nextApartmentPosition([0, 1, 2]), 3);
+  assert.equal(nextApartmentPosition([4, 0, 7]), 8);
+});
+
+test("D6 guard: a different building_id on update is a building change", () => {
+  assert.equal(isBuildingChange(A, A), false);
+  assert.equal(isBuildingChange(A, B), true);
 });

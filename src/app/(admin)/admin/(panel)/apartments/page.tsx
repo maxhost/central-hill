@@ -1,8 +1,12 @@
+import { redirect } from "next/navigation";
 import { requireStaff } from "@core/auth";
-import { ApartmentsAdminList } from "@slices/apartments/admin/ui/list";
 
-/** Apartments list route (`/admin/apartments`). Gated by `(panel)`. */
+/**
+ * Legacy apartments list (`/admin/apartments`). Apartments are managed inside their
+ * building since spec building-detail-admin-editor (D4), so this redirects to the
+ * buildings list. Gated by `(panel)`.
+ */
 export default async function ApartmentsPage() {
   await requireStaff();
-  return <ApartmentsAdminList />;
+  redirect("/admin/buildings");
 }

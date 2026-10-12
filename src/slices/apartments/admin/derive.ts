@@ -37,3 +37,60 @@ export function tallyApartmentCounts(
   }
   return out;
 }
+
+/* ── Ordering inside a building (spec building-detail-admin-editor, S2) ─────────── */
+
+/** One apartment's slot in its building's order. */
+export interface ApartmentSlot {
+  id: string;
+  position: number;
+}
+
+/** Direction of a ↑ / ↓ move in the building's Apartments tab. */
+export type MoveDirection = "up" | "down";
+
+/** Position for a new apartment: after the building's last one (`max + 1`), 0 when empty. */
+export function nextApartmentPosition(positions: readonly number[]): number {
+  return positions.length === 0 ? 0 : Math.max(...positions) + 1;
+}
+
+/** Display order of a building's apartments: `position`, then `id` as a stable tiebreaker. */
+export function sortApartmentSlots(slots: readonly ApartmentSlot[]): ApartmentSlot[] {
+  return [...slots].sort((a, b) =>
+    a.position !== b.position ? a.position - b.position : a.id < b.id ? -1 : a.id > b.id ? 1 : 0,
+  );
+}
+
+/**
+ * Plans a ↑ / ↓ move. `slots` are ONE building's apartments (any order; sorted here).
+ * Swaps `id` with its neighbour in `direction`, then renumbers the whole building to
+ * `0..n-1` (heals duplicate or gapped positions from older data). Returns only the
+ * rows whose position actually changes; `null` when it is a no-op (unknown id, or the
+ * first row moving up / the last moving down).
+ */
+export function planApartmentMove(
+  slots: readonly ApartmentSlot[],
+  id: string,
+  direction: MoveDirection,
+): ApartmentSlot[] | null {
+  const ordered = sortApartmentSlots(slots);
+  const from = ordered.findIndex((s) => s.id === id);
+  if (from === -1) return null;
+  const to = direction === "up" ? from - 1 : from + 1;
+  if (to < 0 || to >= ordered.length) return null;
+  const moved = ordered[from]!;
+  ordered[from] = ordered[to]!;
+  ordered[to] = moved;
+  return ordered
+    .map((s, index) => ({ id: s.id, position: index, before: s.position }))
+    .filter((s) => s.position !== s.before)
+    .map(({ id: slotId, position }) => ({ id: slotId, position }));
+}
+
+/**
+ * D6 guard: an apartment's building is fixed at creation. True when an update posts
+ * a `building_id` other than the stored one (the save must then be rejected).
+ */
+export function isBuildingChange(storedBuildingId: string, postedBuildingId: string): boolean {
+  return storedBuildingId !== postedBuildingId;
+}

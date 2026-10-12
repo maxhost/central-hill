@@ -1,14 +1,16 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireStaff } from "@core/auth";
 import { getApartmentForEdit } from "@slices/apartments/admin/queries";
-import { ApartmentForm } from "@slices/apartments/admin/ui/apartment-form";
-import { listBuildingOptions } from "@slices/buildings/contract";
 
-/** Edit-apartment route (`/admin/apartments/[id]`). Gated by `(panel)`. */
+/**
+ * Legacy edit-apartment route (`/admin/apartments/[id]`): redirects to the nested
+ * route inside the apartment's building (spec building-detail-admin-editor), 404 when
+ * the apartment does not exist. Gated by `(panel)`.
+ */
 export default async function EditApartmentPage({ params }: { params: Promise<{ id: string }> }) {
   await requireStaff();
   const { id } = await params;
-  const [bundle, buildings] = await Promise.all([getApartmentForEdit(id), listBuildingOptions()]);
+  const bundle = await getApartmentForEdit(id);
   if (!bundle) notFound();
-  return <ApartmentForm initial={bundle.data} previews={bundle.previews} buildings={buildings} />;
+  redirect(`/admin/buildings/${bundle.data.building_id}/apartments/${id}`);
 }

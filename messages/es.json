@@ -852,7 +852,11 @@
         "building": "Edificio",
         "status": "Estado",
         "bedrooms": "Dormitorios",
-        "guests": "Huéspedes"
+        "guests": "Huéspedes",
+        "order": "Orden",
+        "photo": "Foto",
+        "specs": "Características",
+        "avantio": "Avantio"
       },
       "status": {
         "draft": "Borrador",
@@ -878,7 +882,7 @@
         "slug": "Slug",
         "slugHint": "Minúsculas, palabras separadas por guiones.",
         "badge": "Etiqueta",
-        "badgeHint": "Etiqueta de marketing opcional, p. ej. “Ático”.",
+        "badgeHint": "Etiqueta corta en la tarjeta (p. ej. Terraza). Déjalo vacío para no mostrar ninguna.",
         "bedrooms": "Dormitorios",
         "bathrooms": "Baños",
         "maxGuests": "Huéspedes máx.",
@@ -894,15 +898,29 @@
         "avantioUrl": "URL de Avantio",
         "metaTitle": "Meta título",
         "metaDescription": "Meta descripción",
-        "coverHint": "Opcional — se muestra un marcador hasta que subas una.",
-        "avantioUrlHint": "Enlace de reserva del botón “Ver disponibilidad” de la tarjeta."
+        "coverHint": "Foto de la tarjeta, 4:3, mínimo 1200×900 px. Déjalo vacío para usar el marcador.",
+        "avantioUrlHint": "Déjalo vacío para usar el enlace de reserva del edificio."
       },
       "errors": {
         "coverRequired": "Se requiere una imagen de portada.",
-        "slugConflict": "Ese slug ya está en uso."
+        "slugConflict": "Ese slug ya está en uso.",
+        "buildingChange": "Un apartamento no puede cambiar de edificio."
       },
       "buildingEmpty": "Todavía no hay apartamentos en este edificio",
-      "buildingEmptyHint": "Añade el primer apartamento para mostrarlo en la página del edificio."
+      "buildingEmptyHint": "Añade el primer apartamento para mostrarlo en la página del edificio.",
+      "backToApartments": "Apartamentos",
+      "specs": {
+        "bedrooms": "{count} dorm",
+        "beds": "{count, plural, one {# cama} other {# camas}}",
+        "guests": "{count} huésp.",
+        "size": "{size} m²"
+      },
+      "avantio": {
+        "own": "Enlace propio",
+        "usesBuilding": "— usa la del edificio"
+      },
+      "noPhoto": "Sin foto",
+      "noPublishedWarning": "La sección <em>Apartments in this Building</em> no se muestra hasta que publiques al menos uno."
     }
   },
   "pages": {

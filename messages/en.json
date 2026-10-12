@@ -852,7 +852,11 @@
         "building": "Building",
         "status": "Status",
         "bedrooms": "Bedrooms",
-        "guests": "Guests"
+        "guests": "Guests",
+        "order": "Order",
+        "photo": "Photo",
+        "specs": "Specs",
+        "avantio": "Avantio"
       },
       "status": {
         "draft": "Draft",
@@ -878,7 +882,7 @@
         "slug": "Slug",
         "slugHint": "Lowercase, words separated by hyphens.",
         "badge": "Badge",
-        "badgeHint": "Optional marketing label, e.g. “Penthouse”.",
+        "badgeHint": "Short label on the card (e.g. Terrace). Leave blank for none.",
         "bedrooms": "Bedrooms",
         "bathrooms": "Bathrooms",
         "maxGuests": "Max guests",
@@ -894,15 +898,29 @@
         "avantioUrl": "Avantio URL",
         "metaTitle": "Meta title",
         "metaDescription": "Meta description",
-        "coverHint": "Optional — a placeholder is shown until you upload one.",
-        "avantioUrlHint": "Booking link for the card’s “Check availability”."
+        "coverHint": "Card photo, 4:3, at least 1200×900 px. Leave blank for the placeholder.",
+        "avantioUrlHint": "Leave blank to use the building’s booking link."
       },
       "errors": {
         "coverRequired": "A cover image is required.",
-        "slugConflict": "That slug is already in use."
+        "slugConflict": "That slug is already in use.",
+        "buildingChange": "Apartments can’t move to another building."
       },
       "buildingEmpty": "No apartments in this building yet",
-      "buildingEmptyHint": "Add the first apartment to show it on the building page."
+      "buildingEmptyHint": "Add the first apartment to show it on the building page.",
+      "backToApartments": "Apartments",
+      "specs": {
+        "bedrooms": "{count} bd",
+        "beds": "{count, plural, one {# bed} other {# beds}}",
+        "guests": "{count, plural, one {# guest} other {# guests}}",
+        "size": "{size} m²"
+      },
+      "avantio": {
+        "own": "Own booking link",
+        "usesBuilding": "— uses building’s"
+      },
+      "noPhoto": "No photo",
+      "noPublishedWarning": "The <em>Apartments in this Building</em> section stays hidden until you publish at least one."
     }
   },
   "pages": {

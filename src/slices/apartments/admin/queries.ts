@@ -23,15 +23,27 @@ export interface ApartmentAdminListItem {
   name: string;
   slug: string;
   status: ApartmentStatus;
+  buildingId: string;
   building: string;
   bedrooms: number;
   maxGuests: number;
+  /** Order inside the building (spec building-detail-admin-editor S2). */
+  position: number;
+  /** [T] source badge, "" when unset. */
+  badge: string;
+  bedsCount: number;
+  sizeM2: number | null;
+  /** The unit has its own Avantio URL (else the card falls back to the building's). */
+  hasAvantioUrl: boolean;
+  /** Cover thumbnail, null when unset (the list draws the placeholder). */
+  cover: AdminMediaPreview | null;
 }
 
 /**
- * Apartments for the admin lists, every status, ordered by building then position.
- * `buildingId` narrows it to one building (the workspace's Apartments tab); without
- * it every apartment is returned.
+ * Apartments for the admin lists, every status, ordered by building then position
+ * (then id — the same tiebreaker `moveApartment` uses). `buildingId` narrows it to
+ * one building (the workspace's Apartments tab); without it every apartment is
+ * returned.
  */
 export async function listApartmentsAdmin(
   filter: { buildingId?: string } = {},
@@ -44,18 +56,23 @@ export async function listApartmentsAdmin(
       building_id: apartment.building_id,
       bedrooms: apartment.bedrooms,
       max_guests: apartment.max_guests,
+      beds_count: apartment.beds_count,
+      size_m2: apartment.size_m2,
+      cover_media_id: apartment.cover_media_id,
+      avantio_url: apartment.avantio_url,
       position: apartment.position,
     })
     .from(apartment)
     .where(apartmentListWhere(filter.buildingId))
-    .orderBy(asc(apartment.building_id), asc(apartment.position));
+    .orderBy(asc(apartment.building_id), asc(apartment.position), asc(apartment.id));
 
-  const [content, buildings] = await Promise.all([
+  const [content, buildings, previews] = await Promise.all([
     loadContent(
       rows.map((r) => ({ type: APARTMENT, id: r.id })),
       SOURCE,
     ),
     listBuildingOptions(),
+    resolvePreviews(rows.map((r) => r.cover_media_id)),
   ]);
   const buildingName = new Map(buildings.map((b) => [b.id, b.name]));
 
@@ -64,9 +81,16 @@ export async function listApartmentsAdmin(
     name: content.get(APARTMENT, r.id, "name") ?? r.slug,
     slug: r.slug,
     status: r.status,
+    buildingId: r.building_id,
     building: buildingName.get(r.building_id) ?? "",
     bedrooms: r.bedrooms,
     maxGuests: r.max_guests,
+    position: r.position,
+    badge: content.get(APARTMENT, r.id, "badge") ?? "",
+    bedsCount: r.beds_count,
+    sizeM2: r.size_m2,
+    hasAvantioUrl: !!r.avantio_url?.trim(),
+    cover: (r.cover_media_id && previews[r.cover_media_id]) || null,
   }));
 }
 

@@ -22,13 +22,16 @@ import { deleteApartment, saveApartment } from "../actions";
 import type { ApartmentEditData } from "../queries";
 
 /**
- * Apartment create/edit form (S12) — one client island for `/admin/apartments/new`
- * and `/admin/apartments/[id]`. Posts through `saveApartment`; building selector is
- * fed from the buildings contract. Source [T] text authored in English.
+ * Apartment create/edit form (S12) — one client island for
+ * `/admin/buildings/[id]/apartments/new` and `/admin/buildings/[id]/apartments/[aptId]`,
+ * rendered inside the building workspace (spec building-detail-admin-editor S2). Posts
+ * through `saveApartment`. Source [T] text authored in English.
  *
- * Simplified to the fields a building's apartment CARD shows (no standalone unit page):
- * building · name · badge · bedrooms / guests / beds / size (m²) · cover (optional →
- * placeholder) · Avantio link. The slug is auto-generated from the name server-side.
+ * The building is fixed by the route (`buildingId`, D6 — no selector) and the order is
+ * changed with ↑ / ↓ in the Apartments tab, so there is no position field either.
+ * Fields: status · name · badge · bedrooms / guests / beds / size (m²) · cover
+ * (optional → placeholder) · Avantio link. The slug is auto-generated from the name
+ * server-side.
  * The remaining DB columns (bathrooms, floor, gallery, description, OG, SEO) stay
  * nullable but are no longer authored here.
  */
@@ -37,8 +40,6 @@ type Status = "draft" | "published" | "archived";
 
 interface FormState {
   status: Status;
-  position: string;
-  building_id: string;
   name: string;
   badge: string;
   bedrooms: string;
@@ -52,14 +53,9 @@ interface FormState {
 
 const STATUSES: Status[] = ["draft", "published", "archived"];
 
-function initialState(
-  data: ApartmentEditData | null,
-  defaultBuildingId: string,
-): FormState {
+function initialState(data: ApartmentEditData | null): FormState {
   return {
     status: data?.status ?? "draft",
-    position: String(data?.position ?? 0),
-    building_id: data?.building_id ?? defaultBuildingId,
     name: data?.name ?? "",
     badge: data?.badge ?? "",
     bedrooms: String(data?.bedrooms ?? 0),
@@ -72,7 +68,7 @@ function initialState(
   };
 }
 
-function buildPayload(s: FormState, id: string | undefined) {
+function buildPayload(s: FormState, id: string | undefined, buildingId: string) {
   const orNull = (v: string) => (v.trim() === "" ? null : v.trim());
   const intOr = (v: string, fallback: number) => {
     const n = Number.parseInt(v, 10);
@@ -86,8 +82,7 @@ function buildPayload(s: FormState, id: string | undefined) {
   return {
     id,
     status: s.status,
-    position: intOr(s.position, 0),
-    building_id: s.building_id,
+    building_id: buildingId,
     name: s.name.trim(),
     badge: orNull(s.badge),
     bedrooms: intOr(s.bedrooms, 0),
@@ -103,11 +98,12 @@ function buildPayload(s: FormState, id: string | undefined) {
 export function ApartmentForm({
   initial,
   previews,
-  buildings,
+  buildingId,
 }: {
   initial: ApartmentEditData | null;
   previews: Record<string, AdminMediaPreview>;
-  buildings: { id: string; name: string }[];
+  /** The workspace's building — fixed for this apartment (D6). */
+  buildingId: string;
 }) {
   const t = useTranslations("apartments");
   const tb = useTranslations("backoffice");
@@ -117,14 +113,13 @@ export function ApartmentForm({
   const queue = useMediaQueue();
   // A pick still being reserved isn't in the form's value yet — Save waits for it.
   const preparing = queue.isPreparing;
-  const [state, setState] = useState<FormState>(() =>
-    initialState(initial, buildings[0]?.id ?? ""),
-  );
+  const [state, setState] = useState<FormState>(() => initialState(initial));
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setState((prev) => ({ ...prev, [key]: value }));
   const err = (key: string) => errors[key];
+  const listHref = `/admin/buildings/${buildingId}/apartments`;
 
   function onSubmit() {
     if (preparing) return;
@@ -135,11 +130,11 @@ export function ApartmentForm({
       // paint until the transition it lives in had already finished (ADR 0030).
       if (!(await queue.flush())) return;
       start(async () => {
-        const result = await saveApartment(buildPayload(state, initial?.id));
+        const result = await saveApartment(buildPayload(state, initial?.id, buildingId));
         if (result.ok) {
           toast.success(tb("actions.saved"));
           if (!initial) {
-            router.push(`/admin/apartments/${result.id}`);
+            router.push(`${listHref}/${result.id}`);
             return;
           }
           router.refresh();
@@ -162,7 +157,7 @@ export function ApartmentForm({
       const result = await deleteApartment(initial.id);
       if (result.ok) {
         toast.success(tb("actions.deleted"));
-        router.push("/admin/apartments");
+        router.push(listHref);
       } else {
         toast.error(tb("actions.deleteError"));
       }
@@ -178,13 +173,19 @@ export function ApartmentForm({
         description={t("admin.formSubtitle")}
         actions={
           <Link
-            href="/admin/apartments"
+            href={listHref}
             className="text-sm text-ink-soft hover:text-ink"
           >
-            ← {t("admin.backToList")}
+            ← {t("admin.backToApartments")}
           </Link>
         }
       />
+
+      {err("building_id") ? (
+        <p role="alert" className="text-sm font-medium text-red-600">
+          {t("admin.errors.buildingChange")}
+        </p>
+      ) : null}
 
       <AdminCard title={t("admin.sections.status")}>
         <FieldGrid>
@@ -200,38 +201,11 @@ export function ApartmentForm({
               ))}
             </Select>
           </Field>
-          <Field
-            label={t("admin.fields.position")}
-            hint={t("admin.fields.positionHint")}
-          >
-            <TextInput
-              type="number"
-              value={state.position}
-              onChange={(e) => set("position", e.target.value)}
-            />
-          </Field>
         </FieldGrid>
       </AdminCard>
 
       <AdminCard title={t("admin.sections.identity")}>
         <div className="space-y-4">
-          <Field
-            label={t("admin.fields.building")}
-            required
-            error={err("building_id")}
-          >
-            <Select
-              value={state.building_id}
-              onChange={(e) => set("building_id", e.target.value)}
-            >
-              <option value="">{t("admin.fields.choose")}</option>
-              {buildings.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
           <Field label={t("admin.fields.name")} required error={err("name")}>
             <TextInput
               value={state.name}
@@ -331,7 +305,7 @@ export function ApartmentForm({
         ) : null}
         <AdminButton
           variant="ghost"
-          onClick={() => router.push("/admin/apartments")}
+          onClick={() => router.push(listHref)}
           disabled={pending}
         >
           {tb("actions.cancel")}

@@ -22,7 +22,10 @@ const count = z.number().int().nonnegative();
 export const apartmentSaveInput = z.object({
   id: z.uuid().optional(),
   status: contentStatus,
-  position,
+  // Ignored by `saveApartment` since spec building-detail-admin-editor S2: a new unit
+  // goes last in its building, and the order changes only through `moveApartment`.
+  // Optional (additive) so the form no longer has to post it.
+  position: position.optional(),
   building_id: z.uuid(),
   badge: tStr({ max: 60 }).nullable(),
   bedrooms: count,

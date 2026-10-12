@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
 import {
@@ -15,14 +15,25 @@ import { APARTMENT } from "../contract";
 import { apartment } from "../schema";
 import { revalidateApartment } from "../server/publish";
 import { recomputeBuildingStats } from "../server/stats";
+import {
+  type MoveDirection,
+  isBuildingChange,
+  nextApartmentPosition,
+  planApartmentMove,
+} from "./derive";
 import { apartmentSaveInput } from "./validation";
 
 /**
  * Backoffice write actions for slice `apartments` (S12). `requireStaff`-gated +
  * re-validated. Source [T] content (name, badge) + slugs via the `core/i18n` write
  * seam (ADR 0019). After any change to the published set the parent building's
- * denormalized stats are recomputed (and the old building's too, on a reassignment)
- * and the ISR caches busted via `revalidateApartment`.
+ * denormalized stats are recomputed and the ISR caches busted via `revalidateApartment`.
+ *
+ * Nested under the building (spec building-detail-admin-editor S2): the building is
+ * fixed at creation (D6 — an update posting another `building_id` is rejected), a new
+ * unit goes last in its building, and the order changes only through
+ * `moveApartment` (↑ / ↓ in the building's Apartments tab). Admin revalidation targets
+ * the building workspace (`/admin/buildings/[id]/…`), not `/admin/apartments`.
  *
  * The per-locale slug is **auto-generated** from the name (the editor no longer asks
  * for one — a unit has no standalone public URL, so the slug is an internal identity
@@ -64,6 +75,25 @@ function slugify(input: string): string {
   return base || "apartment";
 }
 
+/**
+ * Busts the admin views that show a building's apartments: the buildings list (its
+ * "Apartments" column) and the whole building workspace — the layout's tab count plus
+ * every nested page (`apartments`, `apartments/new`, `apartments/[aptId]`).
+ */
+function revalidateBuildingWorkspace(buildingId: string): void {
+  revalidatePath("/admin/buildings");
+  revalidatePath(`/admin/buildings/${buildingId}`, "layout");
+}
+
+/** Positions of one building's apartments (feeds `nextApartmentPosition`). */
+async function buildingPositions(buildingId: string): Promise<number[]> {
+  const rows = await db
+    .select({ position: apartment.position })
+    .from(apartment)
+    .where(eq(apartment.building_id, buildingId));
+  return rows.map((r) => r.position);
+}
+
 export async function saveApartment(raw: unknown): Promise<ApartmentSaveResult> {
   const staff = await requireStaff();
 
@@ -75,9 +105,10 @@ export async function saveApartment(raw: unknown): Promise<ApartmentSaveResult> 
 
   // Card-only columns. Dropped fields (bathrooms / floor / og_image) keep their DB
   // defaults (0) or stay null — they are no longer authored in the editor.
+  // `position` is deliberately absent: set once on create (end of the building), then
+  // owned by `moveApartment`; a posted value is ignored.
   const coreValues = {
     status: input.status,
-    position: input.position,
     building_id: input.building_id,
     bedrooms: input.bedrooms,
     max_guests: input.max_guests,
@@ -90,7 +121,6 @@ export async function saveApartment(raw: unknown): Promise<ApartmentSaveResult> 
 
   try {
     let id = input.id ?? "";
-    let previousBuildingId: string | null = null;
 
     if (input.id) {
       const [existing] = await db
@@ -99,7 +129,14 @@ export async function saveApartment(raw: unknown): Promise<ApartmentSaveResult> 
         .where(eq(apartment.id, input.id))
         .limit(1);
       if (!existing) return { ok: false, error: "not_found" };
-      previousBuildingId = existing.building_id;
+      if (isBuildingChange(existing.building_id, input.building_id)) {
+        // D6: an apartment never moves to another building.
+        return {
+          ok: false,
+          error: "validation",
+          fieldErrors: { building_id: "Apartments cannot move to another building." },
+        };
+      }
       // Slug is immutable post-create (internal identity only) — leave it as-is.
       await db
         .update(apartment)
@@ -107,9 +144,10 @@ export async function saveApartment(raw: unknown): Promise<ApartmentSaveResult> 
         .where(eq(apartment.id, input.id));
     } else {
       const base = slugify(input.name);
+      const position = nextApartmentPosition(await buildingPositions(input.building_id));
       const [ins] = await db
         .insert(apartment)
-        .values({ ...coreValues, slug: base })
+        .values({ ...coreValues, position, slug: base })
         .returning({ id: apartment.id });
       if (!ins) return { ok: false, error: "server" };
       id = ins.id;
@@ -139,16 +177,11 @@ export async function saveApartment(raw: unknown): Promise<ApartmentSaveResult> 
       { updatedBy: staff.userId },
     );
 
-    // Recompute stats for the (possibly changed) building set.
+    // The building is fixed (D6), so only its stats can change.
     await recomputeBuildingStats(input.building_id);
-    if (previousBuildingId && previousBuildingId !== input.building_id) {
-      await recomputeBuildingStats(previousBuildingId);
-      revalidateApartment(id, previousBuildingId);
-    }
 
     revalidateApartment(id, input.building_id);
-    revalidatePath("/admin/apartments");
-    revalidatePath(`/admin/apartments/${id}`);
+    revalidateBuildingWorkspace(input.building_id);
     return { ok: true, id };
   } catch {
     return { ok: false, error: "server" };
@@ -171,8 +204,53 @@ export async function deleteApartment(id: string): Promise<{ ok: boolean }> {
     if (row) {
       await recomputeBuildingStats(row.building_id);
       revalidateApartment(id, row.building_id);
+      revalidateBuildingWorkspace(row.building_id);
     }
-    revalidatePath("/admin/apartments");
+    return { ok: true };
+  } catch {
+    return { ok: false };
+  }
+}
+
+/**
+ * Moves an apartment one slot up or down within ITS building (↑ / ↓ in the
+ * workspace's Apartments tab). Swaps with the neighbour in display order (position,
+ * then id) and renumbers the building to `0..n-1`; a no-op at either end. The
+ * changed rows are written in one Neon batch (a single transaction).
+ */
+export async function moveApartment(
+  id: string,
+  direction: MoveDirection,
+): Promise<{ ok: boolean }> {
+  await requireStaff();
+  if (direction !== "up" && direction !== "down") return { ok: false };
+  try {
+    const [row] = await db
+      .select({ building_id: apartment.building_id })
+      .from(apartment)
+      .where(eq(apartment.id, id))
+      .limit(1);
+    if (!row) return { ok: false };
+
+    const slots = await db
+      .select({ id: apartment.id, position: apartment.position })
+      .from(apartment)
+      .where(eq(apartment.building_id, row.building_id))
+      .orderBy(asc(apartment.position), asc(apartment.id));
+    const updates = planApartmentMove(slots, id, direction);
+    if (!updates || updates.length === 0) return { ok: true };
+
+    const now = new Date();
+    const [first, ...rest] = updates.map((u) =>
+      db
+        .update(apartment)
+        .set({ position: u.position, updated_at: now })
+        .where(eq(apartment.id, u.id)),
+    );
+    if (first) await db.batch([first, ...rest]);
+
+    revalidateApartment(id, row.building_id);
+    revalidateBuildingWorkspace(row.building_id);
     return { ok: true };
   } catch {
     return { ok: false };
