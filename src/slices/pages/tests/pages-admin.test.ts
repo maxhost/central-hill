@@ -30,6 +30,7 @@ import {
 } from "../schemas/real-estate";
 import { capabilityStatementHref } from "../ui/capability-statement";
 import { orMessage } from "../ui/or-message";
+import { cardBgSrc, cssUrlSafe } from "../ui/optimized-src";
 
 /**
  * Slice `pages` backoffice (S12, ADR 0012) — the schema → form model. Pure (walks a
@@ -947,4 +948,53 @@ test("guest welcome alt resolution: field → asset alt → i18n — S3", () => 
   assert.equal(resolve("  ", "Asset"), "Asset");
   assert.equal(resolve(undefined, ""), "I18N");
   assert.equal(resolve(undefined, undefined), "I18N");
+});
+
+// ── Guests landing: teaser card photos (spec guests-admin-editor S4) ──────────
+
+test("guestSchema S4: every teaser card has an optional image picker (accept=image, 3:2 hint)", () => {
+  const root = describe(guestSchema);
+  for (const section of ["services_teaser", "activities_teaser"]) {
+    const node = nodeAt(root, [section, "items", "[]", "image_media_id"]);
+    assert.equal(node.kind, "media", section);
+    if (node.kind !== "media") continue;
+    assert.equal(node.accept, "image", section);
+    assert.equal(
+      node.hint,
+      "Card background (a dark overlay is applied, centre-cropped). Landscape 3:2 — 1200×800 px (min 900×600), JPG or WebP, under 300 KB.",
+    );
+    const items = nodeAt(root, [section, "items"]);
+    assert.equal(items.kind === "array" ? `${items.min}/${items.max}` : "", "6/6", `${section} stays fixed at 6`);
+  }
+});
+
+test("guestSchema S4: old cards (no image key), blank and uploaded ids all validate", () => {
+  const uuid = "3f2b8c1e-9a4d-4e7b-8c2a-1d5e6f7a8b9c";
+  const withImages = (ids: string[]) => ({
+    ...GUEST_SAMPLE,
+    services_teaser: { ...GUEST_SAMPLE.services_teaser, items: ids.map((id) => ({ ...ICON, image_media_id: id })) },
+    activities_teaser: { ...GUEST_SAMPLE.activities_teaser, items: ids.map((id) => ({ ...ICON, image_media_id: id })) },
+  });
+  assert.ok(guestSchema.safeParse(GUEST_SAMPLE).success, "legacy cards");
+  const mixed = guestSchema.safeParse(withImages([uuid, "", uuid, "", "", uuid]));
+  assert.ok(mixed.success, JSON.stringify(mixed.error?.issues));
+  assert.equal(guestSchema.safeParse(withImages(Array(6).fill("not-a-uuid"))).success, false);
+  const scaffolded = guestSchema.safeParse(applyDefaults(describe(guestSchema), GUEST_SAMPLE));
+  assert.ok(scaffolded.success, JSON.stringify(scaffolded.error?.issues));
+});
+
+test("teaser card background: uploaded (optimized, CSS-safe) → else stock by position — S4", () => {
+  const asset = { url: "https://media.example/a.jpg", width: 1200, height: 800, alt: "", blurhash: null };
+  const stock = "https://images.pexels.com/photos/1/p.jpeg?w=1200";
+  const optimize = (a: { url: string } | null | undefined) => (a?.url ? `/_next/image?url=${encodeURIComponent(a.url)}&w=1200&q=75` : null);
+  assert.equal(cardBgSrc(undefined, stock, optimize), stock);
+  assert.equal(cardBgSrc(null, stock, optimize), stock);
+  assert.equal(cardBgSrc({ ...asset, url: "" }, stock, optimize), stock);
+  assert.equal(cardBgSrc(asset, stock, optimize), "/_next/image?url=https%3A%2F%2Fmedia.example%2Fa.jpg&w=1200&q=75");
+  // Default optimizer: without Next's image config it degrades to the raw asset URL.
+  assert.equal(cardBgSrc(asset, stock), asset.url);
+  assert.equal(cardBgSrc(undefined, stock), stock);
+  // Unquoted CSS url(...) safety.
+  assert.equal(cssUrlSafe("https://m.example/a (1)'s \\\"x\".jpg"), "https://m.example/a%20%281%29%27s%20%5C%22x%22.jpg");
+  assert.equal(cardBgSrc({ ...asset, url: "https://m.example/a (1).jpg" }, stock, optimize), "/_next/image?url=https%3A%2F%2Fm.example%2Fa%20%281%29.jpg&w=1200&q=75");
 });

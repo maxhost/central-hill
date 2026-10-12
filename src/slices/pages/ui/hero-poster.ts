@@ -1,5 +1,5 @@
-import { getImageProps } from "next/image";
 import type { MediaImageData } from "@core/media";
+import { optimizedSrc } from "./optimized-src";
 
 /**
  * Optimized URL for the hero `<video poster>` (spec home-admin-editor S4).
@@ -12,25 +12,13 @@ import type { MediaImageData } from "@core/media";
  * is negotiated per request via `images.formats`). The intrinsic size only shapes the props
  * we discard, so a fixed 16:9 box is enough.
  *
- * Returns `null` when there is no resolved asset (→ the caller's stock poster). If
- * `getImageProps` throws (R2 host missing from `images.remotePatterns`, i.e.
- * `R2_PUBLIC_BASE_URL` absent at build time) the raw asset URL is used — degrade, never 500,
- * exactly like `mediaImgTag`.
+ * Returns `null` when there is no resolved asset (→ the caller's stock poster); degrades to
+ * the raw asset URL if the optimizer throws. The mechanics live in `optimizedSrc`
+ * (`./optimized-src`), shared with the Guests teaser cards.
  */
 const POSTER_CSS_WIDTH = 960; // → 2x candidate = 1920 px
 const POSTER_CSS_HEIGHT = 540;
 
 export function heroPosterSrc(asset: MediaImageData | null | undefined): string | null {
-  if (!asset?.url) return null;
-  try {
-    const { props } = getImageProps({
-      src: asset.url,
-      alt: "",
-      width: POSTER_CSS_WIDTH,
-      height: POSTER_CSS_HEIGHT,
-    });
-    return props.src || asset.url;
-  } catch {
-    return asset.url;
-  }
+  return optimizedSrc(asset, POSTER_CSS_WIDTH, POSTER_CSS_HEIGHT);
 }

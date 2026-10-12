@@ -19,6 +19,7 @@ import { FeaturedPortfolio } from "./components/featured-portfolio";
 import { sideMedia } from "./components/side-media";
 import { TestimonialsRow } from "./components/testimonials-row";
 import { heroPosterSrc } from "./hero-poster";
+import { cardBgSrc } from "./optimized-src";
 import { orMessage } from "./or-message";
 
 /**
@@ -39,7 +40,8 @@ import { orMessage } from "./or-message";
  * - "Why Book Directly" (warm `alt` band): a centred `SectionHead`, then `BenefitCards` + CTA.
  * - `#portfolio`: `FeaturedPortfolio` (cards from the buildings slice; the CTA note renders when set).
  * - Services teaser (`alt` band) and what-to-do teaser (plain, ghost CTA): a centred
- *   `SectionHead`, then `PhotoFeatureGrid` + CTA.
+ *   `SectionHead`, then `PhotoFeatureGrid` + CTA. Each card's photo is its optional
+ *   `image_media_id` (optimized, `cardBgSrc`), else the stock photo at its position.
  * - `#testimonials`: `TestimonialsRow`, `audience='guest'`; heading from `testimonials.*`
  *   (blank → `pages.reviews.eyebrow` / `titleGuests`, no intro).
  * - `#faq`: the shared `FaqSection` island, picked by `faq_group_key` (only when set); title
@@ -77,8 +79,9 @@ const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
 const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
 const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
 
-// Premium photo backgrounds for the Services/What-to-do teaser cards (Pexels stock, by
-// position — placeholder until these cards get their own admin-managed image field).
+// Stock photo backgrounds for the Services/What-to-do teaser cards (Pexels, by position): the
+// fallback for any card whose `image_media_id` is blank or has no uploaded asset (spec
+// guests-admin-editor S4). An uploaded card photo replaces the one at its position.
 const SERVICES_TEASER_BG = [
   "https://images.pexels.com/photos/29112731/pexels-photo-29112731.jpeg?auto=compress&cs=tinysrgb&w=1200", // Private Transfers
   "https://images.pexels.com/photos/19627783/pexels-photo-19627783.jpeg?auto=compress&cs=tinysrgb&w=1200", // Day Tours
@@ -183,13 +186,13 @@ export async function GuestPage({ locale }: { locale: Locale }) {
     icon: <Icon name={item.icon_key} size={30} className="block" />,
     title: item.title,
     description: item.description,
-    image: SERVICES_TEASER_BG[i],
+    image: cardBgSrc(media[item.image_media_id ?? ""], SERVICES_TEASER_BG[i]),
   }));
   const activitiesTeaserItems = content.activities_teaser.items.map((item, i) => ({
     icon: <Icon name={item.icon_key} size={30} className="block" />,
     title: item.title,
     description: item.description,
-    image: ACTIVITIES_TEASER_BG[i],
+    image: cardBgSrc(media[item.image_media_id ?? ""], ACTIVITIES_TEASER_BG[i]),
   }));
 
   return (

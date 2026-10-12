@@ -53,6 +53,20 @@ const HERO_POSTER_HINT =
 const WELCOME_MEDIA_HINT =
   "Landscape 3:2 — the frame is about 540×380 px on desktop and a full-width strip 280 px tall on tablet/mobile, and the media is cropped to fill it, so keep the subject centred. Photo: 1500×1000 px (min 1200×800), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1500×1000 or 1200×800, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×800, under 5 MB. Lottie (.lottie or .json): 3:2 canvas (e.g. 1200×800).";
 
+/**
+ * Teaser card photo (spec guests-admin-editor S4). `PhotoFeatureGrid` cards are `min-h-[260px]`,
+ * `bg-cover bg-center` under a dark scrim: ~377×260 px in the desktop 3-column grid (1184px
+ * column, 26px gaps), ~360×260 at 2 columns and up to ~584×260 at 1 column — about 3:2 at
+ * desktop, cropped wider/narrower elsewhere, hence "centre-cropped".
+ */
+const TEASER_CARD_HINT =
+  "Card background (a dark overlay is applied, centre-cropped). Landscape 3:2 — 1200×800 px (min 900×600), JPG or WebP, under 300 KB.";
+/**
+ * A teaser card: the shared `iconCard` plus an optional photo (S4). Local, so Home's
+ * `iconCard` uses are unchanged. "" / absent → the stock photo at that position.
+ */
+const teaserCard = iconCard.extend({ image_media_id: optionalImage(TEASER_CARD_HINT).optional() });
+
 /** One side of the closing two-column CTA band (the mock's `.dual`). No image. */
 const dualPanel = z.object({
   eyebrow: tStrOpt({ max: 60 }),
@@ -111,14 +125,14 @@ export const guestSchema = z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
-    items: fixed(iconCard, 6),
+    items: fixed(teaserCard, 6),
     cta: guestCtaWithNote,
   }),
   activities_teaser: z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
-    items: fixed(iconCard, 6),
+    items: fixed(teaserCard, 6),
     cta: guestCtaWithNote,
   }),
   /** Closing band: guest panel left, owner panel right (mock order). Contact line = settings. */
