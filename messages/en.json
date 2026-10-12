@@ -838,6 +838,20 @@
           "url": "URL"
         }
       }
+    },
+    "subnav": {
+      "realEstate": {
+        "top": "Real Estate Partnerships",
+        "partners": "Our Partners",
+        "capabilities": "Our Capabilities",
+        "manage": "What We Manage",
+        "dealStructures": "Deal Structures",
+        "market": "Portugal Market Opportunity",
+        "trackRecord": "Proven Performance",
+        "process": "The Process",
+        "faq": "Questions & Answers",
+        "dealEnquiry": "Start a Conversation"
+      }
     }
   },
   "apartments": {

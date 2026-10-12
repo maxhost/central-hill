@@ -838,6 +838,20 @@
           "url": "URL"
         }
       }
+    },
+    "subnav": {
+      "realEstate": {
+        "top": "Alianzas Inmobiliarias",
+        "partners": "Nuestros Socios",
+        "capabilities": "Nuestras Capacidades",
+        "manage": "Lo Que Gestionamos",
+        "dealStructures": "Estructuras de Acuerdo",
+        "market": "Oportunidad de Mercado en Portugal",
+        "trackRecord": "Rendimiento Probado",
+        "process": "El Proceso",
+        "faq": "Preguntas y Respuestas",
+        "dealEnquiry": "Iniciar una Conversación"
+      }
     }
   },
   "apartments": {
