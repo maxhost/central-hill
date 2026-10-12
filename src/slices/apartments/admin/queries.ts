@@ -1,5 +1,5 @@
 import "server-only";
-import { asc, eq } from "drizzle-orm";
+import { asc, count, eq } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { type ContentRef, loadContent } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
@@ -7,6 +7,7 @@ import type { AdminMediaPreview } from "@slices/backoffice/contract";
 import { listBuildingOptions } from "@slices/buildings/contract";
 import { APARTMENT } from "../contract";
 import { apartment, apartment_media } from "../schema";
+import { type ApartmentCounts, apartmentListWhere, tallyApartmentCounts } from "./derive";
 
 /**
  * Backoffice reads for slice `apartments` (S12). Not cache-wrapped, all statuses,
@@ -27,7 +28,14 @@ export interface ApartmentAdminListItem {
   maxGuests: number;
 }
 
-export async function listApartmentsAdmin(): Promise<ApartmentAdminListItem[]> {
+/**
+ * Apartments for the admin lists, every status, ordered by building then position.
+ * `buildingId` narrows it to one building (the workspace's Apartments tab); without
+ * it every apartment is returned.
+ */
+export async function listApartmentsAdmin(
+  filter: { buildingId?: string } = {},
+): Promise<ApartmentAdminListItem[]> {
   const rows = await db
     .select({
       id: apartment.id,
@@ -39,6 +47,7 @@ export async function listApartmentsAdmin(): Promise<ApartmentAdminListItem[]> {
       position: apartment.position,
     })
     .from(apartment)
+    .where(apartmentListWhere(filter.buildingId))
     .orderBy(asc(apartment.building_id), asc(apartment.position));
 
   const [content, buildings] = await Promise.all([
@@ -59,6 +68,21 @@ export async function listApartmentsAdmin(): Promise<ApartmentAdminListItem[]> {
     bedrooms: r.bedrooms,
     maxGuests: r.max_guests,
   }));
+}
+
+export type { ApartmentCounts } from "./derive";
+
+/**
+ * Apartment counts per building (`buildingId → { total, published }`), every status
+ * in `total`. Feeds the buildings list column and the workspace's Apartments tab;
+ * buildings without apartments are absent from the map.
+ */
+export async function countApartmentsByBuilding(): Promise<Map<string, ApartmentCounts>> {
+  const rows = await db
+    .select({ building_id: apartment.building_id, status: apartment.status, n: count() })
+    .from(apartment)
+    .groupBy(apartment.building_id, apartment.status);
+  return tallyApartmentCounts(rows);
 }
 
 export interface ApartmentEditData {

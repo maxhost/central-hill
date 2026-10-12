@@ -6,5 +6,13 @@ import { BuildingForm } from "@slices/buildings/admin/ui/building-form";
 export default async function NewBuildingPage() {
   await requireStaff();
   const [amenities, locations] = await Promise.all([listAmenitiesAdmin(), listLocationOptions()]);
-  return <BuildingForm initial={null} previews={{}} amenities={amenities} locations={locations} />;
+  return (
+    <BuildingForm
+      variant="new"
+      initial={null}
+      previews={{}}
+      amenities={amenities}
+      locations={locations}
+    />
+  );
 }

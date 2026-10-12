@@ -362,7 +362,15 @@
           "group": "Group",
           "groupHint": "Optional; orders the list and the building editor."
         }
-      }
+      },
+      "workspace": {
+        "backToBuildings": "Buildings",
+        "tabBuilding": "Building",
+        "tabApartments": "Apartments ({count})",
+        "tabsLabel": "Building sections",
+        "viewOnSite": "View on site"
+      },
+      "apartmentsCountTitle": "{published} published of {total}"
     },
     "home": "Home",
     "statNeighbourhood": "Neighbourhood",
@@ -892,7 +900,9 @@
       "errors": {
         "coverRequired": "A cover image is required.",
         "slugConflict": "That slug is already in use."
-      }
+      },
+      "buildingEmpty": "No apartments in this building yet",
+      "buildingEmptyHint": "Add the first apartment to show it on the building page."
     }
   },
   "pages": {

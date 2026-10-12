@@ -362,7 +362,15 @@
           "group": "Grupo",
           "groupHint": "Opcional; ordena la lista y el editor de edificios."
         }
-      }
+      },
+      "workspace": {
+        "backToBuildings": "Edificios",
+        "tabBuilding": "Edificio",
+        "tabApartments": "Apartamentos ({count})",
+        "tabsLabel": "Secciones del edificio",
+        "viewOnSite": "Ver en la web"
+      },
+      "apartmentsCountTitle": "{published} publicados de {total}"
     },
     "home": "Inicio",
     "statNeighbourhood": "Barrio",
@@ -892,7 +900,9 @@
       "errors": {
         "coverRequired": "Se requiere una imagen de portada.",
         "slugConflict": "Ese slug ya está en uso."
-      }
+      },
+      "buildingEmpty": "Todavía no hay apartamentos en este edificio",
+      "buildingEmptyHint": "Añade el primer apartamento para mostrarlo en la página del edificio."
     }
   },
   "pages": {

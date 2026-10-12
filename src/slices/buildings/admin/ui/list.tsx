@@ -13,6 +13,9 @@ import { type BuildingAdminListItem, listBuildingsAdmin } from "../queries";
  * Buildings backoffice list (S12) at `/admin/buildings`. Server component: reads
  * every status live (admin is dynamic, no ISR), links each row to its editor, and
  * offers a "new building" action. Strings come from the `buildings` namespace.
+ * The Apartments column shows `published / total` from `apartmentCounts`, which the
+ * route composes from the apartments slice (this slice never reads apartments),
+ * and links to the building workspace's Apartments tab.
  */
 
 const STATUS_TONE: Record<
@@ -24,7 +27,12 @@ const STATUS_TONE: Record<
   archived: "neutral",
 };
 
-export async function BuildingsAdminList() {
+export async function BuildingsAdminList({
+  apartmentCounts,
+}: {
+  /** `buildingId → { total, published }`; a building absent from it has none. */
+  apartmentCounts: ReadonlyMap<string, { total: number; published: number }>;
+}) {
   const t = await getTranslations("buildings");
   const rows = await listBuildingsAdmin();
 
@@ -56,7 +64,18 @@ export async function BuildingsAdminList() {
     },
     {
       header: t("admin.columns.apartments"),
-      cell: (row) => <span className="text-ink-soft">{row.apartments}</span>,
+      cell: (row) => {
+        const counts = apartmentCounts.get(row.id) ?? { total: 0, published: 0 };
+        return (
+          <Link
+            href={`/admin/buildings/${row.id}/apartments`}
+            title={t("admin.apartmentsCountTitle", counts)}
+            className="tabular-nums text-ink-soft hover:text-accent-deep"
+          >
+            {counts.published} / {counts.total}
+          </Link>
+        );
+      },
       className: "hidden sm:table-cell",
     },
     {

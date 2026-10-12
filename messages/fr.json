@@ -362,7 +362,15 @@
           "group": "Groupe",
           "groupHint": "Facultatif ; ordonne la liste et l’éditeur d’immeubles."
         }
-      }
+      },
+      "workspace": {
+        "backToBuildings": "Immeubles",
+        "tabBuilding": "Immeuble",
+        "tabApartments": "Appartements ({count})",
+        "tabsLabel": "Sections de l’immeuble",
+        "viewOnSite": "Voir sur le site"
+      },
+      "apartmentsCountTitle": "{published} publiés sur {total}"
     },
     "home": "Accueil",
     "statNeighbourhood": "Quartier",
@@ -892,7 +900,9 @@
       "errors": {
         "coverRequired": "Une image de couverture est requise.",
         "slugConflict": "Ce slug est déjà utilisé."
-      }
+      },
+      "buildingEmpty": "Aucun appartement dans cet immeuble pour l’instant",
+      "buildingEmptyHint": "Ajoutez le premier appartement pour l’afficher sur la page de l’immeuble."
     }
   },
   "pages": {

@@ -7,7 +7,10 @@ import {
 } from "@slices/buildings/admin/queries";
 import { BuildingForm } from "@slices/buildings/admin/ui/building-form";
 
-/** Edit-building route (`/admin/buildings/[id]`). Gated by `(panel)`. */
+/**
+ * Edit-building route (`/admin/buildings/[id]`), the "Building" tab of the workspace.
+ * Gated by `(panel)`; the header and tabs come from the sibling `layout.tsx`.
+ */
 export default async function EditBuildingPage({ params }: { params: Promise<{ id: string }> }) {
   await requireStaff();
   const { id } = await params;
@@ -19,6 +22,7 @@ export default async function EditBuildingPage({ params }: { params: Promise<{ i
   if (!bundle) notFound();
   return (
     <BuildingForm
+      variant="workspace"
       initial={bundle.data}
       previews={bundle.previews}
       amenities={amenities}

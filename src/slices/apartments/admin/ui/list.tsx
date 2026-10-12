@@ -12,6 +12,11 @@ import { type ApartmentAdminListItem, listApartmentsAdmin } from "../queries";
 /**
  * Apartments backoffice list (S12) at `/admin/apartments`. Server component, all
  * statuses, grouped visually by building (rows ordered by building then position).
+ * With `buildingId` it is the building workspace's Apartments tab
+ * (`/admin/buildings/[id]/apartments`, spec building-detail-admin-editor S1): only
+ * that building's rows, no Building column, and no page header (the workspace
+ * layout provides it). Row and "new" links still target `/admin/apartments/…`
+ * until S2 nests them.
  */
 
 const STATUS_TONE: Record<
@@ -23,9 +28,9 @@ const STATUS_TONE: Record<
   archived: "neutral",
 };
 
-export async function ApartmentsAdminList() {
+export async function ApartmentsAdminList({ buildingId }: { buildingId?: string } = {}) {
   const t = await getTranslations("apartments");
-  const rows = await listApartmentsAdmin();
+  const rows = await listApartmentsAdmin({ buildingId });
 
   const columns: Column<ApartmentAdminListItem>[] = [
     {
@@ -39,10 +44,16 @@ export async function ApartmentsAdminList() {
         </Link>
       ),
     },
-    {
-      header: t("admin.columns.building"),
-      cell: (row) => <span className="text-ink-soft">{row.building}</span>,
-    },
+    ...(buildingId
+      ? []
+      : [
+          {
+            header: t("admin.columns.building"),
+            cell: (row: ApartmentAdminListItem) => (
+              <span className="text-ink-soft">{row.building}</span>
+            ),
+          },
+        ]),
     {
       header: t("admin.columns.status"),
       cell: (row) => (
@@ -64,26 +75,39 @@ export async function ApartmentsAdminList() {
     },
   ];
 
+  const newButton = (
+    <Link
+      href="/admin/apartments/new"
+      className="rounded-md border border-accent bg-accent px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-deep"
+    >
+      {t("admin.newApartment")}
+    </Link>
+  );
+
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title={t("admin.title")}
-        description={t("admin.subtitle")}
-        actions={
-          <Link
-            href="/admin/apartments/new"
-            className="rounded-md border border-accent bg-accent px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-deep"
-          >
-            {t("admin.newApartment")}
-          </Link>
-        }
-      />
+      {buildingId ? (
+        <div className="flex justify-end">{newButton}</div>
+      ) : (
+        <AdminPageHeader
+          title={t("admin.title")}
+          description={t("admin.subtitle")}
+          actions={newButton}
+        />
+      )}
       <DataTable
         columns={columns}
         rows={rows}
         getRowKey={(row) => row.id}
         empty={
-          <EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />
+          buildingId ? (
+            <EmptyState
+              title={t("admin.buildingEmpty")}
+              hint={t("admin.buildingEmptyHint")}
+            />
+          ) : (
+            <EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />
+          )
         }
       />
     </div>

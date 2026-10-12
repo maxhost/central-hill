@@ -172,6 +172,36 @@ export async function getBuildingForEdit(id: string): Promise<BuildingEditBundle
   return { data, previews };
 }
 
+export interface BuildingWorkspace {
+  id: string;
+  /** Source-locale ([T] en) name, falling back to the slug. */
+  name: string;
+  status: BuildingStatus;
+  /** Public detail URL in the source locale (`/en/buildings/<slug>`). */
+  publicPath: string;
+}
+
+/**
+ * Header data for the building workspace (`/admin/buildings/[id]` layout): name,
+ * status and public URL. The apartment count is composed by the route from the
+ * apartments slice — this slice never reads apartments.
+ */
+export async function getBuildingWorkspace(id: string): Promise<BuildingWorkspace | null> {
+  const [row] = await db
+    .select({ id: building.id, slug: building.slug, status: building.status })
+    .from(building)
+    .where(eq(building.id, id))
+    .limit(1);
+  if (!row) return null;
+  const content = await loadContent([{ type: BUILDING, id }], SOURCE);
+  return {
+    id: row.id,
+    name: content.get(BUILDING, id, "name") || row.slug,
+    status: row.status,
+    publicPath: `/${SOURCE}/buildings/${row.slug}`,
+  };
+}
+
 /** Build admin previews for a set of media ids (drops blanks / missing). */
 async function resolvePreviews(ids: (string | null)[]): Promise<Record<string, AdminMediaPreview>> {
   const clean = Array.from(new Set(ids.filter((x): x is string => !!x)));

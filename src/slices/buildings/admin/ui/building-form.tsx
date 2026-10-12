@@ -142,11 +142,18 @@ function buildPayload(s: FormState, id: string | undefined) {
 }
 
 export function BuildingForm({
+  variant,
   initial,
   previews,
   amenities,
   locations,
 }: {
+  /**
+   * `new` (`/admin/buildings/new`) renders its own page header + back link;
+   * `workspace` (`/admin/buildings/[id]`) renders none — the workspace layout
+   * provides the header and tabs (spec building-detail-admin-editor, S1).
+   */
+  variant: "new" | "workspace";
   initial: BuildingEditData | null;
   previews: Record<string, AdminMediaPreview>;
   amenities: AmenityOption[];
@@ -289,20 +296,24 @@ export function BuildingForm({
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title={
-          initial ? state.name || t("admin.editTitle") : t("admin.newTitle")
-        }
-        description={t("admin.formSubtitle")}
-        actions={
-          <Link
-            href="/admin/buildings"
-            className="text-sm text-ink-soft hover:text-ink"
-          >
-            ← {t("admin.backToList")}
-          </Link>
-        }
-      />
+      {variant === "new" ? (
+        <AdminPageHeader
+          title={
+            initial ? state.name || t("admin.editTitle") : t("admin.newTitle")
+          }
+          description={t("admin.formSubtitle")}
+          actions={
+            <Link
+              href="/admin/buildings"
+              className="text-sm text-ink-soft hover:text-ink"
+            >
+              ← {t("admin.backToList")}
+            </Link>
+          }
+        />
+      ) : (
+        <p className="text-sm text-ink-soft">{t("admin.formSubtitle")}</p>
+      )}
 
       <AdminCard title={t("admin.sections.status")}>
         <FieldGrid>
