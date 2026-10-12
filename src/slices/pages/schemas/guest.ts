@@ -3,8 +3,8 @@
  * Composed at render time — these are NOT stored here:
  *   - featured portfolio cards → buildings slice (`is_featured`, by position)
  *   - guest reviews → testimonials slice (`audience='guest'`, managed in /admin/testimonials);
- *     its heading is i18n chrome (`pages.reviews.titleGuests`), so the page owns no
- *     testimonials block at all
+ *     only the section heading is authored here (`testimonials`, optional — blank → the
+ *     i18n `pages.reviews.eyebrow` / `titleGuests`)
  *   - the dual-CTA contact line (phone / email / WhatsApp) → company_settings
  *   - the optional FAQ accordion → faq slice, chosen by `faq_group_key`
  * Every other section on the page is authored here and edited at /admin/pages/guest.
@@ -15,7 +15,7 @@
  * docs/specs/guest-page-db-wiring.md.
  */
 import { z } from "zod";
-import { cta, ctaWithNote, tStr, tStrOpt, url } from "@core/validation/primitives";
+import { cta, ctaWithNote, seoShape, tStr, tStrOpt, url } from "@core/validation/primitives";
 import { faqGroupKey, fixed, iconCard, optionalImage, optionalVideo } from "./_shared";
 import { adminHidden } from "./admin-hidden";
 
@@ -45,7 +45,15 @@ const dualPanel = z.object({
   cta: guestCta,
 });
 
+/*
+ * Optional copy overrides added by spec `guests-admin-editor` S2 (`seo`, `testimonials`, `faq`).
+ * Every one is optional and blank-tolerant: empty / absent → the page renders the current i18n
+ * message of the visitor's locale, so a row saved before these keys existed renders exactly as
+ * before.
+ */
 export const guestSchema = z.object({
+  /** Search/social meta for `/<locale>/guests`. Blank → `pages.guests.metaTitle` / `metaDescription`. */
+  seo: z.object({ ...seoShape }).optional(),
   hero: z.object({
     video_media_id: optionalVideo(HERO_VIDEO_HINT),
     eyebrow: tStrOpt({ max: 80 }),
@@ -93,8 +101,23 @@ export const guestSchema = z.object({
     guest: dualPanel,
     owner: dualPanel,
   }),
+  /**
+   * Testimonials heading (the reviews come from the testimonials slice, `audience='guest'`).
+   * Blank → `pages.reviews.eyebrow` / `pages.reviews.titleGuests`; blank intro → no intro.
+   */
+  testimonials: z
+    .object({
+      eyebrow: tStrOpt({ max: 60 }).describe("Leave blank for “Reviews”."),
+      title: tStrOpt({ max: 160 }).describe("Leave blank for “We Care About Our Guests”."),
+      intro: tStrOpt({ max: 400 }).describe("Short line under the title. Leave blank for none."),
+    })
+    .optional(),
   /** Optional FAQ group to show on the page (blank = none). */
   faq_group_key: faqGroupKey,
+  /** FAQ section heading (the group stays in `faq_group_key`). Blank → `pages.faqTitle`. */
+  faq: z
+    .object({ title: tStrOpt({ max: 160 }).describe("Leave blank for “Frequently Asked Questions”.") })
+    .optional(),
 });
 
 export type GuestContent = z.infer<typeof guestSchema>;

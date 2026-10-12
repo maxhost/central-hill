@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import type { Locale } from "@core/db/columns";
-import { buildMetadata } from "@core/seo";
+import { buildGuestMetadata } from "@slices/pages/contract";
 import { GuestPage } from "@slices/pages/ui/guest-page";
 
 /**
  * Static per locale (ISR). Content is the `guest` page_content row plus the buildings,
  * testimonials, faq and settings slices — see `src/slices/pages/ui/guest-page.tsx`.
- * `savePage("guest", …)` revalidates this path for all four locales.
+ * `savePage("guest", …)` revalidates this path for all four locales. Metadata: the page's
+ * `seo.*` with the `pages.guests.*` fallback (spec guests-admin-editor S2).
  */
 export const revalidate = 3600;
 
@@ -27,17 +27,7 @@ export async function generateMetadata({
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
 
-  const languages: Partial<Record<Locale | "x-default", string>> = { "x-default": "/guests" };
-  for (const l of routing.locales) languages[l] = `/${l}/guests`;
-
-  const t = await getTranslations({ locale, namespace: "pages" });
-
-  return buildMetadata({
-    title: t("guests.metaTitle"),
-    description: t("guests.metaDescription"),
-    canonicalPath: `/${locale}/guests`,
-    languages,
-  });
+  return buildGuestMetadata(locale);
 }
 
 export default async function GuestsRoute({

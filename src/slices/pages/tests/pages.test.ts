@@ -474,9 +474,10 @@ test("guest exposes prose leaves as translatable but not media ids, urls or the 
   assert.ok(!paths.includes("hero.cta.url"), "urls are not translatable");
   assert.ok(!paths.includes("portfolio.cta.url"), "urls are not translatable");
   assert.ok(!paths.includes("faq_group_key"), "the faq group key is language-neutral");
-  assert.ok(
-    !paths.some((p) => p.startsWith("testimonials")),
-    "reviews live in the testimonials slice, not in the page schema",
+  // Reviews live in the testimonials slice; the page only authors their heading (S2).
+  assert.deepEqual(
+    paths.filter((p) => p.startsWith("testimonials")).sort(),
+    ["testimonials.eyebrow", "testimonials.intro", "testimonials.title"],
   );
 });
 
@@ -1147,4 +1148,86 @@ test("real estate S5: enquiry contact lines come from Settings; missing data →
     ["mailto:a@b.pt"],
   );
   assert.deepEqual(enquiryContactLines(null, labels), [], "no settings → no lines");
+});
+
+// ── Guests S2: SEO, testimonials heading and FAQ title with i18n fallback ────
+test("guests S2: `seo`, `testimonials`, `faq` are optional, blank-tolerant, capped and translatable", () => {
+  // The live 0012 row (no S2 keys) still validates, and so does one with every key filled / blank.
+  const legacy = migration0012Payload() as Record<string, unknown>;
+  assert.ok(!("seo" in legacy) && !("testimonials" in legacy) && !("faq" in legacy));
+  assert.ok(guestSchema.safeParse(legacy).success, "a row without the S2 keys validates");
+  const blank = {
+    ...legacy,
+    seo: { meta_title: "", meta_description: "" },
+    testimonials: { eyebrow: "", title: "", intro: "" },
+    faq: { title: "" },
+  };
+  assert.ok(guestSchema.safeParse(blank).success, "blank S2 fields validate");
+  const filled = {
+    ...legacy,
+    seo: { meta_title: "Stay in Lisbon", meta_description: "Furnished apartments." },
+    testimonials: { eyebrow: "Guest love", title: "What guests say", intro: "Real stays." },
+    faq: { title: "Guest questions" },
+  };
+  assert.ok(guestSchema.safeParse(filled).success, "filled S2 fields validate");
+  const { seo, testimonials, faq } = guestSchema.shape;
+  assert.ok(!seo.safeParse({ meta_title: "x".repeat(71) }).success, "meta_title ≤ 70");
+  assert.ok(!testimonials.safeParse({ eyebrow: "x".repeat(61) }).success, "eyebrow ≤ 60");
+  assert.ok(!testimonials.safeParse({ title: "x".repeat(161) }).success, "title ≤ 160");
+  assert.ok(!testimonials.safeParse({ intro: "x".repeat(401) }).success, "intro ≤ 400");
+  assert.ok(!faq.safeParse({ title: "x".repeat(161) }).success, "faq title ≤ 160");
+  const paths = translatablePathsByPage.guest;
+  for (const p of ["seo.meta_title", "seo.meta_description", "testimonials.eyebrow", "testimonials.title", "testimonials.intro", "faq.title"]) {
+    assert.ok(paths.includes(p), `expected translatable path ${p}`);
+  }
+});
+
+test("guests S2: blank hints name today's EN text, which equals the EN messages", () => {
+  const en = JSON.parse(readFileSync(path.join(process.cwd(), "messages/en.json"), "utf8")).pages;
+  const { testimonials, faq } = guestSchema.shape;
+  const hint = (schema: { description?: string }) => schema.description ?? "";
+  const t = testimonials.unwrap().shape;
+  assert.ok(hint(t.eyebrow).includes(`“${en.reviews.eyebrow}”`));
+  assert.ok(hint(t.title).includes(`“${en.reviews.titleGuests}”`));
+  assert.ok(hint(faq.unwrap().shape.title).includes(`“${en.faqTitle}”`));
+});
+
+test("guests S2: a blank heading / FAQ title renders the i18n message, a filled one its text", () => {
+  assert.equal(orMessage(undefined, "We Care About Our Guests"), "We Care About Our Guests");
+  assert.equal(orMessage("  ", "Reviews"), "Reviews");
+  assert.equal(orMessage("What guests say", "We Care About Our Guests"), "What guests say");
+  assert.equal(orMessage("", "Frequently Asked Questions"), "Frequently Asked Questions");
+});
+
+test("seoMetadataInput: /guests falls back to i18n, uses seo + OG, keeps canonical/hreflang", () => {
+  const input = seoMetadataInput({
+    locale: "pt",
+    path: "/guests",
+    seo: undefined,
+    ogImage: null,
+    fallbackTitle: "Para Hóspedes — Central Hill",
+    fallbackDescription: "Descrição.",
+  });
+  assert.equal(input.title, "Para Hóspedes — Central Hill");
+  assert.equal(input.description, "Descrição.");
+  assert.equal(input.canonicalPath, "/pt/guests");
+  assert.deepEqual(input.languages, {
+    "x-default": "/guests",
+    en: "/en/guests",
+    pt: "/pt/guests",
+    es: "/es/guests",
+    fr: "/fr/guests",
+  });
+  assert.equal(input.images, undefined);
+  const custom = seoMetadataInput({
+    locale: "en",
+    path: "/guests",
+    seo: { meta_title: "Stay in Lisbon", meta_description: " " },
+    ogImage: { url: "https://cdn.example/og.jpg", width: 1200, height: 630, alt: "OG", blurhash: null },
+    fallbackTitle: "For Guests — Central Hill",
+    fallbackDescription: "Default.",
+  });
+  assert.equal(custom.title, "Stay in Lisbon");
+  assert.equal(custom.description, "Default.");
+  assert.equal(custom.images?.[0]?.url, "https://cdn.example/og.jpg");
 });

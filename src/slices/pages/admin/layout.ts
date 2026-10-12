@@ -346,10 +346,9 @@ const REAL_ESTATE_LAYOUT: EditorLayoutItem[] = [
 ];
 
 /**
- * Guests landing (spec guests-admin-editor → "Editor: formulario sección a sección"). Some
- * root keys only arrive in S2 (`seo`, `testimonials`, `faq` title); until then a card whose
- * key is missing is dropped by `resolveEditorLayout` (the SEO card stays: it hosts the OG
- * image; the FAQ card stays: it claims `faq_group_key`; Testimonials appears in S2).
+ * Guests landing (spec guests-admin-editor → "Editor: formulario sección a sección"). Every
+ * card is shown since S2 added the optional `seo` (meta + the OG image), `testimonials`
+ * (heading over the guest reviews) and `faq` (section title, next to `faq_group_key`) keys.
  */
 const GUEST_LAYOUT: EditorLayoutItem[] = [
   {

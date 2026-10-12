@@ -18,6 +18,7 @@ import { getGuestPage } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
 import { TestimonialsRow } from "./components/testimonials-row";
+import { orMessage } from "./or-message";
 
 /**
  * Guests page: the guest-facing landing, built from `mock/guest.html` and now composed entirely
@@ -37,8 +38,10 @@ import { TestimonialsRow } from "./components/testimonials-row";
  * - `#portfolio`: `FeaturedPortfolio` (cards from the buildings slice; the CTA note renders when set).
  * - Services teaser (`alt` band) and what-to-do teaser (plain, ghost CTA): a centred
  *   `SectionHead`, then `PhotoFeatureGrid` + CTA.
- * - `#testimonials`: `TestimonialsRow`, `audience='guest'`.
- * - `#faq`: the shared `FaqSection` island, picked by `faq_group_key` (only when set).
+ * - `#testimonials`: `TestimonialsRow`, `audience='guest'`; heading from `testimonials.*`
+ *   (blank → `pages.reviews.eyebrow` / `titleGuests`, no intro).
+ * - `#faq`: the shared `FaqSection` island, picked by `faq_group_key` (only when set); title
+ *   from `faq.title` (blank → `pages.faqTitle`).
  * - Closing dual CTA: `SplitCtaPanels`, contact lines from company_settings (`getGlobals`).
  * Every section, including the shared slice ones (portfolio, testimonials, FAQ), uses the same
  * shell (`clamp(72px,10vw,150px)` vertical padding, 84px scroll margin, a 1240px/28px column)
@@ -363,7 +366,13 @@ export async function GuestPage({ locale }: { locale: Locale }) {
 
       {/* Guest reviews — the same shared marquee as Home/Owners, filtered to `audience='guest'`. */}
       <div id="testimonials" className="scroll-mt-[84px]">
-        <TestimonialsRow locale={locale} audience="guest" title={t("reviews.titleGuests")} />
+        <TestimonialsRow
+          locale={locale}
+          audience="guest"
+          eyebrow={orMessage(content.testimonials?.eyebrow, t("reviews.eyebrow"))}
+          title={orMessage(content.testimonials?.title, t("reviews.titleGuests"))}
+          intro={content.testimonials?.intro}
+        />
       </div>
 
       {faqGroupKey ? (
@@ -371,7 +380,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
-            title={t("faqTitle")}
+            title={orMessage(content.faq?.title, t("faqTitle"))}
           />
         </div>
       ) : null}

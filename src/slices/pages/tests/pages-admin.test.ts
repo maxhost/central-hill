@@ -834,17 +834,16 @@ test("guestSchema: hidden URLs round-trip through applyDefaults and still valida
   }
 });
 
-test("guest layout: 10 stable ids in page order; S1 shows all but testimonials; no key lost — S1", () => {
+test("guest layout: 10 stable ids in page order, all present since S2; no key lost", () => {
   assert.deepEqual([...GUEST_CARD_IDS], [
     "seo", "hero", "welcome", "why", "portfolio", "services_teaser", "activities_teaser",
     "testimonials", "faq", "dual_cta",
   ]);
   const rootKeys = Object.keys(guestSchema.shape);
+  for (const k of ["seo", "testimonials", "faq"]) assert.ok(rootKeys.includes(k), `S2 key ${k}`);
   const layout = resolveEditorLayout("guest", rootKeys);
   assert.ok(layout);
-  // `seo` stays (hosts the OG image), `faq` stays (claims `faq_group_key`); `testimonials`
-  // only appears once S2 adds its key.
-  assert.deepEqual(cardIds(layout), GUEST_CARD_IDS.filter((id) => id !== "testimonials"));
+  assert.deepEqual(cardIds(layout), [...GUEST_CARD_IDS]);
   const rendered = layout.flatMap((i) => (i.kind === "card" ? i.paths : []));
   assert.deepEqual([...rendered].sort(), [...rootKeys].sort());
   assert.equal(new Set(rendered).size, rendered.length);
@@ -856,21 +855,15 @@ test("guest layout: 10 stable ids in page order; S1 shows all but testimonials; 
   assert.equal(byId("portfolio")?.note?.link?.href, "/admin/buildings");
   assert.equal(byId("services_teaser")?.note?.textKey, "admin.layout.notes.ctaServices");
   assert.equal(byId("activities_teaser")?.note?.textKey, "admin.layout.notes.ctaGuides");
+  assert.equal(byId("testimonials")?.note?.link?.href, "/admin/testimonials");
   assert.equal(byId("dual_cta")?.note?.link?.href, "/admin/settings");
   const faq = byId("faq");
   assert.ok(faq && faq.kind === "card");
-  assert.deepEqual(faq.paths, ["faq_group_key"]);
-  // Once S2 adds `seo` / `testimonials` / `faq`, every card is shown in place.
-  const later = resolveEditorLayout("guest", [...rootKeys, "seo", "testimonials", "faq"]);
-  assert.ok(later);
-  assert.deepEqual(cardIds(later), [...GUEST_CARD_IDS]);
-  const laterFaq = later.find((i) => i.id === "faq");
-  assert.ok(laterFaq && laterFaq.kind === "card");
-  assert.deepEqual(laterFaq.paths, ["faq_group_key", "faq"]);
+  assert.deepEqual(faq.paths, ["faq_group_key", "faq"]);
 });
 
 test("guest layout + labels: every i18n key exists in the 4 locales — S1", () => {
-  const layout = resolveEditorLayout("guest", [...Object.keys(guestSchema.shape), "seo", "testimonials", "faq"]);
+  const layout = resolveEditorLayout("guest", Object.keys(guestSchema.shape));
   assert.ok(layout);
   const keys = layout.flatMap((i) => [
     i.titleKey,
@@ -880,6 +873,7 @@ test("guest layout + labels: every i18n key exists in the 4 locales — S1", () 
   for (const k of [
     "welcome", "guarantee_label", "services_teaser", "activities_teaser", "items", "lede", "copy",
     "why", "portfolio", "dual_cta", "guest", "owner", "cta", "label", "note", "intro",
+    "seo", "meta_title", "meta_description", "testimonials", "eyebrow", "title", "faq",
   ]) keys.push(`admin.labels.${k}`);
   for (const k of ["items", "benefits"]) keys.push(`admin.itemLabels.${k}`);
   for (const locale of ["en", "pt", "es", "fr"]) {

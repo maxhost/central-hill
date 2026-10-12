@@ -9,7 +9,8 @@ import { type GridItem, TestimonialsMarquee } from "./testimonials-marquee";
  * Testimonials section (Home mixes audiences; Owners/Guests filter to one via `audience`).
  * `eyebrow`/`title` override the shared `pages.reviews.*` copy when a page needs its own
  * heading (the Guests page uses `reviews.titleGuests`); both default to the shared copy so
- * Home and Owners render unchanged. Reads the
+ * Home and Owners render unchanged. `intro` is an optional line under the title (Guests,
+ * spec guests-admin-editor S2); absent → no intro, as before. Reads the
  * audience-tagged read model from the testimonials slice; renders nothing when none are
  * published. Subscribes transitively to `testimonial-list`. Presentation is a full-bleed infinite
  * marquee on the light `.alt` band (up to `MAX_CARDS` unique cards, looped) — data is resolved
@@ -24,6 +25,7 @@ export async function TestimonialsRow({
   showEyebrow = true,
   eyebrow,
   title,
+  intro,
 }: {
   locale: Locale;
   audience?: TestimonialAudience;
@@ -32,6 +34,8 @@ export async function TestimonialsRow({
   eyebrow?: string;
   /** Overrides the shared `reviews.title` copy (e.g. the guest-only variant). */
   title?: string;
+  /** Optional line under the title (`SectionHead`'s `intro`). Absent / blank → none. */
+  intro?: string;
 }) {
   const testimonials = await listTestimonials(locale, audience);
   if (testimonials.length === 0) return null;
@@ -58,6 +62,7 @@ export async function TestimonialsRow({
           flush
           eyebrow={eyebrow ?? (showEyebrow ? t("reviews.eyebrow") : undefined)}
           headline={<span className="whitespace-pre-line">{title ?? t("reviews.title")}</span>}
+          intro={intro?.trim() ? intro : undefined}
         />
       </div>
       {/* Full-bleed marquee (outside the Container) for the seamless infinite scroll. */}
