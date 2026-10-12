@@ -8,12 +8,28 @@
  *   - the dual-CTA contact line (phone / email / WhatsApp) → company_settings
  *   - the optional FAQ accordion → faq slice, chosen by `faq_group_key`
  * Every other section on the page is authored here and edited at /admin/pages/guest.
+ * Button URLs are hidden in the editor (spec guests-admin-editor → "Campos ocultos"): the
+ * render sends each button to a fixed locale-relative route, so the stored `url`s are kept
+ * (round-tripped unchanged on save) but no longer used.
  * See docs/data-model.md → Page content model → guest, and
  * docs/specs/guest-page-db-wiring.md.
  */
 import { z } from "zod";
-import { cta, ctaWithNote, tStr, tStrOpt } from "@core/validation/primitives";
+import { cta, ctaWithNote, tStr, tStrOpt, url } from "@core/validation/primitives";
 import { faqGroupKey, fixed, iconCard, optionalImage, optionalVideo } from "./_shared";
+import { adminHidden } from "./admin-hidden";
+
+/**
+ * A button URL kept in `data` but hidden in the editor (spec guests-admin-editor → "Destinos
+ * de los botones"): where each button points is fixed in code (`/{locale}/buildings`,
+ * `/services`, `/guides`, …), so staff never see or edit it. The stored value round-trips
+ * unchanged on save.
+ */
+const hiddenUrl = adminHidden(url);
+/** Local variant of the kernel `cta` with its `url` hidden in the editor. */
+const guestCta = cta.extend({ url: hiddenUrl });
+/** Local variant of the kernel `ctaWithNote` with its `url` hidden in the editor. */
+const guestCtaWithNote = ctaWithNote.extend({ url: hiddenUrl });
 
 /** Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). */
 const HERO_VIDEO_HINT =
@@ -26,7 +42,7 @@ const dualPanel = z.object({
   eyebrow: tStrOpt({ max: 60 }),
   title: tStr({ max: 160 }),
   body: tStr({ max: 400 }),
-  cta: cta,
+  cta: guestCta,
 });
 
 export const guestSchema = z.object({
@@ -35,7 +51,7 @@ export const guestSchema = z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
-    cta: cta,
+    cta: guestCta,
   }),
   welcome: z.object({
     headline: tStr({ max: 160 }),
@@ -49,28 +65,28 @@ export const guestSchema = z.object({
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
     benefits: fixed(iconCard, 4),
-    cta: ctaWithNote,
+    cta: guestCtaWithNote,
   }),
   /** Headings + CTA only — the cards come from the buildings slice at render time. */
   portfolio: z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
-    cta: ctaWithNote,
+    cta: guestCtaWithNote,
   }),
   services_teaser: z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
     items: fixed(iconCard, 6),
-    cta: ctaWithNote,
+    cta: guestCtaWithNote,
   }),
   activities_teaser: z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
     items: fixed(iconCard, 6),
-    cta: ctaWithNote,
+    cta: guestCtaWithNote,
   }),
   /** Closing band: guest panel left, owner panel right (mock order). Contact line = settings. */
   dual_cta: z.object({

@@ -23,7 +23,9 @@ import { TestimonialsRow } from "./components/testimonials-row";
  * Guests page: the guest-facing landing, built from `mock/guest.html` and now composed entirely
  * from `core/ui` and slice React components. No `.mk` wrapper, raw HTML strings or page
  * `<style>` remain. Every text value comes from the `guest` `page_content` row for the locale
- * (docs/specs/guest-page-db-wiring.md); nothing here is hard-coded copy. The header, footer and
+ * (docs/specs/guest-page-db-wiring.md); nothing here is hard-coded copy. Button destinations
+ * are fixed in code, per locale (`ctaRoutes`, spec guests-admin-editor): the stored CTA urls
+ * are kept but hidden in the editor and not used here. The header, footer and
  * i18n come from the app layout.
  *
  * Sections, top to bottom:
@@ -32,7 +34,7 @@ import { TestimonialsRow } from "./components/testimonials-row";
  * - "Welcome to Central Hill": `IntroSplit` (copy split into paragraphs on blank lines, optional
  *   guarantee line, R2 `MediaImage` or the approved mock photo).
  * - "Why Book Directly" (warm `alt` band): a centred `SectionHead`, then `BenefitCards` + CTA.
- * - `#portfolio`: `FeaturedPortfolio` (cards from the buildings slice).
+ * - `#portfolio`: `FeaturedPortfolio` (cards from the buildings slice; the CTA note renders when set).
  * - Services teaser (`alt` band) and what-to-do teaser (plain, ghost CTA): a centred
  *   `SectionHead`, then `PhotoFeatureGrid` + CTA.
  * - `#testimonials`: `TestimonialsRow`, `audience='guest'`.
@@ -94,20 +96,18 @@ const ACTIVITIES_TEASER_BG = [
 ];
 
 /**
- * Rewrite an own-site `/en/…` CTA link to the active locale. Stored CTA urls must be absolute
- * (`cta.url` is `z.url()`, so a relative path cannot be saved) and are authored in English, so
- * without this a Portuguese visitor would be sent to the English route. External links and
- * anything unparseable pass through untouched.
+ * Fixed, locale-relative button destinations (spec guests-admin-editor → "Destinos de los
+ * botones", decision D1). Button URLs are not editable: the stored `cta.url`s stay in `data`
+ * (hidden in the editor) but the render ignores them.
  */
-function localizeUrl(raw: string, locale: Locale): string {
-  try {
-    const u = new URL(raw);
-    if (!/(^|\.)centralhill\.pt$/.test(u.hostname)) return raw;
-    u.pathname = u.pathname.replace(/^\/(en|pt|es|fr)(?=\/|$)/, `/${locale}`);
-    return u.toString();
-  } catch {
-    return raw;
-  }
+function ctaRoutes(locale: Locale) {
+  return {
+    buildings: `/${locale}/buildings`,
+    services: `/${locale}/services`,
+    guides: `/${locale}/guides`,
+    // S5 turns the owner panel's button into the contact dialog; until then it opens Owners.
+    owners: `/${locale}/owners`,
+  };
 }
 
 /**
@@ -144,6 +144,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
   const faqGroupKey = content.faq_group_key ?? "";
   const dualCta = content.dual_cta;
   const contactLines = dualCtaContactLines(globals);
+  const routes = ctaRoutes(locale);
 
   const whyItems = content.why.benefits.map((item) => ({
     icon: <Icon name={item.icon_key} size={30} className="block" />,
@@ -201,7 +202,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
         headline={hero.headline}
         subtitle={hero.subheadline || undefined}
         actions={
-          <ButtonLink href={localizeUrl(hero.cta.url, locale)}>{`${hero.cta.label} →`}</ButtonLink>
+          <ButtonLink href={routes.buildings}>{`${hero.cta.label} →`}</ButtonLink>
         }
       />
       {/*
@@ -279,7 +280,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
             <BenefitCards
               items={whyItems}
               cta={{
-                href: localizeUrl(content.why.cta.url, locale),
+                href: routes.buildings,
                 label: `${content.why.cta.label} →`,
                 note: content.why.cta.note,
               }}
@@ -296,7 +297,8 @@ export async function GuestPage({ locale }: { locale: Locale }) {
           title={portfolio.headline}
           intro={portfolio.intro}
           ctaLabel={portfolio.cta.label}
-          ctaHref={localizeUrl(portfolio.cta.url, locale)}
+          ctaNote={portfolio.cta.note || undefined}
+          ctaHref={routes.buildings}
         />
       </div>
 
@@ -321,7 +323,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
             <PhotoFeatureGrid
               items={servicesTeaserItems}
               cta={{
-                href: localizeUrl(content.services_teaser.cta.url, locale),
+                href: routes.services,
                 label: `${content.services_teaser.cta.label} →`,
                 note: content.services_teaser.cta.note,
               }}
@@ -349,7 +351,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
             <PhotoFeatureGrid
               items={activitiesTeaserItems}
               cta={{
-                href: localizeUrl(content.activities_teaser.cta.url, locale),
+                href: routes.guides,
                 label: `${content.activities_teaser.cta.label} →`,
                 note: content.activities_teaser.cta.note,
                 variant: "ghost",
@@ -377,8 +379,8 @@ export async function GuestPage({ locale }: { locale: Locale }) {
       {/*
        * Closing guest/owner dual CTA: `core/ui`'s `SplitCtaPanels` (see its docstring for why
        * it's neither `DualCtaPanels` nor `FeaturePanel`) in the plain section shell, one `Reveal`.
-       * React escapes the admin copy; CTA urls go through `localizeUrl`; an empty contact line
-       * is omitted by the component.
+       * React escapes the admin copy; the guest button opens Buildings and the owner button
+       * Owners (fixed routes, `ctaRoutes`); an empty contact line is omitted by the component.
        */}
       <section className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
@@ -390,7 +392,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
                   eyebrow: dualCta.guest.eyebrow,
                   title: dualCta.guest.title,
                   body: dualCta.guest.body,
-                  cta: { href: localizeUrl(dualCta.guest.cta.url, locale), label: dualCta.guest.cta.label },
+                  cta: { href: routes.buildings, label: dualCta.guest.cta.label },
                   contactLine: contactLines.guest,
                 },
                 {
@@ -398,7 +400,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
                   eyebrow: dualCta.owner.eyebrow,
                   title: dualCta.owner.title,
                   body: dualCta.owner.body,
-                  cta: { href: localizeUrl(dualCta.owner.cta.url, locale), label: dualCta.owner.cta.label },
+                  cta: { href: routes.owners, label: dualCta.owner.cta.label },
                   contactLine: contactLines.owner,
                 },
               ]}

@@ -1206,7 +1206,11 @@
           "market": "Pourquoi le Portugal",
           "track_record": "Résultats",
           "process": "Processus",
-          "deal_enquiry": "Demande de contact"
+          "deal_enquiry": "Demande de contact",
+          "welcome": "Bienvenue",
+          "guestWhy": "Pourquoi réserver en direct",
+          "services_teaser": "Aperçu des services",
+          "activities_teaser": "Que faire"
         },
         "notes": {
           "heroSecondary": "Le bouton secondaire mène toujours à /owners.",
@@ -1227,7 +1231,13 @@
           "realEstateHero": "Le bouton 2 télécharge le PDF ; sans PDF, il fait défiler jusqu’au formulaire de contact.",
           "processSteps": "Les numéros des étapes suivent l’ordre.",
           "dealStructuresFeatured": "Une carte mise en avant sans texte de badge affiche « Recommandé ».",
-          "dealEnquiry": "L'e-mail, le téléphone et LinkedIn proviennent des Paramètres. Les champs du formulaire sont fixes et traduits automatiquement. Le formulaire n'envoie pas encore de demandes."
+          "dealEnquiry": "L'e-mail, le téléphone et LinkedIn proviennent des Paramètres. Les champs du formulaire sont fixes et traduits automatiquement. Le formulaire n'envoie pas encore de demandes.",
+          "ctaBuildings": "Le bouton ouvre toujours Immeubles.",
+          "guestPortfolio": "Les biens viennent d’Immeubles (à la une). Le bouton ouvre toujours Immeubles.",
+          "ctaServices": "Le bouton ouvre toujours Services.",
+          "ctaGuides": "Le bouton ouvre toujours Guides.",
+          "guestTestimonials": "Les avis viennent de Témoignages (public Voyageur).",
+          "guestDualCta": "Le bouton voyageur ouvre toujours Immeubles et le bouton propriétaire Propriétaires. La ligne de contact vient des Paramètres."
         },
         "links": {
           "settings": "Ouvrir Paramètres",
@@ -1330,7 +1340,12 @@
         "capability_statement_media_id": "Capability statement (PDF)",
         "deal_enquiry": "Demande de contact",
         "contact_title": "Titre du contact",
-        "value": "Chiffre"
+        "value": "Chiffre",
+        "welcome": "Bienvenue",
+        "guarantee_label": "Ligne de garantie",
+        "services_teaser": "Aperçu des services",
+        "activities_teaser": "Que faire",
+        "items": "Cartes"
       },
       "itemLabels": {
         "benefits": "Avantage",
@@ -1343,7 +1358,8 @@
         "helpers": "Bandeau d’aide",
         "models": "Modèle",
         "points": "Point",
-        "tiles": "Carte"
+        "tiles": "Carte",
+        "items": "Carte"
       },
       "addLabels": {
         "figures": "Nouvelle donnée",

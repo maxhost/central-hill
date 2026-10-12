@@ -9,10 +9,12 @@ import { homeSchema } from "../schemas/home";
 import { withMediaAccept } from "../schemas/media-accept";
 import { adminHidden } from "../schemas/admin-hidden";
 import { ownersSchema } from "../schemas/owners";
+import { guestSchema } from "../schemas/guest";
 import { type FieldNode, applyDefaults, describe, emptyValue, humanizeKey } from "../admin/form-model";
 import { buildingsSchema, defaultBuildings } from "../schemas/buildings";
 import {
   BUILDINGS_CARD_IDS,
+  GUEST_CARD_IDS,
   HOME_CARD_IDS,
   OTHER_CARD_ID,
   OWNERS_CARD_IDS,
@@ -325,8 +327,8 @@ test("an unknown root key lands in a trailing Other card", () => {
 });
 
 test("pages without a layout return null (default rendering)", () => {
-  assert.equal(resolveEditorLayout("guest", ["hero"]), null);
   assert.equal(resolveEditorLayout("about", []), null);
+  assert.equal(resolveEditorLayout("blog", ["hero"]), null);
 });
 
 // ── Hidden fields + Owners layout (spec owners-admin-editor S1) ──────────────
@@ -770,4 +772,121 @@ test("capabilityStatementHref: only a PDF with a url becomes the link — S4", (
   assert.equal(capabilityStatementHref({ url: "https://media.example/x.jpg", mime: "image/jpeg" }), null);
   assert.equal(capabilityStatementHref({ url: "https://media.example/x.mp4", mime: "video/mp4" }), null);
   assert.equal(capabilityStatementHref({ url }), null);
+});
+
+// ── Guests landing: hidden URLs + layout (spec guests-admin-editor S1) ───────
+
+const GUEST_CTA = { label: "Go", url: "https://centralhill.pt/en/buildings" };
+const GUEST_CTA_NOTE = { ...GUEST_CTA, note: "No fees" };
+const guestTeaser = (url: string) => ({
+  headline: "T",
+  items: Array(6).fill(ICON),
+  cta: { label: "More", url, note: "" },
+});
+const GUEST_SAMPLE = {
+  hero: { video_media_id: "", headline: "H", cta: { label: "Browse", url: "https://centralhill.pt/en/hero" } },
+  welcome: { headline: "W", lede: "L", copy: "C", image_media_id: "" },
+  why: { headline: "Y", benefits: Array(4).fill(ICON), cta: { ...GUEST_CTA_NOTE, url: "https://centralhill.pt/en/why" } },
+  portfolio: { headline: "P", cta: { ...GUEST_CTA_NOTE, url: "https://centralhill.pt/en/portfolio" } },
+  services_teaser: guestTeaser("https://centralhill.pt/en/services"),
+  activities_teaser: guestTeaser("https://centralhill.pt/en/guides"),
+  dual_cta: {
+    guest: { title: "G", body: "B", cta: { ...GUEST_CTA, url: "https://centralhill.pt/en/guest" } },
+    owner: { title: "O", body: "B", cta: { ...GUEST_CTA, url: "https://centralhill.pt/en/owners" } },
+  },
+  faq_group_key: "",
+};
+
+const GUEST_HIDDEN = [
+  ["hero", "cta", "url"],
+  ["why", "cta", "url"],
+  ["portfolio", "cta", "url"],
+  ["services_teaser", "cta", "url"],
+  ["activities_teaser", "cta", "url"],
+  ["dual_cta", "guest", "cta", "url"],
+  ["dual_cta", "owner", "cta", "url"],
+];
+
+test("guestSchema: the 7 CTA URLs are hidden; labels and notes stay visible — S1", () => {
+  const root = describe(guestSchema);
+  for (const p of GUEST_HIDDEN) assert.equal(nodeAt(root, p).kind, "hidden", p.join("."));
+  for (const p of GUEST_HIDDEN) {
+    const label = [...p.slice(0, -1), "label"];
+    assert.equal(nodeAt(root, label).kind, "string", label.join("."));
+  }
+  for (const s of ["why", "portfolio", "services_teaser", "activities_teaser"]) {
+    assert.equal(nodeAt(root, [s, "cta", "note"]).kind, "string", `${s}.cta.note`);
+  }
+});
+
+test("guestSchema: hidden URLs round-trip through applyDefaults and still validate on save — S1", () => {
+  const root = describe(guestSchema);
+  const formData = applyDefaults(root, GUEST_SAMPLE) as typeof GUEST_SAMPLE;
+  const parsed = guestSchema.safeParse(formData);
+  assert.ok(parsed.success, JSON.stringify(parsed.error?.issues));
+  const get = (obj: unknown, p: string[]) =>
+    p.reduce<unknown>((o, k) => (o as Record<string, unknown>)[k], obj);
+  for (const p of GUEST_HIDDEN) {
+    const original = get(GUEST_SAMPLE, p);
+    assert.ok(original, p.join("."));
+    assert.equal(get(formData, p), original, `applyDefaults ${p.join(".")}`);
+    assert.equal(get(parsed.data, p), original, `parsed ${p.join(".")}`);
+  }
+});
+
+test("guest layout: 10 stable ids in page order; S1 shows all but testimonials; no key lost — S1", () => {
+  assert.deepEqual([...GUEST_CARD_IDS], [
+    "seo", "hero", "welcome", "why", "portfolio", "services_teaser", "activities_teaser",
+    "testimonials", "faq", "dual_cta",
+  ]);
+  const rootKeys = Object.keys(guestSchema.shape);
+  const layout = resolveEditorLayout("guest", rootKeys);
+  assert.ok(layout);
+  // `seo` stays (hosts the OG image), `faq` stays (claims `faq_group_key`); `testimonials`
+  // only appears once S2 adds its key.
+  assert.deepEqual(cardIds(layout), GUEST_CARD_IDS.filter((id) => id !== "testimonials"));
+  const rendered = layout.flatMap((i) => (i.kind === "card" ? i.paths : []));
+  assert.deepEqual([...rendered].sort(), [...rootKeys].sort());
+  assert.equal(new Set(rendered).size, rendered.length);
+  assert.ok(!cardIds(layout).includes(OTHER_CARD_ID));
+  const byId = (id: string) => layout.find((i) => i.id === id);
+  const seo = byId("seo");
+  assert.ok(seo && seo.kind === "card" && seo.hostsOgImage);
+  assert.equal(byId("hero")?.note?.textKey, "admin.layout.notes.ctaBuildings");
+  assert.equal(byId("portfolio")?.note?.link?.href, "/admin/buildings");
+  assert.equal(byId("services_teaser")?.note?.textKey, "admin.layout.notes.ctaServices");
+  assert.equal(byId("activities_teaser")?.note?.textKey, "admin.layout.notes.ctaGuides");
+  assert.equal(byId("dual_cta")?.note?.link?.href, "/admin/settings");
+  const faq = byId("faq");
+  assert.ok(faq && faq.kind === "card");
+  assert.deepEqual(faq.paths, ["faq_group_key"]);
+  // Once S2 adds `seo` / `testimonials` / `faq`, every card is shown in place.
+  const later = resolveEditorLayout("guest", [...rootKeys, "seo", "testimonials", "faq"]);
+  assert.ok(later);
+  assert.deepEqual(cardIds(later), [...GUEST_CARD_IDS]);
+  const laterFaq = later.find((i) => i.id === "faq");
+  assert.ok(laterFaq && laterFaq.kind === "card");
+  assert.deepEqual(laterFaq.paths, ["faq_group_key", "faq"]);
+});
+
+test("guest layout + labels: every i18n key exists in the 4 locales — S1", () => {
+  const layout = resolveEditorLayout("guest", [...Object.keys(guestSchema.shape), "seo", "testimonials", "faq"]);
+  assert.ok(layout);
+  const keys = layout.flatMap((i) => [
+    i.titleKey,
+    ...(i.note ? [i.note.textKey] : []),
+    ...(i.note?.link ? [i.note.link.labelKey] : []),
+  ]);
+  for (const k of [
+    "welcome", "guarantee_label", "services_teaser", "activities_teaser", "items", "lede", "copy",
+    "why", "portfolio", "dual_cta", "guest", "owner", "cta", "label", "note", "intro",
+  ]) keys.push(`admin.labels.${k}`);
+  for (const k of ["items", "benefits"]) keys.push(`admin.itemLabels.${k}`);
+  for (const locale of ["en", "pt", "es", "fr"]) {
+    const pages = JSON.parse(readFileSync(path.join(process.cwd(), `messages/${locale}.json`), "utf8")).pages;
+    for (const k of keys) {
+      const v = k.split(".").reduce<unknown>((o, part) => (o as Record<string, unknown> | undefined)?.[part], pages);
+      assert.equal(typeof v, "string", `${locale}: pages.${k}`);
+    }
+  }
 });

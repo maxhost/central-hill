@@ -62,11 +62,26 @@ export const REAL_ESTATE_CARD_IDS = [
   "deal_enquiry",
 ] as const;
 
+/** Stable card ids of the Guests landing editor, in page order (spec guests-admin-editor). */
+export const GUEST_CARD_IDS = [
+  "seo",
+  "hero",
+  "welcome",
+  "why",
+  "portfolio",
+  "services_teaser",
+  "activities_teaser",
+  "testimonials",
+  "faq",
+  "dual_cta",
+] as const;
+
 export type EditorCardId =
   | (typeof HOME_CARD_IDS)[number]
   | (typeof OWNERS_CARD_IDS)[number]
   | (typeof BUILDINGS_CARD_IDS)[number]
-  | (typeof REAL_ESTATE_CARD_IDS)[number];
+  | (typeof REAL_ESTATE_CARD_IDS)[number]
+  | (typeof GUEST_CARD_IDS)[number];
 
 /** Id of the fallback card that collects root keys no card claims. */
 export const OTHER_CARD_ID = "other";
@@ -330,11 +345,86 @@ const REAL_ESTATE_LAYOUT: EditorLayoutItem[] = [
   },
 ];
 
+/**
+ * Guests landing (spec guests-admin-editor → "Editor: formulario sección a sección"). Some
+ * root keys only arrive in S2 (`seo`, `testimonials`, `faq` title); until then a card whose
+ * key is missing is dropped by `resolveEditorLayout` (the SEO card stays: it hosts the OG
+ * image; the FAQ card stays: it claims `faq_group_key`; Testimonials appears in S2).
+ */
+const GUEST_LAYOUT: EditorLayoutItem[] = [
+  {
+    kind: "card",
+    id: "seo",
+    titleKey: `${L}.cards.seo`,
+    paths: ["seo"],
+    note: { textKey: `${L}.notes.seoLimits` },
+    hostsOgImage: true,
+  },
+  {
+    kind: "card",
+    id: "hero",
+    titleKey: `${L}.cards.hero`,
+    paths: ["hero"],
+    note: { textKey: `${L}.notes.ctaBuildings` },
+  },
+  { kind: "card", id: "welcome", titleKey: `${L}.cards.welcome`, paths: ["welcome"] },
+  {
+    kind: "card",
+    id: "why",
+    titleKey: `${L}.cards.guestWhy`,
+    paths: ["why"],
+    note: { textKey: `${L}.notes.ctaBuildings` },
+  },
+  {
+    kind: "card",
+    id: "portfolio",
+    titleKey: `${L}.cards.portfolio`,
+    paths: ["portfolio"],
+    note: { textKey: `${L}.notes.guestPortfolio`, link: link("/admin/buildings", "buildings") },
+  },
+  {
+    kind: "card",
+    id: "services_teaser",
+    titleKey: `${L}.cards.services_teaser`,
+    paths: ["services_teaser"],
+    note: { textKey: `${L}.notes.ctaServices` },
+  },
+  {
+    kind: "card",
+    id: "activities_teaser",
+    titleKey: `${L}.cards.activities_teaser`,
+    paths: ["activities_teaser"],
+    note: { textKey: `${L}.notes.ctaGuides` },
+  },
+  {
+    kind: "card",
+    id: "testimonials",
+    titleKey: `${L}.cards.testimonials`,
+    paths: ["testimonials"],
+    note: { textKey: `${L}.notes.guestTestimonials`, link: link("/admin/testimonials", "testimonials") },
+  },
+  {
+    kind: "card",
+    id: "faq",
+    titleKey: `${L}.cards.faq`,
+    paths: ["faq_group_key", "faq"],
+    note: { textKey: `${L}.notes.faq`, link: link("/admin/faq", "faq") },
+  },
+  {
+    kind: "card",
+    id: "dual_cta",
+    titleKey: `${L}.cards.final_cta`,
+    paths: ["dual_cta"],
+    note: { textKey: `${L}.notes.guestDualCta`, link: link("/admin/settings", "settings") },
+  },
+];
+
 const LAYOUTS: Partial<Record<string, EditorLayoutItem[]>> = {
   home: HOME_LAYOUT,
   owners: OWNERS_LAYOUT,
   buildings: BUILDINGS_LAYOUT,
   real_estate: REAL_ESTATE_LAYOUT,
+  guest: GUEST_LAYOUT,
 };
 
 /**
