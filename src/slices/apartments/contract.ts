@@ -64,7 +64,10 @@ export { listByBuilding, getApartmentBySlug } from "./server/queries";
 
 /**
  * Backoffice contribution (S12). `apartmentsAdminScreens` is spread into
- * `composeAdminNav` by the admin panel layout; list/create/edit mount under
- * `app/(admin)/admin/(panel)/apartments/…`. Pure data — safe to import anywhere.
+ * `composeAdminNav` by the admin panel layout; it is `[]` since spec
+ * building-detail-admin-editor (D4: no menu entry). List/create/edit mount inside the
+ * building workspace, `app/(admin)/admin/(panel)/buildings/[id]/apartments/…`; the old
+ * `app/(admin)/admin/(panel)/apartments/…` routes only redirect. Pure data — safe to
+ * import anywhere.
  */
 export { apartmentsAdminScreens } from "./admin/screens";

@@ -3,7 +3,7 @@
 **Fecha:** 2026-10-11
 **Slices:** `buildings` (espacio de trabajo del edificio, formulario, detalle público) y `apartments` (lista y formulario dentro del edificio)
 **Rutas:** shell `src/app`
-**Estado:** spec aprobada, sesiones pendientes
+**Estado:** S1–S3 entregadas; S4 (documentación) hecha; prueba real de guardado pendiente (QA del owner)
 **Precedentes:** `docs/specs/buildings-admin-editor.md` (listado). La auditoría del detalle se presentó en el chat el 2026-10-11.
 
 ## Objetivo
@@ -198,3 +198,69 @@ Cada commit necesita el OK del owner. El push, sólo cuando se pida.
 - Creación rápida de amenities desde el edificio (D5) y mover apartamentos entre edificios (D6).
 - Mapa con lat/long, página propia de apartamento, galería por apartamento.
 - Arco de traducción por pestañas.
+
+---
+
+## Estado (2026-10-11)
+
+S1, S2 y S3 están entregadas. S4 está a medias: el recorrido de sólo lectura y la documentación están
+hechos; falta la prueba real de guardado, que hace el owner. Commits:
+
+| Sesión | Commit | Qué entró |
+|---|---|---|
+| Spec | `130f874` | Este documento + plan por sesiones |
+| S1 | `2b779d0` | Espacio de trabajo `/admin/buildings/[id]` (`layout.tsx`): cabecera con "← Edificios", nombre, estado y "Ver en web ↗" (sólo publicado) + pestañas Edificio / Apartamentos (N); 404 si el edificio no existe. `getBuildingWorkspace`, `BuildingWorkspaceHeader`, `BuildingWorkspaceTabs`. `BuildingForm` con `variant: "new" \| "workspace"`. `countApartmentsByBuilding` y la columna `publicados / total` (enlaza a la pestaña); los conteos los compone la ruta, buildings no lee apartments. `apartmentsAdminScreens = []`. Pestaña Apartamentos con `listApartmentsAdmin({ buildingId })`. `admin/derive.ts` (`apartmentListWhere`, `tallyApartmentCounts`) + tests |
+| S2 | `a20114a` | Lista completa del edificio (miniatura, specs, Avantio, ↑↓ con `moveApartment`, vacío y aviso de "ninguno publicado"). Rutas anidadas `apartments/new` y `apartments/[aptId]` (404 si el apartamento es de otro edificio). `ApartmentForm` con el edificio fijado, sin selector ni posición, y textos de ayuda. `saveApartment`: posición `max + 1` al crear y rechazo del cambio de edificio (D6); revalida las rutas anidadas. Redirecciones de `/admin/apartments*`. Helpers `nextApartmentPosition`, `sortApartmentSlots`, `planApartmentMove`, `isBuildingChange` + tests. Claves i18n en 4 idiomas |
+| S3 | `897b3e1` | `BuildingForm` en 10 tarjetas en el orden de la página pública, con textos de ayuda (4 idiomas). `ActionBand` con `cta` opcional (aditivo, `core/ui`); en el detalle, `#book` envuelve la banda final, que va sin CTA ni nota si el edificio no tiene URL de Avantio (D7). Test de `ActionBand` |
+| S4 | — | Recorrido de sólo lectura del flujo (coordinador) y documentación: `buildings/README.md`, `apartments/README.md`, comentario del contrato de `apartments` y este estado. **Pendiente:** prueba real de guardado |
+
+`docs/vertical-slices.md` y `docs/architecture.md` no describen las rutas de admin de edificios ni de
+apartamentos, así que no se tocaron.
+
+### Desviaciones
+
+- **El headline sigue siendo obligatorio**, así que no se añadió su ayuda "Leave blank to use the
+  building name." (contradiría la validación). Decisión del owner pendiente (Abiertos nº 1).
+- **La ayuda del slug es una clave nueva, `slugPublicHint`**, porque `slugHint` la comparte el
+  formulario de amenities y no debía decir que cambia la URL pública.
+- **El aviso de S2 también sale cuando un edificio publicado no tiene ningún apartamento**, no sólo
+  cuando tiene apartamentos y ninguno está publicado: en los dos casos la sección no se muestra.
+- **Los textos de ayuda reutilizan las claves `*Hint` que ya existían** (`coverHint`, `ogImageHint`,
+  `avantioUrlHint`, `bookingEnabledHint`, `badgeHint`…) cambiando su texto, en vez de crear claves
+  nuevas.
+- **Se borraron 4 claves de sección muertas** (`identity`, `location`, `media`, `descriptions` de
+  `buildings.admin.sections`), que dejaron de usarse con el nuevo orden de tarjetas.
+- **El test de `#book` cubre `ActionBand`** (sin `cta` no pinta enlace ni nota) en lugar de renderizar
+  `BuildingDetail`, que lee la DB. El detalle sin URL se comprobó en el recorrido.
+
+## Abiertos
+
+1. **¿Headline opcional?** Decisión del owner. Si se hace opcional, basta con relajar la validación y
+   añadir la ayuda "Leave blank to use the building name.": el detalle ya cae al nombre
+   (`detail.headline || detail.name` en `building-detail.tsx`).
+2. **Prueba real de guardado pendiente — la hace el owner como QA** en PROD: crear, reordenar y
+   borrar un apartamento de prueba, y guardar el formulario del edificio. Receta: instantánea de las
+   filas → acción → verificar en el admin y en la página → restaurar.
+3. **Claves i18n sin uso que se conservan:** `apartments.admin.fields.position`, `positionHint` y
+   `fields.building` (el formulario ya no muestra esos campos). Se pueden borrar más adelante.
+4. **`getBuildingWorkspace` se llama dos veces en la pestaña Apartamentos** (layout y página, para el
+   estado del aviso). Aceptable: una consulta pequeña por id.
+5. **Un `[id]` / `[aptId]` que no es UUID probablemente da 500 en vez de 404** (la consulta a Postgres
+   falla con el uuid inválido). Es el patrón que ya existía en las rutas de admin.
+
+### Verificación hecha
+
+- **Por sesión:** typecheck + lint + tests en verde, con el exit code comprobado por el coordinador.
+  57 tests de los slices tocados, 54 de `pages` y 3 de `action-band`.
+- **Recorridos headed de sólo lectura (coordinador, Playwright), sin guardar:**
+  - **S1:** pestañas Edificio / Apartamentos y su estado activo, cabecera con estado y "Ver en web",
+    columna `publicados / total` y su enlace, 404 de un edificio inexistente.
+  - **S2:** lista del edificio (miniaturas, specs, Avantio, ↑↓), formulario nuevo y de edición con el
+    edificio fijado, redirecciones de `/admin/apartments*`, 404 de un apartamento de otro edificio.
+  - **S3:** el formulario en 10 tarjetas en el orden de la tabla y la banda `#book` con su CTA en
+    `bairro-alto-view`.
+  - **S4:** recorrido completo por navegación real: menú → Edificios → fila → pestaña Apartamentos →
+    apartamento → "← Apartments" → "+ New apartment" → pestaña Edificio → "← Buildings"; las
+    redirecciones de `/admin/apartments` y `/admin/apartments/new`; `/admin/buildings/new` sin pestañas.
+    Sin errores de página.
+- **No hubo escrituras en PROD** (ni DB ni R2).

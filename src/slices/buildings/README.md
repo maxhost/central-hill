@@ -96,7 +96,9 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   `accent-deep`→`accent`). Not `PropertyCard` (padding/type scale differ, no zoom, text meta
   line instead of icon chips, `next/link` while these link out — see `UnitCard`'s docstring).
   Each card links to the unit's Avantio URL in a new tab, or falls back to the in-page `#book`
-  anchor (the "Booking powered by Avantio" line under the grid); spec chips keep their
+  anchor, which since spec `docs/specs/building-detail-admin-editor.md` (D7, S3 `897b3e1`) is the
+  closing book band below (it used to be the "Booking powered by Avantio" line under the grid);
+  spec chips keep their
   translated `title` and the size chip is omitted when `sizeM2` is unset; covers are
   `MediaImage` (lazy, responsive `sizes`) or `public/placeholders/apartment.svg`. The section
   shell/sec-head/powered line are inline JSX in `building-detail.tsx`, **outside** `.mk` (no
@@ -113,8 +115,12 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
   stacked, `<h3>`), `FeatureCtaBand` (photo split) or `CalloutBand` (light, rounded); the button
   is `buttonClassName("primary")` on a plain `<a>` (ADR 0035). Rendered on
   every building, **outside** `.mk`, after the still-raw amenities/FAQ `.mk` wrapper (order
-  unchanged); links to the building's Avantio URL in a new tab, else the in-page `#book`
-  anchor; static (the old `.reveal` was neutralised). Labels: existing `buildings.book*` keys.
+  unchanged), wrapped in `<div id="book" className="scroll-mt-[84px]">` — **the band is the
+  `#book` anchor** (D7). Its button opens the building's Avantio URL in a new tab; when the
+  building has no Avantio URL the band renders **without CTA and note** (`ActionBand`'s `cta` is
+  optional since S3 — additive kernel change authorised by the spec; the note talks about Avantio),
+  so there is no self-referencing `href="#book"`. Static (the old `.reveal` was neutralised).
+  Labels: existing `buildings.book*` keys.
   The **hero is real JSX**: `core/ui`'s `<Hero compact>`, the fourth consumer (after Home,
   Owners, and this slice's own listing hero) — needed two more additive props, `breadcrumb`
   (the Home / Buildings / building-name trail, a caller-built `<Link>` nav, same "kernel owns
@@ -214,11 +220,36 @@ The listing's editable sections are busted by slice `pages`, not here: Save on
 
 Plugs into the backoffice shell. The slice contributes one `content`-group screen
 (`admin/screens.ts` → `buildingsAdminScreens`, re-exported from `contract.ts`) and mounts
-list/create/edit routes under `app/(admin)/admin/(panel)/buildings/…`.
+list/create/edit routes under `app/(admin)/admin/(panel)/buildings/…`. Since spec
+`docs/specs/building-detail-admin-editor.md` (S1–S3) **apartments are managed inside their
+building** (the apartments slice has no menu entry of its own — see its README):
 
+```
+/admin/buildings                                list (Apartments column: published / total)
+/admin/buildings/new                            building form, no workspace (variant "new")
+/admin/buildings/[id]                           WORKSPACE layout → "Building" tab (the form)
+/admin/buildings/[id]/apartments                "Apartments (N)" tab — apartments slice list
+/admin/buildings/[id]/apartments/new|[aptId]    apartment form, building fixed (apartments slice)
+```
+
+- **Building workspace** (`app/…/buildings/[id]/layout.tsx`, S1): a shared header around every
+  nested route — "← Buildings", the building name, its status badge, "View on site ↗" (only when
+  published; opens the source-locale `/en/buildings/<slug>`) and the **Building / Apartments (N)**
+  tabs. Unknown building → 404. Built from `getBuildingWorkspace(id)` →
+  `{ id, name, status, publicPath }` (source `en` name, slug fallback) plus
+  `admin/ui/workspace-header.tsx`'s `BuildingWorkspaceHeader` (server) and
+  `admin/ui/workspace-tabs.tsx`'s `BuildingWorkspaceTabs` (client island for the active state only:
+  "Building" on the exact `/admin/buildings/[id]`, "Apartments" on `/apartments` and below). The
+  tab count `N` arrives as the `apartmentsCount` prop: **the route composes it** from the
+  apartments slice (`countApartmentsByBuilding`) — this slice never reads apartments.
+- **List column "Apartments"** shows `published / total` (tooltip `apartmentsCountTitle`) and links
+  to the workspace's Apartments tab. `BuildingsAdminList({ apartmentCounts })` receives the
+  `buildingId → { total, published }` map from the route (`app/…/buildings/page.tsx`), again
+  composed from the apartments slice; a building absent from the map shows `0 / 0`.
 - `admin/queries.ts` (server-only, not cache-wrapped — admin is dynamic): `listBuildingsAdmin`
   (all statuses), `getBuildingForEdit` (full **source-locale** record + resolved media previews),
-  `listAmenitiesAdmin` (taxonomy for the multi-select), `listLocationOptions` (city/neighbourhood).
+  `getBuildingWorkspace` (workspace header), `listAmenitiesAdmin` (taxonomy for the multi-select),
+  `listLocationOptions` (city/neighbourhood).
 - `admin/validation.ts` — `buildingSaveInput`: the editor's post shape (nullable optionals,
   `min(1)` on required [T] text, gallery/amenities/FAQ relations). All coercion in one place.
 - `admin/actions.ts` (`"use server"`, `requireStaff`-gated) — `saveBuilding` (create/update) and
@@ -228,8 +259,36 @@ list/create/edit routes under `app/(admin)/admin/(panel)/buildings/…`.
   refinement). FAQ rows are upserted **by id** so approved translations survive an edit; removed
   rows have their polymorphic translation rows cleaned up. On success `revalidateBuilding` busts
   the ISR caches.
-- `admin/ui/` — `list.tsx` (server) + `building-form.tsx` (one client island for new + edit),
-  using the backoffice form + media picker primitives (`MediaField` / `MediaGalleryField`).
+- `admin/ui/` — `list.tsx` (server), `workspace-header.tsx` / `workspace-tabs.tsx` (above) +
+  `building-form.tsx` (one client island for new + edit), using the backoffice form + media picker
+  primitives (`MediaField` / `MediaGalleryField`). `BuildingForm` takes a **`variant`**:
+  `"new"` (`/admin/buildings/new`) keeps its own header and "← back"; `"workspace"` (the Building
+  tab) drops them because the workspace layout already shows them. Saving a new building still
+  lands on `/admin/buildings/[id]`.
+- **Form order = the public detail page** (S3). Only the order, the cards (`AdminCard`) and the
+  help texts changed — no field was added or removed. Ten cards:
+  1. **Status & visibility** — status, position, `is_featured` ("Listing only."), `is_new`
+     ("Shows the ★ New flag on the hero and the listing card.").
+  2. **Hero** — name, slug (`slugPublicHint`: "…Changing it changes the public URL."), city,
+     neighbourhood, address, cover ("Hero background and card photo. Landscape 16:9, at least
+     2400×1350 px.").
+  3. **Gallery** — "Mosaic under the hero. Landscape 4:3, at least 1600×1200 px. The first photo is
+     the large tile."
+  4. **The Building** — headline (still required, no hint), `description_intro` ("One paragraph per
+     line."), `description_neighbourhood` ("… Leave blank to hide “The Neighbourhood”.").
+  5. **Amenities** — "Create or rename amenities in Amenities." (links to `/admin/amenities`).
+  6. **FAQ** — "Leave empty to hide the FAQ section."
+  7. **Booking** — `avantio_id`, `avantio_url` ("Book band button, and fallback for apartments
+     without their own link."), `booking_enabled` ("Listing card links straight to Avantio instead
+     of this page.").
+  8. **Listing card** — teaser ("Shown on the /buildings card and as the SEO description
+     fallback.").
+  9. **Map location** — latitude, longitude ("Not shown on the site yet.").
+  10. **SEO** — meta title/description, OG image ("1200×630 px. Leave blank to use the cover.").
+
+  Section titles are `buildings.admin.sections.*`, card-level hints `buildings.admin.sectionHints.*`,
+  field hints `buildings.admin.fields.*Hint` (4 locales). The old `identity` / `location` / `media` /
+  `descriptions` section keys were removed.
 
 ### Amenity taxonomy editor (`/admin/amenities`)
 
