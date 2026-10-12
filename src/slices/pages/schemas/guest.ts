@@ -16,7 +16,15 @@
  */
 import { z } from "zod";
 import { cta, ctaWithNote, seoShape, tStr, tStrOpt, url } from "@core/validation/primitives";
-import { faqGroupKey, fixed, iconCard, optionalImage, optionalVideo } from "./_shared";
+import {
+  faqGroupKey,
+  fixed,
+  iconCard,
+  optionalAnimated,
+  optionalIconKey,
+  optionalImage,
+  optionalVideo,
+} from "./_shared";
 import { adminHidden } from "./admin-hidden";
 
 /**
@@ -34,8 +42,16 @@ const guestCtaWithNote = ctaWithNote.extend({ url: hiddenUrl });
 /** Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). */
 const HERO_VIDEO_HINT =
   "Hero background video (MP4, H.264). Landscape 16:9 — recommended 1920×1080, under 8 MB. Leave blank to use the approved stock clip.";
-const WELCOME_IMG_HINT =
-  "Welcome section photo. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB. Leave blank to use the approved stock photo.";
+/** Home's hero poster hint, verbatim (spec guests-admin-editor S3). */
+const HERO_POSTER_HINT =
+  "Shown while the video loads and when it can't play. Use a still from the video. 1920×1080 (16:9), JPG or WebP, under 400 KB.";
+/**
+ * Welcome side media (spec guests-admin-editor S3): photo, MP4/WebM loop, animated WebP or
+ * Lottie. `IntroSplit`'s media cell is landscape (min-height 380px beside a ~540px column on
+ * desktop, a full-width 280px strip at ≤880px) and covers it, so the hint asks for 3:2.
+ */
+const WELCOME_MEDIA_HINT =
+  "Landscape 3:2 — the frame is about 540×380 px on desktop and a full-width strip 280 px tall on tablet/mobile, and the media is cropped to fill it, so keep the subject centred. Photo: 1500×1000 px (min 1200×800), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1500×1000 or 1200×800, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×800, under 5 MB. Lottie (.lottie or .json): 3:2 canvas (e.g. 1200×800).";
 
 /** One side of the closing two-column CTA band (the mock's `.dual`). No image. */
 const dualPanel = z.object({
@@ -56,6 +72,8 @@ export const guestSchema = z.object({
   seo: z.object({ ...seoShape }).optional(),
   hero: z.object({
     video_media_id: optionalVideo(HERO_VIDEO_HINT),
+    /** Optional (S3): "" / absent → the stock poster. Optimized via `heroPosterSrc`. */
+    poster_media_id: optionalImage(HERO_POSTER_HINT).optional(),
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
@@ -66,7 +84,14 @@ export const guestSchema = z.object({
     lede: tStr({ max: 400 }),
     copy: tStr({ max: 1200 }),
     guarantee_label: tStrOpt({ max: 120 }),
-    image_media_id: optionalImage(WELCOME_IMG_HINT),
+    /** Optional (S3): blank → the `percentage-circle` icon. */
+    guarantee_icon_key: optionalIconKey,
+    /** S3: image / MP4-WebM loop / animated WebP / Lottie (was image-only; compatible). */
+    image_media_id: optionalAnimated(WELCOME_MEDIA_HINT),
+    /** Optional (S3): blank → the asset's alt → `pages.guests.welcomeAlt`. */
+    image_alt: tStrOpt({ max: 160 }).describe(
+      "Describe the photo for screen readers and search. Leave blank to use the uploaded file's alt text.",
+    ),
   }),
   why: z.object({
     eyebrow: tStrOpt({ max: 80 }),

@@ -11,7 +11,7 @@ export type { MediaAccept };
  * that has never been authored. Pure (no DB / React) so it's unit-testable.
  *
  * Leaf mapping: `*_media_id` → media picker (its `accept` read from `.meta`, default
- * image); `icon_key` → icon picker; ZodBoolean → checkbox; ZodString → text (textarea when its max length is large). Arrays carry their min/max so the
+ * image); `icon_key` / `*_icon_key` → icon picker; ZodBoolean → checkbox; ZodString → text (textarea when its max length is large). Arrays carry their min/max so the
  * editor adds/removes within bounds (fixed-count arrays have min === max).
  *
  * A field tagged `.meta({ admin_hidden: true })` (`adminHidden`, spec owners-admin-editor)
@@ -192,7 +192,8 @@ function describeVisible(schema: z.ZodType, key: string): FieldNode {
   }
 
   // An Iconoir name (strict `iconKey`, ADR 0034) → the backoffice icon picker.
-  if (key === "icon_key") return { kind: "icon", optional };
+  // `<thing>_icon_key` too (guests S3: `welcome.guarantee_icon_key`).
+  if (key === "icon_key" || key.endsWith("_icon_key")) return { kind: "icon", optional };
 
   if (key.endsWith("_media_id")) {
     // A `.describe()` on the media schema becomes uploader guidance in the editor

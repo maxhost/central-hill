@@ -1070,7 +1070,8 @@
       "metaDescription": "Professionally managed apartments across Portugal — every property fully equipped, quality-checked, and backed by 24/7 support.",
       "whyEyebrow": "For Guests",
       "servicesEyebrow": "Guest Services",
-      "activitiesEyebrow": "What To Do"
+      "activitiesEyebrow": "What To Do",
+      "welcomeAlt": "Bright, design-led Central Hill apartment interior"
     },
     "realEstate": {
       "metaTitle": "Real Estate Partnerships — Central Hill",
@@ -1343,6 +1344,8 @@
         "value": "Figure",
         "welcome": "Welcome",
         "guarantee_label": "Guarantee line",
+        "guarantee_icon_key": "Guarantee icon",
+        "image_alt": "Image alt text",
         "services_teaser": "Services teaser",
         "activities_teaser": "What to do",
         "items": "Cards"

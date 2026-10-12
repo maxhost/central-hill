@@ -1070,7 +1070,8 @@
       "metaDescription": "Des appartements gérés par des professionnels partout au Portugal — chaque bien entièrement équipé, contrôlé et soutenu par une assistance 24/7.",
       "whyEyebrow": "Pour les Voyageurs",
       "servicesEyebrow": "Services aux Voyageurs",
-      "activitiesEyebrow": "Que Faire"
+      "activitiesEyebrow": "Que Faire",
+      "welcomeAlt": "Intérieur lumineux et design d’un appartement Central Hill"
     },
     "realEstate": {
       "metaTitle": "Partenariats Immobiliers — Central Hill",
@@ -1343,6 +1344,8 @@
         "value": "Chiffre",
         "welcome": "Bienvenue",
         "guarantee_label": "Ligne de garantie",
+        "guarantee_icon_key": "Icône de la garantie",
+        "image_alt": "Texte alternatif de l’image",
         "services_teaser": "Aperçu des services",
         "activities_teaser": "Que faire",
         "items": "Cartes"

@@ -116,7 +116,7 @@ reclamado cae en "Other". `EditorCardId` suma los ids nuevos.
 |---|---|---|
 | `hero.video_media_id` | `video` | El actual (16:9, 1920×1080, MP4 H.264, < 8 MB) |
 | `hero.poster_media_id` | `image` | El de Home: "Shown while the video loads and when it can't play. Use a still from the video. 1920×1080 (16:9), JPG or WebP, under 400 KB." |
-| `welcome.image_media_id` | `animated` | El de Owners/Home pitch (4:5): "Portrait 4:5 — other ratios are cropped. Photo: 1200×1500 px (min 960×1200), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1080×1350 or 1200×1500, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×1500, under 5 MB. Lottie (.lottie or .json): 4:5 canvas." |
+| `welcome.image_media_id` | `animated` | "Landscape 3:2 — the frame is about 540×380 px on desktop and a full-width strip 280 px tall on tablet/mobile, and the media is cropped to fill it, so keep the subject centred. Photo: 1500×1000 px (min 1200×800), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1500×1000 or 1200×800, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×800, under 5 MB. Lottie (.lottie or .json): 3:2 canvas (e.g. 1200×800)." (corregido en S3: la celda de `IntroSplit` es horizontal, no 4:5) |
 | `*_teaser.items[].image_media_id` | `image` | "Card background (a dark overlay is applied, centre-cropped). Landscape 3:2 — 1200×800 px (min 900×600), JPG or WebP, under 300 KB." |
 | `og_image_media_id` | `image` | El de Home (1200×630) |
 

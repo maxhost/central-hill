@@ -1070,7 +1070,8 @@
       "metaDescription": "Apartamentos geridos profissionalmente em todo o Portugal — cada imóvel totalmente equipado, verificado e com apoio 24/7.",
       "whyEyebrow": "Para Hóspedes",
       "servicesEyebrow": "Serviços ao Hóspede",
-      "activitiesEyebrow": "O Que Fazer"
+      "activitiesEyebrow": "O Que Fazer",
+      "welcomeAlt": "Interior luminoso e com design de um apartamento Central Hill"
     },
     "realEstate": {
       "metaTitle": "Parcerias Imobiliárias — Central Hill",
@@ -1343,6 +1344,8 @@
         "value": "Número",
         "welcome": "Boas-vindas",
         "guarantee_label": "Linha de garantia",
+        "guarantee_icon_key": "Ícone da garantia",
+        "image_alt": "Texto alternativo da imagem",
         "services_teaser": "Destaque de serviços",
         "activities_teaser": "O que fazer",
         "items": "Cartões"

@@ -29,6 +29,7 @@ import {
   realEstateSchema,
 } from "../schemas/real-estate";
 import { capabilityStatementHref } from "../ui/capability-statement";
+import { orMessage } from "../ui/or-message";
 
 /**
  * Slice `pages` backoffice (S12, ADR 0012) — the schema → form model. Pure (walks a
@@ -883,4 +884,67 @@ test("guest layout + labels: every i18n key exists in the 4 locales — S1", () 
       assert.equal(typeof v, "string", `${locale}: pages.${k}`);
     }
   }
+});
+
+// ── Guests landing: Hero + Welcome media (spec guests-admin-editor S3) ───────
+
+test("guestSchema media accepts: hero video=video, poster=image, welcome=animated (3:2 hint) — S3", () => {
+  const root = describe(guestSchema);
+  const media = (p: string[]) => {
+    const node = nodeAt(root, p);
+    assert.equal(node.kind, "media", p.join("."));
+    return node.kind === "media" ? node : undefined;
+  };
+  assert.equal(media(["hero", "video_media_id"])?.accept, "video");
+  const poster = media(["hero", "poster_media_id"]);
+  assert.equal(poster?.accept, "image");
+  assert.match(poster?.hint ?? "", /Use a still from the video\. 1920×1080 \(16:9\)/);
+  const welcome = media(["welcome", "image_media_id"]);
+  assert.equal(welcome?.accept, "animated");
+  assert.match(welcome?.hint ?? "", /^Landscape 3:2 — the frame is about 540×380/);
+  assert.match(welcome?.hint ?? "", /Lottie/);
+});
+
+test("guestSchema S3: guarantee icon is an optional icon picker; image_alt is an optional string", () => {
+  const root = describe(guestSchema);
+  assert.deepEqual(nodeAt(root, ["welcome", "guarantee_icon_key"]), { kind: "icon", optional: true });
+  const alt = nodeAt(root, ["welcome", "image_alt"]);
+  assert.equal(alt.kind, "string");
+});
+
+test("guestSchema S3: old rows (no new keys) and new values both validate", () => {
+  assert.ok(guestSchema.safeParse(GUEST_SAMPLE).success, "legacy row");
+  const uuid = "3f2b8c1e-9a4d-4e7b-8c2a-1d5e6f7a8b9c";
+  const next = {
+    ...GUEST_SAMPLE,
+    hero: { ...GUEST_SAMPLE.hero, poster_media_id: uuid },
+    welcome: {
+      ...GUEST_SAMPLE.welcome,
+      image_media_id: uuid,
+      image_alt: "Sunny living room",
+      guarantee_icon_key: "shield-check",
+    },
+  };
+  const parsed = guestSchema.safeParse(next);
+  assert.ok(parsed.success, JSON.stringify(parsed.error?.issues));
+  const blanks = {
+    ...GUEST_SAMPLE,
+    hero: { ...GUEST_SAMPLE.hero, poster_media_id: "" },
+    welcome: { ...GUEST_SAMPLE.welcome, image_alt: "", guarantee_icon_key: "" },
+  };
+  assert.ok(guestSchema.safeParse(blanks).success, "blank new fields");
+  // A legacy row opened in the editor is scaffolded with blanks, which still validate.
+  const scaffolded = applyDefaults(describe(guestSchema), GUEST_SAMPLE);
+  const again = guestSchema.safeParse(scaffolded);
+  assert.ok(again.success, JSON.stringify(again.error?.issues));
+});
+
+test("guest welcome alt resolution: field → asset alt → i18n — S3", () => {
+  const resolve = (field: string | undefined, asset: string | undefined) =>
+    orMessage(field, orMessage(asset, "I18N"));
+  assert.equal(resolve("Field", "Asset"), "Field");
+  assert.equal(resolve("", "Asset"), "Asset");
+  assert.equal(resolve("  ", "Asset"), "Asset");
+  assert.equal(resolve(undefined, ""), "I18N");
+  assert.equal(resolve(undefined, undefined), "I18N");
 });

@@ -1,7 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import type { Locale } from "@core/db/columns";
-import { MediaImage } from "@core/media";
 import {
   BenefitCards,
   ButtonLink,
@@ -14,10 +13,12 @@ import {
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import { getGlobals } from "@slices/settings/contract";
-import { getGuestPage } from "../contract";
+import { getGuestPage, type PageMedia } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
+import { sideMedia } from "./components/side-media";
 import { TestimonialsRow } from "./components/testimonials-row";
+import { heroPosterSrc } from "./hero-poster";
 import { orMessage } from "./or-message";
 
 /**
@@ -33,7 +34,8 @@ import { orMessage } from "./or-message";
  * - Hero: `Hero` (compact, centred) with Buildings' listing-hero configuration, over Home's
  *   `<video>` background (the poster paints first).
  * - "Welcome to Central Hill": `IntroSplit` (copy split into paragraphs on blank lines, optional
- *   guarantee line, R2 `MediaImage` or the approved mock photo).
+ *   guarantee line + icon, `sideMedia()` image / video / animated WebP / Lottie or the approved
+ *   mock photo).
  * - "Why Book Directly" (warm `alt` band): a centred `SectionHead`, then `BenefitCards` + CTA.
  * - `#portfolio`: `FeaturedPortfolio` (cards from the buildings slice; the CTA note renders when set).
  * - Services teaser (`alt` band) and what-to-do teaser (plain, ghost CTA): a centred
@@ -67,10 +69,6 @@ const HERO_FALLBACK_POSTER =
   "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=1900&q=72";
 const WELCOME_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70";
-const WELCOME_FALLBACK_ALT = "Bright, design-led Central Hill apartment interior";
-// The welcome photo is the narrower of two columns in the 1240px `.wrap` (.95fr of
-// 1.05fr/.95fr with a 56px gap) and goes full-width at ≤880px — see `core/ui`'s `IntroSplit`.
-const WELCOME_SIZES = "(max-width: 880px) 100vw, 540px";
 
 // Shell shared by the hand-written sections: the mock's `section` padding and 84px scroll
 // margin, its 1240px/28px `.wrap` column, and its warm `.alt` band (the same `color-mix`
@@ -114,6 +112,27 @@ function ctaRoutes(locale: Locale) {
 }
 
 /**
+ * The Welcome side media (spec guests-admin-editor S3): `sideMedia()` picks image / MP4-WebM
+ * loop / animated WebP / Lottie by mime. `IntroSplit`'s cell forces its direct child to cover
+ * the full-height cell, so the element sits in a wrapper that passes the same cover rule on
+ * and drops `sideMedia`'s radius (this page's photo has always been square-cornered). An
+ * image row without dimensions (not renderable by `next/image`) degrades to a plain `<img>`,
+ * as before. `null` → the caller's stock photo.
+ */
+function welcomeSideMedia(asset: PageMedia | undefined, alt: string) {
+  if (!asset?.url) return null;
+  const isImage = (asset.mime ?? "image/").startsWith("image/");
+  if (isImage && !(asset.width > 0 && asset.height > 0)) {
+    // eslint-disable-next-line @next/next/no-img-element -- dimensionless asset, as before S3
+    return <img src={asset.url} alt={alt} loading="lazy" decoding="async" />;
+  }
+  const node = sideMedia({ ...asset, alt });
+  return node ? (
+    <div className="*:h-full *:w-full *:rounded-none *:object-cover">{node}</div>
+  ) : null;
+}
+
+/**
  * Closing guest/owner dual CTA's contact lines. Panel copy is admin-authored; the contact line
  * is built from the company_settings singleton (data-model.md → dual-CTA = company_settings), so
  * the phone, email and WhatsApp are edited once in /admin/settings and never duplicated per
@@ -144,6 +163,12 @@ export async function GuestPage({ locale }: { locale: Locale }) {
   const { content, media } = page;
   const { hero, welcome, portfolio } = content;
   const welcomeMedia = media[welcome.image_media_id ?? ""];
+  // Alt (spec S3): the field → the asset's alt → `pages.guests.welcomeAlt`.
+  const welcomeAlt = orMessage(welcome.image_alt, orMessage(welcomeMedia?.alt, t("guests.welcomeAlt")));
+  // Hero (spec S3): the uploaded poster, optimized like Home's; blank → the stock poster.
+  // The `<source type>` follows the uploaded video's mime (MP4/WebM), as Home does.
+  const heroVideo = media[hero.video_media_id ?? ""];
+  const heroPoster = heroPosterSrc(media[hero.poster_media_id ?? ""]) ?? HERO_FALLBACK_POSTER;
   const faqGroupKey = content.faq_group_key ?? "";
   const dualCta = content.dual_cta;
   const contactLines = dualCtaContactLines(globals);
@@ -185,12 +210,9 @@ export async function GuestPage({ locale }: { locale: Locale }) {
             muted
             loop
             playsInline
-            poster={HERO_FALLBACK_POSTER}
+            poster={heroPoster}
           >
-            <source
-              src={media[hero.video_media_id ?? ""]?.url ?? HERO_FALLBACK_VIDEO}
-              type="video/mp4"
-            />
+            <source src={heroVideo?.url ?? HERO_FALLBACK_VIDEO} type={heroVideo?.mime ?? "video/mp4"} />
           </video>
         }
         compact
@@ -211,8 +233,9 @@ export async function GuestPage({ locale }: { locale: Locale }) {
       {/*
        * "Welcome to Central Hill": `core/ui`'s `IntroSplit` (see its docstring for why
        * `TwoColumnShowcase` doesn't fit) in the plain section shell, one `Reveal`. The guarantee
-       * line renders only when set; the image is the R2 asset via `MediaImage` or the approved
-       * mock photo (lazy), sized by the component to cover its full-height cell.
+       * line renders only when set (icon = `guarantee_icon_key` or `percentage-circle`); the media
+       * is `welcomeSideMedia()` or the approved mock photo (lazy), sized by the component to
+       * cover its full-height cell. Alt = `image_alt` → asset alt → `pages.guests.welcomeAlt`.
        */}
       <section className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
@@ -228,23 +251,18 @@ export async function GuestPage({ locale }: { locale: Locale }) {
                 welcome.guarantee_label
                   ? {
                       icon: (
-                        <Icon name="percentage-circle" size={22} />
+                        <Icon name={welcome.guarantee_icon_key || "percentage-circle"} size={22} />
                       ),
                       label: welcome.guarantee_label,
                     }
                   : undefined
               }
               image={
-                welcomeMedia?.url && welcomeMedia.width > 0 && welcomeMedia.height > 0 ? (
-                  <MediaImage
-                    data={{ ...welcomeMedia, alt: welcomeMedia.alt || WELCOME_FALLBACK_ALT }}
-                    sizes={WELCOME_SIZES}
-                  />
-                ) : (
+                welcomeSideMedia(welcomeMedia, welcomeAlt) ?? (
                   // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
                   <img
-                    src={welcomeMedia?.url || WELCOME_FALLBACK_IMG}
-                    alt={welcomeMedia?.alt || WELCOME_FALLBACK_ALT}
+                    src={WELCOME_FALLBACK_IMG}
+                    alt={welcomeAlt}
                     loading="lazy"
                     decoding="async"
                   />
