@@ -1388,6 +1388,7 @@
         "departments": "Departamentos",
         "certifications": "Certificações",
         "logo_media_id": "Logótipo",
+        "logo_alt": "Texto alternativo do logótipo",
         "issuer": "Emissor",
         "community": "Retribuir à comunidade",
         "cards": "Cartões",
@@ -1436,6 +1437,11 @@
         "points": "Novo ponto",
         "tiles": "Novo cartão",
         "steps": "Novo passo"
+      },
+      "addLabelsByParent": {
+        "certifications": {
+          "items": "Nova certificação"
+        }
       }
     }
   },

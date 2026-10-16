@@ -23,6 +23,7 @@ import { getGlobals } from "@slices/settings/contract";
 import { getAboutPage } from "../contract";
 import { aboutSchema, defaultAbout } from "../schemas/about";
 import { FaqSection } from "./components/faq-section";
+import { certLogoAlt } from "./about-certifications";
 import { type OfficeRow, officeRows, resolveOfficeLabels } from "./about-office";
 import { orMessage } from "./or-message";
 
@@ -74,17 +75,6 @@ const AUDIENCE_FALLBACK_IMGS = [
   "https://images.pexels.com/photos/39205181/pexels-photo-39205181.jpeg?auto=compress&cs=tinysrgb&w=1200",
   "https://images.pexels.com/photos/7415097/pexels-photo-7415097.jpeg?auto=compress&cs=tinysrgb&w=1200",
   "https://images.pexels.com/photos/36733412/pexels-photo-36733412.jpeg?auto=compress&cs=tinysrgb&w=1200",
-];
-/** Issuer logos by certification position; a card with neither logo nor fallback shows its icon. */
-const CERT_FALLBACK_LOGOS: ({ src: string; alt: string } | undefined)[] = [
-  {
-    src: "https://d11n7da8rpqbjy.cloudfront.net/alep/19726083_1621536323PF6Ativo_12.png",
-    alt: "ALEP — Associação do Alojamento Local em Portugal logo",
-  },
-  {
-    src: "https://www.turismodeportugal.pt/Style%20Library/TPortugal16Branding/img/logotipo_institucional_preto.png",
-    alt: "Turismo de Portugal logo",
-  },
 ];
 /** Contact card destinations, by position (guests / owners / partners). */
 const CONTACT_CARD_PATHS = ["/buildings", "/owners", "/real-estate"];
@@ -173,14 +163,15 @@ export async function AboutPage({ locale }: { locale: Locale }) {
     title: d.name,
     description: d.description,
   }));
-  const certifications: CertificationCardItem[] = c.certifications.items.map((cert, i) => {
+  // Every row renders (1–12, spec S4). Logo = the R2 asset, alt = `logo_alt` → `issuer` (the
+  // media-library alt is not used); no / unresolved logo → the row's icon.
+  const certifications: CertificationCardItem[] = c.certifications.items.map((cert) => {
     const logo = media[cert.logo_media_id];
-    const fallback = CERT_FALLBACK_LOGOS[i];
     return {
       logo:
-        logo?.url || fallback ? (
+        logo?.url ? (
           // eslint-disable-next-line @next/next/no-img-element -- issuer logo in a fixed 48px slot
-          <img src={logo?.url || fallback?.src} alt={logo?.alt || fallback?.alt || cert.issuer} />
+          <img src={logo.url} alt={certLogoAlt(cert)} />
         ) : (
           <Icon name={cert.icon_key} size={40} className="block text-accent-deep" />
         ),

@@ -14,7 +14,7 @@
 import { z } from "zod";
 import { iconKey } from "@core/validation/icon-key";
 import { seoShape, tStr, tStrOpt } from "@core/validation/primitives";
-import { faqGroupKey, fixed, iconCard, optionalImage, titledItem } from "./_shared";
+import { between, faqGroupKey, fixed, iconCard, optionalImage, titledItem } from "./_shared";
 
 /*
  * Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). Sizes
@@ -47,8 +47,14 @@ const imageAlt = (fallback: string) =>
   tStrOpt({ max: 160 }).describe(
     `Describe the photo for screen readers and search. Leave blank for “${fallback}”.`,
   );
+/*
+ * Certification logo (`CertificationCards` logo slot): a fixed 48 px-tall box, at most 160 px
+ * wide, the image scaled to fit (`object-contain`). The media upload pipeline accepts JPEG, PNG,
+ * WebP and AVIF only (`core/media/mime.ts` → `IMAGE_MIMES`) — no SVG — so the hint asks for a
+ * transparent PNG. 300 px wide covers the 160 px slot at 2× density.
+ */
 const LOGO_HINT =
-  "Issuer logo (PNG/SVG with transparency, ~48px tall on the page). Blank shows the default logo (first two cards) or the icon.";
+  "Issuer logo on a transparent background, PNG (SVG is not accepted). Shown in a slot 48 px tall and up to 160 px wide — upload at least 300 px wide, under 100 KB. Blank shows the card's icon.";
 
 /** A company figure in the stats band (`value` is displayed as authored; numbers count up). */
 const stat = z.object({
@@ -68,6 +74,10 @@ const certification = z.object({
   /** Shown only when the card has no logo. */
   icon_key: iconKey,
   logo_media_id: optionalImage(LOGO_HINT),
+  /** Optional (S4): the logo's alt text. Blank → the row's `issuer`. */
+  logo_alt: tStrOpt({ max: 160 }).describe(
+    "Describe the logo for screen readers and search. Leave blank to use the issuer name.",
+  ),
   title: tStr({ max: 120 }),
   issuer: z.string().min(1).max(120),
   description: tStr({ max: 400 }),
@@ -140,7 +150,8 @@ export const aboutSchema = z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
-    items: fixed(certification, 3),
+    /** Variable since S4: 1–12 rows (the 3 legacy rows stay valid). Add/remove in the editor. */
+    items: between(certification, 1, 12),
   }),
   community: z.object({
     eyebrow: tStrOpt({ max: 80 }),

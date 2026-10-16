@@ -1388,6 +1388,7 @@
         "departments": "Departments",
         "certifications": "Certifications",
         "logo_media_id": "Logo",
+        "logo_alt": "Logo alt text",
         "issuer": "Issuer",
         "community": "Giving back",
         "cards": "Cards",
@@ -1436,6 +1437,11 @@
         "points": "New point",
         "tiles": "New tile",
         "steps": "New step"
+      },
+      "addLabelsByParent": {
+        "certifications": {
+          "items": "New certification"
+        }
       }
     }
   },

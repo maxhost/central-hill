@@ -20,6 +20,7 @@ import { collectMediaIds, expand, overlayTranslations } from "../server/overlay"
 import { heroPosterSrc } from "../ui/hero-poster";
 import { seoMetadataInput } from "../server/metadata-input";
 import { orMessage, orNamedMessage } from "../ui/or-message";
+import { certLogoAlt } from "../ui/about-certifications";
 import { OFFICE_LABEL_KEYS, officeRows, resolveOfficeLabels, websiteText } from "../ui/about-office";
 import { enquiryContactLines, ownersFinalContactLine, settingsContactLine } from "../ui/contact-line";
 import {
@@ -1413,4 +1414,24 @@ test("about S3: office rows come from Settings; blank check-in / website hide th
   // The literals are gone from the page.
   const page = readFileSync(path.join(process.cwd(), "src/slices/pages/ui/about-page.tsx"), "utf8");
   assert.ok(!/CHECKIN_PHONE|WEBSITE\b|912 310 632|www\.centralhill\.pt/.test(page));
+});
+
+// ── About: certification logos (spec about-admin-editor S4) ──────────────────
+
+test("about S4: certification logo alt = logo_alt → issuer", () => {
+  const issuer = "Turismo de Portugal";
+  assert.equal(certLogoAlt({ issuer }), issuer);
+  assert.equal(certLogoAlt({ logo_alt: "", issuer }), issuer);
+  assert.equal(certLogoAlt({ logo_alt: "   ", issuer }), issuer);
+  assert.equal(certLogoAlt({ logo_alt: null, issuer }), issuer);
+  assert.equal(certLogoAlt({ logo_alt: "Turismo de Portugal logo", issuer }), "Turismo de Portugal logo");
+});
+
+test("about S4: no external certification logos are left in the page (no logo → the icon)", () => {
+  const src = readFileSync(path.join(process.cwd(), "src/slices/pages/ui/about-page.tsx"), "utf8");
+  assert.doesNotMatch(src, /CERT_FALLBACK_LOGOS/);
+  assert.doesNotMatch(src, /cloudfront\.net|turismodeportugal\.pt/);
+  // The logo alt goes through certLogoAlt (not the media-library alt).
+  assert.match(src, /alt=\{certLogoAlt\(cert\)\}/);
+  assert.doesNotMatch(src, /logo\?\.alt/);
 });

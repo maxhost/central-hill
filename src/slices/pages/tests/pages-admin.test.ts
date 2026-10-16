@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { z } from "zod";
-import { mediaId, tStr } from "@core/validation/primitives";
+import { mediaId, tStr, translatablePaths } from "@core/validation/primitives";
 import { between, faqGroupKey, fixed, iconCard, optionalImage, optionalVideo } from "../schemas/_shared";
 import { homeSchema } from "../schemas/home";
 import { withMediaAccept } from "../schemas/media-accept";
@@ -1216,4 +1216,79 @@ test("aboutSchema S3: office_labels sits in the contact card as 5 optional strin
   const scaffolded = applyDefaults(root, defaultAbout);
   const again = aboutSchema.safeParse(scaffolded);
   assert.ok(again.success, JSON.stringify(again.error?.issues));
+});
+
+// ── About: variable certifications + R2 logos (spec about-admin-editor S4) ───
+
+test("aboutSchema S4: certifications.items takes 1–12 rows; the legacy 3 rows still validate", () => {
+  const withItems = (n: number) => ({
+    ...defaultAbout,
+    certifications: {
+      ...defaultAbout.certifications,
+      items: Array.from({ length: n }, (_, i) => defaultAbout.certifications.items[i % 3]!),
+    },
+  });
+  assert.equal(defaultAbout.certifications.items.length, 3);
+  assert.ok(aboutSchema.safeParse(defaultAbout).success, "legacy 3-row data");
+  for (const n of [1, 2, 3, 4, 12]) assert.ok(aboutSchema.safeParse(withItems(n)).success, `${n} rows`);
+  for (const n of [0, 13]) assert.ok(!aboutSchema.safeParse(withItems(n)).success, `${n} rows rejected`);
+  // The editor gets a variable list (add/remove between 1 and 12), not a fixed one.
+  const items = nodeAt(describe(aboutSchema), ["certifications", "items"]);
+  assert.equal(items.kind, "array");
+  if (items.kind === "array") {
+    assert.equal(items.min, 1);
+    assert.equal(items.max, 12);
+  }
+  // Scaffolding keeps the stored rows as they are (no padding beyond min, no trimming).
+  const scaffolded = applyDefaults(describe(aboutSchema), withItems(5)) as typeof defaultAbout;
+  assert.equal(scaffolded.certifications.items.length, 5);
+  assert.ok(aboutSchema.safeParse(scaffolded).success);
+});
+
+test("aboutSchema S4: logo is image-only with the R2 hint; logo_alt follows it, optional, hint names the issuer", () => {
+  const root = describe(aboutSchema);
+  const logo = nodeAt(root, ["certifications", "items", "[]", "logo_media_id"]);
+  assert.equal(logo.kind, "media");
+  if (logo.kind === "media") {
+    assert.equal(logo.accept, "image");
+    assert.match(logo.hint ?? "", /transparent background, PNG/);
+    assert.match(logo.hint ?? "", /at least 300 px wide, under 100 KB/);
+    assert.doesNotMatch(logo.hint ?? "", /default logo/);
+  }
+  const alt = nodeAt(root, ["certifications", "items", "[]", "logo_alt"]);
+  assert.equal(alt.kind, "string");
+  if (alt.kind === "string") {
+    assert.equal(alt.optional, true);
+    assert.match(alt.hint ?? "", /Leave blank to use the issuer name\./);
+  }
+  const keys = Object.keys(aboutSchema.shape.certifications.shape.items.element.shape);
+  assert.equal(keys[keys.indexOf("logo_media_id") + 1], "logo_alt");
+  const item = defaultAbout.certifications.items[0]!;
+  const withAlt = (logo_alt: string) => ({
+    ...defaultAbout,
+    certifications: { ...defaultAbout.certifications, items: [{ ...item, logo_alt }] },
+  });
+  assert.ok(aboutSchema.safeParse(withAlt("")).success, "blank alt");
+  assert.ok(aboutSchema.safeParse(withAlt("ALEP logo")).success, "filled alt");
+  assert.ok(!aboutSchema.safeParse(withAlt("x".repeat(161))).success, "alt ≤ 160");
+  // logo_alt is translatable (per-locale), the issuer is not.
+  const tPaths = translatablePaths(aboutSchema);
+  assert.ok(tPaths.includes("certifications.items[].logo_alt"));
+  assert.ok(!tPaths.includes("certifications.items[].issuer"));
+});
+
+test("about S4 i18n: the add button and logo_alt label exist in the 4 locales", () => {
+  assert.deepEqual(listLabelKeys("addLabels", ["certifications", "items"]), [
+    "admin.addLabelsByParent.certifications.items",
+    "admin.addLabels.items",
+  ]);
+  for (const locale of ["en", "pt", "es", "fr"]) {
+    const pages = JSON.parse(readFileSync(path.join(process.cwd(), `messages/${locale}.json`), "utf8")).pages;
+    assert.equal(typeof pages.admin.addLabelsByParent?.certifications?.items, "string", `${locale} add label`);
+    assert.equal(typeof pages.admin.labels?.logo_alt, "string", `${locale} logo_alt label`);
+  }
+  const en = JSON.parse(readFileSync(path.join(process.cwd(), "messages/en.json"), "utf8")).pages;
+  assert.equal(en.admin.addLabelsByParent.certifications.items, "New certification");
+  // Other `items` lists (Guests teaser cards) are not affected: no global add label for `items`.
+  assert.equal(en.admin.addLabels.items, undefined);
 });

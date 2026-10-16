@@ -1388,6 +1388,7 @@
         "departments": "Départements",
         "certifications": "Certifications",
         "logo_media_id": "Logo",
+        "logo_alt": "Texte alternatif du logo",
         "issuer": "Émetteur",
         "community": "Engagement solidaire",
         "cards": "Cartes",
@@ -1436,6 +1437,11 @@
         "points": "Nouveau point",
         "tiles": "Nouvelle carte",
         "steps": "Nouvelle étape"
+      },
+      "addLabelsByParent": {
+        "certifications": {
+          "items": "Nouvelle certification"
+        }
       }
     }
   },
