@@ -162,6 +162,8 @@ export function GlobalsForm({
       email: state.email.trim(),
       phone: state.phone.trim(),
       whatsapp: orNull(state.whatsapp),
+      checkin_phone: orNull(state.checkin_phone),
+      website_url: orNull(state.website_url),
       social: Object.fromEntries(
         SOCIAL_KEYS.map((k) => [k, orNull(state.social[k])]),
       ),
@@ -250,6 +252,28 @@ export function GlobalsForm({
             <TextInput
               value={state.whatsapp}
               onChange={(e) => set("whatsapp", e.target.value)}
+            />
+          </Field>
+          <Field
+            label={t("admin.globals.fields.checkinPhone")}
+            hint={t("admin.globals.fields.checkinPhoneHint")}
+            error={err("checkin_phone")}
+          >
+            <TextInput
+              value={state.checkin_phone}
+              onChange={(e) => set("checkin_phone", e.target.value)}
+            />
+          </Field>
+          <Field
+            label={t("admin.globals.fields.website")}
+            hint={t("admin.globals.fields.websiteHint")}
+            error={err("website_url")}
+          >
+            <TextInput
+              type="url"
+              value={state.website_url}
+              onChange={(e) => set("website_url", e.target.value)}
+              placeholder="https://"
             />
           </Field>
         </FieldGrid>

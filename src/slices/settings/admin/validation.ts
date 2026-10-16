@@ -9,6 +9,7 @@ import { z } from "zod";
 import { iconKey } from "@core/validation/icon-key";
 import { tStr } from "@core/validation/primitives";
 import { SITE_ICON_KEYS, type SiteIconKey } from "../site-icons";
+import { httpsUrl } from "../validation";
 
 const socialUrl = z.url().nullable();
 
@@ -21,6 +22,10 @@ export const companySettingsSaveInput = z.object({
   email: z.email(),
   phone: z.string().min(3).max(40),
   whatsapp: z.string().max(40).nullable(),
+  /** Same rule as `phone`; `null` (blank) hides the About "Check-in" row. */
+  checkin_phone: z.string().min(3).max(40).nullable(),
+  /** An `https://` URL; `null` (blank) hides the About "Website" row. */
+  website_url: httpsUrl.nullable(),
   social: z.object({
     instagram: socialUrl,
     facebook: socialUrl,

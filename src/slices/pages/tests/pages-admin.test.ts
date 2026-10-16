@@ -1109,6 +1109,8 @@ test("about layout + labels: every i18n key exists in the 4 locales — S1", () 
     "value", "label", "serve", "audiences", "values", "items", "organisation", "badge",
     "departments", "name", "certifications", "logo_media_id", "issuer", "community", "copy",
     "faq_group_key", "faq", "title", "contact", "cards", "link_label", "office_title", "form",
+    // S3: the office panel labels.
+    "office_labels", "address", "bookings", "checkin", "email", "website",
   ]) keys.push(`admin.labels.${k}`);
   for (const k of ["narrative", "copy", "stats", "audiences", "departments", "cards"]) {
     keys.push(`admin.itemLabels.${k}`);
@@ -1184,6 +1186,34 @@ test("aboutSchema S2: image_alt is an optional string right after each photo, hi
   assert.ok(aboutSchema.safeParse(withAlts("Lisbon at dusk")).success, "filled alts");
   assert.ok(!aboutSchema.safeParse(withAlts("x".repeat(161))).success, "alt ≤ 160");
   const scaffolded = applyDefaults(describe(aboutSchema), defaultAbout);
+  const again = aboutSchema.safeParse(scaffolded);
+  assert.ok(again.success, JSON.stringify(again.error?.issues));
+});
+
+// ── About: office panel labels (spec about-admin-editor S3) ──────────────────
+
+test("aboutSchema S3: office_labels sits in the contact card as 5 optional strings after the office title", () => {
+  const root = describe(aboutSchema);
+  const labels = nodeAt(root, ["contact", "office_labels"]);
+  assert.equal(labels.kind, "object");
+  if (labels.kind === "object") {
+    assert.deepEqual(labels.fields.map((f) => f.key), ["address", "bookings", "checkin", "email", "website"]);
+    for (const f of labels.fields) {
+      assert.equal(f.node.kind, "string", f.key);
+      if (f.node.kind === "string") {
+        assert.equal(f.node.optional, true, `${f.key} optional`);
+        assert.match(f.node.hint ?? "", /^Leave blank for “.+”\.$/, `${f.key} hint`);
+      }
+    }
+  }
+  const keys = Object.keys(aboutSchema.shape.contact.shape);
+  assert.equal(keys[keys.indexOf("office_title") + 1], "office_labels");
+  // It lives under `contact`, which the "contact" card already claims.
+  const layout = resolveEditorLayout("about", Object.keys(aboutSchema.shape));
+  const contact = layout?.find((i) => i.kind === "card" && i.id === "contact");
+  assert.ok(contact && contact.kind === "card" && contact.paths.includes("contact"));
+  // The editor scaffolds a row without office_labels into one that still validates.
+  const scaffolded = applyDefaults(root, defaultAbout);
   const again = aboutSchema.safeParse(scaffolded);
   assert.ok(again.success, JSON.stringify(again.error?.issues));
 });

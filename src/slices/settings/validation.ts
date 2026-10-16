@@ -7,6 +7,9 @@
 import { z } from "zod";
 import { email, mediaId, position, tStr, tStrOpt, url } from "@core/validation/primitives";
 
+/** The company website: an absolute `https://` URL (the About office panel links to it). */
+export const httpsUrl = z.url({ protocol: /^https$/ }).max(300);
+
 /** A headline company stat: figure + translatable label. */
 const stat = z.object({
   value: z.string().min(1).max(40),
@@ -18,6 +21,8 @@ export const companySettingsInput = z.object({
   email,
   phone: z.string().min(3).max(40),
   whatsapp: z.string().max(40).optional(),
+  checkin_phone: z.string().min(3).max(40).optional(),
+  website_url: httpsUrl.optional(),
   social: z
     .object({
       instagram: url.optional(),

@@ -743,6 +743,10 @@
           "email": "Email",
           "phone": "Telefone",
           "whatsapp": "WhatsApp",
+          "checkinPhone": "Telefone de check-in",
+          "checkinPhoneHint": "Aparece no painel do escritório da página Sobre nós. Deixe em branco para ocultar a linha.",
+          "website": "Website",
+          "websiteHint": "Endereço completo https://, aparece no painel do escritório da página Sobre nós. Deixe em branco para ocultar a linha.",
           "statValue": "Número",
           "statLabel": "Etiqueta",
           "officeAddress": "Morada do escritório",
@@ -1147,6 +1151,13 @@
         "story": "Fachadas tradicionais de azulejo numa rua histórica de Lisboa",
         "organisation": "Equipa a analisar em conjunto documentos de desempenho dos imóveis",
         "community": "Pessoas a partilhar uma refeição numa mesa comunitária em Lisboa"
+      },
+      "office": {
+        "address": "Morada",
+        "bookings": "Reservas",
+        "checkin": "Check-in",
+        "email": "Email",
+        "website": "Website"
       }
     },
     "admin": {
@@ -1381,6 +1392,12 @@
         "community": "Retribuir à comunidade",
         "cards": "Cartões",
         "office_title": "Título do escritório",
+        "office_labels": "Etiquetas do escritório",
+        "address": "Morada",
+        "bookings": "Reservas",
+        "checkin": "Check-in",
+        "email": "Email",
+        "website": "Website",
         "form": "Formulário de contacto",
         "link_label": "Texto do link"
       },

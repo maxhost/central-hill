@@ -114,3 +114,18 @@ test("company settings expose exactly their [T] leaf paths", () => {
 test("nav item exposes only its label", () => {
   assert.deepEqual(translatablePaths(navItemInput), ["label"]);
 });
+
+test("company settings accept an optional check-in phone and https website (S3)", () => {
+  const base = {
+    email: "info@centralhill.pt",
+    phone: "+351 910 075 725",
+    stats: validStats,
+    office_address: "Lisbon, Portugal",
+    avantio_account_id: "ch-001",
+  };
+  assert.equal(companySettingsInput.safeParse(base).success, true, "both optional");
+  const ok = { ...base, checkin_phone: "+351 912 310 632", website_url: "https://www.centralhill.pt" };
+  assert.equal(companySettingsInput.safeParse(ok).success, true);
+  assert.equal(companySettingsInput.safeParse({ ...ok, website_url: "http://www.centralhill.pt" }).success, false);
+  assert.equal(companySettingsInput.safeParse({ ...ok, checkin_phone: "1" }).success, false);
+});

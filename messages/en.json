@@ -743,6 +743,10 @@
           "email": "Email",
           "phone": "Phone",
           "whatsapp": "WhatsApp",
+          "checkinPhone": "Check-in phone",
+          "checkinPhoneHint": "Shown in the About page office panel. Leave blank to hide the row.",
+          "website": "Website",
+          "websiteHint": "Full https:// address, shown in the About page office panel. Leave blank to hide the row.",
           "statValue": "Figure",
           "statLabel": "Label",
           "officeAddress": "Office address",
@@ -1147,6 +1151,13 @@
         "story": "Traditional tiled façades along a historic Lisbon street",
         "organisation": "Team reviewing property performance documents together",
         "community": "People sharing a meal together at a community table in Lisbon"
+      },
+      "office": {
+        "address": "Address",
+        "bookings": "Bookings",
+        "checkin": "Check-in",
+        "email": "Email",
+        "website": "Website"
       }
     },
     "admin": {
@@ -1381,6 +1392,12 @@
         "community": "Giving back",
         "cards": "Cards",
         "office_title": "Office title",
+        "office_labels": "Office labels",
+        "address": "Address",
+        "bookings": "Bookings",
+        "checkin": "Check-in",
+        "email": "Email",
+        "website": "Website",
         "form": "Contact form",
         "link_label": "Link text"
       },

@@ -20,6 +20,7 @@ import { collectMediaIds, expand, overlayTranslations } from "../server/overlay"
 import { heroPosterSrc } from "../ui/hero-poster";
 import { seoMetadataInput } from "../server/metadata-input";
 import { orMessage, orNamedMessage } from "../ui/or-message";
+import { OFFICE_LABEL_KEYS, officeRows, resolveOfficeLabels, websiteText } from "../ui/about-office";
 import { enquiryContactLines, ownersFinalContactLine, settingsContactLine } from "../ui/contact-line";
 import {
   describedStatFigureCells,
@@ -1336,4 +1337,80 @@ test("about S2: image_alt is translatable; alt = field → i18n; alt keys exist 
   assert.equal(orMessage("", en.about.alts.hero), en.about.alts.hero);
   assert.equal(orMessage("  ", en.about.alts.story), en.about.alts.story);
   assert.equal(orMessage(defaultAbout.community.image_alt, en.about.alts.community), en.about.alts.community);
+});
+
+// ── About S3: office panel labels + Settings check-in / website ──────────────
+const OFFICE_GLOBALS = {
+  officeAddress: "Rua da Bempostinha 21A, 1150-065 Lisboa, Portugal",
+  phone: "+351 910 075 725",
+  checkinPhone: "+351 912 310 632" as string | null,
+  email: "info@centralhill.pt",
+  website: "https://www.centralhill.pt" as string | null,
+  officeHours: "Monday – Friday · 09:30 – 18:00",
+  officeHoursLabel: null,
+};
+
+test("about S3: office labels fall back field → i18n; EN keys are the former literals; 4 locales", () => {
+  const en = JSON.parse(readFileSync(path.join(process.cwd(), "messages/en.json"), "utf8")).pages;
+  assert.deepEqual(en.about.office, {
+    address: "Address",
+    bookings: "Bookings",
+    checkin: "Check-in",
+    email: "Email",
+    website: "Website",
+  });
+  for (const locale of ["pt", "es", "fr"]) {
+    const pages = JSON.parse(readFileSync(path.join(process.cwd(), `messages/${locale}.json`), "utf8")).pages;
+    for (const k of OFFICE_LABEL_KEYS) {
+      assert.equal(typeof pages.about.office?.[k], "string", `${locale}: pages.about.office.${k}`);
+    }
+  }
+  const msg = (k: (typeof OFFICE_LABEL_KEYS)[number]) => en.about.office[k] as string;
+  assert.deepEqual(resolveOfficeLabels(undefined, msg), en.about.office, "no office_labels → i18n");
+  const mixed = resolveOfficeLabels({ address: "Find us", bookings: "", checkin: "  " }, msg);
+  assert.equal(mixed.address, "Find us", "a filled field wins");
+  assert.equal(mixed.bookings, "Bookings", "blank → i18n");
+  assert.equal(mixed.checkin, "Check-in", "whitespace → i18n");
+  assert.equal(mixed.website, "Website", "absent → i18n");
+});
+
+test("about S3: office_labels is optional, capped at 40 and translatable; hints name the EN default", () => {
+  const en = JSON.parse(readFileSync(path.join(process.cwd(), "messages/en.json"), "utf8")).pages;
+  assert.ok(!("office_labels" in defaultAbout.contact));
+  assert.ok(aboutSchema.safeParse(defaultAbout).success, "a row without office_labels validates");
+  const withLabels = (labels: Record<string, string>) => ({
+    ...defaultAbout,
+    contact: { ...defaultAbout.contact, office_labels: labels },
+  });
+  assert.ok(aboutSchema.safeParse(withLabels({})).success, "empty object");
+  assert.ok(aboutSchema.safeParse(withLabels({ address: "", website: "Web" })).success, "blank / filled");
+  assert.ok(!aboutSchema.safeParse(withLabels({ email: "x".repeat(41) })).success, "≤ 40");
+  const shape = aboutSchema.shape.contact.shape.office_labels.unwrap().shape;
+  for (const k of OFFICE_LABEL_KEYS) {
+    assert.ok(translatablePathsByPage.about.includes(`contact.office_labels.${k}`), `translatable ${k}`);
+    assert.equal(shape[k].description, `Leave blank for “${en.about.office[k]}”.`, `${k} hint`);
+  }
+});
+
+test("about S3: office rows come from Settings; blank check-in / website hide their row", () => {
+  const labels = resolveOfficeLabels(undefined, (k) => ({ address: "Address", bookings: "Bookings", checkin: "Check-in", email: "Email", website: "Website" })[k]);
+  // Everything set: the six rows the page showed before S3, same text and links.
+  assert.deepEqual(officeRows(OFFICE_GLOBALS, labels), [
+    { key: "address", label: "Address", text: OFFICE_GLOBALS.officeAddress },
+    { key: "bookings", label: "Bookings", text: "+351 910 075 725", href: "tel:+351910075725" },
+    { key: "checkin", label: "Check-in", text: "+351 912 310 632", href: "tel:+351912310632" },
+    { key: "email", label: "Email", text: "info@centralhill.pt", href: "mailto:info@centralhill.pt" },
+    { key: "website", label: "Website", text: "www.centralhill.pt", href: "https://www.centralhill.pt" },
+    { key: "hours", label: "Office Hours", text: OFFICE_GLOBALS.officeHours },
+  ]);
+  const keys = (g: typeof OFFICE_GLOBALS | null) => officeRows(g, labels).map((r) => r.key);
+  assert.deepEqual(keys({ ...OFFICE_GLOBALS, checkinPhone: null }), ["address", "bookings", "email", "website", "hours"]);
+  assert.deepEqual(keys({ ...OFFICE_GLOBALS, website: "  " }), ["address", "bookings", "checkin", "email", "hours"]);
+  assert.deepEqual(keys(null), ["address", "bookings", "email", "hours"], "no settings row: no literals left");
+  // Visible website text: no scheme, no trailing slash.
+  assert.equal(websiteText("https://www.centralhill.pt/"), "www.centralhill.pt");
+  assert.equal(websiteText("https://centralhill.pt/en/"), "centralhill.pt/en");
+  // The literals are gone from the page.
+  const page = readFileSync(path.join(process.cwd(), "src/slices/pages/ui/about-page.tsx"), "utf8");
+  assert.ok(!/CHECKIN_PHONE|WEBSITE\b|912 310 632|www\.centralhill\.pt/.test(page));
 });

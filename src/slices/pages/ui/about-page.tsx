@@ -19,10 +19,11 @@ import {
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import { ContactForm } from "@slices/leads/contract";
-import { getGlobals, type SiteGlobals } from "@slices/settings/contract";
+import { getGlobals } from "@slices/settings/contract";
 import { getAboutPage } from "../contract";
 import { aboutSchema, defaultAbout } from "../schemas/about";
 import { FaqSection } from "./components/faq-section";
+import { type OfficeRow, officeRows, resolveOfficeLabels } from "./about-office";
 import { orMessage } from "./or-message";
 
 /**
@@ -44,9 +45,10 @@ import { orMessage } from "./or-message";
  *   (blank → `pages.faqTitle`).
  * - "Let's Start a Conversation": `SectionHead`, then `BenefitCards` as link cards
  *   (`columns={3}`, per-item `href` fixed by position + `linkLabel`), then `ContactSplit` — the dark office panel
- *   (address / bookings phone / email / office hours from company_settings via `getGlobals`,
- *   so they're edited once in /admin/settings; the check-in phone and website have no settings
- *   field and stay literals) beside the leads slice's `ContactForm` (`source="about-contact"`,
+ *   (address / bookings and check-in phones / email / website / office hours from company_settings
+ *   via `getGlobals`, so they're edited once in /admin/settings; a blank check-in phone or website
+ *   hides its row; row labels from `contact.office_labels`, see `./about-office`) beside the
+ *   leads slice's `ContactForm` (`source="about-contact"`,
  *   `kind = "contact"` — the same form, validation, consent and success/error states as the
  *   header contact dialog). The mock's form was static (`onsubmit="return false"`); it now
  *   submits a real lead.
@@ -128,34 +130,12 @@ function photo(
   );
 }
 
-// Office details company_settings has no field for (or has none set yet) — the mock's literals.
-// Address / bookings phone / email fall back to these only if the settings row is missing.
-const OFFICE_FALLBACK = {
-  address: "Rua da Bempostinha 21A, 1150-065 Lisboa, Portugal",
-  phone: "+351 910 075 725",
-  email: "info@centralhill.pt",
-  hours: "Monday – Friday · 09:30 – 18:00",
-};
-const CHECKIN_PHONE = "+351 912 310 632"; // no settings field
-const WEBSITE = { href: "https://www.centralhill.pt", text: "www.centralhill.pt" }; // no settings field
-
-const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;
-
-/** The office panel rows: settings values where company_settings has a field, literals otherwise. */
-function officeRows(globals: SiteGlobals | null): ContactSplitRow[] {
-  const phone = globals?.phone || OFFICE_FALLBACK.phone;
-  const email = globals?.email || OFFICE_FALLBACK.email;
-  return [
-    { label: "Address", value: globals?.officeAddress || OFFICE_FALLBACK.address },
-    { label: "Bookings", value: <a href={telHref(phone)}>{phone}</a> },
-    { label: "Check-in", value: <a href={telHref(CHECKIN_PHONE)}>{CHECKIN_PHONE}</a> },
-    { label: "Email", value: <a href={`mailto:${email}`}>{email}</a> },
-    { label: "Website", value: <a href={WEBSITE.href}>{WEBSITE.text}</a> },
-    {
-      label: globals?.officeHoursLabel || "Office Hours",
-      value: globals?.officeHours || OFFICE_FALLBACK.hours,
-    },
-  ];
+/** The office panel rows (`./about-office`) as `ContactSplit` rows, linked where they have an href. */
+function officeSplitRows(rows: OfficeRow[]): ContactSplitRow[] {
+  return rows.map((r) => ({
+    label: r.label,
+    value: r.href ? <a href={r.href}>{r.text}</a> : r.text,
+  }));
 }
 
 export async function AboutPage({ locale }: { locale: Locale }) {
@@ -176,6 +156,9 @@ export async function AboutPage({ locale }: { locale: Locale }) {
     organisation: orMessage(c.organisation.image_alt, t("about.alts.organisation")),
     community: orMessage(c.community.image_alt, t("about.alts.community")),
   };
+  // Office panel (S3): labels = `contact.office_labels.*` → `pages.about.office.*`; values from
+  // Settings, the check-in and website rows hidden when blank there.
+  const officeLabels = resolveOfficeLabels(c.contact.office_labels, (k) => t(`about.office.${k}`));
 
   const serveItems = c.serve.audiences.map((a, i) => ({
     icon: <Icon name={a.icon_key} size={30} className="block" />,
@@ -387,7 +370,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
             <ContactSplit
               className="mt-[48px]"
               infoTitle={c.contact.office_title}
-              rows={officeRows(globals)}
+              rows={officeSplitRows(officeRows(globals, officeLabels))}
               formTitle={c.contact.form.headline}
               formIntro={c.contact.form.subheadline || undefined}
             >

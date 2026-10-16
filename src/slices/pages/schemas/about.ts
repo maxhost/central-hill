@@ -89,6 +89,10 @@ const contactCard = z.object({
  * and blank-tolerant: empty / absent → the page renders the current i18n message of the
  * visitor's locale, so a row saved before these keys existed renders exactly as before.
  */
+/** An office-panel row label (S3): optional, blank → the i18n default named in the hint. */
+const officeLabel = (enDefault: string) =>
+  tStrOpt({ max: 40 }).describe(`Leave blank for “${enDefault}”.`);
+
 export const aboutSchema = z.object({
   /** Search/social meta for `/<locale>/about`. Blank → `pages.about.metaTitle` / `metaDescription`. */
   seo: z.object({ ...seoShape }).optional(),
@@ -151,6 +155,20 @@ export const aboutSchema = z.object({
     headline: tStr({ max: 160 }),
     cards: fixed(contactCard, 3),
     office_title: tStr({ max: 80 }),
+    /**
+     * Optional (S3): the office panel's row labels. Blank → `pages.about.office.<key>`. The
+     * values come from Settings (address, phones, email, website); a blank Settings value hides
+     * its row.
+     */
+    office_labels: z
+      .object({
+        address: officeLabel("Address"),
+        bookings: officeLabel("Bookings"),
+        checkin: officeLabel("Check-in"),
+        email: officeLabel("Email"),
+        website: officeLabel("Website"),
+      })
+      .optional(),
     form: z.object({
       headline: tStr({ max: 160 }),
       subheadline: tStrOpt({ max: 280 }),

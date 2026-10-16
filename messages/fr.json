@@ -743,6 +743,10 @@
           "email": "E-mail",
           "phone": "Téléphone",
           "whatsapp": "WhatsApp",
+          "checkinPhone": "Téléphone de check-in",
+          "checkinPhoneHint": "Affiché dans le panneau du bureau de la page À propos. Laissez vide pour masquer la ligne.",
+          "website": "Site web",
+          "websiteHint": "Adresse https:// complète, affichée dans le panneau du bureau de la page À propos. Laissez vide pour masquer la ligne.",
           "statValue": "Chiffre",
           "statLabel": "Libellé",
           "officeAddress": "Adresse du bureau",
@@ -1147,6 +1151,13 @@
         "story": "Façades traditionnelles en azulejos dans une rue historique de Lisbonne",
         "organisation": "Équipe examinant ensemble des documents de performance des biens",
         "community": "Des personnes partageant un repas à une table commune à Lisbonne"
+      },
+      "office": {
+        "address": "Adresse",
+        "bookings": "Réservations",
+        "checkin": "Check-in",
+        "email": "E-mail",
+        "website": "Site web"
       }
     },
     "admin": {
@@ -1381,6 +1392,12 @@
         "community": "Engagement solidaire",
         "cards": "Cartes",
         "office_title": "Titre du bureau",
+        "office_labels": "Libellés du bureau",
+        "address": "Adresse",
+        "bookings": "Réservations",
+        "checkin": "Check-in",
+        "email": "E-mail",
+        "website": "Site web",
         "form": "Formulaire de contact",
         "link_label": "Texte du lien"
       },

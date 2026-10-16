@@ -64,6 +64,10 @@ export interface SiteGlobals {
   email: string;
   phone: string;
   whatsapp: string | null;
+  /** Check-in phone (About office panel); null when unset — the row is then hidden. */
+  checkinPhone: string | null;
+  /** Company website, an `https://` URL; null when unset — the About row is then hidden. */
+  website: string | null;
   social: SocialLinks;
   stats: Record<StatKey, CompanyStat>;
   officeAddress: string;

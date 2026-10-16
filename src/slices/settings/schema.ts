@@ -11,6 +11,10 @@ export const company_settings = pgTable("company_settings", {
   email: text().notNull(),
   phone: text().notNull(),
   whatsapp: text(),
+  /** About office panel "Check-in" phone (migration 0018); null/blank hides the row. */
+  checkin_phone: text(),
+  /** Company website, an `https://` URL (migration 0018); null/blank hides the About row. */
+  website_url: text(),
   social: jsonb().$type<Record<string, string>>().notNull().default({}),
   /** { bookings|years|guests|revenue|buildings|apartments: { value, label } } */
   stats: jsonb().$type<Record<string, { value: string; label: string }>>().notNull().default({}),

@@ -17,6 +17,8 @@ export const DEFAULT_GLOBALS: SiteGlobals = {
   email: "info@centralhill.pt",
   phone: "+351 910 075 725",
   whatsapp: "+351 910 075 725",
+  checkinPhone: "+351 912 310 632",
+  website: "https://www.centralhill.pt",
   social: {},
   stats: {
     bookings: { value: "60,000+", label: "Bookings Completed" },

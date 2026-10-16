@@ -30,6 +30,8 @@ export interface GlobalsEditData {
   email: string;
   phone: string;
   whatsapp: string;
+  checkin_phone: string;
+  website_url: string;
   social: Record<"instagram" | "facebook" | "linkedin" | "youtube" | "tiktok", string>;
   stats: Record<StatKey, StatForm>;
   office_address: string;
@@ -63,6 +65,8 @@ function scaffold(): GlobalsEditBundle {
       email: DEFAULT_GLOBALS.email,
       phone: DEFAULT_GLOBALS.phone,
       whatsapp: DEFAULT_GLOBALS.whatsapp ?? "",
+      checkin_phone: DEFAULT_GLOBALS.checkinPhone ?? "",
+      website_url: DEFAULT_GLOBALS.website ?? "",
       social: { ...EMPTY_SOCIAL },
       stats,
       office_address: DEFAULT_GLOBALS.officeAddress,
@@ -108,6 +112,8 @@ export async function getGlobalsForEdit(): Promise<GlobalsEditBundle> {
     email: row.email,
     phone: row.phone,
     whatsapp: row.whatsapp ?? "",
+    checkin_phone: row.checkin_phone ?? "",
+    website_url: row.website_url ?? "",
     social,
     stats,
     office_address: row.office_address,

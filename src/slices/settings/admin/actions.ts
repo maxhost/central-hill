@@ -61,6 +61,8 @@ export async function saveGlobals(raw: unknown): Promise<SettingsSaveResult> {
     email: input.email,
     phone: input.phone,
     whatsapp: input.whatsapp,
+    checkin_phone: input.checkin_phone,
+    website_url: input.website_url,
     social,
     stats,
     office_address: input.office_address,

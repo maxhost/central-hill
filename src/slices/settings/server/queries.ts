@@ -84,6 +84,8 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
     email: row.email,
     phone: row.phone,
     whatsapp: row.whatsapp ?? null,
+    checkinPhone: row.checkin_phone?.trim() || null,
+    website: row.website_url?.trim() || null,
     social: row.social,
     stats,
     officeAddress: row.office_address,
@@ -102,9 +104,12 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
 // The site icon key list is part of the cache key: adding a site icon must not serve an entry
 // cached before the key existed (its `icons` would lack it).
 const SITE_ICONS_SHAPE = SITE_ICON_KEYS.join(",");
+// Same reason for the read-model shape: bump it when `SiteGlobals` gains a field, so an entry
+// cached before the field existed is not served (v2: `checkinPhone` / `website`, about spec S3).
+const GLOBALS_SHAPE = "v2";
 
 export function getGlobals(locale: Locale): Promise<SiteGlobals | null> {
-  return unstable_cache(() => _getGlobals(locale), ["settings:getGlobals", locale, SITE_ICONS_SHAPE], {
+  return unstable_cache(() => _getGlobals(locale), ["settings:getGlobals", locale, GLOBALS_SHAPE, SITE_ICONS_SHAPE], {
     tags: [SETTINGS_TAGS.globals],
   })();
 }

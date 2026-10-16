@@ -22,6 +22,8 @@ function validGlobals(overrides: Record<string, unknown> = {}) {
     email: "info@centralhill.pt",
     phone: "+351 910 075 725",
     whatsapp: null,
+    checkin_phone: "+351 912 310 632",
+    website_url: "https://www.centralhill.pt",
     social: { instagram: null, facebook: null, linkedin: null, youtube: null, tiktok: null },
     stats: {
       bookings: stat("Bookings"),
@@ -125,4 +127,32 @@ test("stored site icons fall back to the defaults when missing or unknown", () =
   assert.equal(r.location, "pin");
   assert.equal(r.reading_time, SITE_ICON_DEFAULTS.reading_time);
   assert.equal("extra" in r, false);
+});
+
+// ── Check-in phone + website (spec about-admin-editor S3) ──────────────────────
+test("check-in phone: valid, blank (null) or rejected like the bookings phone", () => {
+  const parse = (v: unknown) => companySettingsSaveInput.safeParse(validGlobals({ checkin_phone: v }));
+  assert.equal(parse("+351 912 310 632").success, true);
+  assert.equal(parse(null).success, true, "blank → null hides the About row");
+  assert.equal(parse("12").success, false, "min 3, like phone");
+  assert.equal(parse("1".repeat(41)).success, false, "max 40, like phone");
+  // Same rule as `phone`.
+  for (const v of ["12", "1".repeat(41), "+351 912 310 632"]) {
+    assert.equal(parse(v).success, companySettingsSaveInput.safeParse(validGlobals({ phone: v })).success, v);
+  }
+  const missing: Record<string, unknown> = validGlobals();
+  delete missing.checkin_phone;
+  assert.equal(companySettingsSaveInput.safeParse(missing).success, false, "the form always posts it");
+});
+
+test("website: an https:// URL or blank (null); other values are rejected", () => {
+  const parse = (v: unknown) => companySettingsSaveInput.safeParse(validGlobals({ website_url: v }));
+  assert.equal(parse("https://www.centralhill.pt").success, true);
+  assert.equal(parse("https://www.centralhill.pt/en/").success, true);
+  assert.equal(parse(null).success, true, "blank → null hides the About row");
+  for (const bad of ["www.centralhill.pt", "http://www.centralhill.pt", "ftp://centralhill.pt", "not a url", ""]) {
+    const r = parse(bad);
+    assert.equal(r.success, false, bad);
+    if (!r.success) assert.ok(r.error.issues.some((i) => i.path.join(".") === "website_url"), bad);
+  }
 });
