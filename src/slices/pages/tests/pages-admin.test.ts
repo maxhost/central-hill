@@ -10,7 +10,7 @@ import { withMediaAccept } from "../schemas/media-accept";
 import { adminHidden } from "../schemas/admin-hidden";
 import { ownersSchema } from "../schemas/owners";
 import { guestSchema } from "../schemas/guest";
-import { aboutSchema } from "../schemas/about";
+import { aboutSchema, defaultAbout } from "../schemas/about";
 import { buttonClassName } from "@core/ui/button";
 import { splitCtaButtonClassName } from "@core/ui/split-cta-panels";
 import {
@@ -1126,4 +1126,64 @@ test("about layout + labels: every i18n key exists in the 4 locales — S1", () 
   assert.equal(en.admin.itemLabelsByParent.certifications.items, "Certification");
   // The Guests teaser cards keep the global "Card".
   assert.equal(en.admin.itemLabels.items, "Card");
+});
+
+// ── About: per-photo alt + measured hints (spec about-admin-editor S2) ───────
+
+test("aboutSchema media accepts: every About photo picker is image-only — S2", () => {
+  const media: Record<string, { accept: string; hint?: string }> = {};
+  const walk = (node: FieldNode, p: string) => {
+    if (node.kind === "media") media[p] = { accept: node.accept, hint: node.hint };
+    if (node.kind === "hidden") walk(node.node, p);
+    if (node.kind === "object") for (const f of node.fields) walk(f.node, `${p}.${f.key}`);
+    if (node.kind === "array") walk(node.element, `${p}[]`);
+  };
+  walk(describe(aboutSchema), "about");
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(media).map(([p, m]) => [p, m.accept])),
+    {
+      "about.hero.image_media_id": "image",
+      "about.story.image_media_id": "image",
+      "about.serve.audiences[].image_media_id": "image",
+      "about.organisation.image_media_id": "image",
+      "about.certifications.items[].logo_media_id": "image",
+      "about.community.image_media_id": "image",
+    },
+  );
+  assert.match(media["about.hero.image_media_id"]?.hint ?? "", /Landscape 16:9 — 1920×1080 px \(min 1600×900\)/);
+  for (const p of ["about.story.image_media_id", "about.community.image_media_id", "about.organisation.image_media_id"]) {
+    assert.match(media[p]?.hint ?? "", /Portrait 4:5 — 1200×1500 px \(min 960×1200\)/, p);
+  }
+  assert.match(media["about.serve.audiences[].image_media_id"]?.hint ?? "", /Landscape 4:3 — 1200×900 px \(min 800×600\)/);
+});
+
+test("aboutSchema S2: image_alt is an optional string right after each photo, hint names the EN fallback", () => {
+  const root = describe(aboutSchema);
+  const en = JSON.parse(readFileSync(path.join(process.cwd(), "messages/en.json"), "utf8")).pages;
+  for (const section of ["hero", "story", "organisation", "community"] as const) {
+    const alt = nodeAt(root, [section, "image_alt"]);
+    assert.equal(alt.kind, "string", section);
+    if (alt.kind === "string") {
+      assert.equal(alt.optional, true, `${section}.image_alt optional`);
+      assert.ok((alt.hint ?? "").includes(`Leave blank for “${en.about.alts[section]}”.`), `${section} hint`);
+    }
+    // Editor order follows the schema: the alt sits right after its image field.
+    const keys = Object.keys(aboutSchema.shape[section].shape);
+    assert.equal(keys[keys.indexOf("image_media_id") + 1], "image_alt", `${section} order`);
+  }
+  // Rows saved before S2 (no alt keys) validate; blank and filled alts validate; > 160 does not.
+  assert.ok(aboutSchema.safeParse(defaultAbout).success, "legacy row");
+  const withAlts = (alt: string) => ({
+    ...defaultAbout,
+    hero: { ...defaultAbout.hero, image_alt: alt },
+    story: { ...defaultAbout.story, image_alt: alt },
+    organisation: { ...defaultAbout.organisation, image_alt: alt },
+    community: { ...defaultAbout.community, image_alt: alt },
+  });
+  assert.ok(aboutSchema.safeParse(withAlts("")).success, "blank alts");
+  assert.ok(aboutSchema.safeParse(withAlts("Lisbon at dusk")).success, "filled alts");
+  assert.ok(!aboutSchema.safeParse(withAlts("x".repeat(161))).success, "alt ≤ 160");
+  const scaffolded = applyDefaults(describe(aboutSchema), defaultAbout);
+  const again = aboutSchema.safeParse(scaffolded);
+  assert.ok(again.success, JSON.stringify(again.error?.issues));
 });

@@ -16,9 +16,37 @@ import { iconKey } from "@core/validation/icon-key";
 import { seoShape, tStr, tStrOpt } from "@core/validation/primitives";
 import { faqGroupKey, fixed, iconCard, optionalImage, titledItem } from "./_shared";
 
-const HERO_IMG_HINT = "Full-bleed hero photo. Landscape — recommended 1900×1100px, JPG or WebP, under 500 KB.";
-const SPLIT_IMG_HINT = "Photo beside the text. Portrait 4:5 — recommended 1200×1500px, JPG or WebP, under 500 KB.";
-const AUDIENCE_IMG_HINT = "Card background photo. Portrait — recommended 1200×1500px, JPG or WebP, under 500 KB.";
+/*
+ * Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). Sizes
+ * measured on `/en/about` with Playwright at 1440 / 1024 / 390 px (spec about-admin-editor S2):
+ * - Hero (`Hero compact`, `object-cover`): a band 576 px tall — 1920×576 / 1440×576 / 1024×576
+ *   (16:9) on desktop–tablet, 390×630 portrait on a phone. Always cropped.
+ * - Story / community (`IntroSplit` media cell, `object-cover`): ~536 px wide on desktop, 433 at
+ *   1024, full width (824 at 880, 334 at 390) on tablet/phone. Its height is the larger of the
+ *   text column (story 625 / 682 px, community 511 / 559 px at 1440 / 1024), the photo's own
+ *   height at that width and a 380 px (280 px on tablet/phone) minimum — so a 4:5 photo shows
+ *   uncropped on desktop and phone, and is cropped at the sides only where the text is taller.
+ * - Organisation (`TwoColumnShowcase`): fixed `aspect-[4/5]` — 560×700 / 452×565 / 334×418
+ *   (824×1030 at 880). Cropped to 4:5.
+ * - Audience cards (`PhotoFeatureGrid`, CSS `bg-cover bg-center` under a dark scrim):
+ *   377×287 (3 columns) / 305×333 (3 columns) / 334×287–310 (1 column), 399×287 at 880
+ *   (2 columns) — between ~0.9:1 and 1.3:1, so 4:3 is the safest source. Always centre-cropped.
+ */
+const HERO_IMG_HINT =
+  "Full-bleed hero photo behind the headline, cropped to fill — a wide band about 1440×576 px on a laptop (1920×576 on large screens, 16:9 on tablet, portrait 390×630 on phones), so keep the subject centred. Landscape 16:9 — 1920×1080 px (min 1600×900), JPG or WebP, under 500 KB.";
+/** `IntroSplit` cell (story, community): the photo's own shape sets the height unless the text is taller. */
+const SPLIT_IMG_HINT =
+  "Photo beside the text, about 536 px wide on desktop and full width on phones. Portrait 4:5 shows uncropped on desktop and phones; where the text column is taller (tablet) the sides are cropped, so keep the subject centred. Portrait 4:5 — 1200×1500 px (min 960×1200), JPG or WebP, under 500 KB.";
+/** `TwoColumnShowcase` photo (organisation): a fixed 4:5 frame. */
+const SHOWCASE_IMG_HINT =
+  "Photo beside the departments, in a fixed 4:5 frame (560×700 px on desktop, 334×418 on phones) — other shapes are cropped to fit. Portrait 4:5 — 1200×1500 px (min 960×1200), JPG or WebP, under 500 KB.";
+const AUDIENCE_IMG_HINT =
+  "Card background (a dark overlay is applied, centre-cropped). The card is about 377×287 px on desktop, 305×333 on tablet and 334×300 on phones. Landscape 4:3 — 1200×900 px (min 800×600), JPG or WebP, under 300 KB.";
+/** Per-photo alt (spec about-admin-editor S2): blank → `pages.about.alts.<section>`. */
+const imageAlt = (fallback: string) =>
+  tStrOpt({ max: 160 }).describe(
+    `Describe the photo for screen readers and search. Leave blank for “${fallback}”.`,
+  );
 const LOGO_HINT =
   "Issuer logo (PNG/SVG with transparency, ~48px tall on the page). Blank shows the default logo (first two cards) or the icon.";
 
@@ -66,6 +94,8 @@ export const aboutSchema = z.object({
   seo: z.object({ ...seoShape }).optional(),
   hero: z.object({
     image_media_id: optionalImage(HERO_IMG_HINT),
+    /** Optional (S2): blank → `pages.about.alts.hero`. */
+    image_alt: imageAlt("Rooftops and historic streets of Lisbon at golden hour"),
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     mission: tStr({ max: 600 }),
@@ -75,6 +105,8 @@ export const aboutSchema = z.object({
     headline: tStr({ max: 160 }),
     narrative: fixed(tStr({ max: 1200 }), 3),
     image_media_id: optionalImage(SPLIT_IMG_HINT),
+    /** Optional (S2): blank → `pages.about.alts.story`. */
+    image_alt: imageAlt("Traditional tiled façades along a historic Lisbon street"),
   }),
   stats: fixed(stat, 5),
   serve: z.object({
@@ -95,7 +127,9 @@ export const aboutSchema = z.object({
     intro: tStrOpt({ max: 600 }),
     /** Floating label on the photo (blank = none). */
     badge: tStrOpt({ max: 80 }),
-    image_media_id: optionalImage(SPLIT_IMG_HINT),
+    image_media_id: optionalImage(SHOWCASE_IMG_HINT),
+    /** Optional (S2): blank → `pages.about.alts.organisation`. */
+    image_alt: imageAlt("Team reviewing property performance documents together"),
     departments: fixed(department, 6),
   }),
   certifications: z.object({
@@ -109,6 +143,8 @@ export const aboutSchema = z.object({
     headline: tStr({ max: 160 }),
     copy: fixed(tStr({ max: 1200 }), 2),
     image_media_id: optionalImage(SPLIT_IMG_HINT),
+    /** Optional (S2): blank → `pages.about.alts.community`. */
+    image_alt: imageAlt("People sharing a meal together at a community table in Lisbon"),
   }),
   contact: z.object({
     eyebrow: tStrOpt({ max: 80 }),

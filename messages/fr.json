@@ -1141,7 +1141,13 @@
       "metaTitle": "À Propos — Central Hill",
       "metaDescription": "Depuis 2012, Central Hill Apartments transforme des biens immobiliers en actifs hôteliers performants partout au Portugal, en alliant une connaissance approfondie du terrain, une technologie fondée sur l'IA et un engagement sans compromis envers la qualité.",
       "communityEyebrow": "Communauté",
-      "contactNote": "Nous répondons généralement sous 24 heures."
+      "contactNote": "Nous répondons généralement sous 24 heures.",
+      "alts": {
+        "hero": "Toits et rues historiques de Lisbonne à l'heure dorée",
+        "story": "Façades traditionnelles en azulejos dans une rue historique de Lisbonne",
+        "organisation": "Équipe examinant ensemble des documents de performance des biens",
+        "community": "Des personnes partageant un repas à une table commune à Lisbonne"
+      }
     },
     "admin": {
       "title": "Pages",

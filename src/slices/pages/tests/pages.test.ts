@@ -1308,3 +1308,32 @@ test("seoMetadataInput: /about falls back to i18n, uses seo + OG, keeps canonica
   assert.equal(custom.canonicalPath, "/fr/about");
   assert.equal(custom.images?.[0]?.url, "https://cdn.example/og.jpg");
 });
+
+// ── About S2: per-photo alt with i18n fallback ───────────────────────────────
+test("about S2: image_alt is translatable; alt = field → i18n; alt keys exist in 4 locales", () => {
+  const paths = translatablePathsByPage.about;
+  for (const s of ["hero", "story", "organisation", "community"]) {
+    assert.ok(paths.includes(`${s}.image_alt`), `expected translatable path ${s}.image_alt`);
+  }
+  // EN fallbacks are exactly the mock alts the page rendered before S2.
+  const en = JSON.parse(readFileSync(path.join(process.cwd(), "messages/en.json"), "utf8")).pages;
+  assert.deepEqual(en.about.alts, {
+    hero: "Rooftops and historic streets of Lisbon at golden hour",
+    story: "Traditional tiled façades along a historic Lisbon street",
+    organisation: "Team reviewing property performance documents together",
+    community: "People sharing a meal together at a community table in Lisbon",
+  });
+  for (const locale of ["pt", "es", "fr"]) {
+    const pages = JSON.parse(readFileSync(path.join(process.cwd(), `messages/${locale}.json`), "utf8")).pages;
+    for (const s of ["hero", "story", "organisation", "community"]) {
+      const v = pages.about.alts?.[s];
+      assert.equal(typeof v, "string", `${locale}: pages.about.alts.${s}`);
+      assert.notEqual(v, en.about.alts[s], `${locale}: pages.about.alts.${s} is translated`);
+    }
+  }
+  // Order: the field wins; blank / whitespace / absent → the i18n alt (never the asset's alt).
+  assert.equal(orMessage("Lisbon at dusk", en.about.alts.hero), "Lisbon at dusk");
+  assert.equal(orMessage("", en.about.alts.hero), en.about.alts.hero);
+  assert.equal(orMessage("  ", en.about.alts.story), en.about.alts.story);
+  assert.equal(orMessage(defaultAbout.community.image_alt, en.about.alts.community), en.about.alts.community);
+});

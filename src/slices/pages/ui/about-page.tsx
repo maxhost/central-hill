@@ -56,22 +56,17 @@ import { orMessage } from "./or-message";
 
 // Image fallbacks = the approved mock photo, used 1:1 until a real R2 asset is set in the
 // backoffice (an empty `*_media_id` → no resolved media). Same convention as Real Estate.
-const HERO_FALLBACK = {
-  src: "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70",
-  alt: "Rooftops and historic streets of Lisbon at golden hour",
-};
-const STORY_FALLBACK = {
-  src: "https://images.pexels.com/photos/19295144/pexels-photo-19295144.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  alt: "Traditional tiled façades along a historic Lisbon street",
-};
-const ORGANISED_FALLBACK = {
-  src: "https://images.pexels.com/photos/5324937/pexels-photo-5324937.jpeg?auto=compress&cs=tinysrgb&w=1200",
-  alt: "Team reviewing property performance documents together",
-};
-const COMMUNITY_FALLBACK = {
-  src: "https://images.unsplash.com/photo-1591825729269-caeb344f6df2?auto=format&fit=crop&w=900&q=70",
-  alt: "People sharing a meal together at a community table in Lisbon",
-};
+// Alt text (spec about-admin-editor S2): the section's `image_alt` → `pages.about.alts.<section>`
+// (the mock's alts, translated), with an asset or the fallback photo alike — the media-library
+// alt is not used (the library is going away).
+const HERO_FALLBACK_SRC =
+  "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70";
+const STORY_FALLBACK_SRC =
+  "https://images.pexels.com/photos/19295144/pexels-photo-19295144.jpeg?auto=compress&cs=tinysrgb&w=1200";
+const ORGANISED_FALLBACK_SRC =
+  "https://images.pexels.com/photos/5324937/pexels-photo-5324937.jpeg?auto=compress&cs=tinysrgb&w=1200";
+const COMMUNITY_FALLBACK_SRC =
+  "https://images.unsplash.com/photo-1591825729269-caeb344f6df2?auto=format&fit=crop&w=900&q=70";
 /** `PhotoFeatureGrid` backgrounds, by audience position. */
 const AUDIENCE_FALLBACK_IMGS = [
   "https://images.pexels.com/photos/39205181/pexels-photo-39205181.jpeg?auto=compress&cs=tinysrgb&w=1200",
@@ -102,7 +97,7 @@ const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]"
 
 /**
  * A section photo: the uploaded asset through `MediaImage`, or the mock photo as a plain `<img>`
- * (external TEMP fallback) while none is set.
+ * (external TEMP fallback) while none is set. `alt` is already resolved (field → i18n).
  */
 function photo(
   m: MediaImageData | undefined,
@@ -112,7 +107,7 @@ function photo(
   if (m?.url && m.width > 0 && m.height > 0) {
     return (
       <MediaImage
-        data={{ ...m, alt: m.alt || fallback.alt }}
+        data={{ ...m, alt: fallback.alt }}
         className={opts.className}
         sizes={opts.sizes}
         priority={opts.priority}
@@ -123,7 +118,7 @@ function photo(
     // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
     <img
       src={m?.url || fallback.src}
-      alt={m?.alt || fallback.alt}
+      alt={fallback.alt}
       className={opts.className}
       {...(opts.priority
         ? { loading: "eager" as const, fetchPriority: "high" as const }
@@ -174,6 +169,13 @@ export async function AboutPage({ locale }: { locale: Locale }) {
   const c = page && aboutSchema.safeParse(page.content).success ? page.content : defaultAbout;
   const media = page?.media ?? {};
   const faqGroupKey = c.faq_group_key ?? "";
+  // Photo alts (S2): the section's `image_alt` → `pages.about.alts.<section>`.
+  const alts = {
+    hero: orMessage(c.hero.image_alt, t("about.alts.hero")),
+    story: orMessage(c.story.image_alt, t("about.alts.story")),
+    organisation: orMessage(c.organisation.image_alt, t("about.alts.organisation")),
+    community: orMessage(c.community.image_alt, t("about.alts.community")),
+  };
 
   const serveItems = c.serve.audiences.map((a, i) => ({
     icon: <Icon name={a.icon_key} size={30} className="block" />,
@@ -222,7 +224,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
       {/* Hero: Buildings listing's exact `Hero` configuration (as on Guests and Real Estate). */}
       <Hero
         id="who-we-are"
-        background={photo(media[c.hero.image_media_id], HERO_FALLBACK, {
+        background={photo(media[c.hero.image_media_id], { src: HERO_FALLBACK_SRC, alt: alts.hero }, {
           sizes: "100vw",
           className: "absolute inset-0 -z-10 h-full w-full object-cover",
           priority: true, // full-bleed hero — the LCP element on this page
@@ -251,7 +253,11 @@ export async function AboutPage({ locale }: { locale: Locale }) {
               eyebrow={c.story.eyebrow || undefined}
               headline={c.story.headline}
               paragraphs={c.story.narrative}
-              image={photo(media[c.story.image_media_id], STORY_FALLBACK, { sizes: SPLIT_SIZES })}
+              image={photo(
+                media[c.story.image_media_id],
+                { src: STORY_FALLBACK_SRC, alt: alts.story },
+                { sizes: SPLIT_SIZES },
+              )}
             />
           </Reveal>
         </div>
@@ -308,10 +314,14 @@ export async function AboutPage({ locale }: { locale: Locale }) {
             badge={c.organisation.badge || undefined}
             tone="alt"
             imagePosition="right"
-            image={photo(media[c.organisation.image_media_id], ORGANISED_FALLBACK, {
-              sizes: "(max-width: 1024px) 100vw, 560px",
-              className: "aspect-[4/5] w-full rounded-sm object-cover",
-            })}
+            image={photo(
+              media[c.organisation.image_media_id],
+              { src: ORGANISED_FALLBACK_SRC, alt: alts.organisation },
+              {
+                sizes: "(max-width: 1024px) 100vw, 560px",
+                className: "aspect-[4/5] w-full rounded-sm object-cover",
+              },
+            )}
           />
         </Reveal>
       </div>
@@ -341,7 +351,11 @@ export async function AboutPage({ locale }: { locale: Locale }) {
               eyebrow={c.community.eyebrow || undefined}
               headline={c.community.headline}
               paragraphs={c.community.copy}
-              image={photo(media[c.community.image_media_id], COMMUNITY_FALLBACK, { sizes: SPLIT_SIZES })}
+              image={photo(
+                media[c.community.image_media_id],
+                { src: COMMUNITY_FALLBACK_SRC, alt: alts.community },
+                { sizes: SPLIT_SIZES },
+              )}
             />
           </Reveal>
         </div>
