@@ -224,16 +224,39 @@ page_content
   canonical defaults (`defaultCapabilities`, …, `scripts/backfill-real-estate-sections.ts`); spec
   `real-estate-admin-editor` (2026-10-11) added every optional field above, the hidden fields and the
   `document` media kind.
-- **about**: `hero{image_media_id?, eyebrow, headline, mission}`; `story{eyebrow, headline, narrative[×3], image_media_id?}`;
+- **about** (as shipped by `docs/specs/about-admin-editor.md`, 2026-10-16;
+  `src/slices/pages/schemas/about.ts`). Base shape (session 3d):
+  `hero{image_media_id?, eyebrow, headline, mission}`; `story{eyebrow, headline, narrative[×3], image_media_id?}`;
   `stats[×5]{value,label}`; `serve{eyebrow, headline, intro, audiences[×3]{icon_key,title,description,image_media_id?}}`;
   `values{eyebrow, headline, intro, items[×4]{title,description}}`;
   `organisation{eyebrow, headline, intro, badge, image_media_id?, departments[×6]{icon_key,name,description}}`;
-  `certifications{eyebrow, headline, intro, items[×3]{icon_key,logo_media_id?,title,issuer,description}}`;
+  `certifications{eyebrow, headline, intro, items[1–12]{icon_key,logo_media_id?,logo_alt?,title,issuer,description}}`;
   `community{eyebrow, headline, copy[×2], image_media_id?}`;
-  `contact{eyebrow, headline, cards[×3]{icon_key,title,description,link_label}, office_title, form{headline,subheadline}}`
+  `contact{eyebrow, headline, cards[×3]{icon_key,title,description,link_label}, office_title, office_labels?, form{headline,subheadline}}`
   (card destinations fixed by position: buildings / owners / real estate; form → `lead.kind='contact'`).
-  Blank images fall back to the mock photos. → Office block = **company_settings**.
+  Fields the about spec added — all optional and blank-tolerant (no migration on `page_content`, no
+  backfill); the only type change is `certifications.items` `fixed(3)` → `between(1, 12)`, compatible
+  with the stored 3 rows:
+
+  | Path | Type | Class | Blank / absent → |
+  |---|---|---|---|
+  | `seo?.meta_title?` / `seo?.meta_description?` | ≤70 / ≤200 (`seoShape`) | T | i18n `pages.about.metaTitle` / `metaDescription` (EN = the route's former literals) |
+  | *(column)* `og_image_media_id` | image | C | no OG override |
+  | `hero` / `story` / `organisation` / `community` `.image_alt?` | ≤160, one per photo | T | i18n `pages.about.alts.<section>` (the asset's own alt is not used) |
+  | `certifications.items` | **1–12** rows (was fixed 3) | — | — |
+  | `certifications.items[].logo_media_id` | `"" \| uuid`, image (PNG; SVG not accepted) | C | the row's icon (the external default logos were removed) |
+  | `certifications.items[].logo_alt?` | ≤160 | T | the row's `issuer` |
+  | `faq_group_key?` / `faq?.title?` ≤160 | group key / heading | C / T | no FAQ / i18n `pages.faqTitle` |
+  | `contact.office_labels?{address?, bookings?, checkin?, email?, website?}` | ≤40 each | T | i18n `pages.about.office.<key>` |
+
+  Blank images fall back to the mock photos. The 3 audience cards are CSS backgrounds (no alt).
+  → Office block values = **company_settings** (address, bookings phone, `checkin_phone`, email,
+  `website_url`, hours + label); a blank check-in phone or website hides its row.
   Team/departments, partners, certifications, stats, "founded 2012" are **static copy here** — no entities.
+  → Same language rule (D1) and caching as home: EN only until the per-locale tabs exist;
+  `getAboutPage` is tagged `page:about`, busted by Save on `/admin/pages/about`.
+  → PROD (2026-10-16): rows 1–2 of `certifications.items` hold the ALEP and Turismo de Portugal
+  logos as R2 assets (uploaded through the admin); no photos, OG image or FAQ group set yet.
 - **guest** (as shipped by `docs/specs/guests-admin-editor.md`, 2026-10-12;
   `src/slices/pages/schemas/guest.ts`). Same notation as owners. Base shape wired to the front in
   drizzle 0012 (`docs/specs/guest-page-db-wiring.md`); every field the guests spec added is optional
@@ -430,6 +453,10 @@ default; Home/Guest/About start blank.
   (bookings, years, guests, revenue, buildings, apartments) with **[T]** stat labels; office
   address/hours (**[T]** hours label); `currency='EUR'`; default `og_image_media_id`;
   **Avantio config** `avantio_account_id`, `avantio_widget_config (jsonb)`.
+  `checkin_phone text?` and `website_url text?` (an `https://` URL) — drizzle **0018**
+  (`0018_settings_checkin_website.sql`, additive, seeded with `COALESCE` to `+351 912 310 632` /
+  `https://www.centralhill.pt`; applied in PROD 2026-10-16), spec `about-admin-editor` S3. Read as
+  `SiteGlobals.checkinPhone` / `website` (blank → `null`); the About office panel hides a null row.
 - **nav_item**: `id, location (header|footer), parent_id?, position, url`. **[T]** `label`. Covers the
   primary nav, the two persistent CTAs (Book Now / List Your Property), and footer link columns.
   - Tag: `globals`, `nav` — revalidated site-wide on change.

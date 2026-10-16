@@ -13,7 +13,9 @@ footer) on every public page. See `docs/vertical-slices.md` → S11,
   social{}, stats{key:{value,label}}, office_address, office_hours, currency,
   default_og_image_media_id, avantio_account_id, avantio_widget_config{},
   show_building_location, show_building_count` (the last two are the Lisbon-only Buildings
-  display toggles, client feedback B6, migration `0002`). [T]: each `stats.<key>.label`
+  display toggles, client feedback B6, migration `0002`), `checkin_phone, website_url` (the
+  About office panel's check-in phone and company website, nullable, migration `0018`, spec
+  `docs/specs/about-admin-editor.md` S3 — see below). [T]: each `stats.<key>.label`
   and `office_hours_label`.
 - `nav_item` — `location ('header'|'footer'), parent_id (self-ref → sub-nav / footer
   columns), position, url`. [T]: `label`.
@@ -27,6 +29,20 @@ Types: `SiteGlobals`, `CompanyStat`, `StatKey`, `SocialLinks`, `NavLink`, `NavLo
 Reads: `getGlobals(locale)` (singleton, `null` when unconfigured),
 `getNav(locale, location)` (header/footer tree, top-level items with `children`).
 Cache tags: `SETTINGS_TAGS.globals` = `globals`, `SETTINGS_TAGS.nav` = `nav`.
+
+**Check-in phone and website (spec about-admin-editor S3, migration `0018`).**
+`SiteGlobals.checkinPhone` / `SiteGlobals.website` (`string | null`) read `company_settings.checkin_phone`
+/ `website_url`, trimmed; blank → `null`. Consumer: the About office panel (`pages`
+`ui/about-office.ts`), which **hides the row when the value is null** (also when no settings row
+exists — the pre-seed `DEFAULT_GLOBALS` fallback is not used there). `website` is an absolute
+`https://` URL (About shows it without the scheme). `DEFAULT_GLOBALS` carries the current values
+(`+351 912 310 632`, `https://www.centralhill.pt`).
+- `drizzle/0018_settings_checkin_website.sql`: two `ADD COLUMN IF NOT EXISTS … text` + an `UPDATE`
+  seeding the values the page showed, with `COALESCE` (re-runnable, never overwrites a value).
+  Additive. **Applied in PROD on 2026-10-16** (before the push, owner OK).
+- **Cache key `GLOBALS_SHAPE`** (`server/queries.ts`, today `"v2"`) is part of `getGlobals`'
+  `unstable_cache` key, next to the site-icon list (`SITE_ICONS_SHAPE`). Bump it whenever
+  `SiteGlobals` gains a field, so an entry cached before the field existed is never served.
 
 Both reads are `unstable_cache`-wrapped (keyed by locale) and tagged so a publish busts
 them. **Consumers that embed globals/nav in their own cached reads (e.g. S9 pages:
@@ -160,7 +176,9 @@ Plugs into the backoffice shell. Contributes two **admin-only** `system`-group e
 (both gated with `requireStaff(["admin"])`).
 
 - `admin/validation.ts` — `companySettingsSaveInput` (contact, social URLs, the six stats,
-  office, currency, default OG, Avantio account + widget-config object) and
+  office, currency, default OG, Avantio account + widget-config object; since spec
+  about-admin-editor S3 `checkin_phone` — same rule as `phone`, 3–40 chars — and `website_url` —
+  `httpsUrl` from `validation.ts`, ≤300 — both nullable, `null` = blank) and
   `navigationSaveInput` (header/footer trees, each item with one level of children).
 - `admin/queries.ts` (server-only) — `getGlobalsForEdit` (the singleton, **scaffolded from
   `DEFAULT_GLOBALS` when no row exists**, source [T] labels resolved) and
@@ -169,7 +187,9 @@ Plugs into the backoffice shell. Contributes two **admin-only** `system`-group e
   scalars/jsonb as columns; the [T] stat labels + office-hours label via the `core/i18n`
   write seam, ADR 0019; `revalidateGlobals`) and `saveNavigation` (nav items upserted **by
   id** preserving label translations, removed ones purged; `revalidateNav`).
-- `admin/ui/` — `globals-form` (Avantio config edited as JSON) and `nav-form` (header/footer
+- `admin/ui/` — `globals-form` (Avantio config edited as JSON; "Check-in phone" and "Website"
+  fields next to phone / WhatsApp, hints `settings.admin.globals.fields.checkinPhoneHint` /
+  `websiteHint` in 4 locales: "Leave blank to hide the row") and `nav-form` (header/footer
   builder with add/remove/reorder + sub-items).
 
 ## Deferred
@@ -184,7 +204,8 @@ Plugs into the backoffice shell. Contributes two **admin-only** `system`-group e
 
 ## Tests
 
-`tests/settings.test.ts` — company-settings / nav-item input validation + the
-translatable-path contract. `tests/settings-admin.test.ts` — the admin save schemas
-(globals + navigation trees). Run:
+`tests/settings.test.ts` — company-settings / nav-item input validation (incl. the optional
+check-in phone and https website, S3) + the translatable-path contract.
+`tests/settings-admin.test.ts` — the admin save schemas (globals + navigation trees; check-in
+phone and website: valid, `null` or rejected). Run:
 `npx tsx --test src/slices/settings/tests/settings.test.ts src/slices/settings/tests/settings-admin.test.ts`.

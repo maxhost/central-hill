@@ -1,6 +1,6 @@
 # Spec + plan — Admin About editable sección a sección
 
-**Fecha:** 2026-10-16 · **Slice principal:** `pages` · **Estado:** spec (pendiente S1)
+**Fecha:** 2026-10-16 · **Slice principal:** `pages` · **Estado:** completado (S1–S4; S5 docs)
 **Precedentes:** `home-admin-editor.md`, `owners-admin-editor.md`, `real-estate-admin-editor.md`,
 `guests-admin-editor.md` (mismo proceso, mismas piezas reutilizables).
 
@@ -216,3 +216,91 @@ los fallbacks. Cada sesión cabe en 10–15 minutos.
 - Número de filas fijas: cifras (5), audiencias (3), valores (4), departamentos (6), tarjetas de contacto (3).
 - Arco de traducción por pestañas (EN/PT/ES/FR en el editor).
 - Cambiar los destinos de las tarjetas de contacto desde el admin.
+
+---
+
+## Estado final (2026-10-16)
+
+Las sesiones S1–S4 están entregadas; S5 cierra la documentación. Commits:
+
+| Sesión | Commit | Qué entró |
+|---|---|---|
+| Spec | `1e27992` | Este documento: auditoría, decisiones del owner y plan por sesiones |
+| S1 | `d3cb4b3` | `ABOUT_LAYOUT` (11 tarjetas + "Other"), notas y enlaces, etiquetas e `itemLabels` (4 idiomas). `listLabelKeys` + `itemLabelsByParent` en `form-model.ts` / `schema-fields.tsx`. `seo.*` + `buildAboutMetadata` (contrato); la ruta sólo lo llama. `faq.title` con fallback `pages.faqTitle` |
+| S2 | `c9a3062` | `image_alt` en hero, story, organisation y community (→ i18n `pages.about.alts.*`, 4 idiomas). Hints con medidas reales (Playwright a 1440 / 1024 / 390 px); `SHOWCASE_IMG_HINT` propio para Organisation |
+| S3 | `18ca04c` | Migración `0018` (`checkin_phone`, `website_url`), `SiteGlobals.checkinPhone` / `website`, campos y validación en el editor de Settings, clave de caché `GLOBALS_SHAPE`. `contact.office_labels.*` (→ `pages.about.office.*`); `ui/about-office.ts`; fuera `CHECKIN_PHONE` / `WEBSITE` |
+| S4 | `21de7b1` | `certifications.items` → `between(…, 1, 12)` con añadir/quitar (`addLabelsByParent`), `logo_alt` (→ `issuer`, `ui/about-certifications.ts`), hint del logo en PNG. Borrado `CERT_FALLBACK_LOGOS`: sin logo, el icono |
+| S5 | — | Documentación: `pages/README.md` ("About content model"), README de `settings`, `docs/data-model.md` → about y settings, y este cierre |
+
+### Desviaciones y hallazgos durante la implementación
+
+- **S1:**
+  - Etiquetas de lista **por sección**: la clave `items` de About significa "Value" (`values.items`) y
+    "Certification" (`certifications.items`), pero `pages.admin.itemLabels.items` ya era "Card" (Guests).
+    `listLabelKeys(kind, path)` prueba primero `admin.<kind>ByParent.<padre>.<clave>` y luego la clave
+    global; nuevo mapa `pages.admin.itemLabelsByParent` (4 idiomas). `useFieldLabels().item/add` reciben
+    ahora la ruta completa.
+  - `pages.about.metaDescription` **ya existía y no se usaba** (la ruta tenía su propio literal); se
+    sobrescribió con el literal de la ruta en EN para que el fallback sea idéntico a lo que se veía.
+  - Se reutilizaron los títulos de tarjeta existentes donde encajan: `seo` es "SEO & social" (no
+    "SEO & sharing" como decía la tabla del spec), `hero` y `faq` también.
+- **S2:**
+  - Medidas tomadas: el hero es una franja de **1440×576** (portátil), **1024×576** (tablet) y
+    **390×630** (móvil), siempre recortada → hint 16:9, 1920×1080.
+  - La celda de `IntroSplit` mide **~536 px** de ancho en escritorio y su alto es el mayor entre el
+    texto y la propia foto, así que una foto **4:5** se ve sin recortar: el hint recomienda **4:5, no
+    3:2** (al revés que en Guests, donde el texto es más corto).
+  - Organisation usa su propio `SHOWCASE_IMG_HINT`: marco fijo 4:5 (560×700 escritorio, 334×418 móvil).
+  - Tarjetas de audiencias: ~377×287 / 305×333 / 334×300, recorte centrado → hint **4:3**, 1200×900.
+  - El alt es **campo → i18n `pages.about.alts.*`**, con asset y con la foto de respaldo. El alt de la
+    biblioteca de medios **ya no se lee**.
+- **S3:**
+  - La migración `0018` usa `ADD COLUMN IF NOT EXISTS` y un `UPDATE` con **`COALESCE`**: se puede
+    reejecutar sin pisar un valor ya puesto.
+  - **`0018` se aplicó en PROD el 2026-10-16** (coordinador, con OK del owner), **antes del push**.
+  - Nueva clave de caché `GLOBALS_SHAPE = "v2"` en `getGlobals`, para no servir una entrada cacheada
+    antes de que existieran los campos nuevos.
+  - **Sin fila de settings, las filas Check-in y Website no se pintan** (no usan `DEFAULT_GLOBALS`);
+    dirección, teléfono de reservas, email y horario siguen cayendo a los literales del mock.
+- **S4:**
+  - El pipeline de subida **no acepta SVG** (`core/media/mime.ts` → `IMAGE_MIMES`: JPEG, PNG, WebP,
+    AVIF), así que el hint pide **PNG** transparente (no "PNG o SVG" como decía el spec).
+  - **Carga de logos (coordinador, 2026-10-16, por el admin real → R2 y DB de PROD):**
+    - ALEP: asset `f2f7bfed-3fcb-4f87-889b-bbc989ce432e`, PNG 685×616.
+    - Turismo de Portugal: asset `1bae9d7a-2b1f-4c73-82c7-258802b89044`, PNG 202×70 — **por debajo de
+      los 300 px recomendados**; es el original de la fuente.
+    - Van en las filas 1 y 2 con sus alt originales. La fila 3 (I-PRAC) muestra su icono.
+    - El diff contra la instantánea previa al guardado mostró **sólo** los logos y las claves nuevas
+      vacías.
+
+### Verificación hecha
+
+- **Tests por sesión** (`pages/tests/pages-admin.test.ts`, `pages/tests/pages.test.ts`,
+  `settings/tests/settings.test.ts`, `settings/tests/settings-admin.test.ts`): layout de 11 ids sin
+  claves perdidas, orden de `listLabelKeys`, claves de layout y etiquetas en 4 idiomas; `seo` / `faq`
+  opcionales y traducibles, meta EN = literales anteriores, `seoMetadataInput` de `/about`; `accept=image`
+  de cada foto y del logo; orden del alt (campo → i18n; `logo_alt` → `issuer`); `office_labels`
+  opcionales con fallback i18n; filas Check-in / Website ocultas si vacías; validación del teléfono de
+  check-in y de la web `https://`; 1–12 certificaciones con las 3 filas actuales válidas; ningún logo
+  externo en la página.
+- **Revisión del coordinador en cada sesión**: diff, typecheck + lint + tests, y el admin real y la
+  página pública en Playwright headed **sin guardar** (salvo el guardado autorizado de los logos en S4).
+- **Escrituras en PROD, ambas con OK del owner el 2026-10-16:** la migración `0018` (S3) y el guardado
+  de la fila `about` con los 2 logos (S4).
+- **Recorrido S5 (2026-10-16, Playwright, 1440 y 390 px, en/pt/es/fr):** las 8 combinaciones dan 200, sin
+  errores de consola, sin imágenes rotas y sin scroll horizontal. Título SEO traducido por idioma; etiquetas
+  de la oficina traducidas (Morada / Dirección / Adresse…); los 2 logos salen de R2 con su alt; I-PRAC muestra
+  su icono. "Office Hours" sigue en EN en PT/ES/FR porque la etiqueta viene de Settings (`office_hours_label`
+  sin traducir) y el contenido de la DB ("Get in Touch", textos) sale en EN hasta el arco de pestañas.
+
+## Abiertos (para decidir después)
+
+1. **Logo de Turismo de Portugal más grande**: el actual mide 202×70, por debajo de los 300 px del hint.
+   Se sustituye desde el editor cuando haya uno mejor.
+2. **FAQ sin grupo en PROD**: la sección no aparece en `/about` hasta que se elija un grupo en el editor.
+3. **Sin fotos subidas**: hero, story, organisation, community y audiencias siguen con las fotos del mock
+   (fallback); tampoco hay imagen OG.
+4. **Arco de traducción por pestañas** (`home-admin-editor.md` → "Modelo de traducción por pestañas").
+   Hasta entonces el contenido de la DB sale en EN en PT/ES/FR.
+5. **Auditoría de Services sigue aparcada** (el owner está replanteando etiquetas por servicio vs.
+   globales); es la siguiente página del arco cuando se retome.

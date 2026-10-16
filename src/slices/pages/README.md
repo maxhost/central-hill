@@ -228,7 +228,9 @@ Guests' render verified byte-identical) followed by the new `core/ui` `ContactSp
 `.cform`). The form is the leads slice's `ContactForm` via its contract (`source="about-contact"`,
 `kind = "contact"`) — the mock's static form now submits real leads. Office rows read
 company_settings (`getGlobals`: address, phone, email, office hours + label); the check-in phone
-and website have no settings field and stay literals. `PAGE_STYLE`, `CONTACT_BODY_HTML`, the
+and website have no settings field and stay literals *(since spec about-admin-editor S3 they are
+Settings fields too — `checkin_phone` / `website_url`, migration 0018 — and a blank one hides its
+row; labels are editable, see "About content model")*. `PAGE_STYLE`, `CONTACT_BODY_HTML`, the
 `.pre-reveal` noscript rule and the pages slice's now-unused `components/scroll-reveal.tsx` are
 deleted; the route keeps `mock.css` only for the Iconoir stylesheet.
 
@@ -882,6 +884,101 @@ With every new field blank the page matches the pre-spec render in all 4 locales
 intended changes: buttons go to fixed per-locale routes, the portfolio note renders when set, and
 the closing owner button opens the contact dialog instead of navigating to `/owners`.
 
+### About content model (spec `docs/specs/about-admin-editor.md`, 2026-10-16)
+
+Everything visible on `/<locale>/about` is editable in `/admin/pages/about`, except the FAQ
+questions (catalogue, `/admin/faq`), the contact form's fields / consent / button / messages
+(`leads.*`, shared with the header dialog) and the office values (address, phones, email, website,
+hours — **Settings**). All fields the spec added are **optional** and blank-tolerant (a row saved
+before them renders as before); the only type change is `certifications.items` (fixed 3 → 1–12,
+the 3 legacy rows stay valid). Same D1 rule as the other pages: EN only for now, blank → the
+visitor's locale i18n message through `orMessage`. Full field table: `docs/data-model.md` → about.
+
+| Section | New / changed fields (`schemas/about.ts`) | Blank / absent → |
+|---|---|---|
+| SEO | `seo?{meta_title?, meta_description?}` (`seoShape`) + `og_image_media_id` column | `pages.about.metaTitle` / `metaDescription` (EN = the route's former literals); no OG |
+| Hero / Story / Organisation / Community | `<section>.image_alt?` ≤160 (4 fields, one per photo) | i18n `pages.about.alts.<section>` (the mock's alts, translated) |
+| Certifications | `items`: `fixed(…, 3)` → **`between(certification, 1, 12)`**; `items[].logo_alt?` ≤160 | — / the row's `issuer` |
+| FAQ | `faq_group_key` (root, existing) + `faq?{title? ≤160}` | no FAQ / `pages.faqTitle` |
+| Contact | `contact.office_labels?{address, bookings, checkin, email, website}` (≤40 each) | `pages.about.office.<key>` ("Address", "Bookings", "Check-in", "Email", "Website") |
+
+**Photos and alt.** The alt of each section photo is the field → `pages.about.alts.<section>`,
+with an R2 asset and with the mock fallback photo alike. The media-library alt (`asset.alt`) is no
+longer read (the library is going away). The 3 "Three audiences" cards are CSS backgrounds
+(`PhotoFeatureGrid`), so they have no alt, like the Guests teaser cards. Blank images still fall back
+to the mock photos.
+
+**Media hints** (measured with Playwright at 1440 / 1024 / 390 px; comment block in `schemas/about.ts`).
+Every picker is `accept="image"`:
+- Hero (`HERO_IMG_HINT`): a band ~1440×576 on a laptop, 1024×576 on tablet, 390×630 portrait on a
+  phone, always cropped → 16:9, 1920×1080 (min 1600×900).
+- Story / community (`SPLIT_IMG_HINT`): the `IntroSplit` cell is ~536 px wide on desktop and full
+  width on phones; its height is the taller of the text and the photo, so a **4:5** photo shows
+  uncropped (not 3:2 as on Guests, where the text is shorter) → 1200×1500 (min 960×1200).
+- Organisation (`SHOWCASE_IMG_HINT`, its own): `TwoColumnShowcase` fixed `aspect-[4/5]`
+  (560×700 desktop, 334×418 phone) → 4:5, 1200×1500.
+- Audience cards (`AUDIENCE_IMG_HINT`): ~377×287 / 305×333 / 334×300, centre-cropped under a
+  scrim → 4:3, 1200×900 (min 800×600).
+- Certification logo (`LOGO_HINT`): a slot 48 px tall and up to 160 px wide (`object-contain`) →
+  transparent **PNG**, at least 300 px wide, under 100 KB. SVG is not accepted by the upload
+  pipeline (`core/media/mime.ts` → `IMAGE_MIMES`).
+- OG image: the `seo` card hosts it (same as the other pages).
+
+**Certifications.** Every row renders (1–12; the grid already does 3 → 2 → 1 columns). Logo = the R2
+asset with alt `certLogoAlt(cert)` (`ui/about-certifications.ts`, pure: `logo_alt` → `issuer`); no
+logo → the row's `icon_key`. The external fallback logos (`CERT_FALLBACK_LOGOS`) were **deleted**:
+the ALEP and Turismo de Portugal logos now live in R2 and are set in rows 1–2 of the PROD row
+(uploaded through the real admin on 2026-10-16); row 3 (I-PRAC) shows its icon.
+
+**Office panel** (`ui/about-office.ts`, pure, tested). `resolveOfficeLabels(fields, message)` →
+each label is `contact.office_labels.<key>` → `pages.about.office.<key>`; `officeRows(globals,
+labels)` builds the rows in page order from Settings (`getGlobals`). Address / bookings phone /
+email / hours fall back to the mock's literals only when no settings row exists; **check-in and
+website come from `SiteGlobals.checkinPhone` / `website` and their row is hidden when blank (or with
+no settings row)**. The website's visible text is the URL without `https://` (`websiteText`); phones
+link with `telHref`. "Office Hours" keeps its Settings label (`officeHoursLabel`). The old literals
+`CHECKIN_PHONE` / `WEBSITE` are gone. The 3 contact cards stay fixed by position
+(`/{locale}/buildings`, `/owners`, `/real-estate`).
+
+**Contract.** `buildAboutMetadata(locale)` (`server/metadata.ts`, via `seoMetadataInput`): `seo.*` →
+i18n fallback, canonical `/<locale>/about`, hreflang + `x-default` → `/about`, optional OG. The route
+`src/app/[locale]/about/page.tsx` only calls it.
+
+**Editor.** `ABOUT_LAYOUT` (`admin/layout.ts`), `ABOUT_CARD_IDS` = 11 cards in page order, plus "Other":
+
+| # | id | Card | Note / link |
+|---|---|---|---|
+| 1 | `seo` | SEO & social (hosts the OG image) | 70/200 limits |
+| 2 | `hero` | Hero | — |
+| 3 | `story` | How we started | — |
+| 4 | `stats` | Company figures | "Numbers count up on the page." |
+| 5 | `serve` | Three audiences | — |
+| 6 | `values` | What guides us | "Numbers 01–04 are automatic." |
+| 7 | `organisation` | How we are organised | — |
+| 8 | `certifications` | Certifications (add / remove rows) | "Without a logo the card shows its icon." |
+| 9 | `community` | Giving back | — |
+| 10 | `faq` | FAQ (`faq_group_key` + `faq`) | "Questions are edited in FAQ" + `/admin/faq` |
+| 11 | `contact` | Let's start a conversation | fixed card destinations, office values from Settings, shared form fields + `/admin/settings` |
+
+Existing card titles were reused where they fit (`cards.seo`, `cards.hero`, `cards.faq`); the new
+ones are `pages.admin.layout.cards.{story, aboutStats, serve, values, organisation, certifications,
+community, aboutContact}` and `notes.{aboutStats, aboutValues, aboutCertifications, aboutContact}`.
+
+**Per-section list labels (S1).** About's generic array key `items` means "Value" in `values` and
+"Certification" in `certifications`, but `pages.admin.itemLabels.items` is already Guests' "Card".
+`listLabelKeys(kind, path)` (`admin/form-model.ts`, pure) returns the keys to try, most specific
+first: `admin.<kind>ByParent.<parentKey>.<arrayKey>`, then `admin.<kind>.<arrayKey>`.
+`useFieldLabels().item(path, …)` / `.add(path, …)` now take the full path. New i18n maps (4 locales):
+`pages.admin.itemLabelsByParent.{values,certifications}.items` ("Value", "Certification") and, since
+S4, `pages.admin.addLabelsByParent.certifications.items` ("+ New certification"). Other new labels:
+`labels.logo_alt`, `labels.office_labels` + the 5 office keys, `itemLabels.{narrative, copy,
+audiences, departments, cards}`.
+
+With every new field blank the page matches the pre-spec render in EN, except the intended changes:
+the certification logos come from R2 (same two logos, PNG), and the check-in / website rows follow
+Settings. In PT/ES/FR the SEO, the photo alts, the FAQ title and the office labels are now in the
+visitor's language.
+
 ### Icons on `core/ui` `<Icon>` — Home, Guests, About (ADR 0034)
 
 Supersedes the `iconClass` / `mock.css` notes above for these three pages. Home's
@@ -901,7 +998,9 @@ fallback (no row, or a row/cache entry not matching the schema) and
 `scripts/backfill-about-content.ts` all use it. Blank images fall back to the mock photos (as on
 Real Estate); a certification without a logo shows the default issuer logo for the first two cards
 and its icon otherwise. Contact card destinations are fixed by position to stay on the visitor's
-locale. The office panel still reads company_settings.
+locale. The office panel still reads company_settings. *(Superseded by spec about-admin-editor
+S4: the external default logos were deleted — a certification without an R2 logo shows its icon;
+the two logos are R2 assets on the PROD row. See "About content model".)*
 
 ### Icons on `core/ui` `<Icon>` — Owners and Real Estate (ADR 0034)
 
@@ -963,7 +1062,10 @@ image override comes from the page row. Home and Owners are the exceptions: thei
 `generateMetadata` is `buildHomeMetadata` / `buildOwnersMetadata` from the contract (editable
 `seo.*`, i18n fallback; Owners builds its input with the pure `seoMetadataInput` from
 `server/metadata-input.ts`). The Buildings listing route (`/buildings`, owned by slice `buildings`)
-does the same with `buildBuildingsMetadata`.
+does the same with `buildBuildingsMetadata`; so do Real Estate (`buildRealEstateMetadata`), Guests
+(`buildGuestMetadata`) and, since spec about-admin-editor S1, About (`buildAboutMetadata` — the
+route's former literal title/description are now the `pages.about.metaTitle` / `metaDescription`
+fallbacks).
 
 ## i18n
 
@@ -1017,7 +1119,8 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
   and, since spec owners-admin-editor S1, `owners` — see "Owners content model" for its 12 cards;
   since spec buildings-admin-editor S1, `buildings` — see "Buildings content model"; since spec
   real-estate-admin-editor S1, `real_estate` — see "Real Estate content model"; since spec
-  guests-admin-editor S1, `guest` — see "Guests content model"). An ordered list of cards with **stable ids** — `seo`, `hero`, `stats`,
+  guests-admin-editor S1, `guest` — see "Guests content model"; since spec about-admin-editor S1,
+  `about` — see "About content model"). An ordered list of cards with **stable ids** — `seo`, `hero`, `stats`,
   `guests_pitch`, `portfolio`, `services_carousel`, `faq`, `dual_cta` (never rename one: they will
   be the unit of the translation arc's per-section "Translate with AI") — each listing the `data`
   root keys it renders, plus read-only rows/notes (the Avantio search bar → Settings; notes with
@@ -1029,7 +1132,10 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
   `pages.admin.labels.<key>` (4 locales; keys are global, e.g. `headline` → "Title", `to` →
   "Number"), else `humanizeKey`. Array items use `pages.admin.itemLabels.<arrayKey>` ("Benefit 1",
   "Figure 2"), else the array label; the add button uses `pages.admin.addLabels.<arrayKey>`
-  ("+ New figure"), else "+ <item label>". Card titles/notes live under `pages.admin.layout.*`.
+  ("+ New figure"), else "+ <item label>". Since spec about-admin-editor S1 both first try a
+  per-section key, `pages.admin.itemLabelsByParent.<parentKey>.<arrayKey>` /
+  `addLabelsByParent.<parentKey>.<arrayKey>` (`listLabelKeys` in `form-model.ts`), for generic
+  array keys such as `items`. Card titles/notes live under `pages.admin.layout.*`.
 
 Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton from the schema.
 
@@ -1050,6 +1156,8 @@ Editing an unauthored page works: `applyDefaults` scaffolds the empty skeleton f
   sending, Owners/About sub-navs still EN, …): `docs/specs/real-estate-admin-editor.md` → "Abiertos".
 - **Guests editor open items** (real PROD save with uploads in poster / welcome / teaser cards,
   empty portfolio note and unset FAQ group in PROD, …): `docs/specs/guests-admin-editor.md` → "Abiertos".
+- **About editor open items** (a larger Turismo de Portugal logo, unset FAQ group and no photos
+  uploaded in PROD, …): `docs/specs/about-admin-editor.md` → "Abiertos".
 
 ## Tests
 
@@ -1066,14 +1174,21 @@ panel contact line, `seoMetadataInput` for `/buildings`, `describedStatFigureCel
 plus the Real Estate additions (`seo` / `faq` / `deal_enquiry` optional and translatable, i18n
 fallbacks, EN meta = the route's former literals, `seoMetadataInput` for `/real-estate`,
 `pages.dealEnquiryForm.*` + new `pages.realEstate.*` keys ×4, `enquiryContactLines`), plus the
-Guests additions (`seo` / `testimonials` / `faq` fallbacks, `seoMetadataInput` for `/guests`). `tests/pages-admin.test.ts` — the schema → form model (`describe` leaf/array detection,
+Guests additions (`seo` / `testimonials` / `faq` fallbacks, `seoMetadataInput` for `/guests`),
+plus the About additions (`seo` / `faq` optional and translatable, EN meta = the route's former
+literals, `seoMetadataInput` for `/about`, alt order field → `pages.about.alts.*` ×4, office labels
+field → `pages.about.office.*` ×4, `officeRows` hiding blank check-in / website, `certLogoAlt`
+`logo_alt` → `issuer`, no external certification logos left). `tests/pages-admin.test.ts` — the schema → form model (`describe` leaf/array detection,
 `emptyValue`/`applyDefaults` scaffolding, `humanizeKey`, media `accept` per field, `admin_hidden`
 nodes and hidden values round-tripping on save) and the editor layouts (card placement, "Other"
 fallback, Owners' 12 ids, Buildings' 5 ids + grid info row, media `accept` hero `image` /
 calculator `animated`; Real Estate's hidden URLs/note, 11 ids, accepts `animated` /
 `document` and `capabilityStatementHref`; Guests' 7 hidden URLs, 10 ids, accepts poster `image` /
 welcome `animated` / teaser cards `image`, alt order, `cardBgSrc` fallback by position and the
-optional `dual_cta.owner.contact`). Run:
+optional `dual_cta.owner.contact`; About's 11 ids with every root key in one card, `listLabelKeys`
+order, layout/label keys ×4, every photo and logo `accept="image"`, `image_alt` / `logo_alt` placed
+after their picker, `office_labels` in the contact card, certifications 1–12 with the legacy 3 rows
+valid). Run:
 `npx tsx --test src/slices/pages/tests/pages.test.ts src/slices/pages/tests/pages-admin.test.ts`.
 
 ### `blog` and `guides` rows: the detail-page sidebar CTAs (session 5)
