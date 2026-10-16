@@ -10,11 +10,20 @@ import { withMediaAccept } from "../schemas/media-accept";
 import { adminHidden } from "../schemas/admin-hidden";
 import { ownersSchema } from "../schemas/owners";
 import { guestSchema } from "../schemas/guest";
+import { aboutSchema } from "../schemas/about";
 import { buttonClassName } from "@core/ui/button";
 import { splitCtaButtonClassName } from "@core/ui/split-cta-panels";
-import { type FieldNode, applyDefaults, describe, emptyValue, humanizeKey } from "../admin/form-model";
+import {
+  type FieldNode,
+  applyDefaults,
+  describe,
+  emptyValue,
+  humanizeKey,
+  listLabelKeys,
+} from "../admin/form-model";
 import { buildingsSchema, defaultBuildings } from "../schemas/buildings";
 import {
+  ABOUT_CARD_IDS,
   BUILDINGS_CARD_IDS,
   GUEST_CARD_IDS,
   HOME_CARD_IDS,
@@ -331,7 +340,7 @@ test("an unknown root key lands in a trailing Other card", () => {
 });
 
 test("pages without a layout return null (default rendering)", () => {
-  assert.equal(resolveEditorLayout("about", []), null);
+  assert.equal(resolveEditorLayout("services", []), null);
   assert.equal(resolveEditorLayout("blog", ["hero"]), null);
 });
 
@@ -1037,4 +1046,84 @@ test("guestSchema S5: old rows (no contact), blank and filled contact copy valid
 test("SplitCtaPanels button class per tone matches the panel's own button (S5)", () => {
   assert.equal(splitCtaButtonClassName("dark"), buttonClassName("primary"));
   assert.equal(splitCtaButtonClassName("light"), buttonClassName("solid"));
+});
+
+// ── About: layout + labels (spec about-admin-editor S1) ──────────────────────
+
+test("about layout: 11 stable ids in page order; every root key in exactly one card — S1", () => {
+  assert.deepEqual([...ABOUT_CARD_IDS], [
+    "seo", "hero", "story", "stats", "serve", "values", "organisation", "certifications",
+    "community", "faq", "contact",
+  ]);
+  const rootKeys = Object.keys(aboutSchema.shape);
+  for (const k of ["seo", "faq"]) assert.ok(rootKeys.includes(k), `S1 key ${k}`);
+  const layout = resolveEditorLayout("about", rootKeys);
+  assert.ok(layout);
+  assert.deepEqual(cardIds(layout), [...ABOUT_CARD_IDS]);
+  const rendered = layout.flatMap((i) => (i.kind === "card" ? i.paths : []));
+  assert.deepEqual([...rendered].sort(), [...rootKeys].sort());
+  assert.equal(new Set(rendered).size, rendered.length);
+  assert.ok(!cardIds(layout).includes(OTHER_CARD_ID));
+  const byId = (id: string) => layout.find((i) => i.id === id);
+  const seo = byId("seo");
+  assert.ok(seo && seo.kind === "card" && seo.hostsOgImage);
+  assert.equal(seo.note?.textKey, "admin.layout.notes.seoLimits");
+  assert.equal(byId("stats")?.note?.textKey, "admin.layout.notes.aboutStats");
+  assert.equal(byId("values")?.note?.textKey, "admin.layout.notes.aboutValues");
+  assert.equal(byId("certifications")?.note?.textKey, "admin.layout.notes.aboutCertifications");
+  assert.equal(byId("faq")?.note?.link?.href, "/admin/faq");
+  assert.equal(byId("contact")?.note?.link?.href, "/admin/settings");
+  const faq = byId("faq");
+  assert.ok(faq && faq.kind === "card");
+  assert.deepEqual(faq.paths, ["faq_group_key", "faq"]);
+  // A key added later without a card still shows up, in Other.
+  const later = resolveEditorLayout("about", [...rootKeys, "brand_new"]);
+  assert.deepEqual(later?.at(-1), {
+    kind: "card",
+    id: OTHER_CARD_ID,
+    titleKey: "admin.layout.cards.other",
+    paths: ["brand_new"],
+  });
+});
+
+test("listLabelKeys: a section-specific key is tried before the global one — S1", () => {
+  assert.deepEqual(listLabelKeys("itemLabels", ["values", "items"]), [
+    "admin.itemLabelsByParent.values.items",
+    "admin.itemLabels.items",
+  ]);
+  assert.deepEqual(listLabelKeys("addLabels", ["stats"]), ["admin.addLabels.stats"]);
+  assert.deepEqual(listLabelKeys("itemLabels", ["serve", "audiences", 0]), []);
+  assert.deepEqual(listLabelKeys("itemLabels", ["rows", 1, "items"]), ["admin.itemLabels.items"]);
+});
+
+test("about layout + labels: every i18n key exists in the 4 locales — S1", () => {
+  const layout = resolveEditorLayout("about", Object.keys(aboutSchema.shape));
+  assert.ok(layout);
+  const keys = layout.flatMap((i) => [
+    i.titleKey,
+    ...(i.note ? [i.note.textKey] : []),
+    ...(i.note?.link ? [i.note.link.labelKey] : []),
+  ]);
+  for (const k of [
+    "seo", "meta_title", "meta_description", "hero", "mission", "story", "narrative", "stats",
+    "value", "label", "serve", "audiences", "values", "items", "organisation", "badge",
+    "departments", "name", "certifications", "logo_media_id", "issuer", "community", "copy",
+    "faq_group_key", "faq", "title", "contact", "cards", "link_label", "office_title", "form",
+  ]) keys.push(`admin.labels.${k}`);
+  for (const k of ["narrative", "copy", "stats", "audiences", "departments", "cards"]) {
+    keys.push(`admin.itemLabels.${k}`);
+  }
+  keys.push("admin.itemLabelsByParent.values.items", "admin.itemLabelsByParent.certifications.items");
+  const en = JSON.parse(readFileSync(path.join(process.cwd(), "messages/en.json"), "utf8")).pages;
+  for (const locale of ["en", "pt", "es", "fr"]) {
+    const pages = JSON.parse(readFileSync(path.join(process.cwd(), `messages/${locale}.json`), "utf8")).pages;
+    for (const k of keys) {
+      const v = k.split(".").reduce<unknown>((o, part) => (o as Record<string, unknown> | undefined)?.[part], pages);
+      assert.equal(typeof v, "string", `${locale}: pages.${k}`);
+    }
+  }
+  assert.equal(en.admin.itemLabelsByParent.values.items, "Value");
+  assert.equal(en.admin.itemLabelsByParent.certifications.items, "Certification");
+  // The Guests teaser cards keep the global "Card".
+  assert.equal(en.admin.itemLabels.items, "Card");
 });

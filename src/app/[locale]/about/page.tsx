@@ -3,11 +3,14 @@ import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import type { Locale } from "@core/db/columns";
-import { buildMetadata } from "@core/seo";
+import { buildAboutMetadata } from "@slices/pages/contract";
 import { AboutPage } from "@slices/pages/ui/about-page";
 
-/** Static per locale (ISR). Copy is literal; office details come from cached `getGlobals` (tag `globals`). */
+/**
+ * Static per locale (ISR). Content is the `about` page_content row; office details come from
+ * cached `getGlobals` (tag `globals`). Metadata: the page's `seo.*` with the `pages.about.*`
+ * fallback (spec about-admin-editor S1).
+ */
 export const revalidate = 3600;
 
 export function generateStaticParams() {
@@ -23,16 +26,7 @@ export async function generateMetadata({
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
 
-  const languages: Partial<Record<Locale | "x-default", string>> = { "x-default": "/about" };
-  for (const l of routing.locales) languages[l] = `/${l}/about`;
-
-  return buildMetadata({
-    title: "About Us — Central Hill",
-    description:
-      "Since 2012, Central Hill Apartments has turned properties into high-performing hospitality assets across Portugal — combining deep local knowledge, AI-driven technology, and an uncompromising commitment to quality.",
-    canonicalPath: `/${locale}/about`,
-    languages,
-  });
+  return buildAboutMetadata(locale);
 }
 
 export default async function AboutRoute({

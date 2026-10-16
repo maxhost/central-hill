@@ -13,7 +13,7 @@
  */
 import { z } from "zod";
 import { iconKey } from "@core/validation/icon-key";
-import { tStr, tStrOpt } from "@core/validation/primitives";
+import { seoShape, tStr, tStrOpt } from "@core/validation/primitives";
 import { faqGroupKey, fixed, iconCard, optionalImage, titledItem } from "./_shared";
 
 const HERO_IMG_HINT = "Full-bleed hero photo. Landscape — recommended 1900×1100px, JPG or WebP, under 500 KB.";
@@ -56,7 +56,14 @@ const contactCard = z.object({
   link_label: tStr({ max: 80 }),
 });
 
+/*
+ * Optional copy overrides added by spec `about-admin-editor` S1 (`seo`, `faq`). Both are optional
+ * and blank-tolerant: empty / absent → the page renders the current i18n message of the
+ * visitor's locale, so a row saved before these keys existed renders exactly as before.
+ */
 export const aboutSchema = z.object({
+  /** Search/social meta for `/<locale>/about`. Blank → `pages.about.metaTitle` / `metaDescription`. */
+  seo: z.object({ ...seoShape }).optional(),
   hero: z.object({
     image_media_id: optionalImage(HERO_IMG_HINT),
     eyebrow: tStrOpt({ max: 80 }),
@@ -115,6 +122,10 @@ export const aboutSchema = z.object({
   }),
   /** Optional FAQ group to show on the page (blank = none). */
   faq_group_key: faqGroupKey,
+  /** FAQ section heading (the group stays in `faq_group_key`). Blank → `pages.faqTitle`. */
+  faq: z
+    .object({ title: tStrOpt({ max: 160 }).describe("Leave blank for “Frequently Asked Questions”.") })
+    .optional(),
 });
 
 export type AboutContent = z.infer<typeof aboutSchema>;

@@ -17,6 +17,7 @@ import {
   type SelectOptions,
   emptyValue,
   humanizeKey,
+  listLabelKeys,
 } from "../form-model";
 
 /**
@@ -36,6 +37,8 @@ export type PathOnChange = (path: (string | number)[], value: unknown) => void;
  * items use the singular `pages.admin.itemLabels.<arrayKey>` ("Benefit 1"), else the array's
  * own label ("Benefits 1", the previous behaviour). A variable list's add button reads
  * `pages.admin.addLabels.<arrayKey>` ("+ New figure", spec S5), else "+ <item label>".
+ * A generic array key can be labelled per section with `…ByParent.<parentKey>.<arrayKey>`
+ * (`listLabelKeys`, spec about-admin-editor S1), tried first.
  */
 export function useFieldLabels() {
   const t = useTranslations("pages");
@@ -44,15 +47,13 @@ export function useFieldLabels() {
       const k = `admin.labels.${key}`;
       return t.has(k) ? t(k) : humanizeKey(key);
     },
-    item(arrayKey: string | number | undefined, fallback: string): string {
-      if (typeof arrayKey !== "string") return fallback;
-      const k = `admin.itemLabels.${arrayKey}`;
-      return t.has(k) ? t(k) : fallback;
+    item(path: readonly (string | number)[], fallback: string): string {
+      const k = listLabelKeys("itemLabels", path).find((key) => t.has(key));
+      return k ? t(k) : fallback;
     },
-    add(arrayKey: string | number | undefined, fallback: string): string {
-      if (typeof arrayKey !== "string") return fallback;
-      const k = `admin.addLabels.${arrayKey}`;
-      return t.has(k) ? t(k) : fallback;
+    add(path: readonly (string | number)[], fallback: string): string {
+      const k = listLabelKeys("addLabels", path).find((key) => t.has(key));
+      return k ? t(k) : fallback;
     },
   };
 }
@@ -118,7 +119,7 @@ export function NodeField(props: RenderProps) {
     const items = Array.isArray(value) ? value : [];
     const canAdd = items.length < node.max;
     const canRemove = items.length > node.min;
-    const itemLabel = labels.item(path.at(-1), label);
+    const itemLabel = labels.item(path, label);
     return (
       <div className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
@@ -172,7 +173,7 @@ export function NodeField(props: RenderProps) {
             onClick={() => onChange(path, [...items, emptyValue(node.element)])}
             className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-ink"
           >
-            + {labels.add(path.at(-1), itemLabel)}
+            + {labels.add(path, itemLabel)}
           </button>
         ) : null}
       </div>

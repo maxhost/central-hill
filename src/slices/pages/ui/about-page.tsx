@@ -23,6 +23,7 @@ import { getGlobals, type SiteGlobals } from "@slices/settings/contract";
 import { getAboutPage } from "../contract";
 import { aboutSchema, defaultAbout } from "../schemas/about";
 import { FaqSection } from "./components/faq-section";
+import { orMessage } from "./or-message";
 
 /**
  * About page (`mock/about.html`), fully ported to components. Every string, icon and image comes
@@ -39,7 +40,8 @@ import { FaqSection } from "./components/faq-section";
  * - "How We Are Organised": `TwoColumnShowcase` with Owners' showcase configuration.
  * - "Independently Verified": `SectionHead` + `CertificationCards` (the old per-card stagger is
  *   now one `Reveal` fade).
- * - FAQ: the shared `FaqSection` (only when `faq_group_key` is set).
+ * - FAQ: the shared `FaqSection` (only when `faq_group_key` is set); title from `faq.title`
+ *   (blank → `pages.faqTitle`).
  * - "Let's Start a Conversation": `SectionHead`, then `BenefitCards` as link cards
  *   (`columns={3}`, per-item `href` fixed by position + `linkLabel`), then `ContactSplit` — the dark office panel
  *   (address / bookings phone / email / office hours from company_settings via `getGlobals`,
@@ -347,7 +349,11 @@ export async function AboutPage({ locale }: { locale: Locale }) {
 
       {faqGroupKey ? (
         <div id="faq" className="scroll-mt-[84px]">
-          <FaqSection locale={locale} groupKey={faqGroupKey} title={t("faqTitle")} />
+          <FaqSection
+            locale={locale}
+            groupKey={faqGroupKey}
+            title={orMessage(c.faq?.title, t("faqTitle"))}
+          />
         </div>
       ) : null}
 

@@ -1139,7 +1139,7 @@
     },
     "about": {
       "metaTitle": "Sobre Nosotros — Central Hill",
-      "metaDescription": "La empresa de gestión hotelera de confianza de Portugal desde 2012 — gestionando apartamentos premium y ofreciendo experiencias excepcionales a gran escala.",
+      "metaDescription": "Desde 2012, Central Hill Apartments convierte propiedades en activos hoteleros de alto rendimiento en Portugal, combinando un profundo conocimiento local, tecnología basada en IA y un compromiso inquebrantable con la calidad.",
       "communityEyebrow": "Comunidad",
       "contactNote": "Normalmente respondemos en 24 horas."
     },
@@ -1211,7 +1211,15 @@
           "welcome": "Bienvenida",
           "guestWhy": "Por qué reservar directamente",
           "services_teaser": "Avance de servicios",
-          "activities_teaser": "Qué hacer"
+          "activities_teaser": "Qué hacer",
+          "story": "Cómo empezamos",
+          "aboutStats": "Cifras de la empresa",
+          "serve": "Tres públicos",
+          "values": "Lo que nos guía",
+          "organisation": "Cómo nos organizamos",
+          "certifications": "Certificaciones",
+          "community": "Compromiso social",
+          "aboutContact": "Hablemos"
         },
         "notes": {
           "heroSecondary": "El botón secundario siempre lleva a /owners.",
@@ -1238,7 +1246,11 @@
           "ctaServices": "El botón siempre abre Servicios.",
           "ctaGuides": "El botón siempre abre Guías.",
           "guestTestimonials": "Las reseñas vienen de Testimonios (público Huésped).",
-          "guestDualCta": "El botón del huésped siempre abre Edificios; el del propietario abre el formulario de contacto. La línea de contacto viene de Ajustes."
+          "guestDualCta": "El botón del huésped siempre abre Edificios; el del propietario abre el formulario de contacto. La línea de contacto viene de Ajustes.",
+          "aboutStats": "Las cifras se animan en la página.",
+          "aboutValues": "Los números 01–04 son automáticos.",
+          "aboutCertifications": "Sin logo, la tarjeta muestra su icono.",
+          "aboutContact": "Las tarjetas abren siempre Edificios / Propietarios / Inmobiliaria. La dirección, los teléfonos, el email, la web y el horario vienen de Ajustes. Los campos del formulario se comparten con el formulario de contacto de la cabecera."
         },
         "links": {
           "settings": "Abrir Ajustes",
@@ -1348,7 +1360,23 @@
         "image_alt": "Texto alternativo de la imagen",
         "services_teaser": "Avance de servicios",
         "activities_teaser": "Qué hacer",
-        "items": "Tarjetas"
+        "items": "Tarjetas",
+        "mission": "Texto de la misión",
+        "story": "Cómo empezamos",
+        "narrative": "Párrafos",
+        "serve": "Tres públicos",
+        "audiences": "Públicos",
+        "values": "Lo que nos guía",
+        "organisation": "Cómo nos organizamos",
+        "departments": "Departamentos",
+        "certifications": "Certificaciones",
+        "logo_media_id": "Logo",
+        "issuer": "Emisor",
+        "community": "Compromiso social",
+        "cards": "Tarjetas",
+        "office_title": "Título de la oficina",
+        "form": "Formulario de contacto",
+        "link_label": "Texto del enlace"
       },
       "itemLabels": {
         "benefits": "Ventaja",
@@ -1362,7 +1390,20 @@
         "models": "Modelo",
         "points": "Punto",
         "tiles": "Tarjeta",
-        "items": "Tarjeta"
+        "items": "Tarjeta",
+        "narrative": "Párrafo",
+        "copy": "Párrafo",
+        "audiences": "Público",
+        "departments": "Departamento",
+        "cards": "Tarjeta"
+      },
+      "itemLabelsByParent": {
+        "values": {
+          "items": "Valor"
+        },
+        "certifications": {
+          "items": "Certificación"
+        }
       },
       "addLabels": {
         "figures": "Nuevo dato",

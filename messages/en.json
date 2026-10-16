@@ -1139,7 +1139,7 @@
     },
     "about": {
       "metaTitle": "About Us — Central Hill",
-      "metaDescription": "Portugal's trusted hospitality management company since 2012 — managing premium apartments and delivering exceptional experiences at scale.",
+      "metaDescription": "Since 2012, Central Hill Apartments has turned properties into high-performing hospitality assets across Portugal — combining deep local knowledge, AI-driven technology, and an uncompromising commitment to quality.",
       "communityEyebrow": "Community",
       "contactNote": "We typically reply within 24 hours."
     },
@@ -1211,7 +1211,15 @@
           "welcome": "Welcome",
           "guestWhy": "Why book directly",
           "services_teaser": "Services teaser",
-          "activities_teaser": "What to do"
+          "activities_teaser": "What to do",
+          "story": "How we started",
+          "aboutStats": "Company figures",
+          "serve": "Three audiences",
+          "values": "What guides us",
+          "organisation": "How we are organised",
+          "certifications": "Certifications",
+          "community": "Giving back",
+          "aboutContact": "Let's start a conversation"
         },
         "notes": {
           "heroSecondary": "The secondary button always links to /owners.",
@@ -1238,7 +1246,11 @@
           "ctaServices": "The button always opens Services.",
           "ctaGuides": "The button always opens Guides.",
           "guestTestimonials": "Reviews come from Testimonials (audience Guest).",
-          "guestDualCta": "The guest button always opens Buildings; the owner button opens the contact form. The contact line comes from Settings."
+          "guestDualCta": "The guest button always opens Buildings; the owner button opens the contact form. The contact line comes from Settings.",
+          "aboutStats": "Numbers count up on the page.",
+          "aboutValues": "Numbers 01–04 are automatic.",
+          "aboutCertifications": "Without a logo the card shows its icon.",
+          "aboutContact": "Cards always open Buildings / Owners / Real Estate. Address, phones, email, website and hours come from Settings. Form fields are shared with the header contact form."
         },
         "links": {
           "settings": "Open Settings",
@@ -1348,7 +1360,23 @@
         "image_alt": "Image alt text",
         "services_teaser": "Services teaser",
         "activities_teaser": "What to do",
-        "items": "Cards"
+        "items": "Cards",
+        "mission": "Mission text",
+        "story": "How we started",
+        "narrative": "Paragraphs",
+        "serve": "Three audiences",
+        "audiences": "Audiences",
+        "values": "What guides us",
+        "organisation": "How we are organised",
+        "departments": "Departments",
+        "certifications": "Certifications",
+        "logo_media_id": "Logo",
+        "issuer": "Issuer",
+        "community": "Giving back",
+        "cards": "Cards",
+        "office_title": "Office title",
+        "form": "Contact form",
+        "link_label": "Link text"
       },
       "itemLabels": {
         "benefits": "Benefit",
@@ -1362,7 +1390,20 @@
         "models": "Model",
         "points": "Point",
         "tiles": "Tile",
-        "items": "Card"
+        "items": "Card",
+        "narrative": "Paragraph",
+        "copy": "Paragraph",
+        "audiences": "Audience",
+        "departments": "Department",
+        "cards": "Card"
+      },
+      "itemLabelsByParent": {
+        "values": {
+          "items": "Value"
+        },
+        "certifications": {
+          "items": "Certification"
+        }
       },
       "addLabels": {
         "figures": "New figure",

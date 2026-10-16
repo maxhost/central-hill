@@ -275,3 +275,23 @@ export function humanizeKey(key: string): string {
   const base = key.replace(/_media_id$/, "").replace(/^icon_key$/, "icon").replace(/_/g, " ").trim();
   return base.charAt(0).toUpperCase() + base.slice(1);
 }
+
+/**
+ * i18n keys (namespace `pages`, most specific first) for the singular label of a list's items
+ * (`kind`: `itemLabels`) or its add button (`kind`: `addLabels`). A generic array key that
+ * means different things per section (About's `values.items` → "Value",
+ * `certifications.items` → "Certification", spec about-admin-editor S1) first tries
+ * `admin.<kind>ByParent.<parentKey>.<arrayKey>`; every other list keeps the global
+ * `admin.<kind>.<arrayKey>`. A non-string array key (a list item index) yields no key.
+ */
+export function listLabelKeys(
+  kind: "itemLabels" | "addLabels",
+  path: readonly (string | number)[],
+): string[] {
+  const arrayKey = path.at(-1);
+  if (typeof arrayKey !== "string") return [];
+  const parentKey = path.at(-2);
+  const keys = [`admin.${kind}.${arrayKey}`];
+  if (typeof parentKey === "string") keys.unshift(`admin.${kind}ByParent.${parentKey}.${arrayKey}`);
+  return keys;
+}

@@ -7,6 +7,7 @@ import { buildMetadata } from "@core/seo";
 import { orMessage } from "../ui/or-message";
 import { seoMetadataInput } from "./metadata-input";
 import {
+  getAboutPage,
   getBuildingsPage,
   getGuestPage,
   getHomePage,
@@ -142,6 +143,30 @@ export async function buildGuestMetadata(locale: Locale): Promise<Metadata> {
       ogImage: page?.ogImage,
       fallbackTitle: t("guests.metaTitle"),
       fallbackDescription: t("guests.metaDescription"),
+    }),
+  );
+}
+
+/**
+ * `generateMetadata` for the About route (`src/app/[locale]/about/page.tsx`), spec
+ * `about-admin-editor` S1 — the same shape as {@link buildGuestMetadata}. Title / description
+ * come from the page's `seo.*` and fall back to `pages.about.metaTitle` / `metaDescription`
+ * when blank (no row / no `seo` → exactly what the route built before). Canonical
+ * `/<locale>/about`, hreflang + `x-default` → `/about`, optional OG image.
+ */
+export async function buildAboutMetadata(locale: Locale): Promise<Metadata> {
+  const [t, page] = await Promise.all([
+    getTranslations({ locale, namespace: "pages" }),
+    getAboutPage(locale),
+  ]);
+  return buildMetadata(
+    seoMetadataInput({
+      locale,
+      path: "/about",
+      seo: page?.content.seo,
+      ogImage: page?.ogImage,
+      fallbackTitle: t("about.metaTitle"),
+      fallbackDescription: t("about.metaDescription"),
     }),
   );
 }

@@ -1139,7 +1139,7 @@
     },
     "about": {
       "metaTitle": "À Propos — Central Hill",
-      "metaDescription": "L'entreprise de gestion hôtelière de confiance du Portugal depuis 2012 — gérant des appartements premium et offrant des expériences d'exception à grande échelle.",
+      "metaDescription": "Depuis 2012, Central Hill Apartments transforme des biens immobiliers en actifs hôteliers performants partout au Portugal, en alliant une connaissance approfondie du terrain, une technologie fondée sur l'IA et un engagement sans compromis envers la qualité.",
       "communityEyebrow": "Communauté",
       "contactNote": "Nous répondons généralement sous 24 heures."
     },
@@ -1211,7 +1211,15 @@
           "welcome": "Bienvenue",
           "guestWhy": "Pourquoi réserver en direct",
           "services_teaser": "Aperçu des services",
-          "activities_teaser": "Que faire"
+          "activities_teaser": "Que faire",
+          "story": "Nos débuts",
+          "aboutStats": "Chiffres clés",
+          "serve": "Trois publics",
+          "values": "Ce qui nous guide",
+          "organisation": "Notre organisation",
+          "certifications": "Certifications",
+          "community": "Engagement solidaire",
+          "aboutContact": "Parlons-en"
         },
         "notes": {
           "heroSecondary": "Le bouton secondaire mène toujours à /owners.",
@@ -1238,7 +1246,11 @@
           "ctaServices": "Le bouton ouvre toujours Services.",
           "ctaGuides": "Le bouton ouvre toujours Guides.",
           "guestTestimonials": "Les avis viennent de Témoignages (public Voyageur).",
-          "guestDualCta": "Le bouton voyageur ouvre toujours Immeubles ; le bouton propriétaire ouvre le formulaire de contact. La ligne de contact vient des Paramètres."
+          "guestDualCta": "Le bouton voyageur ouvre toujours Immeubles ; le bouton propriétaire ouvre le formulaire de contact. La ligne de contact vient des Paramètres.",
+          "aboutStats": "Les chiffres s'animent sur la page.",
+          "aboutValues": "Les numéros 01–04 sont automatiques.",
+          "aboutCertifications": "Sans logo, la carte affiche son icône.",
+          "aboutContact": "Les cartes ouvrent toujours Immeubles / Propriétaires / Immobilier. L'adresse, les téléphones, l'e-mail, le site web et les horaires viennent des Paramètres. Les champs du formulaire sont partagés avec le formulaire de contact de l'en-tête."
         },
         "links": {
           "settings": "Ouvrir Paramètres",
@@ -1348,7 +1360,23 @@
         "image_alt": "Texte alternatif de l’image",
         "services_teaser": "Aperçu des services",
         "activities_teaser": "Que faire",
-        "items": "Cartes"
+        "items": "Cartes",
+        "mission": "Texte de la mission",
+        "story": "Nos débuts",
+        "narrative": "Paragraphes",
+        "serve": "Trois publics",
+        "audiences": "Publics",
+        "values": "Ce qui nous guide",
+        "organisation": "Notre organisation",
+        "departments": "Départements",
+        "certifications": "Certifications",
+        "logo_media_id": "Logo",
+        "issuer": "Émetteur",
+        "community": "Engagement solidaire",
+        "cards": "Cartes",
+        "office_title": "Titre du bureau",
+        "form": "Formulaire de contact",
+        "link_label": "Texte du lien"
       },
       "itemLabels": {
         "benefits": "Avantage",
@@ -1362,7 +1390,20 @@
         "models": "Modèle",
         "points": "Point",
         "tiles": "Carte",
-        "items": "Carte"
+        "items": "Carte",
+        "narrative": "Paragraphe",
+        "copy": "Paragraphe",
+        "audiences": "Public",
+        "departments": "Département",
+        "cards": "Carte"
+      },
+      "itemLabelsByParent": {
+        "values": {
+          "items": "Valeur"
+        },
+        "certifications": {
+          "items": "Certification"
+        }
       },
       "addLabels": {
         "figures": "Nouvelle donnée",

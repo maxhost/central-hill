@@ -76,12 +76,28 @@ export const GUEST_CARD_IDS = [
   "dual_cta",
 ] as const;
 
+/** Stable card ids of the About editor, in page order (spec about-admin-editor). */
+export const ABOUT_CARD_IDS = [
+  "seo",
+  "hero",
+  "story",
+  "stats",
+  "serve",
+  "values",
+  "organisation",
+  "certifications",
+  "community",
+  "faq",
+  "contact",
+] as const;
+
 export type EditorCardId =
   | (typeof HOME_CARD_IDS)[number]
   | (typeof OWNERS_CARD_IDS)[number]
   | (typeof BUILDINGS_CARD_IDS)[number]
   | (typeof REAL_ESTATE_CARD_IDS)[number]
-  | (typeof GUEST_CARD_IDS)[number];
+  | (typeof GUEST_CARD_IDS)[number]
+  | (typeof ABOUT_CARD_IDS)[number];
 
 /** Id of the fallback card that collects root keys no card claims. */
 export const OTHER_CARD_ID = "other";
@@ -418,12 +434,70 @@ const GUEST_LAYOUT: EditorLayoutItem[] = [
   },
 ];
 
+/**
+ * About (spec about-admin-editor → "Editor: formulario sección a sección"). S1 adds the
+ * optional `seo` (meta + the OG image) and `faq` (section title, next to `faq_group_key`)
+ * keys, so every card is shown. Contact card destinations and the office details are fixed /
+ * come from Settings (read-only note).
+ */
+const ABOUT_LAYOUT: EditorLayoutItem[] = [
+  {
+    kind: "card",
+    id: "seo",
+    titleKey: `${L}.cards.seo`,
+    paths: ["seo"],
+    note: { textKey: `${L}.notes.seoLimits` },
+    hostsOgImage: true,
+  },
+  { kind: "card", id: "hero", titleKey: `${L}.cards.hero`, paths: ["hero"] },
+  { kind: "card", id: "story", titleKey: `${L}.cards.story`, paths: ["story"] },
+  {
+    kind: "card",
+    id: "stats",
+    titleKey: `${L}.cards.aboutStats`,
+    paths: ["stats"],
+    note: { textKey: `${L}.notes.aboutStats` },
+  },
+  { kind: "card", id: "serve", titleKey: `${L}.cards.serve`, paths: ["serve"] },
+  {
+    kind: "card",
+    id: "values",
+    titleKey: `${L}.cards.values`,
+    paths: ["values"],
+    note: { textKey: `${L}.notes.aboutValues` },
+  },
+  { kind: "card", id: "organisation", titleKey: `${L}.cards.organisation`, paths: ["organisation"] },
+  {
+    kind: "card",
+    id: "certifications",
+    titleKey: `${L}.cards.certifications`,
+    paths: ["certifications"],
+    note: { textKey: `${L}.notes.aboutCertifications` },
+  },
+  { kind: "card", id: "community", titleKey: `${L}.cards.community`, paths: ["community"] },
+  {
+    kind: "card",
+    id: "faq",
+    titleKey: `${L}.cards.faq`,
+    paths: ["faq_group_key", "faq"],
+    note: { textKey: `${L}.notes.faq`, link: link("/admin/faq", "faq") },
+  },
+  {
+    kind: "card",
+    id: "contact",
+    titleKey: `${L}.cards.aboutContact`,
+    paths: ["contact"],
+    note: { textKey: `${L}.notes.aboutContact`, link: link("/admin/settings", "settings") },
+  },
+];
+
 const LAYOUTS: Partial<Record<string, EditorLayoutItem[]>> = {
   home: HOME_LAYOUT,
   owners: OWNERS_LAYOUT,
   buildings: BUILDINGS_LAYOUT,
   real_estate: REAL_ESTATE_LAYOUT,
   guest: GUEST_LAYOUT,
+  about: ABOUT_LAYOUT,
 };
 
 /**

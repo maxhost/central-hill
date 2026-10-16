@@ -1231,3 +1231,80 @@ test("seoMetadataInput: /guests falls back to i18n, uses seo + OG, keeps canonic
   assert.equal(custom.description, "Default.");
   assert.equal(custom.images?.[0]?.url, "https://cdn.example/og.jpg");
 });
+
+// ── About S1: SEO and FAQ title with i18n fallback ───────────────────────────
+test("about S1: `seo` and `faq` are optional, blank-tolerant, capped and translatable", () => {
+  assert.ok(!("seo" in defaultAbout) && !("faq" in defaultAbout));
+  assert.ok(aboutSchema.safeParse(defaultAbout).success, "a row without the S1 keys validates");
+  const blank = { ...defaultAbout, seo: { meta_title: "", meta_description: "" }, faq: { title: "" } };
+  assert.ok(aboutSchema.safeParse(blank).success, "blank S1 fields validate");
+  const filled = {
+    ...defaultAbout,
+    seo: { meta_title: "About Central Hill", meta_description: "Since 2012." },
+    faq: { title: "Questions about us" },
+  };
+  assert.ok(aboutSchema.safeParse(filled).success, "filled S1 fields validate");
+  const { seo, faq } = aboutSchema.shape;
+  assert.ok(!seo.safeParse({ meta_title: "x".repeat(71) }).success, "meta_title ≤ 70");
+  assert.ok(!faq.safeParse({ title: "x".repeat(161) }).success, "faq title ≤ 160");
+  const paths = translatablePathsByPage.about;
+  for (const p of ["seo.meta_title", "seo.meta_description", "faq.title"]) {
+    assert.ok(paths.includes(p), `expected translatable path ${p}`);
+  }
+});
+
+test("about S1: EN meta fallbacks are the route's former literals; FAQ hint names the EN title", () => {
+  const en = JSON.parse(readFileSync(path.join(process.cwd(), "messages/en.json"), "utf8")).pages;
+  assert.equal(en.about.metaTitle, "About Us — Central Hill");
+  assert.equal(
+    en.about.metaDescription,
+    "Since 2012, Central Hill Apartments has turned properties into high-performing hospitality assets across Portugal — combining deep local knowledge, AI-driven technology, and an uncompromising commitment to quality.",
+  );
+  for (const locale of ["pt", "es", "fr"]) {
+    const pages = JSON.parse(readFileSync(path.join(process.cwd(), `messages/${locale}.json`), "utf8")).pages;
+    assert.equal(typeof pages.about.metaTitle, "string", `${locale} metaTitle`);
+    assert.equal(typeof pages.about.metaDescription, "string", `${locale} metaDescription`);
+  }
+  const hint = aboutSchema.shape.faq.unwrap().shape.title.description ?? "";
+  assert.ok(hint.includes(`“${en.faqTitle}”`));
+  assert.equal(orMessage(undefined, en.faqTitle), en.faqTitle);
+  assert.equal(orMessage("  ", en.faqTitle), en.faqTitle);
+  assert.equal(orMessage("Questions about us", en.faqTitle), "Questions about us");
+});
+
+test("seoMetadataInput: /about falls back to i18n, uses seo + OG, keeps canonical/hreflang", () => {
+  const input = seoMetadataInput({
+    locale: "en",
+    path: "/about",
+    seo: undefined,
+    ogImage: null,
+    fallbackTitle: "About Us — Central Hill",
+    fallbackDescription: "Default.",
+  });
+  // Exactly what the route built before S1.
+  assert.deepEqual(input, {
+    title: "About Us — Central Hill",
+    description: "Default.",
+    canonicalPath: "/en/about",
+    languages: {
+      "x-default": "/about",
+      en: "/en/about",
+      pt: "/pt/about",
+      es: "/es/about",
+      fr: "/fr/about",
+    },
+    images: undefined,
+  });
+  const custom = seoMetadataInput({
+    locale: "fr",
+    path: "/about",
+    seo: { meta_title: "À propos de Central Hill", meta_description: "" },
+    ogImage: { url: "https://cdn.example/og.jpg", width: 1200, height: 630, alt: "OG", blurhash: null },
+    fallbackTitle: "À Propos — Central Hill",
+    fallbackDescription: "Défaut.",
+  });
+  assert.equal(custom.title, "À propos de Central Hill");
+  assert.equal(custom.description, "Défaut.");
+  assert.equal(custom.canonicalPath, "/fr/about");
+  assert.equal(custom.images?.[0]?.url, "https://cdn.example/og.jpg");
+});
