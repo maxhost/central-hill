@@ -435,3 +435,18 @@ exit0 (5 warnings históricos), tests explícitos Guides+Pages+Backoffice+Transl
 Typecheck independiente antes y después del build registrado en logs de QA.
 Servidor production3061 sesión28688, con env ficticio y DB/media dedicados.
 QA funcional independiente pendiente; no se declara aprobación por esos checks.
+
+### Primera pasada QA y correcciones root
+
+QA independiente reprodujo sobre0e8fc75:
+- P1 sitemap: guía nueva publicada y detalle200, pero sitemap caliente sin nueva URL.
+  Fix root: revalidateGuides invalida también cacheTags.sitemap, ya que SEO envuelve
+  listGuideParams en un cache propio cuyos tags internos no se propagan.
+- P1 referencia media de lugar inexistente aceptada: helper sólo detectaba sufijo
+  _media_id, omitiendo key exacta media_id. Fix para ambos y tests negativos de los4slots.
+- Guardados7–8s en fixture pequeño: batch único para media de todo árbol y sólo
+  preflight/escritura de slugs explícitamente cambiados; evita reescribir4locales
+  al editar título y conserva targets. Nuevos tests de slugs y paths media anidados.
+El servidor production3061 original PID24341 se detiene para rebuild propio;
+QA restauró refs originales y archivó sus altas de prueba. Previews3059/3060 intactas.
+Estos findings están pendientes de retest; no son aprobación funcional.

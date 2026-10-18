@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import {test} from "node:test";
-import {runGuideWrite} from "../admin/model";
+import {runGuideWrite, guideSlugsToWrite} from "../admin/model";
 test("sequential failure reports confirmed steps, invalidates uncertain writes and retry keeps stable ID",async()=>{
   const rows=new Map<string,string>();let invalidations=0;let fail=true;
   const steps=[{name:"entity",run:async()=>{rows.set("stable-id","row");}},{name:"source",run:async()=>{if(fail)throw Error("network");rows.set("source","Title");}}];
@@ -18,4 +18,12 @@ test("cache failure after durable writes reports invalidation, not a failed sour
   const result=await runGuideWrite("id",[{name:"source",run:async()=>undefined}],()=>{throw Error("cache unavailable");});
   assert.equal(result.ok,false);
   if(!result.ok && result.error==="partial_write") { assert.deepEqual(result.completedSteps,["source"]);assert.equal(result.failedStep,"invalidate"); }
+});
+
+test("unrelated edits do not rewrite translated slugs and creation initializes all locales",()=>{
+ const stored={en:"guide",pt:"guia",es:"guia-es",fr:"visiter"};
+ assert.deepEqual(guideSlugsToWrite(undefined,stored),{});
+ assert.deepEqual(guideSlugsToWrite({en:"guide"},stored),{});
+ assert.deepEqual(guideSlugsToWrite({en:"new-guide"},stored),{en:"new-guide"});
+ assert.deepEqual(guideSlugsToWrite({en:"guide",pt:"guia"}),{en:"guide",pt:"guia",es:"guide",fr:"guide"});
 });

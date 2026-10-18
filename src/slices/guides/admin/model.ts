@@ -63,3 +63,12 @@ export async function runGuideWrite(id: string, steps: GuideWriteStep[], invalid
     return { ok: false, error: "partial_write", entityIds: [id], completedSteps, failedStep, reloadRequired: true };
   }
 }
+
+/** Existing localized slugs are never rewritten by unrelated source edits. */
+export function guideSlugsToWrite(
+  requested: Partial<Record<GuideLocale, string>> = {},
+  existing?: Partial<Record<GuideLocale, string>>,
+): Partial<Record<GuideLocale, string>> {
+  if (!existing) return requested.en ? { en: requested.en, pt: requested.en, es: requested.en, fr: requested.en, ...requested } : requested;
+  return Object.fromEntries(Object.entries(requested).filter(([locale, value]) => value !== undefined && value !== existing[locale as GuideLocale]));
+}

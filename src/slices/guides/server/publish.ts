@@ -1,5 +1,5 @@
 import "server-only";
-import { updateTag } from "@core/revalidate";
+import { cacheTags, updateTag } from "@core/revalidate";
 import { GUIDE_TAGS } from "../contract";
 
 /**
@@ -14,4 +14,6 @@ import { GUIDE_TAGS } from "../contract";
  */
 export function revalidateGuides(): void {
   updateTag(GUIDE_TAGS.list);
+  // SEO wraps listGuideParams in its own cache; nested cache tags do not propagate.
+  updateTag(cacheTags.sitemap);
 }

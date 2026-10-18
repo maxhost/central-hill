@@ -13,8 +13,8 @@ import { guide_page, guide_section, guide_place } from "../schema";
 import { revalidateGuides } from "../server/publish";
 import { getGuideForEdit } from "./queries";
 import { guidePageMutation, guideSectionMutation, guidePlaceMutation, pageColumns, pageSource, placeColumns, guideSectionErrors, guidePlaceErrors, guideTreeErrors, guideFieldErrors, isExactGuideOrder } from "./validation";
-import { guideMediaReferences, guideMediaErrors } from "./media-validation";
-import { runGuideWrite, type GuideActionResult, type GuidePageEdit, type GuideSectionEdit, type GuidePlaceEdit, type GuideWriteStep } from "./model";
+import { guideMediaReferences, guideMediaErrors, guideTreeMediaReferences, guideTreeMediaErrors } from "./media-validation";
+import { runGuideWrite, guideSlugsToWrite, type GuideActionResult, type GuidePageEdit, type GuideSectionEdit, type GuidePlaceEdit, type GuideWriteStep } from "./model";
 
 const fail = (error: "not_found" | "ownership" | "slug_conflict" | "invalid_stored_content" | "server"): GuideActionResult => ({ ok: false, error });
 const invalid = (fieldErrors: Record<string, string>): GuideActionResult => ({ ok: false, error: "validation", fieldErrors });
@@ -24,14 +24,11 @@ async function mediaErrors(input: object) {
   const refs = guideMediaReferences(input);
   return guideMediaErrors(input, await loadMedia(refs.map(r => r.id)));
 }
-async function treeErrors(page: GuidePageEdit) {
-  const errors = guideTreeErrors(page, await listGuideCityOptions());
+async function treeErrors(page: GuidePageEdit, cities?: import("./model").GuideCityOption[]) {
+  const errors = guideTreeErrors(page, cities ?? await listGuideCityOptions());
   if (page.status === "published") {
-    for (const [key, value] of Object.entries(await mediaErrors(page))) errors[key] = value;
-    for (const section of page.sections) {
-      for (const [key, value] of Object.entries(await mediaErrors(section))) errors[`sections.${section.id}.${key}`] = value;
-      for (const place of section.places) for (const [key, value] of Object.entries(await mediaErrors(place))) errors[`sections.${section.id}.places.${place.id}.${key}`] = value;
-    }
+    const ids = [...new Set(guideTreeMediaReferences(page).map(ref => ref.id))];
+    Object.assign(errors, guideTreeMediaErrors(page, await loadMedia(ids)));
   }
   return errors;
 }
@@ -49,24 +46,25 @@ export async function saveGuidePage(raw: unknown): Promise<GuideActionResult> {
       hero_media_id: null, og_image_media_id: null, title: "", intro: null, meta_title: null,
       meta_description: null, slug: "", slugs: {}, sections: [],
     };
-    const effectiveSlugs = !bundle ? { en: input.slugs?.en, pt: input.slugs?.en, es: input.slugs?.en, fr: input.slugs?.en, ...input.slugs } : { ...base.slugs, ...input.slugs };
+    const slugsToWrite = guideSlugsToWrite(input.slugs, bundle?.data.slugs);
+    const effectiveSlugs = { ...base.slugs, ...slugsToWrite };
     const page: GuidePageEdit = { ...base, ...input.changes, ...input.source, slugs: effectiveSlugs, slug: effectiveSlugs.en ?? base.slug };
     const columns = pageColumns.safeParse({ city_id: page.city_id, template: page.template, status: page.status, position: page.position, hero_media_id: page.hero_media_id, og_image_media_id: page.og_image_media_id });
     const source = pageSource.safeParse({ title: page.title, intro: page.intro, meta_title: page.meta_title, meta_description: page.meta_description });
     if (!columns.success) return invalid(guideFieldErrors(columns.error.issues));
     if (!source.success) return invalid(guideFieldErrors(source.error.issues));
     if (!page.slugs.en) return invalid({ "slugs.en": "Enter an English slug." });
-    for (const [locale, value] of Object.entries(page.slugs)) {
+    for (const [locale, value] of Object.entries(slugsToWrite)) {
       if (!value) continue;
       const owner = await resolveSlug(GUIDE_PAGE, locale as "en" | "pt" | "es" | "fr", value);
       if (owner && owner !== input.id) return fail("slug_conflict");
     }
-    const errors = { ...await mediaErrors(page), ...await treeErrors(page) };
+    const errors = { ...(page.status === "published" ? {} : await mediaErrors(page)), ...await treeErrors(page, bundle?.cities) };
     if (Object.keys(errors).length) return invalid(errors);
     const steps: GuideWriteStep[] = [
-      { name: "page", run: () => bundle ? db.update(guide_page).set({ ...input.changes, slug: page.slug, updated_at: new Date() }).where(eq(guide_page.id, input.id)) : db.insert(guide_page).values({ id: input.id, ...columns.data, slug: page.slug }) },
-      { name: "slugs", run: () => setSlugs(GUIDE_PAGE, input.id, page.slugs) },
-      { name: "source", run: () => setSourceContent(GUIDE_PAGE, input.id, input.source, { updatedBy: staff.userId }) },
+      ...(!bundle || Object.keys(input.changes).length || Object.keys(input.source).length || slugsToWrite.en ? [{ name: "page", run: () => bundle ? db.update(guide_page).set({ ...input.changes, slug: page.slug, updated_at: new Date() }).where(eq(guide_page.id, input.id)) : db.insert(guide_page).values({ id: input.id, ...columns.data, slug: page.slug }) }] : []),
+      ...(Object.keys(slugsToWrite).length ? [{ name: "slugs", run: () => setSlugs(GUIDE_PAGE, input.id, slugsToWrite) }] : []),
+      ...(Object.keys(input.source).length ? [{ name: "source", run: () => setSourceContent(GUIDE_PAGE, input.id, input.source, { updatedBy: staff.userId }) }] : []),
     ];
     return runGuideWrite(input.id, steps, () => invalidate(input.id));
   } catch (error) { console.error("[guides:action]", error); return fail("server"); }
@@ -90,7 +88,7 @@ export async function saveGuideSection(pageId: string, raw: unknown): Promise<Gu
       ...input.changes, ...input.source,
     };
     const page = { ...bundle.data, sections: previous ? bundle.data.sections.map(s => s.id === input.id ? section : s) : [...bundle.data.sections, section] };
-    const errors = { ...guideSectionErrors(section), ...await mediaErrors(section), ...await treeErrors(page) };
+    const errors = { ...guideSectionErrors(section), ...(page.status === "published" ? {} : await mediaErrors(section)), ...await treeErrors(page, bundle.cities) };
     if (Object.keys(errors).length) return invalid(errors);
     return runGuideWrite(input.id, [
       { name: "section", run: () => owned ? db.update(guide_section).set({ ...input.changes, updated_at: new Date() }).where(eq(guide_section.id, input.id)) : db.insert(guide_section).values({ id: input.id, guide_page_id: pageId, layout: "standard", position: section.position, header_media_id: section.header_media_id, cta_url: section.cta_url, presentation: section.presentation }) },
@@ -119,7 +117,7 @@ export async function saveGuidePlace(pageId: string, sectionId: string, raw: unk
       ...input.changes, ...input.source,
     };
     const page = { ...bundle.data, sections: bundle.data.sections.map(s => s.id !== sectionId ? s : { ...s, places: previous ? s.places.map(p => p.id === input.id ? place : p) : [...s.places, place] }) };
-    const errors = { ...guidePlaceErrors(place), ...await mediaErrors(place), ...await treeErrors(page) };
+    const errors = { ...guidePlaceErrors(place), ...(page.status === "published" ? {} : await mediaErrors(place)), ...await treeErrors(page, bundle.cities) };
     if (Object.keys(errors).length) return invalid(errors);
     const id = place.id;
     const columns = placeColumns.parse(Object.fromEntries(Object.keys(placeColumns.shape).map(key => [key, place[key as keyof GuidePlaceEdit]])));
@@ -140,7 +138,7 @@ async function reorder(pageId: string, sectionId: string | null, orderedIds: str
     if (sectionId && !parent) return fail("ownership");
     const ids = (parent ? parent.places : bundle.data.sections).map(s => s.id);
     if (!isExactGuideOrder(ids, orderedIds)) return invalid({ order: "Order must contain every saved child exactly once." });
-    const errors = await treeErrors(bundle.data);
+    const errors = await treeErrors(bundle.data, bundle.cities);
     if (Object.keys(errors).length) return invalid(errors);
     return runGuideWrite(pageId, orderedIds.map((id, position) => ({ name: `order:${id}`, run: () => parent ? db.update(guide_place).set({ position, updated_at: new Date() }).where(eq(guide_place.id, id)) : db.update(guide_section).set({ position, updated_at: new Date() }).where(eq(guide_section.id, id)) })), () => invalidate(pageId));
   } catch (error) { console.error("[guides:action]", error); return fail("server"); }
@@ -157,7 +155,7 @@ export async function deleteGuidePlace(pageId: string, sectionId: string, id: st
     const parent = bundle.data.sections.find(s => s.id === sectionId);
     if (!parent?.places.some(p => p.id === id)) return fail("ownership");
     const page = { ...bundle.data, sections: bundle.data.sections.map(s => s.id === sectionId ? { ...s, places: s.places.filter(p => p.id !== id) } : s) };
-    const errors = await treeErrors(page);
+    const errors = await treeErrors(page, bundle.cities);
     if (Object.keys(errors).length) return invalid(errors);
     return runGuideWrite(id, [{ name: "place-translations", run: () => deleteContent(GUIDE_PLACE, id) }, { name: "place", run: () => db.delete(guide_place).where(eq(guide_place.id, id)) }], () => invalidate(pageId));
   } catch (error) { console.error("[guides:action]", error); return fail("server"); }
@@ -171,7 +169,7 @@ export async function deleteGuideSection(pageId: string, id: string): Promise<Gu
     if (bundle.integrity === "invalid") return fail("invalid_stored_content");
     const section = bundle.data.sections.find(s => s.id === id);
     if (!section) return fail("ownership");
-    const errors = await treeErrors({ ...bundle.data, sections: bundle.data.sections.filter(s => s.id !== id) });
+    const errors = await treeErrors({ ...bundle.data, sections: bundle.data.sections.filter(s => s.id !== id) }, bundle.cities);
     if (Object.keys(errors).length) return invalid(errors);
     return runGuideWrite(id, [
       ...section.places.map(p => ({ name: `place-translations:${p.id}`, run: () => deleteContent(GUIDE_PLACE, p.id) })),

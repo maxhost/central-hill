@@ -180,7 +180,7 @@ published tree; MIME/existence checks run on server. Media queue flushes before 
 
 `revalidateGuides` is exported through the contract. Translation actions also invoke
 it for guide_page/guide_section/guide_place, ensuring approved/reset fields refresh
-`guide-list` instead of relying on generic tags that those queries do not subscribe to.
+`guide-list` and the outer SEO `sitemap` cache instead of relying on generic tags that those queries do not subscribe to.
 GuideCityOptions comes from Geography’s staff-gated contract including all statuses;
 only a published city can have publicly published guides.
 
