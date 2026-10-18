@@ -4,9 +4,11 @@ Read [CLAUDE.md](CLAUDE.md) for architecture and [docs/multi-agent-workflow.md](
 
 ## Current handoff
 
-Next planned implementation: [Services editor spec](docs/specs/services-admin-editor.md).
-Read [session handoff 2026-10-18](docs/specs/handoff-2026-10-18.md) for the saved state,
-user decisions and starting steps. Update this pointer when the active task changes.
+Services editor implemented and independently QA-approved; local integration delivery recorded in
+[Services handoff 2026-10-18](docs/specs/handoff-services-2026-10-18.md).
+See the [Services editor spec](docs/specs/services-admin-editor.md) and
+[QA evidence](docs/specs/services-admin-editor-qa.md). No next implementation is assigned yet.
+Update this pointer when the active task changes.
 
 ## Working agreement
 

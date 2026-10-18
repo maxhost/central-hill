@@ -19,7 +19,7 @@ foreign tables**. See `docs/vertical-slices.md` → S9.
   `entity_type='page_content'`, `field='block:<dot.path>'` (e.g. `block:owners.benefits.0.title`).
 
 **Page schemas** (`schemas/`): one fixed Zod schema per page (`home`, `owners`, `real-estate`,
-`about`, `guest`, `blog`, `guides`, `buildings`) composed from `_shared.ts` (`iconCard`, `assurance`, `step`, `titledItem`,
+`about`, `guest`, `blog`, `guides`, `buildings`, `services`) composed from `_shared.ts` (`iconCard`, `assurance`, `step`, `titledItem`,
 `faqGroupKey`, `serviceCategorySlug`, `optionalIconKey`, `statFigure`, the estimate-wizard copy
 overrides `estimateContactStep` / `estimateDoneStep` (Owners `earnings_form` + Buildings
 `calculator`), the media helpers
@@ -1213,7 +1213,7 @@ visitor's language. Translation paths include copy/alt/SEO, excluding icons and 
 `ServicesHero`, `ServicesIntro`, `ServicesHowItWorks`, `ServicesFinalCta` are exported by the
 contract for composition by Services around its own catalogue. Both visual slots accept images,
 original animated WebP and MP4/WebM; optional still posters/default photos replace animation
-with reduced motion. Lottie inherited in the picker renders the stock photo on this surface.
+with reduced motion. Lottie uses the existing player after visibility/motion checks; reduced motion keeps a real still.
 The Services save action validates existing media references and their MIME types, rejecting
 video as OG/poster. Cache tag `page:services` and four localized routes invalidate on save;
 service-list and Settings dependencies remain intact. `buildServicesMetadata` supplies editable

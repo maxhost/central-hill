@@ -81,7 +81,7 @@ has a known, validated schema (Zod in code) that both renders the admin form and
 ```
 page_content
   id        uuid pk
-  key       text unique   -- 'home' | 'owners' | 'real_estate' | 'about' | 'guest' | 'blog' | 'guides' | 'buildings'
+  key       text unique   -- 'home' | 'owners' | 'real_estate' | 'about' | 'guest' | 'blog' | 'guides' | 'buildings' | 'services'
   data      jsonb         -- SOURCE-locale values, validated against the page's fixed schema
   og_image_media_id  uuid null
 ```

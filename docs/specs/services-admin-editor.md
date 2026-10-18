@@ -1,6 +1,6 @@
 # Spec y plan del editor de Services
 
-Fecha: 2026-10-18. Estado: implementación en curso; base común preparada.
+Fecha: 2026-10-18. Estado: implementación y QA aprobados; candidato de código `23f2409`. Integración local autorizada.
 
 Flujo operativo: [AGENTS.md](../../AGENTS.md) y
 [multi-agent-workflow.md](../multi-agent-workflow.md). Esta spec concreta el reparto y los
@@ -120,7 +120,7 @@ Con QA aprobado y sin defectos bloqueantes: revisar diff completo y límites ent
 
 Entrega aceptable cuando las cuatro capturas quedan mapeadas al editor, se guardan textos/iconos/medios y SEO, los cambios aparecen por revalidación en los cuatro idiomas, los enlaces permanecen fijos, se conserva el catálogo y QA documenta las pruebas anteriores. No se da por aprobada una prueba de guardado que solo haya sido simulada; si falta DB aislada, documentar el bloqueo antes de integrar.
 
-Fuera de alcance: rediseño, CRUD/detalle de servicios, editor libre de secciones, enlaces editables, nueva pipeline de traducción, cambios globales de iconos, optimización SEO del resto del sitio y despliegue. Esta fase entrega la spec y el plan; la implementación agéntica corresponde al siguiente paso solicitado por el owner.
+Fuera de alcance: rediseño, CRUD/detalle de servicios, editor libre de secciones, enlaces editables, nueva pipeline de traducción, cambios globales de iconos, optimización SEO del resto del sitio y despliegue. La implementación se completó en la reanudación autorizada del owner; ver el cierre y la evidencia de QA al final.
 
 
 ## Ejecución 2026-10-18 — reanudación
@@ -157,3 +157,74 @@ Fuera de alcance: rediseño, CRUD/detalle de servicios, editor libre de seccione
 - Candidato integrado: typecheck exit 0; 218 tests reales exit 0; lint exit 0 con 5 advertencias
   preexistentes; db:check exit 0 (19 migraciones, advertencia preexistente por breakpoint de 0008).
   Build, QA browser/persistencia y revisión independiente pendientes; no merge main todavía.
+
+
+### Correcciones tras revisión y QA
+
+- `86566c9`: validar fila Services antes de resolver IDs de medios (fila malformada -> fallback,
+  nunca error SQL por UUID inválido). Typecheck exit 0; QA incluye fixture inválida en DB local.
+- Build de `86566c9` en `/private/tmp/central-hill-services-build`: Node22, `pnpm build` exit0,
+  73 páginas generadas, rutas Services SSG/ISR cuatro idiomas. Producción local3049 para probar
+  revalidación real, con `BETTER_AUTH_URL` propio; no es despliegue.
+- QA P2 labels: Field visible no estaba asociado a controles en editor heredado. A corrige
+  `schema-fields.tsx`/`page-editor.tsx` con IDs/htmlFor, grupos de medios y estados accesibles.
+- B corrige herencia de Lottie y carga de vídeo CTA solo al intersectar viewport; sin cambios kernel.
+- Env QA S3 endpoint final `http://127.0.0.1:9048` (SDK path-style), base pública
+  `http://localhost:9048/servicesqa`; S3rver CORS permite3048/3049. Fallo inicial de host virtual
+  fue problema de infraestructura local, guardado correctamente abortó sin IDs incompletos.
+- Preferencia de usuario vigente: implementación/QA y comandos contenidos en este proyecto en automático;
+  solo consultar integración a producción GitHub, eliminación de DB/funcionalidades completas o cambios
+  agresivos de arquitectura. No push/despliegue dentro de esta entrega local.
+
+
+## Cierre de implementación y verificación
+
+Código final probado: `23f2409850006f6f007c5c34bc6e85483183f691`. Aprobación independiente QA
+posterior al retest de todas las correcciones; [informe duradero](services-admin-editor-qa.md).
+Cambios posteriores a ese commit: documentación únicamente. `main` sigue la base `a29ebf2`
+hasta el fast-forward final de la rama `services/integration`; el commit de documentación que
+contiene este cierre identifica el HEAD integrado (`git log -1`). No push ni despliegue.
+
+Comandos reales ejecutados con Node22.23.3 y pnpm, sin placeholders:
+
+```sh
+pnpm typecheck
+pnpm lint
+pnpm exec tsx --test src/slices/pages/tests/pages.test.ts src/slices/pages/tests/pages-admin.test.ts src/slices/pages/tests/services-content.test.ts src/slices/pages/tests/services-editor.test.ts src/slices/pages/tests/services-media-validation.test.ts src/slices/services/tests/services.test.ts src/slices/services/tests/services-admin.test.ts src/core/media/tests/media-inputs.test.ts src/slices/backoffice/tests/media-accept.test.ts src/slices/seo/tests/seo.test.ts
+pnpm build
+pnpm db:check
+git diff a29ebf2 --check
+```
+
+Resultados: todos exit0;220 tests reales, build73 páginas con Services SSG/ISR en EN/PT/ES/FR.
+Lint conserva5 advertencias previas; db:check19 migraciones y advertencia previa de0008 por
+statement-breakpoint. Un typecheck intermedio detectó narrowing imposible de `window` en el
+helper nuevo; corregido en `e9373e7`, verificado por typecheck/build final. Detector visual
+mecánico sobre UI nueva/modificada: exit0, `[]`; revisión de fronteras manual por raíz y QA.
+
+QA:23 textos guardados/recargados;3 iconos; fotos/MP4/WebP animado3 frames/Lottie en ambas
+posiciones; posters y movimiento reducido; carga diferida CTA; permisos y payloads inválidos;
+fallos reales de subida sin persistencia de IDs incompletos; guardado deshabilitado durante
+preparación; fallbacks por fila ausente/vacía/inválida; ES aprobado/FR borrador; SEO/OG/Twitter,
+canonical/alternates absolutos/sitemap/robots; desktop1440/móvil390 sin overflow. Publicación y
+edición reales del catálogo refrescan Home y Services cacheados. No reinicios ni limpieza de
+caché entre el guardado observado y la comprobación pública de revalidación.
+
+Adaptador de entorno QA adicional: Next rechaza correctamente upstreams privados del optimizador;
+el preload temporal habilita `imageConfigDefault.dangerouslyAllowLocalIP=true` solo en el build
+local para comprobar JPG optimizado200 y naturalWidth>0. No modifica config del repositorio.
+Build final pasó tanto sin como con ese adaptador. Nunca se copió `.env.local` del usuario.
+
+Hallazgo previo fuera del alcance: Better Auth genera IDs de usuario textuales, mientras
+`translation.updated_by` es UUID; el CRUD existente de catálogo falla al auditar un staff cuyo
+ID no es UUID. Pages/Services editor no escribe ese campo y funciona con ambos tipos. Se
+conservó el primer usuario ficticio y se añadió un segundo staff ficticio UUID para verificar
+el catálogo existente. No se cambió kernel/esquema ni se ocultó el fallo; requiere tarea futura
+con ADR/migración adecuada. Ningún dato remoto afectado.
+
+Artefactos temporales preservados en `/private/tmp/central-hill-services-qa`: scripts,fixtures,
+report.txt,capturas baseline/final y fallo de subida; sin añadirlos a Git. Worktrees/ramas de
+implementadores conservados con commits capturados. Entorno propio preservado para revisión:
+S3 PID65040 puerto9048; dev PID66646 puerto3048; build final PID74142 puerto3049; DB/proxy
+contenedores exclusivos `central-hill-services-db`/`central-hill-services-proxy`. No tocar otros
+worktrees/procesos (incluido GLaDOS preexistente). Sin archivos ajenos absorbidos.
