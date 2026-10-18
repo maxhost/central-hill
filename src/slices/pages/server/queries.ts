@@ -40,6 +40,9 @@ async function _loadPage<T>(locale: Locale, key: PageKey): Promise<PageResult<T>
     .where(eq(page_content.key, key))
     .limit(1);
   if (!row) return null;
+  // Validate before resolving UUID references: malformed legacy rows must use the fallback,
+  // rather than reaching media queries with invalid IDs and failing the whole route.
+  if (key === "services" && !servicesSchema.safeParse(row.data).success) return null;
 
   const [content, { media, ogImage }] = await Promise.all([
     resolveData(row.id, row.data, locale, translatablePathsByPage[key]),
