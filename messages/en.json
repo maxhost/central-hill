@@ -151,7 +151,7 @@
   },
   "blog": {
     "metaTitle": "Blog — Central Hill",
-    "metaDescription": "Owner guides, short-term-rental tips and Lisbon living, from the Central Hill team.",
+    "metaDescription": "Expert guides, practical tips, and local knowledge for property owners, investors, and anyone navigating the Portuguese short-term rental market.",
     "eyebrow": "The Central Hill Journal",
     "title": "Insights on Short-Term Rentals, Property Management & Portugal",
     "intro": "Expert guides, practical tips, and local knowledge for property owners, investors, and anyone navigating the Portuguese short-term rental market.",
@@ -1398,7 +1398,12 @@
           "guidesCityFilter": "City filter",
           "guidesCatalogue": "Guide listing",
           "guidesRecommendations": "Recommendations",
-          "guidesAside": "CTA inside every guide"
+          "guidesAside": "CTA inside every guide",
+          "blogHero": "Header",
+          "blogFeatured": "Featured article",
+          "blogJournal": "Latest articles",
+          "blogNewsletter": "Newsletter",
+          "blogAside": "Article sidebar CTA"
         },
         "notes": {
           "heroSecondary": "The secondary button always links to /owners.",
@@ -1436,14 +1441,18 @@
           "guidesCatalogue": "Guide cards come from the Guides catalogue. This editor changes only the surrounding copy and icons.",
           "guidesRecommendations": "Places are selected automatically from published guides. Edit their content in the future Guides CMS.",
           "guidesAside": "This CTA appears in every individual guide. Its button opens the Buildings page.",
-          "guidesFinalCta": "The button opens the Buildings page in the visitor’s language."
+          "guidesFinalCta": "The button opens the Buildings page in the visitor’s language.",
+          "blogNewsletter": "Used on the Blog listing and article newsletter bands. Form labels and consent are managed by Leads.",
+          "blogCatalogue": "Articles and categories are managed in Blog Posts.",
+          "blogAside": "This CTA appears in article sidebars and links to the Owners page."
         },
         "links": {
           "settings": "Open Settings",
           "buildings": "Open Buildings",
           "services": "Open Services",
           "faq": "Open FAQ",
-          "testimonials": "Open Testimonials"
+          "testimonials": "Open Testimonials",
+          "blogPosts": "Manage articles"
         }
       },
       "labels": {
@@ -1574,7 +1583,9 @@
         "contact_note": "Contact introduction",
         "how_it_works": "How it works",
         "badge_icon_key": "Badge icon",
-        "destination": "Destination"
+        "destination": "Destination",
+        "search_placeholder": "Search placeholder",
+        "search_label": "Accessible search label"
       },
       "itemLabels": {
         "benefits": "Benefit",
@@ -1685,7 +1696,10 @@
       "aboutConflict": "About changed since this editor was opened. Reload to review the latest content before saving.",
       "aboutSourceNote": "Edit the English source here. Approved translations appear on the public page; manage them in Translations.",
       "reloadSource": "Reload stored content",
-      "aboutListBounds": "{count} items · {min}–{max} allowed"
+      "aboutListBounds": "{count} items · {min}–{max} allowed",
+      "blogSourceNote": "Source text is authored in English. Review Portuguese, Spanish and French in Translations. Blank fields inherit the current text in each visitor language; the placeholder shows the English default.",
+      "blogSourceInvalid": "The saved Blog content is invalid. Reload or repair it before saving.",
+      "blogInheritedHint": "Use the default text for the visitor language."
     }
   },
   "leads": {

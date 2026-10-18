@@ -3,8 +3,7 @@ import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import type { Locale } from "@core/db/columns";
-import { buildMetadata } from "@core/seo";
+import { buildBlogMetadata } from "@slices/pages/contract";
 import { BlogListing } from "@slices/blog/ui/blog-listing";
 
 /**
@@ -29,16 +28,7 @@ export async function generateMetadata({
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
 
-  const languages: Partial<Record<Locale | "x-default", string>> = { "x-default": "/blog" };
-  for (const l of routing.locales) languages[l] = `/${l}/blog`;
-
-  return buildMetadata({
-    title: "Blog — Central Hill",
-    description:
-      "Expert guides, practical tips, and local knowledge for property owners, investors, and anyone navigating the Portuguese short-term rental market.",
-    canonicalPath: `/${locale}/blog`,
-    languages,
-  });
+  return buildBlogMetadata(locale);
 }
 
 export default async function BlogIndexPage({

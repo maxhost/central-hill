@@ -18,6 +18,7 @@
 import type { MediaImageData } from "@core/media";
 import type {
   AboutContent,
+  BlogContent,
   BuildingsContent,
   ServicesContent,
   GuidesContent,
@@ -66,6 +67,8 @@ export type OwnersPage = PageResult<OwnersContent>;
 export type GuestPage = PageResult<GuestContent>;
 export type RealEstatePage = PageResult<RealEstateContent>;
 export type AboutPage = PageResult<AboutContent>;
+/** Blog index overrides and shared newsletter/aside; missing rows retain localized fallbacks. */
+export type BlogPage = PageResult<BlogContent>;
 /** The Buildings listing's editable sections (spec buildings-admin-editor). */
 export type BuildingsPage = PageResult<BuildingsContent>;
 /** Services listing; absent or invalid rows use blank overrides, never a 404. */
@@ -95,6 +98,7 @@ export interface GuideAsideCta extends BlogAsideCta {
 
 export type {
   AboutContent,
+  BlogContent,
   BuildingsContent,
   ServicesContent,
   GuidesContent,
@@ -107,6 +111,7 @@ export type {
 
 export {
   getAboutPage,
+  getBlogPage,
   getBlogAsideCta,
   getBuildingsPage,
   getServicesPage,
@@ -207,5 +212,8 @@ export { buildServicesMetadata } from "./server/metadata";
 export { ServicesHero, ServicesIntro, ServicesHowItWorks, ServicesFinalCta } from "./ui/components/services-sections";
 
 export { buildGuidesMetadata } from "./server/metadata";
+export { buildBlogMetadata } from "./server/metadata";
+/** Translation actions resolve a page UUID to its actual key before invalidating caches. */
+export { revalidatePageTranslation } from "./server/translation-revalidation";
 // Sections take {page: GuidesPage, locale: Locale}; no catalogue reads.
 export { GuidesHero, GuidesFinalCta } from "./ui/components/guides-sections";

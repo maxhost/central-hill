@@ -151,7 +151,7 @@
   },
   "blog": {
     "metaTitle": "Blog — Central Hill",
-    "metaDescription": "Guías para propietarios, consejos de alquiler vacacional y vida en Lisboa, del equipo de Central Hill.",
+    "metaDescription": "Guías expertas, consejos prácticos y conocimiento local para propietarios e inversores en el mercado portugués del alquiler de corta estancia.",
     "eyebrow": "El Diario de Central Hill",
     "title": "Claves sobre Alquiler Vacacional, Gestión de Propiedades y Portugal",
     "intro": "Guías expertas, consejos prácticos y conocimiento local para propietarios, inversores y cualquiera que se mueva en el mercado portugués del alquiler de corta estancia.",
@@ -1398,7 +1398,12 @@
           "guidesCityFilter": "Filtro por ciudades",
           "guidesCatalogue": "Listado de guías",
           "guidesRecommendations": "Recomendaciones",
-          "guidesAside": "CTA dentro de cada guía"
+          "guidesAside": "CTA dentro de cada guía",
+          "blogHero": "Cabecera",
+          "blogFeatured": "Artículo destacado",
+          "blogJournal": "Últimos artículos",
+          "blogNewsletter": "Newsletter",
+          "blogAside": "CTA lateral de artículos"
         },
         "notes": {
           "heroSecondary": "El botón secundario siempre lleva a /owners.",
@@ -1436,14 +1441,18 @@
           "guidesCatalogue": "Las tarjetas provienen del catálogo de guías. Aquí se editan los textos e iconos del listado.",
           "guidesRecommendations": "Los lugares se seleccionan automáticamente de las guías publicadas. Se editarán en el futuro CMS de guías.",
           "guidesAside": "Este CTA aparece en todas las guías individuales. Su botón abre la página de edificios.",
-          "guidesFinalCta": "El botón abre la página de edificios en el idioma del visitante."
+          "guidesFinalCta": "El botón abre la página de edificios en el idioma del visitante.",
+          "blogNewsletter": "Se usa en la banda newsletter del listado y de los artículos. Leads gestiona las etiquetas del formulario y el consentimiento.",
+          "blogCatalogue": "Los artículos y categorías se gestionan en Blog Posts.",
+          "blogAside": "Este CTA aparece en los artículos y enlaza a la página de propietarios."
         },
         "links": {
           "settings": "Abrir Ajustes",
           "buildings": "Abrir Edificios",
           "services": "Abrir Servicios",
           "faq": "Abrir FAQ",
-          "testimonials": "Abrir Testimonios"
+          "testimonials": "Abrir Testimonios",
+          "blogPosts": "Gestionar artículos"
         }
       },
       "labels": {
@@ -1574,7 +1583,9 @@
         "contact_note": "Introducción de contacto",
         "how_it_works": "Cómo funciona",
         "badge_icon_key": "Icono del distintivo",
-        "destination": "Destino"
+        "destination": "Destino",
+        "search_placeholder": "Placeholder del buscador",
+        "search_label": "Etiqueta accesible del buscador"
       },
       "itemLabels": {
         "benefits": "Ventaja",
@@ -1685,7 +1696,10 @@
       "aboutConflict": "About cambió desde que abriste el editor. Recarga para revisar el contenido actual antes de guardar.",
       "aboutSourceNote": "Edita aquí la fuente en inglés. La página pública muestra traducciones aprobadas; se gestionan en Traducciones.",
       "reloadSource": "Recargar contenido guardado",
-      "aboutListBounds": "{count} elementos · permitidos: {min}–{max}"
+      "aboutListBounds": "{count} elementos · permitidos: {min}–{max}",
+      "blogSourceNote": "El contenido fuente se escribe en inglés. Revisa portugués, español y francés en Traducciones. Los campos vacíos usan el texto actual del idioma del visitante; el placeholder muestra el valor inglés.",
+      "blogSourceInvalid": "El contenido guardado de Blog no es válido. Recarga o repáralo antes de guardar.",
+      "blogInheritedHint": "Usar el texto predeterminado del idioma del visitante."
     }
   },
   "leads": {

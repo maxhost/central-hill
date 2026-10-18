@@ -7,6 +7,7 @@ import {
   PAGE_TAGS,
   type AboutPage,
   type BlogAsideCta,
+  type BlogPage,
   type BuildingsPage,
   type ServicesPage,
   type GuidesPage,
@@ -20,6 +21,7 @@ import {
 import { page_content } from "../schema";
 import { type PageKey, translatablePathsByPage } from "../schemas";
 import { blogSchema, defaultBlog } from "../schemas/blog";
+import { blogSourceContent, blogLocalizedContent } from "../blog-content";
 import { buildingsSchema, defaultBuildings } from "../schemas/buildings";
 import { defaultGuides } from "../schemas/guides";
 import { servicesSchema, defaultServices } from "../schemas/services";
@@ -46,6 +48,14 @@ async function _loadPage<T>(locale: Locale, key: PageKey): Promise<PageResult<T>
     .where(eq(page_content.key, key))
     .limit(1);
   if (!row) return null;
+  if (key === "blog") {
+    if (!blogSchema.safeParse(row.data).success) return null;
+    const source = blogSourceContent(row.data);
+    const localized = await resolveData(row.id, source, locale, translatablePathsByPage.blog);
+    const content = blogLocalizedContent(source, localized);
+    const media = await resolveMedia(source, uuid.safeParse(row.og_image_media_id).success ? row.og_image_media_id : null, locale);
+    return { content: content as T, ...media };
+  }
   if (key === "about") {
     const parsed = aboutSchema.safeParse(row.data);
     if (!parsed.success) return null;
@@ -99,10 +109,14 @@ export const getAboutPage = (locale: Locale): Promise<AboutPage | null> =>
  * The CTA closing every post's sticky aside, from the `blog` row (`defaultBlog` while no row
  * exists or it fails the schema). The button always goes to the visitor's locale `/owners`.
  */
+export async function getBlogPage(locale: Locale): Promise<BlogPage> {
+  return await cached<BlogPage["content"]>("blog", locale)
+    ?? { content: structuredClone(defaultBlog), media: {}, ogImage: null };
+}
+
 export async function getBlogAsideCta(locale: Locale): Promise<BlogAsideCta> {
-  const page = await cached<unknown>("blog", locale);
-  const parsed = page ? blogSchema.safeParse(page.content) : null;
-  const a = parsed?.success ? parsed.data.post_aside : defaultBlog.post_aside;
+  const page = await getBlogPage(locale);
+  const a = page.content.post_aside;
   return {
     eyebrow: a.eyebrow || undefined,
     title: a.title,

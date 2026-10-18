@@ -10,6 +10,7 @@ import { orMessage } from "../ui/or-message";
 import { seoMetadataInput } from "./metadata-input";
 import {
   getAboutPage,
+  getBlogPage,
   getBuildingsPage,
   getServicesPage,
   getGuidesPage,
@@ -18,6 +19,23 @@ import {
   getOwnersPage,
   getRealEstatePage,
 } from "./queries";
+
+/** Localized Blog index SEO and the actual Social sharing image from Pages → Blog. */
+export async function buildBlogMetadata(locale: Locale): Promise<Metadata> {
+  const [t, page, globals] = await Promise.all([
+    getTranslations({ locale, namespace: "blog" }), getBlogPage(locale), getGlobals(locale),
+  ]);
+  const input = seoMetadataInput({
+    locale, path: "/blog", seo: page.content.seo, ogImage: page.ogImage ?? globals?.defaultOgImage,
+    fallbackTitle: t("metaTitle"), fallbackDescription: t("metaDescription"),
+  });
+  input.canonicalPath = absoluteUrl(input.canonicalPath);
+  if (input.languages) for (const key of Object.keys(input.languages) as (Locale | "x-default")[]) {
+    const path = input.languages[key];
+    if (path) input.languages[key] = absoluteUrl(path);
+  }
+  return buildMetadata(input);
+}
 
 /**
  * `generateMetadata` for the Home route (`src/app/[locale]/page.tsx`), spec

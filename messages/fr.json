@@ -151,7 +151,7 @@
   },
   "blog": {
     "metaTitle": "Blog — Central Hill",
-    "metaDescription": "Guides pour propriétaires, conseils de location courte durée et vie à Lisbonne, par l'équipe Central Hill.",
+    "metaDescription": "Guides spécialisés, conseils pratiques et expertise locale pour les propriétaires et investisseurs du marché portugais de la location de courte durée.",
     "eyebrow": "Le Journal Central Hill",
     "title": "Éclairages sur la Location Courte Durée, la Gestion Immobilière et le Portugal",
     "intro": "Guides d'experts, conseils pratiques et connaissance locale pour les propriétaires, les investisseurs et tous ceux qui évoluent sur le marché portugais de la location courte durée.",
@@ -1398,7 +1398,12 @@
           "guidesCityFilter": "Filtre par ville",
           "guidesCatalogue": "Liste des guides",
           "guidesRecommendations": "Recommandations",
-          "guidesAside": "CTA dans chaque guide"
+          "guidesAside": "CTA dans chaque guide",
+          "blogHero": "En-tête",
+          "blogFeatured": "Article à la une",
+          "blogJournal": "Derniers articles",
+          "blogNewsletter": "Newsletter",
+          "blogAside": "CTA latéral des articles"
         },
         "notes": {
           "heroSecondary": "Le bouton secondaire mène toujours à /owners.",
@@ -1436,14 +1441,18 @@
           "guidesCatalogue": "Les cartes proviennent du catalogue des guides. Cet éditeur modifie les textes et icônes de la liste.",
           "guidesRecommendations": "Les lieux sont sélectionnés automatiquement dans les guides publiés. Leur contenu sera édité dans le futur CMS des guides.",
           "guidesAside": "Ce CTA apparaît dans chaque guide individuel. Son bouton ouvre la page des immeubles.",
-          "guidesFinalCta": "Le bouton ouvre la page des immeubles dans la langue du visiteur."
+          "guidesFinalCta": "Le bouton ouvre la page des immeubles dans la langue du visiteur.",
+          "blogNewsletter": "Utilisé dans la newsletter de la liste et des articles. Leads gère les libellés du formulaire et le consentement.",
+          "blogCatalogue": "Les articles et catégories sont gérés dans Blog Posts.",
+          "blogAside": "Ce CTA apparaît dans les articles et mène à la page des propriétaires."
         },
         "links": {
           "settings": "Ouvrir Paramètres",
           "buildings": "Ouvrir Immeubles",
           "services": "Ouvrir Services",
           "faq": "Ouvrir FAQ",
-          "testimonials": "Ouvrir Témoignages"
+          "testimonials": "Ouvrir Témoignages",
+          "blogPosts": "Gérer les articles"
         }
       },
       "labels": {
@@ -1574,7 +1583,9 @@
         "contact_note": "Introduction du contact",
         "how_it_works": "Comment ça marche",
         "badge_icon_key": "Icône du badge",
-        "destination": "Destination"
+        "destination": "Destination",
+        "search_placeholder": "Placeholder de recherche",
+        "search_label": "Libellé accessible de recherche"
       },
       "itemLabels": {
         "benefits": "Avantage",
@@ -1685,7 +1696,10 @@
       "aboutConflict": "About a changé depuis l’ouverture de l’éditeur. Rechargez pour vérifier le contenu actuel avant de sauvegarder.",
       "aboutSourceNote": "Modifiez ici la source anglaise. La page publique affiche les traductions approuvées, gérées dans Traductions.",
       "reloadSource": "Recharger le contenu enregistré",
-      "aboutListBounds": "{count} éléments · autorisés : {min}–{max}"
+      "aboutListBounds": "{count} éléments · autorisés : {min}–{max}",
+      "blogSourceNote": "Le contenu source est rédigé en anglais. Révisez le portugais, l’espagnol et le français dans Traductions. Les champs vides utilisent le texte actuel dans la langue du visiteur ; le placeholder affiche la valeur anglaise.",
+      "blogSourceInvalid": "Le contenu Blog enregistré est invalide. Rechargez ou corrigez-le avant d’enregistrer.",
+      "blogInheritedHint": "Utiliser le texte par défaut dans la langue du visiteur."
     }
   },
   "leads": {
