@@ -1,6 +1,6 @@
 # Editor de la página Guides — auditoría, spec y plan
 
-Fecha: 2026-10-18. Estado: planificación terminada; implementación no iniciada.
+Fecha: 2026-10-18. Estado: implementación en curso; contratos y editor integrados, público y QA pendientes.
 Decisiones de ciudades confirmadas por el usuario en esta sesión.
 
 ## Objetivo y alcance
@@ -226,7 +226,7 @@ Solo el orquestador integra. Un QA independiente revisa el candidato integrado;
 implementadores corrigen dentro de su scope y QA repite casos afectados. Ningún
 agente cambia archivos compartidos asignados al orquestador. Sin push ni deploy.
 La autorización y frontera de commits/integración se confirmarán al lanzar la
-implementación; esta entrega solo prepara documentos.
+implementación. La ejecución ahora autorizada y su frontera local se registran abajo.
 
 ## Aceptación y verificación de implementación futura
 
@@ -312,3 +312,10 @@ intermedia, nunca se consideran implementación lista.
 Dependencias integración: pnpm install --offline falló por tarball ausente en el
 store actual; se copiaron dependencias ya instaladas del worktree QA anterior
 (solo node_modules, sin env/credentials). Sin cambios en package/lockfile.
+
+Implementador A entregó `fddd2d6`, integrado como `3baca4a`: cuatro paths del
+write set; typecheck/lint0,146tests0 y detectorUI[]. Rootlint de contratos0.
+QAinfra confirmó DB y rol guidespageqa independientes,21migrations0..20,5JPEG,
+vídeo de prueba y fixtures Lisbon+Porto con guías/recomendaciones localizadas,
+Cascais publicada sin guías y Coimbra draft. Auth de prueba se verificará por
+formulario, no se asume desde el hash. Ninguna credencial remota copiada.

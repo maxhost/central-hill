@@ -1559,11 +1559,19 @@
           "viewpoint_label": "Viewpoint label",
           "beach_label": "Beach label",
           "location_icon_key": "Location icon"
+        },
+        "hero": {
+          "video_media_id": "Optional background video",
+          "poster_media_id": "Background photo / video poster"
         }
       },
       "guidesHints": {
         "catalogue": {
           "headline": "Include '{city}'; it is replaced by the localized city name. Leave blank to use the default."
+        },
+        "hero": {
+          "video_media_id": "Optional silent MP4 or WebM, landscape 1920×1080, ideally under 15 MB. Leave empty for a photo background.",
+          "poster_media_id": "Background photo and video fallback. Landscape 1920×1080, JPEG, PNG, WebP or AVIF, ideally under 500 KB."
         }
       }
     }

@@ -1559,11 +1559,19 @@
           "viewpoint_label": "Texto de miradouro",
           "beach_label": "Texto de praia",
           "location_icon_key": "Ícone de localização"
+        },
+        "hero": {
+          "video_media_id": "Vídeo de fundo opcional",
+          "poster_media_id": "Foto de fundo / imagem de reserva do vídeo"
         }
       },
       "guidesHints": {
         "catalogue": {
           "headline": "Inclua '{city}'; será substituído pelo nome localizado da cidade. Deixe em branco para usar o texto predefinido."
+        },
+        "hero": {
+          "video_media_id": "MP4 ou WebM sem som, horizontal 1920×1080, idealmente menos de 15 MB. Deixe vazio para usar uma foto.",
+          "poster_media_id": "Foto de fundo e imagem de reserva do vídeo. Horizontal 1920×1080, JPEG, PNG, WebP ou AVIF, idealmente menos de 500 KB."
         }
       }
     }

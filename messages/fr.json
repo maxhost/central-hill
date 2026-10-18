@@ -1559,11 +1559,19 @@
           "viewpoint_label": "Libellé point de vue",
           "beach_label": "Libellé plage",
           "location_icon_key": "Icône de localisation"
+        },
+        "hero": {
+          "video_media_id": "Vidéo de fond facultative",
+          "poster_media_id": "Photo de fond / image de secours vidéo"
         }
       },
       "guidesHints": {
         "catalogue": {
           "headline": "Incluez '{city}' ; il sera remplacé par le nom localisé de la ville. Laissez vide pour utiliser le texte par défaut."
+        },
+        "hero": {
+          "video_media_id": "MP4 ou WebM sans son, paysage 1920×1080, idéalement moins de 15 Mo. Laissez vide pour afficher une photo.",
+          "poster_media_id": "Photo de fond et image de secours vidéo. Paysage 1920×1080, JPEG, PNG, WebP ou AVIF, idéalement moins de 500 Ko."
         }
       }
     }

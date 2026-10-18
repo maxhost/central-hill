@@ -1559,11 +1559,19 @@
           "viewpoint_label": "Label de mirador",
           "beach_label": "Label de playa",
           "location_icon_key": "Icono de ubicación"
+        },
+        "hero": {
+          "video_media_id": "Vídeo de fondo opcional",
+          "poster_media_id": "Foto de fondo / respaldo del vídeo"
         }
       },
       "guidesHints": {
         "catalogue": {
           "headline": "Incluye '{city}'; se sustituirá por el nombre localizado de la ciudad. Deja vacío para usar el texto predeterminado."
+        },
+        "hero": {
+          "video_media_id": "MP4 o WebM sin sonido, horizontal 1920×1080, idealmente menos de 15 MB. Deja vacío para usar una foto de fondo.",
+          "poster_media_id": "Foto de fondo y respaldo del vídeo. Horizontal 1920×1080, JPEG, PNG, WebP o AVIF, idealmente menos de 500 KB."
         }
       }
     }
