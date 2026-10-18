@@ -10,8 +10,12 @@ import type { BookingAction } from "./service-booking-card";
  * left and the primary action on the right. Hidden above 980px. Ported 1:1 from
  * `mock/service-detail.html`'s `.mbar`; the button is `core/ui`'s `ButtonLink` (as in the card).
  * While visible it sets `--fab-lift` so the app shell's floating WhatsApp button sits above it.
+ * The same measured space follows the global footer, keeping its final controls reachable.
  */
-const LIFT_FAB = "@media (max-width:980px){:root{--fab-lift:76px}}";
+const MOBILE_SPACE = `@media (max-width:980px){
+  :root:has([data-service-mobile-bar]){--fab-lift:76px}
+  body:has([data-service-mobile-bar]){padding-bottom:var(--fab-lift,76px)}
+}`;
 
 export function ServiceMobileBar({
   price,
@@ -56,8 +60,8 @@ export function ServiceMobileBar({
 
   return (
     <>
-      <style>{LIFT_FAB}</style>
-      <div ref={barRef} className="fixed inset-x-0 bottom-0 z-[55] flex items-center justify-between gap-4 border-t border-line bg-surface px-5 py-[14px] min-[981px]:hidden">
+      <style>{MOBILE_SPACE}</style>
+      <div ref={barRef} data-service-mobile-bar className="fixed inset-x-0 bottom-0 z-[55] flex items-center justify-between gap-4 border-t border-line bg-surface px-5 py-[14px] min-[981px]:hidden">
         {price !== null ? <div className="min-w-0 font-serif text-[22px] leading-[1.6] text-ink [overflow-wrap:anywhere]">
           {price}
           {suffix ? (
