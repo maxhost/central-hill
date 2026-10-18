@@ -414,3 +414,24 @@ partial_write, incluida invalidación posterior a writes. Firmas de consumidores
 Fixtures adicionales en DB aislada: las ocho variantes con59secciones/86lugares y medios
 sintéticos compartidos; slugs locales distintos y títulos ES aprobados para round-trip.
 No se ejecutó seed-guides ni se descargaron fotos de producción.
+
+### Candidato integrado en preparación
+
+B entregó c2c560d (integrado92d52d5), seis archivos incluyendo CCR format.ts, 36tests.
+A entregó42958f6 (integrado0b9ff43), nueve archivos, 4tests. Cambios revisados contra
+write sets. Root toma propiedad de las tres rutas tras handoff para imports por
+contract.ts y añade nav en app layout; A conserva propiedad de su editor para correcciones.
+Root unifica validación HTTP(S)/tel con helpers públicos de B para evitar aceptar
+URLs con credenciales que luego no renderizan. Se verifica de nuevo al integrar.
+Todas las migraciones0000..0021 también aplicaron en DB vacía guidescmsfreshqa, exit0.
+
+### G2 verificación integrada
+
+A corrección65b61a2 integrada6430676: errores humanos sin IDs/paths internos, foco
+y recuperación de respuesta incierta. Root completó nav/exports y labels4locales.
+Node22: `pnpm build` exit0 (116 rutas estáticas, entorno guidescmsqa), `pnpm lint`
+exit0 (5 warnings históricos), tests explícitos Guides+Pages+Backoffice+Translation+SEO
+89/89 exit0. Detector integrado Impeccable exit0, [] (sin hallazgos mecánicos).
+Typecheck independiente antes y después del build registrado en logs de QA.
+Servidor production3061 sesión28688, con env ficticio y DB/media dedicados.
+QA funcional independiente pendiente; no se declara aprobación por esos checks.

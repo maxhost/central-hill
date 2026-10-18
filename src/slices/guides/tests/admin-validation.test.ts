@@ -9,7 +9,7 @@ test("patch omission preserves fields; explicit undefined and foreign/unknown co
   assert.equal(guideSectionMutation.safeParse({id,changes:{},source:{body:null}}).success,true);
 });
 test("HTTP(S) only, exact order and coordinate boundaries", () => {
-  for(const value of ["javascript:alert(1)","data:text/html,hello","file:///tmp/test","/relative"])
+  for(const value of ["javascript:alert(1)","data:text/html,hello","file:///tmp/test","/relative","https://user:password@example.test"])
     assert.equal(guidePlaceMutation.safeParse({id,changes:{website_url:value},source:{}}).success,false);
   assert.equal(guidePlaceMutation.safeParse({id,changes:{booking_url:"https://example.test/book",latitude:0,longitude:0},source:{}}).success,true);
   assert.equal(guidePlaceMutation.safeParse({id,changes:{latitude:91},source:{}}).success,false);

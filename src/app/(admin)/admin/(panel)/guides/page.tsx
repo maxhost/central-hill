@@ -1,4 +1,4 @@
-import { GuidesAdminList } from "@slices/guides/admin/ui/guide-list";
+import { GuidesAdminList } from "@slices/guides/contract";
 export default async function GuidesPage({
   searchParams,
 }: {

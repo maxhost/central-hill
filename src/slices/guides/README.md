@@ -12,7 +12,7 @@ later). See `docs/vertical-slices.md` → S6, `docs/data-model.md` → Slice gui
   families|groups|travellers|custom), slug, status, position, hero_media_id?,
   og_image_media_id?`. [T]: `title, intro, meta_title, meta_description`.
 - `guide_section` — `guide_page_id→guide_page (cascade), position, layout
-  (standard|with_cta|with_media|featured_places), header_media_id?, cta_url?`.
+  (standard|with_cta|with_media|featured_places), header_media_id?, cta_url?, presentation?`.
   [T]: `title, body, local_tip, cta_label`.
 - `guide_place` — `guide_section_id→guide_section (cascade), position, category?, address?,
   phone?, price_tier? (budget|mid|premium = €/€€/€€€), opening_hours?, latitude?,
@@ -55,8 +55,9 @@ The 8 real Lisbon guide pages (`things-to-do-in-lisbon`, `where-and-what-to-eat-
 — one per `GuideTemplate`) are written by `scripts/seed-guides.ts`, adapted from the live
 centralhill.pt "What to do in Lisbon" pages. It is **not a migration**: idempotent,
 re-runnable, and writes through the same seams (`core/i18n` source content + slugs,
-`core/media` R2 ingest) the future admin (S12) will use — re-run it after editing the
-seed's content arrays. Source locale (`en`) only; `pt`/`es`/`fr` fall back to it until
+`core/media` R2 ingest) the admin uses. This is now a historical bootstrap: do not re-run it after
+human CMS edits without a separate preservation review, because it rebuilds child IDs
+and can replace seed-owned assets. Source locale (`en`) only; `pt`/`es`/`fr` fall back to it until
 translated (same accepted gap as `scripts/seed-services.ts`).
 
   pnpm tsx --env-file=.env.local --tsconfig scripts/tsconfig.json scripts/seed-guides.ts
@@ -124,8 +125,6 @@ detail subscribe). Called by the guides admin actions (S12).
 
 ## Deferred (not in this slice's first cut)
 
-- **Admin CRUD** (`admin/`): plugs into the backoffice shell **S12** — guide-page tree
-  editor (sections/places ordering), media pickers, translation review.
 - **Map embed**: places expose `latitude`/`longitude`; the UI links out to Google Maps.
   An interactive map widget is a kernel/app-shell decision (ADR), not hand-rolled here.
 - **Guide/ItemList JSON-LD**: only `BreadcrumbList` is emitted; a richer
@@ -144,7 +143,7 @@ contract. `tests/format.test.ts` — the detail page's pure helpers (`sectionAnc
 
 The fixed editorial content of `/{locale}/guides` is edited in Pages → Guides,
 through the Pages contract (SEO, hero, filter/heading copy, icon overrides and CTA).
-Individual guide/section/place CMS remains future work. No duplicate card/place
+Individual guide/section/place content is edited in `/admin/guides`. No duplicate card/place
 content is saved in page_content.
 
 `listTopRecommendations(locale, limit, {cityIds})` optionally restricts candidates
@@ -152,3 +151,41 @@ before selecting the first complete place per type. Omitted scope is global, an
 empty city list returns none; deduplicated sorted IDs enter the cache key. Existing
 unscoped consumers and listGuideCityGroups/listGuideParams retain their behavior.
 The city-filter setting affects only the index, preserving publication and detail URLs.
+
+## Individual Guides CMS
+
+`/admin/guides`, `/new`, `/[id]` are staff-gated for admin/editor. The editor authors
+EN source on the existing page → section → place tree, preserving stable UUIDs,
+localized slugs and target translations. Mutations are strict granular patches;
+omission retains data, explicit null clears optional fields (and clearing source
+text removes that field’s translations in every locale). Ordering uses complete
+validated child ID lists. Published guides update live on save; there is no separate
+revision draft. New incomplete sections start hidden. Archive replaces guide delete.
+
+Migration0021 adds nullable section `presentation` JSONB with `{version:1,enabled?,
+modules?:{body?,image?,local_tip?,places?,cta?}}`. Null inherits legacy composition.
+Hidden values remain available to admin; public queries apply visibility before TOC,
+counts and mosaic, and hidden place modules do not qualify for recommendations.
+Unknown presentation versions fall back publicly and block silent admin overwrites.
+`template` remains editorial category/icon; `layout` is preserved legacy data, not a
+visual template selector. Public places now render optional hours, website and booking
+links; HTTP(S)/phone helpers also guard legacy content. Shared aside remains Pages
+and shared icons remain Settings; no local duplicate overrides.
+
+Writes use existing i18n/media seams and sequential Neon HTTP statements. A failed
+request can persist partially; results report confirmed steps and require reload
+before further saves. Stable IDs make retries safe. This is not an atomic aggregate
+or optimistic locking system. Every mutation validates ownership and the effective
+published tree; MIME/existence checks run on server. Media queue flushes before save.
+
+`revalidateGuides` is exported through the contract. Translation actions also invoke
+it for guide_page/guide_section/guide_place, ensuring approved/reset fields refresh
+`guide-list` instead of relying on generic tags that those queries do not subscribe to.
+GuideCityOptions comes from Geography’s staff-gated contract including all statuses;
+only a published city can have publicly published guides.
+
+See [execution/acceptance](../../../docs/specs/guides-cms-execution.md) and
+[audit/inventory](../../../docs/specs/guides-cms-audit.md). Pure tests include patches,
+visibility, ownership-order validation, city policy, media guards, partial-write
+recovery, editor patches and query/card rendering. Integrated browser/persistence QA
+is recorded separately; isolated fixtures must never be confused with production.

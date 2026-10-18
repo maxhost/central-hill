@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { z } from "zod";
-import { getGuideForEdit } from "@slices/guides/admin/queries";
-import { GuideEditor } from "@slices/guides/admin/ui/guide-editor";
+import { getGuideForEdit } from "@slices/guides/contract";
+import { GuideEditor } from "@slices/guides/contract";
 export default async function GuidePage({
   params,
 }: {

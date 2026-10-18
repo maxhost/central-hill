@@ -1,12 +1,13 @@
 import { z } from "zod";
 import { contentStatus, latitude, longitude, position, slug } from "@core/validation/primitives";
+import { safeGuideHttpUrl, placePhoneHref } from "../ui/format";
 import { guideTemplate, priceTier } from "../validation";
 import { guideSectionPresentation, GUIDE_MODULE_KEYS, parseGuidePresentation, isGuideSectionVisible, isGuideModuleVisible } from "../presentation";
 import type { GuidePageEdit, GuideCityOption, GuideSectionEdit, GuidePlaceEdit } from "./model";
 const text = (max: number) => z.string().trim().max(max).nullable().transform(v => v || null);
 const title = (max: number) => z.string().trim().min(1, "Enter a title.").max(max);
 const image = z.uuid().nullable();
-const url = z.string().trim().max(2000).nullable().transform(v => v || null).refine(v => !v || /^https?:\/\//i.test(v) && URL.canParse(v), "Enter an absolute HTTP or HTTPS URL.");
+const url = z.string().trim().max(2000).nullable().transform(v => v || null).refine(v => !v || Boolean(safeGuideHttpUrl(v)), "Enter an absolute HTTP or HTTPS URL.");
 export const pageColumns = z.strictObject({ city_id: z.uuid(), template: guideTemplate, status: contentStatus, position, hero_media_id: image, og_image_media_id: image });
 export const pageSource = z.strictObject({ title: title(200), intro: text(1200), meta_title: text(70), meta_description: text(200) });
 export const sectionColumns = z.strictObject({ position, header_media_id: image, cta_url: url, presentation: guideSectionPresentation.nullable() });
@@ -46,7 +47,7 @@ export function guidePlaceErrors(place: GuidePlaceEdit): Record<string, string> 
   if (!cols.success) Object.assign(errors, guideFieldErrors(cols.error.issues));
   if (!source.success) Object.assign(errors, guideFieldErrors(source.error.issues));
   if ((place.latitude === null) !== (place.longitude === null)) errors.latitude = "Provide both coordinates, or clear both.";
-  if (place.phone && !place.phone.replace(/[^\d+]/g, "")) errors.phone = "Enter a valid telephone number.";
+  if (place.phone && !placePhoneHref(place.phone)) errors.phone = "Enter a valid telephone number.";
   return errors;
 }
 /** Validate the EFFECTIVE tree for every mutation, including deletes, of a live guide. */

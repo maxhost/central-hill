@@ -154,3 +154,9 @@ export { revalidateGuides } from "./server/publish";
 export { applyGuideSectionPresentation, isGuideModuleVisible, isGuideSectionVisible, parseGuidePresentation } from "./presentation";
 export type { GuideSectionPresentation, GuideModuleKey } from "./presentation";
 export { isGuideTranslationEntity } from "./presentation";
+
+/** Thin app-shell composition entry points, added after implementation integration. */
+export { GuidesAdminList } from "./admin/ui/guide-list";
+export { GuideEditor } from "./admin/ui/guide-editor";
+export { getGuideForEdit } from "./admin/queries";
+export { newGuide } from "./admin/ui/editor-model";

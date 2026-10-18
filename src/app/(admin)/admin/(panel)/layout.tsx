@@ -8,6 +8,7 @@ import { faqAdminScreens } from "@slices/faq/contract";
 import { geographyAdminScreens } from "@slices/geography/contract";
 import { leadsAdminScreens } from "@slices/leads/contract";
 import { pagesAdminScreens } from "@slices/pages/contract";
+import { guidesAdminScreens } from "@slices/guides/contract";
 import { servicesAdminScreens } from "@slices/services/contract";
 import { settingsAdminScreens } from "@slices/settings/contract";
 import { testimonialsAdminScreens } from "@slices/testimonials/contract";
@@ -45,6 +46,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
       ...faqAdminScreens,
       ...geographyAdminScreens,
       ...servicesAdminScreens,
+      ...guidesAdminScreens,
       ...blogAdminScreens,
       ...leadsAdminScreens,
       ...translationAdminScreens,

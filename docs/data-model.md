@@ -436,7 +436,7 @@ apply neutral flags after locale resolution. Existing title/CTA fields remain au
 - **guide_page**: `id, city_id→city, template, slug, status, position, hero_media_id, og_image_media_id?`.
   `template` ∈ `landing | eat | beaches | events | secrets | families | groups | travellers | custom`.
   **[T]** `title, intro, meta_title, meta_description`.
-- **guide_section**: `id, guide_page_id, position, layout, header_media_id?, cta_label?, cta_url?`.
+- **guide_section**: `id, guide_page_id, position, layout, header_media_id?, cta_label?, cta_url?, presentation?`.
   `layout` ∈ `standard | with_cta | with_media | featured_places`. **[T]** `title, body, local_tip`.
 - **guide_place**: `id, guide_section_id, position, category?, address?, phone?, price_tier?
   (budget|mid|premium ≈ €/€€/€€€), opening_hours?, latitude?, longitude?, website_url?, booking_url?,
@@ -553,3 +553,16 @@ No catalogue or company-contact data is duplicated in the page row.
 `updated_by` remains a nullable legacy UUID populated when the actor ID is a valid UUID.
 Old attribution reads coalesce new text with legacy UUID cast to text. No auth IDs or
 old rows are rewritten. Source and target write seams share the same attribution helper.
+
+### Guides section visibility (migration0021)
+
+Nullable `guide_section.presentation` JSONB is neutral, not translated:
+`{version:1,enabled?:boolean,modules?:{body?,image?,local_tip?,places?,cta?}}`.
+Missing/null inherits historical presence-driven composition. False hides and retains
+content; filtering applies to public tree, counts/TOC/mosaic and recommendations.
+The admin always loads the unfiltered source tree. Module layout/order stays fixed;
+`template` is semantic and legacy `layout` is retained. Granular patch writes retain
+IDs/targets/slugs; all published-tree mutations validate the effective result.
+Statements are sequential via existing seams, with explicit partial-write recovery.
+Pages owns the shared guide_aside, Settings owns shared icon keys, and Geography owns
+city options/status. See `docs/specs/guides-cms-execution.md`.
