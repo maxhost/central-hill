@@ -35,7 +35,11 @@
     "placeCount": "{count, plural, one {# place} other {# places}}",
     "moreEyebrow": "Keep exploring",
     "moreTitle": "More {city} guides",
-    "allCityGuides": "All {city} guides"
+    "allCityGuides": "All {city} guides",
+    "ctaEyebrow": "Your Base in the City",
+    "ctaTitle": "Make It a Stay to Remember",
+    "ctaBody": "Explore Lisbon by day, then come home to a design-led apartment in one of the city’s most storied neighbourhoods — professionally managed, ready when you are.",
+    "ctaButton": "Browse Our Apartments →"
   },
   "common": {
     "tagline": "Premium furnished rentals in Lisbon"
@@ -1285,7 +1289,11 @@
           "aboutContact": "Let's start a conversation",
           "intro": "Catalogue introduction",
           "how_it_works": "How it works",
-          "servicesCatalogue": "Service catalogue"
+          "servicesCatalogue": "Service catalogue",
+          "guidesCityFilter": "City filter",
+          "guidesCatalogue": "Guide listing",
+          "guidesRecommendations": "Recommendations",
+          "guidesAside": "CTA inside every guide"
         },
         "notes": {
           "heroSecondary": "The secondary button always links to /owners.",
@@ -1318,7 +1326,12 @@
           "aboutCertifications": "Without a logo the card shows its icon.",
           "aboutContact": "Cards always open Buildings / Owners / Real Estate. Address, phones, email, website and hours come from Settings. Form fields are shared with the header contact form.",
           "servicesCatalogue": "Service cards and categories are managed in Services.",
-          "servicesFinalCta": "The button always opens Buildings. Email and WhatsApp come from Settings."
+          "servicesFinalCta": "The button always opens Buildings. Email and WhatsApp come from Settings.",
+          "guidesCityFilter": "Choose a city to filter guides and recommendations. Disable to show all cities without the filter. City publication stays in Cities.",
+          "guidesCatalogue": "Guide cards come from the Guides catalogue. This editor changes only the surrounding copy and icons.",
+          "guidesRecommendations": "Places are selected automatically from published guides. Edit their content in the future Guides CMS.",
+          "guidesAside": "This CTA appears in every individual guide. Its button opens the Buildings page.",
+          "guidesFinalCta": "The button opens the Buildings page in the visitor’s language."
         },
         "links": {
           "settings": "Open Settings",
@@ -1513,6 +1526,32 @@
         },
         "how_it_works": {
           "items": "Exactly three steps, in fixed order."
+        }
+      },
+      "guidesSourceInvalid": "The saved Guides content is invalid. Saving is blocked to protect it. Repair the source before editing.",
+      "guidesLabels": {
+        "city_filter": {
+          "enabled": "Show city filter",
+          "label": "City filter label",
+          "note": "City filter note",
+          "soon_label": "Coming soon label",
+          "location_icon_key": "Location icon"
+        },
+        "catalogue": {
+          "headline": "Title template",
+          "view_label": "Open guide label",
+          "empty_message": "Empty listing message",
+          "template_icons": "Guide template icons"
+        },
+        "recommendations": {
+          "restaurant_label": "Restaurant label",
+          "viewpoint_label": "Viewpoint label",
+          "beach_label": "Beach label"
+        }
+      },
+      "guidesHints": {
+        "catalogue": {
+          "headline": "Include '{city}'; it is replaced by the localized city name. Leave blank to use the default."
         }
       }
     }

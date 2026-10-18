@@ -144,3 +144,6 @@ export {
    */
   listTopRecommendations,
 } from "./server/queries";
+
+/** Optional index-only city scope; omitted = global, empty = no recommendations. */
+export type { GuideRecommendationScope } from "./server/recommendation-scope";

@@ -9,6 +9,7 @@ import {
   type BlogAsideCta,
   type BuildingsPage,
   type ServicesPage,
+  type GuidesPage,
   type GuestPage,
   type GuideAsideCta,
   type HomePage,
@@ -20,8 +21,10 @@ import { page_content } from "../schema";
 import { type PageKey, translatablePathsByPage } from "../schemas";
 import { blogSchema, defaultBlog } from "../schemas/blog";
 import { buildingsSchema, defaultBuildings } from "../schemas/buildings";
-import { defaultGuides, guidesSchema } from "../schemas/guides";
+import { defaultGuides } from "../schemas/guides";
 import { servicesSchema, defaultServices } from "../schemas/services";
+import { uuid } from "@core/validation/primitives";
+import { guidesSourceContent, guidesLocalizedContent } from "./guides-content";
 import { resolveData, resolveMedia } from "./resolve";
 
 /**
@@ -43,6 +46,14 @@ async function _loadPage<T>(locale: Locale, key: PageKey): Promise<PageResult<T>
   // Validate before resolving UUID references: malformed legacy rows must use the fallback,
   // rather than reaching media queries with invalid IDs and failing the whole route.
   if (key === "services" && !servicesSchema.safeParse(row.data).success) return null;
+
+  if (key === "guides") {
+    const source = guidesSourceContent(row.data);
+    const localized = await resolveData(row.id, source, locale, translatablePathsByPage.guides);
+    const content = guidesLocalizedContent(source, localized);
+    const media = await resolveMedia(content, uuid.safeParse(row.og_image_media_id).success ? row.og_image_media_id : null, locale);
+    return { content: content as T, ...media };
+  }
 
   const [content, { media, ogImage }] = await Promise.all([
     resolveData(row.id, row.data, locale, translatablePathsByPage[key]),
@@ -95,9 +106,8 @@ export async function getBlogAsideCta(locale: Locale): Promise<BlogAsideCta> {
  * `GUIDE_ASIDE_FALLBACK_IMAGE`).
  */
 export async function getGuideAsideCta(locale: Locale): Promise<GuideAsideCta> {
-  const page = await cached<unknown>("guides", locale);
-  const parsed = page ? guidesSchema.safeParse(page.content) : null;
-  const a = parsed?.success ? parsed.data.guide_aside : defaultGuides.guide_aside;
+  const page = await getGuidesPage(locale);
+  const a = page.content.guide_aside;
   return {
     image: (a.image_media_id && page?.media[a.image_media_id]) || null,
     eyebrow: a.eyebrow || undefined,
@@ -128,4 +138,10 @@ export async function getServicesPage(locale: Locale): Promise<ServicesPage> {
   const parsed = page ? servicesSchema.safeParse(page.content) : null;
   if (parsed?.success && page) return { ...page, content: parsed.data };
   return { content: defaultServices, media: {}, ogImage: page?.ogImage ?? null };
+}
+
+/** Never null: legacy rows keep their aside, missing blocks use visitor-locale messages. */
+export async function getGuidesPage(locale: Locale): Promise<GuidesPage> {
+  const page = await cached<GuidesPage["content"]>("guides", locale);
+  return page ?? { content: structuredClone(defaultGuides), media: {}, ogImage: null };
 }

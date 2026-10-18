@@ -10,13 +10,61 @@
  * every guide): the seed, the migration that creates the row and the renderer fallback.
  */
 import { z } from "zod";
-import { tStr, tStrOpt } from "@core/validation/primitives";
-import { optionalImage } from "./_shared";
+import { seoShape, tStr, tStrOpt } from "@core/validation/primitives";
+import { optionalIconKey, optionalImage, optionalVideo } from "./_shared";
 
 const ASIDE_IMG_HINT =
   "Apartment photo above the text. Landscape 16:10 — recommended 760×475px, JPG or WebP, under 300 KB.";
 
+/** Only the {city} token is allowed; names remain localized Geography data. */
+export function validGuideCityHeadline(value: string): boolean {
+  return !value.trim() || (value.includes("{city}") && !value.replaceAll("{city}", "").match(/[{}]/));
+}
+const cityHeadline = tStrOpt({ max: 200 }).refine(
+  (value) => value === undefined || validGuideCityHeadline(value),
+  "Include {city} and no other placeholders.",
+);
+const copy = {
+  eyebrow: tStrOpt({ max: 80 }),
+  headline: tStrOpt({ max: 200 }),
+  body: tStrOpt({ max: 1200 }),
+};
+
 export const guidesSchema = z.object({
+  seo: z.object({ ...seoShape }).optional(),
+  hero: z.object({
+    ...copy,
+    video_media_id: optionalVideo("Optional silent MP4/WebM, landscape 1920×1080, ideally under 15 MB.").optional(),
+    poster_media_id: optionalImage("Background photo and video poster. Landscape 1920×1080, JPEG/WebP/AVIF, ideally under 500 KB.").optional(),
+  }).optional(),
+  city_filter: z.object({
+    enabled: z.boolean().optional(),
+    label: tStrOpt({ max: 80 }),
+    note: tStrOpt({ max: 240 }),
+    soon_label: tStrOpt({ max: 60 }),
+    location_icon_key: optionalIconKey,
+  }).optional(),
+  catalogue: z.object({
+    eyebrow: tStrOpt({ max: 80 }),
+    headline: cityHeadline,
+    view_label: tStrOpt({ max: 80 }),
+    empty_message: tStrOpt({ max: 400 }),
+    template_icons: z.object({
+      landing_icon_key: optionalIconKey, eat_icon_key: optionalIconKey,
+      beaches_icon_key: optionalIconKey, events_icon_key: optionalIconKey,
+      secrets_icon_key: optionalIconKey, families_icon_key: optionalIconKey,
+      groups_icon_key: optionalIconKey, travellers_icon_key: optionalIconKey,
+      custom_icon_key: optionalIconKey,
+    }).optional(),
+  }).optional(),
+  recommendations: z.object({
+    ...copy,
+    restaurant_label: tStrOpt({ max: 80 }),
+    viewpoint_label: tStrOpt({ max: 80 }),
+    beach_label: tStrOpt({ max: 80 }),
+    location_icon_key: optionalIconKey,
+  }).optional(),
+  final_cta: z.object({ ...copy, cta_label: tStrOpt({ max: 80 }) }).optional(),
   guide_aside: z
     .object({
       image_media_id: optionalImage(ASIDE_IMG_HINT),

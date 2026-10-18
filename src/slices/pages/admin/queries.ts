@@ -7,6 +7,7 @@ import { listFaqGroups } from "@slices/faq/contract";
 import { listServiceCategories } from "@slices/services/contract";
 import { page_content } from "../schema";
 import { type PageKey, pageKey, pageSchemas } from "../schemas";
+import { guidesEditorDefaults, type GuidesSourceStatus } from "./guides-defaults";
 import { type FieldNode, type SelectOptions, applyDefaults, describe } from "./form-model";
 
 /**
@@ -36,6 +37,8 @@ export interface PageEditBundle {
   data: Record<string, unknown>;
   ogImageMediaId: string | null;
   previews: Record<string, AdminMediaPreview>;
+  sourceStatus?: GuidesSourceStatus;
+  sourceInvalid?: boolean;
 }
 
 /** The editable record for one page (its source `data` + og image + previews). */
@@ -44,13 +47,17 @@ export async function getPageForEdit(key: PageKey): Promise<PageEditBundle> {
   const data = (row?.data as Record<string, unknown>) ?? {};
   const ogImageMediaId = row?.og_image_media_id ?? null;
 
-  const ids = collectMediaIds(data);
-  if (ogImageMediaId) ids.push(ogImageMediaId);
+  const guideDefaults = key === "guides" ? guidesEditorDefaults(row?.data, Boolean(row)) : undefined;
+  const editableData = guideDefaults?.data ?? data;
+  const ids = collectMediaIds(editableData);
+  if (ogImageMediaId && !guideDefaults?.sourceInvalid) ids.push(ogImageMediaId);
   const previews = await resolvePreviews(ids);
 
   return {
     key,
-    data,
+    data: editableData,
+    sourceStatus: guideDefaults?.sourceStatus,
+    sourceInvalid: guideDefaults?.sourceInvalid,
     ogImageMediaId,
     previews,
   };

@@ -12,6 +12,7 @@ import {
   getAboutPage,
   getBuildingsPage,
   getServicesPage,
+  getGuidesPage,
   getGuestPage,
   getHomePage,
   getOwnersPage,
@@ -183,6 +184,27 @@ export async function buildServicesMetadata(locale: Locale): Promise<Metadata> {
   ]);
   const input = seoMetadataInput({
     locale, path: "/services", seo: page.content.seo, ogImage: page.ogImage ?? globals?.defaultOgImage,
+    fallbackTitle: t("metaTitle"), fallbackDescription: t("metaDescription"),
+  });
+  input.canonicalPath = absoluteUrl(input.canonicalPath);
+  if (input.languages) {
+    for (const key of Object.keys(input.languages) as (Locale | "x-default")[]) {
+      const path = input.languages[key];
+      if (path) input.languages[key] = absoluteUrl(path);
+    }
+  }
+  return buildMetadata(input);
+}
+
+/** Guides SEO overrides with absolute canonical and locale alternates. */
+export async function buildGuidesMetadata(locale: Locale): Promise<Metadata> {
+  const [t, page, globals] = await Promise.all([
+    getTranslations({ locale, namespace: "guides" }),
+    getGuidesPage(locale),
+    getGlobals(locale),
+  ]);
+  const input = seoMetadataInput({
+    locale, path: "/guides", seo: page.content.seo, ogImage: page.ogImage ?? globals?.defaultOgImage,
     fallbackTitle: t("metaTitle"), fallbackDescription: t("metaDescription"),
   });
   input.canonicalPath = absoluteUrl(input.canonicalPath);

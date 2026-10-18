@@ -35,7 +35,11 @@
     "placeCount": "{count, plural, one {# lieu} other {# lieux}}",
     "moreEyebrow": "Continuer à explorer",
     "moreTitle": "Plus de guides de {city}",
-    "allCityGuides": "Tous les guides de {city}"
+    "allCityGuides": "Tous les guides de {city}",
+    "ctaEyebrow": "Votre pied-à-terre en ville",
+    "ctaTitle": "Un séjour inoubliable",
+    "ctaBody": "Explorez Lisbonne le jour, puis retrouvez un appartement de caractère dans l’un de ses quartiers emblématiques, géré par des professionnels et prêt à vous accueillir.",
+    "ctaButton": "Voir nos appartements →"
   },
   "common": {
     "tagline": "Locations meublées premium à Lisbonne"
@@ -1285,7 +1289,11 @@
           "aboutContact": "Parlons-en",
           "intro": "Introduction du catalogue",
           "how_it_works": "Comment ça marche",
-          "servicesCatalogue": "Catalogue de services"
+          "servicesCatalogue": "Catalogue de services",
+          "guidesCityFilter": "Filtre par ville",
+          "guidesCatalogue": "Liste des guides",
+          "guidesRecommendations": "Recommandations",
+          "guidesAside": "CTA dans chaque guide"
         },
         "notes": {
           "heroSecondary": "Le bouton secondaire mène toujours à /owners.",
@@ -1318,7 +1326,12 @@
           "aboutCertifications": "Sans logo, la carte affiche son icône.",
           "aboutContact": "Les cartes ouvrent toujours Immeubles / Propriétaires / Immobilier. L'adresse, les téléphones, l'e-mail, le site web et les horaires viennent des Paramètres. Les champs du formulaire sont partagés avec le formulaire de contact de l'en-tête.",
           "servicesCatalogue": "Les fiches et les catégories se gèrent dans Services.",
-          "servicesFinalCta": "Le bouton ouvre toujours Immeubles. L’email et WhatsApp proviennent des Paramètres."
+          "servicesFinalCta": "Le bouton ouvre toujours Immeubles. L’email et WhatsApp proviennent des Paramètres.",
+          "guidesCityFilter": "Choisissez une ville pour filtrer guides et recommandations. Désactivez pour tout afficher sans filtre. La publication se gère dans Cities.",
+          "guidesCatalogue": "Les cartes proviennent du catalogue des guides. Cet éditeur modifie les textes et icônes de la liste.",
+          "guidesRecommendations": "Les lieux sont sélectionnés automatiquement dans les guides publiés. Leur contenu sera édité dans le futur CMS des guides.",
+          "guidesAside": "Ce CTA apparaît dans chaque guide individuel. Son bouton ouvre la page des immeubles.",
+          "guidesFinalCta": "Le bouton ouvre la page des immeubles dans la langue du visiteur."
         },
         "links": {
           "settings": "Ouvrir Paramètres",
@@ -1513,6 +1526,32 @@
         },
         "how_it_works": {
           "items": "Exactement trois étapes, dans un ordre fixe."
+        }
+      },
+      "guidesSourceInvalid": "Le contenu enregistré de Guides est invalide. L’enregistrement est bloqué pour le protéger. Corrigez la source avant de modifier.",
+      "guidesLabels": {
+        "city_filter": {
+          "enabled": "Afficher le filtre par ville",
+          "label": "Titre du filtre",
+          "note": "Note du filtre",
+          "soon_label": "Libellé bientôt disponible",
+          "location_icon_key": "Icône de localisation"
+        },
+        "catalogue": {
+          "headline": "Modèle du titre",
+          "view_label": "Libellé pour ouvrir le guide",
+          "empty_message": "Message de liste vide",
+          "template_icons": "Icônes par type de guide"
+        },
+        "recommendations": {
+          "restaurant_label": "Libellé restaurant",
+          "viewpoint_label": "Libellé point de vue",
+          "beach_label": "Libellé plage"
+        }
+      },
+      "guidesHints": {
+        "catalogue": {
+          "headline": "Incluez '{city}' ; il sera remplacé par le nom localisé de la ville. Laissez vide pour utiliser le texte par défaut."
         }
       }
     }

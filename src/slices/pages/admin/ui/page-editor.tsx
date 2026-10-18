@@ -79,6 +79,7 @@ export function PageEditor({
   initialOgImageMediaId,
   previews,
   options,
+  sourceInvalid = false,
 }: {
   pageKey: string;
   rootNode: FieldNode;
@@ -86,6 +87,7 @@ export function PageEditor({
   initialOgImageMediaId: string | null;
   previews: Record<string, AdminMediaPreview>;
   options: SelectOptions;
+  sourceInvalid?: boolean;
 }) {
   const t = useTranslations("pages");
   const tb = useTranslations("backoffice");
@@ -103,7 +105,7 @@ export function PageEditor({
   const [flushing, setFlushing] = useState(false);
   const submittingRef = useRef(false);
   const preparing = queue.isPreparing;
-  const busy = pending || flushing || preparing;
+  const busy = pending || flushing || preparing || sourceInvalid;
 
   const onChange: PathOnChange = (path, value) => {
     setData((prev) => setIn(prev, path, value) as Record<string, unknown>);
@@ -208,6 +210,11 @@ export function PageEditor({
         }
       />
 
+      {sourceInvalid ? (
+        <p role="alert" className="rounded-md border border-accent/40 bg-surface px-4 py-3 text-sm text-accent-deep">
+          {t("admin.guidesSourceInvalid")}
+        </p>
+      ) : null}
       {banner ? (
         <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
           {banner}

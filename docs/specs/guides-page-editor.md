@@ -271,3 +271,33 @@ para CTAs internos; traducción automática nueva; migraciones remotas o desplie
 Revisión cruzada final: editor/datos y público revisaron esta spec; correcciones
 de integridad, fila ausente, accept de medios, aliases de placeholders, handler
 de próximos y caché global/vacío incorporadas. Sin implementación ni QA aprobada.
+
+## Ejecución autorizada — 2026-10-18
+
+Usuario: «vamos con la implementacion si estamos listos». Sidebar y planificación
+capturados en main local `00c836a` antes de iniciar. Orquestador escribe en
+`/private/tmp/central-hill-guides-integration`, branch `guides-page/integration`.
+Worktrees previstos A `/private/tmp/central-hill-guides-editor`, branch
+`guides-page/editor`; B `/private/tmp/central-hill-guides-public`, branch
+`guides-page/public`. Registrar commit contractual al delegar.
+
+Ampliaciones concretas del scope raíz: nuevo `pages/server/guides-content.ts`
+(salvamento por bloque source y fallback target por campo) y
+`pages/tests/guides-defaults.test.ts`; helper scope/test con paths ya acordados.
+`pages/admin/guides-media-validation.ts` se mueve a propiedad del orquestador,
+porque savePage debe poder importarlo en la base contractual; A lo revisa y
+escribe su test sin modificar ese archivo. El contrato exporta secciones
+GuidesHero/GuidesFinalCta con props `{page:GuidesPage, locale:Locale}`; sus stubs
+transitorios en la base son reemplazados exclusivamente por B antes de QA.
+
+Todos los paths de asignación usan prefijo `src/slices/` salvo app/messages/docs.
+A conserva propiedad exclusiva layout.ts, schema-fields.tsx y sus 4tests.
+B conserva listado/filtro/helper de presentación, secciones/medios y sus tests.
+Root es único escritor de contratos/queries/actions/page-editor/messages/docs.
+QA independiente prepara fixtures bajo `/private/tmp/central-hill-guides-qa`;
+DB nueva `guidespageqa`, proxy4458/Postgres5558, bucket dedicado9060 y app3060.
+El preview del usuario3059 y su DB servicedetailqa se mantienen intactos.
+
+Entrega autorizada: commits locales e integración de candidato aprobado en main
+local, sin push/deploy ni writes remotos, siguiendo el flujo que venimos usando.
+Pendientes: implementación A/B, integración, checks y QA browser/save-reload.

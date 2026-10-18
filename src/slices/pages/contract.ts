@@ -20,6 +20,7 @@ import type {
   AboutContent,
   BuildingsContent,
   ServicesContent,
+  GuidesContent,
   GuestContent,
   HomeContent,
   OwnersContent,
@@ -68,6 +69,8 @@ export type AboutPage = PageResult<AboutContent>;
 export type BuildingsPage = PageResult<BuildingsContent>;
 /** Services listing; absent or invalid rows use blank overrides, never a 404. */
 export type ServicesPage = PageResult<ServicesContent>;
+/** Editorial index and the existing shared guide-detail CTA. */
+export type GuidesPage = PageResult<GuidesContent>;
 
 /**
  * The CTA at the bottom of a blog post's sticky aside (the `blog` row's `post_aside`), ready for
@@ -93,6 +96,7 @@ export type {
   AboutContent,
   BuildingsContent,
   ServicesContent,
+  GuidesContent,
   GuestContent,
   HomeContent,
   OwnersContent,
@@ -105,6 +109,7 @@ export {
   getBlogAsideCta,
   getBuildingsPage,
   getServicesPage,
+  getGuidesPage,
   getGuestPage,
   getGuideAsideCta,
   getHomePage,
@@ -199,3 +204,7 @@ export { buildServicesMetadata } from "./server/metadata";
 
 /** Editable editorial sections composed by the Services catalogue through this contract. */
 export { ServicesHero, ServicesIntro, ServicesHowItWorks, ServicesFinalCta } from "./ui/components/services-sections";
+
+export { buildGuidesMetadata } from "./server/metadata";
+// Sections take {page: GuidesPage, locale: Locale}; no catalogue reads.
+export { GuidesHero, GuidesFinalCta } from "./ui/components/guides-sections";

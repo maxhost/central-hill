@@ -30,6 +30,7 @@ import {
   type GuideSection,
   type GuideTemplate,
 } from "../contract";
+import { normalizedRecommendationScope, recommendationScopeKey, type GuideRecommendationScope } from "./recommendation-scope";
 import { guide_page, guide_place, guide_section } from "../schema";
 
 /**
@@ -356,8 +357,8 @@ export function getGuidePage(
  * 4. Output follows `RECOMMENDATION_TYPES` order (Restaurant, Viewpoint, Beach); a type with
  *    no candidate is skipped (so the result may be shorter than `limit`, or empty).
  */
-async function _listTopRecommendations(locale: Locale, limit: number): Promise<GuideRecommendation[]> {
-  if (limit <= 0) return [];
+async function _listTopRecommendations(locale: Locale, limit: number, cityIds?: readonly string[]): Promise<GuideRecommendation[]> {
+  if (limit <= 0 || cityIds?.length === 0) return [];
   const rows = await db
     .select({
       id: guide_place.id,
@@ -373,6 +374,7 @@ async function _listTopRecommendations(locale: Locale, limit: number): Promise<G
     .where(
       and(
         eq(guide_page.status, "published"),
+        cityIds ? inArray(guide_page.city_id, [...cityIds]) : undefined,
         isNotNull(guide_place.media_id),
         isNotNull(guide_place.address),
         inArray(sql<string>`lower(trim(${guide_place.category}))`, [...RECOMMENDATION_TYPES]),
@@ -436,10 +438,10 @@ async function _listTopRecommendations(locale: Locale, limit: number): Promise<G
   return out;
 }
 
-export function listTopRecommendations(locale: Locale, limit = 3): Promise<GuideRecommendation[]> {
+export function listTopRecommendations(locale: Locale, limit = 3, scope?: GuideRecommendationScope): Promise<GuideRecommendation[]> {
   return unstable_cache(
-    () => _listTopRecommendations(locale, limit),
-    ["guides:listTopRecommendations", locale, String(limit)],
+    () => _listTopRecommendations(locale, limit, normalizedRecommendationScope(scope)),
+    ["guides:listTopRecommendations", locale, String(limit), recommendationScopeKey(scope)],
     { tags: [GUIDE_TAGS.list, GEO_TAGS.list] },
   )();
 }

@@ -1,5 +1,8 @@
 "use server";
 
+import { eq } from "drizzle-orm";
+import { guidesSchema, type GuidesContent } from "../schemas/guides";
+import { guidesMediaErrors, guidesMediaReferences } from "./guides-media-validation";
 import { loadMedia } from "@core/media";
 import { uuid } from "@core/validation/primitives";
 import type { ServicesContent } from "../schemas/services";
@@ -54,6 +57,21 @@ export async function savePage(
   const ogImage = payload.og_image_media_id || null;
 
   try {
+    if (key === "guides") {
+      // A stale editor must not silently replace a newly corrupted persisted row.
+      const [existing] = await db.select({ data: page_content.data }).from(page_content).where(eq(page_content.key, "guides")).limit(1);
+      if (existing && !guidesSchema.safeParse(existing.data).success) {
+        return { ok: false, error: "validation", fieldErrors: { _source: "The saved Guides content is invalid. Repair it before saving." } };
+      }
+      if (ogImage && !uuid.safeParse(ogImage).success) {
+        return { ok: false, error: "validation", fieldErrors: { og_image_media_id: "Select an uploaded image." } };
+      }
+      const content = dataParsed.data as GuidesContent;
+      const references = guidesMediaReferences(content, ogImage);
+      const assets = await loadMedia(references.map((ref) => ref.id));
+      const fieldErrors = guidesMediaErrors(content, ogImage, assets);
+      if (Object.keys(fieldErrors).length) return { ok: false, error: "validation", fieldErrors };
+    }
     if (key === "services") {
       if (ogImage && !uuid.safeParse(ogImage).success) {
         return { ok: false, error: "validation", fieldErrors: { og_image_media_id: "Select an uploaded still image." } };
