@@ -47,7 +47,9 @@ schemas/blog.ts,server/queries.ts,server/metadata.ts,server/translation-revalida
 `src/slices/blog/README.md`; `src/slices/translation/admin/actions.ts`;
 `messages/{en,pt,es,fr}.json`; `src/app/[locale]/blog/page.tsx`;
 `src/app/(admin)/admin/(panel)/pages/[key]/page.tsx`;
-new `src/slices/pages/tests/blog-content.test.ts` and `page-translation-revalidation.test.ts`.
+new `src/slices/pages/tests/blog-content.test.ts`; existing `tests/pages-admin.test.ts`
+obsolete no-layout Blog expectation updated by root (Blog now has a layout). Page translation invalidation
+is verified through actual approval/reset in the isolated browser QA.
 
 A only: `src/slices/pages/admin/{queries.ts,actions.ts,layout.ts,ui/page-editor.tsx,
 ui/schema-fields.tsx}`; new `admin/blog-defaults.ts`, `admin/blog-save.ts`,
@@ -73,7 +75,7 @@ S3rver9063, own Docker network/bucket and synthetic staff. Verify ports free and
 record actual processes/environment before writes. No use of existing preview DBs.
 
 Node22/pnpm. Required integrated checks: `pnpm typecheck`, `pnpm lint`,
-`pnpm exec tsx --test src/slices/pages/tests/blog-content.test.ts src/slices/pages/tests/blog-editor.test.ts src/slices/pages/tests/blog-media-validation.test.ts src/slices/pages/tests/blog-presentation.test.ts src/slices/pages/tests/page-translation-revalidation.test.ts src/slices/blog/tests/blog.test.ts src/slices/blog/tests/blog-admin.test.ts src/slices/blog/tests/headings.test.ts`
+`pnpm exec tsx --test src/slices/pages/tests/blog-content.test.ts src/slices/pages/tests/blog-editor.test.ts src/slices/pages/tests/blog-media-validation.test.ts src/slices/pages/tests/blog-presentation.test.ts src/slices/blog/tests/blog.test.ts src/slices/blog/tests/blog-admin.test.ts src/slices/blog/tests/headings.test.ts`
 plus existing Pages/admin/Translation consumer tests as identified during integration;
 `pnpm build` using only isolated env in own integration/runtime. Manual boundaries,
 four-locale keys and detector on changed UI. Record actual commands/exits/commit.
@@ -82,4 +84,16 @@ db:check only for migration changes (none planned); placeholders do not count.
 ## Progress
 
 - Planning savepoint0418662 recorded. Contract implementation and environment preparation underway.
-- No implementation agents delegated yet; no running Blog preview or database writes yet.
+- Contracts da26d36 passed typecheck (exit0). A and B branched from da26d36.
+- DB/proxy containers central-hill-blog-page-db/proxy created on network
+  central-hill-blog-page-qa, DB5588/proxy4488. Existing migrations0000..0021 applied
+  to new blogpageqa only, exit0. Initial pg_isready was early (exit2); psql then
+  connected and completed migrations. S3rver9063 PID64131/session72582.
+- Synthetic env/preload/media fixtures in /private/tmp/central-hill-blog-page-qa;
+  no existing preview env copied except publicly fictitious local template values.
+
+- A9c6f887 and B71659a2 handed off. A typecheck/lint/focused5 passed; old
+  Pages layout assertion updated by root. B typecheck/focused lint/presentation5 passed.
+- New fixture DB identity blogpageqa/blogpageqa verified; two posts, one category,
+  one author, one photo and synthetic staff created. Proxy needs its own local
+  neon_control_plane.endpoints registry, created in Blog DB only.

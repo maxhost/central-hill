@@ -21,6 +21,8 @@ export default async function EditPageRoute({ params }: { params: Promise<{ key:
       options={model.options}
       sourceInvalid={model.sourceInvalid}
       revision={model.revision}
+      pageId={model.pageId}
+      inheritedValues={model.inheritedValues}
     />
   );
 }
