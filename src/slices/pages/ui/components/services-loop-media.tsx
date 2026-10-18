@@ -19,8 +19,8 @@ function useMediaPlayback<T extends HTMLElement>(eager: boolean) {
     const element = ref.current;
     if (eager || !element) return;
     if (!("IntersectionObserver" in window)) {
-      const frame = window.requestAnimationFrame(() => setVisible(true));
-      return () => window.cancelAnimationFrame(frame);
+      const frame = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(frame);
     }
     const observer = new IntersectionObserver(([entry]) =>
       setVisible(!!entry?.isIntersecting),
