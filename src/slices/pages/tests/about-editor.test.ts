@@ -71,7 +71,7 @@ test("About identity metadata stays hidden and media accepts the expanded format
     const child: FieldNode = node.fields.find((field) => field.key === section)!.node;
     assert.equal(child.kind, "object");
     if (child.kind !== "object") continue;
-    const media = child.fields.find((field) => field.key === "image_media_id")!.node;
+    const media: FieldNode = child.fields.find((field) => field.key === "image_media_id")!.node;
     assert.equal(media.kind, "media");
     if (media.kind === "media") assert.equal(media.accept, "animated");
   }
