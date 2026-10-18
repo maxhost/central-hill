@@ -19,3 +19,9 @@ translation rows. No interactive transactions or new driver are introduced.
 Pages owns snapshot comparison, list metadata, validation and extraction; i18n
 alone owns SQL touching translation. An optional revision on generic page actions
 is mandatory for About. Other pages retain their existing save behavior.
+
+Page-content target writes lock and compare the source value in their INSERT
+statement. A missing/changed source returns false; translation editing reports a
+conflict and draft generation does not count a skipped write. This prevents an
+editor opened before removal from recreating an orphan target after source cleanup.
+Other entity types retain their existing target-write behavior.

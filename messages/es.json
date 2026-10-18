@@ -1684,7 +1684,8 @@
       "aboutSourceInvalid": "El contenido guardado de About no es válido. Recarga o repara la fuente antes de guardar.",
       "aboutConflict": "About cambió desde que abriste el editor. Recarga para revisar el contenido actual antes de guardar.",
       "aboutSourceNote": "Edita aquí la fuente en inglés. La página pública muestra traducciones aprobadas; se gestionan en Traducciones.",
-      "reloadSource": "Recargar contenido guardado"
+      "reloadSource": "Recargar contenido guardado",
+      "aboutListBounds": "{count} elementos · permitidos: {min}–{max}"
     }
   },
   "leads": {

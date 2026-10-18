@@ -85,8 +85,8 @@ const certification = z.object({
 });
 
 /**
- * A "Let's Start a Conversation" card. The destination is fixed by position (guests →
- * buildings, owners → owners, partners → real estate) so it stays on the visitor's locale.
+ * A "Let's Start a Conversation" card. Destination follows the item identity;
+ * legacy positions are normalized once, and routes stay on the visitor's locale.
  */
 const contactCard = z.object({
   destination: z.enum(["buildings", "owners", "real_estate"]).optional(),

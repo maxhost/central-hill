@@ -1684,7 +1684,8 @@
       "aboutSourceInvalid": "The saved About content is invalid. Reload or repair the source before saving.",
       "aboutConflict": "About changed since this editor was opened. Reload to review the latest content before saving.",
       "aboutSourceNote": "Edit the English source here. Approved translations appear on the public page; manage them in Translations.",
-      "reloadSource": "Reload stored content"
+      "reloadSource": "Reload stored content",
+      "aboutListBounds": "{count} items · {min}–{max} allowed"
     }
   },
   "leads": {

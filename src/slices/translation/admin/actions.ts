@@ -25,7 +25,7 @@ import { generateDrafts } from "../server/generate";
 
 export type TranslationActionResult =
   | { ok: true }
-  | { ok: false; error: "validation" | "not_found" };
+  | { ok: false; error: "validation" | "not_found" | "conflict" };
 
 const isTargetLocale = (v: unknown): v is Locale =>
   typeof v === "string" && (TARGET_LOCALES as string[]).includes(v);
@@ -91,11 +91,12 @@ export async function saveField(
 
   const trimmed = value.trim();
   if (trimmed) {
-    await setTargetTranslation(type, id, field, locale, trimmed, {
+    const written = await setTargetTranslation(type, id, field, locale, trimmed, {
       sourceValue: source.value,
       state: "needs_review",
       updatedBy: staff.userId,
     });
+    if (!written) return { ok: false, error: "conflict" };
   } else {
     await deleteTranslation(type, id, field, locale);
   }

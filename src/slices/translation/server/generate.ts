@@ -71,12 +71,12 @@ export async function generateDrafts(
     for (const r of results) {
       const sourceValue = sourceByField.get(r.field);
       if (sourceValue === undefined) continue; // provider returned an unknown field
-      await setTargetTranslation(type, id, r.field, locale, r.value, {
+      const saved = await setTargetTranslation(type, id, r.field, locale, r.value, {
         sourceValue,
         state: "needs_review",
         updatedBy: opts.updatedBy,
       });
-      written += 1;
+      if (saved) written += 1;
     }
     if (written > 0) {
       summary.written[locale] = written;

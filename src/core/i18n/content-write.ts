@@ -208,7 +208,7 @@ export async function setTargetTranslation(
   locale: Locale,
   value: string,
   opts: { sourceValue: string; state?: TranslationState; updatedBy?: string },
-): Promise<void> {
+): Promise<boolean> {
   assertTarget(locale);
   const row = {
     entity_type: type,
@@ -220,6 +220,20 @@ export async function setTargetTranslation(
     source_hash: hashSource(opts.sourceValue),
     ...translationActorAttribution(opts.updatedBy),
   };
+  // ADR0037: a Pages editor may remove a list item while a translator is editing it.
+  // Lock the expected source in the same statement: no orphan target can be recreated
+  // after deletion, and a changed source is reported to the caller as a conflict.
+  if (type === "page_content") {
+    const result = await db.execute(sql`with live_source as (
+      select id from translation where entity_type=${type} and entity_id=${id}::uuid
+      and field=${field} and locale='en' and value=${opts.sourceValue} for share
+    ) insert into translation(entity_type,entity_id,field,locale,value,state,source_hash,updated_by,updated_by_user_id)
+      select ${type},${id}::uuid,${field},${locale},${row.value},${row.state},${row.source_hash},${row.updated_by}::uuid,${row.updated_by_user_id} from live_source
+      on conflict(entity_type,entity_id,field,locale) do update set value=excluded.value,
+      state=excluded.state,source_hash=excluded.source_hash,updated_by=excluded.updated_by,
+      updated_by_user_id=excluded.updated_by_user_id,updated_at=now() returning id`);
+    return result.rows.length > 0;
+  }
   await db
     .insert(translation)
     .values(row)
@@ -239,6 +253,7 @@ export async function setTargetTranslation(
         updated_at: sql`now()`,
       },
     });
+  return true;
 }
 
 /**
