@@ -407,7 +407,7 @@ apply neutral flags after locale resolution. Existing title/CTA fields remain au
 
 - **service**: `id, slug, status, position, category_id→service_category, cover_media_id,
   og_image_media_id?, price_from? (cents), rating_tenths? (integer tenths, 0–50 → 0.0–5.0; ADR 0032),
-  duration_label?, booking_type (enquiry|external|none), cta_label?, cta_url?`. **[T]**: `name`, `excerpt`, `body` (rich), `price_suffix?` (e.g. "/ person"), `detail?`, `meta_title`, `meta_description`.
+  duration_label?, booking_type (enquiry|external|none), cta_label?, cta_url?, presentation? (jsonb, migration 0019)`. **[T]**: `name`, `excerpt`, `body` (rich), `price_suffix?` (e.g. "/ person"), `detail?`, `meta_title`, `meta_description`, scalar `copy:<key>` overrides.
   - **`detail`** (portable JSON, one [T] field like the blog body — ADR 0013; schema in
     `src/slices/services/detail.ts`): a **fixed-shape object**, not an ordered block list, because the
     detail template's section order is designer-owned — `highlights[]`, `itinerary[]{time,title,text}`,

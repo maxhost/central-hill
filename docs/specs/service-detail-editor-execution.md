@@ -1,7 +1,7 @@
 # Editor condicional de servicios individuales — spec de ejecución
 
-Fecha: 2026-10-18. Estado: spec preparada y revisada para iniciar G0/G1;
-implementación iniciada tras savepoint solicitado por el owner.
+Fecha: 2026-10-18. Estado: implementación y QA independiente aprobadas sobre código `9faffe9`;
+cierre documental para integración en main local.
 Base: [auditoría con tres agentes](service-detail-editor-audit-2026-10-18.md).
 Procedimiento: [workflow autoritativo](../multi-agent-workflow.md).
 
@@ -550,7 +550,7 @@ Tras cambios, repetir solo afectados más los checks integrados exigidos para el
 | Infra aislada / PID / identidad | G0 verificado; registro al final |
 | Commit contractual G1 | `a4717eab06c6b1213758b60eb0fd4a44033752af` |
 | Commit A / B | A `505d1a4` integrado como `3008671`; B `079243f` como `23cc475` |
-| Candidato integrado / QA | No existe |
+| Candidato integrado / QA | `9faffe9`, QA independiente aprobada |
 | Cambios de esta etapa | Nueva spec y actualización de punteros/documentación de auditoría |
 | Checks de esta etapa | Solo revisión documental y whitespace; sin tests de aplicación |
 
@@ -657,3 +657,37 @@ real de escritura source/target en candidato integrado antes de G3.
 - ADR0036/migración0020 aplicada solo servicedetailqa: nueva columna text para actor real,
   sin reescribir anteriores; source y target seam comparten helper probado. Se elimina
   rechazo UUID-only de Services. Estado final textual debe ser guardado exitoso con autor.
+
+### Candidato en QA independiente
++
++- Candidato `cbc6547`, A/B integrados y ADR0036 incluido. typecheck0,240tests0,
++  lint0(5warningsprevios), db:check0(21migraciones,warning0008previo).
++- Primer build falló por links externos de dependencias, resuelto con instalación offline
++  frozen-lockfile:466paquetes desde caché,0descargas,sin cambio de manifests.
++- Segundo build compiló/TS pero agotó100conexiones PostgreSQLlocal; proxy log confirmó
++  too many clients. Adaptador tmp limita2fetchNeon/proceso;100queries de estrés exitosas.
++  No se cambió app/Nextconfig para estos ajustes de infraestructura.
++- Build final pnpm build exit0,114páginas. Server build3059 sesión63587 envsoloQA,
++  dev3058 detenido por root. Informe independiente en curso, sin G3 todavía.
++- ADR0036 requiere0020 además de0019 antes de un despliegue futuro; en esta tarea solo
++  se aplicaron a bases locales ficticias. No push ni migración remota autorizados.
+
+### Cierre de implementación y QA
+
+- Código final `9faffe95789d31984c69b03b00d6af0ded03fec0`. G0/G1/G2/G3 completados.
+- RondaQA inicial `cbc6547` verificó40SSR,10no-op saves,8combinaciones, hide/reactivate
+  de7bloques con4idiomas/targets antiguos,38copy,7iconos,uploadsJPEG reales, source/target
+  actorUUID/text, ACL/corrupción, errorparcial/recuperación y caches detalle/listado/Home.
+- HallazgoAC18: label80chars hacía barra134.56px que cubríaFAB y controlesfooter.
+  B652c98b→1f2d9e8 y3fb889c→e795d6b añadieron mediciónResizeObserver y reserva alfinalbody
+  solo donde se muestra barra. A4f6894e→e1d1799 añadió ayudaalt compartida, traducida por
+  root en9faffe9 con hintEUR simplificado. Sin cambios de kernel para layout móvil.
+- Checks finales repetidos tras correcciones, con set-e: typecheck0, lint0(5previas),
+  240tests0, dbcheck0(21migraciones,warning0008previo), pnpm build0(134páginas).
+- QA retest9faffe9 aprobado: lift/padding135 para barra134.56, FAB libre yfooteraccesible;
+  desktop ySPA limpian ambos valores; ayudas visibles. Sin bloqueantes pendientes.
+  Errores previos de extractorARIA/nombrelocalizado/fixtureHome no eran fallos producto,
+  quedaron corregidos en harness y retesteados. Evidencia íntegra en informeQA.
+- Solo documentación después de9faffe9. Handoff y QA capturan archivos nuevos y límites.
+  Integración autorizada por fast-forward en main local; savepointa1107f8 intacto.
+  Sin push/deploy ni migración remota. Worktrees y recursos QA propios preservados.

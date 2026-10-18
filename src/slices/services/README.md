@@ -108,9 +108,7 @@ Plugs into the backoffice shell. Contributes two `content`-group screens
 - `admin/ui/` — `category-list`/`category-form` and `list`/`service-form` (client islands;
   the service form gates the CTA fields on `booking_type` and uses the media pickers).
 
-## Deferred
-
-### Conditional detail editor contract (migration 0019)
+## Conditional detail editor contract (migration 0019)
 
 `service.presentation` is nullable JSONB, validated by `presentation.ts`: version 1,
 independent section flags, price display mode and seven optional Iconoir overrides.
@@ -129,7 +127,10 @@ staff IDs are attributed through the kernel's additive text column (ADR0036/migr
 with UUID compatibility retained. Both normal textual and UUID users can save. Invalid stored JSON blocks
 ordinary saves instead of being silently replaced with an empty detail.
 
-Implementation and QA progress: `docs/specs/service-detail-editor-execution.md`.
+Local implementation independently QA-approved on `9faffe9`; execution/QA/handoff under
+`docs/specs/service-detail-editor-*` and `handoff-service-detail-editor.md`.
+
+## Deferred
 
 - **Service/Offer JSON-LD**: only `BreadcrumbList` is emitted; a richer `Service`/`Offer`
   builder belongs in `core/seo` (**S13**, ADR — golden rule 3), not hand-written here.

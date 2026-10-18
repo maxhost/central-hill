@@ -4,17 +4,17 @@ Read [CLAUDE.md](CLAUDE.md) for architecture and [docs/multi-agent-workflow.md](
 
 ## Current handoff
 
-Services editor implemented and independently QA-approved; local integration delivery recorded in
+Individual service conditional editor implemented and independently QA-approved on code
+`9faffe9`; local delivery recorded in
+[Service detail handoff](docs/specs/handoff-service-detail-editor.md).
+See the [execution spec](docs/specs/service-detail-editor-execution.md) and
+[QA evidence](docs/specs/service-detail-editor-qa.md). Savepoint before implementation:
+`a1107f8`, local tag `savepoint/pre-service-detail-editor-2026-10-18`.
+Migrations0019/0020 were applied only to isolated local QA databases; no push/deployment.
+
+Previous Services listing editor delivery remains in
 [Services handoff 2026-10-18](docs/specs/handoff-services-2026-10-18.md).
-See the [Services editor spec](docs/specs/services-admin-editor.md) and
-[QA evidence](docs/specs/services-admin-editor-qa.md).
-Active task: execution spec for individual service editors and conditional sections;
-see [Service detail editor execution spec](docs/specs/service-detail-editor-execution.md)
-and its [audit](docs/specs/service-detail-editor-audit-2026-10-18.md).
-Implementation authorized after local savepoint `a1107f8`; integration worktree
-`/private/tmp/central-hill-service-detail-integration`, branch `service-detail/integration`.
-Contracts and isolated environment must pass the spec's G0/G1 gates before delegating writers.
-Update this pointer when the active task changes.
+No next implementation is assigned yet. Update this pointer when the active task changes.
 
 ## Working agreement
 
