@@ -14,7 +14,7 @@ import {
   TocList,
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
-import { getBlogAsideCta } from "@slices/pages/contract";
+import { getBlogAsideCta, getBlogPage } from "@slices/pages/contract";
 import { SITE_ICON_DEFAULTS, getGlobals } from "@slices/settings/contract";
 import { getPostBySlug } from "../contract";
 import { BodyRenderer, type CalloutChrome } from "./components/body-renderer";
@@ -50,6 +50,11 @@ import { NewsletterSignup } from "./components/newsletter-signup";
 
 const WRAP = "mx-auto max-w-[1240px] px-[28px]";
 const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
+/** Shared newsletter overrides inherit localized messages when blank. */
+function orMessage(value: string | undefined, fallback: string): string {
+  return value?.trim() || fallback;
+}
+
 const COVER_SIZES = "(max-width: 1240px) 100vw, 1184px";
 
 function formatDate(iso: string | null, locale: string): string | null {
@@ -69,10 +74,11 @@ export async function BlogPost({ locale, slug }: { locale: Locale; slug: string 
   const post = await getPostBySlug(locale, slug);
   if (!post) notFound();
 
-  const [t, globals, asideCta] = await Promise.all([
+  const [t, globals, asideCta, page] = await Promise.all([
     getTranslations("blog"),
     getGlobals(locale),
     getBlogAsideCta(locale),
+    getBlogPage(locale),
   ]);
   // Site icons (Settings → "Site icons", ADR 0034 amendment 2).
   const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
@@ -207,9 +213,9 @@ export async function BlogPost({ locale, slug }: { locale: Locale; slug: string 
 
       {/* 4 · newsletter */}
       <NewsletterSignup
-        eyebrow={t("newsletter.eyebrow")}
-        title={t("newsletter.title")}
-        description={t("newsletter.description")}
+        eyebrow={orMessage(page.content.newsletter?.eyebrow, t("newsletter.eyebrow"))}
+        title={orMessage(page.content.newsletter?.title, t("newsletter.title"))}
+        description={orMessage(page.content.newsletter?.description, t("newsletter.description"))}
         source="blog"
       />
 

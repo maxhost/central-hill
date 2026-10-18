@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { PageHead, PageHeadSearch, SectionHead } from "@core/ui";
 import { Icon } from "@core/ui/icon";
+import { getBlogPage } from "@slices/pages/contract";
 import { SITE_ICON_DEFAULTS, getGlobals } from "@slices/settings/contract";
 import { getFeaturedPost, listCategories, listPosts } from "../contract";
 import { CategoryFilterItem, CategoryFilterProvider, CategoryLoadMore, CategoryTabs } from "./components/category-tabs";
@@ -12,8 +13,8 @@ import { NewsletterSignup } from "./components/newsletter-signup";
 /**
  * Blog listing — the approved `mock/blog.html` inside the live app shell.
  * The header band (eyebrow, `<h1>`, lede, search field) is the `core/ui` `PageHead` +
- * `PageHeadSearch`, rendered as JSX with i18n copy (`blog.eyebrow|title|intro|searchPlaceholder|
- * searchLabel`). Below it, the **category tabs** are JSX too and
+ * `PageHeadSearch`, rendered as JSX with Pages overrides and localized fallback copy
+ * (`blog.eyebrow|title|intro|searchPlaceholder|searchLabel`). Below it, the **category tabs** are JSX too and
  * **DB-driven**: the slice's `CategoryTabs` (`core/ui`'s `ChipBar`, plain + centred) fed by
  * `listCategories(locale)`, which is `unstable_cache`d per locale and tagged `blog_post-list`,
  * so a category save/delete in the backoffice (`revalidateBlogList`) refreshes the page. "All"
@@ -45,6 +46,11 @@ import { NewsletterSignup } from "./components/newsletter-signup";
  */
 const JOURNAL_PAGE_SIZE = 9;
 
+/** Blank page overrides inherit the visitor’s existing localized copy. */
+function orMessage(value: string | undefined, fallback: string): string {
+  return value?.trim() || fallback;
+}
+
 // Standard page shell (Guides/Real Estate): the mock's `.mk section` padding + 84px scroll margin,
 // and the `.wrap` 1240px/28px column.
 const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
@@ -73,13 +79,15 @@ const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
  */
 export async function BlogListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const [t, categories, featured, posts, globals] = await Promise.all([
+  const [t, categories, featured, posts, globals, page] = await Promise.all([
     getTranslations("blog"),
     listCategories(locale),
     getFeaturedPost(locale),
     listPosts(locale),
     getGlobals(locale),
+    getBlogPage(locale),
   ]);
+  const { hero, featured: featuredCopy, journal: journalCopy, newsletter } = page.content;
   // Site icons (Settings → "Site icons", ADR 0034 amendment 2).
   const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
   const readingTimeIcon = icons.reading_time;
@@ -88,10 +96,14 @@ export async function BlogListing({ locale }: { locale: Locale }) {
 
   return (
     <>
-      <PageHead eyebrow={t("eyebrow")} headline={t("title")} intro={t("intro")}>
+      <PageHead
+        eyebrow={orMessage(hero?.eyebrow, t("eyebrow"))}
+        headline={orMessage(hero?.headline, t("title"))}
+        intro={orMessage(hero?.intro, t("intro"))}
+      >
         <PageHeadSearch
-          placeholder={t("searchPlaceholder")}
-          label={t("searchLabel")}
+          placeholder={orMessage(hero?.search_placeholder, t("searchPlaceholder"))}
+          label={orMessage(hero?.search_label, t("searchLabel"))}
           icon={<Icon name={icons.search} size={20} />}
         />
       </PageHead>
@@ -105,7 +117,7 @@ export async function BlogListing({ locale }: { locale: Locale }) {
         {featured ? (
           <section className="pt-[52px]">
             <div className="mx-auto max-w-[1240px] px-[28px]">
-              <SectionHead eyebrow={t("featured")} flush className="mb-[28px]" />
+              <SectionHead eyebrow={orMessage(featuredCopy?.eyebrow, t("featured"))} flush className="mb-[28px]" />
               <FeaturedPost
                 post={featured}
                 locale={locale}
@@ -122,7 +134,12 @@ export async function BlogListing({ locale }: { locale: Locale }) {
         {journal.length ? (
           <section className={SECTION_SHELL}>
             <div className={SECTION_WRAP}>
-              <SectionHead eyebrow={t("latestEyebrow")} headline={t("latestTitle")} flush className="mb-[34px]" />
+              <SectionHead
+                eyebrow={orMessage(journalCopy?.eyebrow, t("latestEyebrow"))}
+                headline={orMessage(journalCopy?.title, t("latestTitle"))}
+                flush
+                className="mb-[34px]"
+              />
               <div className="grid grid-cols-1 gap-[26px] min-[681px]:grid-cols-2 min-[981px]:grid-cols-3">
                 {journal.map((post, i) => (
                   <CategoryFilterItem key={post.id} category={post.category.slug} index={i}>
@@ -150,9 +167,9 @@ export async function BlogListing({ locale }: { locale: Locale }) {
         )}
       </CategoryFilterProvider>
       <NewsletterSignup
-        eyebrow={t("newsletter.eyebrow")}
-        title={t("newsletter.title")}
-        description={t("newsletter.description")}
+        eyebrow={orMessage(newsletter?.eyebrow, t("newsletter.eyebrow"))}
+        title={orMessage(newsletter?.title, t("newsletter.title"))}
+        description={orMessage(newsletter?.description, t("newsletter.description"))}
         source="blog"
       />
     </>
