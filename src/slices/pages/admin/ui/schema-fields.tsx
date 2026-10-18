@@ -59,6 +59,7 @@ export function useFieldLabels() {
 }
 
 interface RenderProps {
+  pageKey?: string;
   node: FieldNode;
   value: unknown;
   path: (string | number)[];
@@ -72,6 +73,7 @@ interface RenderProps {
 
 export function NodeField(props: RenderProps) {
   const {
+    pageKey,
     node,
     value,
     path,
@@ -84,6 +86,11 @@ export function NodeField(props: RenderProps) {
   } = props;
   const errorKey = path.join(".");
   const labels = useFieldLabels();
+  const t = useTranslations("pages");
+  const hintKey = `admin.servicesHints.${path.join(".")}`;
+  const hint = pageKey === "services" && node.kind !== "object" && node.kind !== "hidden" && t.has(hintKey)
+    ? t(hintKey)
+    : "hint" in node ? node.hint : undefined;
 
   // `admin_hidden` field: nothing to render. Its value stays in the editor's `data` (scaffolded
   // by `applyDefaults`) and is saved back unchanged, since `onChange` never touches its path.
@@ -93,6 +100,7 @@ export function NodeField(props: RenderProps) {
     const body = node.fields.map((f) => (
       <NodeField
         key={f.key}
+        pageKey={pageKey}
         node={f.node}
         value={(value as Record<string, unknown> | undefined)?.[f.key]}
         path={[...path, f.key]}
@@ -117,7 +125,7 @@ export function NodeField(props: RenderProps) {
 
   if (node.kind === "array") {
     const items = Array.isArray(value) ? value : [];
-    const canAdd = items.length < node.max;
+    const canAdd = !node.fixedOrder && items.length < node.max;
     const canRemove = items.length > node.min;
     const itemLabel = labels.item(path, label);
     return (
@@ -125,13 +133,15 @@ export function NodeField(props: RenderProps) {
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
           {label}
         </p>
+        {hint ? <p className="text-xs text-ink-soft">{hint}</p> : null}
         {items.map((item, i) => (
           <div key={i} className="space-y-3 rounded-md border border-line p-3">
             <div className="flex items-center justify-between">
               <span className="text-xs text-ink-soft">
                 {itemLabel} {i + 1}
               </span>
-              <div className="flex items-center gap-1">
+              {!node.fixedOrder ? (
+                <div className="flex items-center gap-1">
                 <ArrayBtn
                   action="up"
                   disabled={i === 0}
@@ -152,9 +162,11 @@ export function NodeField(props: RenderProps) {
                     )
                   }
                 />
-              </div>
+                </div>
+              ) : null}
             </div>
             <NodeField
+              pageKey={pageKey}
               node={node.element}
               value={item}
               path={[...path, i]}
@@ -188,13 +200,13 @@ export function NodeField(props: RenderProps) {
         onChange={(e) => onChange(path, e.target.checked)}
       />
     );
-    return node.hint ? <Field hint={node.hint}>{box}</Field> : box;
+    return hint ? <Field hint={hint}>{box}</Field> : box;
   }
 
   if (node.kind === "media") {
     const id = typeof value === "string" && value ? value : null;
     return (
-      <Field label={label} hint={node.hint} error={errors[errorKey]}>
+      <Field label={label} hint={hint} error={errors[errorKey]}>
         <MediaField
           value={id}
           accept={node.accept}
@@ -221,7 +233,7 @@ export function NodeField(props: RenderProps) {
     const opts = options[node.source] ?? [];
     const val = typeof value === "string" ? value : "";
     return (
-      <Field label={label} hint={node.hint} error={errors[errorKey]}>
+      <Field label={label} hint={hint} error={errors[errorKey]}>
         <Select value={val} onChange={(e) => onChange(path, e.target.value)}>
           <option value="">{node.emptyLabel}</option>
           {opts.map((o) => (
@@ -240,7 +252,7 @@ export function NodeField(props: RenderProps) {
   // string
   const str = typeof value === "string" ? value : "";
   return (
-    <Field label={label} hint={node.hint} required={!node.optional} error={errors[errorKey]}>
+    <Field label={label} hint={hint} required={!node.optional} error={errors[errorKey]}>
       {node.multiline ? (
         <TextArea
           value={str}

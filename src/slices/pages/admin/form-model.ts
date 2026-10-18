@@ -22,7 +22,7 @@ export type { MediaAccept };
 
 export type FieldNode =
   | { kind: "object"; fields: { key: string; node: FieldNode }[] }
-  | { kind: "array"; element: FieldNode; min: number; max: number }
+  | { kind: "array"; element: FieldNode; min: number; max: number; fixedOrder?: boolean }
   | { kind: "media"; accept: MediaAccept; hint?: string }
   | { kind: "icon"; optional: boolean }
   | {
@@ -166,7 +166,8 @@ function describeVisible(schema: z.ZodType, key: string): FieldNode {
   if (base instanceof z.ZodArray) {
     const element = (base as z.ZodArray<z.ZodType>).element;
     const { min, max } = arrayBounds(base);
-    return { kind: "array", element: describe(element, key), min, max };
+    const node = { kind: "array" as const, element: describe(element, key), min, max };
+    return metaValue(schema, "fixed_order") === true ? { ...node, fixedOrder: true } : node;
   }
 
   // `.describe()` may sit on a wrapper (`.optional().describe(…)`) or on the base.

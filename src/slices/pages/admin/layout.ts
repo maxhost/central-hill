@@ -91,13 +91,17 @@ export const ABOUT_CARD_IDS = [
   "contact",
 ] as const;
 
+/** Stable card ids of the Services editor (spec services-admin-editor). */
+export const SERVICES_CARD_IDS = ["seo", "hero", "intro", "how_it_works", "final_cta"] as const;
+
 export type EditorCardId =
   | (typeof HOME_CARD_IDS)[number]
   | (typeof OWNERS_CARD_IDS)[number]
   | (typeof BUILDINGS_CARD_IDS)[number]
   | (typeof REAL_ESTATE_CARD_IDS)[number]
   | (typeof GUEST_CARD_IDS)[number]
-  | (typeof ABOUT_CARD_IDS)[number];
+  | (typeof ABOUT_CARD_IDS)[number]
+  | (typeof SERVICES_CARD_IDS)[number];
 
 /** Id of the fallback card that collects root keys no card claims. */
 export const OTHER_CARD_ID = "other";
@@ -491,6 +495,24 @@ const ABOUT_LAYOUT: EditorLayoutItem[] = [
   },
 ];
 
+const SERVICES_LAYOUT: EditorLayoutItem[] = [
+  {
+    kind: "card", id: "seo", titleKey: `${L}.cards.seo`, paths: ["seo"],
+    note: { textKey: `${L}.notes.seoLimits` }, hostsOgImage: true,
+  },
+  { kind: "card", id: "hero", titleKey: `${L}.cards.hero`, paths: ["hero"] },
+  { kind: "card", id: "intro", titleKey: `${L}.cards.intro`, paths: ["intro"] },
+  {
+    kind: "info", id: "services_catalogue", titleKey: `${L}.cards.servicesCatalogue`,
+    note: { textKey: `${L}.notes.servicesCatalogue`, link: link("/admin/services", "services") },
+  },
+  { kind: "card", id: "how_it_works", titleKey: `${L}.cards.how_it_works`, paths: ["how_it_works"] },
+  {
+    kind: "card", id: "final_cta", titleKey: `${L}.cards.final_cta`, paths: ["final_cta"],
+    note: { textKey: `${L}.notes.servicesFinalCta`, link: link("/admin/settings", "settings") },
+  },
+];
+
 const LAYOUTS: Partial<Record<string, EditorLayoutItem[]>> = {
   home: HOME_LAYOUT,
   owners: OWNERS_LAYOUT,
@@ -498,6 +520,7 @@ const LAYOUTS: Partial<Record<string, EditorLayoutItem[]>> = {
   real_estate: REAL_ESTATE_LAYOUT,
   guest: GUEST_LAYOUT,
   about: ABOUT_LAYOUT,
+  services: SERVICES_LAYOUT,
 };
 
 /**

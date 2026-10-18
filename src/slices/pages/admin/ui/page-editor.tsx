@@ -176,6 +176,7 @@ export function PageEditor({
     return (
       <NodeField
         key={f.key}
+        pageKey={pageKey}
         node={f.node}
         value={data[f.key]}
         path={[f.key]}
