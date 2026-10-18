@@ -84,7 +84,7 @@ export async function saveGuideSection(pageId: string, raw: unknown): Promise<Gu
     if (!owned && !input.create) return fail("not_found");
     const previous = bundle.data.sections.find(s => s.id === input.id);
     const section: GuideSectionEdit = {
-      ...(previous ?? { id: input.id, guide_page_id: pageId, layout: "standard", position: bundle.data.sections.length, header_media_id: null, cta_url: null, presentation: { version: 1, enabled: false }, title: "", body: null, local_tip: null, cta_label: null, places: [] }),
+      ...(previous ?? { id: input.id, guide_page_id: pageId, layout: "standard", position: Math.max(0, ...bundle.data.sections.map(s => s.position + 1)), header_media_id: null, cta_url: null, presentation: { version: 1, enabled: false }, title: "", body: null, local_tip: null, cta_label: null, places: [] }),
       ...input.changes, ...input.source,
     };
     const page = { ...bundle.data, sections: previous ? bundle.data.sections.map(s => s.id === input.id ? section : s) : [...bundle.data.sections, section] };
@@ -113,7 +113,7 @@ export async function saveGuidePlace(pageId: string, sectionId: string, raw: unk
     if (!owned && !input.create) return fail("not_found");
     const previous = parent.places.find(p => p.id === input.id);
     const place: GuidePlaceEdit = {
-      ...(previous ?? { id: input.id, guide_section_id: sectionId, position: parent.places.length, name: "", description: null, category: null, address: null, phone: null, price_tier: null, opening_hours: null, latitude: null, longitude: null, website_url: null, booking_url: null, media_id: null }),
+      ...(previous ?? { id: input.id, guide_section_id: sectionId, position: Math.max(0, ...parent.places.map(p => p.position + 1)), name: "", description: null, category: null, address: null, phone: null, price_tier: null, opening_hours: null, latitude: null, longitude: null, website_url: null, booking_url: null, media_id: null }),
       ...input.changes, ...input.source,
     };
     const page = { ...bundle.data, sections: bundle.data.sections.map(s => s.id !== sectionId ? s : { ...s, places: previous ? s.places.map(p => p.id === input.id ? place : p) : [...s.places, place] }) };
