@@ -14,3 +14,8 @@ test("even first-step failure is uncertain, never false success or assumed rollb
   let invalidated=false;const result=await runGuideWrite("id",[{name:"entity",run:async()=>{throw Error("lost response");}}],()=>{invalidated=true;});
   assert.equal(result.ok,false);assert.equal(!result.ok&&result.error,"partial_write");assert.equal(invalidated,true);
 });
+test("cache failure after durable writes reports invalidation, not a failed source save",async()=>{
+  const result=await runGuideWrite("id",[{name:"source",run:async()=>undefined}],()=>{throw Error("cache unavailable");});
+  assert.equal(result.ok,false);
+  if(!result.ok && result.error==="partial_write") { assert.deepEqual(result.completedSteps,["source"]);assert.equal(result.failedStep,"invalidate"); }
+});

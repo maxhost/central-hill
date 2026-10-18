@@ -54,10 +54,12 @@ export async function runGuideWrite(id: string, steps: GuideWriteStep[], invalid
   let failedStep = "invalidate";
   try {
     for (const step of steps) { failedStep = step.name; await step.run(); completedSteps.push(step.name); }
+    failedStep = "invalidate";
     invalidate();
     return { ok: true, id };
-  } catch {
-    try { invalidate(); } catch { /* Preserve the original write outcome. */ }
+  } catch (error) {
+    console.error(`[guides:write:${failedStep}]`, error);
+    try { invalidate(); } catch (invalidationError) { console.error("[guides:invalidate]", invalidationError); }
     return { ok: false, error: "partial_write", entityIds: [id], completedSteps, failedStep, reloadRequired: true };
   }
 }

@@ -392,3 +392,25 @@ Previews3059/3060, contenedores y worktrees anteriores conservados.
   como composición del app shell; orquestador añadirá exports de pantalla por contrato
   tras integrar, sin exportar UI inexistente en G1. Todos los imports entre slices
   continúan exclusivamente por contract.ts.
+
+### Lanzamiento de A/B
+
+Commit contractual verificado: `9f0a171`. Ambos worktrees creados desde ese commit:
+A `/private/tmp/central-hill-guides-cms-admin`, branch `guides-cms/admin`;
+B `/private/tmp/central-hill-guides-cms-public`, branch `guides-cms/public`.
+Root conserva escritura de contratos/backend compartidos y docs en integración.
+Implementadores no tienen autorización de mutar DB/media ni procesos ajenos; tests
+puros con Node22, env ficticio solo si se necesita boot de módulos. El root es dueño
+del build integrado, servidor3061 y posterior QA. Las rutas UI son app shell fino.
+
+CCR B aprobado: `src/slices/guides/ui/format.ts` también pertenece a B para helpers
+HTTP(S)/tel defensivos de datos legacy y pruebas existentes. Root añade labels públicos
+guides.hours/website/book (faltaban realmente) y keys admin solicitadas por A en los
+cuatro catálogos. No se transfieren mensajes a escritores paralelos.
+
+Root durante A/B: listado admin usa conteos agregados/carga batch, sin cargar cada
+árbol ni previews por fila. Diagnóstico de fallos registra etapa y conserva resultado
+partial_write, incluida invalidación posterior a writes. Firmas de consumidores iguales.
+Fixtures adicionales en DB aislada: las ocho variantes con59secciones/86lugares y medios
+sintéticos compartidos; slugs locales distintos y títulos ES aprobados para round-trip.
+No se ejecutó seed-guides ni se descargaron fotos de producción.

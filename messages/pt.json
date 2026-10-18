@@ -119,8 +119,32 @@
         "website_url": "URL do site",
         "booking_url": "URL de reserva",
         "media_id": "Foto do local"
-      }
-    }
+      },
+      "clearSourceWarning": "Limpar o texto de origem elimina as traduções em todos os idiomas. Ocultar módulos mantém-nas.",
+      "createFirst": "Guarde o rascunho antes de adicionar secções.",
+      "allTemplates": "Todas as categorias editoriais",
+      "moduleInherited": "Desativar um módulo oculta os campos e mantém o conteúdo.",
+      "sectionSummary": "{places} locais · {photos} fotos",
+      "saving": "A guardar…",
+      "noCity": "Crie primeiro uma cidade em Cidades.",
+      "optional": "Opcional",
+      "templates": {
+        "landing": "O que fazer",
+        "eat": "Comer e beber",
+        "beaches": "Praias",
+        "events": "Eventos e festivais",
+        "secrets": "Segredos locais",
+        "families": "Famílias e crianças",
+        "groups": "Grupos e amigos",
+        "travellers": "Informações para viajantes",
+        "custom": "Outro guia editorial"
+      },
+      "sharedPagesLink": "Editar CTA de alojamento",
+      "sharedSettingsLink": "Editar ícones partilhados"
+    },
+    "hours": "Horário",
+    "website": "Site",
+    "book": "Reservar"
   },
   "common": {
     "tagline": "Alojamento mobilado premium em Lisboa"

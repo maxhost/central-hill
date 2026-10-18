@@ -69,7 +69,7 @@ export async function saveGuidePage(raw: unknown): Promise<GuideActionResult> {
       { name: "source", run: () => setSourceContent(GUIDE_PAGE, input.id, input.source, { updatedBy: staff.userId }) },
     ];
     return runGuideWrite(input.id, steps, () => invalidate(input.id));
-  } catch { return fail("server"); }
+  } catch (error) { console.error("[guides:action]", error); return fail("server"); }
 }
 export async function saveGuideSection(pageId: string, raw: unknown): Promise<GuideActionResult> {
   const staff = await requireStaff(["admin", "editor"]);
@@ -96,7 +96,7 @@ export async function saveGuideSection(pageId: string, raw: unknown): Promise<Gu
       { name: "section", run: () => owned ? db.update(guide_section).set({ ...input.changes, updated_at: new Date() }).where(eq(guide_section.id, input.id)) : db.insert(guide_section).values({ id: input.id, guide_page_id: pageId, layout: "standard", position: section.position, header_media_id: section.header_media_id, cta_url: section.cta_url, presentation: section.presentation }) },
       { name: "source", run: () => setSourceContent(GUIDE_SECTION, input.id, input.source, { updatedBy: staff.userId }) },
     ], () => invalidate(pageId));
-  } catch { return fail("server"); }
+  } catch (error) { console.error("[guides:action]", error); return fail("server"); }
 }
 export async function saveGuidePlace(pageId: string, sectionId: string, raw: unknown): Promise<GuideActionResult> {
   const staff = await requireStaff(["admin", "editor"]);
@@ -127,7 +127,7 @@ export async function saveGuidePlace(pageId: string, sectionId: string, raw: unk
       { name: "place", run: () => owned ? db.update(guide_place).set({ ...input.changes, updated_at: new Date() }).where(eq(guide_place.id, input.id)) : db.insert(guide_place).values({ id, guide_section_id: sectionId, ...columns }) },
       { name: "source", run: () => setSourceContent(GUIDE_PLACE, input.id, input.source, { updatedBy: staff.userId }) },
     ], () => invalidate(pageId));
-  } catch { return fail("server"); }
+  } catch (error) { console.error("[guides:action]", error); return fail("server"); }
 }
 async function reorder(pageId: string, sectionId: string | null, orderedIds: string[]): Promise<GuideActionResult> {
   await requireStaff(["admin", "editor"]);
@@ -143,7 +143,7 @@ async function reorder(pageId: string, sectionId: string | null, orderedIds: str
     const errors = await treeErrors(bundle.data);
     if (Object.keys(errors).length) return invalid(errors);
     return runGuideWrite(pageId, orderedIds.map((id, position) => ({ name: `order:${id}`, run: () => parent ? db.update(guide_place).set({ position, updated_at: new Date() }).where(eq(guide_place.id, id)) : db.update(guide_section).set({ position, updated_at: new Date() }).where(eq(guide_section.id, id)) })), () => invalidate(pageId));
-  } catch { return fail("server"); }
+  } catch (error) { console.error("[guides:action]", error); return fail("server"); }
 }
 export async function reorderGuideSections(pageId: string, orderedIds: string[]) { return reorder(pageId, null, orderedIds); }
 export async function reorderGuidePlaces(pageId: string, sectionId: string, orderedIds: string[]) { return reorder(pageId, sectionId, orderedIds); }
@@ -160,7 +160,7 @@ export async function deleteGuidePlace(pageId: string, sectionId: string, id: st
     const errors = await treeErrors(page);
     if (Object.keys(errors).length) return invalid(errors);
     return runGuideWrite(id, [{ name: "place-translations", run: () => deleteContent(GUIDE_PLACE, id) }, { name: "place", run: () => db.delete(guide_place).where(eq(guide_place.id, id)) }], () => invalidate(pageId));
-  } catch { return fail("server"); }
+  } catch (error) { console.error("[guides:action]", error); return fail("server"); }
 }
 export async function deleteGuideSection(pageId: string, id: string): Promise<GuideActionResult> {
   await requireStaff(["admin", "editor"]);
@@ -178,5 +178,5 @@ export async function deleteGuideSection(pageId: string, id: string): Promise<Gu
       { name: "section-translations", run: () => deleteContent(GUIDE_SECTION, id) },
       { name: "section", run: () => db.delete(guide_section).where(eq(guide_section.id, id)) },
     ], () => invalidate(pageId));
-  } catch { return fail("server"); }
+  } catch (error) { console.error("[guides:action]", error); return fail("server"); }
 }

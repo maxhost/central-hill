@@ -119,8 +119,32 @@
         "website_url": "Website URL",
         "booking_url": "Booking URL",
         "media_id": "Place photo"
-      }
-    }
+      },
+      "clearSourceWarning": "Clearing source text removes its translations in every language. Hiding modules keeps them.",
+      "createFirst": "Save this draft guide before adding sections.",
+      "allTemplates": "All editorial categories",
+      "moduleInherited": "Switching a module off hides its fields and keeps its content.",
+      "sectionSummary": "{places} places · {photos} photos",
+      "saving": "Saving…",
+      "noCity": "Create a city first in Cities.",
+      "optional": "Optional",
+      "templates": {
+        "landing": "Things to do",
+        "eat": "Food and drink",
+        "beaches": "Beaches",
+        "events": "Events and festivals",
+        "secrets": "Local secrets",
+        "families": "Families and children",
+        "groups": "Groups and friends",
+        "travellers": "Traveller information",
+        "custom": "Other editorial guide"
+      },
+      "sharedPagesLink": "Edit shared accommodation CTA",
+      "sharedSettingsLink": "Edit shared icons"
+    },
+    "hours": "Opening hours",
+    "website": "Website",
+    "book": "Book"
   },
   "common": {
     "tagline": "Premium furnished rentals in Lisbon"

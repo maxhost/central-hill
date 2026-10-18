@@ -119,8 +119,32 @@
         "website_url": "URL del sitio",
         "booking_url": "URL de reserva",
         "media_id": "Foto del lugar"
-      }
-    }
+      },
+      "clearSourceWarning": "Vaciar texto de origen elimina sus traducciones en todos los idiomas. Ocultar módulos las conserva.",
+      "createFirst": "Guarda el borrador antes de añadir secciones.",
+      "allTemplates": "Todas las categorías editoriales",
+      "moduleInherited": "Desactivar un módulo oculta sus campos y conserva el contenido.",
+      "sectionSummary": "{places} lugares · {photos} fotos",
+      "saving": "Guardando…",
+      "noCity": "Primero crea una ciudad en Ciudades.",
+      "optional": "Opcional",
+      "templates": {
+        "landing": "Qué hacer",
+        "eat": "Comer y beber",
+        "beaches": "Playas",
+        "events": "Eventos y festivales",
+        "secrets": "Secretos locales",
+        "families": "Familias y niños",
+        "groups": "Grupos y amigos",
+        "travellers": "Información para viajeros",
+        "custom": "Otra guía editorial"
+      },
+      "sharedPagesLink": "Editar CTA de alojamiento",
+      "sharedSettingsLink": "Editar iconos compartidos"
+    },
+    "hours": "Horario",
+    "website": "Sitio web",
+    "book": "Reservar"
   },
   "common": {
     "tagline": "Alquileres premium amueblados en Lisboa"

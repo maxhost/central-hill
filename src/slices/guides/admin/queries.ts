@@ -1,8 +1,8 @@
 import "server-only";
-import { asc, eq, inArray } from "drizzle-orm";
+import { asc, eq, inArray, sql } from "drizzle-orm";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
-import { loadContent, loadAlternateSlugs } from "@core/i18n/content";
+import { loadContent, loadAlternateSlugs, loadSlugs } from "@core/i18n/content";
 import { resolveMediaPreviews } from "@slices/backoffice/contract";
 import { listGuideCityOptions } from "@slices/geography/contract";
 import { GUIDE_PAGE, GUIDE_SECTION, GUIDE_PLACE } from "../contract";
@@ -49,15 +49,28 @@ export async function getGuideForEdit(id: string): Promise<GuideEditBundle | nul
 }
 export async function listGuidesAdmin(filter: { cityId?: string; status?: string; search?: string } = {}): Promise<GuideAdminListItem[]> {
   await requireStaff(["admin", "editor"]);
-  const rows = await db.select().from(guide_page).orderBy(asc(guide_page.position), asc(guide_page.id));
-  const bundles = await Promise.all(rows.map(row => getGuideForEdit(row.id)));
-  return bundles.filter((b): b is GuideEditBundle => Boolean(b)).filter(({ data }) =>
-    (!filter.cityId || data.city_id === filter.cityId) && (!filter.status || data.status === filter.status) &&
-    (!filter.search || data.title.toLowerCase().includes(filter.search.toLowerCase()))
-  ).map(({ data, cities, publishedUrl }) => ({
-    id: data.id, title: data.title || data.slug, city_id: data.city_id,
-    city: cities.find(c => c.id === data.city_id)?.name ?? data.city_id,
-    template: data.template, status: data.status, position: data.position,
-    sections: data.sections.length, places: data.sections.reduce((n, s) => n + s.places.length, 0), publishedUrl,
-  }));
+  const rows = await db.select({
+    id: guide_page.id, slug: guide_page.slug, city_id: guide_page.city_id,
+    template: guide_page.template, status: guide_page.status, position: guide_page.position,
+    sections: sql<number>`count(distinct ${guide_section.id})::int`,
+    places: sql<number>`count(distinct ${guide_place.id})::int`,
+  }).from(guide_page)
+    .leftJoin(guide_section, eq(guide_section.guide_page_id, guide_page.id))
+    .leftJoin(guide_place, eq(guide_place.guide_section_id, guide_section.id))
+    .groupBy(guide_page.id).orderBy(asc(guide_page.position), asc(guide_page.id));
+  const [cities, content, slugs] = await Promise.all([
+    listGuideCityOptions(), loadContent(rows.map(p => ({ type: GUIDE_PAGE, id: p.id })), "en"),
+    loadSlugs(GUIDE_PAGE, rows.map(p => p.id), "en"),
+  ]);
+  return rows.map(row => {
+    const city = cities.find(c => c.id === row.city_id);
+    const slug = slugs.get(row.id);
+    return {
+      ...row, title: content.get(GUIDE_PAGE, row.id, "title") ?? row.slug,
+      city: city?.name ?? row.city_id,
+      publishedUrl: row.status === "published" && city?.status === "published" && slug ? `/en/guides/${city.slug}/${slug}` : null,
+    };
+  }).filter(row => (!filter.cityId || row.city_id === filter.cityId) &&
+    (!filter.status || row.status === filter.status) &&
+    (!filter.search || row.title.toLowerCase().includes(filter.search.toLowerCase())));
 }

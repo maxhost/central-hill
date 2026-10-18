@@ -119,8 +119,32 @@
         "website_url": "URL du site",
         "booking_url": "URL de réservation",
         "media_id": "Photo du lieu"
-      }
-    }
+      },
+      "clearSourceWarning": "Effacer le texte source supprime ses traductions dans toutes les langues. Masquer les modules les conserve.",
+      "createFirst": "Enregistrez ce brouillon avant d’ajouter des sections.",
+      "allTemplates": "Toutes les catégories éditoriales",
+      "moduleInherited": "Désactiver un module masque ses champs et conserve son contenu.",
+      "sectionSummary": "{places} lieux · {photos} photos",
+      "saving": "Enregistrement…",
+      "noCity": "Créez d’abord une ville dans Villes.",
+      "optional": "Facultatif",
+      "templates": {
+        "landing": "Que faire",
+        "eat": "Gastronomie",
+        "beaches": "Plages",
+        "events": "Événements et festivals",
+        "secrets": "Secrets locaux",
+        "families": "Familles et enfants",
+        "groups": "Groupes et amis",
+        "travellers": "Informations voyageurs",
+        "custom": "Autre guide éditorial"
+      },
+      "sharedPagesLink": "Modifier le CTA hébergement",
+      "sharedSettingsLink": "Modifier les icônes partagées"
+    },
+    "hours": "Horaires",
+    "website": "Site web",
+    "book": "Réserver"
   },
   "common": {
     "tagline": "Locations meublées premium à Lisbonne"
