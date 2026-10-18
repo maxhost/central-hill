@@ -9,7 +9,7 @@ import {
   type GuideRecommendation,
   type GuideRecommendationType,
 } from "../../contract";
-import { placeDirectionsUrl, priceTierSymbol } from "../format";
+import { placeDirectionsUrl, placePhoneHref, priceTierSymbol, safeGuideHttpUrl } from "../format";
 
 // One cell of the listing's 3/2/1-column grid — the same `sizes` as `GuideCard`.
 const CARD_SIZES = "(max-width: 680px) 100vw, (max-width: 980px) 50vw, 420px";
@@ -23,7 +23,7 @@ const IMG_CLASS =
   "h-full w-full object-cover transition-transform duration-[600ms] ease-in-out group-hover:scale-[1.04]";
 
 // The `.pcard` shell. The listing card is a link and lifts on hover; the detail's place card is
-// a plain `<article>` (it has nowhere to go but its own "Directions" link), so it stays still.
+// a plain `<article>` with individual practical links, so it stays still.
 const CARD_CLASS = "group block overflow-hidden border border-line bg-surface leading-[1.6] text-ink";
 const CARD_HOVER =
   "transition-[transform,box-shadow] duration-300 ease-in-out hover:-translate-y-1 hover:shadow-[0_20px_44px_-26px_rgba(0,0,0,0.42)]";
@@ -39,12 +39,15 @@ type RecProps = {
 
 /**
  * The guide detail usage: one `GuidePlace` of a section, with the footer row (phone ·
- * "Directions →"). Every field is optional on a place, so each part renders only when present.
+ * "Directions →"), optional hours and website/booking links. Every practical field is optional.
  */
 type PlaceProps = {
   place: GuidePlace;
   /** Pre-translated "Directions" label (the arrow is appended here). */
   directionsLabel: string;
+  hoursLabel: string;
+  websiteLabel: string;
+  bookingLabel: string;
   rec?: never;
 };
 
@@ -102,13 +105,17 @@ export function RecommendationCard(
     );
   }
 
-  const { place, directionsLabel } = props;
+  const { place, directionsLabel, hoursLabel, websiteLabel, bookingLabel } = props;
   const category = place.category?.trim() || null;
   const known = RECOMMENDATION_TYPES.find((type) => type === category?.toLowerCase());
   const typeLabel = (known && typeLabels[known]) || category;
   const price = priceTierSymbol(place.priceTier);
   const directions = placeDirectionsUrl(place);
   const phone = place.phone?.trim() || null;
+  const phoneHref = placePhoneHref(phone);
+  const website = safeGuideHttpUrl(place.websiteUrl);
+  const booking = safeGuideHttpUrl(place.bookingUrl);
+  const hours = place.openingHours?.trim();
 
   return (
     <article className={CARD_CLASS}>
@@ -121,15 +128,26 @@ export function RecommendationCard(
         address={place.address}
         pinIcon={pinIcon}
       >
+        {hours ? (
+          <p className="mt-[14px] whitespace-pre-line text-[13px] text-ink-soft">
+            <span className="font-semibold">{hoursLabel}: </span>{hours}
+          </p>
+        ) : null}
+        {website || booking ? (
+          <div className="mt-[14px] flex flex-wrap gap-x-5 gap-y-3 text-[13px] font-semibold text-accent-deep">
+            {website ? <a href={website} target="_blank" rel="noopener noreferrer" className="hover:underline">{websiteLabel} →</a> : null}
+            {booking ? <a href={booking} target="_blank" rel="noopener noreferrer" className="hover:underline">{bookingLabel} →</a> : null}
+          </div>
+        ) : null}
         {phone || directions ? (
           // `.rec-foot` (mock/guide-detail.html): hairline, phone left, directions right.
-          <div className="mt-4 flex items-center justify-between gap-3 border-t border-line pt-[14px] text-[13px] text-ink-soft">
-            {phone ? (
-              <a href={`tel:${phone.replace(/[^\d+]/g, "")}`} className="hover:text-ink">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-[14px] text-[13px] text-ink-soft">
+            {phoneHref ? (
+              <a href={phoneHref} className="hover:text-ink">
                 {phone}
               </a>
             ) : (
-              <span />
+              <span>{phone}</span>
             )}
             {directions ? (
               <a

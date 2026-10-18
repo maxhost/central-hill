@@ -32,6 +32,8 @@ import {
 } from "../contract";
 import { normalizedRecommendationScope, recommendationScopeKey, type GuideRecommendationScope } from "./recommendation-scope";
 import { guide_page, guide_place, guide_section } from "../schema";
+import { applyGuideSectionPresentation, isGuideModuleVisible } from "../presentation";
+import { safeGuideHttpUrl } from "../ui/format";
 
 /**
  * Public read functions for slice `guides` (conventions.md → reads go through typed,
@@ -79,7 +81,7 @@ async function _listGuideCityGroups(locale: Locale): Promise<GuideCityGroup[]> {
     })
     .from(guide_page)
     .where(eq(guide_page.status, "published"))
-    .orderBy(asc(guide_page.position));
+    .orderBy(asc(guide_page.position), asc(guide_page.id));
   if (rows.length === 0) return [];
 
   // Cities come from geography's contract (only published cities are returned).
@@ -180,10 +182,11 @@ async function _getGuidePage(
       layout: guide_section.layout,
       header_media_id: guide_section.header_media_id,
       cta_url: guide_section.cta_url,
+      presentation: guide_section.presentation,
     })
     .from(guide_section)
     .where(eq(guide_section.guide_page_id, id))
-    .orderBy(asc(guide_section.position));
+    .orderBy(asc(guide_section.position), asc(guide_section.id));
 
   const sectionIds = sectionRows.map((s) => s.id);
   const placeRows = sectionIds.length
@@ -204,7 +207,7 @@ async function _getGuidePage(
         })
         .from(guide_place)
         .where(inArray(guide_place.guide_section_id, sectionIds))
-        .orderBy(asc(guide_place.position))
+        .orderBy(asc(guide_place.position), asc(guide_place.id))
     : [];
 
   // One batched [T] + media load for the whole tree.
@@ -274,10 +277,13 @@ async function _getGuidePage(
     placesBySection.set(p.guide_section_id, list);
   }
 
-  const sections: GuideSection[] = sectionRows.map((s) => {
+  // Filter here so every public consumer (including gallery, TOC and counts) sees the same tree.
+  // Admin reads use their own unfiltered query and retain hidden content.
+  const sections: GuideSection[] = sectionRows.flatMap((s) => {
     const ctaLabel = content.get(GUIDE_SECTION, s.id, "cta_label") ?? undefined;
     const sTitle = content.get(GUIDE_SECTION, s.id, "title") ?? "";
-    return {
+    const ctaUrl = safeGuideHttpUrl(s.cta_url);
+    const section = applyGuideSectionPresentation({
       id: s.id,
       layout: s.layout as GuideLayout,
       title: sTitle,
@@ -291,9 +297,10 @@ async function _getGuidePage(
             TILE_H,
           )
         : null,
-      cta: ctaLabel && s.cta_url ? { label: ctaLabel, url: s.cta_url } : null,
+      cta: ctaLabel && ctaUrl ? { label: ctaLabel, url: ctaUrl } : null,
       places: placesBySection.get(s.id) ?? [],
-    };
+    }, s.presentation);
+    return section ? [section] : [];
   });
 
   const cityRef: GuideCityRef = { id: city.id, slug: city.slug, name: city.name };
@@ -353,7 +360,8 @@ export function getGuidePage(
  *    asset), a `category` and a non-blank `address` — i.e. everything the card shows.
  * 2. The category must equal one of `RECOMMENDATION_TYPES` (case-insensitive, trimmed).
  * 3. Candidates are walked in reading order — guide `position`, then section `position`,
- *    then place `position` — and the **first** match per type wins.
+ *    then place `position` (ID breaks ties at each level) — and the **first** match per type wins.
+ *    Hidden sections and disabled places modules never participate.
  * 4. Output follows `RECOMMENDATION_TYPES` order (Restaurant, Viewpoint, Beach); a type with
  *    no candidate is skipped (so the result may be shorter than `limit`, or empty).
  */
@@ -366,6 +374,7 @@ async function _listTopRecommendations(locale: Locale, limit: number, cityIds?: 
       address: guide_place.address,
       media_id: guide_place.media_id,
       page_id: guide_page.id,
+      presentation: guide_section.presentation,
       city_id: guide_page.city_id,
     })
     .from(guide_place)
@@ -380,7 +389,7 @@ async function _listTopRecommendations(locale: Locale, limit: number, cityIds?: 
         inArray(sql<string>`lower(trim(${guide_place.category}))`, [...RECOMMENDATION_TYPES]),
       ),
     )
-    .orderBy(asc(guide_page.position), asc(guide_section.position), asc(guide_place.position));
+    .orderBy(asc(guide_page.position), asc(guide_page.id), asc(guide_section.position), asc(guide_section.id), asc(guide_place.position), asc(guide_place.id));
   if (rows.length === 0) return [];
 
   const cities = await listCities(locale);
@@ -389,7 +398,7 @@ async function _listTopRecommendations(locale: Locale, limit: number, cityIds?: 
   // Candidates per type in reading order (several per type, in case an asset is missing).
   const byType = new Map<GuideRecommendationType, typeof rows>();
   for (const r of rows) {
-    if (!cityById.has(r.city_id) || !r.address?.trim()) continue;
+    if (!cityById.has(r.city_id) || !r.address?.trim() || !isGuideModuleVisible(r.presentation, "places")) continue;
     const type = r.category!.trim().toLowerCase() as GuideRecommendationType;
     const list = byType.get(type) ?? [];
     list.push(r);

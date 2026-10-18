@@ -241,6 +241,9 @@ export async function GuidePageView({
                           key={place.id}
                           place={place}
                           directionsLabel={t("directions")}
+                          hoursLabel={t("hours")}
+                          websiteLabel={t("website")}
+                          bookingLabel={t("book")}
                           typeLabels={recTypeLabels}
                           pinIcon={icons.location}
                         />

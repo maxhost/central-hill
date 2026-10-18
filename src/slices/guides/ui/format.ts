@@ -59,11 +59,32 @@ export function placeDirectionsUrl(place: {
   longitude: number | null;
   address: string | null;
 }): string | null {
-  if (place.latitude !== null && place.longitude !== null) {
+  if (
+    place.latitude !== null && Number.isFinite(place.latitude) && Math.abs(place.latitude) <= 90 &&
+    place.longitude !== null && Number.isFinite(place.longitude) && Math.abs(place.longitude) <= 180
+  ) {
     return `https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`;
   }
   const address = place.address?.trim();
   return address
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
     : null;
+}
+
+/** Public links accept absolute HTTP(S) only, including legacy values bypassing admin validation. */
+export function safeGuideHttpUrl(raw: string | null | undefined): string | null {
+  const value = raw?.trim();
+  if (!value || !/^https?:\/\//i.test(value)) return null;
+  try {
+    const url = new URL(value);
+    return (url.protocol === "http:" || url.protocol === "https:") && url.hostname && !url.username && !url.password ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Avoid empty or malformed tel links while preserving the authored display text. */
+export function placePhoneHref(raw: string | null | undefined): string | null {
+  const number = raw?.replace(/[^\d+]/g, "") ?? "";
+  return /^\+?\d+$/.test(number) ? `tel:${number}` : null;
 }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { placeDirectionsUrl, priceTierSymbol, sectionAnchorIds, sectionNumber } from "../ui/format";
+import { placeDirectionsUrl, placePhoneHref, safeGuideHttpUrl, priceTierSymbol, sectionAnchorIds, sectionNumber } from "../ui/format";
 
 /**
  * Slice `guides` presentation helpers (guide detail page). Pure, no DB.
@@ -62,4 +62,26 @@ test("priceTierSymbol", () => {
   assert.equal(priceTierSymbol("budget"), "€");
   assert.equal(priceTierSymbol("premium"), "€€€");
   assert.equal(priceTierSymbol(null), null);
+});
+
+
+test("safeGuideHttpUrl accepts absolute HTTP(S) and rejects executable, relative and malformed legacy links", () => {
+  for (const value of ["https://example.com/path?q=1", "http://example.com", "HTTPS://example.com", "  https://example.com  "]) {
+    assert.equal(safeGuideHttpUrl(value), value.trim());
+  }
+  for (const value of [null, undefined, "", " ", "javascript:alert(1)", "data:text/html,x", "file:///tmp/a", "//example.com", "/relative", "https:", "https://", "https://user:pass@example.com"]) {
+    assert.equal(safeGuideHttpUrl(value), null);
+  }
+});
+
+test("placePhoneHref retains display formatting outside href and never creates empty tel links", () => {
+  assert.equal(placePhoneHref("+351 (21) 123-4567"), "tel:+351211234567");
+  assert.equal(placePhoneHref("211234567"), "tel:211234567");
+  for (const value of [null, undefined, "", "call us", "+", "++351", "12+34"]) assert.equal(placePhoneHref(value), null);
+});
+
+test("directions fall back to safely encoded address for invalid legacy coordinates", () => {
+  for (const [latitude, longitude] of [[NaN, 0], [0, Infinity], [91, 0], [0, -181]]) {
+    assert.equal(placeDirectionsUrl({ latitude: latitude!, longitude: longitude!, address: "javascript:alert(1)" }), "https://www.google.com/maps/search/?api=1&query=javascript%3Aalert(1)");
+  }
 });
