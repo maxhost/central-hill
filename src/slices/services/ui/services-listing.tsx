@@ -1,111 +1,48 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { FeatureCtaBand, Hero, IconFeatureGrid, Reveal, SectionHead } from "@core/ui";
-import { Icon } from "@core/ui/icon";
-import { SITE_ICON_DEFAULTS, getGlobals } from "@slices/settings/contract";
+import { Reveal } from "@core/ui";
+import {
+  getServicesPage,
+  ServicesHero,
+  ServicesIntro,
+  ServicesHowItWorks,
+  ServicesFinalCta,
+} from "@slices/pages/contract";
 import { listServices } from "../contract";
 import { ServiceCard } from "./components/service-card";
 
-/**
- * Guest services listing (`mock/services.html`), composed entirely from `core/ui` and slice
- * React components; no `.mk` wrapper, raw HTML strings or page `<style>` remain. Copy comes
- * from the `services.*` messages (all four locales); the cards come from the DB.
- *
- * Sections, top to bottom:
- * - Hero: `Hero` (compact, centred) with exactly the Buildings listing hero configuration
- *   (consistency over mock fidelity, as on Guests and Real Estate). Fixed mock photo.
- * - Services grid: a centred `SectionHead`, then the published services (`listServices`, in
- *   their admin-set `position` order) as this slice's `ServiceCard`, 3 → 2 → 1 columns. An
- *   empty catalogue shows the `services.empty` line instead of the grid.
- * - "How It Works": `IconFeatureGrid`.
- * - Closing CTA: `FeatureCtaBand` with Owners' `#start` configuration. Its contact line is
- *   the `ctaNote` message plus the email/WhatsApp from company_settings (`getGlobals`), so the
- *   contact details are edited once in /admin/settings.
- *
- * Every section uses the standard page shell (`clamp(72px,10vw,150px)` padding, 84px scroll
- * margin, 1240px/28px column). Entrance motion is `Reveal`, with the same `<noscript>` rule
- * as Home/Guests. Icons (card category, How It Works) are `core/ui` `<Icon>` (inline Iconoir
- * SVG, ADR 0034), so the route needs no icon stylesheet.
- *
- * ISR: `listServices` is cached under `SERVICE_TAGS.list`, which the services admin publish
- * flow revalidates, so publishing a service refreshes this page.
- */
-
-const HERO_IMG =
-  "https://images.unsplash.com/photo-1469022563428-aa04fef9f5a2?auto=format&fit=crop&w=1900&q=70";
-const HERO_ALT = "Sunlit Lisbon street with pastel façades and a tram climbing the hill";
-const CTA_IMG =
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=70";
-const CTA_ALT =
-  "Bright, elegantly furnished living room with a city outlook in one of our Lisbon apartments";
-
-const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
-const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
-
+/** Pages owns the fixed editorial sections; Services retains its tagged, ordered catalogue. */
 export async function ServicesListing({ locale }: { locale: Locale }) {
   setRequestLocale(locale);
-  const [services, globals, t] = await Promise.all([
+  const [services, page, t] = await Promise.all([
     listServices(locale),
-    getGlobals(locale),
-    getTranslations("services"),
+    getServicesPage(locale),
+    getTranslations({ locale, namespace: "services" }),
   ]);
-  // Site icons (Settings → "Site icons", ADR 0034 amendment 2).
-  const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
-
-  // The message ends in a full stop; drop it so the joined line reads "… team · email · …".
-  const contactLine = [
-    t("ctaNote").replace(/\.$/, ""),
-    globals?.email,
-    globals?.whatsapp ? `WhatsApp ${globals.whatsapp}` : null,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
   return (
     <>
-      {/* Hero: Buildings listing's exact `Hero` configuration (see that page). */}
-      <Hero
-        background={
-          // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
-          <img src={HERO_IMG} alt={HERO_ALT} className="absolute inset-0 -z-10 h-full w-full object-cover" />
-        }
-        compact
-        align="center"
-        overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.5)_0%,rgba(18,16,13,0.46)_45%,rgba(18,16,13,0.88)_100%)]"
-        wrapClassName="mx-auto max-w-[1600px] p-10"
-        copyClassName="max-w-none"
-        headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
-        subtitleClassName="mt-5 max-w-[60ch] text-lg"
-        eyebrow={t("eyebrow")}
-        headline={t("title")}
-        subtitle={t("intro")}
-      />
+      <ServicesHero page={page} locale={locale} />
       {/* Every `Reveal` renders hidden on the server; this keeps them visible with JS off. */}
       <noscript>
         <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
       </noscript>
 
-      {/* Services grid: centred `SectionHead`, then the DB-backed `ServiceCard`s. */}
-      <section id="services" className={SECTION_SHELL}>
-        <div className={SECTION_WRAP}>
-          <Reveal>
-            <SectionHead
-              align="center"
-              eyebrow={t("gridEyebrow")}
-              headline={t("gridTitle")}
-              intro={t("gridIntro")}
-            />
-          </Reveal>
+      <section
+        id="services"
+        className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]"
+      >
+        <div className="mx-auto max-w-[1240px] px-[28px]">
+          <ServicesIntro page={page} locale={locale} />
           {services.length > 0 ? (
             <Reveal label="services-grid">
               <div className="grid grid-cols-1 gap-[26px] min-[681px]:grid-cols-2 min-[981px]:grid-cols-3">
-                {services.map((s, i) => (
+                {services.map((service, index) => (
                   <ServiceCard
-                    key={s.id}
-                    service={s}
+                    key={service.id}
+                    service={service}
                     locale={locale}
                     viewLabel={t("viewDetails")}
-                    priority={i < 3}
+                    priority={index < 3}
                   />
                 ))}
               </div>
@@ -115,47 +52,8 @@ export async function ServicesListing({ locale }: { locale: Locale }) {
           )}
         </div>
       </section>
-
-      <Reveal label="services-how-it-works">
-        <IconFeatureGrid
-          eyebrow={t("howEyebrow")}
-          headline={t("howTitle")}
-          items={[
-            {
-              icon: <Icon name={icons.services_how_1} size={24} className="block" />,
-              title: t("how1Title"),
-              description: t("how1Body"),
-            },
-            {
-              icon: <Icon name={icons.services_how_2} size={24} className="block" />,
-              title: t("how2Title"),
-              description: t("how2Body"),
-            },
-            {
-              icon: <Icon name={icons.services_how_3} size={24} className="block" />,
-              title: t("how3Title"),
-              description: t("how3Body"),
-            },
-          ]}
-        />
-      </Reveal>
-
-      {/* Closing CTA: Owners' `#start` `FeatureCtaBand` configuration. */}
-      <div id="plan" className="scroll-mt-[84px]">
-        <Reveal label="services-cta">
-          <FeatureCtaBand
-            eyebrow={t("ctaEyebrow")}
-            headline={t("ctaTitle")}
-            body={t("ctaIntro")}
-            cta={{ href: `/${locale}/buildings`, label: `${t("ctaButton")} →` }}
-            contactLine={contactLine || undefined}
-            image={
-              // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
-              <img src={CTA_IMG} alt={CTA_ALT} loading="lazy" className="aspect-[4/5] w-full rounded-sm object-cover" />
-            }
-          />
-        </Reveal>
-      </div>
+      <ServicesHowItWorks page={page} locale={locale} />
+      <ServicesFinalCta page={page} locale={locale} />
     </>
   );
 }
