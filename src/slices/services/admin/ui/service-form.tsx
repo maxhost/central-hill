@@ -485,6 +485,7 @@ export function ServiceForm({
         </AdminCard>
         <AdminCard title={t("admin.sections.media")}>
           <div className="space-y-5">
+            <p className="text-sm text-ink-soft">{tp("mediaAltHint")}</p>
             <Field
               label={t("admin.fields.cover")}
               required
