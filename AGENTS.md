@@ -7,7 +7,12 @@ Read [CLAUDE.md](CLAUDE.md) for architecture and [docs/multi-agent-workflow.md](
 Services editor implemented and independently QA-approved; local integration delivery recorded in
 [Services handoff 2026-10-18](docs/specs/handoff-services-2026-10-18.md).
 See the [Services editor spec](docs/specs/services-admin-editor.md) and
-[QA evidence](docs/specs/services-admin-editor-qa.md). No next implementation is assigned yet.
+[QA evidence](docs/specs/services-admin-editor-qa.md).
+Active task: execution spec for individual service editors and conditional sections;
+see [Service detail editor execution spec](docs/specs/service-detail-editor-execution.md)
+and its [audit](docs/specs/service-detail-editor-audit-2026-10-18.md).
+Preparation only: implementation agents have not been launched; contracts and isolated
+environment must pass the spec's G0/G1 gates before delegating writers.
 Update this pointer when the active task changes.
 
 ## Working agreement
