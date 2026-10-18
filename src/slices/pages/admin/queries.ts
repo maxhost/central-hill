@@ -1,4 +1,6 @@
 import "server-only";
+import { getTranslations } from "next-intl/server";
+import { blogEditorDefaults, blogInheritedValues } from "./blog-defaults";
 import { aboutEditorDefaults } from "./about-defaults";
 import { aboutRevision } from "./about-save";
 import { eq } from "drizzle-orm";
@@ -35,6 +37,8 @@ export async function listPagesAdmin(): Promise<PageAdminListItem[]> {
 }
 
 export interface PageEditBundle {
+  pageId?: string;
+  inheritedValues?: Record<string, string>;
   revision?: string;
   key: PageKey;
   data: Record<string, unknown>;
@@ -50,18 +54,21 @@ export async function getPageForEdit(key: PageKey): Promise<PageEditBundle> {
   const data = (row?.data as Record<string, unknown>) ?? {};
   const ogImageMediaId = row?.og_image_media_id ?? null;
 
-  const guideDefaults = key === "guides" ? guidesEditorDefaults(row?.data, Boolean(row)) : key === "about" ? aboutEditorDefaults(row?.data, Boolean(row)) : undefined;
-  const editableData = guideDefaults?.data ?? data;
+  const editorDefaults = key === "blog" ? blogEditorDefaults(row?.data, Boolean(row)) : key === "guides" ? guidesEditorDefaults(row?.data, Boolean(row)) : key === "about" ? aboutEditorDefaults(row?.data, Boolean(row)) : undefined;
+  const editableData = editorDefaults?.data ?? data;
   const ids = collectMediaIds(editableData);
-  if (ogImageMediaId && !guideDefaults?.sourceInvalid) ids.push(ogImageMediaId);
+  if (ogImageMediaId && !editorDefaults?.sourceInvalid) ids.push(ogImageMediaId);
   const previews = await resolvePreviews(ids);
 
+  const englishBlog = key === "blog" ? await getTranslations({ locale: "en", namespace: "blog" }) : undefined;
   return {
+    pageId: row?.id,
+    inheritedValues: englishBlog ? blogInheritedValues(englishBlog) : undefined,
     revision: key === "about" ? aboutRevision(row) : undefined,
     key,
     data: editableData,
-    sourceStatus: guideDefaults?.sourceStatus,
-    sourceInvalid: guideDefaults?.sourceInvalid,
+    sourceStatus: editorDefaults?.sourceStatus,
+    sourceInvalid: editorDefaults?.sourceInvalid,
     ogImageMediaId,
     previews,
   };

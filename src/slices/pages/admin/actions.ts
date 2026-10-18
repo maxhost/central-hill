@@ -12,14 +12,16 @@ import { db } from "@core/db/client";
 import { page_content } from "../schema";
 import { pageKey, pageSchemas } from "../schemas";
 import { revalidatePage } from "../server/publish";
+import { saveBlog } from "./blog-save";
+import type { BlogContent } from "../schemas/blog";
 import { saveAbout } from "./about-save";
 import type { AboutContent } from "../schemas/about";
 
 /**
  * Backoffice write action for slice `pages` (S12, ADR 0012). The page's source
  * content is the `data` jsonb, validated against its **fixed per-page schema** — the
- * single source of truth for shape. No translation-table writes: source lives in
- * `data`; target locales are S14's job. On success the page's ISR tag + localized
+ * single source of truth for shape. Blog and About atomically sync source fields
+ * through the i18n contract; target locales remain S14's responsibility. On success the page's ISR tag + localized
  * paths are revalidated. `requireStaff`-gated + re-validated.
  */
 
@@ -60,6 +62,11 @@ export async function savePage(
   const ogImage = payload.og_image_media_id || null;
 
   try {
+    if (key === "blog") {
+      const result = await saveBlog(dataParsed.data as BlogContent, ogImage, staff.userId);
+      if (result.ok) revalidatePage("blog");
+      return result;
+    }
     if (key === "about") {
       const result = await saveAbout(dataParsed.data as AboutContent, ogImage, payload.revision, staff.userId);
       if (result.ok) revalidatePage("about");

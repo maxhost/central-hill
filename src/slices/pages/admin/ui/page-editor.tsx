@@ -81,8 +81,12 @@ export function PageEditor({
   options,
   sourceInvalid = false,
   revision,
+  pageId,
+  inheritedValues,
 }: {
   pageKey: string;
+  pageId?: string;
+  inheritedValues?: Record<string, string>;
   rootNode: FieldNode;
   initialData: Record<string, unknown>;
   initialOgImageMediaId: string | null;
@@ -110,6 +114,7 @@ export function PageEditor({
   const submittingRef = useRef(false);
   const preparing = queue.isPreparing;
   const invalidSource = sourceInvalid || Boolean(errors._source);
+  const sourceErrorKey = pageKey === "blog" ? "admin.blogSourceInvalid" : pageKey === "about" ? "admin.aboutSourceInvalid" : "admin.guidesSourceInvalid";
   const busy = pending || flushing || preparing || invalidSource || conflict;
 
   const onChange: PathOnChange = (path, value) => {
@@ -163,7 +168,7 @@ export function PageEditor({
         }
         if (result.error === "validation") {
           setErrors(result.fieldErrors);
-          setBanner(result.fieldErrors._source ? t(pageKey === "about" ? "admin.aboutSourceInvalid" : "admin.guidesSourceInvalid") : t("admin.validationError"));
+          setBanner(result.fieldErrors._source ? t(sourceErrorKey) : t("admin.validationError"));
         } else if (result.error === "conflict") {
           setConflict(true);
           setBanner(t("admin.aboutConflict"));
@@ -195,6 +200,7 @@ export function PageEditor({
       <NodeField
         key={f.key}
         pageKey={pageKey}
+        inheritedValues={inheritedValues}
         listIds={pageKey === "about" ? data._list_ids as Record<string, string[]> : undefined}
         onListChange={pageKey === "about" ? onListChange : undefined}
         node={f.node}
@@ -229,12 +235,17 @@ export function PageEditor({
         {t("admin.aboutSourceNote")} {" "}
         <Link href="/admin/translations" className="font-medium text-ink underline underline-offset-2">{tb("nav.translations")}</Link>
       </p> : null}
+      {pageKey === "blog" ? <p className="text-sm text-ink-soft">
+        {t("admin.blogSourceNote")}{" "}
+        <Link href={pageId ? `/admin/translations/page_content/${pageId}` : "/admin/translations"}
+          className="font-medium text-ink underline underline-offset-2">{tb("nav.translations")}</Link>
+      </p> : null}
       {conflict || invalidSource ? <AdminButton variant="ghost" onClick={() => window.location.reload()}>
         {t("admin.reloadSource")}
       </AdminButton> : null}
       {invalidSource ? (
         <p role="alert" className="rounded-md border border-accent/40 bg-surface px-4 py-3 text-sm text-accent-deep">
-          {t(pageKey === "about" ? "admin.aboutSourceInvalid" : "admin.guidesSourceInvalid")}
+          {t(sourceErrorKey)}
         </p>
       ) : null}
       {banner ? (

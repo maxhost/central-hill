@@ -97,6 +97,8 @@ export const SERVICES_CARD_IDS = ["seo", "hero", "intro", "how_it_works", "final
 /** Stable cards of the Guides listing and its shared detail CTA. */
 export const GUIDES_CARD_IDS = ["seo", "hero", "city_filter", "catalogue", "recommendations", "final_cta", "guide_aside"] as const;
 
+export const BLOG_CARD_IDS = ["seo", "hero", "featured", "journal", "newsletter", "post_aside"] as const;
+
 export type EditorCardId =
   | (typeof HOME_CARD_IDS)[number]
   | (typeof OWNERS_CARD_IDS)[number]
@@ -105,7 +107,8 @@ export type EditorCardId =
   | (typeof GUEST_CARD_IDS)[number]
   | (typeof ABOUT_CARD_IDS)[number]
   | (typeof SERVICES_CARD_IDS)[number]
-  | (typeof GUIDES_CARD_IDS)[number];
+  | (typeof GUIDES_CARD_IDS)[number]
+  | (typeof BLOG_CARD_IDS)[number];
 
 /** Id of the fallback card that collects root keys no card claims. */
 export const OTHER_CARD_ID = "other";
@@ -545,6 +548,19 @@ const GUIDES_LAYOUT: EditorLayoutItem[] = [
   },
 ];
 
+const BLOG_LAYOUT: EditorLayoutItem[] = [
+  { kind: "card", id: "seo", titleKey: `${L}.cards.seo`, paths: ["seo"], hostsOgImage: true,
+    note: { textKey: `${L}.notes.seoLimits` } },
+  { kind: "card", id: "hero", titleKey: `${L}.cards.blogHero`, paths: ["hero"] },
+  { kind: "card", id: "featured", titleKey: `${L}.cards.blogFeatured`, paths: ["featured"],
+    note: { textKey: `${L}.notes.blogCatalogue`, link: link("/admin/posts", "blogPosts") } },
+  { kind: "card", id: "journal", titleKey: `${L}.cards.blogJournal`, paths: ["journal"] },
+  { kind: "card", id: "newsletter", titleKey: `${L}.cards.blogNewsletter`, paths: ["newsletter"],
+    note: { textKey: `${L}.notes.blogNewsletter` } },
+  { kind: "card", id: "post_aside", titleKey: `${L}.cards.blogAside`, paths: ["post_aside"],
+    note: { textKey: `${L}.notes.blogAside` } },
+];
+
 const LAYOUTS: Partial<Record<string, EditorLayoutItem[]>> = {
   home: HOME_LAYOUT,
   owners: OWNERS_LAYOUT,
@@ -554,6 +570,7 @@ const LAYOUTS: Partial<Record<string, EditorLayoutItem[]>> = {
   about: ABOUT_LAYOUT,
   services: SERVICES_LAYOUT,
   guides: GUIDES_LAYOUT,
+  blog: BLOG_LAYOUT,
 };
 
 /**

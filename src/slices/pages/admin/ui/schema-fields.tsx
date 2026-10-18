@@ -64,6 +64,7 @@ export function useFieldLabels() {
 
 interface RenderProps {
   pageKey?: string;
+  inheritedValues?: Record<string, string>;
   listIds?: Record<string, string[]>;
   onListChange?: (path: string, operation: AboutListOperation) => void;
   node: FieldNode;
@@ -80,6 +81,7 @@ interface RenderProps {
 export function NodeField(props: RenderProps) {
   const {
     pageKey,
+    inheritedValues,
     listIds,
     onListChange,
     node,
@@ -102,7 +104,8 @@ export function NodeField(props: RenderProps) {
     : undefined;
   const label = guideLabelKey ? t(guideLabelKey) : defaultLabel;
   const hintKey = `admin.${pageKey === "guides" ? "guidesHints" : "servicesHints"}.${path.join(".")}`;
-  const hint = (pageKey === "services" || pageKey === "guides") && node.kind !== "object" && node.kind !== "hidden" && t.has(hintKey)
+  const inheritedValue = inheritedValues?.[errorKey];
+  const hint = pageKey === "blog" && inheritedValue !== undefined ? t("admin.blogInheritedHint") : (pageKey === "services" || pageKey === "guides") && node.kind !== "object" && node.kind !== "hidden" && t.has(hintKey)
     ? t(hintKey)
     : "hint" in node ? node.hint : undefined;
 
@@ -122,6 +125,7 @@ export function NodeField(props: RenderProps) {
       <NodeField
         key={f.key}
         pageKey={pageKey}
+        inheritedValues={inheritedValues}
         listIds={listIds}
         onListChange={onListChange}
         node={f.node}
@@ -203,6 +207,7 @@ export function NodeField(props: RenderProps) {
             </div>
             <NodeField
               pageKey={pageKey}
+              inheritedValues={inheritedValues}
               listIds={listIds}
               onListChange={onListChange}
               node={node.element}
@@ -320,6 +325,7 @@ export function NodeField(props: RenderProps) {
           aria-invalid={Boolean(errors[errorKey])}
           aria-description={errors[errorKey] || hint}
           value={str}
+          placeholder={inheritedValue}
           onChange={(e) => onChange(path, e.target.value)}
         />
       ) : (
@@ -328,6 +334,7 @@ export function NodeField(props: RenderProps) {
           aria-invalid={Boolean(errors[errorKey])}
           aria-description={errors[errorKey] || hint}
           value={str}
+          placeholder={inheritedValue}
           onChange={(e) => onChange(path, e.target.value)}
         />
       )}
