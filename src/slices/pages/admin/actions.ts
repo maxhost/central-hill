@@ -24,7 +24,7 @@ import type { AboutContent } from "../schemas/about";
  */
 
 export type PageSaveResult =
-  | { ok: true }
+  | { ok: true; revision?: string }
   | { ok: false; error: "validation"; fieldErrors: Record<string, string> }
   | { ok: false; error: "bad_key" }
   | { ok: false; error: "conflict" }

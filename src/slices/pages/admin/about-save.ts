@@ -38,7 +38,9 @@ export async function saveAbout(content: AboutContent, og: string | null, revisi
   const result = await db.execute(sql`with saved as (
     insert into page_content (key, data, og_image_media_id) values ('about', ${JSON.stringify(data)}::jsonb, ${og}::uuid)
     on conflict (key) do update set data=excluded.data, og_image_media_id=excluded.og_image_media_id, updated_at=now()
-    where ${guard} returning id
-  ), ${sync} select id from saved`);
-  return result.rows.length ? { ok: true } : { ok: false, error: "conflict" };
+    where ${guard} returning id, data, og_image_media_id, updated_at
+  ), ${sync} select id, data, og_image_media_id, updated_at from saved`);
+  if (!result.rows.length) return { ok: false, error: "conflict" };
+  const saved = result.rows[0] as { data: unknown; og_image_media_id: string | null; updated_at: string };
+  return { ok: true, revision: aboutRevision({ ...saved, updated_at: new Date(saved.updated_at) }) };
 }
