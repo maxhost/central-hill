@@ -1,0 +1,1 @@
+ALTER TABLE "guide_section" ADD COLUMN "presentation" jsonb;

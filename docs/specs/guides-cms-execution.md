@@ -1,6 +1,6 @@
 # CMS de guías individuales — spec y plan de ejecución
 
-Fecha: 2026-10-18. Estado: auditoría y propuesta documental completadas; implementación NO iniciada.
+Fecha: 2026-10-18. Estado: ejecución autorizada por el usuario; G0/G1 en curso.
 Evidencia: [auditoría](guides-cms-audit.md).
 Brief: [guides-cms-audit-brief.md](guides-cms-audit-brief.md).
 Procedimiento: [multi-agent-workflow.md](../multi-agent-workflow.md).
@@ -352,3 +352,43 @@ exit0. `git diff --check`: exit0. Base revisada `8a61bd7`; sin candidato de cód
 Cambios de esta entrega: este archivo nuevo, `guides-cms-audit.md` nuevo y estado de
 `guides-cms-audit-brief.md`. Sin modificaciones de aplicación, dependencias ni entornos.
 G0–G4 de implementación permanecen pendientes de la siguiente instrucción del usuario.
+
+## Arranque autorizado — 2026-10-18
+
+Usuario autorizó «si estás listo lanzas» tras explicar G0/G1. Se autoriza trabajo local
+en ramas de tarea, contratos, implementación y QA; sin push ni despliegue.
+Auditoría capturada en `6a3c1ce`; savepoint de arranque
+`savepoint/pre-guides-cms-implementation-2026-10-18`. El tag anterior
+`savepoint/pre-guides-cms-2026-10-18` ya existía y se conservó intacto.
+Integración: `/private/tmp/central-hill-guides-cms-integration`, rama `guides-cms/integration`,
+base `6a3c1ce`. Sin .env.local; dependencias compartidas por symlink node_modules.
+Entorno nuevo: DB/rol guidescmsqa, contenedor central-hill-guides-cms-db PostgreSQL17,
+host5568; proxy central-hill-guides-cms-proxy host4468, red central-hill-guides-cms-qa.
+S3rver9061, bucketguidescmsqa, PID71268/session76507; futura app3061.
+Env ficticio `/private/tmp/central-hill-guides-cms-qa/env.sh`; preload solo transporte local.
+Migraciones0000..0020 aplicadas en DB nueva, exit0; reservar0021 para presentation.
+Previews3059/3060, contenedores y worktrees anteriores conservados.
+
+### G0/G1 evidencia y contrato de consumidores
+
+- G0 completado: identidad current_database/current_user=guidescmsqa comprobada por Neon
+  HTTP local. Fixtures sintéticas 4ciudades/2guías/6lugares/5imágenes, staff ficticio
+  guidescmsqa@example.test (ID textual) y cuenta local; no credenciales reales.
+- G1: presentación, tipos `admin/model.ts`, patches strict `admin/validation.ts`,
+  acciones por entidad, query bundle/source, media guards y lector Geography disponibles.
+  Payload, nombres y bundles de esta spec se reflejan en esos módulos; consumidores
+  importan tipos puros, acciones desde admin/actions y lecturas desde admin/queries.
+- La columna 0021 se generó con drizzle-kit; SQL aditiva aplicada a la DB aislada y
+  journal registrado. Dos secciones existentes siguen con presentation=null (2/2).
+  `pnpm db:migrate` falló exit1 por transporte websocket del CLI contra entorno local;
+  se aplicó el SQL generado con psql, exit0, sin cambiar la migración.
+- Checks G1 Node22: typecheck exit0 (tras corregir blurhash del fixture nuevo);
+  lint exit0, solo cinco warnings históricos; 41 tests Guides/contratos exit0;
+  db:check exit0 (warning histórico0008 sin breakpoints). Build integrado pendiente
+  de consumidores y QA. No afirmar verificación browser todavía.
+- `node_modules` es un symlink local no versionado a las dependencias del checkout
+  principal; no forma parte del entregable. No se copiarán .env.local remotos.
+- Write sets de A/B se mantienen. Rutas de A pueden importar sus componentes directos
+  como composición del app shell; orquestador añadirá exports de pantalla por contrato
+  tras integrar, sin exportar UI inexistente en G1. Todos los imports entre slices
+  continúan exclusivamente por contract.ts.

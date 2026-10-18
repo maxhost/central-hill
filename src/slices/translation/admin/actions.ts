@@ -8,6 +8,7 @@ import {
   setTranslationState,
 } from "@core/i18n";
 import { cacheTags, revalidatePath, updateTag } from "@core/revalidate";
+import { isGuideTranslationEntity, revalidateGuides } from "@slices/guides/contract";
 import { SOURCE_LOCALE, TARGET_LOCALES } from "./derive";
 import { generateDrafts } from "../server/generate";
 
@@ -34,6 +35,7 @@ function revalidateEntity(type: string, id: string): void {
   revalidatePath(`/admin/translations/${type}/${id}`);
   // Best-effort public refresh: covers both the per-entity and list tag
   // conventions slices use; anything else rides the daily ISR fallback.
+  if (isGuideTranslationEntity(type)) revalidateGuides();
   updateTag(cacheTags.entity(type, id));
   updateTag(cacheTags.list(type));
 }

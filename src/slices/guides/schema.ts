@@ -1,4 +1,4 @@
-import { doublePrecision, integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { doublePrecision, integer, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { pkUuid, timestamps } from "@core/db/columns";
 
 /**
@@ -33,6 +33,7 @@ export const guide_section = pgTable("guide_section", {
     .notNull()
     .default("standard"),
   header_media_id: uuid(), // → media_asset.id (core/media)
+  presentation: jsonb(), // optional neutral module visibility; null preserves historical render
   cta_label: text(),
   cta_url: text(),
   ...timestamps,

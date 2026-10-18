@@ -147,3 +147,10 @@ export {
 
 /** Optional index-only city scope; omitted = global, empty = no recommendations. */
 export type { GuideRecommendationScope } from "./server/recommendation-scope";
+
+/** Staff CMS registration and server invalidation; no UI imports before integration. */
+export { guidesAdminScreens } from "./admin/screens";
+export { revalidateGuides } from "./server/publish";
+export { applyGuideSectionPresentation, isGuideModuleVisible, isGuideSectionVisible, parseGuidePresentation } from "./presentation";
+export type { GuideSectionPresentation, GuideModuleKey } from "./presentation";
+export { isGuideTranslationEntity } from "./presentation";
