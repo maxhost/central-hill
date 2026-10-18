@@ -17,6 +17,7 @@ export function ServiceBookingCard({
   label,
   fromLabel,
   price,
+  priceHidden = false,
   suffix,
   onRequestLabel,
   priceNote,
@@ -31,6 +32,8 @@ export function ServiceBookingCard({
   fromLabel: string;
   /** Formatted price, or null when unpriced. */
   price: string | null;
+  /** Hide monetary copy while retaining rows and booking actions. */
+  priceHidden?: boolean;
   suffix: string | null;
   onRequestLabel: string;
   priceNote?: string;
@@ -43,7 +46,7 @@ export function ServiceBookingCard({
 }) {
   return (
     <StickyAside label={label}>
-      {price ? (
+      {priceHidden ? null : price !== null ? (
         <>
           <div className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-soft">{fromLabel}</div>
           <div className="mt-1.5 font-serif text-[40px] leading-[1.05] text-ink">
@@ -54,7 +57,7 @@ export function ServiceBookingCard({
       ) : (
         <div className="font-serif text-[40px] leading-[1.05] text-ink">{onRequestLabel}</div>
       )}
-      {priceNote ? <div className="mt-1.5 text-[13.5px] text-ink-soft">{priceNote}</div> : null}
+      {!priceHidden && priceNote ? <div className="mt-1.5 text-[13.5px] text-ink-soft">{priceNote}</div> : null}
       {rows.length ? (
         <dl className="my-6 border-t border-line">
           {rows.map((r, i) => (

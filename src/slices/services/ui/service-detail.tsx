@@ -21,12 +21,10 @@ import { SITE_ICON_DEFAULTS, getGlobals, type SiteGlobals } from "@slices/settin
 import {
   getServiceBySlug,
   listServices,
+  resolveServiceIcons,
   type ServiceDetail as ServiceDetailData,
 } from "../contract";
-import {
-  ServiceBookingCard,
-  type BookingAction,
-} from "./components/service-booking-card";
+import { ServiceBookingCard } from "./components/service-booking-card";
 import { ServiceCard } from "./components/service-card";
 import {
   ServiceGoodToKnow,
@@ -38,7 +36,12 @@ import { ServiceOptionGroups } from "./components/service-option-groups";
 import { ServicePartners } from "./components/service-partners";
 import { ServicePhotos } from "./components/service-photos";
 import { ServiceRates } from "./components/service-rates";
-import { formatPrice } from "./format";
+import {
+  createServiceCopyResolver,
+  serviceBookingView,
+  servicePriceView,
+  type ServiceCopyResolver,
+} from "./detail-view-model";
 
 /**
  * Service detail (`/[locale]/services/[slug]`) — the approved `mock/service-detail.html`: ONE
@@ -106,30 +109,28 @@ function splitParagraphs(text: string): string[] {
 const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;
 const waHref = (n: string) => `https://wa.me/${n.replace(/\D/g, "")}`;
 
-type Translate = (key: string, values?: Record<string, string>) => string;
-
 /** Guest-team contact lines for the enquiry intro, from company settings (omitted when unset). */
 function contactLines(
   globals: SiteGlobals | null,
-  t: Translate,
+  copy: ServiceCopyResolver,
 ): EnquiryContactLine[] {
   if (!globals) return [];
   const lines: EnquiryContactLine[] = [];
   if (globals.phone)
     lines.push({
-      label: t("detail.phone"),
+      label: copy("phone"),
       href: telHref(globals.phone),
       text: globals.phone,
     });
   if (globals.whatsapp)
     lines.push({
-      label: t("detail.whatsapp"),
+      label: copy("whatsapp"),
       href: waHref(globals.whatsapp),
       text: globals.whatsapp,
     });
   if (globals.email)
     lines.push({
-      label: t("detail.email"),
+      label: copy("email"),
       href: `mailto:${globals.email}`,
       text: globals.email,
     });
@@ -148,7 +149,6 @@ export async function ServiceDetail({
   const svc: ServiceDetailData | null = await getServiceBySlug(locale, slug);
   if (!svc) notFound();
 
-  const enquiry = svc.bookingType === "enquiry";
   const [all, globals, t] = await Promise.all([
     listServices(locale),
     getGlobals(locale), // site icons; enquiry pages also use the contact details
@@ -157,34 +157,27 @@ export async function ServiceDetail({
 
   const { detail } = svc;
   // Site icons (Settings → "Site icons", ADR 0034 amendment 2).
-  const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
+  const icons = resolveServiceIcons(svc.presentation?.icons, {
+    ...SITE_ICON_DEFAULTS,
+    ...globals?.icons,
+  });
+  const copy = createServiceCopyResolver(
+    svc.copy,
+    (key) => t(`detail.${key}`, key === "enquiryTitle" ? { name: svc.name } : undefined),
+    svc.name,
+  );
   const paragraphs = splitParagraphs(svc.body);
-  const price = formatPrice(svc.priceFrom, locale);
+  const priceView = servicePriceView(svc, locale, copy("onRequest"));
   const experience = svc.category.slug === "experiences";
   const others = all.filter((s) => s.id !== svc.id).slice(0, MORE_MAX);
 
   // ---- actions by booking type -------------------------------------------------------------
-  let primary: BookingAction | undefined;
-  let secondary: BookingAction | undefined;
-  let mobileLabel: string | undefined;
-  if (enquiry) {
-    primary = {
-      href: "#enquire",
-      label: `${t(experience ? "detail.requestExperience" : "detail.requestService")} →`,
-    };
-    mobileLabel = t("detail.requestShort");
-    if (globals?.whatsapp)
-      secondary = {
-        href: waHref(globals.whatsapp),
-        label: t("detail.whatsappCta"),
-      };
-  } else if (svc.bookingType === "external" && svc.cta) {
-    primary = { href: svc.cta.url, label: `${svc.cta.label} →` };
-    mobileLabel = svc.cta.label;
-  } else if (detail.partners.length) {
-    primary = { href: "#partners", label: `${t("detail.seePartners")} →` };
-    mobileLabel = t("detail.seePartners");
-  }
+  const { enquiry, primary, secondary, mobileLabel } = serviceBookingView(
+    svc,
+    copy,
+    t(experience ? "detail.requestExperience" : "detail.requestService"),
+    globals?.whatsapp,
+  );
 
   // ---- gallery ---------------------------------------------------------------------------------
   const photos: MediaImageData[] = [
@@ -203,9 +196,9 @@ export async function ServiceDetail({
   const showAll =
     photos.length > MOSAIC_ADAPTIVE_MAX ? (
       <ServicePhotos
-        label={t("detail.showAllPhotos")}
-        title={t("detail.allPhotos")}
-        closeLabel={t("detail.close")}
+        label={copy("showAllPhotos")}
+        title={copy("allPhotos")}
+        closeLabel={copy("close")}
         icon={<Icon name={icons.service_photos} />}
       >
         {photos.map((p, i) => (
@@ -227,7 +220,7 @@ export async function ServiceDetail({
         {svc.rating.toFixed(1)}
         {svc.rating >= 4.8 ? (
           <span className="font-normal text-ink-soft">
-            · {t("detail.guestFavourite")}
+            · {copy("guestFavourite")}
           </span>
         ) : null}
       </span>,
@@ -260,9 +253,10 @@ export async function ServiceDetail({
 
       {/* 1 · title block */}
       <DetailTitle
-        breadcrumbLabel={t("detail.breadcrumbLabel")}
+        className="[overflow-wrap:anywhere]"
+        breadcrumbLabel={copy("breadcrumbLabel")}
         crumbs={[
-          { label: t("detail.home"), href: `/${locale}` },
+          { label: copy("home"), href: `/${locale}` },
           { label: t("breadcrumb"), href: `/${locale}/services` },
           { label: svc.name },
         ]}
@@ -281,6 +275,7 @@ export async function ServiceDetail({
 
       {/* 3 · body: content column + sticky booking card */}
       <DetailLayout
+        className="[overflow-wrap:anywhere] [&>div]:min-w-0"
         main={
           <>
             {detail.facts.length ? (
@@ -296,10 +291,10 @@ export async function ServiceDetail({
             ) : null}
 
             <ContentBlock
-              eyebrow={t(
+              eyebrow={copy(
                 experience
-                  ? "detail.aboutEyebrowExperience"
-                  : "detail.aboutEyebrowService",
+                  ? "aboutEyebrowExperience"
+                  : "aboutEyebrowService",
               )}
               title={detail.about_title ?? t("detail.aboutTitle")}
             >
@@ -323,7 +318,7 @@ export async function ServiceDetail({
 
             {detail.highlights.length ? (
               <ContentBlock
-                eyebrow={t("detail.includedEyebrow")}
+                eyebrow={copy("includedEyebrow")}
                 title={detail.included_title ?? t("detail.includedTitle")}
               >
                 <ServiceIncluded items={detail.highlights} icon={icons.service_included} />
@@ -333,8 +328,8 @@ export async function ServiceDetail({
             {detail.itinerary.length ? (
               <ContentBlock
                 id="itinerary"
-                eyebrow={t("detail.itineraryEyebrow")}
-                title={t("detail.itineraryTitle")}
+                eyebrow={copy("itineraryEyebrow")}
+                title={copy("itineraryTitle")}
               >
                 <ServiceItinerary
                   steps={detail.itinerary}
@@ -346,8 +341,8 @@ export async function ServiceDetail({
             {detail.option_groups.length ? (
               <ContentBlock
                 id="options"
-                eyebrow={t("detail.optionsEyebrow")}
-                title={t("detail.optionsTitle")}
+                eyebrow={copy("optionsEyebrow")}
+                title={copy("optionsTitle")}
               >
                 <ServiceOptionGroups groups={detail.option_groups} />
               </ContentBlock>
@@ -356,8 +351,8 @@ export async function ServiceDetail({
             {detail.pricing || detail.extras.length ? (
               <ContentBlock
                 id="rates"
-                eyebrow={t("detail.ratesEyebrow")}
-                title={t("detail.ratesTitle")}
+                eyebrow={copy("ratesEyebrow")}
+                title={copy("ratesTitle")}
               >
                 <ServiceRates pricing={detail.pricing} extras={detail.extras} />
               </ContentBlock>
@@ -366,8 +361,8 @@ export async function ServiceDetail({
             {detail.partners.length ? (
               <ContentBlock
                 id="partners"
-                eyebrow={t("detail.partnersEyebrow")}
-                title={t("detail.partnersTitle")}
+                eyebrow={copy("partnersEyebrow")}
+                title={copy("partnersTitle")}
               >
                 <ServicePartners partners={detail.partners} />
               </ContentBlock>
@@ -375,8 +370,8 @@ export async function ServiceDetail({
 
             {hasKnow ? (
               <ContentBlock
-                eyebrow={t("detail.knowEyebrow")}
-                title={t("detail.knowTitle")}
+                eyebrow={copy("knowEyebrow")}
+                title={copy("knowTitle")}
               >
                 <ServiceGoodToKnow
                   data={gtk}
@@ -386,9 +381,9 @@ export async function ServiceDetail({
                     practical: icons.know_practical,
                   }}
                   labels={{
-                    included: t("detail.knowIncluded"),
-                    cancellation: t("detail.knowCancellation"),
-                    practical: t("detail.knowPractical"),
+                    included: copy("knowIncluded"),
+                    cancellation: copy("knowCancellation"),
+                    practical: copy("knowPractical"),
                   }}
                 />
               </ContentBlock>
@@ -397,16 +392,17 @@ export async function ServiceDetail({
         }
         aside={
           <ServiceBookingCard
-            label={t("detail.bookingLabel")}
-            fromLabel={t("detail.from")}
-            price={price}
-            suffix={svc.priceSuffix}
-            onRequestLabel={t("detail.onRequest")}
-            priceNote={detail.price_note}
+            label={copy("bookingLabel")}
+            fromLabel={copy("from")}
+            price={priceView.price}
+            suffix={priceView.suffix}
+            priceHidden={priceView.hidden}
+            onRequestLabel={copy("onRequest")}
+            priceNote={priceView.priceNote}
             rows={detail.booking_rows}
             primary={primary}
             secondary={secondary}
-            note={enquiry ? t("detail.noPayment") : undefined}
+            note={enquiry ? copy("noPayment") : undefined}
             noteIcon={icons.service_note}
           />
         }
@@ -414,16 +410,16 @@ export async function ServiceDetail({
 
       {/* 4 · enquiry (booking type `enquiry` only) */}
       {enquiry ? (
-        <div className={ALT_BAND}>
+        <div className={`${ALT_BAND} [overflow-wrap:anywhere]`}>
           <EnquirySplit
             id="enquire"
-            eyebrow={t("detail.enquiryEyebrow")}
-            title={t("detail.enquiryTitle", { name: svc.name })}
-            lede={t("detail.enquiryIntro")}
+            eyebrow={copy("enquiryEyebrow")}
+            title={copy("enquiryTitle")}
+            lede={copy("enquiryIntro")}
             contact={(() => {
-              const lines = contactLines(globals, t);
+              const lines = contactLines(globals, copy);
               return lines.length
-                ? { title: t("detail.enquiryInfoTitle"), lines }
+                ? { title: copy("enquiryInfoTitle"), lines }
                 : undefined;
             })()}
           >
@@ -437,8 +433,8 @@ export async function ServiceDetail({
         <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
           <div className={WRAP}>
             <SectionHead
-              eyebrow={t("detail.relatedEyebrow")}
-              headline={t("detail.relatedTitle")}
+              eyebrow={copy("relatedEyebrow")}
+              headline={copy("relatedTitle")}
             />
             <div className="grid grid-cols-1 gap-[22px] min-[561px]:grid-cols-2 min-[981px]:grid-cols-4">
               {others.map((s) => (
@@ -456,8 +452,8 @@ export async function ServiceDetail({
 
       {primary && mobileLabel ? (
         <ServiceMobileBar
-          price={price ?? t("detail.onRequest")}
-          suffix={price ? svc.priceSuffix : null}
+          price={priceView.mobilePrice}
+          suffix={priceView.suffix}
           action={{ href: primary.href, label: mobileLabel }}
         />
       ) : null}

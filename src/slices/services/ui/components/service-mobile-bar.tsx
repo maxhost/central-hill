@@ -15,8 +15,8 @@ export function ServiceMobileBar({
   suffix,
   action,
 }: {
-  /** Formatted price, or the "On request" label. */
-  price: string;
+  /** Formatted price, the "On request" label, or null to keep only the action. */
+  price: string | null;
   suffix: string | null;
   action: BookingAction;
 }) {
@@ -24,7 +24,7 @@ export function ServiceMobileBar({
     <>
       <style>{LIFT_FAB}</style>
       <div className="fixed inset-x-0 bottom-0 z-[55] flex items-center justify-between gap-4 border-t border-line bg-surface px-5 py-[14px] min-[981px]:hidden">
-        <div className="font-serif text-[22px] leading-[1.6] text-ink">
+        {price !== null ? <div className="min-w-0 font-serif text-[22px] leading-[1.6] text-ink [overflow-wrap:anywhere]">
           {price}
           {suffix ? (
             <small className="font-sans text-[13px] text-ink-soft">
@@ -32,8 +32,8 @@ export function ServiceMobileBar({
               {suffix}
             </small>
           ) : null}
-        </div>
-        <ButtonLink href={action.href}>{action.label}</ButtonLink>
+        </div> : null}
+        <ButtonLink href={action.href} className={`min-w-0 max-w-full [overflow-wrap:anywhere] ${price === null ? "w-full" : ""}`}>{action.label}</ButtonLink>
       </div>
     </>
   );
