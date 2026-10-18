@@ -1,5 +1,9 @@
 "use server";
 
+import { loadMedia } from "@core/media";
+import { uuid } from "@core/validation/primitives";
+import type { ServicesContent } from "../schemas/services";
+import { servicesMediaErrors, servicesMediaReferences } from "./services-media-validation";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
 import { page_content } from "../schema";
@@ -50,6 +54,16 @@ export async function savePage(
   const ogImage = payload.og_image_media_id || null;
 
   try {
+    if (key === "services") {
+      if (ogImage && !uuid.safeParse(ogImage).success) {
+        return { ok: false, error: "validation", fieldErrors: { og_image_media_id: "Select an uploaded still image." } };
+      }
+      const content = dataParsed.data as ServicesContent;
+      const ids = servicesMediaReferences(content, ogImage).map((ref) => ref.id);
+      const assets = await loadMedia(ids);
+      const fieldErrors = servicesMediaErrors(content, ogImage, assets);
+      if (Object.keys(fieldErrors).length) return { ok: false, error: "validation", fieldErrors };
+    }
     await db
       .insert(page_content)
       .values({ key, data, og_image_media_id: ogImage })

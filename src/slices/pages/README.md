@@ -2,7 +2,7 @@
 
 The five **editable fixed marketing pages** — Home, Owners, Real Estate, About, and the
 Guest landing — plus the `blog` and `guides` rows (copy those sections show outside a post or
-guide) and the `buildings` row (the Buildings **listing**'s editable sections, rendered inside slice
+guide) and the `services` row (Services listing editorial sections) and the `buildings` row (the Buildings **listing**'s editable sections, rendered inside slice
 `buildings`' listing through this slice's contract), stored one row per `key` in `page_content`, each validated by a fixed
 per-page Zod schema (ADR 0012 / `docs/data-model.md` → Page content model). This slice is
 **pure composition**: it owns only its own page rows and resolves their [T] blocks + media,
@@ -12,7 +12,7 @@ foreign tables**. See `docs/vertical-slices.md` → S9.
 ## Owns
 
 **Table** (`schema.ts`, migrations `0000`, `0003`; data-only rows `0016` blog/guides, `0017` buildings):
-- `page_content` — `key (unique: home|owners|real_estate|about|guest|blog|guides|buildings), data jsonb
+- `page_content` — `key (unique: home|owners|real_estate|about|guest|blog|guides|buildings|services), data jsonb
   (SOURCE-locale values, validated per `key`), og_image_media_id?`. Pages have **no
   draft/published state** (owner direction, `0003`): a row that exists is live.
   Target-locale [T] values live in the cross-cutting `translation` table with
@@ -1200,3 +1200,21 @@ in `/admin/pages` like any page. Drizzle `0016` inserts both rows with `defaultB
 Destinations are fixed in code so they stay on the visitor's locale. `revalidatePage` revalidates
 `/{locale}/blog` and `/{locale}/guides` as **layouts**, so every post/guide under them refreshes.
 
+
+
+## Services listing editor
+
+`/admin/pages/services` edits SEO, hero, catalogue introduction, three fixed-order How it works
+items and the closing CTA. The catalogue remains in `/admin/services`; contact data remains
+in Settings. `servicesSchema` accepts empty overrides, so no initial row or migration is needed.
+`getServicesPage(locale): Promise<ServicesPage>` never returns null: missing or invalid content
+uses `defaultServices` and each public section resolves blank copy through `services.*` in the
+visitor's language. Translation paths include copy/alt/SEO, excluding icons and media IDs.
+`ServicesHero`, `ServicesIntro`, `ServicesHowItWorks`, `ServicesFinalCta` are exported by the
+contract for composition by Services around its own catalogue. Both visual slots accept images,
+original animated WebP and MP4/WebM; optional still posters/default photos replace animation
+with reduced motion. Lottie inherited in the picker renders the stock photo on this surface.
+The Services save action validates existing media references and their MIME types, rejecting
+video as OG/poster. Cache tag `page:services` and four localized routes invalidate on save;
+service-list and Settings dependencies remain intact. `buildServicesMetadata` supplies editable
+SEO/OG and absolute canonical/hreflang through the configured SEO origin.

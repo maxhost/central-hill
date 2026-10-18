@@ -137,3 +137,23 @@ Fuera de alcance: rediseño, CRUD/detalle de servicios, editor libre de seccione
 - Entorno existente: `.env.local` apunta a Neon remoto y bucket compartido; no se copiará. Usuario autorizó preparar entorno local aislado con datos ficticios. Docker/Postgres/S3 local por verificar; sin escrituras a recursos remotos.
 - Node 22.23.3 disponible; pnpm. Verificaciones: typecheck/lint/tests explícitos/build/db:check, QA desktop+móvil, guardado/recarga y revalidación real. Tests/boundary placeholders excluidos. Sin integración a main antes de QA aprobado.
 - Baseline visual público/BO todavía pendiente de entorno aislado; no afirmar prueba visual o persistencia como aprobadas.
+
+
+### Integración del candidato
+
+- Base contractual `f790718`; A `c649c44` integrado como `f702efe`; B `0d66853` integrado como `ac3ca6e`.
+- Scope A ampliado a `admin/ui/page-editor.tsx` para pasar contexto Services a ayudas localizadas.
+- Scope orquestador ampliado a `admin/actions.ts`, nuevo `admin/services-media-validation.ts`, nuevo
+  `tests/services-media-validation.test.ts`, `tests/pages-admin.test.ts`: validar referencias/mimes en
+  servidor y actualizar fixture obsoleta que suponía Services sin layout. QA debe probar rechazo real.
+- Transporte QA temporal `/private/tmp/central-hill-services-qa/preload.cjs`: redirige únicamente
+  el endpoint ficticio Neon `api.local` a proxy local 4448; no cambia implementación/kernel.
+- Runtime checkout `/private/tmp/central-hill-services-runtime`, env ficticio propio, puerto 3048;
+  PostgreSQL contenedor `central-hill-services-db`, proxy `central-hill-services-proxy`, red exclusiva.
+- S3rver temporal en 9048, bucket `servicesqa` y credenciales ficticias; MinIO no disponible en registros.
+  Herramienta QA instalada solo en /private/tmp, sin dependencia nueva del proyecto.
+- Baseline público desktop/móvil capturado desde base contractual en entorno local; Home BO baseline
+  en curso. Usuario ficticio `services-qa@example.test`. No credenciales remotas copiadas ni recursos remotos escritos.
+- Candidato integrado: typecheck exit 0; 218 tests reales exit 0; lint exit 0 con 5 advertencias
+  preexistentes; db:check exit 0 (19 migraciones, advertencia preexistente por breakpoint de 0008).
+  Build, QA browser/persistencia y revisión independiente pendientes; no merge main todavía.

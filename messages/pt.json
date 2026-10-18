@@ -661,7 +661,8 @@
           "move": "Mover para Prático"
         }
       }
-    }
+    },
+    "ctaImageAlt": "Sala luminosa e elegantemente mobilada com vista para a cidade num dos nossos apartamentos de Lisboa"
   },
   "settings": {
     "skip": "Saltar para o conteúdo",
@@ -1183,7 +1184,8 @@
         "guest": "Página de hóspedes",
         "blog": "Blog",
         "guides": "Guias",
-        "buildings": "Edifícios"
+        "buildings": "Edifícios",
+        "services": "Serviços"
       },
       "sections": {
         "publish": "Publicação",
@@ -1236,7 +1238,10 @@
           "organisation": "Como nos organizamos",
           "certifications": "Certificações",
           "community": "Retribuir à comunidade",
-          "aboutContact": "Vamos conversar"
+          "aboutContact": "Vamos conversar",
+          "intro": "Introdução do catálogo",
+          "how_it_works": "Como funciona",
+          "servicesCatalogue": "Catálogo de serviços"
         },
         "notes": {
           "heroSecondary": "O botão secundário leva sempre a /owners.",
@@ -1267,7 +1272,9 @@
           "aboutStats": "Os números animam-se na página.",
           "aboutValues": "Os números 01–04 são automáticos.",
           "aboutCertifications": "Sem logótipo, o cartão mostra o seu ícone.",
-          "aboutContact": "Os cartões abrem sempre Edifícios / Proprietários / Imobiliário. A morada, os telefones, o email, o site e o horário vêm das Definições. Os campos do formulário são partilhados com o formulário de contacto do cabeçalho."
+          "aboutContact": "Os cartões abrem sempre Edifícios / Proprietários / Imobiliário. A morada, os telefones, o email, o site e o horário vêm das Definições. Os campos do formulário são partilhados com o formulário de contacto do cabeçalho.",
+          "servicesCatalogue": "Os cartões e as categorias são geridos em Serviços.",
+          "servicesFinalCta": "O botão abre sempre Edifícios. O email e o WhatsApp vêm das Definições."
         },
         "links": {
           "settings": "Abrir Definições",
@@ -1400,7 +1407,10 @@
         "email": "Email",
         "website": "Website",
         "form": "Formulário de contacto",
-        "link_label": "Texto do link"
+        "link_label": "Texto do link",
+        "media_alt": "Descrição da imagem",
+        "contact_note": "Introdução de contacto",
+        "how_it_works": "Como funciona"
       },
       "itemLabels": {
         "benefits": "Vantagem",
@@ -1427,6 +1437,9 @@
         },
         "certifications": {
           "items": "Certificação"
+        },
+        "how_it_works": {
+          "items": "Passo"
         }
       },
       "addLabels": {
@@ -1441,6 +1454,21 @@
       "addLabelsByParent": {
         "certifications": {
           "items": "Nova certificação"
+        }
+      },
+      "servicesHints": {
+        "hero": {
+          "media_media_id": "Horizontal 16:9, 1920×1080. Foto idealmente inferior a 500 KB; MP4 H.264 sem áudio, ciclo de 10–20 segundos, idealmente inferior a 15 MB. Também aceita WebP animado e WebM.",
+          "poster_media_id": "Imagem estática opcional para vídeos e movimento reduzido. Deixe em branco para usar a foto predefinida da secção.",
+          "media_alt": "Fundo decorativo; esta descrição é guardada mas não é anunciada por leitores de ecrã."
+        },
+        "final_cta": {
+          "media_media_id": "Vertical 4:5, 1200×1500. Foto idealmente inferior a 500 KB; MP4 H.264 sem áudio, ciclo de 6–15 segundos, idealmente inferior a 10 MB; WebP animado idealmente inferior a 5 MB. Também aceita WebM.",
+          "poster_media_id": "Imagem estática opcional para vídeos e movimento reduzido. Deixe em branco para usar a foto predefinida da secção.",
+          "media_alt": "Descreva a imagem para quem utiliza um leitor de ecrã."
+        },
+        "how_it_works": {
+          "items": "Exatamente três passos, numa ordem fixa."
         }
       }
     }

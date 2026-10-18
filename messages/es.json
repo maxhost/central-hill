@@ -661,7 +661,8 @@
           "move": "Mover a Práctico"
         }
       }
-    }
+    },
+    "ctaImageAlt": "Salón luminoso y elegantemente amueblado con vistas a la ciudad en uno de nuestros apartamentos de Lisboa"
   },
   "settings": {
     "skip": "Saltar al contenido",
@@ -1183,7 +1184,8 @@
         "guest": "Página de huéspedes",
         "blog": "Blog",
         "guides": "Guías",
-        "buildings": "Edificios"
+        "buildings": "Edificios",
+        "services": "Servicios"
       },
       "sections": {
         "publish": "Publicación",
@@ -1236,7 +1238,10 @@
           "organisation": "Cómo nos organizamos",
           "certifications": "Certificaciones",
           "community": "Compromiso social",
-          "aboutContact": "Hablemos"
+          "aboutContact": "Hablemos",
+          "intro": "Introducción del catálogo",
+          "how_it_works": "Cómo funciona",
+          "servicesCatalogue": "Catálogo de servicios"
         },
         "notes": {
           "heroSecondary": "El botón secundario siempre lleva a /owners.",
@@ -1267,7 +1272,9 @@
           "aboutStats": "Las cifras se animan en la página.",
           "aboutValues": "Los números 01–04 son automáticos.",
           "aboutCertifications": "Sin logo, la tarjeta muestra su icono.",
-          "aboutContact": "Las tarjetas abren siempre Edificios / Propietarios / Inmobiliaria. La dirección, los teléfonos, el email, la web y el horario vienen de Ajustes. Los campos del formulario se comparten con el formulario de contacto de la cabecera."
+          "aboutContact": "Las tarjetas abren siempre Edificios / Propietarios / Inmobiliaria. La dirección, los teléfonos, el email, la web y el horario vienen de Ajustes. Los campos del formulario se comparten con el formulario de contacto de la cabecera.",
+          "servicesCatalogue": "Las tarjetas y categorías se gestionan en Servicios.",
+          "servicesFinalCta": "El botón siempre abre Edificios. El email y WhatsApp vienen de Ajustes."
         },
         "links": {
           "settings": "Abrir Ajustes",
@@ -1400,7 +1407,10 @@
         "email": "Email",
         "website": "Sitio web",
         "form": "Formulario de contacto",
-        "link_label": "Texto del enlace"
+        "link_label": "Texto del enlace",
+        "media_alt": "Descripción de la imagen",
+        "contact_note": "Introducción de contacto",
+        "how_it_works": "Cómo funciona"
       },
       "itemLabels": {
         "benefits": "Ventaja",
@@ -1427,6 +1437,9 @@
         },
         "certifications": {
           "items": "Certificación"
+        },
+        "how_it_works": {
+          "items": "Paso"
         }
       },
       "addLabels": {
@@ -1441,6 +1454,21 @@
       "addLabelsByParent": {
         "certifications": {
           "items": "Nueva certificación"
+        }
+      },
+      "servicesHints": {
+        "hero": {
+          "media_media_id": "Horizontal 16:9, 1920×1080. Foto idealmente menor de 500 KB; MP4 H.264 sin audio, bucle de 10–20 segundos, idealmente menor de 15 MB. También admite WebP animado y WebM.",
+          "poster_media_id": "Imagen fija opcional para vídeos y movimiento reducido. Déjala vacía para usar la foto predeterminada de la sección.",
+          "media_alt": "Fondo decorativo; esta descripción se guarda, pero no se anuncia con lectores de pantalla."
+        },
+        "final_cta": {
+          "media_media_id": "Vertical 4:5, 1200×1500. Foto idealmente menor de 500 KB; MP4 H.264 sin audio, bucle de 6–15 segundos, idealmente menor de 10 MB; WebP animado idealmente menor de 5 MB. También admite WebM.",
+          "poster_media_id": "Imagen fija opcional para vídeos y movimiento reducido. Déjala vacía para usar la foto predeterminada de la sección.",
+          "media_alt": "Describe la imagen para quienes utilizan un lector de pantalla."
+        },
+        "how_it_works": {
+          "items": "Exactamente tres pasos, con orden fijo."
         }
       }
     }

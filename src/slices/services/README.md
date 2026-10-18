@@ -21,16 +21,12 @@ Slice services.
 
 ## Routes (App Router, ISR)
 
-- `/[locale]/services` — index: the approved `mock/services.html` design embedded 1:1
-  (`ui/services-listing.tsx`) — hero + card grid + CTA band are still static markup;
-  the **"How It Works" value strip is real JSX**, `core/ui`'s new `IconFeatureGrid` (a
-  centered eyebrow/heading above a fixed 3-column icon/title/description grid — see that
-  component's docstring), ported 1:1 from the old `.mk`-scoped `.howstrip`/`.how-grid`/
-  `.how-item` CSS and rendered **outside** `.mk` (same `.mk * {margin:0;padding:0}`
-  unlayered-CSS-vs-`@layer`-Tailwind pitfall `SpecStrip`/buildings hit — see that
-  component's docstring), which is why `BODY` in `services-listing.tsx` is split into
-  `BODY_TOP`/`BODY_BOTTOM` around it. `revalidate = 3600`, static per locale, **no database
-  read** (content is hardcoded English, same gap as the detail pages below).
+- `/[locale]/services` — React composition of the Pages contract's four editable editorial
+  sections (hero, catalogue introduction, three How it works steps and closing CTA), around
+  this slice's published service cards. Edit page copy, icons, media/posters and SEO at
+  `/admin/pages/services`; catalogue cards and categories stay in this slice's admin.
+  Blank overrides preserve `services.*` messages and Settings icons/contact details.
+  Reads retain `service-list`, `page:services` and Settings cache dependencies.
 - `/[locale]/services/[slug]` — detail (`ui/service-detail.tsx`): the approved
   `mock/service-detail.html` — ONE fixed skeleton for every service — fully componentised (no
   `.mk`/`mock.css`) and **DB-driven** via `getServiceBySlug(locale, slug)`:

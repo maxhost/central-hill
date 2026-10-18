@@ -661,7 +661,8 @@
           "move": "Déplacer vers Pratique"
         }
       }
-    }
+    },
+    "ctaImageAlt": "Salon lumineux et élégamment meublé avec vue sur la ville dans l’un de nos appartements à Lisbonne"
   },
   "settings": {
     "skip": "Aller au contenu",
@@ -1183,7 +1184,8 @@
         "guest": "Page voyageurs",
         "blog": "Blog",
         "guides": "Guides",
-        "buildings": "Immeubles"
+        "buildings": "Immeubles",
+        "services": "Services"
       },
       "sections": {
         "publish": "Publication",
@@ -1236,7 +1238,10 @@
           "organisation": "Notre organisation",
           "certifications": "Certifications",
           "community": "Engagement solidaire",
-          "aboutContact": "Parlons-en"
+          "aboutContact": "Parlons-en",
+          "intro": "Introduction du catalogue",
+          "how_it_works": "Comment ça marche",
+          "servicesCatalogue": "Catalogue de services"
         },
         "notes": {
           "heroSecondary": "Le bouton secondaire mène toujours à /owners.",
@@ -1267,7 +1272,9 @@
           "aboutStats": "Les chiffres s'animent sur la page.",
           "aboutValues": "Les numéros 01–04 sont automatiques.",
           "aboutCertifications": "Sans logo, la carte affiche son icône.",
-          "aboutContact": "Les cartes ouvrent toujours Immeubles / Propriétaires / Immobilier. L'adresse, les téléphones, l'e-mail, le site web et les horaires viennent des Paramètres. Les champs du formulaire sont partagés avec le formulaire de contact de l'en-tête."
+          "aboutContact": "Les cartes ouvrent toujours Immeubles / Propriétaires / Immobilier. L'adresse, les téléphones, l'e-mail, le site web et les horaires viennent des Paramètres. Les champs du formulaire sont partagés avec le formulaire de contact de l'en-tête.",
+          "servicesCatalogue": "Les fiches et les catégories se gèrent dans Services.",
+          "servicesFinalCta": "Le bouton ouvre toujours Immeubles. L’email et WhatsApp proviennent des Paramètres."
         },
         "links": {
           "settings": "Ouvrir Paramètres",
@@ -1400,7 +1407,10 @@
         "email": "E-mail",
         "website": "Site web",
         "form": "Formulaire de contact",
-        "link_label": "Texte du lien"
+        "link_label": "Texte du lien",
+        "media_alt": "Description de l’image",
+        "contact_note": "Introduction du contact",
+        "how_it_works": "Comment ça marche"
       },
       "itemLabels": {
         "benefits": "Avantage",
@@ -1427,6 +1437,9 @@
         },
         "certifications": {
           "items": "Certification"
+        },
+        "how_it_works": {
+          "items": "Étape"
         }
       },
       "addLabels": {
@@ -1441,6 +1454,21 @@
       "addLabelsByParent": {
         "certifications": {
           "items": "Nouvelle certification"
+        }
+      },
+      "servicesHints": {
+        "hero": {
+          "media_media_id": "Paysage 16:9, 1920×1080. Photo idéalement inférieure à 500 Ko ; boucle MP4 H.264 sans son de 10–20 secondes, idéalement inférieure à 15 Mo. WebP animé et WebM également acceptés.",
+          "poster_media_id": "Image fixe facultative pour les vidéos et la réduction des animations. Laissez vide pour utiliser la photo par défaut de la section.",
+          "media_alt": "Arrière-plan décoratif ; cette description est enregistrée mais n’est pas annoncée par les lecteurs d’écran."
+        },
+        "final_cta": {
+          "media_media_id": "Portrait 4:5, 1200×1500. Photo idéalement inférieure à 500 Ko ; boucle MP4 H.264 sans son de 6–15 secondes, idéalement inférieure à 10 Mo ; WebP animé idéalement inférieur à 5 Mo. WebM également accepté.",
+          "poster_media_id": "Image fixe facultative pour les vidéos et la réduction des animations. Laissez vide pour utiliser la photo par défaut de la section.",
+          "media_alt": "Décrivez l’image pour les personnes utilisant un lecteur d’écran."
+        },
+        "how_it_works": {
+          "items": "Exactement trois étapes, dans un ordre fixe."
         }
       }
     }

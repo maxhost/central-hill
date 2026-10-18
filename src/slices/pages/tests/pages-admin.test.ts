@@ -340,7 +340,7 @@ test("an unknown root key lands in a trailing Other card", () => {
 });
 
 test("pages without a layout return null (default rendering)", () => {
-  assert.equal(resolveEditorLayout("services", []), null);
+  assert.equal(resolveEditorLayout("unregistered_page", []), null);
   assert.equal(resolveEditorLayout("blog", ["hero"]), null);
 });
 

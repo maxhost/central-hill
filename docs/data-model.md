@@ -517,3 +517,16 @@ translation / slug / media_asset  ← referenced by everything (core)
   partners, milestones, investment-property/deal listings are **not** entities (static copy on About /
   Real Estate, confirmed against the briefs).
 - hreflang/canonical/JSON-LD/sitemap remain **derived** (no per-entity columns) per `docs/seo-i18n.md`.
+
+
+### Services listing editorial content (`page_content.key = services`)
+
+Services uses the existing text key column, with no structural migration or required seed.
+`pages/schemas/services.ts` validates optional `seo`, `hero`, `intro`, `how_it_works` and
+`final_cta` objects. Three step slots are fixed in count and order; blank text/icon/media values
+retain the visitor locale's messages, Settings icons and existing photos. Both visual slots
+store optional media UUID, translated alt and optional still-poster UUID. `final_cta` stores a
+button label and translated contact introduction; the destination and Settings contacts are
+composed in code. [T] leaves use `page_content` / `block:<path>` in the existing pipeline.
+`og_image_media_id` remains the existing column and must reference a still-image MIME.
+No catalogue or company-contact data is duplicated in the page row.

@@ -661,7 +661,8 @@
           "move": "Move to Practical"
         }
       }
-    }
+    },
+    "ctaImageAlt": "Bright, elegantly furnished living room with a city outlook in one of our Lisbon apartments"
   },
   "settings": {
     "skip": "Skip to content",
@@ -1183,7 +1184,8 @@
         "guest": "Guest landing",
         "blog": "Blog",
         "guides": "Guides",
-        "buildings": "Buildings"
+        "buildings": "Buildings",
+        "services": "Services"
       },
       "sections": {
         "publish": "Publish",
@@ -1236,7 +1238,10 @@
           "organisation": "How we are organised",
           "certifications": "Certifications",
           "community": "Giving back",
-          "aboutContact": "Let's start a conversation"
+          "aboutContact": "Let's start a conversation",
+          "intro": "Catalogue introduction",
+          "how_it_works": "How it works",
+          "servicesCatalogue": "Service catalogue"
         },
         "notes": {
           "heroSecondary": "The secondary button always links to /owners.",
@@ -1267,7 +1272,9 @@
           "aboutStats": "Numbers count up on the page.",
           "aboutValues": "Numbers 01–04 are automatic.",
           "aboutCertifications": "Without a logo the card shows its icon.",
-          "aboutContact": "Cards always open Buildings / Owners / Real Estate. Address, phones, email, website and hours come from Settings. Form fields are shared with the header contact form."
+          "aboutContact": "Cards always open Buildings / Owners / Real Estate. Address, phones, email, website and hours come from Settings. Form fields are shared with the header contact form.",
+          "servicesCatalogue": "Service cards and categories are managed in Services.",
+          "servicesFinalCta": "The button always opens Buildings. Email and WhatsApp come from Settings."
         },
         "links": {
           "settings": "Open Settings",
@@ -1400,7 +1407,10 @@
         "email": "Email",
         "website": "Website",
         "form": "Contact form",
-        "link_label": "Link text"
+        "link_label": "Link text",
+        "media_alt": "Image description",
+        "contact_note": "Contact introduction",
+        "how_it_works": "How it works"
       },
       "itemLabels": {
         "benefits": "Benefit",
@@ -1427,6 +1437,9 @@
         },
         "certifications": {
           "items": "Certification"
+        },
+        "how_it_works": {
+          "items": "Step"
         }
       },
       "addLabels": {
@@ -1441,6 +1454,21 @@
       "addLabelsByParent": {
         "certifications": {
           "items": "New certification"
+        }
+      },
+      "servicesHints": {
+        "hero": {
+          "media_media_id": "Landscape 16:9, 1920×1080. Photo ideally under 500 KB; silent MP4 H.264 loop, 10–20 seconds, ideally under 15 MB. Animated WebP and WebM are also supported.",
+          "poster_media_id": "Optional still image for videos and reduced motion. Leave blank to use the section’s default photo.",
+          "media_alt": "Decorative background; this description is stored but not announced by screen readers."
+        },
+        "final_cta": {
+          "media_media_id": "Portrait 4:5, 1200×1500. Photo ideally under 500 KB; silent MP4 H.264 loop, 6–15 seconds, ideally under 10 MB; animated WebP ideally under 5 MB. WebM is also supported.",
+          "poster_media_id": "Optional still image for videos and reduced motion. Leave blank to use the section’s default photo.",
+          "media_alt": "Describe the image for visitors using a screen reader."
+        },
+        "how_it_works": {
+          "items": "Exactly three steps, in fixed order."
         }
       }
     }

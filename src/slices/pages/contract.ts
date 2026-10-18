@@ -196,3 +196,6 @@ export { pagesAdminScreens } from "./admin/screens";
 export { OwnerEstimateForm } from "./ui/components/owner-estimate-form";
 
 export { buildServicesMetadata } from "./server/metadata";
+
+/** Editable editorial sections composed by the Services catalogue through this contract. */
+export { ServicesHero, ServicesIntro, ServicesHowItWorks, ServicesFinalCta } from "./ui/components/services-sections";
