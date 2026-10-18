@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ABOUT_LIST_PATHS } from "../about-content";
 import { ADMIN_HIDDEN_META_KEY } from "../schemas/admin-hidden";
 import { MEDIA_ACCEPTS, MEDIA_ACCEPT_META_KEY, type MediaAccept } from "../schemas/media-accept";
 
@@ -35,9 +36,9 @@ export type FieldNode =
       emptyHint: string;
     }
   | { kind: "boolean"; hint?: string }
-  | { kind: "string"; multiline: boolean; optional: boolean; hint?: string }
+  | { kind: "string"; multiline: boolean; optional: boolean; hint?: string; choices?: string[] }
   /** Not rendered; its value round-trips untouched (`node` = what it would have been). */
-  | { kind: "hidden"; node: FieldNode };
+  | { kind: "hidden"; node: FieldNode; preserve?: boolean };
 
 function isMediaAccept(v: unknown): v is MediaAccept {
   return typeof v === "string" && (MEDIA_ACCEPTS as readonly string[]).includes(v);
@@ -149,7 +150,13 @@ const MULTILINE_OVER = 180;
  */
 export function describe(schema: z.ZodType, key = ""): FieldNode {
   const node = describeVisible(schema, key);
-  return metaValue(schema, ADMIN_HIDDEN_META_KEY) === true ? { kind: "hidden", node } : node;
+  if (metaValue(schema, ADMIN_HIDDEN_META_KEY) === true) {
+    // Opaque metadata records have arbitrary keys: never scaffold them as text.
+    return unwrap(schema).base instanceof z.ZodRecord
+      ? { kind: "hidden", node, preserve: true }
+      : { kind: "hidden", node };
+  }
+  return node;
 }
 
 function describeVisible(schema: z.ZodType, key: string): FieldNode {
@@ -205,6 +212,8 @@ function describeVisible(schema: z.ZodType, key: string): FieldNode {
     return hint ? { kind: "media", accept, hint } : { kind: "media", accept };
   }
 
+  if (base instanceof z.ZodEnum) return { kind: "string", multiline: false, optional, choices: [...base.options] as string[] };
+
   const maxLength = (base as { maxLength?: number | null }).maxLength ?? null;
   const multiline = typeof maxLength === "number" && maxLength > MULTILINE_OVER;
   // A `.describe()` on a text field becomes its hint (e.g. `statFigure`'s number/prefix/suffix).
@@ -230,10 +239,11 @@ export function emptyValue(node: FieldNode): unknown {
     case "media":
     case "icon":
     case "select":
-    case "string":
       return "";
+    case "string":
+      return node.optional && node.choices ? undefined : "";
     case "hidden":
-      return emptyValue(node.node);
+      return node.preserve ? undefined : emptyValue(node.node);
   }
 }
 
@@ -263,11 +273,12 @@ export function applyDefaults(node: FieldNode, value: unknown): unknown {
     case "media":
     case "icon":
     case "select":
-    case "string":
       return typeof value === "string" ? value : "";
+    case "string":
+      return node.optional && node.choices && value === undefined ? undefined : typeof value === "string" ? value : "";
     case "hidden":
       // Same as the visible field: the stored value is kept as-is (not rendered, still saved).
-      return applyDefaults(node.node, value);
+      return node.preserve ? value : applyDefaults(node.node, value);
   }
 }
 
@@ -295,4 +306,53 @@ export function listLabelKeys(
   const keys = [`admin.${kind}.${arrayKey}`];
   if (typeof parentKey === "string") keys.unshift(`admin.${kind}ByParent.${parentKey}.${arrayKey}`);
   return keys;
+}
+
+
+export const ABOUT_EDITOR_LIST_PATHS = ABOUT_LIST_PATHS;
+export type AboutListOperation =
+  | { action: "add"; value: unknown; id: string }
+  | { action: "remove"; index: number }
+  | { action: "move"; index: number; to: number };
+
+/** Content and its translation identity are one update, including plain paragraphs. */
+export function updateAboutList(
+  data: Record<string, unknown>, path: string, operation: AboutListOperation,
+): Record<string, unknown> {
+  if (!(ABOUT_EDITOR_LIST_PATHS as readonly string[]).includes(path)) return data;
+  const keys = path.split(".");
+  const read = (root: unknown): unknown => keys.reduce<unknown>((value, key) =>
+    value && typeof value === "object" ? (value as Record<string, unknown>)[key] : undefined, root);
+  const items = read(data);
+  const metadata = data._list_ids as Record<string, string[]> | undefined;
+  const ids = metadata?.[path];
+  if (!Array.isArray(items) || !ids || ids.length !== items.length) return data;
+  const nextItems = [...items];
+  const nextIds = [...ids];
+  if (operation.action === "add") {
+    if (nextIds.includes(operation.id)) return data;
+    nextItems.push(operation.value);
+    nextIds.push(operation.id);
+  } else {
+    if (operation.index < 0 || operation.index >= items.length) return data;
+    if (operation.action === "remove") {
+      nextItems.splice(operation.index, 1);
+      nextIds.splice(operation.index, 1);
+    } else {
+      if (operation.to < 0 || operation.to >= items.length) return data;
+      [nextItems[operation.index], nextItems[operation.to]] = [nextItems[operation.to], nextItems[operation.index]];
+      [nextIds[operation.index], nextIds[operation.to]] = [nextIds[operation.to]!, nextIds[operation.index]!];
+    }
+  }
+  const out = { ...data, _list_ids: { ...metadata, [path]: nextIds } };
+  let parent: Record<string, unknown> = out;
+  let previous: Record<string, unknown> = data;
+  for (const key of keys.slice(0, -1)) {
+    const child = previous[key] as Record<string, unknown>;
+    parent[key] = { ...child };
+    parent = parent[key] as Record<string, unknown>;
+    previous = child;
+  }
+  parent[keys.at(-1)!] = nextItems;
+  return out;
 }

@@ -18,7 +18,11 @@ import {
   emptyValue,
   humanizeKey,
   listLabelKeys,
+  ABOUT_EDITOR_LIST_PATHS,
+  type AboutListOperation,
 } from "../form-model";
+
+import { AboutListEditor } from "./about-list-editor";
 
 /**
  * Recursive, schema-driven field renderer (S12, ADR 0012). Walks a `FieldNode`
@@ -60,6 +64,8 @@ export function useFieldLabels() {
 
 interface RenderProps {
   pageKey?: string;
+  listIds?: Record<string, string[]>;
+  onListChange?: (path: string, operation: AboutListOperation) => void;
   node: FieldNode;
   value: unknown;
   path: (string | number)[];
@@ -74,6 +80,8 @@ interface RenderProps {
 export function NodeField(props: RenderProps) {
   const {
     pageKey,
+    listIds,
+    onListChange,
     node,
     value,
     path,
@@ -114,6 +122,8 @@ export function NodeField(props: RenderProps) {
       <NodeField
         key={f.key}
         pageKey={pageKey}
+        listIds={listIds}
+        onListChange={onListChange}
         node={f.node}
         value={(value as Record<string, unknown> | undefined)?.[f.key]}
         path={[...path, f.key]}
@@ -138,6 +148,19 @@ export function NodeField(props: RenderProps) {
 
   if (node.kind === "array") {
     const items = Array.isArray(value) ? value : [];
+    if (pageKey === "about" && onListChange && (ABOUT_EDITOR_LIST_PATHS as readonly string[]).includes(errorKey)) {
+      const itemLabel = labels.item(path, label);
+      return <AboutListEditor label={label} itemLabel={itemLabel} addLabel={labels.add(path, itemLabel)}
+        items={items} ids={listIds?.[errorKey] ?? []} min={node.min} max={node.max} error={errors[errorKey]}
+        onChange={(operation) => onListChange(errorKey, operation)}
+        createItem={() => {
+          const item = emptyValue(node.element);
+          // New contact cards deliberately start with a valid, visible choice.
+          return errorKey === "contact.cards" ? { ...(item as Record<string, unknown>), destination: "buildings" } : item;
+        }}
+        renderItem={(item, index) => <NodeField {...props} node={node.element} value={item} path={[...path, index]}
+          label={`${itemLabel} ${index + 1}`} depth={depth + 1} />} />;
+    }
     const canAdd = !node.fixedOrder && items.length < node.max;
     const canRemove = items.length > node.min;
     const itemLabel = labels.item(path, label);
@@ -180,6 +203,8 @@ export function NodeField(props: RenderProps) {
             </div>
             <NodeField
               pageKey={pageKey}
+              listIds={listIds}
+              onListChange={onListChange}
               node={node.element}
               value={item}
               path={[...path, i]}
@@ -273,6 +298,16 @@ export function NodeField(props: RenderProps) {
         ) : null}
       </Field>
     );
+  }
+
+  if (pageKey === "about" && path[0] === "contact" && path.at(-1) === "destination") {
+    return <Field label={label} htmlFor={controlId} error={errors[errorKey]} required>
+      <Select id={controlId} value={typeof value === "string" ? value : ""}
+        aria-invalid={Boolean(errors[errorKey])} aria-description={errors[errorKey]}
+        onChange={(event) => onChange(path, event.target.value)}>
+        {["buildings", "owners", "real_estate"].map((destination) => <option key={destination} value={destination}>{t(`admin.pages.${destination}`)}</option>)}
+      </Select>
+    </Field>;
   }
 
   // string

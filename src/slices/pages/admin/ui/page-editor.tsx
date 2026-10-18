@@ -15,7 +15,7 @@ import {
   useMediaQueue,
 } from "@slices/backoffice/contract";
 import { savePage } from "../actions";
-import { type FieldNode, type SelectOptions, humanizeKey } from "../form-model";
+import { type FieldNode, type SelectOptions, type AboutListOperation, updateAboutList, humanizeKey } from "../form-model";
 import { type EditorNote, resolveEditorLayout } from "../layout";
 import { NodeField, type PathOnChange, useFieldLabels } from "./schema-fields";
 
@@ -80,6 +80,7 @@ export function PageEditor({
   previews,
   options,
   sourceInvalid = false,
+  revision,
 }: {
   pageKey: string;
   rootNode: FieldNode;
@@ -96,6 +97,8 @@ export function PageEditor({
   const router = useRouter();
   const [pending, start] = useTransition();
   const queue = useMediaQueue();
+  const [currentRevision, setCurrentRevision] = useState(revision);
+  const [conflict, setConflict] = useState(false);
   const [data, setData] = useState<Record<string, unknown>>(initialData);
   const [ogImage, setOgImage] = useState<string>(initialOgImageMediaId ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -107,13 +110,16 @@ export function PageEditor({
   const submittingRef = useRef(false);
   const preparing = queue.isPreparing;
   const invalidSource = sourceInvalid || Boolean(errors._source);
-  const busy = pending || flushing || preparing || invalidSource;
+  const busy = pending || flushing || preparing || invalidSource || conflict;
 
   const onChange: PathOnChange = (path, value) => {
     setData((prev) => setIn(prev, path, value) as Record<string, unknown>);
   };
 
-  const topFields = rootNode.kind === "object" ? rootNode.fields : [];
+  const onListChange = (path: string, operation: AboutListOperation) => {
+    setData((previous) => updateAboutList(previous, path, operation));
+  };
+  const topFields = rootNode.kind === "object" ? rootNode.fields.filter((field) => field.node.kind !== "hidden") : [];
   const pageName = t.has(`admin.pages.${pageKey}`)
     ? t(`admin.pages.${pageKey}`)
     : humanizeKey(pageKey);
@@ -147,15 +153,20 @@ export function PageEditor({
         const result = await savePage(pageKey, {
           data,
           og_image_media_id: ogImage || null,
+          ...(pageKey === "about" ? { revision: currentRevision } : {}),
         });
         if (result.ok) {
+          if (pageKey === "about" && result.revision) setCurrentRevision(result.revision);
           setBanner(tb("actions.saved"));
           router.refresh();
           return;
         }
         if (result.error === "validation") {
           setErrors(result.fieldErrors);
-          setBanner(result.fieldErrors._source ? t("admin.guidesSourceInvalid") : t("admin.validationError"));
+          setBanner(result.fieldErrors._source ? t(pageKey === "about" ? "admin.aboutSourceInvalid" : "admin.guidesSourceInvalid") : t("admin.validationError"));
+        } else if (result.error === "conflict") {
+          setConflict(true);
+          setBanner(t("admin.aboutConflict"));
         } else {
           setBanner(tb("actions.saveError"));
         }
@@ -184,6 +195,8 @@ export function PageEditor({
       <NodeField
         key={f.key}
         pageKey={pageKey}
+        listIds={pageKey === "about" ? data._list_ids as Record<string, string[]> : undefined}
+        onListChange={pageKey === "about" ? onListChange : undefined}
         node={f.node}
         value={data[f.key]}
         path={[f.key]}
@@ -212,13 +225,20 @@ export function PageEditor({
         }
       />
 
+      {pageKey === "about" ? <p className="text-sm text-ink-soft">
+        {t("admin.aboutSourceNote")} {" "}
+        <Link href="/admin/translations" className="font-medium text-ink underline underline-offset-2">{tb("nav.translations")}</Link>
+      </p> : null}
+      {conflict || invalidSource ? <AdminButton variant="ghost" onClick={() => window.location.reload()}>
+        {t("admin.reloadSource")}
+      </AdminButton> : null}
       {invalidSource ? (
         <p role="alert" className="rounded-md border border-accent/40 bg-surface px-4 py-3 text-sm text-accent-deep">
-          {t("admin.guidesSourceInvalid")}
+          {t(pageKey === "about" ? "admin.aboutSourceInvalid" : "admin.guidesSourceInvalid")}
         </p>
       ) : null}
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+        <p role={conflict ? "alert" : "status"} className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
           {banner}
         </p>
       ) : null}
