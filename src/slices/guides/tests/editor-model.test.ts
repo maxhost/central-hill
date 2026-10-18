@@ -9,6 +9,7 @@ import {
   placePatch,
   patchIsDirty,
   moveItem,
+  nextPosition,
 } from "../admin/ui/editor-model";
 const pageId = "10000000-0000-4000-8000-000000000001",
   sectionId = "10000000-0000-4000-8000-000000000002",
@@ -88,4 +89,21 @@ test("order keeps exact membership and assigns contiguous positions without chan
   ]);
   assert.equal(moveItem(items, "a", -1), items);
   assert.equal(moveItem(items, "absent", 1), items);
+});
+
+test("appending sections and places follows maximum position after deletion or unordered input", () => {
+  for (const make of [
+    (id: string, position: number) => newSection(id, pageId, position),
+    (id: string, position: number) => newPlace(id, sectionId, position),
+  ]) {
+    assert.equal(nextPosition([]), 0);
+    assert.equal(nextPosition([make("a", 0)]), 1);
+    assert.equal(nextPosition([make("a", 0), make("c", 2)]), 3);
+    const unordered = [make("c", 9), make("a", 0), make("b", 4)];
+    assert.equal(nextPosition(unordered), 10);
+    assert.deepEqual(
+      unordered.map((item) => item.position),
+      [9, 0, 4],
+    );
+  }
 });

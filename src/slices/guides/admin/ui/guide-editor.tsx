@@ -41,6 +41,7 @@ import {
   newSection,
   newPlace,
   moveItem,
+  nextPosition,
   fieldError,
 } from "./editor-model";
 import { GuideTextField } from "./guide-place-editor";
@@ -737,7 +738,7 @@ function Editor({
               const section = newSection(
                 crypto.randomUUID(),
                 page.id,
-                page.sections.length,
+                nextPosition(page.sections),
               );
               updatePage("sections", [...page.sections, section]);
               focusEntity(section.id);
@@ -781,7 +782,7 @@ function Editor({
               const place = newPlace(
                 crypto.randomUUID(),
                 section.id,
-                section.places.length,
+                nextPosition(section.places),
               );
               updateSection({ ...section, places: [...section.places, place] });
               focusEntity(place.id);

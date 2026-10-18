@@ -196,3 +196,8 @@ export function fieldError(
 ): string | undefined {
   return errors[name] ?? errors[`source.${name}`] ?? errors[`changes.${name}`];
 }
+
+/** Append after the highest stored position, including gaps left by deletion. */
+export function nextPosition(items: readonly { position: number }[]): number {
+  return items.length ? Math.max(...items.map((item) => item.position)) + 1 : 0;
+}
