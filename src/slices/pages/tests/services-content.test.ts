@@ -7,7 +7,10 @@ import { translatablePaths } from "@core/validation/primitives";
 import { defaultServices, servicesSchema } from "../schemas/services";
 import { collectMediaIds, overlayTranslations } from "../server/overlay";
 import { orMessage } from "../ui/or-message";
-import { ServicesLoopMedia } from "../ui/components/services-loop-media";
+import {
+  ServicesLoopMedia,
+  ServicesLottieMedia,
+} from "../ui/components/services-loop-media";
 
 const UUID = "11111111-1111-4111-8111-111111111111";
 
@@ -127,4 +130,41 @@ test("video initially renders its real poster without starting playback before m
   assert.match(html, /playsInline=""/);
   assert.match(html, /aria-hidden="true"/);
   assert.doesNotMatch(html, /src=|autoPlay=/);
+});
+
+test("Lottie renders an informative real still before client motion and viewport checks", () => {
+  const html = renderToStaticMarkup(
+    createElement(ServicesLottieMedia, {
+      src: "/animation.lottie",
+      poster: "/still.jpg",
+      alt: "Localized apartment photo",
+    }),
+  );
+  assert.match(html, /src="\/still.jpg"/);
+  assert.match(html, /alt="Localized apartment photo"/);
+  assert.match(html, /loading="lazy"/);
+  assert.doesNotMatch(html, /canvas|animation.lottie/);
+});
+
+test("eager decorative hero animation still waits for motion preference and keeps a decorative poster", () => {
+  const html = renderToStaticMarkup(
+    createElement(ServicesLottieMedia, {
+      src: "/animation.json",
+      poster: "/hero.jpg",
+      alt: "",
+      eager: true,
+    }),
+  );
+  assert.match(html, /alt=""/);
+  assert.match(html, /loading="eager"/);
+  assert.doesNotMatch(html, /canvas|animation.json/);
+  const video = renderToStaticMarkup(
+    createElement(ServicesLoopMedia, {
+      src: "/hero.mp4",
+      poster: "/hero.jpg",
+      eager: true,
+    }),
+  );
+  assert.match(video, /poster="\/hero.jpg"/);
+  assert.doesNotMatch(video, /src=|autoPlay=/);
 });

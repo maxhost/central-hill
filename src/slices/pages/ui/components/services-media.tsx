@@ -1,6 +1,7 @@
 import { MediaImage } from "@core/media";
+import { isLottieMime } from "@core/media/mime";
 import type { PageMedia } from "../../contract";
-import { ServicesLoopMedia } from "./services-loop-media";
+import { ServicesLoopMedia, ServicesLottieMedia } from "./services-loop-media";
 
 export const SERVICES_HERO_IMAGE =
   "https://images.unsplash.com/photo-1469022563428-aa04fef9f5a2?auto=format&fit=crop&w=1900&q=70";
@@ -39,7 +40,22 @@ export function ServicesMedia({
   let visual;
   if (media && mime.startsWith("video/")) {
     visual = (
-      <ServicesLoopMedia src={media.url} poster={still} className={fill} />
+      <ServicesLoopMedia
+        src={media.url}
+        poster={still}
+        className={fill}
+        eager={hero}
+      />
+    );
+  } else if (media && isLottieMime(mime)) {
+    visual = (
+      <ServicesLottieMedia
+        src={media.url}
+        poster={still}
+        alt={hero ? "" : alt}
+        className={fill}
+        eager={hero}
+      />
     );
   } else if (media && mime === "image/webp") {
     // A picture selects the still poster before fetching an animated original with reduced motion.
