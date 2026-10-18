@@ -4,7 +4,6 @@ import { EMPTY_DETAIL } from "../detail";
 import {
   servicePresentationErrors,
   serviceStoredContentValid,
-  supportedServiceActor,
   serviceSaveInput,
 } from "../admin/validation";
 const input = {
@@ -53,15 +52,10 @@ test("external booking needs safe URL and label; enquiry does not", () => {
     {},
   );
 });
-test("stored-content integrity and actor-ID predicates reject incompatible values", () => {
+test("stored-content integrity rejects corrupt originals", () => {
   assert.equal(serviceStoredContentValid(undefined, null), true);
   assert.equal(serviceStoredContentValid("broken", null), false);
   assert.equal(serviceStoredContentValid("{}", { version: 99 }), false);
-  assert.equal(supportedServiceActor("staff-textual-id"), false);
-  assert.equal(
-    supportedServiceActor("11111111-1111-4111-8111-111111111111"),
-    true,
-  );
 });
 test("money cannot overflow PostgreSQL before any write", () => {
   const shape = serviceSaveInput.shape.price_from;

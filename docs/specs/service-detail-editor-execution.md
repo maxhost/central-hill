@@ -308,6 +308,7 @@ mantenga el contrato actual, acción Services detecta ID no UUID antes de cualqu
 y devuelve `unsupported_actor_id` con explicación localizada. Probar que no se altera fila,
 slugs, contenido ni galería. Esto sustituye el fallo SQL parcial por un rechazo controlado.
 
+Nota histórica anterior a ADR0036 (reemplazada por ampliación al final):
 No declarar soporte funcional de guardado con staff textual: queda bloqueado por el
 contrato existente. Si el staff real al que debe entregarse el editor usa ID textual,
 el orquestador documenta un ADR/remediación del kernel antes de G3; QA no puede aprobar
@@ -546,9 +547,9 @@ Tras cambios, repetir solo afectados más los checks integrados exigidos para el
 |---|---|
 | Base observada | `62b622b534587d30189943696a02d28e1cbbd4d8` |
 | Commit de planificación | Identificado por `savepoint/pre-service-detail-editor-2026-10-18` al crear el checkpoint |
-| Infra aislada / PID / identidad | Pendiente G0 |
-| Commit contractual G1 | Todavía no creado |
-| Commit A / B | No lanzados |
+| Infra aislada / PID / identidad | G0 verificado; registro al final |
+| Commit contractual G1 | `a4717eab06c6b1213758b60eb0fd4a44033752af` |
+| Commit A / B | A `505d1a4` integrado como `3008671`; B `079243f` como `23cc475` |
 | Candidato integrado / QA | No existe |
 | Cambios de esta etapa | Nueva spec y actualización de punteros/documentación de auditoría |
 | Checks de esta etapa | Solo revisión documental y whitespace; sin tests de aplicación |
@@ -609,3 +610,50 @@ Referencia local, sin push ni despliegue. Su creación y verificación se report
   modes.{auto,from,on_request,hidden}, source/published/unsaved/integrity/actor/emptySection,
   priceRequired/invalidEuros/externalUrl/externalLabel/mediaError/saveError/copyInvalid.
   A mapea frases de guardas a esos mensajes localizados y solicita claves nuevas al owner.
+
+### G0 verificado y consumidores en curso
+
+- DB dedicada `servicedetailqa`, contenedor `central-hill-service-detail-db`, puerto5558;
+  proxy `central-hill-service-detail-proxy` puerto4458, red propia.
+  Driver Neon real confirmó database/user servicedetailqa. Sin endpoint/credencial remoto.
+- S3rver puerto9058, bucket servicedetailqa, PID10096, sesión70146, dir temporal propio.
+  PUT/GET real comprobado, HTTP200. Staff ficticios UUID y textual creados, sin login remoto.
+- Migraciones0000–0018 aplicadas a DB vacía por agente infra; orquestador aplicó0019
+  y diez patrones de servicios con medios sintéticos/targets antiguos aprobados en una
+  transacción propia, exit0. No se ejecutó el seed que sube medios remotos.
+  SQL y manifest en `/private/tmp/central-hill-service-detail-qa/`.
+- G1 commit `a4717ea`: typecheck/lint y52tests reejecutados exit0 tras corrección de catch.
+  db:check exit0. A/B creados desde ese mismo commit, paths/ramas de sección6 verificados.
+- B commit `079243f` (5archivos asignados) integrado como `23cc475`; typecheck/lint,
+  8tests de render y detector[] exit0. A todavía trabajando en archivos exclusivos.
+- Enquiry ahora respeta cta_label ya existente: corrección intencional frente a baseline,
+  excepción documentada a «mismo CTA» AC01. Valores antiguos no se descartan ni se inventan.
+- Dev propio en3058, worktree integración, sesión72315, entorno ficticio sourced desde
+  `/private/tmp/central-hill-service-detail-qa/env.sh`; Next webpack. QA integrado pendiente.
+
+### Ampliación de scope del orquestador: ADR0036
+
+Evidencia del flujo normal `scripts/create-admin.ts` (signup sin política UUID), los IDs
+textuales de Auth y el fallo SQL previo hacen insuficiente entregar solo rechazo seguro.
+Para dar soporte real a personal normal sin perder atribución, el orquestador aprobó
+[ADR0036](../decisions/0036-translation-actor-attribution.md): columna text aditiva para
+actor real y compatibilidad con campo UUID anterior. Reemplaza el gate UUID-only de
+sección5/AC14: QA ahora debe guardar con ambos tipos, no aceptar rechazo para textual.
+
+Escritura adicional EXCLUSIVA orquestador, registrada antes de editar kernel:
+`src/core/i18n/schema.ts`, `src/core/i18n/content-write.ts`, nuevos
+`src/core/i18n/actor-attribution.ts`, `src/core/i18n/tests/actor-attribution.test.ts`,
+`docs/decisions/0036-translation-actor-attribution.md`, `docs/decisions/README.md`,
+`drizzle/0020_translation_actor_attribution.sql`, `drizzle/meta/0020_snapshot.json`,
+entrada journal y docs compartidas ya asignadas. Sin nueva tecnología ni cambio auth.
+No agentes escritores de kernel; A/B conservan alcance. Incluir la suite nueva y QA
+real de escritura source/target en candidato integrado antes de G3.
+
+- A `505d1a4` integrado como `3008671`:6archivos asignados; typecheck/lint9tests de
+  modelo y detector[] exit0. Ninguna nueva clave i18n. Ambos worktrees preservados.
+- AC19 adicional: DB ficticia servicedetailmigrationqa en el mismo contenedor, schema
+  anterior hasta0018, servicio previo con precio3550. Aplicar0019 preservó slug/precio y
+  presentation null; SQL assertion exit0. Script migration-preservation.sql en QA tmp.
+- ADR0036/migración0020 aplicada solo servicedetailqa: nueva columna text para actor real,
+  sin reescribir anteriores; source y target seam comparten helper probado. Se elimina
+  rechazo UUID-only de Services. Estado final textual debe ser guardado exitoso con autor.

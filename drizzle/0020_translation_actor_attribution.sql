@@ -1,0 +1,1 @@
+ALTER TABLE "translation" ADD COLUMN "updated_by_user_id" text;

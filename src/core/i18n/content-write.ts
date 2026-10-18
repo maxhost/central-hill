@@ -1,3 +1,4 @@
+import { translationActorAttribution } from "./actor-attribution";
 import "server-only";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
@@ -61,6 +62,7 @@ export async function setSourceContent(
     value: string;
     state: "draft";
     updated_by: string | null;
+    updated_by_user_id: string | null;
   }[] = [];
   const clears: string[] = [];
 
@@ -74,7 +76,7 @@ export async function setSourceContent(
         locale: SOURCE_LOCALE,
         value,
         state: "draft",
-        updated_by: opts?.updatedBy ?? null,
+        ...translationActorAttribution(opts?.updatedBy),
       });
     } else {
       clears.push(field);
@@ -96,6 +98,7 @@ export async function setSourceContent(
           value: sql`excluded.value`,
           state: sql`excluded.state`,
           updated_by: sql`excluded.updated_by`,
+          updated_by_user_id: sql`excluded.updated_by_user_id`,
           updated_at: sql`now()`,
         },
       });
@@ -130,10 +133,15 @@ export async function setSlug(
     .select({ entity_id: slugTable.entity_id })
     .from(slugTable)
     .where(
-      and(eq(slugTable.entity_type, type), eq(slugTable.locale, locale), eq(slugTable.slug, value)),
+      and(
+        eq(slugTable.entity_type, type),
+        eq(slugTable.locale, locale),
+        eq(slugTable.slug, value),
+      ),
     )
     .limit(1);
-  if (clash && clash.entity_id !== id) throw new SlugConflictError(type, locale, value);
+  if (clash && clash.entity_id !== id)
+    throw new SlugConflictError(type, locale, value);
 
   const [existing] = await db
     .select({ id: slugTable.id })
@@ -153,7 +161,9 @@ export async function setSlug(
       .set({ slug: value, updated_at: new Date() })
       .where(eq(slugTable.id, existing.id));
   } else {
-    await db.insert(slugTable).values({ entity_type: type, entity_id: id, locale, slug: value });
+    await db
+      .insert(slugTable)
+      .values({ entity_type: type, entity_id: id, locale, slug: value });
   }
 }
 
@@ -180,7 +190,9 @@ export async function setSlugs(
 /** Reject any attempt to write the source locale through the target seam. */
 function assertTarget(locale: Locale): void {
   if (locale === SOURCE_LOCALE) {
-    throw new Error(`setTargetTranslation: '${SOURCE_LOCALE}' is the source locale (use setSourceContent).`);
+    throw new Error(
+      `setTargetTranslation: '${SOURCE_LOCALE}' is the source locale (use setSourceContent).`,
+    );
   }
 }
 
@@ -206,7 +218,7 @@ export async function setTargetTranslation(
     value: value.trim(),
     state: opts.state ?? ("needs_review" as TranslationState),
     source_hash: hashSource(opts.sourceValue),
-    updated_by: opts.updatedBy ?? null,
+    ...translationActorAttribution(opts.updatedBy),
   };
   await db
     .insert(translation)
@@ -223,6 +235,7 @@ export async function setTargetTranslation(
         state: sql`excluded.state`,
         source_hash: sql`excluded.source_hash`,
         updated_by: sql`excluded.updated_by`,
+        updated_by_user_id: sql`excluded.updated_by_user_id`,
         updated_at: sql`now()`,
       },
     });
@@ -277,10 +290,14 @@ export async function deleteTranslation(
 export async function deleteContent(type: string, id: string): Promise<void> {
   await db
     .delete(translation)
-    .where(and(eq(translation.entity_type, type), eq(translation.entity_id, id)));
+    .where(
+      and(eq(translation.entity_type, type), eq(translation.entity_id, id)),
+    );
 }
 
 /** Remove every slug row for an entity (used on entity delete). */
 export async function deleteSlugs(type: string, id: string): Promise<void> {
-  await db.delete(slugTable).where(and(eq(slugTable.entity_type, type), eq(slugTable.entity_id, id)));
+  await db
+    .delete(slugTable)
+    .where(and(eq(slugTable.entity_type, type), eq(slugTable.entity_id, id)));
 }

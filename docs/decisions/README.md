@@ -42,6 +42,7 @@ Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 - [0033 — Home's section components move into `core/ui` as a reusable library](#0033)
 - [0034 — One icon system: server-rendered inline Iconoir SVG via `core/ui` `<Icon>`](#0034)
 - [0035 — One button: `ButtonLink`/`buttonClassName` is the mock's `.btn`](#0035)
+- [0036 — Preserve textual auth IDs in translation attribution](0036-translation-actor-attribution.md)
 
 ---
 

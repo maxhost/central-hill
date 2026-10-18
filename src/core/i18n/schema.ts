@@ -22,6 +22,8 @@ export const translation = pgTable(
     /** hash of the source field when translated — staleness detection. */
     source_hash: text(),
     updated_by: uuid(),
+    /** Canonical auth actor ID, which Better Auth can generate as text (ADR 0036). */
+    updated_by_user_id: text(),
     ...timestamps,
   },
   (t) => [unique("translation_key").on(t.entity_type, t.entity_id, t.field, t.locale)],

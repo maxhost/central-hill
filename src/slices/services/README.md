@@ -125,9 +125,8 @@ from source rows. Reads validate each field and fall back independently. About/I
 titles and primary CTA label retain their existing fields to avoid duplicate sources.
 
 Save validates effective presentation, media and stored integrity before writes. Existing
-non-UUID staff IDs cannot be attributed by the kernel UUID column; Services returns
-`unsupported_actor_id` before mutations rather than partially saving. This is a documented
-compatibility limit, not support for textual staff attribution. Invalid stored JSON blocks
+staff IDs are attributed through the kernel's additive text column (ADR0036/migration0020),
+with UUID compatibility retained. Both normal textual and UUID users can save. Invalid stored JSON blocks
 ordinary saves instead of being silently replaced with an empty detail.
 
 Implementation and QA progress: `docs/specs/service-detail-editor-execution.md`.

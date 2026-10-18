@@ -29,7 +29,6 @@ import {
   serviceSaveInput,
   servicePresentationErrors,
   serviceStoredContentValid,
-  supportedServiceActor,
 } from "./validation";
 
 /**
@@ -158,8 +157,6 @@ export async function deleteServiceCategory(
 // ── Services ─────────────────────────────────────────────────────────────────
 export async function saveService(raw: unknown): Promise<ServiceSaveResult> {
   const staff = await requireStaff();
-  if (!supportedServiceActor(staff.userId))
-    return { ok: false, error: "unsupported_actor_id" };
 
   const parsed = serviceSaveInput.safeParse(raw);
   if (!parsed.success) {

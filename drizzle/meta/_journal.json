@@ -141,6 +141,13 @@
       "when": 1792337245345,
       "tag": "0019_service_presentation",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1792338314482,
+      "tag": "0020_translation_actor_attribution",
+      "breakpoints": true
     }
   ]
 }

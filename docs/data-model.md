@@ -538,3 +538,10 @@ button label and translated contact introduction; the destination and Settings c
 composed in code. [T] leaves use `page_content` / `block:<path>` in the existing pipeline.
 `og_image_media_id` remains the existing column and must reference a still-image MIME.
 No catalogue or company-contact data is duplicated in the page row.
+
+### Translation actor attribution (ADR0036, migration0020)
+
+`translation.updated_by_user_id` is nullable text and stores the real auth user ID.
+`updated_by` remains a nullable legacy UUID populated when the actor ID is a valid UUID.
+Old attribution reads coalesce new text with legacy UUID cast to text. No auth IDs or
+old rows are rewritten. Source and target write seams share the same attribution helper.

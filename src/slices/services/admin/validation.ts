@@ -123,6 +123,3 @@ export function serviceStoredContentValid(
       parseServicePresentation(presentationRaw) !== null)
   );
 }
-export function supportedServiceActor(userId: string): boolean {
-  return z.uuid().safeParse(userId).success;
-}
