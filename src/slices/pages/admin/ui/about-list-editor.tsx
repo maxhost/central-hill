@@ -20,6 +20,7 @@ export function AboutListEditor({ label, itemLabel, addLabel, items, ids, min, m
   error?: string;
 }) {
   const tb = useTranslations("backoffice");
+  const t = useTranslations("pages");
   const actions = [
     { action: "up", icon: "arrow-up", label: "media.moveUp" },
     { action: "down", icon: "arrow-down", label: "media.moveDown" },
@@ -27,6 +28,7 @@ export function AboutListEditor({ label, itemLabel, addLabel, items, ids, min, m
   ] as const;
   return <div className="space-y-3">
     <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">{label}</p>
+    <p className="text-xs text-ink-soft" role="status">{t("admin.aboutListBounds", { count: items.length, min, max })}</p>
     {error ? <p role="alert" className="text-sm text-accent-deep">{error}</p> : null}
     {items.map((item, index) => <div key={ids[index]} className="space-y-3 rounded-md border border-line p-3">
       <div className="flex items-center justify-between gap-2">
