@@ -1,5 +1,17 @@
 # Central Hill agent instructions
 
+## Active task — Blog page implementation (2026-10-18)
+
+Read [Blog CMS audit](docs/specs/blog-cms-audit.md) and
+[proposed plan/spec](docs/specs/blog-cms-plan.md). Implementation of the revised plan is now authorized by the user.
+Read docs/specs/blog-page-execution.md for contracts, ownership and checks. Baseline documentation1c48555/code d4e13c9.
+Current plan revision focuses Pages→Blog on listing header, Featured/Journal
+headings, newsletter copy, listing SEO and EN/PT/ES/FR translation wiring, per
+the user's four screenshots. Article-editor/search improvements are follow-ups.
+Preserve previews3059–3062; no main integration, push or deployment.
+Future verification is normal functional save/reload/public/media checks, without
+an expanded adversarial matrix. Prior handoffs below remain preserved.
+
 Read [CLAUDE.md](CLAUDE.md) for architecture and [docs/multi-agent-workflow.md](docs/multi-agent-workflow.md) for the authoritative execution procedure. Read the active spec in `docs/specs/`, the assigned slice README and relevant ADRs before editing.
 
 ## Current handoff
