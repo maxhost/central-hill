@@ -22,6 +22,9 @@ import { ContactForm } from "@slices/leads/contract";
 import { getGlobals } from "@slices/settings/contract";
 import { getAboutPage } from "../contract";
 import { aboutSchema, defaultAbout } from "../schemas/about";
+import { normalizeAbout } from "../about-content";
+import { aboutAudienceImage, aboutContactHref, aboutStatColumns } from "./about-presentation";
+import { AboutMedia } from "./components/about-media";
 import { FaqSection } from "./components/faq-section";
 import { certLogoAlt } from "./about-certifications";
 import { type OfficeRow, officeRows, resolveOfficeLabels } from "./about-office";
@@ -35,7 +38,7 @@ import { orMessage } from "./or-message";
  * Every section uses existing `core/ui` components (consistency over mock fidelity):
  * - Hero: `Hero` with the Buildings listing configuration (as on Guests and Real Estate).
  * - "How We Started" and "Giving Back…": `IntroSplit` (`imagePosition="left"`, `eyebrow`).
- * - Company numbers: `StatBand` (`columns={5}`), whose `CountUp` replaces the page's old
+ * - Company numbers: `StatBand` (up to five columns), whose `CountUp` replaces the page's old
  *   `OwnerStatsCounter`.
  * - "One Platform. Three Audiences.": `SectionHead` + `PhotoFeatureGrid`.
  * - "What Guides Us": `SectionHead` + `NumberedFeatureGrid`.
@@ -45,7 +48,7 @@ import { orMessage } from "./or-message";
  * - FAQ: the shared `FaqSection` (only when `faq_group_key` is set); title from `faq.title`
  *   (blank → `pages.faqTitle`).
  * - "Let's Start a Conversation": `SectionHead`, then `BenefitCards` as link cards
- *   (`columns={3}`, per-item `href` fixed by position + `linkLabel`), then `ContactSplit` — the dark office panel
+ *   (`columns={3}`, per-item semantic destination + `linkLabel`), then `ContactSplit` — the dark office panel
  *   (address / bookings and check-in phones / email / website / office hours from company_settings
  *   via `getGlobals`, so they're edited once in /admin/settings; a blank check-in phone or website
  *   hides its row; row labels from `contact.office_labels`, see `./about-office`) beside the
@@ -75,11 +78,7 @@ const AUDIENCE_FALLBACK_IMGS = [
   "https://images.pexels.com/photos/39205181/pexels-photo-39205181.jpeg?auto=compress&cs=tinysrgb&w=1200",
   "https://images.pexels.com/photos/7415097/pexels-photo-7415097.jpeg?auto=compress&cs=tinysrgb&w=1200",
   "https://images.pexels.com/photos/36733412/pexels-photo-36733412.jpeg?auto=compress&cs=tinysrgb&w=1200",
-];
-/** Contact card destinations, by position (guests / owners / partners). */
-const CONTACT_CARD_PATHS = ["/buildings", "/owners", "/real-estate"];
-
-const SPLIT_SIZES = "(max-width: 1024px) 100vw, 600px";
+] as const;
 
 // Standard page shell (Real Estate, Guests): padding, 84px scroll margin, 1240px/28px column,
 // and the warm `alt` band.
@@ -136,7 +135,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
     getTranslations("pages"),
   ]);
   // A row (or a cache entry) still in the pre-3d shape renders the default copy, not a crash.
-  const c = page && aboutSchema.safeParse(page.content).success ? page.content : defaultAbout;
+  const c = normalizeAbout(page && aboutSchema.safeParse(page.content).success ? page.content : defaultAbout);
   const media = page?.media ?? {};
   const faqGroupKey = c.faq_group_key ?? "";
   // Photo alts (S2): the section's `image_alt` → `pages.about.alts.<section>`.
@@ -154,7 +153,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
     icon: <Icon name={a.icon_key} size={30} className="block" />,
     title: a.title,
     description: a.description,
-    image: media[a.image_media_id]?.url || AUDIENCE_FALLBACK_IMGS[i],
+    image: aboutAudienceImage(media[a.image_media_id]?.url, i, AUDIENCE_FALLBACK_IMGS),
   }));
   const valueItems = c.values.items.map((v) => ({ title: v.title, body: v.description }));
   // Sized like Owners' showcase bullet icons.
@@ -180,11 +179,11 @@ export async function AboutPage({ locale }: { locale: Locale }) {
       description: cert.description,
     };
   });
-  const contactCards: BenefitCardItem[] = c.contact.cards.map((card, i) => ({
+  const contactCards: BenefitCardItem[] = c.contact.cards.map((card) => ({
     icon: <Icon name={card.icon_key} size={30} className="block" />,
     title: card.title,
     description: card.description,
-    href: `/${locale}${CONTACT_CARD_PATHS[i]}`,
+    href: aboutContactHref(card, locale),
     linkLabel: card.link_label,
   }));
 
@@ -227,20 +226,18 @@ export async function AboutPage({ locale }: { locale: Locale }) {
               eyebrow={c.story.eyebrow || undefined}
               headline={c.story.headline}
               paragraphs={c.story.narrative}
-              image={photo(
-                media[c.story.image_media_id],
-                { src: STORY_FALLBACK_SRC, alt: alts.story },
-                { sizes: SPLIT_SIZES },
-              )}
+              image={<AboutMedia media={media[c.story.image_media_id]} fallback={STORY_FALLBACK_SRC} alt={alts.story} />}
             />
           </Reveal>
         </div>
       </section>
 
-      {/* Company numbers: the same `StatBand` as Home/Owners/Buildings, five columns. */}
-      <Reveal label="about-stats">
-        <StatBand cells={c.stats} columns={5} />
-      </Reveal>
+      {/* No empty band; variable figures keep the approved five-column ceiling. */}
+      {c.stats.length > 0 ? (
+        <Reveal label="about-stats">
+          <StatBand cells={c.stats} columns={aboutStatColumns(c.stats.length)} />
+        </Reveal>
+      ) : null}
 
       {/* "One Platform. Three Audiences.": `SectionHead` + `PhotoFeatureGrid` (Guests' teasers). */}
       <section id="serve" className={`${SECTION_SHELL} ${ALT_BAND}`}>
@@ -286,16 +283,10 @@ export async function AboutPage({ locale }: { locale: Locale }) {
             body={c.organisation.intro || undefined}
             bullets={departmentBullets}
             badge={c.organisation.badge || undefined}
+            badgeIcon={<Icon name={c.organisation.badge_icon_key || "check"} size={20} />}
             tone="alt"
             imagePosition="right"
-            image={photo(
-              media[c.organisation.image_media_id],
-              { src: ORGANISED_FALLBACK_SRC, alt: alts.organisation },
-              {
-                sizes: "(max-width: 1024px) 100vw, 560px",
-                className: "aspect-[4/5] w-full rounded-sm object-cover",
-              },
-            )}
+            image={<AboutMedia media={media[c.organisation.image_media_id]} fallback={ORGANISED_FALLBACK_SRC} alt={alts.organisation} frame="showcase" />}
           />
         </Reveal>
       </div>
@@ -325,11 +316,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
               eyebrow={c.community.eyebrow || undefined}
               headline={c.community.headline}
               paragraphs={c.community.copy}
-              image={photo(
-                media[c.community.image_media_id],
-                { src: COMMUNITY_FALLBACK_SRC, alt: alts.community },
-                { sizes: SPLIT_SIZES },
-              )}
+              image={<AboutMedia media={media[c.community.image_media_id]} fallback={COMMUNITY_FALLBACK_SRC} alt={alts.community} />}
             />
           </Reveal>
         </div>
