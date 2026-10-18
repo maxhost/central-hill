@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import { ButtonLink } from "@core/ui";
 import type { BookingAction } from "./service-booking-card";
 
@@ -20,10 +23,41 @@ export function ServiceMobileBar({
   suffix: string | null;
   action: BookingAction;
 }) {
+  const barRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!bar) return;
+    const root = document.documentElement;
+    const mobile = window.matchMedia("(max-width:980px)");
+    const previousLift = root.style.getPropertyValue("--fab-lift");
+    const previousPriority = root.style.getPropertyPriority("--fab-lift");
+    const restoreLift = () => {
+      if (previousLift)
+        root.style.setProperty("--fab-lift", previousLift, previousPriority);
+      else root.style.removeProperty("--fab-lift");
+    };
+    const updateLift = () => {
+      if (mobile.matches)
+        root.style.setProperty("--fab-lift", `${Math.ceil(bar.getBoundingClientRect().height)}px`);
+      else restoreLift();
+    };
+    // Labels, fonts and viewport changes can all change the bar's rendered height.
+    const observer = new ResizeObserver(updateLift);
+    observer.observe(bar);
+    mobile.addEventListener("change", updateLift);
+    updateLift();
+    return () => {
+      observer.disconnect();
+      mobile.removeEventListener("change", updateLift);
+      restoreLift();
+    };
+  }, []);
+
   return (
     <>
       <style>{LIFT_FAB}</style>
-      <div className="fixed inset-x-0 bottom-0 z-[55] flex items-center justify-between gap-4 border-t border-line bg-surface px-5 py-[14px] min-[981px]:hidden">
+      <div ref={barRef} className="fixed inset-x-0 bottom-0 z-[55] flex items-center justify-between gap-4 border-t border-line bg-surface px-5 py-[14px] min-[981px]:hidden">
         {price !== null ? <div className="min-w-0 font-serif text-[22px] leading-[1.6] text-ink [overflow-wrap:anywhere]">
           {price}
           {suffix ? (
