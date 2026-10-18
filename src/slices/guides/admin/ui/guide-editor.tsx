@@ -77,7 +77,7 @@ function Editor({
   const [page, setPage] = useState(initial?.data ?? draft),
     [saved, setSaved] = useState<GuidePageEdit | undefined>(initial?.data);
   const [busy, setBusy] = useState(false),
-    [partial, setPartial] = useState<string | null>(null);
+    [partial, setPartial] = useState(false);
   const [errors, setErrors] = useState<Record<string, Record<string, string>>>(
     {},
   );
@@ -149,11 +149,14 @@ function Editor({
         if (parent instanceof HTMLDetailsElement) parent.open = true;
         parent = parent.parentElement;
       }
-      const input = name
-        ? document.getElementById(
-            `${id}-${name.replace(/^(source|changes)\./, "")}`,
-          )
-        : block?.querySelector("input, textarea, select, button");
+      const fieldName = name?.replace(/^(source|changes)\./, "");
+      const targetName = fieldName === "slugs.en" ? "slug" : fieldName;
+      const namedInput = targetName
+        ? document.getElementById(`${id}-${targetName}`)
+        : null;
+      const input =
+        namedInput ??
+        block?.querySelector("input, textarea, select, button, summary");
       (input as HTMLElement | null)?.focus();
       block?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     });
@@ -163,9 +166,7 @@ function Editor({
     if (result.error === "partial_write") {
       if (!saved && id === page.id)
         window.history.replaceState(null, "", `/admin/guides/${page.id}`);
-      setPartial(
-        `${result.entityIds.join(", ")} · ${result.failedStep} · ${result.completedSteps.join(", ")}`,
-      );
+      setPartial(true);
       toast.error(t("partialWrite"));
       return;
     }
@@ -211,11 +212,13 @@ function Editor({
     if (disabled || lock.current) return;
     lock.current = true;
     setBusy(true);
+    let actionStarted = false;
     try {
       if (needsMedia && !(await queue.flush())) {
         toast.error(t("error"));
         return;
       }
+      actionStarted = true;
       const result = await action();
       if (!result.ok) {
         receiveErrors(id, result);
@@ -225,7 +228,14 @@ function Editor({
       setErrors((prev) => ({ ...prev, [id]: {} }));
       toast.success(t("saved"));
     } catch {
-      toast.error(t("error"));
+      if (actionStarted) {
+        if (!saved && id === page.id)
+          window.history.replaceState(null, "", `/admin/guides/${page.id}`);
+        setPartial(true);
+        toast.error(t("partialWrite"));
+      } else {
+        toast.error(t("error"));
+      }
     } finally {
       lock.current = false;
       setBusy(false);
@@ -502,7 +512,6 @@ function Editor({
           className="space-y-3 rounded-md border border-red-200 p-4 text-sm text-red-700"
         >
           <p>{t("partialWrite")}</p>
-          <p className="break-words">{partial}</p>
           <AdminButton
             onClick={() => {
               if (!dirty || window.confirm(t("unsaved")))
@@ -527,7 +536,7 @@ function Editor({
                 className="block max-w-full break-words text-left text-sm text-red-700 underline"
                 onClick={() => focusEntity(id, key)}
               >
-                {message} · {key} · {id}
+                {message}
               </button>
             )),
           )}
