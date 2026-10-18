@@ -2093,7 +2093,8 @@
       "generate": "Gerar",
       "generateAll": "Gerar (tudo)",
       "approveAll": "Aprovar tudo",
-      "editLabel": "Editar {field}"
+      "editLabel": "Editar {field}",
+      "conflict": "Não foi possível guardar esta tradução. A fonte pode ter mudado ou sido removida. O rascunho foi mantido; reveja a fonte antes de tentar novamente."
     }
   }
 }

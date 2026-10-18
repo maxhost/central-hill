@@ -30,6 +30,7 @@ export function TranslationRowActions({
   const [pending, startTransition] = useTransition();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value ?? "");
+  const [saveError, setSaveError] = useState(false);
 
   const run = (fn: () => Promise<unknown>) =>
     startTransition(async () => void (await fn()));
@@ -44,14 +45,21 @@ export function TranslationRowActions({
           onChange={(e) => setDraft(e.target.value)}
           aria-label={t("actions.editLabel", { field })}
         />
+        {saveError ? <p role="alert" className="text-sm text-accent-deep">{t("actions.conflict")}</p> : null}
         <div className="flex flex-wrap gap-2">
           <AdminButton
             variant="primary"
             disabled={pending}
             onClick={() =>
               run(async () => {
-                await saveField(type, id, field, locale, draft);
-                setEditing(false);
+                setSaveError(false);
+                try {
+                  const result = await saveField(type, id, field, locale, draft);
+                  if (result.ok) setEditing(false);
+                  else setSaveError(true);
+                } catch {
+                  setSaveError(true);
+                }
               })
             }
           >
@@ -61,6 +69,7 @@ export function TranslationRowActions({
             disabled={pending}
             onClick={() => {
               setDraft(value ?? "");
+              setSaveError(false);
               setEditing(false);
             }}
           >
@@ -94,6 +103,7 @@ export function TranslationRowActions({
         disabled={pending}
         onClick={() => {
           setDraft(value ?? "");
+          setSaveError(false);
           setEditing(true);
         }}
       >

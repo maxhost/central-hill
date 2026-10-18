@@ -1,5 +1,11 @@
 # Slice `translation` / `translation-pipeline` (S14)
 
+About follow-up (ADR0037): page-content target writes compare and lock the source
+value in the same SQL statement. If source has changed/disappeared, the write is
+rejected; generation counts only successful writes. Per-cell editing retains its
+draft and shows an error on failed saves. Page-content mutations also invalidate
+`page:about`, so approved About copy updates without rebuilding the site.
+
 The LLM-assisted, human-reviewed **translation workflow** (ADR 0007 / ADR 0021).
 Owns **no tables** and **no migration** — it operates on the cross-cutting kernel
 `translation` table **generically by `entity_type`**, exclusively through the

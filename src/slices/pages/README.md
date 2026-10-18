@@ -1,5 +1,36 @@
 # Slice `pages` (S9)
 
+## About CMS follow-up (2026-10-18)
+
+The current About implementation supersedes the fixed-count/image-only statements
+in the historical About notes below. See `docs/specs/about-cms-execution.md` and
+ADR0037. Section composition stays fixed; its eight lists are bounded and support
+add/remove/reorder. Private `_list_ids` retain item identity, including string
+paragraphs. Legacy `legacy_N` IDs resolve the original numeric translation key;
+new UUID IDs use `@UUID` keys. `_retired_ids` prevents reuse. These metadata are
+not translatable and are not shown in the editor.
+
+Contact cards carry a semantic destination (`buildings|owners|real_estate`),
+normalized once for legacy rows. New cards default visibly to Buildings and allow
+selection; moving them never changes their locale-aware destination. Audience
+fallback photos also follow identity. Figures support0–8 (zero hides the band),
+and the other lists keep their maximum column count while adding rows.
+
+Story/Organisation/Community accept image, animated WebP, MP4/WebM and Lottie,
+using Home's players. WebP in these slots bypasses optimization. IntroSplit keeps
+its flexible frame and Organisation keeps4:5. Badge icon is editable, blank→check.
+Hero/audience/logo/OG slots stay image-only, and About validates reference
+existence and MIME before saving.
+
+Missing About source opens `defaultAbout`; an invalid persisted row blocks save.
+About saves require the revision from `getPageEditModel` and return a new revision
+for consecutive saves. A single PostgreSQL statement compares the stored snapshot,
+writes the page and synchronizes source translation rows through the kernel seam.
+Existing target values/state/actor remain unchanged for surviving fields; removed
+or cleared fields are deleted. Source-guarded target writes cannot recreate a
+removed field. Translation actions invalidate `page:about`. Other pages retain
+their existing save model; Settings, FAQ and shared Leads text remain separate.
+
 The five **editable fixed marketing pages** — Home, Owners, Real Estate, About, and the
 Guest landing — plus the `blog` and `guides` rows (copy those sections show outside a post or
 guide) and the `services` row (Services listing editorial sections) and the `buildings` row (the Buildings **listing**'s editable sections, rendered inside slice

@@ -2093,7 +2093,8 @@
       "generate": "Générer",
       "generateAll": "Générer (tout)",
       "approveAll": "Tout approuver",
-      "editLabel": "Modifier {field}"
+      "editLabel": "Modifier {field}",
+      "conflict": "Cette traduction n’a pas pu être enregistrée. La source a peut-être changé ou été supprimée. Votre brouillon est conservé ; vérifiez la source avant de réessayer."
     }
   }
 }

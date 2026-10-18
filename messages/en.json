@@ -2093,7 +2093,8 @@
       "generate": "Generate",
       "generateAll": "Generate (all)",
       "approveAll": "Approve all",
-      "editLabel": "Edit {field}"
+      "editLabel": "Edit {field}",
+      "conflict": "This translation could not be saved. The source may have changed or been removed. Your draft is still here; review the source before retrying."
     }
   }
 }

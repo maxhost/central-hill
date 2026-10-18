@@ -249,3 +249,24 @@ ownership de Leads y fallback compartido, antes de ampliar archivos.
 commits, implementación, migraciones, merge a main, push ni despliegue. Las
 decisiones de fase0 se resolverán como parte de la implementación posterior;
 no se delegó trabajo a implementadores en esta revisión.
+
+## Progreso de implementación autorizado
+
+La sección anterior registra la entrega de auditoría inicial, no el estado actual.
+Contratos14a4c7c y revisión devueltaae859f7. A0fcf8c3+22c2325 integradosc30e9f1+a904413;
+B5a20557 integrado7b291f7. Follow-up fotos fallback98f7b57 integrado73c65e7;
+límites visibles2123077 integradofc38270. Root d63dd3f localiza recarga y4d3e157
+protege escrituras target tras eliminación de source (API kernel devuelve boolean;
+Translation saveField reporta conflicto y generación sólo cuenta writes efectivos).
+Root ownership ampliado a `src/slices/translation/server/generate.ts`,
+`src/slices/translation/admin/ui/row-actions.tsx` y README de Translation: necesarios
+para propagar rechazo, conservar el draft y mostrar error al operador.
+
+Candidato4d3e157: build exit0,167tests explícitos exit0, lint exit0 con5warnings
+históricos; typecheck integrado previo exit0 y TypeScript del build exit0.
+Detector integrado exit0, `[]`. QA independiente en curso, informe separado.
+Preview3062 PID43187/sesión11232 en su primer arranque; DB/bucketaboutcmsqa.
+Se añadieron fixtures locales de JPG/WebP animado/MP4/WebM real generado con canvas/
+Lottie JSON y staff ficticio. No se ejecutó ningún seed de producción.
+Nuevo contacto se crea con destino Buildings visible y editable, conforme al
+control aprobado en el contrato UI; todos los destinos son enums localizables.

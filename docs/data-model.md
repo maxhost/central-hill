@@ -566,3 +566,20 @@ IDs/targets/slugs; all published-tree mutations validate the effective result.
 Statements are sequential via existing seams, with explicit partial-write recovery.
 Pages owns the shared guide_aside, Settings owns shared icon keys, and Geography owns
 city options/status. See `docs/specs/guides-cms-execution.md`.
+
+### About bounded lists (ADR0037, no DDL)
+
+`page_content.key='about'` keeps its fixed section composition, with bounded lists:
+story paragraphs1–8, figures0–8, audiences/values/departments/certifications/contact
+cards1–12 and community paragraphs1–8. Strings remain strings. Optional neutral
+`_list_ids` maps each collection path to its ordered IDs; `_retired_ids` stores
+retired `path:id` pairs. Metadata is private to the editor and never translated.
+
+Legacy item ID `legacy_N` always resolves `block:<collection>.N.<leaf>`, regardless
+of the item's current position. New UUID IDs resolve `block:<collection>.@UUID.<leaf>`.
+The source snapshot synchronizes these stable keys and clears removed fields.
+Contact cards add optional semantic `destination` (legacy normalized once); the
+selected route travels with the card. Organisation adds optional `badge_icon_key`.
+Story/Organisation/Community media references accept images, video and Lottie;
+all other About media slots retain image-only semantics. Save validates MIME and
+reference existence and uses a guarded single SQL statement for page/source rows.
