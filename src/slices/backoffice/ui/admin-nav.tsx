@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { cn } from "@core/ui";
+import { cn, UiIcon } from "@core/ui";
 import type { AdminNavGroup } from "../types";
 
 /**
@@ -16,7 +16,7 @@ export function AdminNav({ groups }: { groups: AdminNavGroup[] }) {
   const pathname = usePathname();
 
   const isActive = (href: string) =>
-    href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+    pathname === href || (href !== "/admin" && pathname.startsWith(`${href}/`));
 
   return (
     <nav className="flex flex-col gap-6">
@@ -28,20 +28,51 @@ export function AdminNav({ groups }: { groups: AdminNavGroup[] }) {
           <ul className="mt-2 space-y-0.5">
             {group.items.map((item) => {
               const active = isActive(item.href);
+              const childActive = item.children?.some((child) => isActive(child.href));
+              const showChildren = active || childActive;
               return (
                 <li key={item.id}>
                   <Link
                     href={item.href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "block rounded-md px-3 py-2 text-sm transition-colors",
+                      "flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
                       active
                         ? "bg-accent/10 font-medium text-accent-deep"
+                        : childActive ? "font-medium text-ink"
                         : "text-ink hover:bg-bg/60",
                     )}
                   >
                     {t(item.label)}
+                    {item.children && item.children.length > 0 && (
+                      <UiIcon
+                        name={showChildren ? "nav-arrow-down" : "nav-arrow-right"}
+                        size={16}
+                        className="shrink-0"
+                      />
+                    )}
                   </Link>
+                  {showChildren && item.children && (
+                    <ul className="ml-3 mt-0.5 space-y-0.5 border-l border-line pl-2">
+                      {item.children.map((child) => {
+                        const active = isActive(child.href);
+                        return (
+                          <li key={child.id}>
+                            <Link
+                              href={child.href}
+                              aria-current={active ? "page" : undefined}
+                              className={cn(
+                                "block rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                                active ? "bg-accent/10 font-medium text-accent-deep" : "text-ink hover:bg-bg/60",
+                              )}
+                            >
+                              {t(child.label)}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
                 </li>
               );
             })}

@@ -51,6 +51,10 @@ row is treated as not-staff.
   `composeAdminNav`. Composition is explicit (no module-level mutation) so the
   sidebar is deterministic under RSC. Nav labels are i18n **keys** resolved
   against the `backoffice` namespace.
+  Screens may set `parentId` to a top-level screen in the same group. Its children
+  appear beneath it while the parent or a child route is active; the parent link
+  still opens its normal list. Role filtering runs before nesting, and a visible
+  child whose parent is unavailable stays accessible at the top level.
 - **Shell** — `AdminShell`, `Dashboard`, `LoginForm`.
 - **Primitives** — `AdminPageHeader`, `AdminCard`, `EmptyState`, `StateBadge`,
   `DataTable` (+ `Column`), `TranslationFieldRow` (translation-review scaffold).

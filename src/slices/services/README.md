@@ -87,8 +87,8 @@ detail, categories and any S9 teaser subscribe to it). Called by the services ad
 ## Backoffice (`admin/`) — category manager + service CRUD (S12)
 
 Plugs into the backoffice shell. Contributes two `content`-group screens
-(`admin/screens.ts` → `servicesAdminScreens`): "Service categories" (order 60) and
-"Services" (order 65). Lists + editors mount under
+(`admin/screens.ts` → `servicesAdminScreens`): "Services" (order 20) with
+"Service categories" as its submenu on service and category routes. Lists + editors mount under
 `app/(admin)/admin/(panel)/{service-categories,services}/…`.
 
 - `admin/validation.ts` — `serviceCategorySaveInput` (slug/icon/position + [T] name) and

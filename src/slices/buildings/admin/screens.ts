@@ -15,5 +15,6 @@ export const buildingsAdminScreens: AdminScreen[] = [
     label: "nav.amenities",
     group: "content",
     order: 15,
+    parentId: "buildings.list",
   },
 ];

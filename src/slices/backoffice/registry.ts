@@ -29,10 +29,20 @@ export function composeAdminNav(extra: AdminScreen[] = [], role?: StaffRole): Ad
     (s) => !s.roles || (role !== undefined && s.roles.includes(role)),
   );
 
-  return GROUP_ORDER.map<AdminNavGroup>((id) => ({
-    id,
-    items: visible
+  return GROUP_ORDER.map<AdminNavGroup>((id) => {
+    const screens = visible
       .filter((s) => s.group === id)
-      .sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || a.id.localeCompare(b.id)),
-  })).filter((g) => g.items.length > 0);
+      .sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || a.id.localeCompare(b.id));
+    // Only nest beneath a visible top-level parent. Missing/filtered parents
+    // leave their permitted children accessible as top-level links.
+    const parentIds = new Set(screens.filter((s) => !s.parentId).map((s) => s.id));
+    const isChild = (s: AdminScreen) => s.parentId !== undefined && parentIds.has(s.parentId);
+    return {
+      id,
+      items: screens.filter((s) => !isChild(s)).map((screen) => {
+        const children = screens.filter((s) => isChild(s) && s.parentId === screen.id);
+        return children.length ? { ...screen, children } : screen;
+      }),
+    };
+  }).filter((g) => g.items.length > 0);
 }

@@ -7,5 +7,5 @@ import type { AdminScreen } from "@slices/backoffice/contract";
  * Label key resolves against the `backoffice` namespace.
  */
 export const geographyAdminScreens: AdminScreen[] = [
-  { id: "geography.cities", href: "/admin/cities", label: "nav.cities", group: "content", order: 50 },
+  { id: "geography.cities", href: "/admin/cities", label: "nav.cities", group: "content", order: 60 },
 ];

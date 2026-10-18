@@ -14,7 +14,12 @@ Migrations0019/0020 were applied only to isolated local QA databases; no push/de
 
 Previous Services listing editor delivery remains in
 [Services handoff 2026-10-18](docs/specs/handoff-services-2026-10-18.md).
-No next implementation is assigned yet. Update this pointer when the active task changes.
+Current task: Guides listing page editor audited and specified in
+[Guides page editor](docs/specs/guides-page-editor.md); implementation not started.
+City control is a single show-filter toggle, with real filtering of guides and
+recommendations when enabled. Individual guide CMS is a later task. Preserve
+the uncommitted, user-reviewed sidebar work documented in
+[Sidebar refinements](docs/specs/buildings-sidebar-submenu.md).
 
 ## Working agreement
 

@@ -76,8 +76,8 @@ ISR caches on publish. Called by the blog admin actions once the backoffice shel
 ## Backoffice (`admin/`) — category/author managers + post editor (S12)
 
 Plugs into the backoffice shell. Contributes three `content`-group screens
-(`admin/screens.ts` → `blogAdminScreens`): "Blog categories" (80), "Authors" (85),
-"Posts" (90). Lists + editors mount under
+(`admin/screens.ts` → `blogAdminScreens`): "Blog Posts" (30) with "Blog categories"
+and "Authors" as submenus on post/category/author routes. Lists + editors mount under
 `app/(admin)/admin/(panel)/{blog-categories,authors,posts}/…`.
 
 - `admin/validation.ts` — `blogCategorySaveInput`, `authorSaveInput`, and

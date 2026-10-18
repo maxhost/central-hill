@@ -12,6 +12,7 @@ export const servicesAdminScreens: AdminScreen[] = [
     label: "nav.serviceCategories",
     group: "content",
     order: 60,
+    parentId: "services.list",
   },
-  { id: "services.list", href: "/admin/services", label: "nav.services", group: "content", order: 65 },
+  { id: "services.list", href: "/admin/services", label: "nav.services", group: "content", order: 20 },
 ];

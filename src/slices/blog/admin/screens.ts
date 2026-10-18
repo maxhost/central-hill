@@ -12,7 +12,8 @@ export const blogAdminScreens: AdminScreen[] = [
     label: "nav.blogCategories",
     group: "content",
     order: 80,
+    parentId: "blog.posts",
   },
-  { id: "blog.authors", href: "/admin/authors", label: "nav.authors", group: "content", order: 85 },
-  { id: "blog.posts", href: "/admin/posts", label: "nav.posts", group: "content", order: 90 },
+  { id: "blog.authors", href: "/admin/authors", label: "nav.authors", group: "content", order: 85, parentId: "blog.posts" },
+  { id: "blog.posts", href: "/admin/posts", label: "nav.posts", group: "content", order: 30 },
 ];

@@ -59,3 +59,25 @@ test("unrestricted screens are visible even without a role", () => {
   assert.ok(ids.includes("crm.leads"));
   assert.ok(!ids.includes("system.users"));
 });
+
+const buildings: [AdminScreen, AdminScreen] = [
+  { id: "buildings.list", href: "/admin/buildings", label: "nav.buildings", group: "content", order: 10 },
+  { id: "buildings.amenities", parentId: "buildings.list", href: "/admin/amenities", label: "nav.amenities", group: "content", order: 15 },
+];
+
+test("nests Amenities beneath Buildings without duplicating the link", () => {
+  const content = composeAdminNav([...extra, ...buildings], "editor").find((g) => g.id === "content");
+  assert.ok(content);
+  assert.ok(!content.items.some((s) => s.id === "buildings.amenities"));
+  assert.deepEqual(content.items.find((s) => s.id === "buildings.list")?.children?.map((s) => s.href), ["/admin/amenities"]);
+});
+
+test("filters children by role and retains permitted links when a parent is hidden or absent", () => {
+  const restrictedChild = [{ ...buildings[0] }, { ...buildings[1], roles: ["admin" as const] }];
+  assert.equal(composeAdminNav(restrictedChild, "editor").find((g) => g.id === "content")?.items[0]?.children, undefined);
+  const restrictedParent = [{ ...buildings[0], roles: ["admin" as const] }, buildings[1]];
+  for (const screens of [restrictedParent, [buildings[1]]]) {
+    const content = composeAdminNav(screens, "editor").find((g) => g.id === "content");
+    assert.deepEqual(content?.items.map((s) => s.id), ["buildings.amenities"]);
+  }
+});

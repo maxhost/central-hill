@@ -28,10 +28,16 @@ export interface AdminScreen {
   order?: number;
   /** Roles allowed to see the screen; omitted ⇒ visible to any staff member. */
   roles?: StaffRole[];
+  /** Optional top-level screen in the same group to nest this link beneath. */
+  parentId?: string;
+}
+
+export interface AdminNavItem extends AdminScreen {
+  children?: AdminScreen[];
 }
 
 /** A non-empty sidebar group of screens, ready to render. */
 export interface AdminNavGroup {
   id: AdminNavGroupId;
-  items: AdminScreen[];
+  items: AdminNavItem[];
 }

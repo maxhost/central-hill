@@ -293,6 +293,7 @@ building** (the apartments slice has no menu entry of its own — see its README
 ### Amenity taxonomy editor (`/admin/amenities`)
 
 A second `content`-group screen (`buildings.amenities`, nav key `backoffice.nav.amenities`),
+shown as a submenu beneath Buildings on building and amenity routes,
 mirroring the service-category editor: list at `/admin/amenities`, create at `/new`, edit +
 delete at `/[id]` (routes under `app/(admin)/admin/(panel)/amenities/…`).
 
