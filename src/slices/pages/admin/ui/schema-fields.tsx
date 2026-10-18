@@ -77,7 +77,7 @@ export function NodeField(props: RenderProps) {
     node,
     value,
     path,
-    label,
+    label: defaultLabel,
     depth,
     onChange,
     errors,
@@ -88,8 +88,13 @@ export function NodeField(props: RenderProps) {
   const controlId = `page-field-${encodeURIComponent(pageKey ?? "page")}-${path.map((part) => encodeURIComponent(String(part))).join(".")}`;
   const labels = useFieldLabels();
   const t = useTranslations("pages");
-  const hintKey = `admin.servicesHints.${path.join(".")}`;
-  const hint = pageKey === "services" && node.kind !== "object" && node.kind !== "hidden" && t.has(hintKey)
+  const labelKey = `admin.guidesLabels.${path.join(".")}`;
+  const guideLabelKey = pageKey === "guides"
+    ? [`${labelKey}._label`, labelKey].find((key) => t.has(key) && typeof t.raw(key) === "string")
+    : undefined;
+  const label = guideLabelKey ? t(guideLabelKey) : defaultLabel;
+  const hintKey = `admin.${pageKey === "guides" ? "guidesHints" : "servicesHints"}.${path.join(".")}`;
+  const hint = (pageKey === "services" || pageKey === "guides") && node.kind !== "object" && node.kind !== "hidden" && t.has(hintKey)
     ? t(hintKey)
     : "hint" in node ? node.hint : undefined;
 

@@ -94,6 +94,9 @@ export const ABOUT_CARD_IDS = [
 /** Stable card ids of the Services editor (spec services-admin-editor). */
 export const SERVICES_CARD_IDS = ["seo", "hero", "intro", "how_it_works", "final_cta"] as const;
 
+/** Stable cards of the Guides listing and its shared detail CTA. */
+export const GUIDES_CARD_IDS = ["seo", "hero", "city_filter", "catalogue", "recommendations", "final_cta", "guide_aside"] as const;
+
 export type EditorCardId =
   | (typeof HOME_CARD_IDS)[number]
   | (typeof OWNERS_CARD_IDS)[number]
@@ -101,7 +104,8 @@ export type EditorCardId =
   | (typeof REAL_ESTATE_CARD_IDS)[number]
   | (typeof GUEST_CARD_IDS)[number]
   | (typeof ABOUT_CARD_IDS)[number]
-  | (typeof SERVICES_CARD_IDS)[number];
+  | (typeof SERVICES_CARD_IDS)[number]
+  | (typeof GUIDES_CARD_IDS)[number];
 
 /** Id of the fallback card that collects root keys no card claims. */
 export const OTHER_CARD_ID = "other";
@@ -513,6 +517,34 @@ const SERVICES_LAYOUT: EditorLayoutItem[] = [
   },
 ];
 
+const GUIDES_LAYOUT: EditorLayoutItem[] = [
+  {
+    kind: "card", id: "seo", titleKey: `${L}.cards.seo`, paths: ["seo"],
+    note: { textKey: `${L}.notes.seoLimits` }, hostsOgImage: true,
+  },
+  { kind: "card", id: "hero", titleKey: `${L}.cards.hero`, paths: ["hero"] },
+  {
+    kind: "card", id: "city_filter", titleKey: `${L}.cards.guidesCityFilter`, paths: ["city_filter"],
+    note: { textKey: `${L}.notes.guidesCityFilter` },
+  },
+  {
+    kind: "card", id: "catalogue", titleKey: `${L}.cards.guidesCatalogue`, paths: ["catalogue"],
+    note: { textKey: `${L}.notes.guidesCatalogue` },
+  },
+  {
+    kind: "card", id: "recommendations", titleKey: `${L}.cards.guidesRecommendations`, paths: ["recommendations"],
+    note: { textKey: `${L}.notes.guidesRecommendations` },
+  },
+  {
+    kind: "card", id: "final_cta", titleKey: `${L}.cards.final_cta`, paths: ["final_cta"],
+    note: { textKey: `${L}.notes.guidesFinalCta` },
+  },
+  {
+    kind: "card", id: "guide_aside", titleKey: `${L}.cards.guidesAside`, paths: ["guide_aside"],
+    note: { textKey: `${L}.notes.guidesAside` },
+  },
+];
+
 const LAYOUTS: Partial<Record<string, EditorLayoutItem[]>> = {
   home: HOME_LAYOUT,
   owners: OWNERS_LAYOUT,
@@ -521,6 +553,7 @@ const LAYOUTS: Partial<Record<string, EditorLayoutItem[]>> = {
   guest: GUEST_LAYOUT,
   about: ABOUT_LAYOUT,
   services: SERVICES_LAYOUT,
+  guides: GUIDES_LAYOUT,
 };
 
 /**
