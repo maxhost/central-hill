@@ -105,7 +105,8 @@ export function PageEditor({
   const [flushing, setFlushing] = useState(false);
   const submittingRef = useRef(false);
   const preparing = queue.isPreparing;
-  const busy = pending || flushing || preparing || sourceInvalid;
+  const invalidSource = sourceInvalid || Boolean(errors._source);
+  const busy = pending || flushing || preparing || invalidSource;
 
   const onChange: PathOnChange = (path, value) => {
     setData((prev) => setIn(prev, path, value) as Record<string, unknown>);
@@ -153,7 +154,7 @@ export function PageEditor({
         }
         if (result.error === "validation") {
           setErrors(result.fieldErrors);
-          setBanner(t("admin.validationError"));
+          setBanner(result.fieldErrors._source ? t("admin.guidesSourceInvalid") : t("admin.validationError"));
         } else {
           setBanner(tb("actions.saveError"));
         }
@@ -163,7 +164,7 @@ export function PageEditor({
   }
 
   const ogImageField = (
-    <Field label={t("admin.fields.ogImage")} hint={t("admin.fields.ogImageHint")}>
+    <Field label={t("admin.fields.ogImage")} hint={t("admin.fields.ogImageHint")} error={errors.og_image_media_id}>
       <div role="group" aria-label={t("admin.fields.ogImage")} aria-describedby={`page-${pageKey}-og-image-hint`}>
         <span id={`page-${pageKey}-og-image-hint`} className="sr-only">{t("admin.fields.ogImageHint")}</span>
         <MediaField
@@ -210,7 +211,7 @@ export function PageEditor({
         }
       />
 
-      {sourceInvalid ? (
+      {invalidSource ? (
         <p role="alert" className="rounded-md border border-accent/40 bg-surface px-4 py-3 text-sm text-accent-deep">
           {t("admin.guidesSourceInvalid")}
         </p>

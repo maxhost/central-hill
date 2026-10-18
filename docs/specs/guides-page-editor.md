@@ -301,3 +301,14 @@ El preview del usuario3059 y su DB servicedetailqa se mantienen intactos.
 Entrega autorizada: commits locales e integración de candidato aprobado en main
 local, sin push/deploy ni writes remotos, siguiendo el flujo que venimos usando.
 Pendientes: implementación A/B, integración, checks y QA browser/save-reload.
+
+Contrato aterrizado en `3a5ccd9`; typecheck exit0 y cuatro tests contractuales
+(defaults/salvamento/targets/scope cache) exit0 antes de delegar. A y B creados desde
+ese commit en los worktrees/branches arriba indicados. Root reserva además los
+helpers/test roots declarados en esta sección de ejecución. Directorios y branch
+reales se verifican por cada agente antes de editar. Stubs públicos solo en base
+intermedia, nunca se consideran implementación lista.
+
+Dependencias integración: pnpm install --offline falló por tarball ausente en el
+store actual; se copiaron dependencias ya instaladas del worktree QA anterior
+(solo node_modules, sin env/credentials). Sin cambios en package/lockfile.

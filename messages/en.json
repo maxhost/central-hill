@@ -1541,12 +1541,24 @@
           "headline": "Title template",
           "view_label": "Open guide label",
           "empty_message": "Empty listing message",
-          "template_icons": "Guide template icons"
+          "template_icons": {
+            "_label": "Guide template icons",
+            "landing_icon_key": "Overview icon",
+            "eat_icon_key": "Eating and drinking icon",
+            "beaches_icon_key": "Beaches icon",
+            "events_icon_key": "Events icon",
+            "secrets_icon_key": "Local secrets icon",
+            "families_icon_key": "Families icon",
+            "groups_icon_key": "Groups icon",
+            "travellers_icon_key": "Traveller information icon",
+            "custom_icon_key": "Custom guide icon"
+          }
         },
         "recommendations": {
           "restaurant_label": "Restaurant label",
           "viewpoint_label": "Viewpoint label",
-          "beach_label": "Beach label"
+          "beach_label": "Beach label",
+          "location_icon_key": "Location icon"
         }
       },
       "guidesHints": {

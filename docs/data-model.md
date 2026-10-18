@@ -300,6 +300,14 @@ page_content
 - **guides** (drizzle 0016): `guide_aside{image_media_id?, eyebrow?, title, body?, cta_label}` — the
   accommodation CTA under the "In this guide" TOC of every guide. Destination fixed in code (locale
   `/buildings`); a blank image shows the mock photo.
+  Optional listing blocks (Guides page editor): `seo`, `hero{eyebrow?,headline?,body?,
+  video_media_id?,poster_media_id?}`, `city_filter{enabled?,label?,note?,soon_label?,
+  location_icon_key?}`, `catalogue{eyebrow?,headline?,view_label?,empty_message?,
+  template_icons?}`, `recommendations{eyebrow?,headline?,body?,restaurant_label?,
+  viewpoint_label?,beach_label?,location_icon_key?}`, `final_cta{eyebrow?,headline?,
+  body?,cta_label?}`. Text is [T]; UUID/media/icon/boolean are neutral. Missing enabled
+  means true. False hides only the city filter and shows all groups/recommendations;
+  it never changes cities or guide publication. No migration: existing JSONB row.
 
 - **buildings** (as shipped by `docs/specs/buildings-admin-editor.md`, 2026-10-11;
   `src/slices/pages/schemas/buildings.ts`). The editable sections of the Buildings **listing**

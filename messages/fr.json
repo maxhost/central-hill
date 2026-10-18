@@ -1541,12 +1541,24 @@
           "headline": "Modèle du titre",
           "view_label": "Libellé pour ouvrir le guide",
           "empty_message": "Message de liste vide",
-          "template_icons": "Icônes par type de guide"
+          "template_icons": {
+            "_label": "Icônes par type de guide",
+            "landing_icon_key": "Icône du guide général",
+            "eat_icon_key": "Icône de gastronomie",
+            "beaches_icon_key": "Icône des plages",
+            "events_icon_key": "Icône des événements",
+            "secrets_icon_key": "Icône des secrets locaux",
+            "families_icon_key": "Icône des familles",
+            "groups_icon_key": "Icône des groupes",
+            "travellers_icon_key": "Icône des informations voyageurs",
+            "custom_icon_key": "Icône du guide personnalisé"
+          }
         },
         "recommendations": {
           "restaurant_label": "Libellé restaurant",
           "viewpoint_label": "Libellé point de vue",
-          "beach_label": "Libellé plage"
+          "beach_label": "Libellé plage",
+          "location_icon_key": "Icône de localisation"
         }
       },
       "guidesHints": {

@@ -1541,12 +1541,24 @@
           "headline": "Plantilla del título",
           "view_label": "Label para abrir guía",
           "empty_message": "Mensaje del listado vacío",
-          "template_icons": "Iconos por tipo de guía"
+          "template_icons": {
+            "_label": "Iconos por tipo de guía",
+            "landing_icon_key": "Icono de guía general",
+            "eat_icon_key": "Icono de gastronomía",
+            "beaches_icon_key": "Icono de playas",
+            "events_icon_key": "Icono de eventos",
+            "secrets_icon_key": "Icono de secretos locales",
+            "families_icon_key": "Icono de familias",
+            "groups_icon_key": "Icono de grupos",
+            "travellers_icon_key": "Icono de información para viajeros",
+            "custom_icon_key": "Icono de guía personalizada"
+          }
         },
         "recommendations": {
           "restaurant_label": "Label de restaurante",
           "viewpoint_label": "Label de mirador",
-          "beach_label": "Label de playa"
+          "beach_label": "Label de playa",
+          "location_icon_key": "Icono de ubicación"
         }
       },
       "guidesHints": {

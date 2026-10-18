@@ -138,3 +138,17 @@ detail subscribe). Called by the guides admin actions (S12).
 contract. `tests/format.test.ts` — the detail page's pure helpers (`sectionAnchorIds`,
 `sectionNumber`, `placeDirectionsUrl`, `priceTierSymbol`). Run:
 `npx tsx --test src/slices/guides/tests/*.test.ts`.
+
+
+## Listing editorial control
+
+The fixed editorial content of `/{locale}/guides` is edited in Pages → Guides,
+through the Pages contract (SEO, hero, filter/heading copy, icon overrides and CTA).
+Individual guide/section/place CMS remains future work. No duplicate card/place
+content is saved in page_content.
+
+`listTopRecommendations(locale, limit, {cityIds})` optionally restricts candidates
+before selecting the first complete place per type. Omitted scope is global, an
+empty city list returns none; deduplicated sorted IDs enter the cache key. Existing
+unscoped consumers and listGuideCityGroups/listGuideParams retain their behavior.
+The city-filter setting affects only the index, preserving publication and detail URLs.

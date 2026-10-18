@@ -1541,12 +1541,24 @@
           "headline": "Modelo do título",
           "view_label": "Texto para abrir guia",
           "empty_message": "Mensagem de lista vazia",
-          "template_icons": "Ícones por tipo de guia"
+          "template_icons": {
+            "_label": "Ícones por tipo de guia",
+            "landing_icon_key": "Ícone de guia geral",
+            "eat_icon_key": "Ícone de gastronomia",
+            "beaches_icon_key": "Ícone de praias",
+            "events_icon_key": "Ícone de eventos",
+            "secrets_icon_key": "Ícone de segredos locais",
+            "families_icon_key": "Ícone de famílias",
+            "groups_icon_key": "Ícone de grupos",
+            "travellers_icon_key": "Ícone de informação para viajantes",
+            "custom_icon_key": "Ícone de guia personalizado"
+          }
         },
         "recommendations": {
           "restaurant_label": "Texto de restaurante",
           "viewpoint_label": "Texto de miradouro",
-          "beach_label": "Texto de praia"
+          "beach_label": "Texto de praia",
+          "location_icon_key": "Ícone de localização"
         }
       },
       "guidesHints": {

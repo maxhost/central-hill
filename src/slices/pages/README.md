@@ -1218,3 +1218,22 @@ The Services save action validates existing media references and their MIME type
 video as OG/poster. Cache tag `page:services` and four localized routes invalidate on save;
 service-list and Settings dependencies remain intact. `buildServicesMetadata` supplies editable
 SEO/OG and absolute canonical/hreflang through the configured SEO origin.
+
+
+## Guides listing editor
+
+`/admin/pages/guides` extends the existing guide-aside editor with SEO, hero photo /
+optional MP4-WebM, city-filter copy and enabled flag, catalogue headings/template
+icons, recommendations copy/type labels and closing CTA. `guide_aside` retains its
+original schema paths and historical defaults; migration0016 remains unchanged.
+`getGuidesPage` is never null and salvages valid source blocks before resolving media;
+invalid approved translations fall back per field. An invalid persisted source blocks
+editor saves rather than silently replacing it. Absent rows scaffold the valid historical
+aside, while missing city_filter.enabled defaults to true and explicit false persists.
+
+Guides owns the dynamic cards and city-selection island. With the filter enabled, each
+city panel has scoped recommendations; disabled shows all city groups and global
+recommendations. This flag does not alter Geography publication or guide detail URLs.
+Only text is translated; references, icons and enabled are neutral. Save preserves
+page:guides and layout revalidation across four locales, including the shared aside.
+Media references/MIMEs are validated before persistence; OG/poster/aside are images.
