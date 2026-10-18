@@ -162,11 +162,14 @@ export function PageEditor({
 
   const ogImageField = (
     <Field label={t("admin.fields.ogImage")} hint={t("admin.fields.ogImageHint")}>
-      <MediaField
-        value={ogImage || null}
-        preview={ogImage ? (previews[ogImage] ?? null) : null}
-        onChange={(id) => setOgImage(id ?? "")}
-      />
+      <div role="group" aria-label={t("admin.fields.ogImage")} aria-describedby={`page-${pageKey}-og-image-hint`}>
+        <span id={`page-${pageKey}-og-image-hint`} className="sr-only">{t("admin.fields.ogImageHint")}</span>
+        <MediaField
+          value={ogImage || null}
+          preview={ogImage ? (previews[ogImage] ?? null) : null}
+          onChange={(id) => setOgImage(id ?? "")}
+        />
+      </div>
     </Field>
   );
 

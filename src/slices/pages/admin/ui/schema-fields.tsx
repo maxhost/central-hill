@@ -85,6 +85,7 @@ export function NodeField(props: RenderProps) {
     options,
   } = props;
   const errorKey = path.join(".");
+  const controlId = `page-field-${encodeURIComponent(pageKey ?? "page")}-${path.map((part) => encodeURIComponent(String(part))).join(".")}`;
   const labels = useFieldLabels();
   const t = useTranslations("pages");
   const hintKey = `admin.servicesHints.${path.join(".")}`;
@@ -195,6 +196,9 @@ export function NodeField(props: RenderProps) {
   if (node.kind === "boolean") {
     const box = (
       <Checkbox
+        id={controlId}
+        aria-invalid={Boolean(errors[errorKey])}
+        aria-description={errors[errorKey] || hint}
         label={label}
         checked={Boolean(value)}
         onChange={(e) => onChange(path, e.target.checked)}
@@ -207,20 +211,24 @@ export function NodeField(props: RenderProps) {
     const id = typeof value === "string" && value ? value : null;
     return (
       <Field label={label} hint={hint} error={errors[errorKey]}>
-        <MediaField
-          value={id}
-          accept={node.accept}
-          preview={id ? (previews[id] ?? null) : null}
-          onChange={(next) => onChange(path, next ?? "")}
-        />
+        <div role="group" aria-label={label} aria-describedby={errors[errorKey] || hint ? `${controlId}-description` : undefined}>
+          {errors[errorKey] || hint ? <span id={`${controlId}-description`} className="sr-only">{errors[errorKey] || hint}</span> : null}
+          <MediaField
+            value={id}
+            accept={node.accept}
+            preview={id ? (previews[id] ?? null) : null}
+            onChange={(next) => onChange(path, next ?? "")}
+          />
+        </div>
       </Field>
     );
   }
 
   if (node.kind === "icon") {
     return (
-      <Field label={label} required={!node.optional} error={errors[errorKey]}>
+      <Field label={label} htmlFor={controlId} required={!node.optional} error={errors[errorKey]}>
         <IconField
+          id={controlId}
           value={typeof value === "string" ? value : ""}
           allowEmpty={node.optional}
           onChange={(next) => onChange(path, next)}
@@ -233,8 +241,14 @@ export function NodeField(props: RenderProps) {
     const opts = options[node.source] ?? [];
     const val = typeof value === "string" ? value : "";
     return (
-      <Field label={label} hint={hint} error={errors[errorKey]}>
-        <Select value={val} onChange={(e) => onChange(path, e.target.value)}>
+      <Field label={label} htmlFor={controlId} hint={hint} error={errors[errorKey]}>
+        <Select
+          id={controlId}
+          aria-invalid={Boolean(errors[errorKey])}
+          aria-description={errors[errorKey] || hint}
+          value={val}
+          onChange={(e) => onChange(path, e.target.value)}
+        >
           <option value="">{node.emptyLabel}</option>
           {opts.map((o) => (
             <option key={o.value} value={o.value}>
@@ -252,14 +266,20 @@ export function NodeField(props: RenderProps) {
   // string
   const str = typeof value === "string" ? value : "";
   return (
-    <Field label={label} hint={hint} required={!node.optional} error={errors[errorKey]}>
+    <Field label={label} htmlFor={controlId} hint={hint} required={!node.optional} error={errors[errorKey]}>
       {node.multiline ? (
         <TextArea
+          id={controlId}
+          aria-invalid={Boolean(errors[errorKey])}
+          aria-description={errors[errorKey] || hint}
           value={str}
           onChange={(e) => onChange(path, e.target.value)}
         />
       ) : (
         <TextInput
+          id={controlId}
+          aria-invalid={Boolean(errors[errorKey])}
+          aria-description={errors[errorKey] || hint}
           value={str}
           onChange={(e) => onChange(path, e.target.value)}
         />
