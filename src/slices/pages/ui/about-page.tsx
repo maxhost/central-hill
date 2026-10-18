@@ -153,7 +153,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
     icon: <Icon name={a.icon_key} size={30} className="block" />,
     title: a.title,
     description: a.description,
-    image: aboutAudienceImage(media[a.image_media_id]?.url, i, AUDIENCE_FALLBACK_IMGS),
+    image: aboutAudienceImage(media[a.image_media_id]?.url, i, AUDIENCE_FALLBACK_IMGS, c._list_ids?.["serve.audiences"]?.[i]),
   }));
   const valueItems = c.values.items.map((v) => ({ title: v.title, body: v.description }));
   // Sized like Owners' showcase bullet icons.

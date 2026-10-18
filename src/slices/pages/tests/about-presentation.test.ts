@@ -44,3 +44,12 @@ test("mixed slots dispatch supported media and retain legacy image compatibility
   for (const mime of ["application/json", "application/zip+dotlottie"]) assert.equal(aboutMediaKind(mime), "lottie");
   for (const mime of ["application/pdf", "video/quicktime", "image/svg+xml", "text/html"]) assert.equal(aboutMediaKind(mime), null);
 });
+
+test("fallback audience photographs travel with legacy and new identities through reorder", () => {
+  const fallbacks = ["guest.jpg", "owners.jpg", "partners.jpg"] as const;
+  assert.equal(aboutAudienceImage(undefined, 0, fallbacks, "legacy_1"), "owners.jpg");
+  assert.equal(aboutAudienceImage(undefined, 2, fallbacks, "legacy_0"), "guest.jpg");
+  const id = "5b9e5930-34db-436e-a2a1-b1655d8b6643";
+  assert.equal(aboutAudienceImage(undefined, 0, fallbacks, id), aboutAudienceImage(undefined, 7, fallbacks, id));
+  assert.equal(aboutAudienceImage("uploaded.webp", 0, fallbacks, "legacy_1"), "uploaded.webp");
+});

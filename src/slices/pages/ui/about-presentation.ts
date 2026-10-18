@@ -14,9 +14,14 @@ export function aboutStatColumns(count: number): 1 | 2 | 3 | 4 | 5 {
   return Math.max(1, Math.min(5, count)) as 1 | 2 | 3 | 4 | 5;
 }
 
-/** Extra audience rows reuse the approved photos deterministically. */
-export function aboutAudienceImage(url: string | undefined, index: number, fallbacks: readonly [string, ...string[]]): string {
-  return url || fallbacks[index % fallbacks.length]!;
+/** Legacy photos follow their original item; new identities choose a stable approved photo. */
+export function aboutAudienceImage(url: string | undefined, index: number, fallbacks: readonly [string, ...string[]], id?: string): string {
+  if (url) return url;
+  const legacyIndex = id?.match(/^legacy_(\d+)$/)?.[1];
+  const photoIndex = legacyIndex !== undefined ? Number(legacyIndex) : id
+    ? Array.from(id).reduce((hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0, 0)
+    : index;
+  return fallbacks[photoIndex % fallbacks.length]!;
 }
 
 export function aboutMediaKind(mime: string | undefined): "image" | "video" | "lottie" | null {
