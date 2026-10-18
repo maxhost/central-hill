@@ -20,7 +20,12 @@ Local delivery: [Guides handoff](docs/specs/handoff-guides-page-editor.md),
 Savepoint: `00c836a`, tag `savepoint/pre-guides-page-editor-2026-10-18`.
 No migrations, push or deployment. Preview3060 uses isolated synthetic guidespageqa;
 previous user preview3059 is preserved. Sidebar work is captured in00c836a.
-Individual guide CMS is a later task; no next implementation is assigned yet.
+Current next task: audit and specify the individual Guides CMS, before implementation.
+Read [Guides CMS audit brief](docs/specs/guides-cms-audit-brief.md). User requested
+fresh context before the larger audit. Use read-only agents to map actual guide
+variants, common fields and exclusive modules; do not start implementation yet.
+The city-filter collapse follow-up was user-validated; typecheck/lint/build passed,
+with no new independent browser QA claim. Preserve both local preview environments.
 
 ## Working agreement
 

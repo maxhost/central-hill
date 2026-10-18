@@ -58,6 +58,12 @@ Hallazgos:
 Reutilizar PageEditor, media queue, campos derivados de Zod y layout por tarjetas.
 Conservar el guardado inmediato y comunicar «Guardar publica los cambios».
 
+Ajuste posterior solicitado: al desmarcar «Show city filter», la tarjeta muestra
+solo el checkbox; al marcarlo reaparecen sus campos. El estado conserva textos e
+icono al ocultarlos y al guardar/recargar. Solo afecta a Guides/city_filter.
+Cambio simple del agente principal en admin/ui/schema-fields.tsx; comprobación
+de navegador enfocada y checks de compilación, sin una nueva suite de tests.
+
 | ID estable | Tarjeta | Campos |
 | --- | --- | --- |
 | seo | SEO y redes sociales | meta_title, meta_description; OG image existente fuera del JSON |
@@ -359,3 +365,12 @@ documental no cambia el código probado. Entrega por fast-forward a main local;
 ver [handoff](handoff-guides-page-editor.md) y HEAD final para commit de documentación.
 Sin push, despliegue ni modificaciones remotas. No quedan tareas requeridas para
 este alcance. El CMS de guías individuales sigue explícitamente fuera de alcance.
+
+
+Follow-up checkbox colapsable: typecheck/lint/build0 (cinco warnings previos).
+Servidor3060 actualizado, sesión74270. El usuario confirmó «funcionó»; canceló
+la comprobación automatizada de navegador, por tanto no se afirma nuevo QA
+independiente para este ajuste pequeño. Estado y valores se conservan por diseño;
+solo se omite el render de los campos cuando enabled=false.
+Próximo alcance: auditoría de CMS de guías individuales, ver
+[brief de continuación](guides-cms-audit-brief.md).

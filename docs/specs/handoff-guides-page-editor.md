@@ -88,3 +88,9 @@ become real city chips when their source slug matches a published Geography UUID
 - `src/slices/pages/tests/guides-media-validation.test.ts`
 - `src/slices/pages/ui/components/guides-media.tsx`
 - `src/slices/pages/ui/components/guides-sections.tsx`
+
+
+Follow-up posterior al cierre: Show city filter ahora colapsa sus campos al
+estar desactivado, conservando valores. Usuario validó el comportamiento;
+typecheck/lint/build0, sin nueva QA independiente. Server3060 sesión74270.
+Ver HEAD para commit que captura ese ajuste y brief del siguiente trabajo.

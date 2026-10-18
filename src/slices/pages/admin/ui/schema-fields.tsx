@@ -103,7 +103,14 @@ export function NodeField(props: RenderProps) {
   if (node.kind === "hidden") return null;
 
   if (node.kind === "object") {
-    const body = node.fields.map((f) => (
+    // Only collapse the Guides city-filter settings; their values remain in the
+    // parent form state and are restored when the checkbox is enabled again.
+    const cityFilterDisabled = pageKey === "guides" && path.length === 1 &&
+      path[0] === "city_filter" && (value as { enabled?: boolean } | undefined)?.enabled === false;
+    const fields = cityFilterDisabled
+      ? node.fields.filter((field) => field.key === "enabled")
+      : node.fields;
+    const body = fields.map((f) => (
       <NodeField
         key={f.key}
         pageKey={pageKey}
