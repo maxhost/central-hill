@@ -20,10 +20,14 @@ Local delivery: [Guides handoff](docs/specs/handoff-guides-page-editor.md),
 Savepoint: `00c836a`, tag `savepoint/pre-guides-page-editor-2026-10-18`.
 No migrations, push or deployment. Preview3060 uses isolated synthetic guidespageqa;
 previous user preview3059 is preserved. Sidebar work is captured in00c836a.
-Current next task: audit and specify the individual Guides CMS, before implementation.
-Read [Guides CMS audit brief](docs/specs/guides-cms-audit-brief.md). User requested
-fresh context before the larger audit. Use read-only agents to map actual guide
-variants, common fields and exclusive modules; do not start implementation yet.
+Individual Guides CMS implementation was subsequently authorized and is integrated
+on task branch `guides-cms/integration` in `/private/tmp/central-hill-guides-cms-integration`.
+Code `1a2739c` is independently QA-approved; delivery remains on the task branch.
+Read [Guides CMS execution](docs/specs/guides-cms-execution.md),
+[QA evidence](docs/specs/guides-cms-qa.md) and [handoff](docs/specs/handoff-guides-cms.md).
+Savepoint `6a3c1ce`, tag `savepoint/pre-guides-cms-implementation-2026-10-18`.
+Migration0021 and synthetic writes are isolated to guidescmsqa/freshqa; preview3061.
+No main integration, push, deployment or production writes in this task delivery.
 The city-filter collapse follow-up was user-validated; typecheck/lint/build passed,
 with no new independent browser QA claim. Preserve both local preview environments.
 

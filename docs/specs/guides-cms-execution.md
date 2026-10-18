@@ -450,3 +450,44 @@ QA independiente reprodujo sobre0e8fc75:
 El servidor production3061 original PID24341 se detiene para rebuild propio;
 QA restauró refs originales y archivó sus altas de prueba. Previews3059/3060 intactas.
 Estos findings están pendientes de retest; no son aprobación funcional.
+
+### Candidato bec225e y retest en curso
+
+Commit `bec225ee6b13025936d8f3bc8eec8911915b4e97`: fixes de QA-01/02 y batch de guardado.
+Build/typecheck/lint exit0 y91tests de regresión exit0. Servidor3061 nuevo PID44880,
+sesión73420, con env ficticio. Retest independiente confirmó sitemap publish y media
+UUID inexistente corregidos. Resto de QA sigue en curso. No comparar timings bajo
+3pipelines concurrentes con la primera medición aislada.
+Root amplía su write set documental con `docs/specs/handoff-guides-cms.md` y el
+resumen de handoff en `AGENTS.md` al cierre; QA conserva propiedad de su informe.
+Verificación corpus acotada:8page no-op saves, representantes source por categoría
+y snapshots íntegros8guías/59secciones/86lugares, IDs/textos/targets/slugs. No se
+requiere repetir145saves vacíos; QA registrará número exacto y efectos reales.
+
+### Corrección de orden tras eliminación
+
+QA reprodujo P2: borrar un elemento intermedio deja posiciones0,2; añadir usando
+length2 empata con el último y el desempate por UUID altera el orden al recargar.
+A conserva escritura exclusiva de editor-model.ts, guide-editor.tsx y su test;
+root corrige defaults de saveGuideSection/saveGuidePlace en admin/actions.ts.
+Ambas capas añaden con máximo position+1 (vacío0), preservando posiciones e IDs
+existentes. A verifica vacío/gaps/entrada desordenada; QA retesta altas tras borrar
+en ambos niveles y defaults de acción sin position.
+
+Integración A e089612→1a2739c; root defaults7f9c391. Candidato
+`1a2739cb397daef05a7c226b48ee4d0ecb293998`: typecheck0/lint0(5warnings previos),
+92tests0 y build0. Logs order-full-tests.log/order-lint.log/order-build.log.
+Root detuvo exclusivamente su servidor3061 PID44880 y arrancó PID64605,
+sesión98264, server-order.log, mismo entorno sintético. Retest QA final en curso.
+
+### Cierre G3
+
+QA independiente aprobó código1a2739c: UI append tras baja en secciones/lugares,
+defaults API sin position, cascade de hijos/traducciones conservando media compartido,
+TOC/contadores, archivo404 y sitemap, siguiente recomendación elegible y clear de
+todos los locales PASS. Pipeline qa-order-retest.cjs+qa-final-close.cjs exit0.
+Guardado no-op aislado4431ms sobre transporte local: se registra sin inferencia de
+rendimiento de producción. Dictamen/evidencia completa en guides-cms-qa.md.
+Entrega en guides-cms/integration; main6a3c1ce limpio y sin integración, conforme
+al límite local en rama de tarea. Previews3059/3060 preservadas. No push/deploy ni
+writes remotos. Documentación final se captura en commit separado del código probado.
