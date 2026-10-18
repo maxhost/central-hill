@@ -6,13 +6,24 @@ import { UiIcon } from "@core/ui";
 import {
   AdminButton,
   type AdminMediaPreview,
-  Field,
   FieldGrid,
   IconField,
   MediaField,
   TextArea,
   TextInput,
 } from "@slices/backoffice/contract";
+import {
+  ServiceField as Field,
+  ServiceItemScope,
+  ServiceSectionControls,
+} from "./service-section-controls";
+import { ServiceCopyFields, SECTION_COPY_KEYS } from "./service-copy-editor";
+import { sectionCount } from "../form-model";
+import type {
+  ServicePresentation,
+  ServiceSectionKey,
+} from "../../presentation";
+import type { ServiceCopy } from "../../copy";
 import { DEFAULT_FACT_ICON } from "../../detail";
 import {
   DETAIL_LIMITS as L,
@@ -62,7 +73,22 @@ export function DetailEditor({
   onChange,
   errors,
   previews,
+  mode = "sections",
+  presentation,
+  onSectionChoice,
+  onDiscard,
+  copy,
+  onCopyChange,
 }: {
+  mode?: "general" | "sections" | "booking";
+  presentation: ServicePresentation | null;
+  onSectionChoice: (
+    key: ServiceSectionKey,
+    choice: boolean | undefined,
+  ) => void;
+  onDiscard: (key: ServiceSectionKey) => void;
+  copy: ServiceCopy;
+  onCopyChange: (copy: ServiceCopy) => void;
   value: DetailDraft;
   onChange: (next: DetailDraft) => void;
   errors: Errors;
@@ -70,9 +96,11 @@ export function DetailEditor({
   previews: Record<string, AdminMediaPreview>;
 }) {
   const t = useTranslations("services");
+  const tp = useTranslations("services.admin.presentation");
   const d = (key: string, values?: Record<string, string | number>) =>
     t(`admin.detail.${key}`, values);
-  const err = (...path: (string | number)[]) => errors[["detail", ...path].join(".")];
+  const err = (...path: (string | number)[]) =>
+    errors[["detail", ...path].join(".")];
   const set = <K extends keyof DetailDraft>(key: K, next: DetailDraft[K]) =>
     onChange({ ...value, [key]: next });
   const setGtk = (key: keyof DraftGoodToKnow, next: string[]) =>
@@ -81,420 +109,780 @@ export function DetailEditor({
   // Previews of step images picked in this session (not in the server's map yet). Steps
   // are keyed by index, so each picker is re-keyed by its media id and fed from here.
   const [picked, setPicked] = useState<Record<string, AdminMediaPreview>>({});
-  const previewFor = (id: string) => (id ? (picked[id] ?? previews[id] ?? null) : null);
+  const previewFor = (id: string) =>
+    id ? (picked[id] ?? previews[id] ?? null) : null;
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-ink-soft">{d("hint")}</p>
+      {mode === "sections" ? (
+        <p className="text-sm text-ink-soft">{tp("hint")}</p>
+      ) : null}
 
-      {/* Title & booking card */}
-      <Section title={d("sections.titleBooking")}>
-        <SubHeading error={err("badges")}>{d("fields.badges")}</SubHeading>
-        <p className="text-xs text-ink-soft">{d("fields.badgesHint")}</p>
-        <StringList
-          items={value.badges}
-          onChange={(next) => set("badges", next)}
-          max={L.badges}
-          addLabel={d("add.badge")}
-          errorAt={(i) => err("badges", i)}
-          emptyLabel={d("empty")}
-          controlsLabels={controlsLabels(d)}
-        />
-        <Field
-          label={d("fields.priceNote")}
-          hint={d("fields.priceNoteHint")}
-          error={err("price_note")}
-        >
-          <TextInput
-            value={value.price_note}
-            onChange={(e) => set("price_note", e.target.value)}
-          />
-        </Field>
-        <SubHeading error={err("booking_rows")}>{d("fields.bookingRows")}</SubHeading>
-        <ItemList
-          items={value.booking_rows}
-          onChange={(next) => set("booking_rows", next)}
-          max={L.booking_rows}
-          heading={(i) => d("items.bookingRow", { n: i + 1 })}
-          addLabel={d("add.bookingRow")}
-          emptyLabel={d("empty")}
-          blank={(): DraftBookingRow => ({ label: "", value: "" })}
-          controlsLabels={controlsLabels(d)}
-          render={(row, i, update) => (
-            <FieldGrid>
-              <Field label={d("fields.label")} required error={err("booking_rows", i, "label")}>
-                <TextInput
-                  value={row.label}
-                  onChange={(e) => update({ ...row, label: e.target.value })}
-                />
-              </Field>
-              <Field label={d("fields.value")} required error={err("booking_rows", i, "value")}>
-                <TextInput
-                  value={row.value}
-                  onChange={(e) => update({ ...row, value: e.target.value })}
-                />
-              </Field>
-            </FieldGrid>
-          )}
-        />
-      </Section>
-
-      {/* Key facts */}
-      <Section title={d("sections.facts")} error={err("facts")}>
-        <ItemList
-          items={value.facts}
-          onChange={(next) => set("facts", next)}
-          max={L.facts}
-          heading={(i) => d("items.fact", { n: i + 1 })}
-          addLabel={d("add.fact")}
-          emptyLabel={d("empty")}
-          blank={(): DraftFact => ({ icon: DEFAULT_FACT_ICON, title: "", note: "" })}
-          controlsLabels={controlsLabels(d)}
-          render={(fact, i, update) => (
-            <div className="space-y-3">
-              <FieldGrid>
-                <Field label={d("fields.icon")} required error={err("facts", i, "icon")}>
-                  <IconField value={fact.icon} onChange={(icon) => update({ ...fact, icon })} />
-                </Field>
-                <Field label={d("fields.title")} required error={err("facts", i, "title")}>
-                  <TextInput
-                    value={fact.title}
-                    onChange={(e) => update({ ...fact, title: e.target.value })}
-                  />
-                </Field>
-              </FieldGrid>
-              <Field
-                label={d("fields.factNote")}
-                hint={d("fields.optional")}
-                error={err("facts", i, "note")}
-              >
-                <TextInput
-                  value={fact.note}
-                  onChange={(e) => update({ ...fact, note: e.target.value })}
-                />
-              </Field>
-            </div>
-          )}
-        />
-      </Section>
-
-      {/* About heading */}
-      <Section title={d("sections.about")}>
-        <Field
-          label={d("fields.aboutTitle")}
-          hint={d("fields.aboutTitleHint")}
-          error={err("about_title")}
-        >
-          <TextInput
-            value={value.about_title}
-            onChange={(e) => set("about_title", e.target.value)}
-          />
-        </Field>
-      </Section>
-
-      {/* What's included (heading + the highlights list) */}
-      <Section title={d("sections.included")}>
-        <Field
-          label={d("fields.includedTitle")}
-          hint={d("fields.includedTitleHint")}
-          error={err("included_title")}
-        >
-          <TextInput
-            value={value.included_title}
-            onChange={(e) => set("included_title", e.target.value)}
-          />
-        </Field>
-        <SubHeading error={err("highlights")}>{d("fields.highlights")}</SubHeading>
-        <StringList
-          items={value.highlights}
-          onChange={(next) => set("highlights", next)}
-          max={L.highlights}
-          addLabel={d("add.highlight")}
-          errorAt={(i) => err("highlights", i)}
-          emptyLabel={d("empty")}
-          controlsLabels={controlsLabels(d)}
-        />
-      </Section>
-
-      {/* Variable module */}
-      <div className="space-y-1 border-t border-line pt-4">
-        <p className="text-sm font-semibold text-ink">{d("module.title")}</p>
-        <p className="text-sm text-ink-soft">{d("module.hint")}</p>
-      </div>
-
-      {/* Itinerary */}
-      <Section title={d("sections.itinerary")} error={err("itinerary")}>
-        <ItemList
-          items={value.itinerary}
-          onChange={(next) => set("itinerary", next)}
-          max={L.itinerary}
-          heading={(i) => d("items.step", { n: i + 1 })}
-          addLabel={d("add.step")}
-          emptyLabel={d("empty")}
-          blank={(): DraftItinerary => ({ time: "", title: "", text: "", media_id: "" })}
-          controlsLabels={controlsLabels(d)}
-          render={(step, i, update) => (
-            <div className="space-y-3">
-              <FieldGrid>
-                <Field label={d("fields.time")} required error={err("itinerary", i, "time")}>
-                  <TextInput
-                    value={step.time}
-                    onChange={(e) => update({ ...step, time: e.target.value })}
-                  />
-                </Field>
-                <Field label={d("fields.title")} required error={err("itinerary", i, "title")}>
-                  <TextInput
-                    value={step.title}
-                    onChange={(e) => update({ ...step, title: e.target.value })}
-                  />
-                </Field>
-              </FieldGrid>
-              <Field label={d("fields.text")} required error={err("itinerary", i, "text")}>
-                <TextArea
-                  value={step.text}
-                  onChange={(e) => update({ ...step, text: e.target.value })}
-                />
-              </Field>
-              <Field
-                label={d("fields.stepImage")}
-                hint={d("fields.stepImageHint")}
-                error={err("itinerary", i, "media_id")}
-              >
-                <MediaField
-                  key={step.media_id || "none"}
-                  value={step.media_id || null}
-                  preview={previewFor(step.media_id)}
-                  onChange={(id, preview) => {
-                    if (id && preview) setPicked((prev) => ({ ...prev, [id]: preview }));
-                    update({ ...step, media_id: id ?? "" });
-                  }}
-                />
-              </Field>
-            </div>
-          )}
-        />
-      </Section>
-
-      {/* Options (groups → items) */}
-      <Section title={d("sections.options")} error={err("option_groups")}>
-        <ItemList
-          items={value.option_groups}
-          onChange={(next) => set("option_groups", next)}
-          max={L.option_groups}
-          heading={(i) => d("items.group", { n: i + 1 })}
-          addLabel={d("add.group")}
-          emptyLabel={d("empty")}
-          blank={(): DraftOptionGroup => ({ title: "", items: [{ name: "", desc: "" }] })}
-          controlsLabels={controlsLabels(d)}
-          render={(group, gi, update) => (
-            <div className="space-y-3">
-              <Field
-                label={d("fields.groupTitle")}
-                required
-                error={err("option_groups", gi, "title")}
-              >
-                <TextInput
-                  value={group.title}
-                  onChange={(e) => update({ ...group, title: e.target.value })}
-                />
-              </Field>
-              <SubHeading error={err("option_groups", gi, "items")}>
-                {d("fields.groupItems")}
-              </SubHeading>
-              <ItemList
-                items={group.items}
-                onChange={(items) => update({ ...group, items })}
-                max={L.option_items}
-                min={1}
-                heading={(i) => d("items.option", { n: i + 1 })}
-                addLabel={d("add.option")}
-                emptyLabel={d("empty")}
-                blank={() => ({ name: "", desc: "" })}
-                controlsLabels={controlsLabels(d)}
-                render={(item, ii, updateItem) => (
+      {mode === "general" ? (
+        <>
+          <Section title={d("fields.badges")}>
+            <SubHeading error={err("badges")}>{d("fields.badges")}</SubHeading>
+            <p className="text-xs text-ink-soft">{d("fields.badgesHint")}</p>
+            <StringList
+              items={value.badges}
+              onChange={(next) => set("badges", next)}
+              max={L.badges}
+              addLabel={d("add.badge")}
+              errorAt={(i) => err("badges", i)}
+              pathAt={(i) => ["detail", "badges", i].join(".")}
+              emptyLabel={d("empty")}
+              controlsLabels={controlsLabels(d)}
+            />
+          </Section>
+          <Section title={d("sections.facts")} error={err("facts")}>
+            <ItemList
+              items={value.facts}
+              onChange={(next) => set("facts", next)}
+              max={L.facts}
+              heading={(i) => d("items.fact", { n: i + 1 })}
+              addLabel={d("add.fact")}
+              emptyLabel={d("empty")}
+              blank={(): DraftFact => ({
+                icon: DEFAULT_FACT_ICON,
+                title: "",
+                note: "",
+              })}
+              controlsLabels={controlsLabels(d)}
+              render={(fact, i, update) => (
+                <div className="space-y-3">
                   <FieldGrid>
                     <Field
-                      label={d("fields.name")}
+                      label={d("fields.icon")}
                       required
-                      error={err("option_groups", gi, "items", ii, "name")}
+                      error={err("facts", i, "icon")}
+                      fieldPath={["detail", "facts", i, "icon"].join(".")}
                     >
-                      <TextInput
-                        value={item.name}
-                        onChange={(e) => updateItem({ ...item, name: e.target.value })}
+                      <IconField
+                        value={fact.icon}
+                        onChange={(icon) => update({ ...fact, icon })}
                       />
                     </Field>
                     <Field
-                      label={d("fields.optionDesc")}
-                      hint={d("fields.optionDescHint")}
-                      error={err("option_groups", gi, "items", ii, "desc")}
+                      label={d("fields.title")}
+                      required
+                      error={err("facts", i, "title")}
+                      fieldPath={["detail", "facts", i, "title"].join(".")}
                     >
-                      <TextArea
-                        rows={2}
-                        value={item.desc}
-                        onChange={(e) => updateItem({ ...item, desc: e.target.value })}
+                      <TextInput
+                        value={fact.title}
+                        onChange={(e) =>
+                          update({ ...fact, title: e.target.value })
+                        }
                       />
                     </Field>
                   </FieldGrid>
-                )}
-              />
-            </div>
-          )}
-        />
-      </Section>
-
-      {/* Pricing table */}
-      <Section title={d("sections.pricing")} error={err("pricing")}>
-        {value.pricing ? (
-          <PricingEditor
-            value={value.pricing}
-            onChange={(next) => set("pricing", next)}
-            onRemove={() => set("pricing", null)}
-            err={(...p) => err("pricing", ...p)}
-            d={d}
-          />
-        ) : (
-          <div className="space-y-3">
-            <p className="text-sm text-ink-soft">{d("pricing.none")}</p>
-            <AdminButton variant="ghost" onClick={() => set("pricing", emptyPricing())}>
-              + {d("add.pricing")}
-            </AdminButton>
-          </div>
-        )}
-      </Section>
-
-      {/* Extras */}
-      <Section title={d("sections.extras")} error={err("extras")}>
-        <ItemList
-          items={value.extras}
-          onChange={(next) => set("extras", next)}
-          max={L.extras}
-          heading={(i) => d("items.extra", { n: i + 1 })}
-          addLabel={d("add.extra")}
-          emptyLabel={d("empty")}
-          blank={(): DraftExtra => ({ label: "", price: "", desc: "" })}
-          controlsLabels={controlsLabels(d)}
-          render={(extra, i, update) => (
-            <div className="space-y-3">
-              <FieldGrid>
-                <Field label={d("fields.label")} required error={err("extras", i, "label")}>
-                  <TextInput
-                    value={extra.label}
-                    onChange={(e) => update({ ...extra, label: e.target.value })}
-                  />
-                </Field>
-                <Field
-                  label={d("fields.price")}
-                  hint={d("fields.priceHint")}
-                  required
-                  error={err("extras", i, "price")}
-                >
-                  <TextInput
-                    value={extra.price}
-                    onChange={(e) => update({ ...extra, price: e.target.value })}
-                  />
-                </Field>
-              </FieldGrid>
-              <Field label={d("fields.desc")} required error={err("extras", i, "desc")}>
-                <TextArea
-                  rows={2}
-                  value={extra.desc}
-                  onChange={(e) => update({ ...extra, desc: e.target.value })}
-                />
-              </Field>
-            </div>
-          )}
-        />
-      </Section>
-
-      {/* Partners */}
-      <Section title={d("sections.partners")} error={err("partners")}>
-        <ItemList
-          items={value.partners}
-          onChange={(next) => set("partners", next)}
-          max={L.partners}
-          heading={(i) => d("items.partner", { n: i + 1 })}
-          addLabel={d("add.partner")}
-          emptyLabel={d("empty")}
-          blank={(): DraftPartner => ({ name: "", desc: "", cta_label: "", url: "" })}
-          controlsLabels={controlsLabels(d)}
-          render={(p, i, update) => (
-            <div className="space-y-3">
-              <Field label={d("fields.name")} required error={err("partners", i, "name")}>
-                <TextInput
-                  value={p.name}
-                  onChange={(e) => update({ ...p, name: e.target.value })}
-                />
-              </Field>
-              <Field label={d("fields.desc")} required error={err("partners", i, "desc")}>
-                <TextArea
-                  rows={2}
-                  value={p.desc}
-                  onChange={(e) => update({ ...p, desc: e.target.value })}
-                />
-              </Field>
-              <FieldGrid>
-                <Field
-                  label={d("fields.ctaLabel")}
-                  required
-                  error={err("partners", i, "cta_label")}
-                >
-                  <TextInput
-                    value={p.cta_label}
-                    onChange={(e) => update({ ...p, cta_label: e.target.value })}
-                  />
-                </Field>
-                <Field label={d("fields.url")} required error={err("partners", i, "url")}>
-                  <TextInput
-                    type="url"
-                    value={p.url}
-                    onChange={(e) => update({ ...p, url: e.target.value })}
-                  />
-                </Field>
-              </FieldGrid>
-            </div>
-          )}
-        />
-      </Section>
-
-      {/* Good to know (three fixed columns) */}
-      <Section title={d("sections.goodToKnow")} error={err("good_to_know")}>
-        {GTK_COLUMNS.map(([key, max]) => (
-          <div key={key} className="space-y-3">
-            <SubHeading error={err("good_to_know", key)}>{d(`gtk.${key}`)}</SubHeading>
-            <StringList
-              items={value.good_to_know[key]}
-              onChange={(next) => setGtk(key, next)}
-              max={max}
-              addLabel={d("add.gtkItem")}
-              errorAt={(i) => err("good_to_know", key, i)}
-              emptyLabel={d("empty")}
-              controlsLabels={controlsLabels(d)}
-              multiline
+                  <Field
+                    label={d("fields.factNote")}
+                    hint={d("fields.optional")}
+                    error={err("facts", i, "note")}
+                    fieldPath={["detail", "facts", i, "note"].join(".")}
+                  >
+                    <TextInput
+                      value={fact.note}
+                      onChange={(e) =>
+                        update({ ...fact, note: e.target.value })
+                      }
+                    />
+                  </Field>
+                </div>
+              )}
             />
-          </div>
-        ))}
-      </Section>
-
-      {/* Legacy notes: shown only while old notes remain, with a one-click migration. */}
-      {value.notes.length > 0 ? (
-        <Section title={d("sections.notes")} error={err("notes")}>
-          <p className="text-sm text-ink-soft">{d("legacyNotes.hint")}</p>
-          <div>
-            <AdminButton variant="ghost" onClick={() => onChange(moveNotesToPractical(value))}>
-              {d("legacyNotes.move")}
-            </AdminButton>
-          </div>
-          <StringList
-            items={value.notes}
-            onChange={(next) => set("notes", next)}
-            max={L.notes}
-            addLabel={d("add.note")}
-            errorAt={(i) => err("notes", i)}
+          </Section>
+          <Section title={d("sections.about")}>
+            <Field
+              label={d("fields.aboutTitle")}
+              hint={d("fields.aboutTitleHint")}
+              error={err("about_title")}
+              fieldPath={["detail", "about_title"].join(".")}
+            >
+              <TextInput
+                value={value.about_title}
+                onChange={(e) => set("about_title", e.target.value)}
+              />
+            </Field>
+          </Section>
+        </>
+      ) : null}
+      {mode === "booking" ? (
+        <Section title={d("sections.titleBooking")}>
+          {" "}
+          <Field
+            label={d("fields.priceNote")}
+            hint={d("fields.priceNoteHint")}
+            error={err("price_note")}
+            fieldPath={["detail", "price_note"].join(".")}
+          >
+            <TextInput
+              value={value.price_note}
+              onChange={(e) => set("price_note", e.target.value)}
+            />
+          </Field>
+          <SubHeading error={err("booking_rows")}>
+            {d("fields.bookingRows")}
+          </SubHeading>
+          <ItemList
+            items={value.booking_rows}
+            onChange={(next) => set("booking_rows", next)}
+            max={L.booking_rows}
+            heading={(i) => d("items.bookingRow", { n: i + 1 })}
+            addLabel={d("add.bookingRow")}
             emptyLabel={d("empty")}
+            blank={(): DraftBookingRow => ({ label: "", value: "" })}
             controlsLabels={controlsLabels(d)}
-            multiline
+            render={(row, i, update) => (
+              <FieldGrid>
+                <Field
+                  label={d("fields.label")}
+                  required
+                  error={err("booking_rows", i, "label")}
+                  fieldPath={["detail", "booking_rows", i, "label"].join(".")}
+                >
+                  <TextInput
+                    value={row.label}
+                    onChange={(e) => update({ ...row, label: e.target.value })}
+                  />
+                </Field>
+                <Field
+                  label={d("fields.value")}
+                  required
+                  error={err("booking_rows", i, "value")}
+                  fieldPath={["detail", "booking_rows", i, "value"].join(".")}
+                >
+                  <TextInput
+                    value={row.value}
+                    onChange={(e) => update({ ...row, value: e.target.value })}
+                  />
+                </Field>
+              </FieldGrid>
+            )}
           />
         </Section>
+      ) : null}
+      {mode === "sections" ? (
+        <ServiceSectionControls
+          section="included"
+          title={d("sections.included")}
+          count={sectionCount("included", value)}
+          choice={presentation?.sections?.included}
+          onChoice={(choice) => onSectionChoice("included", choice)}
+          onDiscard={() => onDiscard("included")}
+          error={
+            Object.entries(errors).find(
+              ([path]) =>
+                path === "detail.highlights" ||
+                path.startsWith("detail.highlights.") ||
+                path === "detail.included_title" ||
+                (SECTION_COPY_KEYS.included ?? []).some(
+                  (key) => path === `copy.${key}`,
+                ),
+            )?.[1]
+          }
+        >
+          {(SECTION_COPY_KEYS.included ?? []).length ? (
+            <fieldset className="space-y-3">
+              <legend className="mb-3 text-sm font-semibold text-ink">
+                {tp("headings")}
+              </legend>
+              <ServiceCopyFields
+                keys={SECTION_COPY_KEYS.included ?? []}
+                value={copy}
+                onChange={onCopyChange}
+                errors={errors}
+              />
+            </fieldset>
+          ) : null}
+
+          <Field
+            label={d("fields.includedTitle")}
+            hint={d("fields.includedTitleHint")}
+            error={err("included_title")}
+            fieldPath={["detail", "included_title"].join(".")}
+          >
+            <TextInput
+              value={value.included_title}
+              onChange={(e) => set("included_title", e.target.value)}
+            />
+          </Field>
+          <SubHeading error={err("highlights")}>
+            {d("fields.highlights")}
+          </SubHeading>
+          <StringList
+            items={value.highlights}
+            onChange={(next) => set("highlights", next)}
+            max={L.highlights}
+            addLabel={d("add.highlight")}
+            errorAt={(i) => err("highlights", i)}
+            pathAt={(i) => ["detail", "highlights", i].join(".")}
+            emptyLabel={d("empty")}
+            controlsLabels={controlsLabels(d)}
+          />
+        </ServiceSectionControls>
+      ) : null}
+      {mode === "sections" ? (
+        <ServiceSectionControls
+          section="itinerary"
+          title={d("sections.itinerary")}
+          count={sectionCount("itinerary", value)}
+          choice={presentation?.sections?.itinerary}
+          onChoice={(choice) => onSectionChoice("itinerary", choice)}
+          onDiscard={() => onDiscard("itinerary")}
+          error={
+            Object.entries(errors).find(
+              ([path]) =>
+                path === "detail.itinerary" ||
+                path.startsWith("detail.itinerary.") ||
+                (SECTION_COPY_KEYS.itinerary ?? []).some(
+                  (key) => path === `copy.${key}`,
+                ),
+            )?.[1]
+          }
+        >
+          {(SECTION_COPY_KEYS.itinerary ?? []).length ? (
+            <fieldset className="space-y-3">
+              <legend className="mb-3 text-sm font-semibold text-ink">
+                {tp("headings")}
+              </legend>
+              <ServiceCopyFields
+                keys={SECTION_COPY_KEYS.itinerary ?? []}
+                value={copy}
+                onChange={onCopyChange}
+                errors={errors}
+              />
+            </fieldset>
+          ) : null}
+
+          <ItemList
+            items={value.itinerary}
+            onChange={(next) => set("itinerary", next)}
+            max={L.itinerary}
+            heading={(i) => d("items.step", { n: i + 1 })}
+            addLabel={d("add.step")}
+            emptyLabel={d("empty")}
+            blank={(): DraftItinerary => ({
+              time: "",
+              title: "",
+              text: "",
+              media_id: "",
+            })}
+            controlsLabels={controlsLabels(d)}
+            render={(step, i, update) => (
+              <div className="space-y-3">
+                <FieldGrid>
+                  <Field
+                    label={d("fields.time")}
+                    required
+                    error={err("itinerary", i, "time")}
+                    fieldPath={["detail", "itinerary", i, "time"].join(".")}
+                  >
+                    <TextInput
+                      value={step.time}
+                      onChange={(e) =>
+                        update({ ...step, time: e.target.value })
+                      }
+                    />
+                  </Field>
+                  <Field
+                    label={d("fields.title")}
+                    required
+                    error={err("itinerary", i, "title")}
+                    fieldPath={["detail", "itinerary", i, "title"].join(".")}
+                  >
+                    <TextInput
+                      value={step.title}
+                      onChange={(e) =>
+                        update({ ...step, title: e.target.value })
+                      }
+                    />
+                  </Field>
+                </FieldGrid>
+                <Field
+                  label={d("fields.text")}
+                  required
+                  error={err("itinerary", i, "text")}
+                  fieldPath={["detail", "itinerary", i, "text"].join(".")}
+                >
+                  <TextArea
+                    value={step.text}
+                    onChange={(e) => update({ ...step, text: e.target.value })}
+                  />
+                </Field>
+                <Field
+                  label={d("fields.stepImage")}
+                  hint={d("fields.stepImageHint")}
+                  error={err("itinerary", i, "media_id")}
+                  fieldPath={["detail", "itinerary", i, "media_id"].join(".")}
+                >
+                  <MediaField
+                    key={step.media_id || "none"}
+                    value={step.media_id || null}
+                    preview={previewFor(step.media_id)}
+                    onChange={(id, preview) => {
+                      if (id && preview)
+                        setPicked((prev) => ({ ...prev, [id]: preview }));
+                      update({ ...step, media_id: id ?? "" });
+                    }}
+                  />
+                </Field>
+              </div>
+            )}
+          />
+        </ServiceSectionControls>
+      ) : null}
+      {mode === "sections" ? (
+        <ServiceSectionControls
+          section="options"
+          title={d("sections.options")}
+          count={sectionCount("options", value)}
+          choice={presentation?.sections?.options}
+          onChoice={(choice) => onSectionChoice("options", choice)}
+          onDiscard={() => onDiscard("options")}
+          error={
+            Object.entries(errors).find(
+              ([path]) =>
+                path === "detail.option_groups" ||
+                path.startsWith("detail.option_groups.") ||
+                (SECTION_COPY_KEYS.options ?? []).some(
+                  (key) => path === `copy.${key}`,
+                ),
+            )?.[1]
+          }
+        >
+          {(SECTION_COPY_KEYS.options ?? []).length ? (
+            <fieldset className="space-y-3">
+              <legend className="mb-3 text-sm font-semibold text-ink">
+                {tp("headings")}
+              </legend>
+              <ServiceCopyFields
+                keys={SECTION_COPY_KEYS.options ?? []}
+                value={copy}
+                onChange={onCopyChange}
+                errors={errors}
+              />
+            </fieldset>
+          ) : null}
+
+          <ItemList
+            items={value.option_groups}
+            onChange={(next) => set("option_groups", next)}
+            max={L.option_groups}
+            heading={(i) => d("items.group", { n: i + 1 })}
+            addLabel={d("add.group")}
+            emptyLabel={d("empty")}
+            blank={(): DraftOptionGroup => ({
+              title: "",
+              items: [{ name: "", desc: "" }],
+            })}
+            controlsLabels={controlsLabels(d)}
+            render={(group, gi, update) => (
+              <div className="space-y-3">
+                <Field
+                  label={d("fields.groupTitle")}
+                  required
+                  error={err("option_groups", gi, "title")}
+                  fieldPath={["detail", "option_groups", gi, "title"].join(".")}
+                >
+                  <TextInput
+                    value={group.title}
+                    onChange={(e) =>
+                      update({ ...group, title: e.target.value })
+                    }
+                  />
+                </Field>
+                <SubHeading error={err("option_groups", gi, "items")}>
+                  {d("fields.groupItems")}
+                </SubHeading>
+                <ItemList
+                  items={group.items}
+                  onChange={(items) => update({ ...group, items })}
+                  max={L.option_items}
+                  min={1}
+                  heading={(i) => d("items.option", { n: i + 1 })}
+                  addLabel={d("add.option")}
+                  emptyLabel={d("empty")}
+                  blank={() => ({ name: "", desc: "" })}
+                  controlsLabels={controlsLabels(d)}
+                  render={(item, ii, updateItem) => (
+                    <FieldGrid>
+                      <Field
+                        label={d("fields.name")}
+                        required
+                        error={err("option_groups", gi, "items", ii, "name")}
+                        fieldPath={[
+                          "detail",
+                          "option_groups",
+                          gi,
+                          "items",
+                          ii,
+                          "name",
+                        ].join(".")}
+                      >
+                        <TextInput
+                          value={item.name}
+                          onChange={(e) =>
+                            updateItem({ ...item, name: e.target.value })
+                          }
+                        />
+                      </Field>
+                      <Field
+                        label={d("fields.optionDesc")}
+                        hint={d("fields.optionDescHint")}
+                        error={err("option_groups", gi, "items", ii, "desc")}
+                        fieldPath={[
+                          "detail",
+                          "option_groups",
+                          gi,
+                          "items",
+                          ii,
+                          "desc",
+                        ].join(".")}
+                      >
+                        <TextArea
+                          rows={2}
+                          value={item.desc}
+                          onChange={(e) =>
+                            updateItem({ ...item, desc: e.target.value })
+                          }
+                        />
+                      </Field>
+                    </FieldGrid>
+                  )}
+                />
+              </div>
+            )}
+          />
+        </ServiceSectionControls>
+      ) : null}
+      {mode === "booking" ? (
+        <ServiceSectionControls
+          section="pricing"
+          title={d("sections.pricing")}
+          count={sectionCount("pricing", value)}
+          choice={presentation?.sections?.pricing}
+          onChoice={(choice) => onSectionChoice("pricing", choice)}
+          onDiscard={() => onDiscard("pricing")}
+          error={
+            Object.entries(errors).find(
+              ([path]) =>
+                path === "detail.pricing" ||
+                path.startsWith("detail.pricing.") ||
+                (SECTION_COPY_KEYS.pricing ?? []).some(
+                  (key) => path === `copy.${key}`,
+                ),
+            )?.[1]
+          }
+        >
+          {(SECTION_COPY_KEYS.pricing ?? []).length ? (
+            <fieldset className="space-y-3">
+              <legend className="mb-3 text-sm font-semibold text-ink">
+                {tp("headings")}
+              </legend>
+              <ServiceCopyFields
+                keys={SECTION_COPY_KEYS.pricing ?? []}
+                value={copy}
+                onChange={onCopyChange}
+                errors={errors}
+              />
+            </fieldset>
+          ) : null}
+
+          {value.pricing ? (
+            <PricingEditor
+              value={value.pricing}
+              onChange={(next) => set("pricing", next)}
+              onRemove={() => set("pricing", null)}
+              err={(...p) => err("pricing", ...p)}
+              d={d}
+            />
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-ink-soft">{d("pricing.none")}</p>
+              <AdminButton
+                variant="ghost"
+                onClick={() => set("pricing", emptyPricing())}
+              >
+                + {d("add.pricing")}
+              </AdminButton>
+            </div>
+          )}
+        </ServiceSectionControls>
+      ) : null}
+      {mode === "booking" ? (
+        <ServiceSectionControls
+          section="extras"
+          title={d("sections.extras")}
+          count={sectionCount("extras", value)}
+          choice={presentation?.sections?.extras}
+          onChoice={(choice) => onSectionChoice("extras", choice)}
+          onDiscard={() => onDiscard("extras")}
+          error={
+            Object.entries(errors).find(
+              ([path]) =>
+                path === "detail.extras" ||
+                path.startsWith("detail.extras.") ||
+                (SECTION_COPY_KEYS.extras ?? []).some(
+                  (key) => path === `copy.${key}`,
+                ),
+            )?.[1]
+          }
+        >
+          {(SECTION_COPY_KEYS.extras ?? []).length ? (
+            <fieldset className="space-y-3">
+              <legend className="mb-3 text-sm font-semibold text-ink">
+                {tp("headings")}
+              </legend>
+              <ServiceCopyFields
+                keys={SECTION_COPY_KEYS.extras ?? []}
+                value={copy}
+                onChange={onCopyChange}
+                errors={errors}
+              />
+            </fieldset>
+          ) : null}
+
+          <ItemList
+            items={value.extras}
+            onChange={(next) => set("extras", next)}
+            max={L.extras}
+            heading={(i) => d("items.extra", { n: i + 1 })}
+            addLabel={d("add.extra")}
+            emptyLabel={d("empty")}
+            blank={(): DraftExtra => ({ label: "", price: "", desc: "" })}
+            controlsLabels={controlsLabels(d)}
+            render={(extra, i, update) => (
+              <div className="space-y-3">
+                <FieldGrid>
+                  <Field
+                    label={d("fields.label")}
+                    required
+                    error={err("extras", i, "label")}
+                    fieldPath={["detail", "extras", i, "label"].join(".")}
+                  >
+                    <TextInput
+                      value={extra.label}
+                      onChange={(e) =>
+                        update({ ...extra, label: e.target.value })
+                      }
+                    />
+                  </Field>
+                  <Field
+                    label={d("fields.price")}
+                    hint={d("fields.priceHint")}
+                    required
+                    error={err("extras", i, "price")}
+                    fieldPath={["detail", "extras", i, "price"].join(".")}
+                  >
+                    <TextInput
+                      value={extra.price}
+                      onChange={(e) =>
+                        update({ ...extra, price: e.target.value })
+                      }
+                    />
+                  </Field>
+                </FieldGrid>
+                <Field
+                  label={d("fields.desc")}
+                  required
+                  error={err("extras", i, "desc")}
+                  fieldPath={["detail", "extras", i, "desc"].join(".")}
+                >
+                  <TextArea
+                    rows={2}
+                    value={extra.desc}
+                    onChange={(e) => update({ ...extra, desc: e.target.value })}
+                  />
+                </Field>
+              </div>
+            )}
+          />
+        </ServiceSectionControls>
+      ) : null}
+      {mode === "sections" ? (
+        <ServiceSectionControls
+          section="partners"
+          title={d("sections.partners")}
+          count={sectionCount("partners", value)}
+          choice={presentation?.sections?.partners}
+          onChoice={(choice) => onSectionChoice("partners", choice)}
+          onDiscard={() => onDiscard("partners")}
+          error={
+            Object.entries(errors).find(
+              ([path]) =>
+                path === "detail.partners" ||
+                path.startsWith("detail.partners.") ||
+                (SECTION_COPY_KEYS.partners ?? []).some(
+                  (key) => path === `copy.${key}`,
+                ),
+            )?.[1]
+          }
+        >
+          {(SECTION_COPY_KEYS.partners ?? []).length ? (
+            <fieldset className="space-y-3">
+              <legend className="mb-3 text-sm font-semibold text-ink">
+                {tp("headings")}
+              </legend>
+              <ServiceCopyFields
+                keys={SECTION_COPY_KEYS.partners ?? []}
+                value={copy}
+                onChange={onCopyChange}
+                errors={errors}
+              />
+            </fieldset>
+          ) : null}
+
+          <ItemList
+            items={value.partners}
+            onChange={(next) => set("partners", next)}
+            max={L.partners}
+            heading={(i) => d("items.partner", { n: i + 1 })}
+            addLabel={d("add.partner")}
+            emptyLabel={d("empty")}
+            blank={(): DraftPartner => ({
+              name: "",
+              desc: "",
+              cta_label: "",
+              url: "",
+            })}
+            controlsLabels={controlsLabels(d)}
+            render={(p, i, update) => (
+              <div className="space-y-3">
+                <Field
+                  label={d("fields.name")}
+                  required
+                  error={err("partners", i, "name")}
+                  fieldPath={["detail", "partners", i, "name"].join(".")}
+                >
+                  <TextInput
+                    value={p.name}
+                    onChange={(e) => update({ ...p, name: e.target.value })}
+                  />
+                </Field>
+                <Field
+                  label={d("fields.desc")}
+                  required
+                  error={err("partners", i, "desc")}
+                  fieldPath={["detail", "partners", i, "desc"].join(".")}
+                >
+                  <TextArea
+                    rows={2}
+                    value={p.desc}
+                    onChange={(e) => update({ ...p, desc: e.target.value })}
+                  />
+                </Field>
+                <FieldGrid>
+                  <Field
+                    label={d("fields.ctaLabel")}
+                    required
+                    error={err("partners", i, "cta_label")}
+                    fieldPath={["detail", "partners", i, "cta_label"].join(".")}
+                  >
+                    <TextInput
+                      value={p.cta_label}
+                      onChange={(e) =>
+                        update({ ...p, cta_label: e.target.value })
+                      }
+                    />
+                  </Field>
+                  <Field
+                    label={d("fields.url")}
+                    required
+                    error={err("partners", i, "url")}
+                    fieldPath={["detail", "partners", i, "url"].join(".")}
+                  >
+                    <TextInput
+                      type="url"
+                      value={p.url}
+                      onChange={(e) => update({ ...p, url: e.target.value })}
+                    />
+                  </Field>
+                </FieldGrid>
+              </div>
+            )}
+          />
+        </ServiceSectionControls>
+      ) : null}
+      {mode === "sections" ? (
+        <ServiceSectionControls
+          section="good_to_know"
+          title={d("sections.goodToKnow")}
+          count={sectionCount("good_to_know", value)}
+          choice={presentation?.sections?.good_to_know}
+          onChoice={(choice) => onSectionChoice("good_to_know", choice)}
+          onDiscard={() => onDiscard("good_to_know")}
+          error={
+            Object.entries(errors).find(
+              ([path]) =>
+                path === "detail.good_to_know" ||
+                path.startsWith("detail.good_to_know.") ||
+                path.startsWith("detail.notes") ||
+                (SECTION_COPY_KEYS.good_to_know ?? []).some(
+                  (key) => path === `copy.${key}`,
+                ),
+            )?.[1]
+          }
+        >
+          {(SECTION_COPY_KEYS.good_to_know ?? []).length ? (
+            <fieldset className="space-y-3">
+              <legend className="mb-3 text-sm font-semibold text-ink">
+                {tp("headings")}
+              </legend>
+              <ServiceCopyFields
+                keys={SECTION_COPY_KEYS.good_to_know ?? []}
+                value={copy}
+                onChange={onCopyChange}
+                errors={errors}
+              />
+            </fieldset>
+          ) : null}
+
+          {GTK_COLUMNS.map(([key, max]) => (
+            <div key={key} className="space-y-3">
+              <SubHeading error={err("good_to_know", key)}>
+                {d(`gtk.${key}`)}
+              </SubHeading>
+              <StringList
+                items={value.good_to_know[key]}
+                onChange={(next) => setGtk(key, next)}
+                max={max}
+                addLabel={d("add.gtkItem")}
+                errorAt={(i) => err("good_to_know", key, i)}
+                pathAt={(i) => ["detail", "good_to_know", key, i].join(".")}
+                emptyLabel={d("empty")}
+                controlsLabels={controlsLabels(d)}
+                multiline
+              />
+            </div>
+          ))}
+
+          {value.notes.length > 0 ? (
+            <Section title={d("sections.notes")} error={err("notes")}>
+              <p className="text-sm text-ink-soft">{d("legacyNotes.hint")}</p>
+              <div>
+                <AdminButton
+                  variant="ghost"
+                  onClick={() => onChange(moveNotesToPractical(value))}
+                >
+                  {d("legacyNotes.move")}
+                </AdminButton>
+              </div>
+              <StringList
+                items={value.notes}
+                onChange={(next) => set("notes", next)}
+                max={L.notes}
+                addLabel={d("add.note")}
+                errorAt={(i) => err("notes", i)}
+                pathAt={(i) => ["detail", "notes", i].join(".")}
+                emptyLabel={d("empty")}
+                controlsLabels={controlsLabels(d)}
+                multiline
+              />
+            </Section>
+          ) : null}
+        </ServiceSectionControls>
       ) : null}
     </div>
   );
@@ -531,7 +919,10 @@ function PricingEditor({
                 placeholder={d("items.column", { n: i + 1 })}
                 value={col}
                 onChange={(e) =>
-                  onChange({ ...value, columns: replaceAt(value.columns, i, e.target.value) })
+                  onChange({
+                    ...value,
+                    columns: replaceAt(value.columns, i, e.target.value),
+                  })
                 }
               />
               <ItemControls
@@ -571,7 +962,12 @@ function PricingEditor({
           controlsLabels={labels}
           render={(row, ri, update) => (
             <div className="space-y-3">
-              <Field label={d("fields.rowLabel")} required error={err("rows", ri, "label")}>
+              <Field
+                label={d("fields.rowLabel")}
+                required
+                error={err("rows", ri, "label")}
+                fieldPath={["detail", "pricing", "rows", ri, "label"].join(".")}
+              >
                 <TextInput
                   value={row.label}
                   onChange={(e) => update({ ...row, label: e.target.value })}
@@ -584,13 +980,26 @@ function PricingEditor({
                     label={columnName(ci)}
                     required
                     error={err("rows", ri, "cells", ci)}
+                    fieldPath={[
+                      "detail",
+                      "pricing",
+                      "rows",
+                      ri,
+                      "cells",
+                      ci,
+                    ].join(".")}
                   >
                     <TextInput
                       value={row.cells[ci] ?? ""}
                       onChange={(e) => {
                         // Pad defensively so the row always has one cell per column.
-                        const cells = value.columns.map((__, j) => row.cells[j] ?? "");
-                        update({ ...row, cells: replaceAt(cells, ci, e.target.value) });
+                        const cells = value.columns.map(
+                          (__, j) => row.cells[j] ?? "",
+                        );
+                        update({
+                          ...row,
+                          cells: replaceAt(cells, ci, e.target.value),
+                        });
                       }}
                     />
                   </Field>
@@ -602,7 +1011,11 @@ function PricingEditor({
         />
       </div>
 
-      <Field label={d("fields.footnote")} error={err("footnote")}>
+      <Field
+        label={d("fields.footnote")}
+        error={err("footnote")}
+        fieldPath={["detail", "pricing", "footnote"].join(".")}
+      >
         <TextArea
           rows={2}
           value={value.footnote}
@@ -625,7 +1038,11 @@ interface ControlsLabels {
 }
 
 function controlsLabels(d: (key: string) => string): ControlsLabels {
-  return { up: d("controls.moveUp"), down: d("controls.moveDown"), remove: d("controls.remove") };
+  return {
+    up: d("controls.moveUp"),
+    down: d("controls.moveDown"),
+    remove: d("controls.remove"),
+  };
 }
 
 /** A section panel — the fieldset + legend idiom of the pages schema editor. */
@@ -649,10 +1066,18 @@ function Section({
   );
 }
 
-function SubHeading({ children, error }: { children: ReactNode; error?: string }) {
+function SubHeading({
+  children,
+  error,
+}: {
+  children: ReactNode;
+  error?: string;
+}) {
   return (
     <div className="space-y-1">
-      <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">{children}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+        {children}
+      </p>
       <ErrorLine error={error} />
     </div>
   );
@@ -660,7 +1085,9 @@ function SubHeading({ children, error }: { children: ReactNode; error?: string }
 
 /** Same error line as `Field`, for list-level / row-level errors with no single control. */
 function ErrorLine({ error }: { error?: string }) {
-  return error ? <p className="text-xs font-medium text-red-600">{error}</p> : null;
+  return error ? (
+    <p className="text-xs font-medium text-red-600">{error}</p>
+  ) : null;
 }
 
 function ItemControls({
@@ -740,22 +1167,26 @@ function ItemList<T>({
 }) {
   return (
     <div className="space-y-3">
-      {items.length === 0 ? <p className="text-sm text-ink-soft">{emptyLabel}</p> : null}
+      {items.length === 0 ? (
+        <p className="text-sm text-ink-soft">{emptyLabel}</p>
+      ) : null}
       {items.map((item, i) => (
-        <div key={i} className="space-y-3 rounded-md border border-line p-3">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-xs text-ink-soft">{heading(i)}</span>
-            <ItemControls
-              index={i}
-              count={items.length}
-              canRemove={items.length > min}
-              onMove={(dir) => onChange(moveAt(items, i, dir))}
-              onRemove={() => onChange(removeAt(items, i))}
-              labels={labels}
-            />
+        <ServiceItemScope key={i} name={heading(i)}>
+          <div className="space-y-3 rounded-md border border-line p-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs text-ink-soft">{heading(i)}</span>
+              <ItemControls
+                index={i}
+                count={items.length}
+                canRemove={items.length > min}
+                onMove={(dir) => onChange(moveAt(items, i, dir))}
+                onRemove={() => onChange(removeAt(items, i))}
+                labels={labels}
+              />
+            </div>
+            {render(item, i, (next) => onChange(replaceAt(items, i, next)))}
           </div>
-          {render(item, i, (next) => onChange(replaceAt(items, i, next)))}
-        </div>
+        </ServiceItemScope>
       ))}
       <AdminButton
         variant="ghost"
@@ -776,6 +1207,7 @@ function StringList({
   addLabel,
   emptyLabel,
   errorAt,
+  pathAt,
   controlsLabels: labels,
   multiline = false,
 }: {
@@ -785,23 +1217,35 @@ function StringList({
   addLabel: string;
   emptyLabel: string;
   errorAt: (i: number) => string | undefined;
+  pathAt: (i: number) => string;
   controlsLabels: ControlsLabels;
   multiline?: boolean;
 }) {
   return (
     <div className="space-y-3">
-      {items.length === 0 ? <p className="text-sm text-ink-soft">{emptyLabel}</p> : null}
+      {items.length === 0 ? (
+        <p className="text-sm text-ink-soft">{emptyLabel}</p>
+      ) : null}
       {items.map((item, i) => (
-        <div key={i} className="space-y-1.5">
+        <div
+          key={i}
+          data-service-path={pathAt(i)}
+          data-service-error-message={errorAt(i)}
+          className="space-y-1.5"
+        >
           <div className="flex items-start gap-2">
             {multiline ? (
               <TextArea
                 rows={2}
+                aria-label={`${addLabel} ${i + 1}`}
+                aria-invalid={Boolean(errorAt(i))}
                 value={item}
                 onChange={(e) => onChange(replaceAt(items, i, e.target.value))}
               />
             ) : (
               <TextInput
+                aria-label={`${addLabel} ${i + 1}`}
+                aria-invalid={Boolean(errorAt(i))}
                 value={item}
                 onChange={(e) => onChange(replaceAt(items, i, e.target.value))}
               />

@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { isIconName } from "@core/ui/icons/names";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   AdminButton,
   AdminCard,
   AdminPageHeader,
-  Field,
+  IconField,
   FieldGrid,
   FormActions,
   type AdminMediaPreview,
@@ -19,11 +20,31 @@ import {
   TextInput,
   useMediaQueue,
 } from "@slices/backoffice/contract";
-import { EMPTY_DETAIL } from "../../detail";
+
 import { deleteService, saveService } from "../actions";
-import { type DetailDraft, detailToDraft, draftToDetail } from "../detail-draft";
+import {
+  initialState,
+  buildPayload,
+  discardSection,
+  guardMessageKey,
+  STATUSES,
+  BOOKING_TYPES,
+  type FormState,
+  type Status,
+  type BookingType,
+  setSectionChoice,
+} from "../form-model";
 import type { ServiceEditData } from "../queries";
 import { DetailEditor } from "./detail-editor";
+import { ServiceField as Field } from "./service-section-controls";
+import { ServiceCopyEditor } from "./service-copy-editor";
+import {
+  SERVICE_ICON_SLOTS,
+  SERVICE_PRICE_DISPLAYS,
+  type ServiceSectionKey,
+  type ServicePriceDisplay,
+} from "../../presentation";
+import { serviceSaveInput, servicePresentationErrors } from "../validation";
 
 /**
  * Service create/edit form (S12) — one client island for `/admin/services/new` and
@@ -31,114 +52,6 @@ import { DetailEditor } from "./detail-editor";
  * from this slice's admin queries. Source [T] text is authored in English; the
  * booking CTA fields are gated by `booking_type`.
  */
-
-type Status = "draft" | "published" | "archived";
-type BookingType = "enquiry" | "external" | "none";
-
-const STATUSES: Status[] = ["draft", "published", "archived"];
-const BOOKING_TYPES: BookingType[] = ["none", "enquiry", "external"];
-
-interface FormState {
-  slug: string;
-  status: Status;
-  position: string;
-  category_id: string;
-  cover_media_id: string;
-  og_image_media_id: string;
-  price_from: string;
-  price_suffix: string;
-  /** Human-facing score ("4.7"); converted to integer tenths on submit. */
-  rating: string;
-  booking_type: BookingType;
-  cta_url: string;
-  cta_label: string;
-  duration_label: string;
-  name: string;
-  excerpt: string;
-  body: string;
-  meta_title: string;
-  meta_description: string;
-  /** Rich detail sections, as an editable draft (serialised by `draftToDetail`). */
-  detail: DetailDraft;
-  gallery: string[];
-}
-
-function initialState(
-  data: ServiceEditData | null,
-  defaultCategoryId: string,
-): FormState {
-  return {
-    slug: data?.slug ?? "",
-    status: data?.status ?? "draft",
-    position: String(data?.position ?? 0),
-    category_id: data?.category_id ?? defaultCategoryId,
-    cover_media_id: data?.cover_media_id ?? "",
-    og_image_media_id: data?.og_image_media_id ?? "",
-    price_from: data?.price_from != null ? String(data.price_from) : "",
-    price_suffix: data?.price_suffix ?? "",
-    rating: data?.rating_tenths != null ? String(data.rating_tenths / 10) : "",
-    booking_type: data?.booking_type ?? "none",
-    cta_url: data?.cta_url ?? "",
-    cta_label: data?.cta_label ?? "",
-    duration_label: data?.duration_label ?? "",
-    name: data?.name ?? "",
-    excerpt: data?.excerpt ?? "",
-    body: data?.body ?? "",
-    meta_title: data?.meta_title ?? "",
-    meta_description: data?.meta_description ?? "",
-    detail: detailToDraft(data?.detail ?? EMPTY_DETAIL),
-    gallery: data?.gallery ?? [],
-  };
-}
-
-/**
- * "4.7" → 47 integer tenths (the column's unit), clamped to 0–5 and rounded to one
- * decimal. Blank or unparseable → null ("not rated"), which hides the star chip.
- * Accepts a comma decimal separator, which PT/ES/FR keyboards produce by default.
- */
-function ratingTenths(raw: string): number | null {
-  const trimmed = raw.trim().replace(",", ".");
-  if (trimmed === "") return null;
-  const n = Number.parseFloat(trimmed);
-  if (!Number.isFinite(n)) return null;
-  return Math.round(Math.min(5, Math.max(0, n)) * 10);
-}
-
-function buildPayload(s: FormState, id: string | undefined) {
-  const orNull = (v: string) => (v.trim() === "" ? null : v.trim());
-  const intOr = (v: string, fallback: number) => {
-    const n = Number.parseInt(v, 10);
-    return Number.isFinite(n) ? n : fallback;
-  };
-  const intOrNull = (v: string) => {
-    if (v.trim() === "") return null;
-    const n = Number.parseInt(v, 10);
-    return Number.isFinite(n) ? n : null;
-  };
-  return {
-    id,
-    slug: s.slug.trim(),
-    status: s.status,
-    position: intOr(s.position, 0),
-    category_id: s.category_id,
-    cover_media_id: s.cover_media_id || null,
-    og_image_media_id: orNull(s.og_image_media_id),
-    price_from: intOrNull(s.price_from),
-    price_suffix: orNull(s.price_suffix),
-    rating_tenths: ratingTenths(s.rating),
-    booking_type: s.booking_type,
-    cta_url: orNull(s.cta_url),
-    cta_label: orNull(s.cta_label),
-    duration_label: orNull(s.duration_label),
-    name: s.name.trim(),
-    excerpt: s.excerpt.trim(),
-    body: s.body.trim(),
-    meta_title: orNull(s.meta_title),
-    meta_description: orNull(s.meta_description),
-    detail: draftToDetail(s.detail),
-    gallery: s.gallery,
-  };
-}
 
 export function ServiceForm({
   initial,
@@ -151,6 +64,8 @@ export function ServiceForm({
 }) {
   const t = useTranslations("services");
   const tb = useTranslations("backoffice");
+  const tp = useTranslations("services.admin.presentation");
+  const locale = useLocale();
   const router = useRouter();
   const [pending, start] = useTransition();
   const queue = useMediaQueue();
@@ -160,45 +75,169 @@ export function ServiceForm({
     initialState(initial, categories[0]?.id ?? ""),
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saved, setSaved] = useState(() =>
+    initialState(initial, categories[0]?.id ?? ""),
+  );
+  const [uploading, setUploading] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const bypass = useRef(false);
+  const dirty =
+    JSON.stringify(state) !== JSON.stringify(saved) ||
+    queue.hasPending ||
+    preparing;
+  const corrupt =
+    initial?.integrity.detail === "invalid" ||
+    initial?.integrity.presentation === "invalid";
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      if (dirty && !bypass.current) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
+  const canLeave = () => !dirty || window.confirm(tp("unsaved"));
+  const goBack = () => {
+    if (canLeave()) router.push("/admin/services");
+  };
+  function focusError(path: string, message: string) {
+    requestAnimationFrame(() => {
+      const section = path.startsWith("detail.")
+        ? path.split(".")[1]
+        : undefined;
+      const sectionKeys: Record<string, string> = {
+        highlights: "included",
+        option_groups: "options",
+        notes: "good_to_know",
+      };
+      const scope = section
+        ? (root.current?.querySelector<HTMLElement>(
+            `[data-service-section="${sectionKeys[section] ?? section}"]`,
+          ) ?? root.current)
+        : root.current;
+      const fields = Array.from(
+        scope?.querySelectorAll<HTMLElement>(
+          "[data-service-field], [data-service-error-message]",
+        ) ?? [],
+      );
+      const direct = root.current?.querySelector<HTMLElement>(
+        `[data-service-path="${path}"]`,
+      );
+      const field =
+        fields.find((node) => node.dataset.serviceErrorMessage === message) ??
+        fields.find((node) => node.dataset.serviceError === "true");
+      const directControl = direct?.matches("input,textarea,select,button")
+        ? direct
+        : direct?.querySelector<HTMLElement>("input,textarea,select,button");
+      const control =
+        directControl ??
+        field?.querySelector<HTMLElement>("input, textarea, select, button") ??
+        scope?.querySelector<HTMLElement>('[aria-invalid="true"]');
+      const target = control ?? field ?? scope;
+      if (target) {
+        target.closest("details")?.setAttribute("open", "");
+        target.scrollIntoView({ block: "center" });
+        if (!control) target.tabIndex = -1;
+        target.focus();
+      }
+    });
+  }
+  function reportErrors(next: Record<string, string>) {
+    const localized = Object.fromEntries(
+      Object.entries(next).map(([path, message]) => [
+        path,
+        guardMessageKey(path, message)
+          ? tp(guardMessageKey(path, message)!)
+          : message,
+      ]),
+    );
+    setErrors(localized);
+    setBanner(tp("saveError"));
+  }
   const [banner, setBanner] = useState<string | null>(null);
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setState((prev) => ({ ...prev, [key]: value }));
   const err = (key: string) => errors[key];
 
+  useEffect(() => {
+    const first = Object.entries(errors)[0];
+    if (first) focusError(...first);
+  }, [errors]);
+
   function onSubmit() {
-    if (preparing) return;
+    if (preparing || pending || uploading || corrupt) return;
     setBanner(null);
-    if (!state.cover_media_id) {
-      setErrors({ cover_media_id: t("admin.errors.coverRequired") });
+    let payload: ReturnType<typeof buildPayload>;
+    try {
+      payload = buildPayload(state, initial?.id);
+    } catch {
+      reportErrors({ price_from: tp("invalidEuros") });
+      return;
+    }
+    const parsed = serviceSaveInput.safeParse(payload);
+    if (!parsed.success) {
+      reportErrors(
+        Object.fromEntries(
+          parsed.error.issues.map((issue) => [
+            issue.path.join("."),
+            issue.message,
+          ]),
+        ),
+      );
+      return;
+    }
+    const preflight = servicePresentationErrors(
+      parsed.data,
+      state.presentation,
+    );
+    if (Object.keys(preflight).length) {
+      reportErrors(preflight);
       return;
     }
     setErrors({});
+    setUploading(true);
     void (async () => {
-      // Uploads run OUTSIDE the transition on purpose: `startTransition` marks every
-      // update in its scope as low priority, so the queue's progress modal would not
-      // paint until the transition it lives in had already finished (ADR 0030).
-      if (!(await queue.flush())) return;
-      start(async () => {
-        const result = await saveService(buildPayload(state, initial?.id));
-        if (result.ok) {
-          if (!initial) {
-            router.push(`/admin/services/${result.id}`);
-            return;
-          }
-          setBanner(tb("actions.saved"));
-          router.refresh();
+      try {
+        if (!(await queue.flush())) {
+          setBanner(tp("saveError"));
+          setUploading(false);
           return;
         }
-        if (result.error === "validation") {
-          setErrors(result.fieldErrors);
-          setBanner(tb("actions.saveError"));
-        } else if (result.error === "slug_conflict") {
-          setErrors({ slug: t("admin.errors.slugConflict") });
-        } else {
-          setBanner(tb("actions.saveError"));
-        }
-      });
+        start(async () => {
+          try {
+            const result = await saveService(payload);
+            if (result.ok) {
+              setSaved(structuredClone(state));
+              setBanner(tb("actions.saved"));
+              if (!initial) {
+                bypass.current = true;
+                router.push(`/admin/services/${result.id}`);
+              } else router.refresh();
+            } else if (result.error === "validation")
+              reportErrors(result.fieldErrors);
+            else if (result.error === "slug_conflict")
+              reportErrors({ slug: t("admin.errors.slugConflict") });
+            else
+              setBanner(
+                result.error === "invalid_stored_content"
+                  ? tp("integrity")
+                  : result.error === "unsupported_actor_id"
+                    ? tp("actor")
+                    : tp("saveError"),
+              );
+          } catch {
+            setBanner(tp("saveError"));
+          } finally {
+            setUploading(false);
+          }
+        });
+      } catch {
+        setBanner(tp("saveError"));
+        setUploading(false);
+      }
     })();
   }
 
@@ -207,13 +246,48 @@ export function ServiceForm({
     if (!window.confirm(tb("actions.confirmDelete"))) return;
     start(async () => {
       const result = await deleteService(initial.id);
-      if (result.ok) router.push("/admin/services");
-      else setBanner(tb("actions.saveError"));
+      if (result.ok) {
+        bypass.current = true;
+        router.push("/admin/services");
+      } else setBanner(tb("actions.saveError"));
     });
   }
 
+  const detailProps = {
+    value: state.detail,
+    onChange: (detail: FormState["detail"]) => set("detail", detail),
+    errors,
+    previews,
+    presentation: state.presentation,
+    onSectionChoice: (key: ServiceSectionKey, choice: boolean | undefined) =>
+      set("presentation", setSectionChoice(state.presentation, key, choice)),
+    onDiscard: (key: ServiceSectionKey) => {
+      const next = discardSection(state, saved, key);
+      const retained = new Set([
+        next.cover_media_id,
+        next.og_image_media_id,
+        ...next.gallery,
+        ...next.detail.itinerary.map((step) => step.media_id),
+      ]);
+      for (const step of state.detail.itinerary)
+        if (step.media_id && !retained.has(step.media_id))
+          queue.dequeue(step.media_id);
+      setState(next);
+    },
+    copy: state.copy,
+    onCopyChange: (copy: FormState["copy"]) => set("copy", copy),
+  };
+  const iconLabels = {
+    service_photos: t("detail.showAllPhotos"),
+    service_badge: t("admin.detail.fields.badges"),
+    service_included: t("admin.detail.sections.included"),
+    service_note: t("detail.noPayment"),
+    know_included: t("detail.knowIncluded"),
+    know_cancellation: t("detail.knowCancellation"),
+    know_practical: t("detail.knowPractical"),
+  };
   return (
-    <div className="space-y-6">
+    <div ref={root} className="space-y-6">
       <AdminPageHeader
         title={
           initial ? state.name || t("admin.editTitle") : t("admin.newTitle")
@@ -222,6 +296,9 @@ export function ServiceForm({
         actions={
           <Link
             href="/admin/services"
+            onClick={(event) => {
+              if (!canLeave()) event.preventDefault();
+            }}
             className="text-sm text-ink-soft hover:text-ink"
           >
             ← {t("admin.backToList")}
@@ -230,253 +307,468 @@ export function ServiceForm({
       />
 
       {banner ? (
-        <p className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink">
+        <p
+          role="status"
+          className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink"
+        >
           {banner}
         </p>
       ) : null}
 
-      <AdminCard title={t("admin.sections.status")}>
-        <FieldGrid>
-          <Field label={t("admin.fields.status")}>
-            <Select
-              value={state.status}
-              onChange={(e) => set("status", e.target.value as Status)}
-            >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {t(`admin.status.${s}`)}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field
-            label={t("admin.fields.position")}
-            hint={t("admin.fields.positionHint")}
-          >
-            <TextInput
-              type="number"
-              value={state.position}
-              onChange={(e) => set("position", e.target.value)}
-            />
-          </Field>
-        </FieldGrid>
-      </AdminCard>
-
-      <AdminCard title={t("admin.sections.identity")}>
-        <div className="space-y-4">
-          <Field
-            label={t("admin.fields.category")}
-            required
-            error={err("category_id")}
-          >
-            <Select
-              value={state.category_id}
-              onChange={(e) => set("category_id", e.target.value)}
-            >
-              <option value="">{t("admin.fields.choose")}</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field label={t("admin.fields.name")} required error={err("name")}>
-            <TextInput
-              value={state.name}
-              onChange={(e) => set("name", e.target.value)}
-            />
-          </Field>
-          <Field
-            label={t("admin.fields.slug")}
-            required
-            hint={t("admin.fields.slugHint")}
-            error={err("slug")}
-          >
-            <TextInput
-              value={state.slug}
-              onChange={(e) => set("slug", e.target.value)}
-            />
-          </Field>
-          <Field
-            label={t("admin.fields.excerpt")}
-            required
-            error={err("excerpt")}
-          >
-            <TextArea
-              value={state.excerpt}
-              onChange={(e) => set("excerpt", e.target.value)}
-            />
-          </Field>
+      {corrupt ? (
+        <p
+          role="alert"
+          className="rounded-md border border-line px-4 py-3 text-sm text-red-700"
+        >
+          {tp("integrity")}
+        </p>
+      ) : null}
+      <p className="text-sm text-ink-soft">{tp("source")}</p>
+      {initial?.status === "published" ? (
+        <Link
+          href={`/${locale}/services/${initial.slug}`}
+          onClick={(event) => {
+            if (!canLeave()) event.preventDefault();
+          }}
+          className="inline-block text-sm underline underline-offset-4"
+        >
+          {tp("published")}
+        </Link>
+      ) : null}
+      {Object.keys(errors).length ? (
+        <div
+          role="alert"
+          className="space-y-2 rounded-md border border-line p-4"
+        >
+          <p className="text-sm font-semibold">{tp("saveError")}</p>
+          <ul className="space-y-2">
+            {Object.entries(errors).map(([path, message]) => (
+              <li key={path}>
+                <button
+                  type="button"
+                  onClick={() => focusError(path, message)}
+                  className="text-left text-sm underline underline-offset-4"
+                >
+                  {message}
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
-      </AdminCard>
-
-      <AdminCard title={t("admin.sections.media")}>
-        <div className="space-y-5">
-          <Field
-            label={t("admin.fields.cover")}
-            required
-            error={err("cover_media_id")}
-          >
-            <MediaField
-              value={state.cover_media_id || null}
-              preview={previews[state.cover_media_id] ?? null}
-              onChange={(id) => set("cover_media_id", id ?? "")}
-            />
-          </Field>
-          <Field
-            label={t("admin.fields.ogImage")}
-            hint={t("admin.fields.ogImageHint")}
-          >
-            <MediaField
-              value={state.og_image_media_id || null}
-              preview={previews[state.og_image_media_id] ?? null}
-              onChange={(id) => set("og_image_media_id", id ?? "")}
-            />
-          </Field>
-          <Field label={t("admin.fields.gallery")}>
-            <MediaGalleryField
-              value={state.gallery}
-              previews={previews}
-              onChange={(ids) => set("gallery", ids)}
-            />
-          </Field>
-        </div>
-      </AdminCard>
-
-      <AdminCard title={t("admin.sections.body")}>
-        <Field label={t("admin.fields.body")} required error={err("body")}>
-          <TextArea
-            rows={8}
-            value={state.body}
-            onChange={(e) => set("body", e.target.value)}
-          />
-        </Field>
-      </AdminCard>
-
-      <AdminCard title={t("admin.sections.detail")}>
-        <DetailEditor
-          value={state.detail}
-          onChange={(next) => set("detail", next)}
-          errors={errors}
-          previews={previews}
-        />
-      </AdminCard>
-
-      <AdminCard title={t("admin.sections.booking")}>
-        <div className="space-y-4">
+      ) : null}
+      <fieldset
+        disabled={pending || uploading || corrupt}
+        className="space-y-6"
+      >
+        <AdminCard title={t("admin.sections.status")}>
           <FieldGrid>
-            <Field
-              label={t("admin.fields.priceFrom")}
-              hint={t("admin.fields.priceFromHint")}
-              error={err("price_from")}
-            >
-              <TextInput
-                type="number"
-                value={state.price_from}
-                onChange={(e) => set("price_from", e.target.value)}
-              />
-            </Field>
-            <Field
-              label={t("admin.fields.priceSuffix")}
-              hint={t("admin.fields.priceSuffixHint")}
-              error={err("price_suffix")}
-            >
-              <TextInput
-                value={state.price_suffix}
-                onChange={(e) => set("price_suffix", e.target.value)}
-              />
-            </Field>
-            <Field
-              label={t("admin.fields.rating")}
-              hint={t("admin.fields.ratingHint")}
-              error={err("rating_tenths")}
-            >
-              <TextInput
-                type="number"
-                step="0.1"
-                min="0"
-                max="5"
-                value={state.rating}
-                onChange={(e) => set("rating", e.target.value)}
-              />
-            </Field>
-            <Field
-              label={t("admin.fields.durationLabel")}
-              error={err("duration_label")}
-            >
-              <TextInput
-                value={state.duration_label}
-                onChange={(e) => set("duration_label", e.target.value)}
-              />
-            </Field>
-            <Field label={t("admin.fields.bookingType")}>
+            <Field label={t("admin.fields.status")}>
               <Select
-                value={state.booking_type}
-                onChange={(e) =>
-                  set("booking_type", e.target.value as BookingType)
-                }
+                data-service-path="status"
+                value={state.status}
+                onChange={(e) => set("status", e.target.value as Status)}
               >
-                {BOOKING_TYPES.map((b) => (
-                  <option key={b} value={b}>
-                    {t(`admin.bookingType.${b}`)}
+                {STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {t(`admin.status.${s}`)}
                   </option>
                 ))}
               </Select>
             </Field>
+            <Field
+              label={t("admin.fields.position")}
+              hint={t("admin.fields.positionHint")}
+            >
+              <TextInput
+                type="number"
+                data-service-path="position"
+                value={state.position}
+                onChange={(e) => set("position", e.target.value)}
+              />
+            </Field>
           </FieldGrid>
-          {state.booking_type === "external" ? (
+        </AdminCard>
+
+        <AdminCard title={t("admin.sections.identity")}>
+          <div className="space-y-4">
+            <Field
+              label={t("admin.fields.category")}
+              required
+              error={err("category_id")}
+            >
+              <Select
+                data-service-path="category_id"
+                value={state.category_id}
+                onChange={(e) => set("category_id", e.target.value)}
+              >
+                <option value="">{t("admin.fields.choose")}</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label={t("admin.fields.name")} required error={err("name")}>
+              <TextInput
+                data-service-path="name"
+                value={state.name}
+                onChange={(e) => set("name", e.target.value)}
+              />
+            </Field>
+            <Field
+              label={t("admin.fields.slug")}
+              required
+              hint={t("admin.fields.slugHint")}
+              error={err("slug")}
+            >
+              <TextInput
+                data-service-path="slug"
+                value={state.slug}
+                onChange={(e) => set("slug", e.target.value)}
+              />
+            </Field>
+            <Field
+              label={t("admin.fields.excerpt")}
+              required
+              error={err("excerpt")}
+            >
+              <TextArea
+                data-service-path="excerpt"
+                value={state.excerpt}
+                onChange={(e) => set("excerpt", e.target.value)}
+              />
+            </Field>
             <FieldGrid>
               <Field
-                label={t("admin.fields.ctaLabel")}
-                error={err("cta_label")}
+                label={t("admin.fields.rating")}
+                hint={t("admin.fields.ratingHint")}
+                error={err("rating_tenths")}
               >
                 <TextInput
-                  value={state.cta_label}
-                  onChange={(e) => set("cta_label", e.target.value)}
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="5"
+                  data-service-path="rating_tenths"
+                  value={state.rating}
+                  onChange={(e) => set("rating", e.target.value)}
                 />
               </Field>
-              <Field label={t("admin.fields.ctaUrl")} error={err("cta_url")}>
+              <Field
+                label={t("admin.fields.durationLabel")}
+                error={err("duration_label")}
+              >
                 <TextInput
-                  value={state.cta_url}
-                  onChange={(e) => set("cta_url", e.target.value)}
+                  data-service-path="duration_label"
+                  value={state.duration_label}
+                  onChange={(e) => set("duration_label", e.target.value)}
                 />
               </Field>
             </FieldGrid>
-          ) : null}
-        </div>
-      </AdminCard>
+          </div>
+        </AdminCard>
 
-      <AdminCard title={t("admin.sections.seo")}>
-        <div className="space-y-4">
-          <Field label={t("admin.fields.metaTitle")} error={err("meta_title")}>
-            <TextInput
-              value={state.meta_title}
-              onChange={(e) => set("meta_title", e.target.value)}
-            />
-          </Field>
-          <Field
-            label={t("admin.fields.metaDescription")}
-            error={err("meta_description")}
-          >
+        <AdminCard title={t("admin.sections.body")}>
+          <Field label={t("admin.fields.body")} required error={err("body")}>
             <TextArea
-              value={state.meta_description}
-              onChange={(e) => set("meta_description", e.target.value)}
+              rows={8}
+              data-service-path="body"
+              value={state.body}
+              onChange={(e) => set("body", e.target.value)}
             />
           </Field>
-        </div>
-      </AdminCard>
+        </AdminCard>
 
+        <AdminCard title={t("admin.sections.detail")}>
+          <DetailEditor mode="general" {...detailProps} />
+        </AdminCard>
+        <AdminCard title={t("admin.sections.media")}>
+          <div className="space-y-5">
+            <Field
+              label={t("admin.fields.cover")}
+              required
+              error={err("cover_media_id")}
+              fieldPath="cover_media_id"
+            >
+              <MediaField
+                value={state.cover_media_id || null}
+                preview={previews[state.cover_media_id] ?? null}
+                onChange={(id) => set("cover_media_id", id ?? "")}
+              />
+            </Field>
+            <Field
+              label={t("admin.fields.gallery")}
+              fieldPath="gallery"
+              error={
+                Object.entries(errors).find(([path]) =>
+                  path.startsWith("gallery"),
+                )?.[1]
+              }
+            >
+              <MediaGalleryField
+                value={state.gallery}
+                previews={previews}
+                onChange={(ids) => set("gallery", ids)}
+              />
+            </Field>
+          </div>
+        </AdminCard>
+
+        <AdminCard title={tp("title")}>
+          <DetailEditor mode="sections" {...detailProps} />
+        </AdminCard>
+
+        <AdminCard title={t("admin.sections.booking")}>
+          <div className="space-y-4">
+            <Field
+              label={tp("priceMode")}
+              hint={
+                state.presentation?.price_display === undefined
+                  ? tp("inherited")
+                  : tp("explicit")
+              }
+            >
+              <Select
+                value={state.presentation?.price_display ?? "auto"}
+                onChange={(event) => {
+                  const next = { ...state.presentation, version: 1 as const };
+                  if (event.target.value === "auto") delete next.price_display;
+                  else
+                    next.price_display = event.target
+                      .value as ServicePriceDisplay;
+                  set(
+                    "presentation",
+                    Object.keys(next).length === 1 ? null : next,
+                  );
+                }}
+              >
+                {SERVICE_PRICE_DISPLAYS.map((mode) => (
+                  <option key={mode} value={mode}>
+                    {tp(`modes.${mode}`)}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            {state.presentation?.price_display !== undefined ? (
+              <AdminButton
+                onClick={() => {
+                  const next = { ...state.presentation, version: 1 as const };
+                  delete next.price_display;
+                  set(
+                    "presentation",
+                    Object.keys(next).length === 1 ? null : next,
+                  );
+                }}
+              >
+                {tp("reset")}
+              </AdminButton>
+            ) : null}
+            <details
+              open={
+                !["hidden", "on_request"].includes(
+                  state.presentation?.price_display ?? "auto",
+                ) || Boolean(err("price_from") || err("price_suffix"))
+              }
+            >
+              <summary className="mb-3 cursor-pointer text-sm font-semibold">
+                {tp("euros")}
+              </summary>
+              <FieldGrid>
+                <Field
+                  label={tp("euros")}
+                  hint={tp("eurosHint")}
+                  error={err("price_from")}
+                >
+                  <TextInput
+                    inputMode="decimal"
+                    data-service-path="price_from"
+                    value={state.price_from}
+                    onChange={(e) => set("price_from", e.target.value)}
+                  />
+                </Field>
+                <Field
+                  label={t("admin.fields.priceSuffix")}
+                  hint={t("admin.fields.priceSuffixHint")}
+                  error={err("price_suffix")}
+                >
+                  <TextInput
+                    data-service-path="price_suffix"
+                    value={state.price_suffix}
+                    onChange={(e) => set("price_suffix", e.target.value)}
+                  />
+                </Field>
+              </FieldGrid>
+            </details>
+            <FieldGrid>
+              <Field label={t("admin.fields.bookingType")}>
+                <Select
+                  data-service-path="booking_type"
+                  value={state.booking_type}
+                  onChange={(e) =>
+                    set("booking_type", e.target.value as BookingType)
+                  }
+                >
+                  {BOOKING_TYPES.map((b) => (
+                    <option key={b} value={b}>
+                      {t(`admin.bookingType.${b}`)}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </FieldGrid>
+            {state.booking_type !== "none" ? (
+              <FieldGrid>
+                <Field
+                  label={t("admin.fields.ctaLabel")}
+                  error={err("cta_label")}
+                >
+                  <TextInput
+                    data-service-path="cta_label"
+                    value={state.cta_label}
+                    onChange={(e) => set("cta_label", e.target.value)}
+                  />
+                </Field>
+                {state.booking_type === "external" ? (
+                  <Field
+                    label={t("admin.fields.ctaUrl")}
+                    error={err("cta_url")}
+                  >
+                    <TextInput
+                      type="url"
+                      data-service-path="cta_url"
+                      value={state.cta_url}
+                      onChange={(e) => set("cta_url", e.target.value)}
+                    />
+                  </Field>
+                ) : null}
+              </FieldGrid>
+            ) : null}
+            <DetailEditor mode="booking" {...detailProps} />
+          </div>
+        </AdminCard>
+
+        <AdminCard title={t("admin.sections.seo")}>
+          <div className="space-y-4">
+            <Field
+              label={t("admin.fields.ogImage")}
+              hint={t("admin.fields.ogImageHint")}
+              error={err("og_image_media_id")}
+              fieldPath="og_image_media_id"
+            >
+              <MediaField
+                value={state.og_image_media_id || null}
+                preview={previews[state.og_image_media_id] ?? null}
+                onChange={(id) => set("og_image_media_id", id ?? "")}
+              />
+            </Field>
+
+            <Field
+              label={t("admin.fields.metaTitle")}
+              error={err("meta_title")}
+            >
+              <TextInput
+                data-service-path="meta_title"
+                value={state.meta_title}
+                onChange={(e) => set("meta_title", e.target.value)}
+              />
+            </Field>
+            <Field
+              label={t("admin.fields.metaDescription")}
+              error={err("meta_description")}
+            >
+              <TextArea
+                data-service-path="meta_description"
+                value={state.meta_description}
+                onChange={(e) => set("meta_description", e.target.value)}
+              />
+            </Field>
+          </div>
+        </AdminCard>
+
+        <AdminCard title={tp("icons")}>
+          <details>
+            <summary className="cursor-pointer text-sm font-semibold">
+              {tp("icons")}
+            </summary>
+            <div className="mt-4 space-y-4">
+              {SERVICE_ICON_SLOTS.map((slot) => (
+                <div key={slot} className="space-y-2">
+                  <Field
+                    label={iconLabels[slot]}
+                    error={err(`presentation.icons.${slot}`)}
+                  >
+                    <IconField
+                      value={state.presentation?.icons?.[slot] ?? ""}
+                      emptyLabel={tp("globalIcon")}
+                      allowEmpty
+                      onChange={(value) => {
+                        const icons = { ...state.presentation?.icons };
+                        if (isIconName(value)) icons[slot] = value;
+                        else delete icons[slot];
+                        const next = {
+                          ...state.presentation,
+                          version: 1 as const,
+                          icons,
+                        };
+                        if (!Object.keys(icons).length)
+                          delete (next as FormState["presentation"])!.icons;
+                        set(
+                          "presentation",
+                          Object.keys(next).length === 1 ? null : next,
+                        );
+                      }}
+                    />
+                  </Field>
+                  {state.presentation?.icons?.[slot] ? (
+                    <AdminButton
+                      onClick={() => {
+                        const icons = { ...state.presentation?.icons };
+                        delete icons[slot];
+                        const next = {
+                          ...state.presentation,
+                          version: 1 as const,
+                          icons,
+                        };
+                        if (!Object.keys(icons).length)
+                          delete (
+                            next as NonNullable<FormState["presentation"]>
+                          ).icons;
+                        set(
+                          "presentation",
+                          Object.keys(next).length === 1 ? null : next,
+                        );
+                      }}
+                    >
+                      {tp("globalIcon")}
+                    </AdminButton>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </details>
+        </AdminCard>
+        <ServiceCopyEditor
+          data-service-path="copy"
+          value={state.copy}
+          onChange={(copy) => set("copy", copy)}
+          errors={errors}
+        />
+      </fieldset>
       <FormActions>
         {initial ? (
-          <AdminButton variant="danger" onClick={onDelete} disabled={pending}>
+          <AdminButton
+            variant="danger"
+            onClick={onDelete}
+            disabled={pending || uploading}
+          >
             {tb("actions.delete")}
           </AdminButton>
         ) : null}
         <AdminButton
           variant="ghost"
-          onClick={() => router.push("/admin/services")}
-          disabled={pending}
+          onClick={goBack}
+          disabled={pending || uploading}
         >
           {tb("actions.cancel")}
         </AdminButton>
@@ -485,8 +777,12 @@ export function ServiceForm({
             {tb("media.waitForMedia")}
           </p>
         ) : null}
-        <AdminButton variant="primary" onClick={onSubmit} disabled={pending || preparing}>
-          {pending ? tb("actions.saving") : tb("actions.save")}
+        <AdminButton
+          variant="primary"
+          onClick={onSubmit}
+          disabled={pending || uploading || preparing || corrupt}
+        >
+          {pending || uploading ? tb("actions.saving") : tb("actions.save")}
         </AdminButton>
       </FormActions>
     </div>
