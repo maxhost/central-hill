@@ -294,6 +294,15 @@ page_content
   `/en/…` URLs — removed by the guests spec); spec `guests-admin-editor` (2026-10-12) added every
   optional field above and the hidden URLs.
 
+- **blog listing editor (2026-10-18)**: optional `[T]` groups
+  `seo{meta_title?,meta_description?}`,
+  `hero{eyebrow?,headline?,intro?,search_placeholder?,search_label?}`,
+  `featured{eyebrow?}`, `journal{eyebrow?,title?}`,
+  `newsletter{eyebrow?,title?,description?}`. Empty overrides inherit visitor-locale
+  messages; shared newsletter appears in listing/articles. OG remains the existing
+  `page_content.og_image_media_id`. Blog page saves atomically synchronize authored
+  nonblank `block:<path>` source rows through the existing kernel CTE; surviving
+  target translations stay, cleared fields remove source/targets. No migration.
 - **blog** (drizzle 0016): `post_aside{eyebrow?, title, body?, cta_label}` — the CTA under the
   "In this article" TOC of every post. Destination fixed in code (locale `/owners`); a post's own
   `cta_label`/`cta_url` replaces the button. No FAQ, no OG override in use.

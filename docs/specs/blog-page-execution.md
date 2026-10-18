@@ -48,7 +48,8 @@ schemas/blog.ts,server/queries.ts,server/metadata.ts,server/translation-revalida
 `messages/{en,pt,es,fr}.json`; `src/app/[locale]/blog/page.tsx`;
 `src/app/(admin)/admin/(panel)/pages/[key]/page.tsx`;
 new `src/slices/pages/tests/blog-content.test.ts`; existing `tests/pages-admin.test.ts`
-obsolete no-layout Blog expectation updated by root (Blog now has a layout). Page translation invalidation
+obsolete no-layout Blog expectation updated by root (Blog now has a layout);
+`tests/pages.test.ts` existing aside-path assertion scoped to aside as new Blog fields are translatable. Page translation invalidation
 is verified through actual approval/reset in the isolated browser QA.
 
 A only: `src/slices/pages/admin/{queries.ts,actions.ts,layout.ts,ui/page-editor.tsx,

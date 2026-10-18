@@ -1,5 +1,15 @@
 # Slice `blog` (S4)
 
+## Blog page copy (2026-10-18)
+
+The index now reads `getBlogPage(locale)` from the Pages contract for header and
+search text, Featured label, Journal headings and newsletter copy. Blank overrides
+inherit the existing localized messages per field. The article newsletter consumes
+the same page fields. Listing metadata uses Pages' `buildBlogMetadata`, including
+its editable localized title/description and social image. Cards, categories,
+article fields, filtering and pagination keep their existing source/behavior;
+the search field still has no search implementation in this scoped delivery.
+
 Editorial blog — listing + article detail. Public, statically rendered (ISR), 4 locales.
 See `docs/vertical-slices.md` → S4, `docs/content-briefs.md` → §6, ADR 0013 (body block set).
 

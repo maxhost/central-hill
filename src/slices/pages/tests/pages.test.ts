@@ -518,7 +518,7 @@ test("blog/guides defaults validate and the 0016 migration inserts exactly them"
 });
 
 test("blog/guides aside CTAs translate their copy but not the photo", () => {
-  assert.deepEqual(translatablePathsByPage.blog.sort(), [
+  assert.deepEqual(translatablePathsByPage.blog.filter(path => path.startsWith("post_aside.")).sort(), [
     "post_aside.body",
     "post_aside.cta_label",
     "post_aside.eyebrow",

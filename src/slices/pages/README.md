@@ -1,5 +1,23 @@
 # Slice `pages` (S9)
 
+## Blog listing editor (2026-10-18)
+
+Pages→Blog now groups SEO/social image, header/search copy, Featured label,
+Journal headings, shared newsletter and the existing article aside. New groups
+are optional overrides: blank values inherit visitor-locale `blog` messages;
+English inherited placeholders in the editor never become stored values merely
+by saving. Existing aside data/translation paths and its Owners destination stay.
+The shared newsletter is consumed by listing and articles; Leads owns its form.
+
+`getBlogPage(locale)` and `buildBlogMetadata(locale)` expose the content and
+listing SEO/OG through the contract. Blog saves compose Pages' saved row with
+the existing i18n source-snapshot CTE in one SQL statement, preserve surviving
+targets, and clear removed source/targets. Source-invalid rows block editing;
+OG references must be existing image assets. No migration. Translation actions
+resolve the actual page key from its UUID before calling `revalidatePage`, so
+Blog approval/reset invalidates `page:blog` and its route tree without rebuild.
+See `docs/specs/blog-page-execution.md` for ownership and verification scope.
+
 ## About CMS follow-up (2026-10-18)
 
 The current About implementation supersedes the fixed-count/image-only statements

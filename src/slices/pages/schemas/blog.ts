@@ -1,8 +1,9 @@
 /**
  * `blog` page content schema (ADR 0012). Source-locale values only.
  *
- * Holds the blog copy that is not a post: today, the CTA at the bottom of every post's sticky
- * aside ("In this article" card, `mock/blog-post.html` `.aside-cta`). Its destination is fixed in
+ * Holds index header/section copy, shared newsletter copy and listing SEO as optional
+ * overrides, plus the existing CTA at the bottom of every post's sticky aside.
+ * Blank index overrides inherit visitor-locale messages. The aside destination is fixed in
  * code (the visitor's locale `/owners`), like Home's owners CTA, so only the copy is editable. A
  * post with its own `cta_label`/`cta_url` replaces this button (blog slice).
  *
