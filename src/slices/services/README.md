@@ -110,6 +110,28 @@ Plugs into the backoffice shell. Contributes two `content`-group screens
 
 ## Deferred
 
+### Conditional detail editor contract (migration 0019)
+
+`service.presentation` is nullable JSONB, validated by `presentation.ts`: version 1,
+independent section flags, price display mode and seven optional Iconoir overrides.
+Absent flags retain content-driven visibility; false hides without deleting content.
+Public `detail` is filtered after resolving localized text; admin always loads full data.
+`ServiceSummary.priceDisplay` is resolved separately from the stored `priceFrom` value.
+The listing and Home carousel still do not render prices.
+
+`copy.ts` defines 38 optional per-service text overrides, stored as scalar translatable
+fields `copy:<key>` through the i18n seam. The generic translation inbox discovers them
+from source rows. Reads validate each field and fall back independently. About/Included
+titles and primary CTA label retain their existing fields to avoid duplicate sources.
+
+Save validates effective presentation, media and stored integrity before writes. Existing
+non-UUID staff IDs cannot be attributed by the kernel UUID column; Services returns
+`unsupported_actor_id` before mutations rather than partially saving. This is a documented
+compatibility limit, not support for textual staff attribution. Invalid stored JSON blocks
+ordinary saves instead of being silently replaced with an empty detail.
+
+Implementation and QA progress: `docs/specs/service-detail-editor-execution.md`.
+
 - **Service/Offer JSON-LD**: only `BreadcrumbList` is emitted; a richer `Service`/`Offer`
   builder belongs in `core/seo` (**S13**, ADR — golden rule 3), not hand-written here.
 

@@ -12,7 +12,12 @@ import {
   resolveSlug,
 } from "@core/i18n/content";
 import { slug as slugTable } from "@core/i18n/schema";
-import { type MediaAsset, type MediaImageData, loadMedia, mediaUrl } from "@core/media";
+import {
+  type MediaAsset,
+  type MediaImageData,
+  loadMedia,
+  mediaUrl,
+} from "@core/media";
 import {
   SERVICE,
   SERVICE_CATEGORY,
@@ -23,6 +28,12 @@ import {
   type ServiceSummary,
 } from "../contract";
 import { EMPTY_DETAIL, parseDetail } from "../detail";
+import {
+  parseServicePresentation,
+  applyServicePresentation,
+  resolveServicePriceDisplay,
+} from "../presentation";
+import { resolveServiceCopy } from "../copy";
 import { service, service_category, service_media } from "../schema";
 
 /**
@@ -37,6 +48,7 @@ interface ServiceRow {
   id: string;
   cover_media_id: string | null;
   price_from: number | null;
+  presentation: unknown;
   rating_tenths: number | null;
   booking_type: ServiceBookingType;
   cat_id: string;
@@ -48,6 +60,7 @@ const summarySelect = {
   id: service.id,
   cover_media_id: service.cover_media_id,
   price_from: service.price_from,
+  presentation: service.presentation,
   rating_tenths: service.rating_tenths,
   booking_type: service.booking_type,
   cat_id: service_category.id,
@@ -72,7 +85,10 @@ interface SummaryCtx {
 const DEFAULT_W = 1600;
 const DEFAULT_H = 1200;
 
-function toImageData(asset: MediaAsset | undefined, alt: string): MediaImageData | null {
+function toImageData(
+  asset: MediaAsset | undefined,
+  alt: string,
+): MediaImageData | null {
   if (!asset) return null;
   return {
     url: mediaUrl(asset.r2_key),
@@ -83,7 +99,10 @@ function toImageData(asset: MediaAsset | undefined, alt: string): MediaImageData
   };
 }
 
-async function buildCtx(rows: ServiceRow[], locale: Locale): Promise<SummaryCtx> {
+async function buildCtx(
+  rows: ServiceRow[],
+  locale: Locale,
+): Promise<SummaryCtx> {
   const refs: ContentRef[] = [];
   const coverIds: string[] = [];
   const serviceIds: string[] = [];
@@ -132,6 +151,10 @@ function mapSummary(row: ServiceRow, ctx: SummaryCtx): ServiceSummary {
     category,
     cover,
     priceFrom: row.price_from,
+    priceDisplay: resolveServicePriceDisplay(
+      parseServicePresentation(row.presentation),
+      row.price_from,
+    ),
     // Integer tenths on the row → one-decimal score for the UI (0–5). Null stays null.
     rating: row.rating_tenths == null ? null : row.rating_tenths / 10,
     priceSuffix: content.get(SERVICE, row.id, "price_suffix") ?? null,
@@ -141,9 +164,15 @@ function mapSummary(row: ServiceRow, ctx: SummaryCtx): ServiceSummary {
 }
 
 // ── Public, cache-wrapped reads ──────────────────────────────────────────────
-async function _listServiceCategories(locale: Locale): Promise<ServiceCategoryRef[]> {
+async function _listServiceCategories(
+  locale: Locale,
+): Promise<ServiceCategoryRef[]> {
   const rows = await db
-    .select({ id: service_category.id, slug: service_category.slug, icon: service_category.icon })
+    .select({
+      id: service_category.id,
+      slug: service_category.slug,
+      icon: service_category.icon,
+    })
     .from(service_category)
     .orderBy(asc(service_category.position));
   const content = await loadContent(
@@ -158,7 +187,9 @@ async function _listServiceCategories(locale: Locale): Promise<ServiceCategoryRe
   }));
 }
 
-export function listServiceCategories(locale: Locale): Promise<ServiceCategoryRef[]> {
+export function listServiceCategories(
+  locale: Locale,
+): Promise<ServiceCategoryRef[]> {
   return unstable_cache(
     () => _listServiceCategories(locale),
     ["services:listServiceCategories", locale],
@@ -166,9 +197,15 @@ export function listServiceCategories(locale: Locale): Promise<ServiceCategoryRe
   )();
 }
 
-async function _listServices(locale: Locale, categorySlug?: string): Promise<ServiceSummary[]> {
+async function _listServices(
+  locale: Locale,
+  categorySlug?: string,
+): Promise<ServiceSummary[]> {
   const where = categorySlug
-    ? and(eq(service.status, "published"), eq(service_category.slug, categorySlug))
+    ? and(
+        eq(service.status, "published"),
+        eq(service_category.slug, categorySlug),
+      )
     : eq(service.status, "published");
   const rows = await summaryQuery().where(where).orderBy(asc(service.position));
   if (rows.length === 0) return [];
@@ -176,15 +213,21 @@ async function _listServices(locale: Locale, categorySlug?: string): Promise<Ser
   return rows.map((r) => mapSummary(r, ctx));
 }
 
-export function listServices(locale: Locale, categorySlug?: string): Promise<ServiceSummary[]> {
+export function listServices(
+  locale: Locale,
+  categorySlug?: string,
+): Promise<ServiceSummary[]> {
   return unstable_cache(
     () => _listServices(locale, categorySlug),
-    ["services:listServices", locale, categorySlug ?? "all"],
+    ["services:listServices:v2", locale, categorySlug ?? "all"],
     { tags: [SERVICE_TAGS.list] },
   )();
 }
 
-async function _getServiceBySlug(locale: Locale, slugValue: string): Promise<ServiceDetail | null> {
+async function _getServiceBySlug(
+  locale: Locale,
+  slugValue: string,
+): Promise<ServiceDetail | null> {
   const id = await resolveSlug(SERVICE, locale, slugValue);
   if (!id) return null;
 
@@ -229,7 +272,10 @@ async function _getServiceBySlug(locale: Locale, slugValue: string): Promise<Ser
       ),
     ]);
     for (const mid of galleryIds) {
-      const img = toImageData(galleryMedia.get(mid), galleryAlt.get("media_asset", mid, "alt") ?? summary.name);
+      const img = toImageData(
+        galleryMedia.get(mid),
+        galleryAlt.get("media_asset", mid, "alt") ?? summary.name,
+      );
       if (img) gallery.push(img);
     }
   }
@@ -248,7 +294,8 @@ async function _getServiceBySlug(locale: Locale, slugValue: string): Promise<Ser
     ogImage =
       toImageData(
         ogMap.get(extra.og_image_media_id),
-        ctx.content.get("media_asset", extra.og_image_media_id, "alt") ?? summary.name,
+        ctx.content.get("media_asset", extra.og_image_media_id, "alt") ??
+          summary.name,
       ) ?? summary.cover;
   }
 
@@ -264,12 +311,32 @@ async function _getServiceBySlug(locale: Locale, slugValue: string): Promise<Ser
   detail ??= EMPTY_DETAIL;
   // Legacy flat `notes` (written before the grouped good-to-know) render as "practical".
   const gtk = detail.good_to_know;
-  if (detail.notes.length && !gtk.included.length && !gtk.cancellation.length && !gtk.practical.length) {
+  if (
+    detail.notes.length &&
+    !gtk.included.length &&
+    !gtk.cancellation.length &&
+    !gtk.practical.length
+  ) {
     detail = { ...detail, good_to_know: { ...gtk, practical: detail.notes } };
   }
 
+  const presentation = parseServicePresentation(detailRow.presentation);
+  detail = applyServicePresentation(detail, presentation);
+  const sourceCopy =
+    locale === "en"
+      ? ctx.content
+      : await loadContent([{ type: SERVICE, id }], "en");
+  const copy = resolveServiceCopy(
+    (field) => ctx.content.get(SERVICE, id, field),
+    (field) => sourceCopy.get(SERVICE, id, field),
+  );
+
   // Itinerary thumbnails (optional per step), keyed by media id.
-  const stepIds = [...new Set(detail.itinerary.flatMap((s) => (s.media_id ? [s.media_id] : [])))];
+  const stepIds = [
+    ...new Set(
+      detail.itinerary.flatMap((s) => (s.media_id ? [s.media_id] : [])),
+    ),
+  ];
   const stepImages: Record<string, MediaImageData> = {};
   if (stepIds.length) {
     const [stepMedia, stepAlt] = await Promise.all([
@@ -280,7 +347,10 @@ async function _getServiceBySlug(locale: Locale, slugValue: string): Promise<Ser
       ),
     ]);
     for (const mid of stepIds) {
-      const img = toImageData(stepMedia.get(mid), stepAlt.get("media_asset", mid, "alt") ?? "");
+      const img = toImageData(
+        stepMedia.get(mid),
+        stepAlt.get("media_asset", mid, "alt") ?? "",
+      );
       if (img) stepImages[mid] = img;
     }
   }
@@ -289,32 +359,43 @@ async function _getServiceBySlug(locale: Locale, slugValue: string): Promise<Ser
     ...summary,
     body: ctx.content.get(SERVICE, id, "body") ?? "",
     detail,
+    presentation,
+    copy,
+    ctaLabel: ctaLabel ?? null,
     stepImages,
     gallery,
     cta,
     metaTitle: ctx.content.get(SERVICE, id, "meta_title") ?? undefined,
-    metaDescription: ctx.content.get(SERVICE, id, "meta_description") ?? undefined,
+    metaDescription:
+      ctx.content.get(SERVICE, id, "meta_description") ?? undefined,
     ogImage,
     alternateSlugs,
   };
 }
 
-export function getServiceBySlug(locale: Locale, slugValue: string): Promise<ServiceDetail | null> {
+export function getServiceBySlug(
+  locale: Locale,
+  slugValue: string,
+): Promise<ServiceDetail | null> {
   // Bump the key version whenever the ServiceDetail shape changes, so a cached entry of the
   // old shape is never served to the new renderer.
   return unstable_cache(
     () => _getServiceBySlug(locale, slugValue),
-    ["services:getServiceBySlug:v2", locale, slugValue],
+    ["services:getServiceBySlug:v3", locale, slugValue],
     { tags: [SERVICE_TAGS.list] },
   )();
 }
 
 /** For `generateStaticParams`: every published service's slug, per locale. */
-export async function listServiceParams(): Promise<Array<{ locale: Locale; slug: string }>> {
+export async function listServiceParams(): Promise<
+  Array<{ locale: Locale; slug: string }>
+> {
   const rows = await db
     .select({ locale: slugTable.locale, slug: slugTable.slug })
     .from(slugTable)
     .innerJoin(service, eq(slugTable.entity_id, service.id))
-    .where(and(eq(slugTable.entity_type, SERVICE), eq(service.status, "published")));
+    .where(
+      and(eq(slugTable.entity_type, SERVICE), eq(service.status, "published")),
+    );
   return rows.map((r) => ({ locale: r.locale, slug: r.slug }));
 }

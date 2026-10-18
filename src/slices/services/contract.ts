@@ -6,6 +6,8 @@
  */
 import type { MediaImageData } from "@core/media";
 import type { ServiceDetailContent } from "./detail";
+import type { ServicePresentation } from "./presentation";
+import type { ServiceCopy } from "./copy";
 
 /** Entity types used for translation/slug keys and cache tags. */
 export const SERVICE = "service" as const;
@@ -39,6 +41,7 @@ export interface ServiceSummary {
   cover: MediaImageData | null;
   /** Integer cents, or null when not priced ("from" semantics). */
   priceFrom: number | null;
+  priceDisplay: "from" | "on_request" | "hidden";
   /**
    * Satisfaction score 0.0–5.0 (one decimal), or null when unrated. Stored as integer
    * tenths on the row; divided here so consumers render it directly (ADR 0032).
@@ -52,6 +55,9 @@ export interface ServiceSummary {
 }
 
 export interface ServiceDetail extends ServiceSummary {
+  presentation: ServicePresentation | null;
+  copy: ServiceCopy;
+  ctaLabel: string | null;
   /** Rich-text body (paragraphs), already locale-resolved. */
   body: string;
   /**
@@ -103,3 +109,30 @@ export {
  * Pure data — safe to import anywhere.
  */
 export { servicesAdminScreens } from "./admin/screens";
+
+export {
+  SERVICE_SECTION_KEYS,
+  SERVICE_ICON_SLOTS,
+  SERVICE_PRICE_DISPLAYS,
+  MAX_SERVICE_CENTS,
+  servicePresentationSchema,
+  parseServicePresentation,
+  hasServiceSectionContent,
+  isServiceSectionVisible,
+  applyServicePresentation,
+  resolveServicePriceDisplay,
+  resolveServiceIcons,
+  type ServicePresentation,
+  type ServiceSectionKey,
+  type ServiceIconSlot,
+  type ServicePriceDisplay,
+} from "./presentation";
+export {
+  SERVICE_COPY_KEYS,
+  serviceCopySchema,
+  serviceCopyValueSchema,
+  serviceCopyLimit,
+  resolveServiceCopy,
+  type ServiceCopy,
+  type ServiceCopyKey,
+} from "./copy";

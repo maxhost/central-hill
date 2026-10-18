@@ -4,8 +4,21 @@ import { db } from "@core/db/client";
 import { type ContentRef, loadContent } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
-import { SERVICE, SERVICE_CATEGORY, type ServiceBookingType } from "../contract";
-import { EMPTY_DETAIL, type ServiceDetailContent, parseDetail } from "../detail";
+import {
+  SERVICE,
+  SERVICE_CATEGORY,
+  type ServiceBookingType,
+} from "../contract";
+import {
+  EMPTY_DETAIL,
+  type ServiceDetailContent,
+  parseDetail,
+} from "../detail";
+import {
+  parseServicePresentation,
+  type ServicePresentation,
+} from "../presentation";
+import { resolveServiceCopy, type ServiceCopy } from "../copy";
 import { service, service_category, service_media } from "../schema";
 
 /**
@@ -27,7 +40,9 @@ export interface ServiceCategoryAdminListItem {
 }
 
 /** All service categories (source names), in display order. */
-export async function listServiceCategoriesAdmin(): Promise<ServiceCategoryAdminListItem[]> {
+export async function listServiceCategoriesAdmin(): Promise<
+  ServiceCategoryAdminListItem[]
+> {
   const rows = await db
     .select({
       id: service_category.id,
@@ -63,7 +78,11 @@ export interface ServiceCategoryEditData {
 export async function getServiceCategoryForEdit(
   id: string,
 ): Promise<ServiceCategoryEditData | null> {
-  const [row] = await db.select().from(service_category).where(eq(service_category.id, id)).limit(1);
+  const [row] = await db
+    .select()
+    .from(service_category)
+    .where(eq(service_category.id, id))
+    .limit(1);
   if (!row) return null;
   const content = await loadContent([{ type: SERVICE_CATEGORY, id }], SOURCE);
   return {
@@ -76,7 +95,9 @@ export async function getServiceCategoryForEdit(
 }
 
 /** Lean `{ id, name }` category options (source names) for the service selector. */
-export async function listServiceCategoryOptions(): Promise<{ id: string; name: string }[]> {
+export async function listServiceCategoryOptions(): Promise<
+  { id: string; name: string }[]
+> {
   const rows = await db
     .select({ id: service_category.id, slug: service_category.slug })
     .from(service_category)
@@ -86,7 +107,10 @@ export async function listServiceCategoryOptions(): Promise<{ id: string; name: 
     rows.map((r) => ({ type: SERVICE_CATEGORY, id: r.id })),
     SOURCE,
   );
-  return rows.map((r) => ({ id: r.id, name: content.get(SERVICE_CATEGORY, r.id, "name") ?? r.slug }));
+  return rows.map((r) => ({
+    id: r.id,
+    name: content.get(SERVICE_CATEGORY, r.id, "name") ?? r.slug,
+  }));
 }
 
 // ── Services ─────────────────────────────────────────────────────────────────
@@ -130,6 +154,12 @@ export async function listServicesAdmin(): Promise<ServiceAdminListItem[]> {
 }
 
 export interface ServiceEditData {
+  presentation: ServicePresentation | null;
+  copy: ServiceCopy;
+  integrity: {
+    detail: "valid" | "missing" | "invalid";
+    presentation: "valid" | "missing" | "invalid";
+  };
   id: string;
   slug: string;
   status: Status;
@@ -160,8 +190,14 @@ export interface ServiceEditBundle {
 }
 
 /** Full editable record for one service (source-locale values), or null. */
-export async function getServiceForEdit(id: string): Promise<ServiceEditBundle | null> {
-  const [row] = await db.select().from(service).where(eq(service.id, id)).limit(1);
+export async function getServiceForEdit(
+  id: string,
+): Promise<ServiceEditBundle | null> {
+  const [row] = await db
+    .select()
+    .from(service)
+    .where(eq(service.id, id))
+    .limit(1);
   if (!row) return null;
 
   const galleryRows = await db
@@ -172,7 +208,21 @@ export async function getServiceForEdit(id: string): Promise<ServiceEditBundle |
 
   const content = await loadContent([{ type: SERVICE, id }], SOURCE);
 
+  const rawDetail = content.get(SERVICE, id, "detail");
+  const parsedDetail = parseDetail(rawDetail);
+  const presentation = parseServicePresentation(row.presentation);
   const data: ServiceEditData = {
+    presentation,
+    copy: resolveServiceCopy((field) => content.get(SERVICE, id, field)),
+    integrity: {
+      detail: !rawDetail ? "missing" : parsedDetail ? "valid" : "invalid",
+      presentation:
+        row.presentation == null
+          ? "missing"
+          : presentation
+            ? "valid"
+            : "invalid",
+    },
     id: row.id,
     slug: row.slug,
     status: row.status,
@@ -192,7 +242,7 @@ export async function getServiceForEdit(id: string): Promise<ServiceEditBundle |
     cta_label: content.get(SERVICE, id, "cta_label") ?? null,
     meta_title: content.get(SERVICE, id, "meta_title") ?? null,
     meta_description: content.get(SERVICE, id, "meta_description") ?? null,
-    detail: parseDetail(content.get(SERVICE, id, "detail")) ?? EMPTY_DETAIL,
+    detail: parsedDetail ?? EMPTY_DETAIL,
     gallery: galleryRows.map((g) => g.media_id),
   };
 
@@ -207,13 +257,21 @@ export async function getServiceForEdit(id: string): Promise<ServiceEditBundle |
   return { data, previews };
 }
 
-async function resolvePreviews(ids: (string | null)[]): Promise<Record<string, AdminMediaPreview>> {
+async function resolvePreviews(
+  ids: (string | null)[],
+): Promise<Record<string, AdminMediaPreview>> {
   const clean = Array.from(new Set(ids.filter((x): x is string => !!x)));
   if (clean.length === 0) return {};
   const assets = await loadMedia(clean);
   const out: Record<string, AdminMediaPreview> = {};
   for (const [mid, a] of assets) {
-    out[mid] = { id: mid, url: mediaUrl(a.r2_key), width: a.width, height: a.height, mime: a.mime };
+    out[mid] = {
+      id: mid,
+      url: mediaUrl(a.r2_key),
+      width: a.width,
+      height: a.height,
+      mime: a.mime,
+    };
   }
   return out;
 }

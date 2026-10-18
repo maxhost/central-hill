@@ -134,6 +134,13 @@
       "when": 1791396711545,
       "tag": "0018_settings_checkin_website",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792337245345,
+      "tag": "0019_service_presentation",
+      "breakpoints": true
     }
   ]
 }

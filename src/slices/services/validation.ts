@@ -7,6 +7,8 @@
 import { z } from "zod";
 import { iconKey } from "@core/validation/icon-key";
 import { serviceDetailContent } from "./detail";
+import { MAX_SERVICE_CENTS, servicePresentationSchema } from "./presentation";
+import { serviceCopySchema } from "./copy";
 import {
   cents,
   contentStatus,
@@ -34,7 +36,9 @@ export const serviceInput = z.object({
   category_id: z.uuid(),
   cover_media_id: mediaId,
   og_image_media_id: mediaId.optional(),
-  price_from: cents.optional(),
+  price_from: cents.max(MAX_SERVICE_CENTS).optional(),
+  presentation: servicePresentationSchema.nullable().optional(),
+  copy: serviceCopySchema.optional(),
   price_suffix: tStrOpt({ max: 40 }), // e.g. "/ person"
   /** Satisfaction score in integer tenths (0–50 → 0.0–5.0); omitted = unrated (ADR 0032). */
   rating_tenths: z.number().int().min(0).max(50).optional(),

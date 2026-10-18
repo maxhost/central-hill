@@ -7,8 +7,27 @@
  */
 import { z } from "zod";
 import { iconKey } from "@core/validation/icon-key";
-import { cents, contentStatus, position, slug, tStr } from "@core/validation/primitives";
-import { serviceDetailContent } from "../detail";
+import {
+  cents,
+  contentStatus,
+  position,
+  slug,
+  tStr,
+} from "@core/validation/primitives";
+import {
+  serviceDetailContent,
+  parseDetail,
+  type ServiceDetailContent,
+} from "../detail";
+import {
+  MAX_SERVICE_CENTS,
+  SERVICE_SECTION_KEYS,
+  hasServiceSectionContent,
+  parseServicePresentation,
+  servicePresentationSchema,
+  type ServicePresentation,
+} from "../presentation";
+import { serviceCopySchema } from "../copy";
 
 export const serviceCategorySaveInput = z.object({
   id: z.uuid().optional(),
@@ -28,7 +47,9 @@ export const serviceSaveInput = z.object({
   category_id: z.uuid(),
   cover_media_id: z.uuid(),
   og_image_media_id: z.uuid().nullable(),
-  price_from: cents.nullable(),
+  price_from: cents.max(MAX_SERVICE_CENTS).nullable(),
+  presentation: servicePresentationSchema.nullable().optional(),
+  copy: serviceCopySchema.optional(),
   /** Satisfaction score in tenths (0–50 → 0.0–5.0); null when unrated (ADR 0032). */
   rating_tenths: z.number().int().min(0).max(50).nullable(),
   booking_type: z.enum(["enquiry", "external", "none"]),
@@ -52,3 +73,56 @@ export const serviceSaveInput = z.object({
   gallery: z.array(z.uuid()),
 });
 export type ServiceSaveInput = z.infer<typeof serviceSaveInput>;
+
+/** Validate against effective persisted presentation when older clients omit the field. */
+export function servicePresentationErrors(
+  input: {
+    detail: ServiceDetailContent;
+    price_from: number | null;
+    booking_type: string;
+    cta_url: string | null;
+    cta_label: string | null;
+  },
+  presentation: ServicePresentation | null,
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  const fields = {
+    included: "highlights",
+    itinerary: "itinerary",
+    options: "option_groups",
+    pricing: "pricing",
+    extras: "extras",
+    partners: "partners",
+    good_to_know: "good_to_know",
+  };
+  for (const key of SERVICE_SECTION_KEYS) {
+    if (
+      presentation?.sections?.[key] === true &&
+      !hasServiceSectionContent(key, input.detail)
+    )
+      errors[`detail.${fields[key]}`] =
+        "Add content before showing this section.";
+  }
+  if (presentation?.price_display === "from" && input.price_from === null)
+    errors.price_from = "Enter a starting price.";
+  if (input.booking_type === "external") {
+    if (!input.cta_url || !/^https?:\/\//i.test(input.cta_url))
+      errors.cta_url = "Enter an http(s) booking URL.";
+    if (!input.cta_label?.trim())
+      errors.cta_label = "Enter a booking button label.";
+  }
+  return errors;
+}
+export function serviceStoredContentValid(
+  detailRaw: string | undefined,
+  presentationRaw: unknown,
+): boolean {
+  return (
+    (!detailRaw || parseDetail(detailRaw) !== null) &&
+    (presentationRaw == null ||
+      parseServicePresentation(presentationRaw) !== null)
+  );
+}
+export function supportedServiceActor(userId: string): boolean {
+  return z.uuid().safeParse(userId).success;
+}

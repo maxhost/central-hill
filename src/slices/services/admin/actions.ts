@@ -4,6 +4,14 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
+import { loadContent, resolveSlug } from "@core/i18n/content";
+import { loadMedia } from "@core/media";
+import { parseServicePresentation } from "../presentation";
+import { serviceCopySourceFields } from "../copy";
+import {
+  serviceMediaReferences,
+  serviceMediaErrors,
+} from "./service-media-validation";
 import {
   SlugConflictError,
   deleteContent,
@@ -19,6 +27,9 @@ import {
   type ServiceSaveInput,
   serviceCategorySaveInput,
   serviceSaveInput,
+  servicePresentationErrors,
+  serviceStoredContentValid,
+  supportedServiceActor,
 } from "./validation";
 
 /**
@@ -34,9 +45,12 @@ export type ServiceSaveResult =
   | { ok: false; error: "validation"; fieldErrors: Record<string, string> }
   | { ok: false; error: "slug_conflict" }
   | { ok: false; error: "not_found" }
-  | { ok: false; error: "server" };
+  | { ok: false; error: "server" }
+  | { ok: false; error: "invalid_stored_content" | "unsupported_actor_id" };
 
-export type CategoryDeleteResult = { ok: true } | { ok: false; error: "in_use" | "server" };
+export type CategoryDeleteResult =
+  | { ok: true }
+  | { ok: false; error: "in_use" | "server" };
 
 function fieldErrorsFrom(
   issues: readonly { path: PropertyKey[]; message: string }[],
@@ -49,19 +63,34 @@ function fieldErrorsFrom(
   return out;
 }
 
-const sameSlugAllLocales = (slug: string) => ({ en: slug, pt: slug, es: slug, fr: slug });
+const sameSlugAllLocales = (slug: string) => ({
+  en: slug,
+  pt: slug,
+  es: slug,
+  fr: slug,
+});
 
 // ── Categories ───────────────────────────────────────────────────────────────
-export async function saveServiceCategory(raw: unknown): Promise<ServiceSaveResult> {
+export async function saveServiceCategory(
+  raw: unknown,
+): Promise<ServiceSaveResult> {
   const staff = await requireStaff();
 
   const parsed = serviceCategorySaveInput.safeParse(raw);
   if (!parsed.success) {
-    return { ok: false, error: "validation", fieldErrors: fieldErrorsFrom(parsed.error.issues) };
+    return {
+      ok: false,
+      error: "validation",
+      fieldErrors: fieldErrorsFrom(parsed.error.issues),
+    };
   }
   const input = parsed.data;
 
-  const coreValues = { slug: input.slug, icon: input.icon, position: input.position };
+  const coreValues = {
+    slug: input.slug,
+    icon: input.icon,
+    position: input.position,
+  };
 
   try {
     let id = input.id ?? "";
@@ -85,7 +114,12 @@ export async function saveServiceCategory(raw: unknown): Promise<ServiceSaveResu
       id = ins.id;
     }
 
-    await setSourceContent(SERVICE_CATEGORY, id, { name: input.name }, { updatedBy: staff.userId });
+    await setSourceContent(
+      SERVICE_CATEGORY,
+      id,
+      { name: input.name },
+      { updatedBy: staff.userId },
+    );
 
     revalidateServices();
     revalidatePath("/admin/service-categories");
@@ -96,7 +130,9 @@ export async function saveServiceCategory(raw: unknown): Promise<ServiceSaveResu
   }
 }
 
-export async function deleteServiceCategory(id: string): Promise<CategoryDeleteResult> {
+export async function deleteServiceCategory(
+  id: string,
+): Promise<CategoryDeleteResult> {
   await requireStaff();
   try {
     // category_id is a RESTRICT FK on `service` — refuse the delete while in use
@@ -122,14 +158,23 @@ export async function deleteServiceCategory(id: string): Promise<CategoryDeleteR
 // ── Services ─────────────────────────────────────────────────────────────────
 export async function saveService(raw: unknown): Promise<ServiceSaveResult> {
   const staff = await requireStaff();
+  if (!supportedServiceActor(staff.userId))
+    return { ok: false, error: "unsupported_actor_id" };
 
   const parsed = serviceSaveInput.safeParse(raw);
   if (!parsed.success) {
-    return { ok: false, error: "validation", fieldErrors: fieldErrorsFrom(parsed.error.issues) };
+    return {
+      ok: false,
+      error: "validation",
+      fieldErrors: fieldErrorsFrom(parsed.error.issues),
+    };
   }
   const input = parsed.data;
 
   const coreValues = {
+    ...(input.presentation !== undefined
+      ? { presentation: input.presentation }
+      : {}),
     slug: input.slug,
     status: input.status,
     position: input.position,
@@ -143,6 +188,42 @@ export async function saveService(raw: unknown): Promise<ServiceSaveResult> {
   };
 
   try {
+    const [existing] = input.id
+      ? await db.select().from(service).where(eq(service.id, input.id)).limit(1)
+      : [];
+    if (input.id && !existing) return { ok: false, error: "not_found" };
+    if (existing) {
+      const source = await loadContent(
+        [{ type: SERVICE, id: existing.id }],
+        "en",
+      );
+      if (
+        !serviceStoredContentValid(
+          source.get(SERVICE, existing.id, "detail"),
+          existing.presentation,
+        )
+      )
+        return { ok: false, error: "invalid_stored_content" };
+    }
+    const effectivePresentation =
+      input.presentation !== undefined
+        ? input.presentation
+        : parseServicePresentation(existing?.presentation);
+    const slugOwners = await Promise.all(
+      (["en", "pt", "es", "fr"] as const).map((locale) =>
+        resolveSlug(SERVICE, locale, input.slug),
+      ),
+    );
+    if (slugOwners.some((owner) => owner && owner !== input.id))
+      return { ok: false, error: "slug_conflict" };
+    const errors = servicePresentationErrors(input, effectivePresentation);
+    const refs = serviceMediaReferences(input);
+    Object.assign(
+      errors,
+      serviceMediaErrors(input, await loadMedia(refs.map((ref) => ref.id))),
+    );
+    if (Object.keys(errors).length)
+      return { ok: false, error: "validation", fieldErrors: errors };
     const isCreate = !input.id;
     let id = input.id ?? "";
 
@@ -158,7 +239,10 @@ export async function saveService(raw: unknown): Promise<ServiceSaveResult> {
         .set({ ...coreValues, updated_at: new Date() })
         .where(eq(service.id, input.id));
     } else {
-      const [ins] = await db.insert(service).values(coreValues).returning({ id: service.id });
+      const [ins] = await db
+        .insert(service)
+        .values(coreValues)
+        .returning({ id: service.id });
       if (!ins) return { ok: false, error: "server" };
       id = ins.id;
     }
@@ -171,6 +255,7 @@ export async function saveService(raw: unknown): Promise<ServiceSaveResult> {
           await db.delete(service).where(eq(service.id, id));
           await deleteSlugs(SERVICE, id);
         }
+        revalidateServices();
         return { ok: false, error: "slug_conflict" };
       }
       throw err;
@@ -188,8 +273,13 @@ export async function saveService(raw: unknown): Promise<ServiceSaveResult> {
         cta_label: input.cta_label,
         meta_title: input.meta_title,
         meta_description: input.meta_description,
+        ...(input.copy !== undefined
+          ? serviceCopySourceFields(input.copy)
+          : {}),
         // Portable JSON like the blog body (ADR 0013); cleared when every section is empty.
-        detail: isEmptyDetail(input.detail) ? null : JSON.stringify(input.detail),
+        detail: isEmptyDetail(input.detail)
+          ? null
+          : JSON.stringify(input.detail),
       },
       { updatedBy: staff.userId },
     );
@@ -201,6 +291,10 @@ export async function saveService(raw: unknown): Promise<ServiceSaveResult> {
     revalidatePath(`/admin/services/${id}`);
     return { ok: true, id };
   } catch {
+    // Statements are sequential: a failed write can leave changes. Bust caches on that path too.
+    revalidateServices();
+    revalidatePath("/admin/services");
+    if (input.id) revalidatePath(`/admin/services/${input.id}`);
     return { ok: false, error: "server" };
   }
 }
@@ -220,11 +314,20 @@ export async function deleteService(id: string): Promise<{ ok: boolean }> {
 }
 
 /** Replace the gallery rows with the submitted, ordered media ids. */
-async function persistGallery(id: string, gallery: ServiceSaveInput["gallery"]): Promise<void> {
+async function persistGallery(
+  id: string,
+  gallery: ServiceSaveInput["gallery"],
+): Promise<void> {
   await db.delete(service_media).where(eq(service_media.service_id, id));
   if (gallery.length > 0) {
     await db
       .insert(service_media)
-      .values(gallery.map((mediaId, i) => ({ service_id: id, media_id: mediaId, position: i })));
+      .values(
+        gallery.map((mediaId, i) => ({
+          service_id: id,
+          media_id: mediaId,
+          position: i,
+        })),
+      );
   }
 }

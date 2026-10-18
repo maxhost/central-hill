@@ -1,5 +1,6 @@
-import { integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
 import { pkUuid, timestamps } from "@core/db/columns";
+import type { ServicePresentation } from "./presentation";
 
 /**
  * Slice `services` — guest services (index + detail). [T] fields (name, excerpt,
@@ -16,7 +17,10 @@ export const service_category = pgTable("service_category", {
 export const service = pgTable("service", {
   id: pkUuid(),
   slug: text().notNull(),
-  status: text().$type<"draft" | "published" | "archived">().notNull().default("draft"),
+  status: text()
+    .$type<"draft" | "published" | "archived">()
+    .notNull()
+    .default("draft"),
   position: integer().notNull().default(0),
   category_id: uuid()
     .notNull()
@@ -24,6 +28,7 @@ export const service = pgTable("service", {
   cover_media_id: uuid(), // → media_asset.id (core/media)
   og_image_media_id: uuid(), // → media_asset.id (core/media)
   price_from: integer(), // cents
+  presentation: jsonb().$type<ServicePresentation>(),
   /**
    * Partner/service satisfaction score in **tenths** (0–50 → 0.0–5.0), or null when the
    * service has not been rated yet. Integer, never a float (data-model.md → Conventions);
@@ -32,7 +37,10 @@ export const service = pgTable("service", {
    */
   rating_tenths: integer(),
   duration_label: text(),
-  booking_type: text().$type<"enquiry" | "external" | "none">().notNull().default("none"),
+  booking_type: text()
+    .$type<"enquiry" | "external" | "none">()
+    .notNull()
+    .default("none"),
   cta_label: text(),
   cta_url: text(),
   ...timestamps,

@@ -11,8 +11,9 @@ See the [Services editor spec](docs/specs/services-admin-editor.md) and
 Active task: execution spec for individual service editors and conditional sections;
 see [Service detail editor execution spec](docs/specs/service-detail-editor-execution.md)
 and its [audit](docs/specs/service-detail-editor-audit-2026-10-18.md).
-Preparation only: implementation agents have not been launched; contracts and isolated
-environment must pass the spec's G0/G1 gates before delegating writers.
+Implementation authorized after local savepoint `a1107f8`; integration worktree
+`/private/tmp/central-hill-service-detail-integration`, branch `service-detail/integration`.
+Contracts and isolated environment must pass the spec's G0/G1 gates before delegating writers.
 Update this pointer when the active task changes.
 
 ## Working agreement

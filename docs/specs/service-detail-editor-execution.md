@@ -1,7 +1,7 @@
 # Editor condicional de servicios individuales — spec de ejecución
 
 Fecha: 2026-10-18. Estado: spec preparada y revisada para iniciar G0/G1;
-sin implementación iniciada.
+implementación iniciada tras savepoint solicitado por el owner.
 Base: [auditoría con tres agentes](service-detail-editor-audit-2026-10-18.md).
 Procedimiento: [workflow autoritativo](../multi-agent-workflow.md).
 
@@ -12,8 +12,8 @@ su layout público actual: contenidos generales, secciones elegibles, textos/lab
 iconos, imágenes, precio y tarifas, solicitud/reserva y SEO. Preservar EN/PT/ES/FR,
 ISR, URLs y composición. `/admin/pages/services` sigue siendo el editor del listado.
 
-Esta etapa prepara la ejecución, no lanza escritores ni cambia código. Una vez iniciada
-la implementación, la entrega sigue el acuerdo de Services: commits e integración en
+Owner autorizó continuar tras crear el savepoint local `a1107f8`. La entrega sigue
+el acuerdo de Services: commits e integración en
 `main` local tras QA independiente; sin push, despliegue ni escrituras de producción.
 
 No incluye constructor libre de páginas, reordenación de bloques públicos, compra de
@@ -583,3 +583,29 @@ secretos ni procesos. Esta preparación no migró ni modificó datos. Para inspe
 recuperar el checkpoint sin descartar trabajo posterior, crear otro worktree desde la
 referencia, en una ruta libre; evitar reset/restore global del checkout de trabajo.
 Referencia local, sin push ni despliegue. Su creación y verificación se reportan al owner.
+
+## Ejecución tras savepoint — 2026-10-18
+
+- Savepoint verificado: `a1107f859944e98757134bdb25d776976d51023f`, tag local
+  `savepoint/pre-service-detail-editor-2026-10-18`. Raíz permanece limpia en ese commit.
+- Orquestador: `/private/tmp/central-hill-service-detail-integration`, rama
+  `service-detail/integration`, base savepoint. A/B todavía no lanzados al preparar G1.
+- Dependencias: directorio `node_modules` local ignorado con links a las dependencias
+  existentes del checkout raíz, solo lectura; sin instalar ni cambiar package/lockfile.
+- Infra G0 a cargo de agente auxiliar solo en `/private/tmp/central-hill-service-detail-qa`
+  y contenedores nuevos dedicados; no escribe aplicación ni toca trabajos anteriores.
+- G1: migración0019 generada, solo ADD COLUMN presentation jsonb; guardas previas,
+  copy escalar y lectura filtrada implementados. Shared helpers/interfaces y labels
+  `services.admin.presentation` en cuatro idiomas antes de consumidores.
+- Checks G1 antes de última revisión: typecheck exit0, lint exit0 con5 warnings previos,
+  52 tests Services exit0, db:check exit0 (20 migraciones; warning0008 previo).
+  tsx inicial falló EPERM de IPC dentro sandbox; repetido con permisos, éxito real.
+- Revisión G1 por agente de modelo detectó catch de invalidación situado en categoría:
+  corregido al catch de saveService; sin cambios de comportamiento de categoría.
+  Pruebas de predicados no equivalen a I/O: QA debe comprobar AC14/15 realmente.
+- `admin.presentation` ofrece labels title/hint/visible/hidden/inherited/explicit/reset,
+  elements(count), show/edit/discard/discardHint/headings/additional/additionalHint,
+  copyFieldLabel(label), serviceNameExample/globalIcon/icons/priceMode/euros/eurosHint,
+  modes.{auto,from,on_request,hidden}, source/published/unsaved/integrity/actor/emptySection,
+  priceRequired/invalidEuros/externalUrl/externalLabel/mediaError/saveError/copyInvalid.
+  A mapea frases de guardas a esos mensajes localizados y solicita claves nuevas al owner.

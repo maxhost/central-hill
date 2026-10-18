@@ -397,6 +397,14 @@ default; Home/Guest/About start blank.
   - *Public contract:* `PostSummary`, `PostDetail`, `listPosts(category?)`, `getBySlug`.
 
 ### Slice `services` — guest services (index + detail)
+
+Conditional detail editing adds `service.presentation` (nullable JSONB, migration `0019`):
+versioned neutral section visibility, price-display mode and icon overrides. Absence retains
+historical content-driven visibility; hiding preserves content. Text overrides are scalar
+translation fields `copy:<key>` under `entity_type='service'`, defined in the Services
+`copy.ts` whitelist. Layout remains fixed. The admin reads unfiltered content; public reads
+apply neutral flags after locale resolution. Existing title/CTA fields remain authoritative.
+
 - **service**: `id, slug, status, position, category_id→service_category, cover_media_id,
   og_image_media_id?, price_from? (cents), rating_tenths? (integer tenths, 0–50 → 0.0–5.0; ADR 0032),
   duration_label?, booking_type (enquiry|external|none), cta_label?, cta_url?`. **[T]**: `name`, `excerpt`, `body` (rich), `price_suffix?` (e.g. "/ person"), `detail?`, `meta_title`, `meta_description`.
