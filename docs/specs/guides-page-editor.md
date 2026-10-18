@@ -1,6 +1,6 @@
 # Editor de la página Guides — auditoría, spec y plan
 
-Fecha: 2026-10-18. Estado: implementación en curso; contratos y editor integrados, público y QA pendientes.
+Fecha: 2026-10-18. Estado: implementación integrada y QA independiente aprobada; cierre local preparado.
 Decisiones de ciudades confirmadas por el usuario en esta sesión.
 
 ## Objetivo y alcance
@@ -34,8 +34,8 @@ Auditoría realizada por tres agentes de solo lectura: editor/datos, público e 
 Referencia: https://central-hill-umber.vercel.app/es/guides y las cuatro capturas
 del usuario. HTTP directo con curl: 200. HTML auditado: h1 «Guías de ciudad, por
 quienes viven aquí»; h2 «Guías de Lisbon», «Nuestras Recomendaciones» y cierre
-«Make It a Stay to Remember». No se ha hecho QA visual del nuevo editor porque
-todavía no existe. Copia temporal del HTML: /private/tmp/central-hill-guides-live.html.
+«Make It a Stay to Remember». En la auditoría inicial todavía no existía el nuevo editor; la QA posterior se
+registra en el cierre de ejecución. Copia temporal del HTML: /private/tmp/central-hill-guides-live.html.
 
 Hallazgos:
 
@@ -319,3 +319,43 @@ QAinfra confirmó DB y rol guidespageqa independientes,21migrations0..20,5JPEG,
 vídeo de prueba y fixtures Lisbon+Porto con guías/recomendaciones localizadas,
 Cascais publicada sin guías y Coimbra draft. Auth de prueba se verificará por
 formulario, no se asume desde el hash. Ninguna credencial remota copiada.
+
+Savepoint local para este trabajo: tag anotado
+`savepoint/pre-guides-page-editor-2026-10-18` → `00c836a`.
+Placeholders reservados del filtro: `placeholder:porto` reconoce source slugs
+`porto`/`oporto`; `placeholder:cascais` reconoce `cascais`. La identidad real es
+UUID, y el catálogo localizado se une al source exclusivamente por UUID.
+Sin una correspondencia publicada se conserva el placeholder, sin crear ciudades.
+
+Implementador B entregó `1433fc1`, integrado como `fc1daac`: siete archivos del
+write set;11tests/typecheck/lint/diffcheck0. Conserva symlink node_modules de tests
+fuera de Git en su worktree, informado y no eliminado. Su helper usa callbacks
+para sustituir nombres con símbolos `$` literalmente en la plantilla.
+
+Candidato integrado `fc1daac`: Node22.23.3/pnpm10.8.0, typecheck0, lint0 con cinco
+warnings previos,228tests reales0, pnpm build0 (82páginas, fixtures QA).
+Comandos exactos en /private/tmp/central-hill-guides-qa/root-checks.sh; logs
+root-typecheck/lint/tests/build.log. No migraciones nuevas, db:check no requerido.
+Servidor Next production3060 sesión53787 iniciado desde integración y envfake.
+QA independiente ya autorizado sobre ese commit; no se afirma aprobación aún.
+
+
+## Cierre aprobado
+
+QA independiente aprobó `fc1daac45b77859aa5f778051fa86ceb7d586a57`:23casos finales
+PASS, sin bloqueadores ni cambios de aplicación durante QA. Informe archivado en
+[QA](guides-page-editor-qa.md). Se verificó login real y save/reload, filtro conjunto
+ON/OFF, sourcelegacy/ausente/corrupto,4idiomas/SEO/ISR, JPEG y MP4 reales, uploadfallido,
+MIMEs/UUID/ACL, targetinválido, móviltextomáximo, placeholders y navegación SPA.
+Primeros fallos de harness (click aria-disabled, anunciador Next, espera de ruta)
+se corrigieron y repitieron; registros originales permanecen, sin ocultarlos.
+
+Fuente QA restaurada por savePage: aside original, filtrotrue, sin overrides
+editoriales/SEO/medios;OGnull. Ciudades y dos guías ficticias restauradas, assets
+conservados. Preview3060 representativo y separado de3059. Savepoint00c836a intacto.
+
+Completados contratos, A/B, integración,228tests/typecheck/lint/build y QA. El cierre
+documental no cambia el código probado. Entrega por fast-forward a main local;
+ver [handoff](handoff-guides-page-editor.md) y HEAD final para commit de documentación.
+Sin push, despliegue ni modificaciones remotas. No quedan tareas requeridas para
+este alcance. El CMS de guías individuales sigue explícitamente fuera de alcance.

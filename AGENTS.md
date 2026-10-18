@@ -14,12 +14,13 @@ Migrations0019/0020 were applied only to isolated local QA databases; no push/de
 
 Previous Services listing editor delivery remains in
 [Services handoff 2026-10-18](docs/specs/handoff-services-2026-10-18.md).
-Current task: Guides listing page editor implementation in progress in
-[Guides page editor](docs/specs/guides-page-editor.md); contracts landed at `3a5ccd9`; implementers use isolated editor/public worktrees.
-City control is a single show-filter toggle, with real filtering of guides and
-recommendations when enabled. Individual guide CMS is a later task. Preserve
-the user-reviewed sidebar work captured in `00c836a` and documented in
-[Sidebar refinements](docs/specs/buildings-sidebar-submenu.md).
+Guides listing page editor implemented and independently QA-approved on `fc1daac`.
+Local delivery: [Guides handoff](docs/specs/handoff-guides-page-editor.md),
+[spec](docs/specs/guides-page-editor.md), [QA](docs/specs/guides-page-editor-qa.md).
+Savepoint: `00c836a`, tag `savepoint/pre-guides-page-editor-2026-10-18`.
+No migrations, push or deployment. Preview3060 uses isolated synthetic guidespageqa;
+previous user preview3059 is preserved. Sidebar work is captured in00c836a.
+Individual guide CMS is a later task; no next implementation is assigned yet.
 
 ## Working agreement
 
