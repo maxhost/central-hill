@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import type { Locale } from "@core/db/columns";
 import { absoluteUrl } from "@slices/seo/contract";
+import { getGlobals } from "@slices/settings/contract";
 import { buildMetadata } from "@core/seo";
 import { orMessage } from "../ui/or-message";
 import { seoMetadataInput } from "./metadata-input";
@@ -175,12 +176,13 @@ export async function buildAboutMetadata(locale: Locale): Promise<Metadata> {
 
 /** Services SEO overrides with absolute canonical and locale alternates. */
 export async function buildServicesMetadata(locale: Locale): Promise<Metadata> {
-  const [t, page] = await Promise.all([
+  const [t, page, globals] = await Promise.all([
     getTranslations({ locale, namespace: "services" }),
     getServicesPage(locale),
+    getGlobals(locale),
   ]);
   const input = seoMetadataInput({
-    locale, path: "/services", seo: page.content.seo, ogImage: page.ogImage,
+    locale, path: "/services", seo: page.content.seo, ogImage: page.ogImage ?? globals?.defaultOgImage,
     fallbackTitle: t("metaTitle"), fallbackDescription: t("metaDescription"),
   });
   input.canonicalPath = absoluteUrl(input.canonicalPath);
