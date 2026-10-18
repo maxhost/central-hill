@@ -1,6 +1,10 @@
 # Próxima tarea: auditoría y spec del CMS de guías individuales
 
-Fecha: 2026-10-18. Estado: solicitada; auditoría todavía no iniciada.
+Fecha: 2026-10-18. Estado: auditoría y propuesta documental completadas sobre
+`8a61bd782078c721abfea42cf49ed41aa77db804`; implementación no iniciada.
+Resultados: [auditoría e inventario completo](guides-cms-audit.md) y
+[spec, contratos y plan](guides-cms-execution.md). Son propuestas para revisión,
+no autorización de implementación ni aprobación QA funcional.
 El usuario pidió cerrar contexto antes de invertir recursos en esta tarea.
 No iniciar implementación hasta terminar inventario, auditoría, spec y plan.
 
