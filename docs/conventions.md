@@ -7,8 +7,9 @@
 - **TypeScript strict.** No `any` (use `unknown` + narrowing). No non-null `!` on external data.
 - **pnpm** workspace. Scripts: `dev`, `build`, `start`, `typecheck`, `lint`, `test`, `db:generate`,
   `db:migrate`, `boundary:check`.
-- **ESLint + Prettier**; import boundaries enforced by lint rule (no `slices/*/server|ui|admin`
-  imports across slices) + the `boundary:check` script.
+- **ESLint + Prettier**. Cross-slice internal imports are forbidden. Review boundaries
+  explicitly: the current ESLint config has no slice-boundary rule, and `boundary:check`
+  is a placeholder, not an enforced check.
 
 ## Next.js / rendering
 - Public routes live under `app/[locale]/...` and are **Server Components by default**. Add
@@ -49,8 +50,9 @@
   compose them, don't re-implement.
 
 ## Testing
-- Unit-test domain logic and contract functions. Component-test interactive UI. Each slice owns its
-  `tests/`. A slice's tests must pass in isolation (`test --filter <slice>`).
+- Unit-test domain logic and contract functions. Component-test interactive UI. Each slice owns
+  its `tests/`. Run affected tests directly with `pnpm exec tsx --test <explicit-test-files>`;
+  `pnpm test` is currently a placeholder and does not support slice filtering.
 - Public pages get a build-time smoke + (later) Lighthouse budget check in CI.
 
 ## Errors & resilience
@@ -63,6 +65,9 @@
   keys are server-only.
 
 ## Git / PRs
-- Branch per slice/task. Small PRs. Commit messages: `<slice>: <what>`. PR body lists the slice,
+- Follow [multi-agent-workflow.md](multi-agent-workflow.md): separate worktrees for parallel
+  writers, exact file ownership, a shared contract base and QA before local integration.
+- Branch per task/implementer. Small commits. Commit messages: `<slice>: <what>`. PR body lists the slice,
   the migration number(s), contracts touched, and the DoD checklist.
-- CI must be green incl. `boundary:check` before merge.
+- Required real checks must pass before merge; do not treat placeholder scripts as proof.
+  For Services, delivery is local `main` after QA, with no push or deployment.

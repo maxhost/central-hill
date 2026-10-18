@@ -1,5 +1,9 @@
 # Mock build contract (read before building any page mock)
 
+> Scope: static HTML mocks only. Current delegation, authorization and integration rules
+> live in [multi-agent-workflow.md](multi-agent-workflow.md). This guide does not authorize
+> changes to live application components or override the active implementation spec.
+
 Shared rules + snippets every per-page agent MUST follow so pages stay consistent and connected.
 Build static HTML page mocks for "Central Hill" (premium furnished-rentals, Lisbon). Reference vibe:
 ukio.com (warm boutique-premium) + lovelystay.com (information architecture).

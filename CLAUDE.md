@@ -1,5 +1,10 @@
 # Central Hill — Operating Manual (read this first)
 
+Agent entry point: [AGENTS.md](AGENTS.md). The current execution procedure is
+[docs/multi-agent-workflow.md](docs/multi-agent-workflow.md), updated 2026-10-18.
+It governs delegation, worktrees, QA and local integration; historical task guides do not
+override it. The active user request defines authorization and delivery scope.
+
 Central Hill is a **premium furnished-rentals catalog** for a Lisbon-based hospitality
 company. A fast, SEO/GEO-impeccable **public site** showcases a portfolio of buildings &
 apartments (booking is delegated to an embedded **Avantio** engine), plus editorial content
@@ -17,10 +22,10 @@ features, and never make unilateral cross-cutting decisions. **Follow them exact
 
 ## 🟡 The 7 Golden Rules (non-negotiable)
 
-1. **Own your directory.** You may only **write inside the slice you were assigned**
-   (`src/slices/<slice>/…`) plus brand-new files. You may **read anything**. You may **never
-   edit files owned by another slice or the shared kernel** (`src/core/…`). Need a change
-   there? → open a *contract change request* (see `docs/multi-agent-workflow.md`) and stop.
+1. **Own your assigned files.** The orchestrator assigns an explicit write set within a
+   slice, or named files across slices when a task requires coordinated composition.
+   New files also need an owner. Everything else is read-only; request scope expansion
+   through the orchestrator. Shared kernel changes (`src/core/…`) still require an ADR.
 
 2. **Talk through contracts, not internals.** Slices import each other **only** through the
    public contract a slice exports (`src/slices/<slice>/contract.ts`). Never import another
@@ -43,7 +48,7 @@ features, and never make unilateral cross-cutting decisions. **Follow them exact
    Check `docs/decisions/` and `docs/conventions.md` *before* choosing any pattern.
 
 7. **Done means verified.** A slice is done only when: `typecheck` + `lint` + slice tests pass,
-   its `contract.ts` is documented, **no files outside the owned dir changed**, the migration is
+   its `contract.ts` is documented, **no files outside the assigned write set changed**, the migration is
    additive, **i18n keys exist for all 4 locales**, and (if it renders public content) **ISR
    revalidation is wired**. Every slice passes an adversarial review before merge.
 
@@ -101,11 +106,14 @@ cliente-docs/          # client content briefs (source of truth for requirements
 
 ## Definition of Done (per slice) — copy into every task
 
-- [ ] Only files inside the assigned slice dir changed (verify with `git status`).
-- [ ] `pnpm typecheck && pnpm lint && pnpm test --filter <slice>` all green.
+- [ ] Only assigned files changed (verify tracked and untracked paths).
+- [ ] `pnpm typecheck`, `pnpm lint`, actual affected tests via `pnpm exec tsx --test <files>`
+  and integrated `pnpm build` passed. `pnpm test` is currently a placeholder.
 - [ ] No import of another slice's internals; cross-slice access via `contract.ts` only.
 - [ ] DB changes are a new, additive, numbered migration; no past migration edited.
 - [ ] i18n keys added for **en, pt, es, fr** (source authored; others may be draft).
 - [ ] Public-content changes wire ISR `revalidateTag`/`revalidatePath` on publish.
 - [ ] `contract.ts` + slice `README.md` updated.
 - [ ] Passed adversarial review (boundaries + correctness).
+- [ ] Independent QA verified the integrated candidate; local `main` integration and any
+  external actions respect the user's delivery scope. Follow the canonical workflow.

@@ -1,5 +1,13 @@
 # Component Extraction Workflow (piloted 2026-10-05 — adopted)
 
+> **Historical task guide, procedural update 2026-10-18:** use
+> [multi-agent-workflow.md](multi-agent-workflow.md) for current execution rules.
+> The pilot below records Claude Code behavior and is not a guarantee about this runtime.
+> Worktrees do not enforce file permissions or isolate databases. Do not automatically copy
+> production `.env` files. Its no-commit/manual-patch integration and repeated approval steps
+> are superseded when the user has authorized local commits and post-QA integration.
+> Preserve the implementation lessons below; apply the current workflow to new tasks.
+
 > **Status:** piloted successfully 2026-10-05 (3 agents, cross-file, all merged to `main`).
 > Written earlier the same day after a solo (single-thread) session doing this work
 > page-by-page, section-by-section; revised after a research pass against Claude Code's
