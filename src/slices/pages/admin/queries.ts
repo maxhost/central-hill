@@ -1,4 +1,6 @@
 import "server-only";
+import { aboutEditorDefaults } from "./about-defaults";
+import { aboutRevision } from "./about-save";
 import { eq } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { loadMedia, mediaUrl } from "@core/media";
@@ -33,6 +35,7 @@ export async function listPagesAdmin(): Promise<PageAdminListItem[]> {
 }
 
 export interface PageEditBundle {
+  revision?: string;
   key: PageKey;
   data: Record<string, unknown>;
   ogImageMediaId: string | null;
@@ -47,13 +50,14 @@ export async function getPageForEdit(key: PageKey): Promise<PageEditBundle> {
   const data = (row?.data as Record<string, unknown>) ?? {};
   const ogImageMediaId = row?.og_image_media_id ?? null;
 
-  const guideDefaults = key === "guides" ? guidesEditorDefaults(row?.data, Boolean(row)) : undefined;
+  const guideDefaults = key === "guides" ? guidesEditorDefaults(row?.data, Boolean(row)) : key === "about" ? aboutEditorDefaults(row?.data, Boolean(row)) : undefined;
   const editableData = guideDefaults?.data ?? data;
   const ids = collectMediaIds(editableData);
   if (ogImageMediaId && !guideDefaults?.sourceInvalid) ids.push(ogImageMediaId);
   const previews = await resolvePreviews(ids);
 
   return {
+    revision: key === "about" ? aboutRevision(row) : undefined,
     key,
     data: editableData,
     sourceStatus: guideDefaults?.sourceStatus,

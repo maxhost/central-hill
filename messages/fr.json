@@ -1426,10 +1426,10 @@
           "ctaGuides": "Le bouton ouvre toujours Guides.",
           "guestTestimonials": "Les avis viennent de Témoignages (public Voyageur).",
           "guestDualCta": "Le bouton voyageur ouvre toujours Immeubles ; le bouton propriétaire ouvre le formulaire de contact. La ligne de contact vient des Paramètres.",
-          "aboutStats": "Les chiffres s'animent sur la page.",
-          "aboutValues": "Les numéros 01–04 sont automatiques.",
+          "aboutStats": "Ajoutez ou supprimez des chiffres. Sans chiffres, la bande est masquée.",
+          "aboutValues": "La numérotation suit automatiquement l’ordre des éléments.",
           "aboutCertifications": "Sans logo, la carte affiche son icône.",
-          "aboutContact": "Les cartes ouvrent toujours Immeubles / Propriétaires / Immobilier. L'adresse, les téléphones, l'e-mail, le site web et les horaires viennent des Paramètres. Les champs du formulaire sont partagés avec le formulaire de contact de l'en-tête.",
+          "aboutContact": "Modifiez ici les libellés. Chaque carte conserve sa destination après déplacement. Les coordonnées sont gérées dans Paramètres ; les libellés du formulaire sont partagés.",
           "servicesCatalogue": "Les fiches et les catégories se gèrent dans Services.",
           "servicesFinalCta": "Le bouton ouvre toujours Immeubles. L’email et WhatsApp proviennent des Paramètres.",
           "guidesCityFilter": "Choisissez une ville pour filtrer guides et recommandations. Désactivez pour tout afficher sans filtre. La publication se gère dans Cities.",
@@ -1572,7 +1572,9 @@
         "link_label": "Texte du lien",
         "media_alt": "Description de l’image",
         "contact_note": "Introduction du contact",
-        "how_it_works": "Comment ça marche"
+        "how_it_works": "Comment ça marche",
+        "badge_icon_key": "Icône du badge",
+        "destination": "Destination"
       },
       "itemLabels": {
         "benefits": "Avantage",
@@ -1678,7 +1680,10 @@
           "video_media_id": "MP4 ou WebM sans son, paysage 1920×1080, idéalement moins de 15 Mo. Laissez vide pour afficher une photo.",
           "poster_media_id": "Photo de fond et image de secours vidéo. Paysage 1920×1080, JPEG, PNG, WebP ou AVIF, idéalement moins de 500 Ko."
         }
-      }
+      },
+      "aboutSourceInvalid": "Le contenu About enregistré est invalide. Rechargez ou réparez la source avant de sauvegarder.",
+      "aboutConflict": "About a changé depuis l’ouverture de l’éditeur. Rechargez pour vérifier le contenu actuel avant de sauvegarder.",
+      "aboutSourceNote": "Modifiez ici la source anglaise. La page publique affiche les traductions approuvées, gérées dans Traductions."
     }
   },
   "leads": {

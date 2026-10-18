@@ -11,6 +11,7 @@ export type {
   TranslationFilter,
   TranslationState,
 } from "./content";
+export { sourceSnapshotCtes } from "./source-snapshot";
 export {
   loadContent,
   resolveSlug,

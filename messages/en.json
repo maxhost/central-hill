@@ -1426,10 +1426,10 @@
           "ctaGuides": "The button always opens Guides.",
           "guestTestimonials": "Reviews come from Testimonials (audience Guest).",
           "guestDualCta": "The guest button always opens Buildings; the owner button opens the contact form. The contact line comes from Settings.",
-          "aboutStats": "Numbers count up on the page.",
-          "aboutValues": "Numbers 01–04 are automatic.",
+          "aboutStats": "Add or remove figures. With no figures the band is hidden.",
+          "aboutValues": "Numbers follow the item order automatically.",
           "aboutCertifications": "Without a logo the card shows its icon.",
-          "aboutContact": "Cards always open Buildings / Owners / Real Estate. Address, phones, email, website and hours come from Settings. Form fields are shared with the header contact form.",
+          "aboutContact": "Edit labels here. Each card keeps its selected destination when moved. Office values are managed in Settings; contact form labels are shared.",
           "servicesCatalogue": "Service cards and categories are managed in Services.",
           "servicesFinalCta": "The button always opens Buildings. Email and WhatsApp come from Settings.",
           "guidesCityFilter": "Choose a city to filter guides and recommendations. Disable to show all cities without the filter. City publication stays in Cities.",
@@ -1572,7 +1572,9 @@
         "link_label": "Link text",
         "media_alt": "Image description",
         "contact_note": "Contact introduction",
-        "how_it_works": "How it works"
+        "how_it_works": "How it works",
+        "badge_icon_key": "Badge icon",
+        "destination": "Destination"
       },
       "itemLabels": {
         "benefits": "Benefit",
@@ -1678,7 +1680,10 @@
           "video_media_id": "Optional silent MP4 or WebM, landscape 1920×1080, ideally under 15 MB. Leave empty for a photo background.",
           "poster_media_id": "Background photo and video fallback. Landscape 1920×1080, JPEG, PNG, WebP or AVIF, ideally under 500 KB."
         }
-      }
+      },
+      "aboutSourceInvalid": "The saved About content is invalid. Reload or repair the source before saving.",
+      "aboutConflict": "About changed since this editor was opened. Reload to review the latest content before saving.",
+      "aboutSourceNote": "Edit the English source here. Approved translations appear on the public page; manage them in Translations."
     }
   },
   "leads": {

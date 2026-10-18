@@ -1426,10 +1426,10 @@
           "ctaGuides": "O botão abre sempre Guias.",
           "guestTestimonials": "As avaliações vêm de Testemunhos (público Hóspede).",
           "guestDualCta": "O botão do hóspede abre sempre Edifícios; o do proprietário abre o formulário de contacto. A linha de contacto vem das Definições.",
-          "aboutStats": "Os números animam-se na página.",
-          "aboutValues": "Os números 01–04 são automáticos.",
+          "aboutStats": "Adicione ou remova números. Sem números, a faixa fica oculta.",
+          "aboutValues": "A numeração segue automaticamente a ordem dos itens.",
           "aboutCertifications": "Sem logótipo, o cartão mostra o seu ícone.",
-          "aboutContact": "Os cartões abrem sempre Edifícios / Proprietários / Imobiliário. A morada, os telefones, o email, o site e o horário vêm das Definições. Os campos do formulário são partilhados com o formulário de contacto do cabeçalho.",
+          "aboutContact": "Edite aqui os rótulos. Cada cartão mantém o destino ao ser movido. Os dados do escritório estão nas Definições; os rótulos do formulário são partilhados.",
           "servicesCatalogue": "Os cartões e as categorias são geridos em Serviços.",
           "servicesFinalCta": "O botão abre sempre Edifícios. O email e o WhatsApp vêm das Definições.",
           "guidesCityFilter": "Escolha uma cidade para filtrar guias e recomendações. Desative para mostrar todas sem filtro. A publicação é gerida em Cities.",
@@ -1572,7 +1572,9 @@
         "link_label": "Texto do link",
         "media_alt": "Descrição da imagem",
         "contact_note": "Introdução de contacto",
-        "how_it_works": "Como funciona"
+        "how_it_works": "Como funciona",
+        "badge_icon_key": "Ícone do destaque",
+        "destination": "Destino"
       },
       "itemLabels": {
         "benefits": "Vantagem",
@@ -1678,7 +1680,10 @@
           "video_media_id": "MP4 ou WebM sem som, horizontal 1920×1080, idealmente menos de 15 MB. Deixe vazio para usar uma foto.",
           "poster_media_id": "Foto de fundo e imagem de reserva do vídeo. Horizontal 1920×1080, JPEG, PNG, WebP ou AVIF, idealmente menos de 500 KB."
         }
-      }
+      },
+      "aboutSourceInvalid": "O conteúdo guardado de About é inválido. Recarregue ou repare a fonte antes de guardar.",
+      "aboutConflict": "About mudou desde que abriu o editor. Recarregue para rever o conteúdo atual antes de guardar.",
+      "aboutSourceNote": "Edite aqui a fonte em inglês. A página pública mostra traduções aprovadas, geridas em Traduções."
     }
   },
   "leads": {

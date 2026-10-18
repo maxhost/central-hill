@@ -30,6 +30,7 @@ import type {
 
 /** Entity type used for translation keys (`block:<dot.path>`) and cache tags. */
 export const PAGE_CONTENT = "page_content" as const;
+export { ABOUT_LIST_PATHS, ABOUT_DESTINATIONS, normalizeAbout, aboutTranslationField } from "./about-content";
 
 /**
  * Cache tag this slice owns — one singleton per page `key` (conventions.md → Cache

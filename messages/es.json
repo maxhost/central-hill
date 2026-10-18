@@ -1426,10 +1426,10 @@
           "ctaGuides": "El botón siempre abre Guías.",
           "guestTestimonials": "Las reseñas vienen de Testimonios (público Huésped).",
           "guestDualCta": "El botón del huésped siempre abre Edificios; el del propietario abre el formulario de contacto. La línea de contacto viene de Ajustes.",
-          "aboutStats": "Las cifras se animan en la página.",
-          "aboutValues": "Los números 01–04 son automáticos.",
+          "aboutStats": "Añade o elimina cifras. Sin cifras se oculta la franja.",
+          "aboutValues": "Los números siguen automáticamente el orden de los elementos.",
           "aboutCertifications": "Sin logo, la tarjeta muestra su icono.",
-          "aboutContact": "Las tarjetas abren siempre Edificios / Propietarios / Inmobiliaria. La dirección, los teléfonos, el email, la web y el horario vienen de Ajustes. Los campos del formulario se comparten con el formulario de contacto de la cabecera.",
+          "aboutContact": "Edita aquí los labels. Cada tarjeta conserva su destino al moverla. Los datos de oficina se gestionan en Ajustes; los labels del formulario son compartidos.",
           "servicesCatalogue": "Las tarjetas y categorías se gestionan en Servicios.",
           "servicesFinalCta": "El botón siempre abre Edificios. El email y WhatsApp vienen de Ajustes.",
           "guidesCityFilter": "Elige una ciudad para filtrar guías y recomendaciones. Desactiva para mostrar todas las ciudades sin filtro. La publicación se gestiona en Cities.",
@@ -1572,7 +1572,9 @@
         "link_label": "Texto del enlace",
         "media_alt": "Descripción de la imagen",
         "contact_note": "Introducción de contacto",
-        "how_it_works": "Cómo funciona"
+        "how_it_works": "Cómo funciona",
+        "badge_icon_key": "Icono del distintivo",
+        "destination": "Destino"
       },
       "itemLabels": {
         "benefits": "Ventaja",
@@ -1678,7 +1680,10 @@
           "video_media_id": "MP4 o WebM sin sonido, horizontal 1920×1080, idealmente menos de 15 MB. Deja vacío para usar una foto de fondo.",
           "poster_media_id": "Foto de fondo y respaldo del vídeo. Horizontal 1920×1080, JPEG, PNG, WebP o AVIF, idealmente menos de 500 KB."
         }
-      }
+      },
+      "aboutSourceInvalid": "El contenido guardado de About no es válido. Recarga o repara la fuente antes de guardar.",
+      "aboutConflict": "About cambió desde que abriste el editor. Recarga para revisar el contenido actual antes de guardar.",
+      "aboutSourceNote": "Edita aquí la fuente en inglés. La página pública muestra traducciones aprobadas; se gestionan en Traducciones."
     }
   },
   "leads": {

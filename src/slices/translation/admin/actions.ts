@@ -9,6 +9,7 @@ import {
 } from "@core/i18n";
 import { cacheTags, revalidatePath, updateTag } from "@core/revalidate";
 import { isGuideTranslationEntity, revalidateGuides } from "@slices/guides/contract";
+import { PAGE_TAGS } from "@slices/pages/contract";
 import { SOURCE_LOCALE, TARGET_LOCALES } from "./derive";
 import { generateDrafts } from "../server/generate";
 
@@ -31,6 +32,7 @@ const isTargetLocale = (v: unknown): v is Locale =>
 
 /** Bust the admin screens + the entity's public caches after a change. */
 function revalidateEntity(type: string, id: string): void {
+  if (type === "page_content") updateTag(PAGE_TAGS.page("about"));
   revalidatePath("/admin/translations");
   revalidatePath(`/admin/translations/${type}/${id}`);
   // Best-effort public refresh: covers both the per-entity and list tag

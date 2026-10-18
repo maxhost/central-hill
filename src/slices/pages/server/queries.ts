@@ -26,6 +26,9 @@ import { servicesSchema, defaultServices } from "../schemas/services";
 import { uuid } from "@core/validation/primitives";
 import { guidesSourceContent, guidesLocalizedContent } from "./guides-content";
 import { resolveData, resolveMedia } from "./resolve";
+import { aboutSchema } from "../schemas/about";
+import { normalizeAbout, aboutIdentityErrors } from "../about-content";
+import { resolveAboutData } from "./about-translations";
 
 /**
  * Public read model for the five editable fixed pages (slice `pages`, S9). Each read
@@ -43,6 +46,15 @@ async function _loadPage<T>(locale: Locale, key: PageKey): Promise<PageResult<T>
     .where(eq(page_content.key, key))
     .limit(1);
   if (!row) return null;
+  if (key === "about") {
+    const parsed = aboutSchema.safeParse(row.data);
+    if (!parsed.success) return null;
+    const source = normalizeAbout(parsed.data);
+    if (Object.keys(aboutIdentityErrors(source)).length) return null;
+    const content = await resolveAboutData(row.id, source, locale);
+    const media = await resolveMedia(source, uuid.safeParse(row.og_image_media_id).success ? row.og_image_media_id : null, locale);
+    return { content: content as T, ...media };
+  }
   // Validate before resolving UUID references: malformed legacy rows must use the fallback,
   // rather than reaching media queries with invalid IDs and failing the whole route.
   if (key === "services" && !servicesSchema.safeParse(row.data).success) return null;

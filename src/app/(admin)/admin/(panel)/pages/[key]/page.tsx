@@ -20,6 +20,7 @@ export default async function EditPageRoute({ params }: { params: Promise<{ key:
       previews={model.previews}
       options={model.options}
       sourceInvalid={model.sourceInvalid}
+      revision={model.revision}
     />
   );
 }

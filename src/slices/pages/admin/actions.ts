@@ -12,6 +12,8 @@ import { db } from "@core/db/client";
 import { page_content } from "../schema";
 import { pageKey, pageSchemas } from "../schemas";
 import { revalidatePage } from "../server/publish";
+import { saveAbout } from "./about-save";
+import type { AboutContent } from "../schemas/about";
 
 /**
  * Backoffice write action for slice `pages` (S12, ADR 0012). The page's source
@@ -25,6 +27,7 @@ export type PageSaveResult =
   | { ok: true }
   | { ok: false; error: "validation"; fieldErrors: Record<string, string> }
   | { ok: false; error: "bad_key" }
+  | { ok: false; error: "conflict" }
   | { ok: false; error: "server" };
 
 function fieldErrorsFrom(
@@ -40,9 +43,9 @@ function fieldErrorsFrom(
 
 export async function savePage(
   rawKey: string,
-  payload: { data: unknown; og_image_media_id: string | null },
+  payload: { data: unknown; og_image_media_id: string | null; revision?: string },
 ): Promise<PageSaveResult> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   const keyParsed = pageKey.safeParse(rawKey);
   if (!keyParsed.success) return { ok: false, error: "bad_key" };
@@ -57,6 +60,11 @@ export async function savePage(
   const ogImage = payload.og_image_media_id || null;
 
   try {
+    if (key === "about") {
+      const result = await saveAbout(dataParsed.data as AboutContent, ogImage, payload.revision, staff.userId);
+      if (result.ok) revalidatePage("about");
+      return result;
+    }
     if (key === "guides") {
       // A stale editor must not silently replace a newly corrupted persisted row.
       const [existing] = await db.select({ data: page_content.data }).from(page_content).where(eq(page_content.key, "guides")).limit(1);

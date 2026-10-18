@@ -14,7 +14,8 @@
 import { z } from "zod";
 import { iconKey } from "@core/validation/icon-key";
 import { seoShape, tStr, tStrOpt } from "@core/validation/primitives";
-import { between, faqGroupKey, fixed, iconCard, optionalImage, titledItem } from "./_shared";
+import { between, faqGroupKey, iconCard, optionalImage, optionalAnimated, optionalIconKey, titledItem } from "./_shared";
+import { adminHidden } from "./admin-hidden";
 
 /*
  * Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). Sizes
@@ -88,6 +89,7 @@ const certification = z.object({
  * buildings, owners → owners, partners → real estate) so it stays on the visitor's locale.
  */
 const contactCard = z.object({
+  destination: z.enum(["buildings", "owners", "real_estate"]).optional(),
   icon_key: iconKey,
   title: tStr({ max: 120 }),
   description: tStr({ max: 400 }),
@@ -104,6 +106,8 @@ const officeLabel = (enDefault: string) =>
   tStrOpt({ max: 40 }).describe(`Leave blank for “${enDefault}”.`);
 
 export const aboutSchema = z.object({
+  _list_ids: adminHidden(z.record(z.string(), z.array(z.string().max(64)).max(12)).optional()),
+  _retired_ids: adminHidden(z.array(z.string().max(64)).optional()),
   /** Search/social meta for `/<locale>/about`. Blank → `pages.about.metaTitle` / `metaDescription`. */
   seo: z.object({ ...seoShape }).optional(),
   hero: z.object({
@@ -117,23 +121,23 @@ export const aboutSchema = z.object({
   story: z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
-    narrative: fixed(tStr({ max: 1200 }), 3),
-    image_media_id: optionalImage(SPLIT_IMG_HINT),
+    narrative: between(tStr({ max: 1200 }), 1, 8),
+    image_media_id: optionalAnimated(SPLIT_IMG_HINT + " Also accepts animated WebP (under 5 MB), MP4/WebM muted loops (6–15 seconds, under 10 MB), and Lottie JSON/dotLottie."),
     /** Optional (S2): blank → `pages.about.alts.story`. */
     image_alt: imageAlt("Traditional tiled façades along a historic Lisbon street"),
   }),
-  stats: fixed(stat, 5),
+  stats: between(stat, 0, 8),
   serve: z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
-    audiences: fixed(iconCard.extend({ image_media_id: optionalImage(AUDIENCE_IMG_HINT) }), 3),
+    audiences: between(iconCard.extend({ image_media_id: optionalImage(AUDIENCE_IMG_HINT) }), 1, 12),
   }),
   values: z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
-    items: fixed(titledItem, 4),
+    items: between(titledItem, 1, 12),
   }),
   organisation: z.object({
     eyebrow: tStrOpt({ max: 80 }),
@@ -141,10 +145,11 @@ export const aboutSchema = z.object({
     intro: tStrOpt({ max: 600 }),
     /** Floating label on the photo (blank = none). */
     badge: tStrOpt({ max: 80 }),
-    image_media_id: optionalImage(SHOWCASE_IMG_HINT),
+    badge_icon_key: optionalIconKey,
+    image_media_id: optionalAnimated(SHOWCASE_IMG_HINT + " Also accepts animated WebP (under 5 MB), MP4/WebM muted loops (6–15 seconds, under 10 MB), and Lottie JSON/dotLottie."),
     /** Optional (S2): blank → `pages.about.alts.organisation`. */
     image_alt: imageAlt("Team reviewing property performance documents together"),
-    departments: fixed(department, 6),
+    departments: between(department, 1, 12),
   }),
   certifications: z.object({
     eyebrow: tStrOpt({ max: 80 }),
@@ -156,15 +161,15 @@ export const aboutSchema = z.object({
   community: z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
-    copy: fixed(tStr({ max: 1200 }), 2),
-    image_media_id: optionalImage(SPLIT_IMG_HINT),
+    copy: between(tStr({ max: 1200 }), 1, 8),
+    image_media_id: optionalAnimated(SPLIT_IMG_HINT + " Also accepts animated WebP (under 5 MB), MP4/WebM muted loops (6–15 seconds, under 10 MB), and Lottie JSON/dotLottie."),
     /** Optional (S2): blank → `pages.about.alts.community`. */
     image_alt: imageAlt("People sharing a meal together at a community table in Lisbon"),
   }),
   contact: z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
-    cards: fixed(contactCard, 3),
+    cards: between(contactCard, 1, 12),
     office_title: tStr({ max: 80 }),
     /**
      * Optional (S3): the office panel's row labels. Blank → `pages.about.office.<key>`. The

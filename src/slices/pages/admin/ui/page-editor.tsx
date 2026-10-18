@@ -88,6 +88,7 @@ export function PageEditor({
   previews: Record<string, AdminMediaPreview>;
   options: SelectOptions;
   sourceInvalid?: boolean;
+  revision?: string;
 }) {
   const t = useTranslations("pages");
   const tb = useTranslations("backoffice");

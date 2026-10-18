@@ -457,7 +457,7 @@ const ABOUT_LAYOUT: EditorLayoutItem[] = [
     note: { textKey: `${L}.notes.seoLimits` },
     hostsOgImage: true,
   },
-  { kind: "card", id: "hero", titleKey: `${L}.cards.hero`, paths: ["hero"] },
+  { kind: "card", id: "hero", titleKey: `${L}.cards.hero`, paths: ["hero", "_list_ids", "_retired_ids"] },
   { kind: "card", id: "story", titleKey: `${L}.cards.story`, paths: ["story"] },
   {
     kind: "card",

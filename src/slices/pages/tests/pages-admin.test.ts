@@ -1132,7 +1132,7 @@ test("about layout + labels: every i18n key exists in the 4 locales — S1", () 
 
 // ── About: per-photo alt + measured hints (spec about-admin-editor S2) ───────
 
-test("aboutSchema media accepts: every About photo picker is image-only — S2", () => {
+test("aboutSchema media accepts: About two-column slots accept animated media", () => {
   const media: Record<string, { accept: string; hint?: string }> = {};
   const walk = (node: FieldNode, p: string) => {
     if (node.kind === "media") media[p] = { accept: node.accept, hint: node.hint };
@@ -1145,11 +1145,11 @@ test("aboutSchema media accepts: every About photo picker is image-only — S2",
     Object.fromEntries(Object.entries(media).map(([p, m]) => [p, m.accept])),
     {
       "about.hero.image_media_id": "image",
-      "about.story.image_media_id": "image",
+      "about.story.image_media_id": "animated",
       "about.serve.audiences[].image_media_id": "image",
-      "about.organisation.image_media_id": "image",
+      "about.organisation.image_media_id": "animated",
       "about.certifications.items[].logo_media_id": "image",
-      "about.community.image_media_id": "image",
+      "about.community.image_media_id": "animated",
     },
   );
   assert.match(media["about.hero.image_media_id"]?.hint ?? "", /Landscape 16:9 — 1920×1080 px \(min 1600×900\)/);

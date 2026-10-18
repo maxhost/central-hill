@@ -34,6 +34,26 @@ Textos/iconos/labels/SEO ya cubiertos no se reconstruyen innecesariamente.
   en `src/core/i18n/index.ts`, ADR0037; nuevo
   `src/slices/pages/admin/about-save.ts`. Shared core helpers no importan Pages.
   Contratos y tests se completan antes de arrancar A/B.
+- Fase0 verificada: typecheck exit0;7tests puros exit0. Harness
+  `/private/tmp/central-hill-about-cms-qa/phase0.ts` contra DB/rol verificados
+  aboutcmsqa: guardado único+source sync, target legacy preservado tras reorder,
+  stale revision rechazado, exit0. Fallos previos fueron de harness/transporte
+  (marker server-only, endpoint control-plane y multi-statement preparado), corregidos
+  sin cambiar entornos existentes.
+- Entorno nuevo: PostgreSQL17 puerto5578, proxy4478, red Docker
+  central-hill-about-cms-qa; S3rver9062 PID9890, sesión7024, bucketaboutcmsqa.
+  Migraciones0000..0021 aplicadas sólo allí con SQL generado del journal, exit0;
+  no DDL nuevo de esta tarea. Env fake/preload en carpeta QA, sin credenciales reales.
+- Contratos concretos: `normalizeAbout`, `ABOUT_LIST_PATHS`, `aboutTranslationField`,
+  `aboutIdentityErrors`, `retireAboutIds`, `aboutSourceFields` en `about-content.ts`.
+  `aboutEditorDefaults` retorna fuente+status; `PageEditBundle.revision` y nuevo
+  prop `PageEditor.revision`; payload `savePage.revision` obligatorio About y error
+  `conflict`. No conservar revision local tras éxito sin refresh/remount del editor.
+  `sourceSnapshotCtes` en kernel; `resolveAboutData` resuelve IDs. Metadata hidden.
+- Scope root ampliado: route admin Pages pasa revision y Translation actions invalida
+  tag page:about para entity_type page_content. A/B no editan esos archivos.
+- A/B se crearán desde el commit de contratos registrado en el handoff de delegación;
+  los archivos de la tabla anterior son sus write sets exclusivos, sin nested agents.
 
 Los campos continúan siendo source EN; textos T resueltos en EN/PT/ES/FR mediante
 Translations. No prometer edición directa del ES en About ni traducción automática
