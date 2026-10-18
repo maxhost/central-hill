@@ -31,6 +31,20 @@ No main integration, push, deployment or production writes in this task delivery
 The city-filter collapse follow-up was user-validated; typecheck/lint/build passed,
 with no new independent browser QA claim. Preserve both local preview environments.
 
+About CMS follow-up is implemented and independently functional-QA-approved on code
+`d4e13c9`, task branch `about-cms/integration` in
+`/private/tmp/central-hill-about-cms-integration`. Read
+[About handoff](docs/specs/handoff-about-cms.md),
+[execution](docs/specs/about-cms-execution.md) and
+[functional QA](docs/specs/about-cms-qa.md). Savepoint6849427,
+tag `savepoint/pre-about-cms-implementation-2026-10-18`. No new migration;
+existing0000..0021 only applied to new isolated aboutcmsqa, preview3062.
+Final runtime checkout `/private/tmp/central-hill-about-cms-runtime` on d4e13c9.
+The user explicitly narrowed QA to normal form save/reload, public output and media
+uploads; do not reopen a broad adversarial matrix as an unfinished delivery gate.
+No main integration, push, deployment or production writes. Preserve previews
+3059/3060/3061/3062 and their environments.
+
 ## Working agreement
 
 - For an authorized agentic implementation: one orchestrator, two implementers with disjoint file assignments, then one independent QA agent reviewing the integrated result. Simple tasks remain with the main agent. Do not start implementation when the request is only for a spec or review.

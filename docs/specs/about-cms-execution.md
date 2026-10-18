@@ -1,8 +1,8 @@
 # About CMS — plan y spec de alineación
 
-2026-10-18. **Estado: implementación autorizada por el usuario; fase0 en curso.**
-Base `6849427`, rama actual `guides-cms/integration` en
-`/private/tmp/central-hill-guides-cms-integration`. No se autoriza por este documento
+2026-10-18. **Estado: implementación completada y QA funcional independiente aprobada en d4e13c9.**
+Base `6849427`, implementación en rama `about-cms/integration` y worktree
+`/private/tmp/central-hill-about-cms-integration`. No se autoriza por este documento
 merge a main, push, despliegue, migraciones ni escrituras de producción.
 Auditoría y límites de evidencia: [about-cms-audit.md](about-cms-audit.md).
 
@@ -151,9 +151,8 @@ aprobadas o dejar traducciones de otro elemento como fallback.
 
 ## Plan de ejecución y ownership
 
-Sólo después de la siguiente autorización de implementación. Crear savepoint del
-HEAD real de entonces, comprobar tracked/untracked y no absorber trabajo ajeno.
-Propuesta de integración nueva `/private/tmp/central-hill-about-cms-integration`,
+Implementación autorizada por el usuario tras revisar la auditoría. Savepoint
+`savepoint/pre-about-cms-implementation-2026-10-18` en6849427. Integración nueva `/private/tmp/central-hill-about-cms-integration`,
 rama `about-cms/integration`, partiendo del código Guides aprobado y su cierre
 documental, sin integrar Guides a main como prerrequisito.
 
@@ -171,7 +170,7 @@ worktrees y verificación de pwd/branch/status de cada agente. Archivos propuest
 
 A: `/private/tmp/central-hill-about-cms-admin`, rama `about-cms/admin`.
 B: `/private/tmp/central-hill-about-cms-public`, rama `about-cms/public`.
-Son destinos propuestos, **no creados**. Ningún writer comparte worktree. Archivos
+Ambos worktrees creados desde14a4c7c y verificados por sus agentes. Ningún writer comparte worktree. Archivos
 compartidos permanecen con root; cambios a `side-media.tsx` o kernel UI sólo si la
 fase0 justifica y asigna explícitamente, nunca simultáneamente por A/B. Tests nuevos
 de cada implementador no editan el archivo histórico compartido.
@@ -245,10 +244,9 @@ ownership de Leads y fallback compartido, antes de ampliar archivos.
 
 ## Entrega de esta fase
 
-Únicamente esta spec y `about-cms-audit.md` añadidos. Sin cambios de código,
-commits, implementación, migraciones, merge a main, push ni despliegue. Las
-decisiones de fase0 se resolverán como parte de la implementación posterior;
-no se delegó trabajo a implementadores en esta revisión.
+La auditoría inicial entregó únicamente esta spec y `about-cms-audit.md`. Después
+el usuario autorizó implementación; el progreso y la entrega actual se registran
+a continuación y en el handoff. Continúa sin main, push ni despliegue.
 
 ## Progreso de implementación autorizado
 
@@ -270,3 +268,24 @@ Se añadieron fixtures locales de JPG/WebP animado/MP4/WebM real generado con ca
 Lottie JSON y staff ficticio. No se ejecutó ningún seed de producción.
 Nuevo contacto se crea con destino Buildings visible y editable, conforme al
 control aprobado en el contrato UI; todos los destinos son enums localizables.
+
+## Ajuste de verificación solicitado por el usuario
+
+2026-10-18: el usuario pidió detener la ampliación adversarial y cerrar con QA
+normal de funcionamiento: editar/guardar/recargar, comprobar el resultado público
+y cargar imágenes; verificar también MP4/WebP animado en sus slots. Los checks
+automatizados ya completados se conservan, sin repetir matrices ni añadir tests
+por hipótesis. La matriz adversarial anterior queda como referencia histórica,
+no como gate pendiente de esta entrega. QA independiente realizará sólo el flujo
+normal de carga/guardado/público restante y documentará evidencia real.
+
+Candidato final de código d4e13c9, construido exit0 en checkout separado
+`/private/tmp/central-hill-about-cms-runtime` para no interrumpir el grupo de listas.
+Preview3062 cambió a ese runtime tras checkpoint explícito de QA.
+
+## Cierre
+
+QA funcional aprobada en `about-cms-qa.md`; entrega y archivos en
+`handoff-about-cms.md`. Preview final3062 PID60973/sesión5489 sobre d4e13c9;
+no main/push/despliegue ni writes de producción. Verificación reducida según
+instrucción del usuario completada, sin trabajo funcional pendiente conocido.
