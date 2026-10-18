@@ -683,7 +683,7 @@
         "icons": "Service icons",
         "priceMode": "Price display",
         "euros": "Starting price (€)",
-        "eurosHint": "Enter euros, for example 35.50. Stored as exact cents.",
+        "eurosHint": "Enter euros, for example 35.50.",
         "source": "Content is authored in English. Other languages use the translation review workflow.",
         "published": "View published page",
         "unsaved": "You have unsaved changes. Leave this page?",
@@ -702,7 +702,8 @@
           "from": "From an amount",
           "on_request": "On request",
           "hidden": "Do not show a price"
-        }
+        },
+        "mediaAltHint": "Alternative text is managed in the media library and shared wherever the same image is used."
       }
     },
     "ctaImageAlt": "Bright, elegantly furnished living room with a city outlook in one of our Lisbon apartments"

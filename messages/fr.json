@@ -683,7 +683,7 @@
         "icons": "Icônes du service",
         "priceMode": "Affichage du prix",
         "euros": "Prix à partir de (€)",
-        "eurosHint": "Saisissez des euros, par exemple 35,50. Enregistré en centimes exacts.",
+        "eurosHint": "Saisissez des euros, par exemple 35,50.",
         "source": "Le contenu est rédigé en anglais. Les autres langues passent par la révision des traductions.",
         "published": "Voir la page publiée",
         "unsaved": "Des modifications ne sont pas enregistrées. Voulez-vous quitter ?",
@@ -702,7 +702,8 @@
           "from": "À partir d’un montant",
           "on_request": "Sur demande",
           "hidden": "Ne pas afficher de prix"
-        }
+        },
+        "mediaAltHint": "Le texte alternatif est géré dans la médiathèque et partagé partout où la même image est utilisée."
       }
     },
     "ctaImageAlt": "Salon lumineux et élégamment meublé avec vue sur la ville dans l’un de nos appartements à Lisbonne"

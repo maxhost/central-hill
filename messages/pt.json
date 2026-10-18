@@ -683,7 +683,7 @@
         "icons": "Ícones do serviço",
         "priceMode": "Apresentação do preço",
         "euros": "Preço desde (€)",
-        "eurosHint": "Introduza euros, por exemplo 35,50. Guardado em cêntimos exatos.",
+        "eurosHint": "Introduza euros, por exemplo 35,50.",
         "source": "O conteúdo é escrito em inglês. Os outros idiomas usam a revisão de traduções.",
         "published": "Ver página publicada",
         "unsaved": "Tem alterações por guardar. Deseja sair?",
@@ -702,7 +702,8 @@
           "from": "Desde um valor",
           "on_request": "Sob consulta",
           "hidden": "Não mostrar preço"
-        }
+        },
+        "mediaAltHint": "O texto alternativo é gerido na biblioteca de multimédia e partilhado onde a mesma imagem é utilizada."
       }
     },
     "ctaImageAlt": "Sala luminosa e elegantemente mobilada com vista para a cidade num dos nossos apartamentos de Lisboa"
