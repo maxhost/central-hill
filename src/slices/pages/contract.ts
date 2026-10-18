@@ -19,6 +19,7 @@ import type { MediaImageData } from "@core/media";
 import type {
   AboutContent,
   BuildingsContent,
+  ServicesContent,
   GuestContent,
   HomeContent,
   OwnersContent,
@@ -65,6 +66,8 @@ export type RealEstatePage = PageResult<RealEstateContent>;
 export type AboutPage = PageResult<AboutContent>;
 /** The Buildings listing's editable sections (spec buildings-admin-editor). */
 export type BuildingsPage = PageResult<BuildingsContent>;
+/** Services listing; absent or invalid rows use blank overrides, never a 404. */
+export type ServicesPage = PageResult<ServicesContent>;
 
 /**
  * The CTA at the bottom of a blog post's sticky aside (the `blog` row's `post_aside`), ready for
@@ -89,6 +92,7 @@ export interface GuideAsideCta extends BlogAsideCta {
 export type {
   AboutContent,
   BuildingsContent,
+  ServicesContent,
   GuestContent,
   HomeContent,
   OwnersContent,
@@ -100,6 +104,7 @@ export {
   getAboutPage,
   getBlogAsideCta,
   getBuildingsPage,
+  getServicesPage,
   getGuestPage,
   getGuideAsideCta,
   getHomePage,
@@ -189,3 +194,5 @@ export { pagesAdminScreens } from "./admin/screens";
  * exports are gone (nothing to mount any more).
  */
 export { OwnerEstimateForm } from "./ui/components/owner-estimate-form";
+
+export { buildServicesMetadata } from "./server/metadata";

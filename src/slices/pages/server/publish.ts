@@ -21,6 +21,7 @@ const PAGE_PATH: Record<PageKey, string> = {
   blog: "blog",
   guides: "guides",
   buildings: "buildings",
+  services: "services",
 };
 
 /** Keys whose copy shows on every page under their segment (each post, each guide). */

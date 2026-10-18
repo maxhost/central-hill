@@ -14,10 +14,11 @@ import { aboutSchema } from "./about";
 import { guestSchema } from "./guest";
 import { blogSchema } from "./blog";
 import { guidesSchema } from "./guides";
+import { servicesSchema } from "./services";
 import { buildingsSchema } from "./buildings";
 
 /** `page_content.key` enum — one row per key. */
-export const pageKey = z.enum(["home", "owners", "real_estate", "about", "guest", "blog", "guides", "buildings"]);
+export const pageKey = z.enum(["home", "owners", "real_estate", "about", "guest", "blog", "guides", "buildings", "services"]);
 export type PageKey = z.infer<typeof pageKey>;
 
 /** key → the fixed schema that validates that page's `data` jsonb. */
@@ -30,6 +31,7 @@ export const pageSchemas = {
   blog: blogSchema,
   guides: guidesSchema,
   buildings: buildingsSchema,
+  services: servicesSchema,
 } as const satisfies Record<PageKey, z.ZodType>;
 
 /** key → translatable leaf paths (with `[]` array wildcards) for the pipeline. */
@@ -42,6 +44,7 @@ export const translatablePathsByPage: Record<PageKey, string[]> = {
   blog: translatablePaths(blogSchema),
   guides: translatablePaths(guidesSchema),
   buildings: translatablePaths(buildingsSchema),
+  services: translatablePaths(servicesSchema),
 };
 
 export {
@@ -53,6 +56,7 @@ export {
   blogSchema,
   guidesSchema,
   buildingsSchema,
+  servicesSchema,
 };
 export type { HomeContent } from "./home";
 export type { OwnersContent } from "./owners";
@@ -62,3 +66,5 @@ export type { GuestContent } from "./guest";
 export type { BlogContent } from "./blog";
 export type { GuidesContent } from "./guides";
 export type { BuildingsContent } from "./buildings";
+
+export type { ServicesContent } from "./services";

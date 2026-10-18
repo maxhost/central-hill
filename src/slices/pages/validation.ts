@@ -14,6 +14,7 @@ import {
   homeSchema,
   ownersSchema,
   realEstateSchema,
+  servicesSchema,
 } from "./schemas";
 
 const row = <K extends string, D extends z.ZodType>(key: K, data: D) =>
@@ -31,6 +32,7 @@ export const pageContentSchema = z.discriminatedUnion("key", [
   row("real_estate", realEstateSchema),
   row("about", aboutSchema),
   row("guest", guestSchema),
+  row("services", servicesSchema),
 ]);
 
 export type PageContent = z.infer<typeof pageContentSchema>;

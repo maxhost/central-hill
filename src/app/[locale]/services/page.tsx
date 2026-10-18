@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
-import type { Locale } from "@core/db/columns";
-import { buildMetadata } from "@core/seo";
+import { buildServicesMetadata } from "@slices/pages/contract";
 import { ServicesListing } from "@slices/services/ui/services-listing";
 
 /**
@@ -26,17 +25,7 @@ export async function generateMetadata({
   if (!hasLocale(routing.locales, locale)) return {};
   setRequestLocale(locale);
 
-  const languages: Partial<Record<Locale | "x-default", string>> = { "x-default": "/services" };
-  for (const l of routing.locales) languages[l] = `/${l}/services`;
-
-  const t = await getTranslations({ locale, namespace: "services" });
-
-  return buildMetadata({
-    title: t("metaTitle"),
-    description: t("metaDescription"),
-    canonicalPath: `/${locale}/services`,
-    languages,
-  });
+  return buildServicesMetadata(locale);
 }
 
 export default async function ServicesIndexPage({

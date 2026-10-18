@@ -1,6 +1,6 @@
 # Spec y plan del editor de Services
 
-Fecha: 2026-10-18. Estado: auditoría inicial completada; implementación pendiente.
+Fecha: 2026-10-18. Estado: implementación en curso; base común preparada.
 
 Flujo operativo: [AGENTS.md](../../AGENTS.md) y
 [multi-agent-workflow.md](../multi-agent-workflow.md). Esta spec concreta el reparto y los
@@ -121,3 +121,19 @@ Con QA aprobado y sin defectos bloqueantes: revisar diff completo y límites ent
 Entrega aceptable cuando las cuatro capturas quedan mapeadas al editor, se guardan textos/iconos/medios y SEO, los cambios aparecen por revalidación en los cuatro idiomas, los enlaces permanecen fijos, se conserva el catálogo y QA documenta las pruebas anteriores. No se da por aprobada una prueba de guardado que solo haya sido simulada; si falta DB aislada, documentar el bloqueo antes de integrar.
 
 Fuera de alcance: rediseño, CRUD/detalle de servicios, editor libre de secciones, enlaces editables, nueva pipeline de traducción, cambios globales de iconos, optimización SEO del resto del sitio y despliegue. Esta fase entrega la spec y el plan; la implementación agéntica corresponde al siguiente paso solicitado por el owner.
+
+
+## Ejecución 2026-10-18 — reanudación
+
+- Base limpia: `a29ebf24596a3c60bb9cbca03fb08fb3d9eacc00`, rama original `main`, sin cambios previos.
+- Orquestador: `/Users/maxi/Documents/claude-workspace/central-hill`, rama `services/integration`.
+- A: `/private/tmp/central-hill-services-editor`, rama `services/editor`.
+- B: `/private/tmp/central-hill-services-public`, rama `services/public`.
+- Base común: commit de schema/registro/getter/metadata inmediatamente anterior a crear worktrees; ambos agentes deben verificar HEAD/rama/cwd/status y reportarlos.
+- Escritura A: `src/slices/pages/admin/layout.ts`, `src/slices/pages/admin/form-model.ts`, `src/slices/pages/admin/ui/schema-fields.tsx`, nuevo `src/slices/pages/tests/services-editor.test.ts`. Ampliación explícita para respetar `items.meta({fixed_order:true})` sin afectar otros arrays; ayudas localizadas de Services por claves de mensajes, manteniendo compatibilidad.
+- Escritura B: nuevos `src/slices/pages/ui/components/services-sections.tsx`, `services-media.tsx`, `services-loop-media.tsx`, `src/slices/pages/tests/services-content.test.ts`; `src/slices/services/ui/services-listing.tsx`. Export solicitado al orquestador antes de checks. Secciones: `ServicesHero`, `ServicesIntro`, `ServicesHowItWorks`, `ServicesFinalCta`, props `{page:ServicesPage,locale:Locale}`; cada una resuelve sus mensajes y Settings por contratos cuando necesita.
+- Solo orquestador: schema Services, registros, contrato, queries/metadata/publish, ruta, `messages/{en,pt,es,fr}.json`, documentación, pruebas compartidas adicionales e infraestructura temporal QA. No kernel, migraciones ni dependencias nuevas.
+- Contrato: `ServicesContent` y `ServicesPage`, `getServicesPage` nunca null; campos de la tabla de esta spec. Iconos/medios no traducibles; textos opcionales vacíos -> mensajes por idioma. Cache `page:services`; catálogo `service-list`; Settings mantiene dependencia propia.
+- Entorno existente: `.env.local` apunta a Neon remoto y bucket compartido; no se copiará. Usuario autorizó preparar entorno local aislado con datos ficticios. Docker/Postgres/S3 local por verificar; sin escrituras a recursos remotos.
+- Node 22.23.3 disponible; pnpm. Verificaciones: typecheck/lint/tests explícitos/build/db:check, QA desktop+móvil, guardado/recarga y revalidación real. Tests/boundary placeholders excluidos. Sin integración a main antes de QA aprobado.
+- Baseline visual público/BO todavía pendiente de entorno aislado; no afirmar prueba visual o persistencia como aprobadas.

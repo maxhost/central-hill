@@ -8,6 +8,7 @@ import {
   type AboutPage,
   type BlogAsideCta,
   type BuildingsPage,
+  type ServicesPage,
   type GuestPage,
   type GuideAsideCta,
   type HomePage,
@@ -20,6 +21,7 @@ import { type PageKey, translatablePathsByPage } from "../schemas";
 import { blogSchema, defaultBlog } from "../schemas/blog";
 import { buildingsSchema, defaultBuildings } from "../schemas/buildings";
 import { defaultGuides, guidesSchema } from "../schemas/guides";
+import { servicesSchema, defaultServices } from "../schemas/services";
 import { resolveData, resolveMedia } from "./resolve";
 
 /**
@@ -115,4 +117,12 @@ export async function getBuildingsPage(locale: Locale): Promise<BuildingsPage> {
     if (parsed.success) return { content: parsed.data, media: page.media, ogImage: page.ogImage };
   }
   return { content: defaultBuildings, media: {}, ogImage: page?.ogImage ?? null };
+}
+
+/** Cached editorial overrides, with locale-message fallback for missing/invalid content. */
+export async function getServicesPage(locale: Locale): Promise<ServicesPage> {
+  const page = await cached<unknown>("services", locale);
+  const parsed = page ? servicesSchema.safeParse(page.content) : null;
+  if (parsed?.success && page) return { ...page, content: parsed.data };
+  return { content: defaultServices, media: {}, ogImage: page?.ogImage ?? null };
 }
