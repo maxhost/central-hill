@@ -13,6 +13,7 @@
  * docs/data-model.md → Page content model → home.
  */
 import { z } from "zod";
+import { adminHidden } from "./admin-hidden";
 import { cta, ctaWithNote, seoShape, tStr, tStrOpt } from "@core/validation/primitives";
 import {
   assurance,
@@ -60,6 +61,8 @@ const ctaPanel = z.object({
  * section objects themselves are optional too (legacy rows have none of them).
  */
 export const homeSchema = z.object({
+  _list_ids: adminHidden(z.record(z.string(), z.array(z.string().max(64)).max(8)).optional()),
+  _retired_ids: adminHidden(z.array(z.string().max(96)).optional()),
   /** Search/social meta for `/<locale>`. Blank → `pages.home.metaTitle` / `metaDescription`. */
   seo: z.object({ ...seoShape }).optional(),
   hero: z.object({

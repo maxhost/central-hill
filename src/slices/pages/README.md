@@ -1286,3 +1286,17 @@ recommendations. This flag does not alter Geography publication or guide detail 
 Only text is translated; references, icons and enabled are neutral. Save preserves
 page:guides and layout revalidation across four locales, including the shared aside.
 Media references/MIMEs are validated before persistence; OG/poster/aside are images.
+
+## Home contextual pilot (2026-10-18)
+
+Home uses the common Backoffice contextual shell with schema-derived bindings and
+the existing NodeField/media upload queue. The private saved-content preview uses
+HomePage with optional section instrumentation; normal public calls add no editor
+annotations. Avantio is replaced with an external notice only in this preview.
+
+Home source saves require homeRevision, validate all media references and atomically
+synchronize kernel source translations. Stats retain original legacy numeric keys
+through private list IDs; new rows use UUID keys and removed IDs cannot be reused.
+Home target locale snapshots use the same revision guard and kernel target seam.
+Needs-review/absent targets fall back to EN; approved stale targets remain visible.
+Local language drafts remain in the adapter while switching tabs.

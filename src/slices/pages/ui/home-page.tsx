@@ -42,7 +42,7 @@ const HERO_FALLBACK_POSTER =
  * editor (`dual_cta`), with the owner panel's target still hardcoded to `/owners` (not
  * CMS-editable — same reasoning as the hero's secondary CTA above).
  */
-export async function HomePage({ locale }: { locale: Locale }) {
+export async function HomePage({ locale, preview = false }: { locale: Locale; preview?: boolean }) {
   setRequestLocale(locale);
   const [page, t] = await Promise.all([getHomePage(locale), getTranslations("pages")]);
   if (!page) notFound();
@@ -60,12 +60,14 @@ export async function HomePage({ locale }: { locale: Locale }) {
   const uploadedPoster = heroPosterSrc(media[hero.poster_media_id ?? ""]);
   if (uploadedPoster) preload(uploadedPoster, { as: "image", fetchPriority: "high" });
 
+  const binding = (id: string) => preview ? { "data-editor-binding": id } : {};
   return (
     <main>
       <ScrollDebugProbe page="home" />
-      <Hero
+      <div {...binding("hero")}><Hero
         background={
           <video
+            {...binding("hero.video_media_id")}
             className="absolute inset-0 -z-10 h-full w-full object-cover"
             autoPlay
             muted
@@ -81,25 +83,25 @@ export async function HomePage({ locale }: { locale: Locale }) {
           </video>
         }
         eyebrow={orMessage(hero.eyebrow, t("home.heroEyebrow"))}
-        headline={hero.headline}
+        headline={preview ? <span {...binding("hero.headline")}>{hero.headline}</span> : hero.headline}
         subtitle={hero.subtitle}
         actions={
           <>
-            <ButtonLink href={hero.cta_primary.url}>{hero.cta_primary.label}</ButtonLink>
+            <ButtonLink href={hero.cta_primary.url}>{preview ? <span {...binding("hero.cta_primary.label")}>{hero.cta_primary.label}</span> : hero.cta_primary.label}</ButtonLink>
             {/*
              * Always our own internal Owners route — hardcoded, not CMS-editable, so it can
              * never be pinned to a stale locale/domain the way a free-text CMS url would be
              * (client feedback). Staff only edit the label.
              */}
             <ButtonLink href={`/${locale}/owners`} variant="light">
-              {hero.cta_secondary.label}
+              {preview ? <span {...binding("hero.cta_secondary.label")}>{hero.cta_secondary.label}</span> : hero.cta_secondary.label}
             </ButtonLink>
           </>
         }
-      />
+      /></div>
 
       {/* Avantio availability search, directly under the hero (client request). */}
-      <AvantioSearchBar locale={locale} />
+      {preview ? <div {...binding("avantio")} className="border-y border-line bg-surface px-6 py-8 text-center text-sm text-ink-soft">Avantio · External booking integration</div> : <AvantioSearchBar locale={locale} />}
 
       {/*
        * Scroll-reveal from here down (client feedback: bring Home in line with the other
@@ -118,28 +120,28 @@ export async function HomePage({ locale }: { locale: Locale }) {
        * the row count (`statBandColumns`); mobile stays 2-up.
        */}
       {statCells.length > 0 ? (
-        <Reveal label="stats">
+        <div {...binding("stats")}><Reveal label="stats">
           <StatBand
             title={orMessage(content.stats?.title, t("stats.title"))}
             cells={statCells}
             columns={statBandColumns(statCells.length)}
           />
-        </Reveal>
+        </Reveal></div>
       ) : null}
 
       {/* Guests pitch now sits directly under stats, ahead of the carousel (client feedback). */}
-      <Reveal label="guests-pitch">
+      <div {...binding("guests_pitch")}><Reveal label="guests-pitch">
         <GuestsSection
           content={guests_pitch}
           image={media[guests_pitch.image_media_id ?? ""] ?? null}
         />
-      </Reveal>
+      </Reveal></div>
 
       {/*
        * Featured portfolio (restored, client direction) — composes from `buildings`, ahead
        * of the services carousel. No intro copy under the title (client feedback).
        */}
-      <Reveal label="featured-portfolio">
+      <div {...binding("portfolio")}><Reveal label="featured-portfolio">
         <FeaturedPortfolio
           locale={locale}
           showEyebrow={false}
@@ -149,25 +151,25 @@ export async function HomePage({ locale }: { locale: Locale }) {
           ctaLabel={orMessage(portfolio?.cta_label, t("portfolio.viewAll"))}
           viewLabel={orMessage(portfolio?.card_view_label, t("portfolio.view"))}
         />
-      </Reveal>
+      </Reveal></div>
 
       {/* Services & partners (ADR 0032) — copy from the page, cards from `services`. */}
-      <Reveal label="services-carousel">
+      <div {...binding("services_carousel")}><Reveal label="services-carousel">
         <ServicesCarousel locale={locale} content={services_carousel} />
-      </Reveal>
+      </Reveal></div>
 
       {faqGroupKey ? (
-        <FaqSection
+        <div {...binding("faq")}><FaqSection
           locale={locale}
           groupKey={faqGroupKey}
           title={orMessage(content.faq?.title, t("faqTitle"))}
-        />
+        /></div>
       ) : null}
 
       {/* Closing owner/guest dual CTA (restored, client direction) — sits right before the footer. */}
-      <Reveal label="dual-cta">
+      <div {...binding("dual_cta")}><Reveal label="dual-cta">
         <DualCta locale={locale} content={dual_cta} media={media} />
-      </Reveal>
+      </Reveal></div>
     </main>
   );
 }
