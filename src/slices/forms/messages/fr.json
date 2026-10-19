@@ -118,5 +118,6 @@
     "logged": "Test enregistré dans la console email locale. Aucun email n’a été envoyé.",
     "skipped": "Test enregistré. Email désactivé ; aucun email n’a été envoyé.",
     "failed": "Test enregistré, mais l’envoi de l’email a échoué. Vérifiez la configuration du serveur avant de réessayer."
-  }
+  },
+  "stepProgress": "Étape {current} sur {total}"
 }

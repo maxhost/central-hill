@@ -118,5 +118,6 @@
     "logged": "Teste registado na consola local de email. Nenhum email foi enviado.",
     "skipped": "Teste registado. Email desativado; nenhum email foi enviado.",
     "failed": "Teste registado, mas o envio do email falhou. Verifique a configuração do servidor antes de tentar novamente."
-  }
+  },
+  "stepProgress": "Passo {current} de {total}"
 }

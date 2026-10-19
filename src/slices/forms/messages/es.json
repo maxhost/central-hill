@@ -118,5 +118,6 @@
     "logged": "Prueba registrada en la consola local de email. No se envió un correo.",
     "skipped": "Prueba registrada. Email desactivado; no se envió un correo.",
     "failed": "Prueba registrada, pero falló el envío del email. Revisa la configuración del servidor antes de intentarlo de nuevo."
-  }
+  },
+  "stepProgress": "Paso {current} de {total}"
 }

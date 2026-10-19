@@ -118,5 +118,6 @@
     "logged": "Test recorded in the local email console. No email was sent.",
     "skipped": "Test recorded. Email is disabled; no email was sent.",
     "failed": "Test recorded, but the email attempt failed. Check the server configuration before trying again."
-  }
+  },
+  "stepProgress": "Step {current} of {total}"
 }
