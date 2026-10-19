@@ -23,8 +23,8 @@ export function FormCatalog({ forms }: { forms: FormRecord[] }) {
       catch { setError(t("requestError")); }
       finally { setBusy(false); }
     }}>
-      <Field label={t("internalName")} htmlFor="new-form-name"><TextInput id="new-form-name" required maxLength={150} value={name} onChange={event => setName(event.target.value)} /></Field>
-      <Field label={t("template")} htmlFor="new-form-template"><Select id="new-form-template" value={template} onChange={event => setTemplate(event.target.value as FormTemplate)}>{(["contact", "newsletter", "owner-estimate"] as const).map(value => <option key={value} value={value}>{t(`templates.${value}`)}</option>)}</Select></Field>
+      <Field label={t("internalName")} htmlFor="new-form-name"><TextInput id="new-form-name" disabled={busy} required maxLength={150} value={name} onChange={event => setName(event.target.value)} /></Field>
+      <Field label={t("template")} htmlFor="new-form-template"><Select id="new-form-template" disabled={busy} value={template} onChange={event => setTemplate(event.target.value as FormTemplate)}>{(["contact", "newsletter", "owner-estimate"] as const).map(value => <option key={value} value={value}>{t(`templates.${value}`)}</option>)}</Select></Field>
       <AdminButton type="submit" variant="primary" disabled={busy}>{busy ? t("working") : t("create")}</AdminButton>
     </form>
     {error && <p role="alert" className="text-sm text-red-700">{error}</p>}

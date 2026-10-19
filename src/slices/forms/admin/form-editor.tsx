@@ -132,7 +132,7 @@ export function FormEditor({ model }: { model: FormEditorModel }) {
     {saved.status === "archived" && <p className="text-sm text-ink-soft">{t("archivedHint")}</p>}
     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
       <div className="flex flex-wrap gap-1" aria-label={t("language")}>
-        {languages.map(locale => <AdminButton key={locale} aria-pressed={language === locale} variant={language === locale ? "primary" : "ghost"} onClick={() => { setLanguage(locale); setNotice(""); setError(""); }}>{locale.toUpperCase()}{locale === "en" ? ` · ${t("source")}` : ""}</AdminButton>)}
+        {languages.map(locale => <AdminButton key={locale} disabled={busy} aria-pressed={language === locale} variant={language === locale ? "primary" : "ghost"} onClick={() => { setLanguage(locale); setNotice(""); setError(""); }}>{locale.toUpperCase()}{locale === "en" ? ` · ${t("source")}` : ""}</AdminButton>)}
       </div>
       <div className="flex flex-wrap items-center gap-2"><AdminButton disabled={busy || saved.status === "archived" || !saved.recipient} onClick={() => setTesting(!testing)}>{t(testing ? "returnToEditor" : "testSaved")}</AdminButton><AdminButton variant="primary" disabled={busy || saved.status === "archived"} onClick={() => void save()}>{t(busy ? "working" : sourceMode ? "saveSource" : "saveReview")}</AdminButton>{!sourceMode && <AdminButton disabled={busy || dirty || saved.status === "archived"} onClick={() => void save(true)}>{t("approve")}</AdminButton>}</div>
     </div>
@@ -142,7 +142,7 @@ export function FormEditor({ model }: { model: FormEditorModel }) {
       const result = await testForm({ id: saved.id, expectedRevision: saved.revision, locale: language, values });
       if (!result.ok) return { ok: false, error: result.code === "conflict" ? t("conflict") : validationMessage(result) };
       setNotice(t(`delivery.${result.data.delivery}`)); return result.data.delivery === "failed" ? { ok: false, error: t("delivery.failed") } : { ok: true };
-    }} /></div></section> : <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+    }} /></div></section> : <fieldset disabled={busy} className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
       <section className="min-w-0 rounded-lg border border-line bg-bg p-4 sm:p-6" aria-label={t("canvas")}>
         <p className="mb-5 text-sm text-ink-soft">{t(sourceMode ? "canvasHint" : "targetHint")}</p>
         <div className="mx-auto w-full rounded-lg border border-line bg-surface p-4 sm:p-6" style={{ maxWidth: compact ? 390 : 760 }}>
@@ -187,6 +187,6 @@ export function FormEditor({ model }: { model: FormEditorModel }) {
           {(Object.keys(definition.copy) as (keyof FormCopy)[]).map(key => textControl(`block:copy.${key}`, t(`copy.${key}`), ["description", "successMessage", "errorMessage"].includes(key)))}
         </>}
       </aside>
-    </div>}
+    </fieldset>}
   </div>;
 }
