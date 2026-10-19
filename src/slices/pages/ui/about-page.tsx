@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { MediaImage, type MediaImageData } from "@core/media";
@@ -20,7 +21,7 @@ import {
 import { Icon } from "@core/ui/icon";
 import { ContactForm } from "@slices/leads/contract";
 import { getGlobals } from "@slices/settings/contract";
-import { getAboutPage } from "../contract";
+import { getAboutPage, type AboutPage as AboutPageResult } from "../contract";
 import { aboutSchema, defaultAbout } from "../schemas/about";
 import { normalizeAbout } from "../about-content";
 import { aboutAudienceImage, aboutContactHref, aboutStatColumns } from "./about-presentation";
@@ -127,16 +128,25 @@ function officeSplitRows(rows: OfficeRow[]): ContactSplitRow[] {
   }));
 }
 
-export async function AboutPage({ locale }: { locale: Locale }) {
+function PreviewBinding({ preview, id, children }: { preview: boolean; id: string; children: ReactNode }) {
+  return preview ? <div data-editor-binding={id}>{children}</div> : <>{children}</>;
+}
+
+export async function AboutPage({ locale, preview = false, page: injectedPage }: {
+  locale: Locale;
+  preview?: boolean;
+  page?: AboutPageResult | null;
+}) {
   setRequestLocale(locale);
   const [page, globals, t] = await Promise.all([
-    getAboutPage(locale),
+    injectedPage === undefined ? getAboutPage(locale) : Promise.resolve(injectedPage),
     getGlobals(locale),
     getTranslations("pages"),
   ]);
   // A row (or a cache entry) still in the pre-3d shape renders the default copy, not a crash.
   const c = normalizeAbout(page && aboutSchema.safeParse(page.content).success ? page.content : defaultAbout);
   const media = page?.media ?? {};
+  const binding = (id: string) => preview ? { "data-editor-binding": id } : {};
   const faqGroupKey = c.faq_group_key ?? "";
   // Photo alts (S2): the section's `image_alt` → `pages.about.alts.<section>`.
   const alts = {
@@ -195,7 +205,8 @@ export async function AboutPage({ locale }: { locale: Locale }) {
       </noscript>
 
       {/* Hero: Buildings listing's exact `Hero` configuration (as on Guests and Real Estate). */}
-      <Hero
+      <PreviewBinding preview={preview} id="hero"><Hero
+        editorBindings={preview ? { background: "hero.image_media_id", eyebrow: "hero.eyebrow", subtitle: "hero.mission" } : undefined}
         id="who-we-are"
         background={photo(media[c.hero.image_media_id], { src: HERO_FALLBACK_SRC, alt: alts.hero }, {
           sizes: "100vw",
@@ -210,15 +221,15 @@ export async function AboutPage({ locale }: { locale: Locale }) {
         headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
         subtitleClassName="mt-5 max-w-[60ch] text-lg"
         eyebrow={c.hero.eyebrow || undefined}
-        headline={c.hero.headline}
+        headline={preview ? <span {...binding("hero.headline")}>{c.hero.headline}</span> : c.hero.headline}
         subtitle={c.hero.mission}
-      />
+      /></PreviewBinding>
 
       {/*
        * "How We Started": `IntroSplit` with the image on the left. The tighter top padding
        * (50px, it sits right under the hero) is the client tweak the old `#story` rule carried.
        */}
-      <section id="story" className="scroll-mt-[84px] pt-[50px] pb-[clamp(72px,10vw,150px)]">
+      <section {...binding("story")} id="story" className="scroll-mt-[84px] pt-[50px] pb-[clamp(72px,10vw,150px)]">
         <div className={SECTION_WRAP}>
           <Reveal label="about-story">
             <IntroSplit
@@ -234,13 +245,13 @@ export async function AboutPage({ locale }: { locale: Locale }) {
 
       {/* No empty band; variable figures keep the approved five-column ceiling. */}
       {c.stats.length > 0 ? (
-        <Reveal label="about-stats">
+        <PreviewBinding preview={preview} id="stats"><Reveal label="about-stats">
           <StatBand cells={c.stats} columns={aboutStatColumns(c.stats.length)} />
-        </Reveal>
+        </Reveal></PreviewBinding>
       ) : null}
 
       {/* "One Platform. Three Audiences.": `SectionHead` + `PhotoFeatureGrid` (Guests' teasers). */}
-      <section id="serve" className={`${SECTION_SHELL} ${ALT_BAND}`}>
+      <section {...binding("serve")} id="serve" className={`${SECTION_SHELL} ${ALT_BAND}`}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
@@ -256,7 +267,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
       </section>
 
       {/* "What Guides Us": `SectionHead` + `NumberedFeatureGrid`. */}
-      <section id="values" className={SECTION_SHELL}>
+      <section {...binding("values")} id="values" className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
@@ -275,7 +286,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
        * "How We Are Organised": `TwoColumnShowcase` with Owners' showcase configuration (the
        * original was already a page-scoped copy of it), on the `alt` band, no CTA.
        */}
-      <div id="organised" className="scroll-mt-[84px]">
+      <div {...binding("organisation")} id="organised" className="scroll-mt-[84px]">
         <Reveal label="about-organised">
           <TwoColumnShowcase
             eyebrow={c.organisation.eyebrow || undefined}
@@ -292,7 +303,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
       </div>
 
       {/* "Independently Verified": `SectionHead` + `CertificationCards`. */}
-      <section id="certifications" className={SECTION_SHELL}>
+      <section {...binding("certifications")} id="certifications" className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
@@ -308,7 +319,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
       </section>
 
       {/* "Giving Back…": the same `IntroSplit` (image left) as "How We Started", on the `alt` band. */}
-      <section id="community" className={`${SECTION_SHELL} ${ALT_BAND}`}>
+      <section {...binding("community")} id="community" className={`${SECTION_SHELL} ${ALT_BAND}`}>
         <div className={SECTION_WRAP}>
           <Reveal label="about-community">
             <IntroSplit
@@ -323,7 +334,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
       </section>
 
       {faqGroupKey ? (
-        <div id="faq" className="scroll-mt-[84px]">
+        <div {...binding("faq")} id="faq" className="scroll-mt-[84px]">
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
@@ -336,7 +347,7 @@ export async function AboutPage({ locale }: { locale: Locale }) {
        * "Let's Start a Conversation": `SectionHead`, `BenefitCards` link cards (3 columns), then
        * `ContactSplit` — office details (company_settings) beside the leads `ContactForm`.
        */}
-      <section id="contact" className={SECTION_SHELL}>
+      <section {...binding("contact")} id="contact" className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead eyebrow={c.contact.eyebrow || undefined} headline={c.contact.headline} />
@@ -352,7 +363,9 @@ export async function AboutPage({ locale }: { locale: Locale }) {
               formTitle={c.contact.form.headline}
               formIntro={c.contact.form.subheadline || undefined}
             >
-              <ContactForm source="about-contact" />
+              <PreviewBinding preview={preview} id="contact.form">
+                {preview ? <div inert><ContactForm source="about-contact" /></div> : <ContactForm source="about-contact" />}
+              </PreviewBinding>
             </ContactSplit>
           </Reveal>
         </div>

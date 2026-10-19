@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ABOUT_LIST_PATHS } from "../about-content";
+import { ABOUT_LIST_PATHS } from "../schemas/about";
 import { ADMIN_HIDDEN_META_KEY } from "../schemas/admin-hidden";
 import { MEDIA_ACCEPTS, MEDIA_ACCEPT_META_KEY, type MediaAccept } from "../schemas/media-accept";
 

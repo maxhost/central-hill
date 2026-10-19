@@ -17,6 +17,9 @@ import { seoShape, tStr, tStrOpt } from "@core/validation/primitives";
 import { between, faqGroupKey, iconCard, optionalImage, optionalAnimated, optionalIconKey, titledItem } from "./_shared";
 import { adminHidden } from "./admin-hidden";
 
+/** Shared with the form model without importing the editor descriptor. */
+export const ABOUT_LIST_PATHS = ["story.narrative", "stats", "serve.audiences", "values.items", "organisation.departments", "certifications.items", "community.copy", "contact.cards"] as const;
+
 /*
  * Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). Sizes
  * measured on `/en/about` with Playwright at 1440 / 1024 / 390 px (spec about-admin-editor S2):

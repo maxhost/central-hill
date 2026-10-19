@@ -1,8 +1,11 @@
-import { aboutSchema, type AboutContent } from "./schemas/about";
+import { ABOUT_LIST_PATHS, aboutSchema, type AboutContent } from "./schemas/about";
 import { translatablePaths } from "@core/validation/primitives";
 import { expand } from "./server/overlay";
+import { describe } from "./admin/form-model";
+import type { PageEditorialDescriptor } from "./editorial-adapter-types";
+import { editorialTextPaths } from "./editorial-identities";
 
-export const ABOUT_LIST_PATHS = ["story.narrative", "stats", "serve.audiences", "values.items", "organisation.departments", "certifications.items", "community.copy", "contact.cards"] as const;
+export { ABOUT_LIST_PATHS } from "./schemas/about";
 export type AboutListPath = typeof ABOUT_LIST_PATHS[number];
 export const ABOUT_DESTINATIONS = ["buildings", "owners", "real_estate"] as const;
 const ID = /^(legacy_\d+|[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/;
@@ -68,3 +71,25 @@ export function aboutSourceFields(data: AboutContent): Record<string, string> {
   }
   return result;
 }
+
+/** Serializable metadata for the shared Pages editor; existing identity policy stays authoritative. */
+export const aboutDescriptor: PageEditorialDescriptor = {
+  key: "about",
+  title: "About",
+  publicPath: "/about",
+  rootNode: describe(aboutSchema),
+  textPatterns: translatablePaths(aboutSchema),
+  listPaths: [...ABOUT_LIST_PATHS],
+  maxLocalMedia: 29,
+  externalSections: [],
+  mediaSlots: [
+    { path: "hero.image_media_id", kind: "image" },
+    { path: "story.image_media_id", kind: "mixed" },
+    { path: "organisation.image_media_id", kind: "mixed" },
+    { path: "community.image_media_id", kind: "mixed" },
+    { path: "serve.audiences[].image_media_id", kind: "image" },
+    { path: "certifications.items[].logo_media_id", kind: "image" },
+  ],
+};
+export const aboutTextPaths = (content: AboutContent): string[] =>
+  editorialTextPaths(content, aboutDescriptor);
