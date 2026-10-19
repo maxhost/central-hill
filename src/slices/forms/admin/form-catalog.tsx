@@ -24,7 +24,12 @@ export function FormCatalog({ forms }: { forms: FormRecord[] }) {
       finally { setBusy(false); }
     }}>
       <Field label={t("internalName")} htmlFor="new-form-name"><TextInput id="new-form-name" disabled={busy} required maxLength={150} value={name} onChange={event => setName(event.target.value)} /></Field>
-      <Field label={t("template")} htmlFor="new-form-template"><Select id="new-form-template" disabled={busy} value={template} onChange={event => setTemplate(event.target.value as FormTemplate)}>{(["contact", "newsletter", "owner-estimate"] as const).map(value => <option key={value} value={value}>{t(`templates.${value}`)}</option>)}</Select></Field>
+      <Field label={t("template")} htmlFor="new-form-template">
+        <div className="relative">
+          <Select id="new-form-template" className="appearance-none" disabled={busy} value={template} onChange={event => setTemplate(event.target.value as FormTemplate)}>{(["contact", "newsletter", "owner-estimate"] as const).map(value => <option key={value} value={value}>{t(`templates.${value}`)}</option>)}</Select>
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-soft"><path d="m6 9 6 6 6-6" /></svg>
+        </div>
+      </Field>
       <AdminButton type="submit" variant="primary" disabled={busy}>{busy ? t("working") : t("create")}</AdminButton>
     </form>
     {error && <p role="alert" className="text-sm text-red-700">{error}</p>}

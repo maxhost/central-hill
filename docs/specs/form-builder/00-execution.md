@@ -158,3 +158,8 @@ Handoff [02-handoff](02-handoff.md). Entrega permanece en rama de tarea, sin mai
 push, deploy, GitHub o Neon producción. Se conservan todos los worktrees/commits y
 previews anteriores. Quedan únicamente las exclusiones deliberadas (placements,
 publicación/release pública y editor contextual de páginas) para el siguiente arco.
+
+Follow-up L0 de estilo solicitado por usuario: selector de plantilla normalizado con
+`appearance-none` y chevron, sólo en catálogo. Browser confirma ambos controles38px,
+misma alineación/fuente14px/fondo/radio; seleccionar plantilla sigue funcionando.
+ESLint del archivo y diff-check exit0; captura localstyle-fix.png. Sin cambios de lógica.
