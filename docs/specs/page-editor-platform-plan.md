@@ -213,3 +213,19 @@ commit probado, paths incluidos nuevos, limitaciones, informe y handoff/URLs3068
 continúa en versión validada preservada. Ningún merge a main/push/despliegue como efecto de
 terminar la tanda. Conservar worktrees/fixtures/procesos propios para revisión del usuario.
 Estado actual de este plan: sólo documentación, ninguna de las fases iniciada.
+
+## Registro de ejecución — iniciado 2026-10-18
+
+Nueva orden del usuario autoriza implementación local. Base verificada8223f4a, limpio,
+checkout documental preservado. Integración creada en
+/private/tmp/central-hill-page-editors-integration, rama page-editors/integration.
+Se mantienen los write sets anteriores; raíz añade server/editorial-adapters.ts al registry
+servidor y estabiliza adapters/home.ts inicialmente (A pasa a poseerlo tras el contrato).
+Tipos genéricos mantienen default Home por compatibilidad, JSON storage acepta las cinco
+keys sin DDL. Descriptor serializable con rootNode, textPatterns [T], listPaths y mediaSlots.
+Root habilita cada key sólo con sus consumidores completos. Helpers comunes de A deben
+aceptar descriptor opcional (Home default) para preservar tests y consumidores existentes.
+Contrato IDs: scope hijo plans.tiers.@<parentId>.features incluso para parent legacy_N;
+traducción legacy_N se convierte en índice original, UUID en @UUID. No índice mutable en
+metadata hija. El path de edición sigue numérico; helper resuelve scope desde identidad.
+Presupuesto, aceptación y comandos del plan siguen vigentes. Sin main/push/deploy/producción.
