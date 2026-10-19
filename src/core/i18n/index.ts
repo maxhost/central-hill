@@ -41,3 +41,5 @@ export type {
   TranslateUnit,
 } from "./translate";
 export { getTranslateProvider, hashSource } from "./translate";
+
+export { targetSnapshotCtes } from "./target-snapshot";

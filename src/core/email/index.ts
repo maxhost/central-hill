@@ -1,24 +1,10 @@
 import "server-only";
 import { env } from "@core/env";
+import { createResendProvider } from "./resend";
 
-/**
- * Transactional email — kernel seam (ADR 0011 "notify staff by email"; ADR 0016
- * for the implementation shape). Slices never talk to a vendor SDK directly; they
- * import {@link sendEmail} (or the typed message + provider interface) from here so
- * the provider can be swapped behind one interface (mirrors `core/i18n/translate`).
- *
- * Server-only: this is never imported by statically rendered public pages.
- *
- * Provider selection (intentionally dependency-free for now):
- *  - **dev** → `consoleProvider`: logs the message so local lead notifications are
- *    visible without any vendor credentials.
- *  - **prod without a vendor wired** → `noopProvider`: silently no-ops. Leads are
- *    still durably captured in Neon + the backoffice inbox (S12); the email is a
- *    best-effort nicety, so a missing provider must never lose data.
- *
- * Wiring a real transactional vendor (Resend/Postmark/SES — EU region per ADR 0015)
- * is a follow-up: add the dep + an `EmailProvider` impl behind a new ADR, then
- * select it here when `EMAIL_API_KEY`/`EMAIL_FROM` are present. No call site changes.
+/** Transactional mail kernel. Explicit EMAIL_PROVIDER=resend selects Resend;
+ * otherwise development logs locally and production disables delivery (ADR0038).
+ * Provider acceptance is not final delivery. Slices never contact a vendor directly.
  */
 
 /** A transactional message. `text` is required; `html` is an optional richer body. */
@@ -66,7 +52,9 @@ let cached: EmailProvider | null = null;
 /** The active provider (memoized). See module docs for the selection rules. */
 export function emailProvider(): EmailProvider {
   if (cached) return cached;
-  cached = process.env.NODE_ENV === "production" ? noopProvider : consoleProvider;
+  const selection = env.EMAIL_PROVIDER ?? (process.env.NODE_ENV === "production" ? "disabled" : "console");
+  cached = selection === "resend" ? createResendProvider(env.RESEND_API_KEY, env.EMAIL_FROM)
+    : selection === "console" ? consoleProvider : noopProvider;
   return cached;
 }
 

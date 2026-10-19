@@ -27,6 +27,8 @@ const EnvSchema = z.object({
 
   // Avantio / email / translation.
   AVANTIO_ACCOUNT_ID: z.string().optional(),
+  EMAIL_PROVIDER: z.enum(["resend", "console", "disabled"]).optional(),
+  RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().optional(),
   EMAIL_API_KEY: z.string().optional(),
   /** Staff inbox lead notifications are sent to (ADR 0011/0016). Optional until wired. */
