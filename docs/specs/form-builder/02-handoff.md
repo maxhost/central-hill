@@ -69,3 +69,8 @@ producto. La integración no deja archivos sin versionar; todos los archivos nue
 se incluyen en los commits. Worktrees de implementadores preservados; sus symlinks
 node_modules son locales/no versionados. Dos Contact drafts sintéticos adicionales
 del harness quedan junto a los tres ejemplos completos, documentados en QA.
+
+Comprobación final de listeners:3064,3063 y3070 activos. No se observaron listeners
+en3059–3062 en esa lectura; sus checkouts/bases/artefactos no se modificaron ni se
+reiniciaron. No atribuir esa ausencia a esta entrega ni afirmar que esos procesos
+siguen vivos: no se comprobó su estado inicial.
