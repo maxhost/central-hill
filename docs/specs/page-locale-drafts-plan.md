@@ -141,3 +141,38 @@ Root additionally owns the final ninth case in page-locale-drafts.integration.te
 (two pure, six DB); final total9. Independent QA reviews auth-wrapped legacy mutation guards.
 ES unpublished legacy SEO persisted without EN value; all baseline data remains synthetic.
 QA-only ESM loader stubs server-only for standalone Node tests; Next uses its normal guard.
+
+## Integrated verification (code b4bb282)
+
+Node22.23.3; synthetic pagedraftsqa only. Logs under
+/private/tmp/central-hill-page-drafts-qa. Root ran:
+
+| Command | Exit | Evidence |
+|---|---:|---|
+| pnpm typecheck |0|typecheck.log|
+| pnpm lint |0|lint.log;7 existing warnings|
+| pnpm exec tsx --test src/slices/pages/tests/page-locale-drafts.test.ts src/slices/pages/tests/page-locale-drafts.integration.test.ts |0|tests.log;9 passed|
+| pnpm db:check |0|db-check.log;24 migrations, existing0008 marker warning|
+| pnpm build |0|build.log; static/SSG/ISR output retained|
+
+No149-case routine suite, placeholder test or boundary commands counted. Manual boundaries:
+Translation imports Pages policy via contract; public Home has published-only cached getter;
+private preview injects saved draft-or-published through the existing renderer. Four-locale
+message sets match; no kernel files changed.
+
+Infrastructure retries: first db:check sandbox IPC EPERM, then exit0 after elevation.
+First build failed on outside-root node_modules symlink; source symlink removed, exact
+existing dependencies cloned locally, then build0. Offline dependency installation lacked
+cached aws-sdk tarball; no lockfile/package changes. QA gets logs and does not rerun them.
+Server3067 root session3471; storage9067 session59103/PID90200. Browser QA completado sin defectos de producto; informe independiente
+page-locale-drafts-qa.md. Un selector final /review/ coincidió con «preview»: continuación
+de lectura con selector corregido; sin repetir flujo/mutaciones. Screenshots desktop/mobile
+inspeccionados en la misma ronda. Code b4bb282 sin cambios después de checks.
+
+## Cierre
+
+QA independiente aprobó b4bb282 sin defectos abiertos; informe fd7892c.
+Root verificó checkout original home-contextual/integration limpio y Home3065 activo
+(PID46594). Cierre sólo documental después del candidato ejecutable, sin repetir checks
+de código. No implementación pendiente en este arco Home. Preview3067 queda activo para
+el usuario. Entrega local en page-drafts/integration; sin main/push/despliegue/producción.

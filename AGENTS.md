@@ -1,21 +1,27 @@
 # Central Hill agent instructions
 
-## Next: Home draft/publish per language (spec/plan only)
+## Home draft/publish per language — local implementation
 
-Read [spec](docs/specs/page-locale-drafts-spec.md),
-[execution plan](docs/specs/page-locale-drafts-plan.md),
-[fresh-context handoff](docs/specs/page-locale-drafts-handoff.md) and ADR0040.
-User requested documentation before launching implementation agents; do not start code now.
+Implemented from e06272b on page-drafts/integration in
+/private/tmp/central-hill-page-drafts-integration. Code b4bb282, independently QA-approved; report fd7892c.
+Read [delivery](docs/specs/page-locale-drafts-delivery.md),
+[handoff](docs/specs/page-locale-drafts-handoff.md),
+[spec](docs/specs/page-locale-drafts-spec.md),
+[execution](docs/specs/page-locale-drafts-plan.md),
+[QA](docs/specs/page-locale-drafts-qa.md) and ADR0040.
 Exactly Save draft and Publish, both for selected locale. One JSON draft per language;
 private preview uses it if present, otherwise that language's published JSON. Publish EN
 clears only EN draft; ES draft/public/local work stay intact. No translation approve/review.
-Persistent per-locale revision survives draft deletion. Home first, before Owners.
-Maximum10new focused automated cases, one EN/ES desktop/mobile browser pass. Global
-checks once in integrated candidate; QA consumes logs instead of rerunning. No149tests by
-routine or large locale/viewport matrices. Local safe sandbox and QA already authorized.
-Neon production/GitHub need separate approval; no main/push/deployment in local delivery.
+Persistent per-locale revision survives draft deletion. Home first; Owners not implemented.
+Nine focused tests, typecheck/lint/build/db:check passed; one EN/ES desktop/mobile
+functional browser sequence passed, final independent report records evidence/limits.
+Preview3067 uses new synthetic pagedraftsqa DB5618/proxy4518/storage9067. Migration0023
+applied only to this isolated QA DB; Home3065 and its original checkout e06272b preserved.
+User explicitly reiterated automatic local QA/test/DB authorization; no repeated functional
+approval questions. Sandbox still applies. Neon production/GitHub need separate approval;
+no main/push/deployment in local delivery. Preserve all worktrees/environment artifacts.
 
-Owners plan/handoff now waits for this base. Future page-adapter parallelism is described in
+Owners plan/handoff can now consume this base after reading the completed QA report. Future page-adapter parallelism is described in
 [parallel plan](docs/specs/page-editors-parallel-plan.md): proposed one agent/page, maximum3
 writers with current4slots including root. No agents launched. Exclude Services CMS,
 Buildings CMS and Blog posts. Shared infrastructure/contracts must land before page agents.
