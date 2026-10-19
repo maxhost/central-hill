@@ -152,3 +152,27 @@ filtering / empty-group drop. `tests/media-accept.test.ts` — what each `accept
 refuses (incl. `.lottie` / `.json` normalisation, tiles); `tests/media-busy.test.ts` — the
 reservation counter. Run:
 `npx tsx --test src/slices/backoffice/tests/backoffice.test.ts`.
+
+## Contextual page editor (ADR0039)
+
+`PageEditorShell` is a reusable saved-content canvas and inspector. A
+`PageEditorAdapter` supplies sections and binding IDs, locale/selection callbacks,
+preview URL/version, pending state, actions and inspector. The shell owns no page
+queries or persistence. The adapter increments `previewVersion` after a successful
+save; pending edits remain explicitly separate from the saved preview. Desktop,
+tablet and mobile use real iframe document widths1440/768/390 with fit scaling.
+The outline and binding selector retain access to hidden/empty sections and SEO.
+
+Only authenticated private previews mount `PageEditorPreviewBridge({instance,
+bindingIds})`. The route passes the `instance` query parameter and an allowlist of
+section/binding IDs. The renderer annotates selectable elements with
+`data-editor-binding="<id>"`; public rendering omits those attributes and the bridge.
+Both directions validate same origin, exact parent/iframe window, instance and
+allowlist through the pure `readPageEditorMessage` helper. `ready` is preview→shell;
+`select` is bidirectional and never echoed. Parent selection scrolls/focuses and
+highlights the preview element. Preview click/keyboard selection opens its inspector.
+Navigation, submissions, dragging and embedded iframe interaction are blocked in
+the preview; this is an editing surface, never a public form runtime. The route
+owns authentication/noindex/no-cache, and page adapters own external integration
+notices and translation/publishing semantics. Bridge behavior has explicit tests in
+`tests/page-editor-bridge.test.ts`.
