@@ -1,6 +1,7 @@
-# Home — plan del editor contextual y selector de Forms
+# Home — plan cerrado del editor contextual reutilizable
 
-2026-10-18. Estado: propuesta para revisión; **sin implementar Home todavía**.
+2026-10-18. Estado: alcance y decisiones cerrados con las aclaraciones del usuario;
+**sin implementar Home todavía**. Próximo paso: spec de ejecución/contratos y Home.
 Base de producto64da451, rama actual form-builder/integration,
 checkout /private/tmp/central-hill-form-builder-integration. Continúa el concepto
 [contextual-editor](contextual-editor/00-spec.md) y la entrega
@@ -20,8 +21,10 @@ selector Forms ni sustitución. Forms corresponde a formularios propios de conta
 newsletter o rentabilidad. Tampoco se modifican reservas ni configuración de Avantio.
 
 El editor Forms conserva ownership de campos/pasos/reglas/copy/traducciones/destino.
-El editor de página selecciona el formulario y su versión publicada en un slot
-compatible; muestra resumen, preview y enlace “Edit form”. No duplica su constructor.
+En futuras páginas que tengan formulario, el editor de página seleccionará uno de
+Forms y sustituirá el formulario actualmente escrito en código. Mostrará resumen,
+preview y enlace “Edit form”, sin duplicar el constructor. **Home no tiene formulario
+propio: no tendrá selector, slot nuevo ni integración pública de Forms en este arco.**
 
 ## Base real y trabajo que falta
 
@@ -38,10 +41,9 @@ compatible; muestra resumen, preview y enlace “Edit form”. No duplica su con
   de interacción, no un segundo renderer para producción.
 - Home **no tiene un slot de formulario propio inline**. Sus CTA actuales llevan a
   Owners/Avantio/enlaces configurados; el contacto del header pertenece a Settings.
-  No añadir una sección ni alterar esos destinos silenciosamente. El plan incluye
-  infraestructura del selector, pero su ubicación funcional en Home se define al
-  revisar el mapa de bloques. Si Home no incorpora un slot propio, se identifica
-  como externo y se habilita el selector al adaptar una página con un slot real.
+  No se añade una sección ni se alteran esos destinos. No queda ninguna decisión
+  pendiente de ubicación de formulario en Home: **no hay formulario que seleccionar**.
+  El selector se implementará al adaptar una página con formulario real (ejemplo Owners).
 
 ## Cobertura de Home
 
@@ -56,17 +58,16 @@ compatible; muestra resumen, preview y enlace “Edit form”. No duplica su con
 | FAQ | Título y selección de grupo; contenido pertenece a FAQ |
 | Cierre dual | Imágenes/copy de paneles; conservar destinos existentes |
 | SEO | Inspector específico para title/description/OG; canonical/hreflang automáticos |
-| Formularios propios | Sólo slots explícitos compatibles; nunca el widget de Avantio |
+| Formularios propios | No aplicable en Home; selector y sustitución al adaptar páginas que sí los tengan |
 
 Secciones ocultas/sin resultados siguen accesibles desde el índice. Todos los campos
 actuales deben conservar acceso; listas con límites actuales, sin perder capacidades.
 
 ## Entregables pequeños y dependencias
 
-1. **Spec ejecutable y contratos.** Confirmar mapa/slot de formularios; definir
-   PageEditorAdapter, bindings, metadatos traducibles y bridge de preview. ADR para
-   instrumentación compartida y publicación/placements Forms. Registrar base,
-   worktrees, archivos exactos, ownership y checks antes de delegar escritores.
+1. **Spec ejecutable y contratos.** Definir PageEditorAdapter, bindings, metadatos
+   traducibles y bridge de preview. ADR para instrumentación compartida. Registrar
+   base, worktrees, archivos exactos, ownership y checks antes de delegar escritores.
 2. **Shell contextual + Home de lectura.** Canvas/iframe privado con renderer público
    compartido, selección y outline, inspector, viewport real1440/768/390, foco y
    bloqueo de navegación/submits en preview. Avantio identificado como externo;
@@ -75,24 +76,39 @@ actuales deben conservar acceso; listas con límites actuales, sin perder capaci
    CMS, añadir source sync atómico, revisión contra sobrescritura e identidad de
    listas traducibles. Tabs conservan selección y borradores locales por idioma;
    estructura/medios/referencias compartidos, copy/SEO traducibles, estados y fallback.
-4. **Forms publicables + selector.** Publicar una release inmutable con esquema y
-   copy resuelta por idioma; permitir seguir editando borrador sin cambiar la
-   release en uso. Contratos listCompatibleForms/getPublishedForm/submitPublishedForm
-   propiedad de Forms. Placement guarda formId+releaseId; selector y preview muestran
-   nombre, versión, idiomas y enlace a Forms. Actualizar versión es explícito.
-5. **Uso público funcional del placement acordado.** Render por contrato Forms,
-   validación servidor contra release/slot guardados, consentimiento exacto,
-   persistencia pública separada de tests y notificación Resend. Definir integración
-   con Leads por contrato sin forzar schemas dinámicos en sus cuatro kinds legacy.
-   Protección básica de envío (honeypot/límites/duplicados), sin convertir esto en CRM
-   ni motor de automatizaciones. La preview nunca ejecuta el envío público.
-6. **QA independiente y cierre local.** Integrar los entregables, verificar sólo las
-   superficies tocadas, corregir y retestar afectados. Después planificar Owners
-   como segunda prueba del estándar, sin convertir todas las páginas en este arco.
+4. **QA independiente y cierre Home.** Integrar los entregables, verificar sólo las
+   superficies tocadas, corregir y retestar afectados. Entregar Home funcional sin
+   convertir Owners/Guest/About ni añadir publicación/envíos públicos de Forms.
 
-El selector no se presenta como funcional si sólo guarda un ID y no tiene renderer,
-publicación y envío reales. Si se entrega Home antes del slot público, se declara
-explícitamente esa división y no se anuncia integración pública de Forms.
+## Estándar reutilizable, adaptación pantalla por pantalla
+
+La parte común pertenece al backoffice: shell, selección, outline, toolbar, viewport,
+estados pendientes/guardados, inspector y controles reutilizables. Cada página aporta
+un adaptador con secciones/bindings, modelo de datos, preview y callbacks de guardado.
+Pages conserva validación, persistencia, fuentes externas, traducción y revalidación.
+El shell no importa queries de Pages ni ramifica su lógica por nombre de página.
+
+Usar los FieldNode y controles actuales como base; no copiar el formulario gigante
+a un segundo componente ni crear un renderer público alternativo. Los componentes
+públicos sólo reciben instrumentación opcional cuando sea necesaria, con ADR si son
+kernel; no cargar JS/anotaciones de edición al público. No generalizar reglas de
+negocio de Home a otras páginas.
+
+Criterio de diseño: incorporar Owners debe requerir su adaptador y bindings, no
+copiar el shell. Las diferencias reales (listas, wizard, secciones exclusivas) se
+resuelven en cada adaptador. No prometer conversión automática sin inventario. El
+estándar se confirma con la segunda página, sin implementar esa página en el piloto.
+
+Secuencia posterior: Owners como segundo piloto; después Guest, About y restantes,
+una pantalla y un handoff a la vez. Al llegar a Owners se añade el selector de Forms
+y se sustituye el wizard hardcoded por un formulario elegido del catálogo, manteniendo
+la presentación/placement acordados. Revisar su compatibilidad funcional entonces.
+
+La integración pública de Forms tendrá su spec/ADR dentro de ese arco: releases
+inmutables, slots compatibles, selector formId/releaseId, renderer, envío anónimo
+validado, captura/consentimiento, Resend e integración con Leads por contrato. Las
+pruebas staff actuales no son ese endpoint. No construir ahora APIs/placeholders
+sin uso ni bloquear Home por ese trabajo futuro.
 
 ## Preview, guardado e idiomas
 
@@ -103,40 +119,43 @@ source e identidad de instancia. Ancho real del documento, no sólo escala visua
 Base propuesta: preview de la versión guardada con estado de cambios pendientes y
 refresco después del guardado. EN: “Save and publish”, porque actualmente guardar
 Pages publica; targets: guardar para revisión/aprobar con semánticas distintas.
-Sin live preview por pulsación ni promesa de draft persistente. Un refresco manual
-con snapshot privado sin publicar es una ampliación concreta a decidir en la spec
-antes de implementarlo, no un requisito oculto de esta propuesta.
+Sin live preview por pulsación, snapshots privados sin guardar ni borrador persistente
+en el MVP. Esta decisión cierra el piloto: navegación contextual y preview guardada,
+con indicación clara de cambios pendientes. Esas ampliaciones pueden pedirse después.
 
 Traducciones mediante kernel existente, nunca otra tabla paralela. EN fuente y
 ES/PT/FR target; absent/unapproved→EN, approved stale visible según política actual.
-Guardar Forms no cambia automáticamente la versión insertada en una página. El
-slot/release es compartido por idioma; textos se resuelven desde esa release.
+Los formularios conservan su edición por idioma en Forms; no se duplican aquí.
+Su futura publicación/selección por página queda fuera del piloto Home.
 
 ## Ejecución y QA proporcional
 
 Raíz: ADR/contratos, migraciones, shell de rutas, mensajes/registries compartidos e
 integración. Dos implementadores en worktrees independientes: uno shell/inspector/
-bridge, otro adaptador/render/persistencia de Home; el puente Forms se asigna en
-pasos posteriores con archivos disjuntos, sin tercer escritor sobre archivos comunes.
+bridge, otro adaptador/render/persistencia de Home; sin dos escritores sobre archivos comunes.
 Un QA independiente revisa candidato integrado. No agentes implementadores en esta
 fase documental. No main, push, despliegue, GitHub ni Neon producción.
 
 Entorno nuevo aislado para Home; preservar Forms3064, concepto3070 y entornos
-anteriores. No copiar credenciales de producción. Resend con transporte simulado/
-consola en QA; entrega real requiere configuración posterior, fuera de este plan.
+anteriores. No copiar credenciales de producción. No envíos de correo en este arco Home.
 
 QA normal: seleccionar texto/medio/botón, editar/guardar/recargar/ver público; un
 upload representativo; lista y target ES con fallback/aprobación/stale; comprobar
 claves EN/PT/ES/FR sin repetir toda la batería por idioma; SEO/ISR conservados;
-un placement compatible y envío sintético real por contrato, cambio de release
-explícito, controles de preview que impiden envíos. Un pase agrupado desktop/mobile,
+controles de preview que impiden navegación/envíos y Avantio sin editar. Un pase agrupado desktop/mobile,
 confirmación sólo de correcciones. No matriz global ni todas las combinaciones.
 
 Checks reales Node22/pnpm: typecheck/lint/tests explícitos afectados/build; db:check
 si hay migración. Boundary review manual. Informar commit probado y limitaciones.
 
-## Estado de esta propuesta
+## Estado y siguiente sesión
 
-Plan inicial redactado desde código real y concepto previo; pendiente revisar las
-ubicaciones de Forms y cerrar spec/contratos de ejecución. Ningún cambio al editor
-Home, a páginas públicas, Avantio, DB o env de previews para crear este documento.
+Plan de alcance cerrado: Home contextual reutilizable, idiomas y SEO; sin Forms
+ni Avantio editables en Home. No quedan decisiones de ubicación de formulario.
+Preparar spec ejecutable, ADR y contratos/ownership antes de iniciar implementadores.
+No se ha empezado la implementación de Home en esta sesión.
+
+Se recomienda contexto nuevo antes del trabajo grande. Handoff de entrada:
+[home-contextual-editor-handoff](home-contextual-editor-handoff.md).
+Ningún cambio al editor Home, páginas públicas, Avantio, DB o env de previews para
+cerrar este plan. Sólo documentación; diff-check, sin repetir tests de producto.

@@ -1,5 +1,17 @@
 # Central Hill agent instructions
 
+## Next: Home contextual editor (scope closed)
+
+Read [closed plan](docs/specs/home-contextual-editor-plan.md) and
+[fresh-context handoff](docs/specs/home-contextual-editor-handoff.md) before starting.
+Home is the only implementation pilot: shared shell plus per-page adapter, preserving
+EN/ES/PT/FR, SEO and ISR. Home has no own form: NO Forms selector/new slot in Home.
+Avantio stays external and uneditable. Forms selection/replacement of hardcoded forms
+belongs to later page adaptations such as Owners. Proceed screen by screen; no rollout
+in this pilot. Current session closes documentation only, no Home implementation yet.
+Prepare execution spec/ADR/contracts/write sets before two implementers and independent
+normal scoped QA. Preview uses saved content; no live/durable-draft/snapshot expansion.
+
 ## Active form-builder arc (2026-10-18)
 
 User authorized the real reusable form builder first. Read [execution/spec](docs/specs/form-builder/00-execution.md) and [ADR0038](docs/decisions/0038-form-builder-and-resend.md). Provider explicitly confirmed **Resend**, not SendGrid. Integration branch `form-builder/integration`, checkout `/private/tmp/central-hill-form-builder-integration`, base377cffd; contracts b0fee3d. Two implementers in separate worktrees completed; independent normal scoped QA approved executable `e33f078` (report `b7d8d4c`). Read [QA](docs/specs/form-builder/01-qa.md) and [handoff](docs/specs/form-builder/02-handoff.md). No public form placement/selection or page-editor conversion in this arc; current public forms and Avantio stay intact. Preserve previews3059–3063 and static concept3070. New isolated formbuilderqa DB/proxy5598/4498, preview3064; final email mode console (no real sends), Resend prepared and QA-tested through a fake transport. Typecheck/lint/28tests/build/db:check passed. Local QA authorized automatically. No main integration, push, deployment, GitHub or Neon production writes.
