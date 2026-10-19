@@ -6,7 +6,8 @@ import { PAGE_EDITOR_CHANNEL, readPageEditorMessage } from "./page-editor-bridge
 /** Imported only by the authenticated preview route; public pages never mount this bridge. */
 export function PageEditorPreviewBridge({ instance, bindingIds }: { instance: string; bindingIds: string[] }) {
   useEffect(() => {
-    if (!instance || window.parent === window) return;
+    if (!instance) return;
+    const embedded = window.parent !== window;
     const allowed = new Set(bindingIds);
     const elements = Array.from(document.querySelectorAll<HTMLElement>("[data-editor-binding]"))
       .filter((element) => allowed.has(element.dataset.editorBinding ?? ""));
@@ -35,7 +36,7 @@ export function PageEditorPreviewBridge({ instance, bindingIds }: { instance: st
       const bindingId = element?.dataset.editorBinding;
       if (!bindingId || !allowed.has(bindingId)) return;
       highlight(bindingId, false);
-      window.parent.postMessage({ channel: PAGE_EDITOR_CHANNEL, instance, type: "select", bindingId }, window.location.origin);
+      if (embedded) window.parent.postMessage({ channel: PAGE_EDITOR_CHANNEL, instance, type: "select", bindingId }, window.location.origin);
     };
     const block = (event: Event) => { event.preventDefault(); event.stopImmediatePropagation(); };
     const click = (event: MouseEvent) => { block(event); sendSelection(event.target); };
@@ -49,15 +50,15 @@ export function PageEditorPreviewBridge({ instance, bindingIds }: { instance: st
       const data = readPageEditorMessage(event, { origin: window.location.origin, source: window.parent, instance, bindingIds });
       if (data?.type === "select" && data.bindingId) highlight(data.bindingId, true);
     };
-    window.addEventListener("message", message);
+    if (embedded) window.addEventListener("message", message);
     document.addEventListener("click", click, true);
     document.addEventListener("auxclick", block, true);
     document.addEventListener("submit", block, true);
     document.addEventListener("keydown", keyboard, true);
     document.addEventListener("dragstart", block, true);
-    window.parent.postMessage({ channel: PAGE_EDITOR_CHANNEL, instance, type: "ready" }, window.location.origin);
+    if (embedded) window.parent.postMessage({ channel: PAGE_EDITOR_CHANNEL, instance, type: "ready" }, window.location.origin);
     return () => {
-      window.removeEventListener("message", message);
+      if (embedded) window.removeEventListener("message", message);
       document.removeEventListener("click", click, true);
       document.removeEventListener("auxclick", block, true);
       document.removeEventListener("submit", block, true);
