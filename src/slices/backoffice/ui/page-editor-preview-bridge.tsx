@@ -1,26 +1,27 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { PAGE_EDITOR_CHANNEL, readPageEditorMessage } from "./page-editor-bridge";
 
 /** Imported only by the authenticated preview route; public pages never mount this bridge. */
 export function PageEditorPreviewBridge({ instance, bindingIds }: { instance: string; bindingIds: string[] }) {
+  const readyInstance = useRef("");
+  const bindingsJson = JSON.stringify(bindingIds);
   useEffect(() => {
     if (!instance) return;
     const embedded = window.parent !== window;
-    const allowed = new Set(bindingIds);
-    const elements = Array.from(document.querySelectorAll<HTMLElement>("[data-editor-binding]"))
-      .filter((element) => allowed.has(element.dataset.editorBinding ?? ""));
-    const previous = elements.map((element) => ({ element, tabIndex: element.getAttribute("tabindex") }));
-    for (const element of elements) element.tabIndex = 0;
-    const frames = Array.from(document.querySelectorAll<HTMLIFrameElement>("iframe"));
-    const previousFrames = frames.map((element) => ({ element, pointerEvents: element.style.pointerEvents, tabIndex: element.getAttribute("tabindex") }));
-    for (const frame of frames) { frame.style.pointerEvents = "none"; frame.tabIndex = -1; }
+    const currentBindings: string[] = JSON.parse(bindingsJson);
+    const allowed = new Set(currentBindings);
+    let elements: HTMLElement[] = [];
+    const previous = new Map<HTMLElement, string | null>();
+    const previousFrames = new Map<HTMLIFrameElement, { pointerEvents: string; tabIndex: string | null }>();
     const style = document.createElement("style");
     style.textContent = `[data-editor-binding]{cursor:pointer!important}[data-editor-selected="true"],[data-editor-binding]:focus-visible{outline:3px solid var(--color-accent);outline-offset:4px}html{scroll-behavior:auto}input,textarea,select,button,a{cursor:pointer!important}`;
     document.head.append(style);
     let selected: HTMLElement | undefined;
+    let selectedId = "";
     const highlight = (id: string, focus: boolean) => {
+      selectedId = id;
       const element = elements.find((candidate) => candidate.dataset.editorBinding === id);
       selected?.removeAttribute("data-editor-selected");
       selected = element;
@@ -31,6 +32,27 @@ export function PageEditorPreviewBridge({ instance, bindingIds }: { instance: st
         element.focus({ preventScroll: true });
       }
     };
+    const bindElements = () => {
+      // Do not retain detached RSC trees across an editing session.
+      for (const element of previous.keys()) if (!element.isConnected) previous.delete(element);
+      for (const frame of previousFrames.keys()) if (!frame.isConnected) previousFrames.delete(frame);
+      elements = Array.from(document.querySelectorAll<HTMLElement>("[data-editor-binding]"))
+        .filter(element => allowed.has(element.dataset.editorBinding ?? ""));
+      for (const element of elements) {
+        if (!previous.has(element)) previous.set(element, element.getAttribute("tabindex"));
+        element.tabIndex = 0;
+      }
+      for (const frame of document.querySelectorAll<HTMLIFrameElement>("iframe")) {
+        if (!previousFrames.has(frame)) previousFrames.set(frame, { pointerEvents: frame.style.pointerEvents, tabIndex: frame.getAttribute("tabindex") });
+        frame.style.pointerEvents = "none";
+        frame.tabIndex = -1;
+      }
+      // Replacement RSC content inherits selection without moving focus or scroll.
+      if (selectedId) highlight(selectedId, false);
+    };
+    bindElements();
+    const observer = new MutationObserver(bindElements);
+    observer.observe(document.body, { childList: true, subtree: true });
     const sendSelection = (target: EventTarget | null) => {
       const element = target instanceof Element ? target.closest<HTMLElement>("[data-editor-binding]") : null;
       const bindingId = element?.dataset.editorBinding;
@@ -47,7 +69,7 @@ export function PageEditorPreviewBridge({ instance, bindingIds }: { instance: st
       }
     };
     const message = (event: MessageEvent) => {
-      const data = readPageEditorMessage(event, { origin: window.location.origin, source: window.parent, instance, bindingIds });
+      const data = readPageEditorMessage(event, { origin: window.location.origin, source: window.parent, instance, bindingIds: currentBindings });
       if (data?.type === "select" && data.bindingId) highlight(data.bindingId, true);
     };
     if (embedded) window.addEventListener("message", message);
@@ -56,8 +78,12 @@ export function PageEditorPreviewBridge({ instance, bindingIds }: { instance: st
     document.addEventListener("submit", block, true);
     document.addEventListener("keydown", keyboard, true);
     document.addEventListener("dragstart", block, true);
-    if (embedded) window.parent.postMessage({ channel: PAGE_EDITOR_CHANNEL, instance, type: "ready" }, window.location.origin);
+    if (embedded && readyInstance.current !== instance) {
+      readyInstance.current = instance;
+      window.parent.postMessage({ channel: PAGE_EDITOR_CHANNEL, instance, type: "ready" }, window.location.origin);
+    }
     return () => {
+      observer.disconnect();
       if (embedded) window.removeEventListener("message", message);
       document.removeEventListener("click", click, true);
       document.removeEventListener("auxclick", block, true);
@@ -66,12 +92,12 @@ export function PageEditorPreviewBridge({ instance, bindingIds }: { instance: st
       document.removeEventListener("dragstart", block, true);
       selected?.removeAttribute("data-editor-selected");
       style.remove();
-      for (const { element, tabIndex } of previous) { if (tabIndex === null) element.removeAttribute("tabindex"); else element.setAttribute("tabindex", tabIndex); }
-      for (const { element, pointerEvents, tabIndex } of previousFrames) {
+      for (const [element, tabIndex] of previous) { if (tabIndex === null) element.removeAttribute("tabindex"); else element.setAttribute("tabindex", tabIndex); }
+      for (const [element, { pointerEvents, tabIndex }] of previousFrames) {
         element.style.pointerEvents = pointerEvents;
         if (tabIndex === null) element.removeAttribute("tabindex"); else element.setAttribute("tabindex", tabIndex);
       }
     };
-  }, [instance, bindingIds]);
+  }, [instance, bindingsJson]);
   return null;
 }

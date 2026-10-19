@@ -17,6 +17,8 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
   const editorId = useId();
   const [viewport, setViewport] = useState(1440);
   const [refresh, setRefresh] = useState(0);
+  const [liveRefresh, setLiveRefresh] = useState(0);
+  const previewRevision = useRef(0);
   const [loadedInstance, setLoadedInstance] = useState("");
   const [failedInstance, setFailedInstance] = useState("");
   const [outlineOpen, setOutlineOpen] = useState(false);
@@ -30,6 +32,9 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
   const bindingIdsJson = JSON.stringify(adapter.sections.flatMap((section) => [section.id, ...section.bindings.map((binding) => binding.id)]));
   const bindingIds = useMemo<string[]>(() => JSON.parse(bindingIdsJson), [bindingIdsJson]);
   const url = pageEditorPreviewUrl(adapter.previewUrl, instance, adapter.previewVersion);
+  const hasLivePreview = adapter.previewPayload !== undefined;
+  // Stable serialized data prevents adapter rerenders from restarting the debounce.
+  const payloadJson = hasLivePreview ? JSON.stringify(adapter.previewPayload) : undefined;
   const ready = loadedInstance === instance;
   const failed = failedInstance === instance;
   const selectedSection = adapter.sections.find((section) => section.id === adapter.selectedId || section.bindings.some((binding) => binding.id === adapter.selectedId));
@@ -70,6 +75,17 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
   }, [onSelect, selectedId, bindingIds, instance, sendSelection]);
 
   useEffect(() => { if (ready) sendSelection(selectedId); }, [selectedId, ready, sendSelection]);
+
+  useEffect(() => {
+    if (!ready || payloadJson === undefined) return;
+    const timeout = window.setTimeout(() => {
+      frame.current?.contentWindow?.postMessage({
+        channel: PAGE_EDITOR_CHANNEL, instance, type: "preview",
+        revision: ++previewRevision.current, payload: JSON.parse(payloadJson),
+      }, window.location.origin);
+    }, 300);
+    return () => window.clearTimeout(timeout);
+  }, [ready, instance, payloadJson, liveRefresh]);
 
   useEffect(() => {
     if (ready) return;
@@ -118,7 +134,7 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
                 {seoSection.label} {adapter.locale.toUpperCase()}
               </button> : null}
             </div>
-            <button type="button" onClick={() => setRefresh((value) => value + 1)} className={`${buttonClass} text-ink-soft`}>{t("refresh")}</button>
+            <button type="button" onClick={() => hasLivePreview && ready ? setLiveRefresh(value => value + 1) : setRefresh(value => value + 1)} className={`${buttonClass} text-ink-soft`}>{t("refresh")}</button>
           </div>
           {outlineOpen ? (
             <nav id={`${editorId}-outline`} aria-label={t("sections")} className="absolute left-3 top-14 z-10 max-h-[60vh] w-64 max-w-[calc(100%-1.5rem)] overflow-y-auto border border-line bg-surface p-2 shadow-lg">
@@ -131,7 +147,7 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
             </nav>
           ) : null}
           <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-[11px] text-ink-soft">
-            <span>{adapter.dirty ? t("pendingPreview") : t("savedPreview")} · {adapter.locale.toUpperCase()}</span>
+            <span>{hasLivePreview ? t(adapter.dirty ? "localPreview" : "livePreview") : adapter.dirty ? t("pendingPreview") : t("savedPreview")} · {adapter.locale.toUpperCase()}</span>
             <span className="tabular-nums">{viewport} px · {t("fit")} {Math.round(scale * 100)}%</span>
           </div>
           <div className="relative mx-3 h-[460px] min-w-0 overflow-hidden bg-line/40 sm:mx-4 xl:h-[min(70vh,760px)]" ref={canvas} aria-busy={!ready}>
