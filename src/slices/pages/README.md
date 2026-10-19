@@ -1295,8 +1295,8 @@ HomePage with optional section instrumentation; normal public calls add no edito
 annotations. Avantio is replaced with an external notice only in this preview.
 
 Home source saves require homeRevision, validate all media references and atomically
-synchronize kernel source translations. Stats retain original legacy numeric keys
-through private list IDs; new rows use UUID keys and removed IDs cannot be reused.
+synchronize kernel source translations. Stats, guest benefits and service assurances retain original legacy numeric keys
+through private list IDs; new rows use UUID keys and removed IDs cannot be reused. Retired identities are scoped to their list. Older stats-only metadata is normalized to include the two fixed-length movable lists without changing their legacy translation keys.
 Home target locale snapshots use the same revision guard and kernel target seam.
 Needs-review/absent targets fall back to EN; approved stale targets remain visible.
 Local language drafts remain in the adapter while switching tabs.

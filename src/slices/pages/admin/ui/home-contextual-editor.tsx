@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { AdminButton, Field, MediaField, PageEditorShell, TextArea, useMediaQueue, type EditorLocale } from "@slices/backoffice/contract";
 import type { HomeContextualModel } from "../home-queries";
 import { homeNode, homeSections, type HomeTargetLocale } from "../home-contextual";
-import { homeAt, homeSourceFields, homeTextPaths, homeTranslationField } from "../../home-content";
+import { HOME_LIST_PATHS, homeAt, homeSourceFields, homeTextPaths, homeTranslationField } from "../../home-content";
 import type { HomeContent } from "../../schemas/home";
 import { savePage } from "../actions";
 import { saveHomeLocale } from "../home-actions";
@@ -30,12 +30,14 @@ export function HomeContextualEditor({model}:{model:HomeContextualModel}){
  const busy=saving||queue.isPreparing;const content=data as HomeContent;
  const mark=()=>setDirty(prev=>({...prev,[locale]:true}));
  function change(path:(string|number)[],value:unknown){setData(prev=>setValue(prev,path,value) as Record<string,unknown>);mark();}
- function listChange(_path:string,operation:AboutListOperation){
- setData(prev=>{const c=prev as HomeContent;const figures=[...(c.stats?.figures??[])];const ids=[...(c._list_ids?.["stats.figures"]??[])];
- if(operation.action==="add"){figures.push(operation.value as typeof figures[number]);ids.push(operation.id);}
- else if(operation.action==="remove"){figures.splice(operation.index,1);ids.splice(operation.index,1);}
- else{[figures[operation.index],figures[operation.to]]=[figures[operation.to]!,figures[operation.index]!];[ids[operation.index],ids[operation.to]]=[ids[operation.to]!,ids[operation.index]!];}
- return {...prev,stats:{...c.stats,figures},_list_ids:{"stats.figures":ids}};});mark();}
+ function listChange(path:string,operation:AboutListOperation){
+ if (!(HOME_LIST_PATHS as readonly string[]).includes(path)) return;
+ setData(prev=>{const c=prev as HomeContent;const items=[...(homeAt(c,path) as unknown[] ?? [])];const ids=[...(c._list_ids?.[path]??[])];
+ if(operation.action==="add"){items.push(operation.value);ids.push(operation.id);}
+ else if(operation.action==="remove"){items.splice(operation.index,1);ids.splice(operation.index,1);}
+ else{[items[operation.index],items[operation.to]]=[items[operation.to],items[operation.index]];[ids[operation.index],ids[operation.to]]=[ids[operation.to]!,ids[operation.index]!];}
+ const next=setValue(prev,path.split("."),items) as Record<string,unknown>;
+ return {...next,_list_ids:{...c._list_ids,[path]:ids}};});mark();}
  async function save(approve=false){
  if(lock.current||busy||model.sourceInvalid||conflict)return;lock.current=true;setSaving(true);setNotice("");setErrors({});
  try{
