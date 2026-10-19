@@ -229,3 +229,15 @@ Contrato IDs: scope hijo plans.tiers.@<parentId>.features incluso para parent le
 traducción legacy_N se convierte en índice original, UUID en @UUID. No índice mutable en
 metadata hija. El path de edición sigue numérico; helper resuelve scope desde identidad.
 Presupuesto, aceptación y comandos del plan siguen vigentes. Sin main/push/deploy/producción.
+
+Contratos root4d7482c; worktrees motor/UI creados desde ese hash y verificados limpios.
+Motor A /private/tmp/central-hill-page-editors-engine (page-editors/engine), UI B
+/private/tmp/central-hill-page-editors-ui (page-editors/ui). Se provisionó entorno nuevo:
+DB/rol SQL pageeditorsqa verificados ambos antes de writes, containers/nueva red del plan,
+5628/4528 y storage9068 PID39697/session78716. Migraciones existentes0000..0023 aplicadas
+sin DDL de producto nuevo (tabla neon_control_plane sólo infraestructura proxy QA).
+Env/harness/logs en /private/tmp/central-hill-page-editors-qa, sin .env productivo.
+Dependencias exactas existentes clonadas localmente con cp -cR en los tres worktrees;
+Node22 desde /Users/maxi/.nvm/versions/node/v22.23.3/bin. Staff/fixtures sintéticos nuevos.
+Usuario reiteró ejecución automática de pruebas focales y QA local sin autorizaciones
+funcionales; se conserva esa preferencia en todas las fases.

@@ -24,7 +24,7 @@ import { page_content } from "../schema";
 import { type PageKey, translatablePathsByPage } from "../schemas";
 import { blogSchema, defaultBlog } from "../schemas/blog";
 import { blogSourceContent, blogLocalizedContent } from "../blog-content";
-import { buildingsSchema, defaultBuildings } from "../schemas/buildings";
+import { defaultBuildings } from "../schemas/buildings";
 import { defaultGuides } from "../schemas/guides";
 import { servicesSchema, defaultServices } from "../schemas/services";
 import { uuid } from "@core/validation/primitives";
@@ -104,17 +104,20 @@ const cached = <T>(key: PageKey, locale: Locale): Promise<PageResult<T> | null> 
     tags: [PAGE_TAGS.page(key)],
   })();
 
+const published = <K extends import("../editorial-types").EditorialPageKey>(key: K, locale: Locale) =>
+  unstable_cache(() => getPublishedPageLocale(key, locale), ["pages:publishedLocale:v1", key, locale], { tags: [pageLocaleTag(key, locale)] })();
+
 export const getHomePage = (locale: Locale): Promise<HomePage | null> =>
   unstable_cache(() => getPublishedPageLocale("home", locale), ["pages:publishedLocale:v1", "home", locale], { tags: [pageLocaleTag("home", locale)] })();
 
 export const getOwnersPage = (locale: Locale): Promise<OwnersPage | null> =>
-  cached<OwnersPage["content"]>("owners", locale);
+  published("owners", locale);
 
 export const getGuestPage = (locale: Locale): Promise<GuestPage | null> =>
-  cached<GuestPage["content"]>("guest", locale);
+  published("guest", locale);
 
 export const getRealEstatePage = (locale: Locale): Promise<RealEstatePage | null> =>
-  cached<RealEstatePage["content"]>("real_estate", locale);
+  published("real_estate", locale);
 
 export const getAboutPage = (locale: Locale): Promise<AboutPage | null> =>
   cached<AboutPage["content"]>("about", locale);
@@ -164,12 +167,7 @@ export async function getGuideAsideCta(locale: Locale): Promise<GuideAsideCta> {
  * listing always renders. Blank texts are resolved to i18n by the section components.
  */
 export async function getBuildingsPage(locale: Locale): Promise<BuildingsPage> {
-  const page = await cached<unknown>("buildings", locale);
-  if (page) {
-    const parsed = buildingsSchema.safeParse(page.content);
-    if (parsed.success) return { content: parsed.data, media: page.media, ogImage: page.ogImage };
-  }
-  return { content: defaultBuildings, media: {}, ogImage: page?.ogImage ?? null };
+  return await published("buildings", locale) ?? { content: structuredClone(defaultBuildings), media: {}, ogImage: null };
 }
 
 /** Cached editorial overrides, with locale-message fallback for missing/invalid content. */

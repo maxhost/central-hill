@@ -8,6 +8,7 @@ import {
   BuildingsOwnerPanel,
   BuildingsStats,
   getBuildingsPage,
+  type BuildingsPage,
 } from "@slices/pages/contract";
 import { listBuildings } from "../server/queries";
 import { BuildingListingCard } from "./components/building-listing-card";
@@ -42,12 +43,13 @@ import { BuildingListingCard } from "./components/building-listing-card";
  * Cards link to each building's real per-locale detail slug.
  */
 
-export async function BuildingsListing({ locale }: { locale: Locale }) {
+export interface BuildingsListingRendererProps { locale: Locale; page?: BuildingsPage; preview?: boolean }
+export async function BuildingsListing({ locale, page: injectedPage, preview = false }: BuildingsListingRendererProps) {
   setRequestLocale(locale);
   const [buildings, t, page] = await Promise.all([
     listBuildings(locale),
     getTranslations("buildings"),
-    getBuildingsPage(locale),
+    injectedPage ?? getBuildingsPage(locale),
   ]);
 
   return (
@@ -57,7 +59,7 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
         <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
       </noscript>
       {/* Editable hero (slice `pages`, spec buildings-admin-editor S2). */}
-      <BuildingsHero page={page} locale={locale} />
+      <BuildingsHero page={page} locale={locale} preview={preview} />
       {/*
        * Real JSX — the building grid, `./components/building-listing-card.tsx`'s
        * `BuildingListingCard` (the locked `.pcard` design, ported to Tailwind) inside
@@ -65,7 +67,7 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
        * already used for every other migrated section's entrance animation this session,
        * e.g. Owners' `StepGallery`/`StatBand` — not a per-card stagger).
        */}
-      <Section>
+      <Section {...(preview ? { "data-editor-binding": "catalogue" } : {})}>
         <Container>
           {buildings.length > 0 ? (
             <Reveal label="buildings-grid">
@@ -82,9 +84,12 @@ export async function BuildingsListing({ locale }: { locale: Locale }) {
       </Section>
       {/* Editable "For Owners" panel → figures band → earnings calculator (`#estimate`, the
           panel button's target) — slice `pages`, spec buildings-admin-editor S2. */}
-      <BuildingsOwnerPanel page={page} locale={locale} />
-      <BuildingsStats page={page} locale={locale} />
-      <BuildingsCalculator page={page} locale={locale} />
+      <BuildingsOwnerPanel page={page} locale={locale} preview={preview} />
+      <BuildingsStats page={page} locale={locale} preview={preview} />
+      <BuildingsCalculator page={page} locale={locale} preview={preview} />
     </Fragment>
   );
 }
+
+/** Contract renderer composes editorial snapshot with the live published catalogue. */
+export const BuildingsListingRenderer = BuildingsListing;

@@ -1,4 +1,5 @@
 "use server";
+import { usesPageLocaleDrafts } from "../editorial-registry";
 
 import { eq } from "drizzle-orm";
 import { guidesSchema, type GuidesContent } from "../schemas/guides";
@@ -52,7 +53,7 @@ export async function savePage(
   const keyParsed = pageKey.safeParse(rawKey);
   if (!keyParsed.success) return { ok: false, error: "bad_key" };
   const key = keyParsed.data;
-  if (key === "home") return { ok: false, error: "validation", fieldErrors: { _source: "Use Save draft and Publish in the Home editor." } };
+  if (usesPageLocaleDrafts(key)) return { ok: false, error: "validation", fieldErrors: { _source: "Use Save draft and Publish in the contextual page editor." } };
 
   const dataParsed = pageSchemas[key].safeParse(payload.data);
   if (!dataParsed.success) {

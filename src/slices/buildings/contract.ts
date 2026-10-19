@@ -134,3 +134,7 @@ export { listBuildingOptions } from "./admin/queries";
  * `app/(admin)/admin/(panel)/amenities/…`. Pure data — safe to import anywhere.
  */
 export { buildingsAdminScreens } from "./admin/screens";
+
+/** Optional editorial injection for staff previews; catalogue stays Buildings-owned/read-only. */
+export { BuildingsListingRenderer } from "./ui/buildings-listing";
+export type { BuildingsListingRendererProps } from "./ui/buildings-listing";

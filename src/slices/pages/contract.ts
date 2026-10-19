@@ -232,3 +232,9 @@ export { getPageDraftPreview } from "./server/editorial-preview";
 
 /** Read-only authenticated render of a local Home snapshot; no persistence or ISR writes. */
 export { renderHomeLivePreview } from "./admin/live-preview-actions";
+
+/** Shared enabled-page staff preview route; no public instrumentation. */
+export { PageEditorialPreview } from "./admin/editorial-preview-route";
+export { renderPageLivePreview } from "./admin/live-preview-actions";
+export type { EditorialPageKey, PageContentMap, PageEditorialModel, PageLivePreviewInput } from "./editorial-types";
+export type { PageEditorialDescriptor, PageEditorialAdapter } from "./editorial-adapter-types";
