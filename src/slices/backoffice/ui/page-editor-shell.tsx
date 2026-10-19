@@ -25,7 +25,10 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
   const frame = useRef<HTMLIFrameElement>(null);
   const inspectorTitle = useRef<HTMLHeadingElement>(null);
   const instance = `${editorId}-${adapter.locale}-${adapter.previewVersion}-${refresh}`;
-  const bindingIds = useMemo(() => adapter.sections.flatMap((section) => [section.id, ...section.bindings.map((binding) => binding.id)]), [adapter.sections]);
+  // Adapters may recreate sections on each keystroke. Keep an unchanged allowlist
+  // stable so the selection effect cannot resend a focus command into the iframe.
+  const bindingIdsJson = JSON.stringify(adapter.sections.flatMap((section) => [section.id, ...section.bindings.map((binding) => binding.id)]));
+  const bindingIds = useMemo<string[]>(() => JSON.parse(bindingIdsJson), [bindingIdsJson]);
   const url = pageEditorPreviewUrl(adapter.previewUrl, instance, adapter.previewVersion);
   const ready = loadedInstance === instance;
   const failed = failedInstance === instance;
