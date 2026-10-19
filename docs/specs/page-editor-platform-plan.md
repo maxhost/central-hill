@@ -255,3 +255,12 @@ B añade bindings de sección/hojas sólo privados sobre el mismo JSX público.
 Owners writers: /private/tmp/central-hill-page-editors-owners-model rama
 page-editors/owners-model y /private/tmp/central-hill-page-editors-owners-render rama
 page-editors/owners-render, base74d2235. Write sets Owners de tabla previa sin expansión.
+
+Owners5952e83 integrado con renderer6cdb1af (16e685a) y followup UI b25c564 (0d0b808).
+Scope extension autorizada a B: home-contextual.ts/page-contextual-editor.tsx para ocultar
+campos [T] admin_hidden también en inspector target anidado; sin perder sus valores.
+Owners2tests0/eslint0. Nueve slots contenido +OG=10 confirmados. Registry habilita Owners
+con getter/editor/preview/policy simultáneos. Resto parte del siguiente commit root:
+Buildings A y Real Estate B con write sets exactos de tabla; después Guest A. Seam Buildings
+ya exportada por contract, renderer acepta {locale,page?,preview?}; secciones Pages deben
+aceptar preview opcional, grid readonly se anota catalogue. A no modifica seam fuera de scope.
