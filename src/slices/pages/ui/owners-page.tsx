@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { MediaImage } from "@core/media";
@@ -16,7 +16,8 @@ import {
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import { ContactDialog, getGlobals } from "@slices/settings/contract";
-import { getOwnersPage } from "../contract";
+import { getOwnersPage, type OwnersPage as OwnersPageResult } from "../contract";
+import { ownersFallbackIndex } from "../owners-content";
 import { FaqSection } from "./components/faq-section";
 import { ownersFinalContactLine } from "./contact-line";
 import { OwnerEstimateForm } from "./components/owner-estimate-form";
@@ -93,16 +94,26 @@ const CTA_FALLBACK_ALT = "A Central Hill managed property at golden hour, overlo
 // 7xl container), full width below.
 const CTA_IMG_SIZES = "(max-width: 980px) 100vw, 600px";
 
-export async function OwnersPage({ locale }: { locale: Locale }) {
+/** Only the private renderer adds annotation wrappers; public DOM remains unchanged. */
+function PreviewBinding({ preview, id, children }: { preview: boolean; id: string; children: ReactNode }) {
+  return preview ? <div data-editor-binding={id}>{children}</div> : <>{children}</>;
+}
+
+export async function OwnersPage({ locale, preview = false, page: injectedPage }: {
+  locale: Locale;
+  preview?: boolean;
+  page?: OwnersPageResult | null;
+}) {
   setRequestLocale(locale);
   const [page, t, globals] = await Promise.all([
-    getOwnersPage(locale),
+    injectedPage === undefined ? getOwnersPage(locale) : Promise.resolve(injectedPage),
     getTranslations("pages"),
     getGlobals(locale),
   ]);
   if (!page) notFound();
 
   const { content, media } = page;
+  const binding = (id: string) => preview ? { "data-editor-binding": id } : {};
   const { hero, earnings_form, stats, why, services, plans, journey, dashboard } = content;
   const faqGroupKey = content.faq_group_key ?? "";
   // Optional copy overrides (spec owners-admin-editor S2): blank / absent → today's i18n message.
@@ -149,7 +160,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
       ) : (
         // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
         <img
-          src={JOURNEY_FALLBACK_IMGS[i % JOURNEY_FALLBACK_IMGS.length]}
+          src={JOURNEY_FALLBACK_IMGS[ownersFallbackIndex(content, i) % JOURNEY_FALLBACK_IMGS.length]}
           alt={s.title}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-[1.06]"
         />
@@ -166,6 +177,10 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
     .map((line) => line.trim())
     .filter(Boolean);
 
+  const heroHeadline = heroHeadlineLines.map((line, i) => (
+    <Fragment key={i}>{i > 0 ? <br /> : null}{line}</Fragment>
+  ));
+
   // This page's own per-page figures (`content.stats`, drizzle 0009) — NOT the company-wide
   // `company_settings` ones. Same derivation the old raw-HTML band used, now the helper the
   // Home band shares (spec S5): prefix + (optionally grouped) `to` + suffix, e.g.
@@ -181,7 +196,8 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
       <noscript>
         <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
       </noscript>
-      <Hero
+      <PreviewBinding preview={preview} id="hero"><Hero
+        editorBindings={preview ? { background: "hero.image_media_id", eyebrow: "hero", subtitle: "hero.copy" } : undefined}
         id="worth"
         background={
           heroMedia ? (
@@ -203,24 +219,19 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
         compact
         copyClassName="max-w-none"
         actionsClassName="mt-7"
-        headline={heroHeadlineLines.map((line, i) => (
-          <Fragment key={i}>
-            {i > 0 ? <br /> : null}
-            {line}
-          </Fragment>
-        ))}
+        headline={preview ? <span {...binding("hero.headline")}>{heroHeadline}</span> : heroHeadline}
         subtitle={hero.copy}
         actions={
-          <ContactDialog
+          <PreviewBinding preview={preview} id="hero.contact.label"><ContactDialog
             variant="light"
             label={orMessage(contact?.label, t("owners.contactLabel"))}
             title={orMessage(contact?.title, t("owners.contactTitle"))}
             intro={orMessage(contact?.intro, t("owners.contactIntro"))}
             source="owners-hero"
-          />
+          /></PreviewBinding>
         }
         aside={
-          <OwnerEstimateForm
+          <PreviewBinding preview={preview} id="earnings_form"><OwnerEstimateForm
             badge={earnings_form.badge}
             headline={earnings_form.headline}
             subheadline={earnings_form.subheadline}
@@ -232,9 +243,9 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
             backLabel={earnings_form.contact_step?.back_label}
             doneTitle={earnings_form.done_step?.title}
             doneBody={earnings_form.done_step?.body}
-          />
+          /></PreviewBinding>
         }
-      />
+      /></PreviewBinding>
       {/*
        * "Numbers that speak for themselves" — the same reusable, count-up band component Home
        * uses (`core/ui`'s presentational `StatBand` + `CountUp`), fed this page's own
@@ -245,7 +256,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
        * (the header's Owners menu links to it). No `title` → the bare proof band the locked
        * design uses here (Home passes a heading).
        */}
-      <div id="numbers" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("stats")} id="numbers" style={{ scrollMarginTop: 130 }}>
         {statCells.length > 0 ? (
           <Reveal label="owners-stats">
             <StatBand cells={statCells} columns={statBandColumns(statCells.length)} />
@@ -261,7 +272,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
        * (`#numbers`/`#testimonials`/`#faq`) rather than the component's own generic anchor,
        * to match this page's 130px fixed-nav offset.
        */}
-      <div id="why" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("why")} id="why" style={{ scrollMarginTop: 130 }}>
         <EditorialSplit
           headline={why.headline}
           body={why.subheadline}
@@ -280,7 +291,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
        * `<GuestsSection>` — unlike `EditorialSplit`, nothing here needs `position:sticky`, so
        * there's no reason to wire the animation inside the component itself.
        */}
-      <div id="services" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("services")} id="services" style={{ scrollMarginTop: 130 }}>
         <Reveal label="owners-services">
           <TwoColumnShowcase
             headline={services.headline}
@@ -313,7 +324,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
        * (the schema's `planHelper.cta.url` field exists but was never actually wired to the
        * href there either — preserved as-is, not silently fixed).
        */}
-      <div id="plans" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("plans")} id="plans" style={{ scrollMarginTop: 130 }}>
         <Reveal label="owners-plans">
           <PricingCards
             headline={plans.headline}
@@ -345,7 +356,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
        * 1:1 from the old `.mk`-scoped CSS (`.steps`/`.step`/`.step-img`/`.step-scrim`/`.snum`,
        * now deleted along with the rest of `OWNERS_STYLE`/the `.mk` wrapper/`ScrollReveal`).
        */}
-      <div id="journey" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("journey")} id="journey" style={{ scrollMarginTop: 130 }}>
         <Reveal label="owners-journey">
           <StepGallery headline={journey.headline} body={journey.subheadline} items={journeyItems} tone="alt" />
         </Reveal>
@@ -355,7 +366,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
        * mirrored (`imagePosition="left"`). This was the last `.owner-showcase` raw-HTML user,
        * so that CSS block is gone from `OWNERS_STYLE` entirely now.
        */}
-      <div id="technology" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("dashboard")} id="technology" style={{ scrollMarginTop: 130 }}>
         <Reveal label="owners-dashboard">
           <TwoColumnShowcase
             headline={dashboard.headline}
@@ -384,7 +395,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
        * anchor + scroll offset the header's Owners section menu links to. The FAQ group is
        * editable per page (`faq_group_key`); blank/empty → nothing renders.
        */}
-      <div id="testimonials" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("testimonials")} id="testimonials" style={{ scrollMarginTop: 130 }}>
         <TestimonialsRow
           locale={locale}
           showEyebrow={false}
@@ -392,7 +403,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
         />
       </div>
       {faqGroupKey ? (
-        <div id="faq" style={{ scrollMarginTop: 130 }}>
+        <div {...binding("faq")} id="faq" style={{ scrollMarginTop: 130 }}>
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
@@ -408,7 +419,7 @@ export async function OwnersPage({ locale }: { locale: Locale }) {
        * " →" is added here; the button always targets `#worth`); blank contact line → built
        * from Settings ("Call {phone} · email · WhatsApp …"); no image asset → the Pexels photo.
        */}
-      <div id="start" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("final_cta")} id="start" style={{ scrollMarginTop: 130 }}>
         <Reveal label="owners-cta">
           <FeatureCtaBand
             eyebrow={orMessage(finalCta?.eyebrow, t("owners.finalEyebrow"))}
