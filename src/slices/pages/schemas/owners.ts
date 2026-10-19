@@ -95,6 +95,9 @@ const showcaseBadge = z
  * renders exactly as before.
  */
 export const ownersSchema = z.object({
+  /** Private editorial identities, including child lists scoped by parent ID. */
+  _list_ids: adminHidden(z.record(z.string(), z.array(z.string()))).optional(),
+  _retired_ids: adminHidden(z.array(z.string())).optional(),
   /** Search/social meta for `/<locale>/owners`. Blank → `pages.owners.metaTitle` / `metaDescription`. */
   seo: z.object({ ...seoShape }).optional(),
   hero: z.object({
