@@ -71,5 +71,10 @@ builder with blank media and2synthetic figures. Existing Forms3064/concept3070 p
 Dependencies installed with Node22/pnpm frozen lockfile (no lock changes).
 
 Initial integrated typecheck0, lint0 (7baseline warnings), explicit7tests0.
-Build in progress; independent scoped QA pending. Final candidate and evidence below.
+Build on255f3e2 exit0 after sandbox port denial was retried with escalation.
+Root scope addition: pages/tests/pages-admin.test.ts, align legacy layout fixture with
+visible schema fields (new private list metadata must stay hidden). Initial broadened
+147tests:144pass/3fixture failures, addressed by filtering hidden nodes as real caller does.
+Independent normal scoped QA running on build255f3e2 at3065. Server session95319.
+Design detector run once on4changed UI files exit0, JSON=[] (no findings). Final candidate and evidence below.
 

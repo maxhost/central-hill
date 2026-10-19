@@ -296,7 +296,10 @@ test("guest hero video picker accepts video (same fix as home, S1)", async () =>
 
 // ── Editor layout (spec home-admin-editor S2) ────────────────────────────────
 
-const homeRootKeys = Object.keys(homeSchema.shape);
+const homeFieldModel = describe(homeSchema);
+const homeRootKeys = homeFieldModel.kind === "object"
+  ? homeFieldModel.fields.filter((field) => field.node.kind !== "hidden").map((field) => field.key)
+  : [];
 const cardIds = (items: NonNullable<ReturnType<typeof resolveEditorLayout>>) =>
   items.filter((i) => i.kind === "card").map((i) => i.id);
 
@@ -312,7 +315,7 @@ test("home layout lists the 8 stable card ids in page order", () => {
   assert.equal(ids.indexOf("search_bar"), ids.indexOf("hero") + 1);
 });
 
-test("every home root key is rendered exactly once (a card or Other)", () => {
+test("every visible home root key is rendered exactly once (a card or Other)", () => {
   const layout = resolveEditorLayout("home", homeRootKeys);
   assert.ok(layout);
   const rendered = layout.flatMap((i) => (i.kind === "card" ? i.paths : []));
