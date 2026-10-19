@@ -1,16 +1,23 @@
 # Central Hill agent instructions
 
-## Next: Home contextual editor (scope closed)
+## Home contextual editor pilot (2026-10-18)
 
-Read [closed plan](docs/specs/home-contextual-editor-plan.md) and
-[fresh-context handoff](docs/specs/home-contextual-editor-handoff.md) before starting.
-Home is the only implementation pilot: shared shell plus per-page adapter, preserving
-EN/ES/PT/FR, SEO and ISR. Home has no own form: NO Forms selector/new slot in Home.
-Avantio stays external and uneditable. Forms selection/replacement of hardcoded forms
-belongs to later page adaptations such as Owners. Proceed screen by screen; no rollout
-in this pilot. Current session closes documentation only, no Home implementation yet.
-Prepare execution spec/ADR/contracts/write sets before two implementers and independent
-normal scoped QA. Preview uses saved content; no live/durable-draft/snapshot expansion.
+User authorized implementation from c28615f. Local task branch
+home-contextual/integration at /private/tmp/central-hill-home-contextual-integration;
+corrected executable6359b6d, independently scoped-QA-approved.
+Read [execution](docs/specs/home-contextual-editor-execution.md),
+[delivery](docs/specs/home-contextual-editor-delivery.md) and
+[QA](docs/specs/home-contextual-editor-qa.md). Closed scope remains in
+[plan](docs/specs/home-contextual-editor-plan.md). Home only; shared shell and adapter,
+EN/ES/PT/FR, SEO/ISR, saved-content private preview. No Forms selector/slot or Avantio
+editing. Stable identities cover figures, benefits and assurances. ADR0039 owns the
+minimal optional Hero preview annotation seam; public callers omit it.
+Preview3065 uses new synthetic homecontextualqa DB5608/proxy4508/storage9065;
+Forms3064 and concept3070 preserved. No main integration, push, deployment, GitHub
+or Neon production writes. User explicitly reiterated automatic local QA; no repeated
+functional approval questions. Safe sandbox operations confined to this project are also
+explicitly authorized by the user. Neon production and GitHub changes require separate
+authorization. Environment sandbox restrictions still apply.
 
 ## Active form-builder arc (2026-10-18)
 

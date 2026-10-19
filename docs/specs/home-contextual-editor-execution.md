@@ -59,7 +59,8 @@ QA environment must use new synthetic DB/storage/user and distinct ports, record
 Contracts1a90e63; A759937d integrated as3e4f586; B76e739c integrated as9d64d30.
 Root integrated route, private preview/public chrome contract exports, four-locale messages,
 Home dispatch, revision/source-invalid model, public stable-identity translation resolution,
-and existing identity-aware list control reuse. No kernel changes or migrations.
+and existing identity-aware list control reuse. Initial integration had no kernel changes
+or migrations; later scoped Hero annotation amendment is recorded below.
 
 New isolated Home environment: synthetic DB/user homecontextualqa; Docker containers
 central-hill-home-contextual-db (5608), central-hill-home-contextual-proxy (4508), network
@@ -94,7 +95,8 @@ Design detector run once on4changed UI files exit0, JSON=[] (no findings). Final
 - No migration; db:check not required by this task. Existing migration SQL used only on new
   QA database. Manual boundary review: new cross-slice imports through contracts only;
   Pages owns Home, Backoffice owns generic shell/bridge, Settings exports shared chrome.
-  No core files changed. Public routes retain their ISR configuration/metadata and page:home
+  Initial candidate changed no core files; later optional Hero annotations are recorded below.
+  Public routes retain their ISR configuration/metadata and page:home
   tag plus four-locale revalidation on source/target saves.
 - Mechanical detector once over4changed UI files exit0, no findings ([]). Actual browser
   inspection/persistence testing belongs to independent QA report; detector is not its substitute.
@@ -118,3 +120,38 @@ Root hit-test review found background click intercepted by Hero container/scrim,
 section instead of media. QA supplied3elementFromPoint samples. Confirm after rebuild.
 A fix b4a5e9a integrated899e669 also blocks standalone authenticated preview actions,
 without sending self-messages. B fixa950260 integrated6b10cc3 covers all3movable lists.
+
+## Corrected candidate verification
+
+Executable6359b6d. Node22.23.3/pnpm10.8.0:
+- pnpm typecheck exit0, typecheck-final.log.
+- pnpm lint exit0,7baseline warnings, lint-final.log.
+- Same four explicit tsx test files exit0,149/149tests, tests-final.log.
+- pnpm build with isolated Home env exit0, build-final.log.
+Initial root-owned server95319 stopped before rebuild; corrected production-mode
+preview3065 root session81445, server-final.log. Storage session36345 unchanged.
+Independent QA completed original grouped pass; affected confirmation now covers
+all3list identity reorder behavior, ordinary media selection, standalone preview
+blocking and public annotation absence. Final result: independent scoped QA approved6359b6d, no unresolved blocker.
+corrections.cjs exit0 confirmed ordinary background media selection, approved ES benefits/
+assurances after reorder/save/reload, standalone CTA/submit blocking/noindex, public attrs absent.
+
+Root documentation write set also includes AGENTS.md and
+home-contextual-editor-delivery.md to record the current implementation handoff.
+User reaffirmed local QA runs automatically; no production/GitHub writes authorized.
+
+User additionally authorized safe sandbox operations confined to this project. This does
+not authorize production/GitHub writes or change the local-only delivery boundary.
+
+## Completion
+
+Home pilot complete on executable6359b6d after independent normal scoped QA. All required
+checks passed (149tests, typecheck, lint, build), media persistence/public output verified.
+Delivery and limitations: home-contextual-editor-delivery.md. QA: home-contextual-editor-qa.md.
+Only documentation/whitespace changes follow the tested executable. No source files left
+untracked; original Forms checkout remains clean atc28615f. Task checkouts retained.
+No main/push/deployment/GitHub/production writes. New preview3065 remains running with
+synthetic content and its isolated DB/storage. Previous environment artifacts preserved;
+final listener read observed3065/9065, not3063/3064/3070 (no assertion they are running).
+
+Independent QA report-only commit14d85fd. Final closure changes documentation only.
