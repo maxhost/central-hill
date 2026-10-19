@@ -1,5 +1,9 @@
 # Home: Guardar borrador y Publicar por idioma — entrega local
 
+Actualización: fix de foco63a628a, verificado por raíz en escritura continua EN/ES y móvil.
+La aprobación independiente original corresponde a b4bb282; ver seguimiento en QA.
+Preview3067 actualizado PID5230/session43430.
+
 2026-10-18. Base e06272b; contratos4b49471. Código integrado b4bb282 en
 page-drafts/integration, /private/tmp/central-hill-page-drafts-integration.
 QA independiente aprobado, informe fd7892c. Sólo documentación de cierre después del código

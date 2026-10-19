@@ -176,3 +176,21 @@ Root verificó checkout original home-contextual/integration limpio y Home3065 a
 (PID46594). Cierre sólo documental después del candidato ejecutable, sin repetir checks
 de código. No implementación pendiente en este arco Home. Preview3067 queda activo para
 el usuario. Entrega local en page-drafts/integration; sin main/push/despliegue/producción.
+
+## Follow-up: typing focus regression
+
+User reported focus loss on every input keystroke after delivery fe60797. Simple fix owned
+by root; no new parallel implementation. Exact write set: Backoffice
+ui/page-editor-shell.tsx and this plan/QA/delivery documentation. Browser harness only
+/private/tmp/central-hill-page-drafts-qa/focus-regression.cjs. Reproduced against3067 before
+change: continuous typing loses focus after first character (focus-before.log, exit1).
+Cause: recreated adapter.sections changes bindingIds/sendSelection identity; effect resends
+selection to iframe, whose bridge focuses the preview element. Stabilize allowlist by its
+contents. Check typing EN single/multiple controls, ES SEO textareas/mobile, and deliberate
+preview selection; no DB saves/publication needed. Node22 typecheck/lint/affected bridge
+tests/build plus focused browser regression; no repeat of nine persistence cases or full QA.
+
+Fix63a628a verificado por raíz: typecheck/lint/3bridge tests/build exit0, escritura continua
+EN simple/múltiple y ES SEO/mobile correcta. Selección desde preview y escritura posterior
+verificadas. Evidencia y límite de la aserción H2 del harness en QA, seguimiento de foco.
+3067 actualizado: PID5230/session43430. Sin cambios DB ni nuevos tests persistentes.

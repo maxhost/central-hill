@@ -4,6 +4,10 @@
 
 Implemented from e06272b on page-drafts/integration in
 /private/tmp/central-hill-page-drafts-integration. Code b4bb282, independently QA-approved; report fd7892c.
+Follow-up63a628a fixes typing focus loss in shared shell; root verified continuous
+EN/ES single/multiple fields/mobile, preview selection, typecheck/lint/3bridge tests/build.
+This follow-up has focused root verification, not a new independent QA claim.
+Current3067 PID5230/session43430.
 Read [delivery](docs/specs/page-locale-drafts-delivery.md),
 [handoff](docs/specs/page-locale-drafts-handoff.md),
 [spec](docs/specs/page-locale-drafts-spec.md),

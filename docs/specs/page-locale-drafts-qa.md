@@ -94,3 +94,26 @@ WebSocket local y no se contabiliza como migración exitosa.
 No se ejecutaron pnpm test/boundary:check ni149tests históricos, matriz PT/FR, batería MIME,
 correos ni prueba de producción. El informe aprueba únicamente el piloto Home y el QA
 acotado acordado; no afirma exhaustividad de entidades ajenas o flujos excluidos.
+
+## Seguimiento de foco — verificación de raíz, 2026-10-18
+
+Usuario detectó foco perdido tras cada tecla. Reproducido sobre fe60797 en3067 con
+keyboard.type y comprobación de document.activeElement tras cada carácter;
+focus-before.log exit1 confirma pérdida en primer carácter. Los fill() del pase anterior
+no detectaban esta interacción. Corrección63a628a en page-editor-shell.tsx: estabiliza
+la lista de bindings por contenido, evitando que un render del adapter reenvíe selección
+y provoque focus() en el iframe. No cambios de persistencia ni renderer.
+
+Raíz verificó escritura continua EN single headline, dos campos en inspector múltiple,
+SEO ES título/descripción y textarea móvil. focus-after.log registra los seis PASS;
+la última comprobación esperaba erróneamente foco en H2 tras clic de preview y agotó
+la espera. Se corrigió esa aserción para verificar selección del campo y se continuó
+sólo ese paso: focus-selection.log exit0, selección correcta y escritura posterior
+con foco conservado. Todos los navegadores cierran en finally; sin guardar/publicar.
+
+Código63a628a: pnpm typecheck0, pnpm lint0 (mismos7warnings),
+pnpm exec tsx --test src/slices/backoffice/tests/page-editor-bridge.test.ts0 (3/3),
+pnpm build0. Logs focus-{typecheck,lint,tests,build}.log en directorio QA. No se repitió
+la batería de persistencia: no hubo cambios DB/actions. Es verificación focal de raíz,
+no nueva aprobación independiente del código63a628a.
+Preview3067 actualizado, PID5230/session43430; Home3065 preservado.

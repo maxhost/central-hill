@@ -1,5 +1,10 @@
 # Home drafts por idioma — handoff de implementación
 
+Código actual63a628a incluye corrección de foco del shell; verificación focal de raíz:
+escritura continua EN/ES desktop/mobile, selección preview, typecheck/lint/3tests/build0.
+QA independiente original b4bb282; seguimiento documentado en QA.
+Preview3067 actual PID5230/session43430.
+
 2026-10-18. Usuario autorizó implementación desde e06272b y reiteró QA/DB local automático.
 Código b4bb282 aprobado por QA independiente (informe fd7892c), rama page-drafts/integration, checkout
 /private/tmp/central-hill-page-drafts-integration. Entrega local detallada en
