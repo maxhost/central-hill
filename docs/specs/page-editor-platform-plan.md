@@ -241,3 +241,17 @@ Dependencias exactas existentes clonadas localmente con cp -cR en los tres workt
 Node22 desde /Users/maxi/.nvm/versions/node/v22.23.3/bin. Staff/fixtures sintéticos nuevos.
 Usuario reiteró ejecución automática de pruebas focales y QA local sin autorizaciones
 funcionales; se conserva esa preferencia en todas las fases.
+
+Motor7b547b7 integrado como b0dc12b; UI5586819 integrada74d2235. Checks focales motor13
+(11Home existentes +2nuevos motor), UI ESLint0 y regresiones legacy About/Pages71existentes0.
+No globals por worktree. Gate Owners parte de74d2235: modelo y renderer trabajan con los
+campos/schema actuales, section IDs OWNERS_CARD_IDS. Metadata: stats, why.benefits,
+services.benefits, plans.tiers, plans.tiers[].features, plans.helpers, journey.steps,
+dashboard.benefits (confirmar helpers real schema; no cambiar cardinalidades).
+Contrato renderer inyecta page?: OwnersPage|null, preview?:boolean; público omite ambos.
+A exporta ownersFallbackIndex(content,index) desde owners-content.ts: legacy_N usa N,
+UUID nuevo usa fallback0; B lo usa para Journey, no índice actual tras mover filas.
+B añade bindings de sección/hojas sólo privados sobre el mismo JSX público.
+Owners writers: /private/tmp/central-hill-page-editors-owners-model rama
+page-editors/owners-model y /private/tmp/central-hill-page-editors-owners-render rama
+page-editors/owners-render, base74d2235. Write sets Owners de tabla previa sin expansión.
