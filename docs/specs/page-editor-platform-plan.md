@@ -1,7 +1,8 @@
 # Editor común Pages — plan de ejecución
 
 2026-10-18. [Spec](page-editor-platform-spec.md) aprobada como planificación por el usuario;
-**no código/agentes/worktrees/DB nuevos en este turno**. Reanudar tras clear y nueva orden.
+turno inicial de planificación sin código/agentes/worktrees/DB. Tras clear, el usuario
+autorizó la implementación desde8223f4a; véase registro de ejecución y entrega al final.
 Base anterior a estos documentos8de459a; código8da3519 y QA f8d7c91. Checkout documental
 /private/tmp/central-hill-page-drafts-integration, rama page-drafts/integration, limpio al
 comenzar. Registrar el HEAD documental final/status al iniciar implementación.
@@ -13,7 +14,7 @@ con scopes disjuntos y worktrees separados, después QA independiente. **Máximo
 este plan no adopta la excepción anterior propuesta de tres agentes de página. Sin delegación
 anidada. Raíz es único integrador; no blanket stage/reset/cleanup ni reescritura de historia.
 
-Checkouts propuestos (NO crearlos hoy):
+Checkouts de fases (creados tras autorización; hashes en registro de ejecución):
 
 | Fase / rol | Rama | Checkout /private/tmp/ |
 |---|---|---|
@@ -212,7 +213,7 @@ QA aprueba el ejecutable integrado sin blockers ni checks requeridos pendientes.
 commit probado, paths incluidos nuevos, limitaciones, informe y handoff/URLs3068. Home3067
 continúa en versión validada preservada. Ningún merge a main/push/despliegue como efecto de
 terminar la tanda. Conservar worktrees/fixtures/procesos propios para revisión del usuario.
-Estado actual de este plan: sólo documentación, ninguna de las fases iniciada.
+Estado y verificaciones reales de cada fase: registro de ejecución siguiente.
 
 ## Registro de ejecución — iniciado 2026-10-18
 
@@ -294,3 +295,44 @@ typecheck2 detectó sólo anotación kind:string de refs Home y fixture Owners {
 con image_media_id requerido. Root corrige en adapters/home.ts y test Owners (scopes ya
 cerrados), sin cambio funcional. Se conserva typecheck-initial.log y se repite sólo typecheck,
 eslint focal y pruebas Home+Owners afectadas antes de build (aún no ejecutado).
+
+## Verificación integrada
+
+Candidato completo cf9064b: pnpm lint exit0 (7warnings históricos), comando integrado
+de10archivos tsx --test exit0,26/26 (16regresiones Home/bridge existentes+10casos nuevos).
+Typecheck inicial exit2 sólo2errores de tipos; preservado typecheck-initial.log.
+Corrección bc2037f: pnpm typecheck exit0; eslint focal2archivos exit0 (lint-type-fix.log);
+tsx --test page-locale-drafts.test.ts home-live-preview.test.ts owners-editorial-adapter.test.ts
+exit0,6/6 (tests-type-fix.log). Sólo se repitieron scopes afectados por el fix.
+pnpm build sobre bc2037f exit0,81páginas estáticas, DB pageeditorsqa verificada. No db:check
+porque no hubo migración nueva. B verificó71regresiones existentes About/Pages por el diff
+NodeField/AboutListEditor; esos consumidores no cambiaron después.
+Detector impeccable una vez: design-detect.json [], exit0. Revisión manual de imports
+sin cruces a internals de otros slices; sin core/migraciones/package/lockfile en diff.
+Nuevas claves externalPage/catalogue en4locales; tags/rutas por key+locale revisados.
+Logs /private/tmp/central-hill-page-editors-qa. Production next start3068 listo, session54408.
+QA independiente iniciado sobre bc2037f; raíz no cambia producto durante el pase.
+
+QA sobre bc2037f comprobó los5flujos y confirmó un defecto acotado: Owners ES reload tras
+publicar marcaba Unsaved sin cambios semánticos. dirty-diagnosis.json muestra jsonEqualfalse,
+semanticEqualtrue (seo aparece en distinto orden de claves). Root toma editorial-content.ts,
+page-contextual-editor.tsx y el caso engine puro ya existente para comparación estable de
+claves de objetos conservando el orden de arrays. No caso nuevo ni pérdida de datos.
+Se repetirán sólo typecheck/eslint focal/engine1test, build y confirmación targetreload+
+true edit/foco de QA; no otra matriz o los5flujos completos.
+
+Fix QA-1 ejecutable7e13d9f: typecheck exit0 (typecheck-dirty-fix.log), eslint focal3paths
+exit0 (lint-dirty-fix.log), caso engine existente ampliado exit0,1/1 (tests-dirty-fix.log),
+build exit0 (build-dirty-fix.log). No otro global suite/lint repetido. Root detuvo sólo su
+PID68361 y reinició3068 con build7e13d9f: PID73105/session55343, Ready106ms en
+server-dirty-fix.log; storage9068PID39697 sigue intacto. QA confirmará sólo el defecto y
+observaciones readonly finales. Sin otra ampliación del guion.
+
+## Cierre
+
+QA independiente aprueba7e13d9f sin blockers. Pase agrupado sobre bc2037f y confirmación
+focal retest.cjs exit0 sobre7e13d9f: Owners ES Published después de reload, edición mobile
+real Unsaved/live/foco/caret y reload restaura Published sin writes; catálogo readonly y
+foto Guest persistida comprobados. Informe page-editor-platform-qa.md, retest.log y las capturas owners-es-clean-reload/real-edit. Ninguna nueva batería; máximo10casos automatizados nuevos respetado.
+Checkouts de escritores conservados con commits capturados, entrega sólo rama local.
+No main/push/deploy/GitHub/producción, ningún check requerido queda pendiente.

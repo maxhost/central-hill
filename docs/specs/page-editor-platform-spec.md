@@ -1,6 +1,7 @@
 # Editor común de Pages — spec de conversión
 
-2026-10-18. **Sólo spec/plan en este turno. No implementar ni lanzar agentes.**
+2026-10-18. Alcance cerrado en el turno de planificación; implementación autorizada
+por el usuario tras clear desde8223f4a. Véase [entrega local](page-editor-platform-delivery.md).
 Usuario aceptó Home y su live preview, acordó convertir la capa en editor común y pidió
 estos documentos antes de hacer clear. Implementación se inicia en contexto nuevo con su
 siguiente encargo. Base documental/producto8de459a; ejecutable Home8da3519, QA f8d7c91.

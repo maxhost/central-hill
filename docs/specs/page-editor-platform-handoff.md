@@ -89,3 +89,15 @@ exacto de7archivos Markdown (3nuevos spec/plan/handoff, AGENTS y3notas de preced
 planes previos). Sin cambios src/messages/drizzle/package/lockfile ni entorno. No se corrió
 ningún test/build de producto por documentación. El commit de cierre figura en HEAD y en la
 respuesta de entrega; comprobarlo al volver antes de ramificar implementación.
+
+
+## Cierre posterior de implementación
+
+Nueva orden del usuario ejecutada desde8223f4a en
+/private/tmp/central-hill-page-editors-integration, rama page-editors/integration.
+Código final7e13d9f, independientemente QA-aprobado tras pase acotado y confirmación del
+fix de indicador Unsaved por orden de claves JSON. [Entrega](page-editor-platform-delivery.md),
+[registro de ejecución](page-editor-platform-plan.md), [QA](page-editor-platform-qa.md).
+Nuevo preview3068/DBpageeditorsqa, sin main/push/despliegue/producción. Los archivos de
+planificación en el checkout anterior y sus entornos se conservaron; no seguir este texto
+histórico como si la conversión todavía no estuviera implementada.

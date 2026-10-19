@@ -1,22 +1,22 @@
 # Central Hill agent instructions
 
-## Next after clear: shared Pages editor and four adapters — spec/plan only
+## Common Pages editor platform — local delivery approved
 
-User requested spec/plan before clear, then a fresh-context implementation turn. Read
-[handoff](docs/specs/page-editor-platform-handoff.md),
+User authorized implementation from8223f4a after fresh context. Integration
+/private/tmp/central-hill-page-editors-integration, branch page-editors/integration.
+Executable7e13d9f independently scoped-QA-approved, implements common engine/UI and adapters Home, Owners,
+Buildings LISTING, Real Estate and Guest; no Forms selection/capture/email changes.
+Read [delivery](docs/specs/page-editor-platform-delivery.md),
 [spec](docs/specs/page-editor-platform-spec.md) and
-[execution plan](docs/specs/page-editor-platform-plan.md).
-Planning base8de459a; executable Home8da3519/independent QA f8d7c91 remains unchanged.
-No implementation agents, new worktrees/DB or product edits in this planning turn.
-New scope: Owners, Buildings LISTING, Real Estate, Guest; Home remains the regression adapter.
-One generic engine/UI plus per-page descriptors/validators/renderers, independent locale
-Draft/Publish and ephemeral live preview. Preserve current forms; public Forms/catalog
-selection/release/capture/Leads deferred separately. Old Owners Forms dependency and old
-About/three-writer parallel proposal do not govern this scope. Two implementers then QA.
-New isolated pageeditorsqa proposed3068/9068/5628/4528 (verify before launch); preserve
-validated3067/3065 and other environments. Max10new focused cases, one grouped browser
-pass, global checks once integrated; no149tests/matrices or repeated QA permission questions.
-No main/push/deploy/GitHub/production. Start only after the user's new implementation request.
+[execution](docs/specs/page-editor-platform-plan.md). Typecheck/lint/26focused tests/build
+passed, with scoped corrections/rechecks documented; independent browser QA approved.
+New synthetic pageeditorsqa DB5628/proxy4528/storage9068, preview3068 PID73105/session55343.
+No new product migration, main/push/deploy/GitHub/production. Original checkouts/DB/artifacts
+preserved;3065/3067 were not listening on latest read-only check, no old process touched.
+Automatic scoped local QA/tests authorized; no repeated functional confirmation questions.
+Two implementation writers completed in separate worktrees; independent QA approved after
+the single grouped pass and one targeted confirmation of the corrected false-dirty indicator.
+See [QA](docs/specs/page-editor-platform-qa.md). Worktrees/fixtures retained for local review.
 
 ## Home ephemeral live preview follow-up
 
