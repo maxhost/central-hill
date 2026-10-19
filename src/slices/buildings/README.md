@@ -331,3 +331,11 @@ can't read the apartment table — golden rule 2).
 contract. `tests/buildings-admin.test.ts` — the `buildingSaveInput` admin schema (required [T],
 kebab slug, cover required, FAQ row rules). Run:
 `npx tsx --test src/slices/buildings/tests/buildings.test.ts src/slices/buildings/tests/buildings-admin.test.ts`.
+
+## Editorial listing preview seam
+
+`BuildingsListingRenderer` and its props are exported through `contract.ts`. An optional
+Pages-owned `BuildingsPage` and private `preview` flag inject the editorial snapshot into
+the same listing composition. The grid still reads published catalogue rows via this slice;
+Pages never imports the grid internals or stores catalogue data in editorial JSON. Public
+`BuildingsListing` callers omit injection/instrumentation. No entity editor change.

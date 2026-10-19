@@ -1,5 +1,24 @@
 # Slice `pages` (S9)
 
+## Common page editor platform
+
+Home, Owners, Buildings listing, Real Estate and Guest share `PageContextualEditor` and
+one key-aware engine on `page_locale_content`. Descriptors are serializable field/list/media
+metadata; the server-only adapter registry owns validation and lazy rendering. Each renderer
+accepts a resolved PageResult for staff saved/live previews and keeps its public composition.
+Buildings renders its published catalogue through the Buildings contract; snapshots contain
+only editorial content. Current public forms and their submission limits are preserved.
+
+Draft/publication and persistent CAS revisions are independent by page and locale. Legacy
+mutations/translation review/generation are blocked for registered keys only; About, Blog,
+Guides, Services and entity editors retain their current workflow. Public reads never
+bootstrap. Bootstrap preserves approved legacy copy in published and pending copy in its
+language draft. Nested child list scopes use stable parent IDs; original legacy numeric
+translation keys and stock photos follow their original identity after reorder.
+
+See `docs/specs/page-editor-platform-spec.md`, plan and delivery for scope and verification.
+The Home notes below record the pilot; common behavior now covers all five registered keys.
+
 ## Local live preview
 
 Home now offers ephemeral live preview after the user's follow-up request. Current form

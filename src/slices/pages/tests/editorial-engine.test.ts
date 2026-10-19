@@ -26,10 +26,9 @@ test("Representative Owners bootstrap captures pending copy privately and retain
     maxLocalMedia: 10,
     externalSections: [],
   };
-  const content = normalizeEditorial(
-    applyDefaults(descriptor.rootNode, {}) as PageEnvelope<"owners">["content"],
-    descriptor,
-  );
+  const raw = applyDefaults(descriptor.rootNode, {}) as PageEnvelope<"owners">["content"];
+  raw.plans.tiers.push({ ...structuredClone(raw.plans.tiers[0]!), features: ["Second EN feature"] });
+  const content = normalizeEditorial(raw, descriptor);
   const published: PageEnvelope<"owners"> = {
     schemaVersion: 1,
     content,

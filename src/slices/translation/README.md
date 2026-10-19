@@ -1,9 +1,9 @@
 # Slice `translation` / `translation-pipeline` (S14)
 
-Home adaptation (ADR0040): Pages owns complete draft/published JSON by locale. Home
-is excluded from this generic review inbox, and direct review routes redirect to its
-contextual editor. Save/clear/approve/reset/generate entrypoints reject Home via the
-Pages contract identity lookup; other entity workflows remain unchanged. Legacy Home
+Adapted Pages (ADR0040): Home, Owners, Buildings listing, Real Estate and Guest. Pages owns complete draft/published JSON by locale. These pages
+are excluded from this generic review inbox, and direct review routes redirect to their
+contextual editors. Save/clear/approve/reset/generate entrypoints reject these registered pages via the
+Pages contract identity lookup; other entity workflows remain unchanged. Legacy page
 rows are retained for bootstrap and are never deleted by this adaptation.
 
 About follow-up (ADR0037): page-content target writes compare and lock the source

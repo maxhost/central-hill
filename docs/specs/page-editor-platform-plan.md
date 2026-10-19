@@ -277,3 +277,10 @@ eslint0. Registry activa ambos con getters/policy comunes ya conectados. Guest A
 del commit root de esta habilitación en /private/tmp/central-hill-page-editors-guest,
 rama page-editors/guest. Exacto write set Guest de tabla anterior, 2casos nuevos restantes.
 Los dos casos engine +2Owners +2Buildings +2RealEstate +2Guest agotan el máximo10.
+
+Revisión root de los2tests motor: la fixture pura ahora tiene2tiers, para que reverse
+mueva de verdad al padre; el caso DB usa bootstrap Buildings real con pending ES SEO,
+valida equivalencia/idempotencia y recorre save/CAS/publish del motor completo antes de
+comprobar que ES y Owners quedan intactos. Sustituye el escenario anterior de SQL low-level,
+no añade casos ni matrices. Root toma estos2archivos tras cierre del scope engine A;
+A sólo escribe Guest, sin conflicto. Se ejecutarán en el único pase integrado pendiente.

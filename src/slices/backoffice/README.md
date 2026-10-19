@@ -189,3 +189,11 @@ the preview; this is an editing surface, never a public form runtime. The route
 owns authentication/noindex/no-cache, and page adapters own external integration
 notices and translation/publishing semantics. Bridge behavior has explicit tests in
 `tests/page-editor-bridge.test.ts`.
+
+## Common Pages contextual editor
+
+Pages supplies one descriptor-driven contextual editor for Home, Owners, Buildings listing,
+Real Estate and Guest. The shared shell/bridge continues to own viewport, selection and
+bounded ephemeral live messages; Pages owns each page/locale snapshot and explicit Save
+draft / Publish actions. Stable list policies extend NodeField without changing legacy About
+consumers. Staff preview routes alone mount live/selection bridges; public routes omit them.
