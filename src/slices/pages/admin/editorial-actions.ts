@@ -24,9 +24,9 @@ export async function publishPageDraft<K extends EditorialPageKey>(
   if (!result.ok) return result;
   try {
     updateTag(pageLocaleTag(input.key, input.locale));
-    revalidatePath(
-      `/${input.locale}${getEditorialAdapter(input.key).descriptor.publicPath}`,
-    );
+    const adapter = getEditorialAdapter(input.key);
+    if (adapter.publicationScope === "layout") revalidatePath(`/${input.locale}`, "layout");
+    else revalidatePath(`/${input.locale}${adapter.descriptor.publicPath}`);
   } catch {
     return { ...result, refreshWarning: true };
   }

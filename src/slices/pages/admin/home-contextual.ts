@@ -1,3 +1,4 @@
+import { editorialAt } from "../editorial-identities";
 import type { PageEditorialDescriptor } from "../editorial-adapter-types";
 import type { EditorSection } from "@slices/backoffice/contract";
 import type { FieldNode } from "./form-model";
@@ -32,7 +33,7 @@ export const homeEditorBindingIds = ["hero","avantio","stats","guests_pitch","po
  ...["owner","guest"].flatMap(side=>["image_media_id","eyebrow","title","body","cta_label"].map(key=>`dual_cta.${side}.${key}`)),"seo.meta_title","seo.meta_description"] ;
 
 /** One outline policy; Home retains its validated section grouping and order. */
-export function pageSections(descriptor: PageEditorialDescriptor, label: (key: string) => string): EditorSection[] {
+export function pageSections(descriptor: PageEditorialDescriptor, label: (key: string) => string, content?: unknown): EditorSection[] {
   if (descriptor.key === "home") return homeSections(descriptor.rootNode, label);
   const root = descriptor.rootNode;
   if (root.kind !== "object") return [];
@@ -54,6 +55,12 @@ export function pageSections(descriptor: PageEditorialDescriptor, label: (key: s
     sections.splice(sections.indexOf(seo), 1);
     seo.bindings.push({ id: "og_image_media_id", label: label("ogImage"), sectionId: "seo" });
     sections.push(seo);
+  }
+  for (const rule of descriptor.collapseWhenFalse ?? []) {
+    if (editorialAt(content, rule.path) === false) {
+      const section = sections.find(section => section.id === rule.section);
+      if (section) section.bindings = section.bindings.filter(binding => binding.id === rule.path);
+    }
   }
   return sections;
 }

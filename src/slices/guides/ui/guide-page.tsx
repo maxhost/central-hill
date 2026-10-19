@@ -1,3 +1,4 @@
+import { GuideSharedAside } from "./components/guide-shared-aside";
 import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -5,7 +6,6 @@ import type { Locale } from "@core/db/columns";
 import { MediaImage, type MediaImageData } from "@core/media";
 import { JsonLd, breadcrumbLd } from "@core/seo";
 import {
-  AsideCta,
   ButtonLink,
   Callout,
   ContentBlock,
@@ -18,7 +18,7 @@ import {
   TocList,
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
-import { GUIDE_ASIDE_FALLBACK_IMAGE, getGuideAsideCta } from "@slices/pages/contract";
+import { getGuideAsideCta } from "@slices/pages/contract";
 import { SITE_ICON_DEFAULTS, getGlobals } from "@slices/settings/contract";
 import { getGuidePage, listGuideCityGroups } from "../contract";
 import { GuideCard } from "./components/guide-card";
@@ -69,7 +69,6 @@ function gallerySizes(count: number, i: number): string {
 
 // The section image spans the content column (≈714px beside the 380px aside).
 const SECTION_IMG_SIZES = "(max-width: 980px) calc(100vw - 56px), 714px";
-const ASIDE_IMG_SIZES = "(max-width: 980px) calc(100vw - 118px), 318px";
 
 /** Body text → paragraphs (blank lines separate them, as authored in the backoffice). */
 function splitParagraphs(text: string | null): string[] {
@@ -271,26 +270,7 @@ export async function GuidePageView({
                 icon={<Icon name={icons.table_of_contents} />}
               />
             ) : null}
-            <AsideCta
-              className={tocItems.length ? undefined : "mt-0! border-t-0! pt-0!"}
-              image={
-                asideCta.image ? (
-                  <MediaImage data={asideCta.image} sizes={ASIDE_IMG_SIZES} />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element -- static fallback photo until one is picked in the backoffice
-                  <img
-                    src={GUIDE_ASIDE_FALLBACK_IMAGE.url}
-                    alt={GUIDE_ASIDE_FALLBACK_IMAGE.alt}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                )
-              }
-              eyebrow={asideCta.eyebrow}
-              title={asideCta.title}
-              body={asideCta.body}
-              cta={asideCta.cta}
-            />
+            <GuideSharedAside asideCta={asideCta} divided={tocItems.length > 0} />
           </StickyAside>
         }
       />

@@ -60,7 +60,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   }), [state.model.working, localPreviews, descriptor]);
   const dirty = isDirty(state.model);
   const busy = operation !== null || queue.isPreparing;
-  const sections = pageSections(descriptor, labels.field);
+  const sections = pageSections(descriptor, labels.field, content);
   const section = sections.find(s => s.id === selected || s.bindings.some(b => b.id === selected)) ?? sections[0]!;
 
   function selectLocale(nextLocale: EditorLocale) {
@@ -199,7 +199,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   </fieldset>;
   return <PageEditorShell adapter={{
     title: descriptor.title, sections, seoSectionId: "seo", selectedId: selected, onSelect: setSelected,
-    locale, onLocaleChange: selectLocale, previewUrl: `/admin/preview/${descriptor.key}?locale=${locale}`,
+    locale, onLocaleChange: selectLocale, previewUrl: `/admin/preview/${descriptor.key}?locale=${locale}&surface=${descriptor.sectionPreviews?.[section.id] ?? "page"}`,
     previewVersion: state.previewVersion, previewPayload, dirty, busy,
     editorialState: `${locale.toUpperCase()} · ${t(dirty ? "admin.editorial.unsaved" : state.model.draft ? "admin.editorial.draft" : "admin.editorial.published")}`,
     status: <span>{t("admin.editorial.livePreview")}</span>, inspector,

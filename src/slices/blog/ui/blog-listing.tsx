@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import type { BlogPage } from "@slices/pages/contract";
 import type { Locale } from "@core/db/columns";
 import { PageHead, PageHeadSearch, SectionHead } from "@core/ui";
 import { Icon } from "@core/ui/icon";
@@ -78,6 +79,11 @@ const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
  * must enclose both the tabs (above it) and the grid (below it).
  */
 export async function BlogListing({ locale }: { locale: Locale }) {
+  return BlogListingRenderer({ locale });
+}
+
+export async function BlogListingRenderer({ locale, page: suppliedPage, preview = false }: { locale: Locale; page?: BlogPage | null; preview?: boolean }) {
+  void preview;
   setRequestLocale(locale);
   const [t, categories, featured, posts, globals, page] = await Promise.all([
     getTranslations("blog"),
@@ -85,7 +91,7 @@ export async function BlogListing({ locale }: { locale: Locale }) {
     getFeaturedPost(locale),
     listPosts(locale),
     getGlobals(locale),
-    getBlogPage(locale),
+    suppliedPage ?? getBlogPage(locale),
   ]);
   const { hero, featured: featuredCopy, journal: journalCopy, newsletter } = page.content;
   // Site icons (Settings → "Site icons", ADR 0034 amendment 2).

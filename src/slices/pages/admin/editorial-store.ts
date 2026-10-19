@@ -10,8 +10,6 @@ import {
   isEditorialPageKey,
   usesPageLocaleDrafts,
 } from "../editorial-registry";
-import { homeSet } from "../home-content";
-import { loadContent } from "@core/i18n";
 function emptyEditorialEnvelope<K extends EditorialPageKey>(
   key: K,
 ): PageEnvelope<K> {
@@ -23,12 +21,10 @@ function emptyEditorialEnvelope<K extends EditorialPageKey>(
 }
 import { eq, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
-import { loadTranslationRows } from "@core/i18n";
 import type { Locale } from "@core/db/columns";
-import { page_content, page_locale_content } from "../schema";
+import { page_locale_content } from "../schema";
 import {
   prepareTargetEnvelope,
-  captureLegacyPending,
 } from "../editorial-content";
 import type {
   EditorialPageKey,
@@ -44,77 +40,8 @@ export type EditorialRow<K extends EditorialPageKey = "home"> = Omit<
   typeof page_locale_content.$inferSelect,
   "published" | "draft"
 > & { published: PageEnvelope<K> | null; draft: PageEnvelope<K> | null };
-export async function legacyEditorialRows<K extends EditorialPageKey = "home">(
-  key: K = "home" as K,
-): Promise<EditorialRow<K>[]> {
-  const [source] = await db
-    .select()
-    .from(page_content)
-    .where(eq(page_content.key, key))
-    .limit(1);
-  const adapter = getEditorialAdapter(key);
-  const parsed = adapter.publishSchema.safeParse(source?.data);
-  if (!parsed.success && key !== "buildings") {
-    if (source) throw new Error("Invalid legacy page content");
-    return [];
-  }
-  const content = adapter.normalize(
-    parsed.success ? parsed.data : adapter.defaultContent(),
-  );
-  if (Object.keys(adapter.identityErrors(content)).length)
-    throw new Error("Invalid legacy page identities");
-  const translations =
-    source && parsed.success
-      ? await loadTranslationRows({ type: "page_content", id: source.id })
-      : [];
-  return Promise.all(
-    editorialLocales.map(async (locale) => {
-      const localized = structuredClone(content);
-      if (source && parsed.success && locale !== "en") {
-        const resolver = await loadContent(
-          [{ type: "page_content", id: source.id }],
-          locale,
-        );
-        for (const path of adapter.textPaths(localized)) {
-          const value = resolver.get(
-            "page_content",
-            source.id,
-            adapter.translationField(content, path),
-          );
-          if (value !== undefined) homeSet(localized, path, value);
-        }
-      }
-      const published: PageEnvelope<K> = {
-        schemaVersion: 1,
-        content: localized,
-        ogImageMediaId: source?.og_image_media_id ?? null,
-      };
-      const pending = translations.filter(
-        (row) =>
-          row.locale === locale &&
-          row.state !== "approved" &&
-          row.field.startsWith("block:"),
-      );
-      const draft =
-        locale === "en"
-          ? null
-          : captureLegacyPending(published, pending, adapter.descriptor);
-      return {
-        id: source?.id ?? "",
-        page_key: key,
-        locale,
-        published,
-        draft,
-        revision: 0,
-        published_at: source?.updated_at ?? new Date(),
-        draft_saved_at: draft ? (source?.updated_at ?? new Date()) : null,
-        updated_by: null,
-        created_at: source?.created_at ?? new Date(),
-        updated_at: source?.updated_at ?? new Date(),
-      };
-    }),
-  );
-}
+export { legacyEditorialRows } from "../server/editorial-legacy";
+import { legacyEditorialRows } from "../server/editorial-legacy";
 export async function readEditorialRows<K extends EditorialPageKey = "home">(
   key: K = "home" as K,
 ): Promise<EditorialRow<K>[]> {

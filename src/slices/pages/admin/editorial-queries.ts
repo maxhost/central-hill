@@ -78,6 +78,7 @@ export async function getEditorialEditModel<K extends EditorialPageKey>(
   return {
     ...model,
     descriptor: adapter.descriptor,
+    sourceInvalid: rows.length === 4 ? false : model.sourceInvalid,
     previews,
     data: locales.en.working.content,
     ogImageMediaId: locales.en.working.ogImageMediaId,

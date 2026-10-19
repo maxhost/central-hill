@@ -10,7 +10,7 @@ import type {
 } from "../editorial-types";
 import { page_locale_content } from "../schema";
 import { validEditorialRequest } from "./editorial-policy";
-import { legacyEditorialRows } from "../admin/editorial-store";
+import { legacyEditorialRows } from "./editorial-legacy";
 import { resolveMedia } from "./resolve";
 export async function resolveEditorialEnvelope<
   K extends EditorialPageKey = "home",
@@ -46,7 +46,7 @@ export async function getPublishedPageLocale<K extends EditorialPageKey>(
       locale,
     );
   try {
-    const baseline = await legacyEditorialRows(key);
+    const baseline = await legacyEditorialRows(key, true);
     return resolveEditorialEnvelope(
       (baseline.find((row) => row.locale === locale)?.published ??
         null) as PageEnvelope<K> | null,

@@ -78,3 +78,7 @@ export {
  * safe to import anywhere.
  */
 export { blogAdminScreens } from "./admin/screens";
+
+/** Injectable editorial composition, retaining the slice-owned catalogue. */
+export { BlogListingRenderer } from "./ui/blog-listing";
+export { BlogSharedAside } from "./ui/components/blog-shared-aside";

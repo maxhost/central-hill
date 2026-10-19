@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import type { ServicesPage } from "@slices/pages/contract";
 import type { Locale } from "@core/db/columns";
 import { Reveal } from "@core/ui";
 import {
@@ -13,10 +14,15 @@ import { ServiceCard } from "./components/service-card";
 
 /** Pages owns the fixed editorial sections; Services retains its tagged, ordered catalogue. */
 export async function ServicesListing({ locale }: { locale: Locale }) {
+  return ServicesListingRenderer({ locale });
+}
+
+export async function ServicesListingRenderer({ locale, page: suppliedPage, preview = false }: { locale: Locale; page?: ServicesPage | null; preview?: boolean }) {
+  void preview;
   setRequestLocale(locale);
   const [services, page, t] = await Promise.all([
     listServices(locale),
-    getServicesPage(locale),
+    suppliedPage ?? getServicesPage(locale),
     getTranslations({ locale, namespace: "services" }),
   ]);
   return (

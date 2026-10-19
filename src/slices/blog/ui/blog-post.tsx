@@ -1,3 +1,4 @@
+import { BlogSharedAside } from "./components/blog-shared-aside";
 import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -5,7 +6,6 @@ import type { Locale } from "@core/db/columns";
 import { MediaImage } from "@core/media";
 import { JsonLd, blogPostingLd, breadcrumbLd } from "@core/seo";
 import {
-  AsideCta,
   DetailLayout,
   DetailTitle,
   MosaicGallery,
@@ -200,13 +200,7 @@ export async function BlogPost({ locale, slug }: { locale: Locale; slug: string 
                 className="max-[980px]:hidden"
               />
             ) : null}
-            <AsideCta
-              eyebrow={asideCta.eyebrow}
-              title={asideCta.title}
-              body={asideCta.body}
-              cta={cta}
-              divided={toc.length > 0}
-            />
+            <BlogSharedAside asideCta={asideCta} cta={cta} divided={toc.length > 0} />
           </StickyAside>
         }
       />

@@ -1,4 +1,5 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import type { GuidesPage } from "@slices/pages/contract";
 import type { Locale } from "@core/db/columns";
 import { SectionHead } from "@core/ui";
 import { Icon } from "@core/ui/icon";
@@ -18,9 +19,14 @@ const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]"
 
 /** Fixed editorial page plus published catalogues. Filtering changes presentation, never detail routes. */
 export async function GuidesListing({ locale }: { locale: Locale }) {
+  return GuidesListingRenderer({ locale });
+}
+
+export async function GuidesListingRenderer({ locale, page: suppliedPage, preview = false }: { locale: Locale; page?: GuidesPage | null; preview?: boolean }) {
+  void preview;
   setRequestLocale(locale);
   const [groups, cities, sourceCities, page, t, globals] = await Promise.all([
-    listGuideCityGroups(locale), listCities(locale), listCities("en"), getGuidesPage(locale),
+    listGuideCityGroups(locale), listCities(locale), listCities("en"), suppliedPage ?? getGuidesPage(locale),
     getTranslations("guides"), getGlobals(locale),
   ]);
   const icons = globals?.icons ?? SITE_ICON_DEFAULTS;

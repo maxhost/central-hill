@@ -180,3 +180,15 @@ QA aprueba candidato integrado con checks requeridos completos. Root entrega com
 archivos incluidos nuevos, informe, URL3069 y handoff; mantiene3068 validado intacto.
 La tarea termina en rama local, sin main/push/despliegue. Este documento en este encargo no ejecuta
 ninguna de esas fases: sólo revisión de código y documentación.
+
+## Ejecución autorizada 2026-10-18
+
+Base documental verificada85676c3, checkout original limpio. Nueva integración
+`/private/tmp/central-hill-page-editors-editorial-integration`, rama
+`page-editors-editorial/integration`. Usuario autoriza implementación y QA automático;
+entrega sólo local, sin main/push/despliegue/producción. Preview3068 PID73105 preservado.
+Write sets y criterios/commands de este plan siguen vigentes. Raíz aterriza tipos9keys
+con enablement separado, seam `legacySource/legacyEditorialRows`, renderers inyectables,
+shared asides extraídos, `surface` validada servidor y `publicationScope` antes de consumidores.
+Tanda1 tendrá worktrees Services/About con los paths de la tabla; tanda2 Guides/Blog.
+Sin cambios DDL/kernel. Preparación entorno pageeditors2qa en curso; no writes a3068.

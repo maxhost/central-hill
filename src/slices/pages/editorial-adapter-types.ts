@@ -18,11 +18,14 @@ export interface PageEditorialDescriptor {
   mediaSlots: { path: string; kind: "image" | "video" | "mixed" | "pdf" }[];
   maxLocalMedia: number;
   externalSections: string[];
+  sectionPreviews?: Record<string, "shared_aside">;
+  collapseWhenFalse?: { section: string; path: string }[];
 }
 export interface EditorialMediaReference { path: string; id: string; kind: "image" | "video" | "mixed" | "pdf" }
 /** Pure adapter; registry is server-only. Renderer is loaded lazily to avoid slice cycles. */
 export interface PageEditorialAdapter<K extends EditorialPageKey> {
   key: K;
+  publicationScope?: "page" | "layout";
   descriptor: PageEditorialDescriptor;
   draftSchema: z.ZodType<PageContentMap[K]>;
   publishSchema: z.ZodType<PageContentMap[K]>;
@@ -34,6 +37,6 @@ export interface PageEditorialAdapter<K extends EditorialPageKey> {
   translationField(content: PageContentMap[K], path: string): string;
   collectMediaReferences(content: PageContentMap[K], og: string | null): EditorialMediaReference[];
   mediaErrors(content: PageContentMap[K], og: string | null, assets: ReadonlyMap<string, { mime: string }>): Record<string, string>;
-  render(input: { locale: Locale; page: PageResult<PageContentMap[K]> | null; preview: true }): Promise<ReactNode>;
+  render(input: { locale: Locale; page: PageResult<PageContentMap[K]> | null; preview: true; surface?: "page" | "shared_aside" }): Promise<ReactNode>;
 }
 export type AnyPageEnvelope = PageEnvelope<EditorialPageKey>;

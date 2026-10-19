@@ -136,3 +136,6 @@ export {
   type ServiceCopy,
   type ServiceCopyKey,
 } from "./copy";
+
+/** Injectable editorial composition, retaining the slice-owned catalogue. */
+export { ServicesListingRenderer } from "./ui/services-listing";

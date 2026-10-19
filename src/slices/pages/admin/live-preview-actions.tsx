@@ -5,7 +5,7 @@ import type { PageLivePreviewResult } from "@slices/backoffice/contract";
 import type { Locale } from "@core/db/columns";
 import type { EditorialPageKey } from "../editorial-types";
 import { getEditorialAdapter } from "../server/editorial-adapters";
-import { validEditorialRequest } from "../server/editorial-policy";
+import { validEditorialRequest, validEditorialSurface } from "../server/editorial-policy";
 import { resolveMedia } from "../server/resolve";
 import { validatePageLivePreview } from "./live-preview-validation";
 
@@ -14,9 +14,10 @@ export async function renderPageLivePreview<K extends EditorialPageKey>(
   key: K,
   locale: string,
   payload: unknown,
+  surface: string = "page",
 ): Promise<PageLivePreviewResult> {
   await requireStaff();
-  if (!validEditorialRequest(key, locale))
+  if (!validEditorialRequest(key, locale) || !validEditorialSurface(key, surface))
     return { ok: false, error: "validation" };
   const checked = validatePageLivePreview(key, payload, env.BETTER_AUTH_URL);
   if (!checked) return { ok: false, error: "validation" };
@@ -60,6 +61,7 @@ export async function renderPageLivePreview<K extends EditorialPageKey>(
     const content = await adapter.render({
       locale: locale as Locale,
       preview: true,
+      surface,
       page: { content: envelope.content, ...resolved },
     });
     return { ok: true, content };
@@ -71,6 +73,7 @@ export async function renderPageLivePreview<K extends EditorialPageKey>(
 export async function renderHomeLivePreview(
   locale: string,
   payload: unknown,
+  surface: string = "page",
 ): Promise<PageLivePreviewResult> {
   return renderPageLivePreview("home", locale, payload);
 }
