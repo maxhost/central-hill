@@ -284,3 +284,7 @@ valida equivalencia/idempotencia y recorre save/CAS/publish del motor completo a
 comprobar que ES y Owners quedan intactos. Sustituye el escenario anterior de SQL low-level,
 no añade casos ni matrices. Root toma estos2archivos tras cierre del scope engine A;
 A sólo escribe Guest, sin conflicto. Se ejecutarán en el único pase integrado pendiente.
+
+Guest9346883 integrado,2tests0/eslint0, dieciséis slots confirmados inclOG. Las5keys
+quedan habilitadas; contrato+renderer+getter+SEO+guards están conectados juntos. Candidato
+completo entra ahora a globals una vez y QA independiente sobre3068. No DDL nuevo.
