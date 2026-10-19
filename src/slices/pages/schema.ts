@@ -1,4 +1,4 @@
-import { jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { pkUuid, timestamps } from "@core/db/columns";
 
 /**
@@ -19,3 +19,17 @@ export const page_content = pgTable("page_content", {
   og_image_media_id: uuid(), // → media_asset.id (core/media)
   ...timestamps,
 });
+
+/** Per-language editorial snapshots for adapted pages (ADR0040). */
+export const page_locale_content = pgTable("page_locale_content", {
+  id: pkUuid(),
+  page_key: text().notNull(),
+  locale: text().$type<import("@core/db/columns").Locale>().notNull(),
+  published: jsonb().$type<import("./editorial-types").PageEnvelope>(),
+  draft: jsonb().$type<import("./editorial-types").PageEnvelope>(),
+  revision: integer().notNull().default(0),
+  published_at: timestamp({ withTimezone: true }),
+  draft_saved_at: timestamp({ withTimezone: true }),
+  updated_by: text(),
+  ...timestamps,
+}, table => [unique("page_locale_content_page_locale_unique").on(table.page_key, table.locale)]);

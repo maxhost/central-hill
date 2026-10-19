@@ -221,3 +221,7 @@ export { GuidesHero, GuidesFinalCta } from "./ui/components/guides-sections";
 /** Shared Home RSC renderer, optionally instrumented only in staff previews. */
 export { HomePage as HomePageRenderer } from "./ui/home-page";
 export { homeEditorBindingIds } from "./admin/home-contextual";
+
+/** Per-language draft/publication policy and serializable editorial contracts (ADR0040). */
+export { usesPageLocaleDrafts, pageLocaleTag } from "./editorial-registry";
+export type { PageEnvelope, PageLocaleEditorialModel, HomeEditorialModel, SavePageDraftInput, PublishPageDraftInput, PageEditorialResult } from "./editorial-types";

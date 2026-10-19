@@ -104,3 +104,23 @@ alcanzado, no recomenzar el flujo entero. Browser siempre se cierra en finally.
 Código probado, informe QA y handoff con commits/archivos/limitaciones. Una URL para que
 el usuario pruebe. No integración a main/push/despliegue/producción. Mantener worktrees y
 artefactos. Después se retoma Owners y la adaptación paralela de page-editors.
+
+## Active execution — 2026-10-18
+
+Implementation authorized by current user request. Base e06272b, clean status verified.
+Integration /private/tmp/central-hill-page-drafts-integration, page-drafts/integration.
+Root owns the shared files listed above plus this plan and final handoff. A/B paths remain
+as assigned above; B shell/types allowed if necessary. Root owns home-queries.ts too
+(legacy model retained read-only for old tests; route moves to editorial-queries).
+Contracts: editorial-types.ts (numeric persistent per-locale revisions, complete envelopes,
+first-target templateRevision), editorial-registry.ts, page_locale_content.
+Backend exports getHomeEditorialModel(), getPageEditorialModel(key,locale),
+savePageDraft(input), publishPageDraft(input), getPageDraftPreview(key,locale),
+getPublishedPageLocale(key,locale). Preview/public getters return resolved PageResult|null;
+public getter falls back legacy read-only before initialization. Actions return only selected
+locale model; editor must never reset other locale state. No router.refresh on mutation.
+Test budget: A owns up to 8 cases (1–7 and 9 above grouped only when one scenario);
+root owns cases8 and10 if not already covered by A; B adds no automated cases, browser
+checks cover dirty/tab state. Required DB cases4/6/7 remain real DB.
+QA environment pending new synthetic pagedraftsqa, preview3067; Home3065 preserved.
+Global checks once after integration, logs under /private/tmp/central-hill-page-drafts-qa.

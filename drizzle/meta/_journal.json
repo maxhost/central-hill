@@ -162,6 +162,13 @@
       "when": 1792370579376,
       "tag": "0022_form_builder",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1792376680792,
+      "tag": "0023_page_locale_content",
+      "breakpoints": true
     }
   ]
 }
