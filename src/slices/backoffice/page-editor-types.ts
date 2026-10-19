@@ -17,6 +17,8 @@ export interface PageEditorAdapter {
   previewVersion: number;
   dirty: boolean;
   busy: boolean;
+  /** Adapter-specific selected-locale draft/publication status. */
+  editorialState?: ReactNode;
   status?: ReactNode;
   inspector: ReactNode;
   actions: ReactNode;

@@ -93,7 +93,7 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
           ))}
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <span role="status" className={`text-xs ${adapter.dirty ? "text-accent-deep" : "text-ink-soft"}`}>{adapter.dirty ? t("pending") : t("saved")}</span>
+          <span role="status" className={`text-xs ${adapter.dirty ? "text-accent-deep" : "text-ink-soft"}`}>{adapter.editorialState ?? (adapter.dirty ? t("pending") : t("saved"))}</span>
           {adapter.actions}
         </div>
       </header>
