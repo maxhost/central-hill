@@ -65,6 +65,7 @@ export async function HomePage({ locale, preview = false }: { locale: Locale; pr
     <main>
       <ScrollDebugProbe page="home" />
       <div {...binding("hero")}><Hero
+        editorBindings={preview ? { background: "hero.video_media_id", eyebrow: "hero.eyebrow", subtitle: "hero.subtitle" } : undefined}
         background={
           <video
             {...binding("hero.video_media_id")}

@@ -152,7 +152,7 @@ export function NodeField(props: RenderProps) {
 
   if (node.kind === "array") {
     const items = Array.isArray(value) ? value : [];
-    if (onListChange && ((pageKey === "about" && (ABOUT_EDITOR_LIST_PATHS as readonly string[]).includes(errorKey)) || (pageKey === "home" && errorKey === "stats.figures"))) {
+    if (onListChange && ((pageKey === "about" && (ABOUT_EDITOR_LIST_PATHS as readonly string[]).includes(errorKey)) || (pageKey === "home" && ["stats.figures", "guests_pitch.benefits", "services_carousel.assurances"].includes(errorKey)))) {
       const itemLabel = labels.item(path, label);
       return <AboutListEditor label={label} itemLabel={itemLabel} addLabel={labels.add(path, itemLabel)}
         items={items} ids={listIds?.[errorKey] ?? []} min={node.min} max={node.max} error={errors[errorKey]}

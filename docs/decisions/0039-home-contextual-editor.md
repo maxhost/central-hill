@@ -6,7 +6,11 @@ Backoffice owns a page-independent contextual shell and private iframe bridge, e
 through its contract. Pages owns the Home adapter, bindings, schema, persistence and preview.
 The private authenticated preview uses the same Home renderer as public RSC/ISR, with optional
 preview-only instrumentation. Public calls omit instrumentation and never load bridge code.
-No shared-kernel changes are planned; no alternative renderer, Forms placement, Avantio
+The orchestrator owns a minimal opt-in `Hero.editorBindings` kernel instrumentation seam: 
+background/root, eyebrow and subtitle annotations, no style or layout changes. All public calls
+omit it; no annotation values or bridge JS reach the public page. Ordinary background clicks
+resolve the media binding even when the video itself is behind the scrim/content container.
+No other shared-kernel changes; no alternative renderer, Forms placement, Avantio
 configuration, public submissions, live/durable drafts or rollout to other pages.
 
 Home source writes atomically synchronize kernel translation source rows and compare revisions.

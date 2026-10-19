@@ -91,6 +91,7 @@ export function Hero({
   headlineClassName,
   subtitleClassName,
   wrapClassName,
+  editorBindings,
 }: {
   background?: ReactNode;
   /** Rendered above the eyebrow line (Buildings detail's breadcrumb trail). Caller-built. */
@@ -119,18 +120,20 @@ export function Hero({
   subtitleClassName?: string;
   /** Renders a plain `<div>` with this className instead of the shared `Container` (needs a wider-than-kernel max-width). */
   wrapClassName?: string;
+  /** ADR0039: optional staff-preview annotations; omitted by every public call. */
+  editorBindings?: { background: string; eyebrow: string; subtitle: string };
 }) {
   const copy = (
     <div className="text-surface">
       {breadcrumb}
       {eyebrow ? (
         eyebrowPill ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] text-surface">
+          <span data-editor-binding={editorBindings?.eyebrow} className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold uppercase tracking-[0.1em] text-surface">
             <UiIcon name="star" size="1em" className="[&_path]:fill-current" />
             {eyebrow}
           </span>
         ) : (
-          <span className="text-xs font-medium uppercase tracking-[0.16em] text-feature-accent">
+          <span data-editor-binding={editorBindings?.eyebrow} className="text-xs font-medium uppercase tracking-[0.16em] text-feature-accent">
             {eyebrowBadge}
             {eyebrow}
           </span>
@@ -149,6 +152,7 @@ export function Hero({
       </h1>
       {subtitle ? (
         <p
+          data-editor-binding={editorBindings?.subtitle}
           className={cn(
             "leading-relaxed text-surface/85",
             subtitleClassName ?? "mt-5 max-w-xl text-lg",
@@ -178,6 +182,7 @@ export function Hero({
     <section
       id={id}
       data-hero
+      data-editor-binding={editorBindings?.background}
       className={cn(
         "relative isolate flex overflow-hidden bg-feature",
         align === "center" ? "items-center" : "items-end",

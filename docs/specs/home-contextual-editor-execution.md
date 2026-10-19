@@ -78,3 +78,43 @@ visible schema fields (new private list metadata must stay hidden). Initial broa
 Independent normal scoped QA running on build255f3e2 at3065. Server session95319.
 Design detector run once on4changed UI files exit0, JSON=[] (no findings). Final candidate and evidence below.
 
+
+## Verification ledger
+
+- Contract base1a90e63; integrated executable255f3e2; test/docs follow-up47d5742.
+- Node22.23.3/pnpm10.8.0; pnpm typecheck exit0, pnpm lint exit0 (7existing warnings).
+  Final logs typecheck.log/lint.log (47d5742).
+- pnpm exec tsx --test src/slices/pages/tests/home-contextual.test.ts
+  src/slices/backoffice/tests/page-editor-bridge.test.ts
+  src/slices/pages/tests/pages-admin.test.ts src/slices/pages/tests/pages.test.ts
+  exit0,147/147tests, tests.log. Tests need local tsx pipe permission; initial sandbox denial
+  is recorded, successful run used escalation. No placeholder scripts counted.
+- pnpm build exit0 using isolated Home environment; build.log. Initial sandbox attempt
+  failed because Turbopack could not bind its local worker port; escalated same command passed.
+- No migration; db:check not required by this task. Existing migration SQL used only on new
+  QA database. Manual boundary review: new cross-slice imports through contracts only;
+  Pages owns Home, Backoffice owns generic shell/bridge, Settings exports shared chrome.
+  No core files changed. Public routes retain their ISR configuration/metadata and page:home
+  tag plus four-locale revalidation on source/target saves.
+- Mechanical detector once over4changed UI files exit0, no findings ([]). Actual browser
+  inspection/persistence testing belongs to independent QA report; detector is not its substitute.
+
+## Scoped correction during QA
+
+Root static review found that fixed-length benefits/assurances retain move controls;
+translation identity must cover guests_pitch.benefits and services_carousel.assurances,
+not just stats.figures. Owner B assigned correction in its existing worktree/write set:
+Home domain/adapter/tests/README (schema only if needed). Root owns schema-fields condition
+expansion to reuse identity-aware lists for all three paths. No capability removed.
+Existing stats-only metadata is normalized compatibly; retired identities become list-scoped.
+This is required by closed plan's stable translated lists, not a scope expansion to another page.
+Independent QA will confirm affected list behavior on corrected candidate.
+
+Root scope addition under amended ADR0039: src/core/ui/hero.tsx and
+src/slices/pages/ui/home-page.tsx (single orchestrator writer while B edits only domain/
+adapter/tests/README). Add optional Hero.editorBindings attributes for private background,
+eyebrow and subtitle selection. Public callers omit the prop; no layout/style changes.
+Root hit-test review found background click intercepted by Hero container/scrim, selecting
+section instead of media. QA supplied3elementFromPoint samples. Confirm after rebuild.
+A fix b4a5e9a integrated899e669 also blocks standalone authenticated preview actions,
+without sending self-messages. B fixa950260 integrated6b10cc3 covers all3movable lists.
