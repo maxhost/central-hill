@@ -1,11 +1,13 @@
 # Blog público y CMS — plan/spec revisado
 
-2026-10-18. **Sólo planificación; pendiente de autorización para implementar.**
+2026-10-18. **Plan aprobado para implementar por el usuario.**
+Estado y comprobaciones: [blog-page-execution.md](blog-page-execution.md).
 Revisión según las cuatro capturas del usuario: editor `/admin/pages/blog`, salida
 `/es/blog` y equivalentes EN/PT/FR. Auditoría: [blog-cms-audit.md](blog-cms-audit.md).
 Base documental `1c48555`, código `d4e13c9`, rama `about-cms/integration`, checkout
-`/private/tmp/central-hill-about-cms-integration`. Los únicos cambios actuales son
-este plan, la auditoría y referencia en AGENTS.md. Sin main, push ni despliegue.
+`/private/tmp/central-hill-about-cms-integration`. Al aprobar este plan sólo había cambios documentales en
+este plan, la auditoría y AGENTS.md. La implementación se registra en su execution.
+Sin main, push ni despliegue.
 Preservar previews3059–3062 y sus entornos.
 
 ## Resultado y alcance de esta entrega propuesta
@@ -131,7 +133,8 @@ Inventario propuesto para cerrar antes de delegar:
 - QA: informe y evidencias propios; no editar código. Asignaciones exactas y
   nombres de archivos nuevos deben quedar registrados antes de iniciar agentes.
 
-La presente revisión no crea ramas/agentes ni concede permiso de implementación.
+Esta revisión precedió a la autorización posterior del usuario; las ramas, agentes
+y asignaciones definitivas se registran en blog-page-execution.md.
 Sin integración a main, push, despliegue ni escrituras de producción.
 
 ## Aceptación y verificación funcional normal
@@ -165,4 +168,5 @@ No contar `pnpm test` ni `pnpm boundary:check` (placeholders). `db:check` sólo 
 se necesita migración. QA independiente hace Save/reload/public/OG/traducción
 normales; retestar únicamente fallos concretos y cambios afectados.
 
-Esta revisión es documental: no representa cambios implementados ni QA aprobada.
+Este documento define el alcance aprobado; los resultados de implementación y QA
+se registran por separado en execution y QA, sin inferirlos del propio plan.

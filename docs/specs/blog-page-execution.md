@@ -98,3 +98,39 @@ db:check only for migration changes (none planned); placeholders do not count.
 - New fixture DB identity blogpageqa/blogpageqa verified; two posts, one category,
   one author, one photo and synthetic staff created. Proxy needs its own local
   neon_control_plane.endpoints registry, created in Blog DB only.
+
+- Integrated executable candidate cb1f068; d7fc540 adds only README/model/spec,
+  schema comment and compatibility-test expectation. Build started cb1f068 and
+  finished after d7fc540 with identical executable source. No repeat build needed
+  solely for comments/docs/tests. Required checks completed:
+  - `PATH=/Users/maxi/.nvm/versions/node/v22.23.3/bin:$PATH pnpm typecheck`: exit0.
+  - same PATH `pnpm lint`: exit0, five historical warnings (mock/site.js,
+    postcss.config, existing core/i18n/schema unused import).
+  - explicit 13-file command below: 194/194, exit0. First run193/194 identified
+    old test asserting Blog had only aside translation paths; root scoped that
+    assertion to aside and reran affected suites once. No behavior fix was needed.
+  - `source /private/tmp/central-hill-blog-page-qa/env.sh; pnpm build`: exit0,
+    compiled/TypeScript and84 static pages generated using isolated QA DB/media.
+  - Impeccable detector on four changed UI files: exit0, `[]`.
+  - diff-check, four-locale added-message presence and changed-slice contract
+    import review passed. No src/core or drizzle changes; no db:check required.
+- Actual integration tests command (Node22 PATH as above):
+  `pnpm exec tsx --test src/slices/pages/tests/blog-content.test.ts src/slices/pages/tests/blog-editor.test.ts src/slices/pages/tests/blog-media-validation.test.ts src/slices/pages/tests/blog-presentation.test.ts src/slices/pages/tests/pages-admin.test.ts src/slices/pages/tests/pages.test.ts src/slices/pages/tests/guides-editor.test.ts src/slices/pages/tests/services-editor.test.ts src/slices/pages/tests/about-editor.test.ts src/slices/translation/tests/translation.test.ts src/slices/blog/tests/blog.test.ts src/slices/blog/tests/blog-admin.test.ts src/slices/blog/tests/headings.test.ts`.
+- Preview3063 PID71871/session80599, cwd integration on d7fc540 executable code.
+  Server log server.log, build/tests/lint/typecheck logs in QA folder. S3rver9063
+  PID64131/session72582. Dependencies are now a local clone copy in integration
+  (ignored), not a symlink outside Turbopack root. A/B keep untracked node_modules
+  symlinks only; these are dependencies, not source, and are not committed.
+- Independent QA agent auditing d7fc540 with normal workflow, no code edits.
+  User explicitly authorized automatic local QA; no routine confirmation requests.
+  GitHub changes or Neon production access require separate permission.
+
+- Independent QA approved d7fc540 within requested normal functional scope:
+  main qa run exit0/errors=[], reset/reapprove supplement exit0/errors=[].
+  Save/reload/second Save, JPG OG upload, all four public sections, shared article
+  newsletter, ES draft/approval/immediate output, preservation on unrelated Save,
+  cleared source+target and localized fallback, PT/FR smoke, canonical/hreflang and
+  desktop1440/mobile390 passed. No code corrections required. Evidence/report:
+  docs/specs/blog-page-qa.md and QA folder qa-results.json/qa-reset-results.json.
+- Executable candidate remains d7fc540; closing changes only documentation.
+  User authorized automatic local QA; no GitHub, Neon production or main writes.
