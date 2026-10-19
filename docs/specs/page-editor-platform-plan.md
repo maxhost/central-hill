@@ -271,3 +271,9 @@ page-contextual-editor.tsx tras cierre B del scope compartido para seleccionar e
 externo genérico en páginas distintas de Home; cuatro mensajes externalPage/catalogue nuevos.
 No hay escritor concurrente en ese archivo. Root actualiza ADR0040 para las cinco keys
 explícitas y prepara entrega docs/specs/page-editor-platform-delivery.md.
+
+Buildings5056e73 y Real Estate6517d4b integrados secuencialmente, cada adaptador2tests0,
+eslint0. Registry activa ambos con getters/policy comunes ya conectados. Guest A parte
+del commit root de esta habilitación en /private/tmp/central-hill-page-editors-guest,
+rama page-editors/guest. Exacto write set Guest de tabla anterior, 2casos nuevos restantes.
+Los dos casos engine +2Owners +2Buildings +2RealEstate +2Guest agotan el máximo10.
