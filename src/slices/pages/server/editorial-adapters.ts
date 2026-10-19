@@ -1,3 +1,5 @@
+import { guidesAdapter } from "../adapters/guides";
+import { blogAdapter } from "../adapters/blog";
 import { servicesAdapter } from "../adapters/services";
 import { aboutAdapter } from "../adapters/about";
 import "server-only";
@@ -10,6 +12,8 @@ import { guestAdapter } from "../adapters/guest";
 import { homeAdapter } from "../adapters/home";
 /** Explicit server registry: consumers cannot accidentally bundle queries/renderers. */
 export function getEditorialAdapter<K extends EditorialPageKey>(key: K): PageEditorialAdapter<K> {
+ if (key === "guides") return guidesAdapter as unknown as PageEditorialAdapter<K>;
+ if (key === "blog") return blogAdapter as unknown as PageEditorialAdapter<K>;
  if (key === "services") return servicesAdapter as unknown as PageEditorialAdapter<K>;
  if (key === "about") return aboutAdapter as unknown as PageEditorialAdapter<K>;
  if (key === "guest") return guestAdapter as unknown as PageEditorialAdapter<K>;

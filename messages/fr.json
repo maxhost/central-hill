@@ -1731,7 +1731,8 @@
         "conflict": "Cette langue a changé dans un autre onglet. Rechargez avant de continuer.",
         "refreshWarning": "Publié. L’actualisation publique a échoué ; réessayez avant de vérifier le site.",
         "noDraft": "Enregistrez un brouillon avant de publier.",
-        "livePreview": "Aperçu en direct · les modifications ne sont pas enregistrées automatiquement"
+        "livePreview": "Aperçu en direct · les modifications ne sont pas enregistrées automatiquement",
+        "sharedBlock": "Bloc partagé"
       }
     }
   },

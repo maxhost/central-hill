@@ -53,7 +53,7 @@ export async function savePage(
   const keyParsed = pageKey.safeParse(rawKey);
   if (!keyParsed.success) return { ok: false, error: "bad_key" };
   const key = keyParsed.data;
-  if (usesPageLocaleDrafts(key)) return { ok: false, error: "validation", fieldErrors: { _source: "Use Save draft and Publish in the contextual page editor." } };
+  if (Boolean(usesPageLocaleDrafts(key))) return { ok: false, error: "validation", fieldErrors: { _source: "Use Save draft and Publish in the contextual page editor." } };
 
   const dataParsed = pageSchemas[key].safeParse(payload.data);
   if (!dataParsed.success) {

@@ -1,3 +1,4 @@
+import { servicesSchema } from "../schemas/services";
 import "server-only";
 import { getTranslations } from "next-intl/server";
 import { blogEditorDefaults, blogInheritedValues } from "./blog-defaults";
@@ -76,7 +77,7 @@ export async function getPageForEdit(key: PageKey): Promise<PageEditBundle> {
     key,
     data: editableData,
     sourceStatus: editorDefaults?.sourceStatus,
-    sourceInvalid: homeInvalid || editorDefaults?.sourceInvalid,
+    sourceInvalid: homeInvalid || editorDefaults?.sourceInvalid || (key === "services" && Boolean(row) && !servicesSchema.safeParse(row?.data).success),
     ogImageMediaId,
     previews,
   };

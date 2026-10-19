@@ -238,3 +238,5 @@ export { PageEditorialPreview } from "./admin/editorial-preview-route";
 export { renderPageLivePreview } from "./admin/live-preview-actions";
 export type { EditorialPageKey, PageContentMap, PageEditorialModel, PageLivePreviewInput } from "./editorial-types";
 export type { PageEditorialDescriptor, PageEditorialAdapter } from "./editorial-adapter-types";
+
+export { blogAsideCta } from "./blog-content";

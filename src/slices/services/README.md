@@ -148,3 +148,9 @@ different photo, tracked via `media_asset.credit`. Run:
 `tests/services.test.ts` — service / category / media input validation + the
 translatable-path contract. `tests/services-admin.test.ts` — the admin save schemas. Run:
 `npx tsx --test src/slices/services/tests/services.test.ts src/slices/services/tests/services-admin.test.ts`.
+
+## Common Pages editorial integration
+
+`ServicesListingRenderer` accepts optional injected Pages content and private preview
+annotations; the public listing uses the same renderer and retains slice catalogue queries.
+Editorial draft/publish lives in Pages, while individual entity workflows remain here.

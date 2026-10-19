@@ -189,3 +189,9 @@ See [execution/acceptance](../../../docs/specs/guides-cms-execution.md) and
 visibility, ownership-order validation, city policy, media guards, partial-write
 recovery, editor patches and query/card rendering. Integrated browser/persistence QA
 is recorded separately; isolated fixtures must never be confused with production.
+
+## Common Pages editorial integration
+
+`GuidesListingRenderer` accepts optional injected Pages content and private preview
+annotations; the public listing uses the same renderer and retains slice catalogue queries.
+Editorial draft/publish lives in Pages, while individual entity workflows remain here.

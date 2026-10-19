@@ -63,6 +63,8 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   const sections = pageSections(descriptor, labels.field, content);
   const section = sections.find(s => s.id === selected || s.bindings.some(b => b.id === selected)) ?? sections[0]!;
 
+  const surface = descriptor.sectionPreviews?.[section.id] ?? "page";
+
   function selectLocale(nextLocale: EditorLocale) {
     if (busy) return;
     // A target starts once, from the latest saved EN template. Returning to an
@@ -199,8 +201,8 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   </fieldset>;
   return <PageEditorShell adapter={{
     title: descriptor.title, sections, seoSectionId: "seo", selectedId: selected, onSelect: setSelected,
-    locale, onLocaleChange: selectLocale, previewUrl: `/admin/preview/${descriptor.key}?locale=${locale}&surface=${descriptor.sectionPreviews?.[section.id] ?? "page"}`,
-    previewVersion: state.previewVersion, previewPayload, dirty, busy,
+    locale, onLocaleChange: selectLocale, previewUrl: `/admin/preview/${descriptor.key}?locale=${locale}&surface=${surface}`,
+    previewVersion: state.previewVersion * 2 + (surface === "shared_aside" ? 1 : 0), previewPayload, dirty, busy,
     editorialState: `${locale.toUpperCase()} · ${t(dirty ? "admin.editorial.unsaved" : state.model.draft ? "admin.editorial.draft" : "admin.editorial.published")}`,
     status: <span>{t("admin.editorial.livePreview")}</span>, inspector,
     actions: <div className="flex flex-wrap gap-2">

@@ -202,3 +202,15 @@ Nueva DB SQL identidad pageeditors2qa/pageeditors2qa verificada; migraciones exi
 aplicadas exit0. Infra técnica del proxy local corregida, ningún DDL de producto nuevo.
 Storage9069 PID85502. Tanda2 usa la integración de tanda1 con registry/getters Services/About
 habilitados y seam legacy con pending exacto separado del published validado.
+
+Tanda2 integrada139cd4b/3395da0 desde d7d9453/e8b75bc; 2casos por adapter pasan.
+Registro nueve keys activado coherentemente con getters publicados, guards legacy,
+metadata cliente y renderers existentes. Root exporta blogAsideCta por contrato y
+getters shared reutilizan mappers puros. Cambio superficie modifica previewVersion
+para negociar nuevo ready y reenviar payload temporal actual, sin reload al escribir.
+Regresión adicional acotada about-editor.test.ts justificada por cambio import form-model.
+Suite integrada59casos:58pass/1fail inicial por fallback Buildings; root restaura
+excepción Buildings y confirma sólo ese test. Lint exit0 (warnings históricos y un
+warning wrapper Home corregido). Typecheck inicial detectó narrowing never en guard
+legacy al completar9keys; guard runtime conserva comportamiento con Boolean.
+Build/checks finales y QA independiente en curso; evidencias en directorio QA.

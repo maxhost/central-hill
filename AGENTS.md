@@ -1,21 +1,15 @@
 # Central Hill agent instructions
 
-## Next: remaining Pages adapters — spec/plan only
+## Remaining Pages adapters — implementation in progress
 
-User accepted the common editor and requested the same planning workflow for Services,
-About, Guides listing and Blog listing. Read
-[handoff](docs/specs/page-editor-editorial-pages-handoff.md),
-[spec](docs/specs/page-editor-editorial-pages-spec.md) and
-[plan](docs/specs/page-editor-editorial-pages-plan.md). Planning base13fdec8, executable
-7e13d9f/preview3068 remains unchanged. No implementation agents/worktrees/DB/product edits
-in this planning turn. Future implementation starts only on a new user order.
-Tanda1 Services/About, tanda2 Guides/Blog, two writers then independent scoped QA.
-Plan covers per-adapter legacy snapshot policies, About stable IDs, Guides city-filter
-collapse and {city}, shared aside preview surfaces, and locale subtree invalidation for
-Blog/Guides shared copy. Preserve newsletter/forms/catalogues and individual entity editors.
-Max10new tests, affected regressions once, one grouped browser pass plus realfixconfirmation.
-Proposed pageeditors2qa3069/9069/5638/4538 not provisioned; preserve3068 and prior artifacts.
-No main/push/deploy/GitHub/production. Automatic safe local QA authorization persists.
+User authorized implementation from documentary85676c3 and automatic scoped local QA.
+Integration `/private/tmp/central-hill-page-editors-editorial-integration`, branch
+`page-editors-editorial/integration`. Follow spec/plan/handoff under
+`docs/specs/page-editor-editorial-pages-*`. Two waves Services/About then Guides/Blog
+implemented in disjoint worktrees; root integrated, independent QA next.
+New synthetic pageeditors2qa DB5638/proxy4538/storage9069, preview3069; SQL db/role
+both verified pageeditors2qa. Preserve validated3068 and all earlier artifacts.
+No new product migration, no main/push/deploy/GitHub/production.
 
 ## Common Pages editor platform — local delivery approved
 

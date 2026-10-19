@@ -1731,7 +1731,8 @@
         "conflict": "Este idioma foi alterado noutro separador. Recarrega antes de continuar.",
         "refreshWarning": "Publicado. A atualização pública falhou; tenta atualizar antes de verificar o site.",
         "noDraft": "Guarda um rascunho antes de publicar.",
-        "livePreview": "Pré-visualização em tempo real · as alterações não são guardadas automaticamente"
+        "livePreview": "Pré-visualização em tempo real · as alterações não são guardadas automaticamente",
+        "sharedBlock": "Bloco partilhado"
       }
     }
   },

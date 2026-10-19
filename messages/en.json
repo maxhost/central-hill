@@ -1731,7 +1731,8 @@
         "conflict": "This language changed in another tab. Reload before continuing.",
         "refreshWarning": "Published. Public refresh failed; retry the refresh before checking the website.",
         "noDraft": "Save a draft before publishing.",
-        "livePreview": "Live preview · changes are not saved automatically"
+        "livePreview": "Live preview · changes are not saved automatically",
+        "sharedBlock": "Shared block"
       }
     }
   },

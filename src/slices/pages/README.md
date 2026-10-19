@@ -1349,3 +1349,19 @@ Home SEO navigation follow-up3c55a1b: dedicated SEO EN/ES/PT/FR toolbar entry, o
 Sections/Element, full inspector for existing SEO fields. Follow-up draft/publication
 design is now ADR0040 and docs/specs/page-locale-drafts-spec.md; implementation is pending.
 It will supersede the pilot's Save and publish / translation approval model for Home only.
+
+## Common editorial adapters: remaining Pages
+
+Services, About, Guides listing and Blog listing now use the common per-page/per-locale
+engine and PageContextualEditor with explicit Save draft / Publish. All nine Pages are
+enabled together with their published getters and legacy translation guards. No DDL.
+Services preserves three fixed steps and numerical legacy translation paths. About
+reuses eight identity lists and semantic destinations/photos. Guides treats omitted
+city_filter.enabled as true; false collapses controls while retaining data.
+Guides/Blog shared aside selection uses a validated private shared_aside surface
+rendering the same component as details; listing JSON never captures catalogue data.
+Blog/Guides publish invalidates only the locale tag and locale layout subtree, including
+already cached details/newsletter. Legacy source status blocks first adoption of corrupt
+data, while complete editorial snapshots are authoritative. Public Guides salvage and
+Blog blank-source translation policy remain separate from pending target drafts.
+Local rollout evidence: docs/specs/page-editor-editorial-pages-plan.md and QA report.

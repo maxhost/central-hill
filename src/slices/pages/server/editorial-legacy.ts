@@ -36,7 +36,6 @@ export async function legacyEditorialRows<K extends EditorialPageKey = "home">(
   const snapshot = legacySource(key, source?.data, Boolean(source));
   if (snapshot.invalid && !publicFallback) throw new Error("Invalid legacy page content");
   const parsed = adapter.publishSchema.safeParse(snapshot.content);
-  if ((!parsed.success || snapshot.invalid) && !publicFallback && source) throw new Error("Invalid legacy page content");
   if (!parsed.success && key !== "buildings") {
     if (source) throw new Error("Invalid legacy page content");
     return [];

@@ -73,7 +73,6 @@ export async function renderPageLivePreview<K extends EditorialPageKey>(
 export async function renderHomeLivePreview(
   locale: string,
   payload: unknown,
-  surface: string = "page",
 ): Promise<PageLivePreviewResult> {
   return renderPageLivePreview("home", locale, payload);
 }
