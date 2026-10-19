@@ -4,6 +4,7 @@ import { AdminShell, composeAdminNav, MediaQueueProvider } from "@slices/backoff
 import { apartmentsAdminScreens } from "@slices/apartments/contract";
 import { blogAdminScreens } from "@slices/blog/contract";
 import { buildingsAdminScreens } from "@slices/buildings/contract";
+import { formsAdminScreens } from "@slices/forms/contract";
 import { faqAdminScreens } from "@slices/faq/contract";
 import { geographyAdminScreens } from "@slices/geography/contract";
 import { leadsAdminScreens } from "@slices/leads/contract";
@@ -48,6 +49,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
       ...servicesAdminScreens,
       ...guidesAdminScreens,
       ...blogAdminScreens,
+      ...formsAdminScreens,
       ...leadsAdminScreens,
       ...translationAdminScreens,
       ...settingsAdminScreens,

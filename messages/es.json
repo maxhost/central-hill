@@ -1843,7 +1843,8 @@
       "settings": "Ajustes",
       "navigation": "Navegación",
       "translations": "Traducciones",
-      "guides": "Guías"
+      "guides": "Guías",
+      "forms": "Formularios"
     },
     "shell": {
       "signedInAs": "Sesión iniciada como",

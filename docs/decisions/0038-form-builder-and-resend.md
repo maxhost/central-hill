@@ -31,3 +31,5 @@ JSON at https://api.resend.com/emails with Bearer auth and reply_to. Acceptance 
 final delivery. No webhook/delivery guarantee in this arc. Console/skipped/failed are
 distinct in staff test results, and test data persists before an attempted notification.
 QA uses fake credentials + local intercept only; no real mail or production writes.
+
+Official transport reference: [Resend Send Email](https://resend.com/docs/api-reference/emails/send-email), verified2026-10-18. No SendGrid dependency/configuration is introduced.

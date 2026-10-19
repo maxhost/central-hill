@@ -97,4 +97,11 @@ No SEO/ISR público nuevo; confirmar que no se tocaron rutas públicas existente
 
 Pendiente aprovisionar formbuilderqa aislada; preview objetivo3064, PostgreSQL5598,
 proxy4498, todos a verificar libres. No usar credenciales de producción. No uploads.
-Contratos en preparación; ningún implementador iniciado todavía.
+Contratos aterrizados en b0fee3d; backend7768804 integrado como0dd23a9.
+Implementador A/B verificaron sus worktrees/branch/base limpio antes de editar.
+PostgreSQL17 + local Neon proxy creados, identidad DB/role formbuilderqa comprobada.
+Migraciones0000..0022 sólo aplicadas allí. Usuario staff sintético creado. Resend usa
+clave ficticia y preload que captura en mail-capture.jsonl; no tráfico al proveedor.
+Checks preliminares:3tests del transporte exit0; db:check exit0 (warning histórico0008).
+Primer intento tsx en sandbox falló EPERM socket, rerun autorizado local exit0.
+Integración UI/checks finales/QA pendientes.

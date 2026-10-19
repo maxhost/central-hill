@@ -1843,7 +1843,8 @@
       "settings": "Settings",
       "navigation": "Navigation",
       "translations": "Translations",
-      "guides": "Guides"
+      "guides": "Guides",
+      "forms": "Forms"
     },
     "shell": {
       "signedInAs": "Signed in as",

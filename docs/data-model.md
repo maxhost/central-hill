@@ -592,3 +592,19 @@ selected route travels with the card. Organisation adds optional `badge_icon_key
 Story/Organisation/Community media references accept images, video and Lottie;
 all other About media slots retain image-only semantics. Save validates MIME and
 reference existence and uses a guarded single SQL statement for page/source rows.
+
+## Reusable form builder — Forms (migration0022, ADR0038)
+
+`form_definition`: UUID, internal name, template contact/newsletter/owner-estimate,
+recipient address, status draft/archived, optimistic revision, schemaVersion1 JSON
+definition, timestamps. JSON preserves stable UUIDs of steps/fields/select options,
+layout and validation rules. EN copy is mirrored atomically into kernel translation
+entity `form_definition`, paths `block:copy.*`, `block:steps.<UUID>.title`,
+`block:fields.<UUID>.{label,placeholder,help}`, `block:fields.<UUID>.options.<UUID>`.
+Targets use kernel rows with approval/source_hash and explicit EN fallback.
+
+`form_test_submission`: UUID, form_id FK (no cascade), saved revision, locale,
+recipient, exact localized definition snapshot and normalized values JSON, creating
+staff ID, delivery accepted/logged/skipped/failed, provider ID/error, timestamps.
+Checkbox consent and exact labels retained in snapshot. Only staff tests, never
+production Leads or visitor data; no public placements/releases yet.

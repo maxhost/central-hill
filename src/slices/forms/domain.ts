@@ -56,5 +56,7 @@ export function createBlueprint(template: FormTemplate): FormBlueprint {
       { ...make("I accept the terms and privacy notice", "checkbox", true, contactStep), consent: true },
       { ...make("I would like to receive marketing emails", "checkbox", false, contactStep), consent: true }];
   }
+  if (template === "contact") fields = fields.map(field => field.type === "email" || field.label === "Name" ? { ...field, width: 1 } : field);
+  if (template === "owner-estimate") fields = fields.map(field => ["Number of properties", "Bedrooms", "Name", "Email"].includes(field.label) ? { ...field, width: 1 } : field);
   return { schemaVersion: 1, columns: template === "newsletter" ? 1 : 2, steps, fields, copy, replyToFieldId: email.id };
 }

@@ -17,8 +17,17 @@ import fr from "../../messages/fr.json";
  * — the `/admin` backoffice — 500'd with the JSON missing. A static map bundles all
  * four locales everywhere; the per-page size cost is negligible.
  */
+import formsEN from "../slices/forms/messages/en.json";
+import formsPT from "../slices/forms/messages/pt.json";
+import formsES from "../slices/forms/messages/es.json";
+import formsFR from "../slices/forms/messages/fr.json";
 type Loc = (typeof routing.locales)[number];
-const MESSAGES: Record<Loc, unknown> = { en, pt, es, fr };
+const MESSAGES: Record<Loc, unknown> = {
+  en: { ...en, forms: formsEN },
+  pt: { ...pt, forms: formsPT },
+  es: { ...es, forms: formsES },
+  fr: { ...fr, forms: formsFR },
+};
 
 export default getRequestConfig(async ({ requestLocale }) => {
   const requested = await requestLocale;

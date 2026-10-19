@@ -1,5 +1,9 @@
 # Central Hill agent instructions
 
+## Active form-builder arc (2026-10-18)
+
+User authorized the real reusable form builder first. Read [execution/spec](docs/specs/form-builder/00-execution.md) and [ADR0038](docs/decisions/0038-form-builder-and-resend.md). Provider explicitly confirmed **Resend**, not SendGrid. Integration branch `form-builder/integration`, checkout `/private/tmp/central-hill-form-builder-integration`, base377cffd; contracts b0fee3d. Two implementers in separate worktrees, independent normal scoped QA after integration. No public form placement/selection or page-editor conversion in this arc; current public forms and Avantio stay intact. Preserve previews3059–3063 and static concept3070. New isolated formbuilderqa DB/proxy5598/4498, preview3064. Local QA authorized automatically. No main integration, push, deployment, GitHub or Neon production writes.
+
 ## Contextual editor concept (2026-10-18)
 
 Current branch `contextual-editor/concept`, checkout

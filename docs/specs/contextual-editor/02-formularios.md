@@ -1,6 +1,11 @@
 # Catálogo y editor de formularios reutilizables
 
-2026-10-18. Diseño de feature futura; sin cambios de producto ni migraciones.
+2026-10-18. Nota posterior: el usuario autorizó primero el constructor real;
+[spec de ejecución Forms](../form-builder/00-execution.md) y ADR0038 sustituyen las
+propuestas de ownership/plantillas limitadas de este concepto. El selector de página
+sigue fuera del arco actual.
+
+Diseño histórico de feature futura; sin cambios de producto ni migraciones.
 Parte del estándar contextual, con lifecycle propio. Su HTML es sólo un concepto
 separado (`mock/contextual-editor/forms.html`). No se inserta un formulario nuevo
 en Home. Esta separación permite pulir el editor Home antes de construir todo el

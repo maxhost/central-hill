@@ -109,3 +109,11 @@ S0 platform-foundation
 
 Each wave merges only after its slices pass the Definition of Done and adversarial review.
 Migration numbers are allocated by the orchestrator per wave to avoid sequence collisions.
+
+## Forms builder (ADR0038)
+
+Forms owns `form_definition` and `form_test_submission`, reusable draft schemas and
+three starting templates (Contact, Newsletter, Owner estimate). Consumes core
+auth/DB/i18n/email and Backoffice contract only. Public contract exposes catalog/editor
+models and admin screens; no public placement/submission API in this arc. Staff tests
+are separate from S10 Leads; existing public forms remain on their legacy pipeline.
