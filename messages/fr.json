@@ -1728,7 +1728,8 @@
         "savedPreview": "L’aperçu affiche le contenu enregistré",
         "conflict": "Cette langue a changé dans un autre onglet. Rechargez avant de continuer.",
         "refreshWarning": "Publié. L’actualisation publique a échoué ; réessayez avant de vérifier le site.",
-        "noDraft": "Enregistrez un brouillon avant de publier."
+        "noDraft": "Enregistrez un brouillon avant de publier.",
+        "livePreview": "Aperçu en direct · les modifications ne sont pas enregistrées automatiquement"
       }
     }
   },
@@ -1968,7 +1969,12 @@
       "unavailable": "Aperçu indisponible",
       "retry": "Réessayer",
       "element": "Élément",
-      "fit": "Ajuster"
+      "fit": "Ajuster",
+      "livePreview": "Aperçu en direct",
+      "localPreview": "Modifications locales · non enregistrées",
+      "updatingPreview": "Actualisation de l’aperçu…",
+      "invalidPreview": "La dernière version valide est affichée. Vérifiez les champs incomplets.",
+      "previewError": "L’aperçu n’a pas pu être actualisé. Actualisez-le pour réessayer."
     }
   },
   "testimonials": {

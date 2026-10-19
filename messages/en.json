@@ -1728,7 +1728,8 @@
         "savedPreview": "Preview shows saved content",
         "conflict": "This language changed in another tab. Reload before continuing.",
         "refreshWarning": "Published. Public refresh failed; retry the refresh before checking the website.",
-        "noDraft": "Save a draft before publishing."
+        "noDraft": "Save a draft before publishing.",
+        "livePreview": "Live preview · changes are not saved automatically"
       }
     }
   },
@@ -1968,7 +1969,12 @@
       "unavailable": "Preview unavailable",
       "retry": "Try again",
       "element": "Element",
-      "fit": "Fit"
+      "fit": "Fit",
+      "livePreview": "Live preview",
+      "localPreview": "Local changes · not saved",
+      "updatingPreview": "Updating preview…",
+      "invalidPreview": "Preview shows the last valid version. Check the unfinished fields.",
+      "previewError": "Preview could not update. Refresh the preview to retry."
     }
   },
   "testimonials": {

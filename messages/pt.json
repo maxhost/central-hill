@@ -1728,7 +1728,8 @@
         "savedPreview": "A pré-visualização mostra o conteúdo guardado",
         "conflict": "Este idioma foi alterado noutro separador. Recarrega antes de continuar.",
         "refreshWarning": "Publicado. A atualização pública falhou; tenta atualizar antes de verificar o site.",
-        "noDraft": "Guarda um rascunho antes de publicar."
+        "noDraft": "Guarda um rascunho antes de publicar.",
+        "livePreview": "Pré-visualização em tempo real · as alterações não são guardadas automaticamente"
       }
     }
   },
@@ -1968,7 +1969,12 @@
       "unavailable": "Pré-visualização indisponível",
       "retry": "Tentar novamente",
       "element": "Elemento",
-      "fit": "Ajustar"
+      "fit": "Ajustar",
+      "livePreview": "Pré-visualização em tempo real",
+      "localPreview": "Alterações locais · por guardar",
+      "updatingPreview": "A atualizar a pré-visualização…",
+      "invalidPreview": "É apresentada a última versão válida. Verifica os campos incompletos.",
+      "previewError": "Não foi possível atualizar a pré-visualização. Atualiza para tentar novamente."
     }
   },
   "testimonials": {

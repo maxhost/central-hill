@@ -229,3 +229,6 @@ export type { PageEnvelope, PageLocaleEditorialModel, HomeEditorialModel, SavePa
 export { getPageEditorialRedirect } from "./server/editorial-translation-policy";
 
 export { getPageDraftPreview } from "./server/editorial-preview";
+
+/** Read-only authenticated render of a local Home snapshot; no persistence or ISR writes. */
+export { renderHomeLivePreview } from "./admin/live-preview-actions";

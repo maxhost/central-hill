@@ -100,3 +100,6 @@ export type { ToastApi, ToastVariant, ToastOptions } from "./ui/toast";
 export type { PageEditorAdapter, PageEditorShellProps, EditorLocale, EditorSection, EditorBinding, PageEditorBridgeMessage, PageLivePreviewResult, PageLivePreviewRenderer } from "./page-editor-types";
 export { PageEditorShell } from "./ui/page-editor-shell";
 export { PageEditorPreviewBridge } from "./ui/page-editor-preview-bridge";
+
+/** Staff-preview-only client surface; server renderer supplied by owning page adapter. */
+export { PageEditorLivePreview } from "./ui/page-editor-live-preview";

@@ -1,5 +1,14 @@
 # Slice `pages` (S9)
 
+## Local live preview
+
+Home now offers ephemeral live preview after the user's follow-up request. Current form
+snapshots and same-origin queued blob media go through a staff-only read action to the
+same Home renderer. It never saves, flushes uploads or invalidates public caches. Refresh
+replays local state; reloading the editor still recovers only the saved draft/published.
+Save draft and Publish remain explicit per-language actions. See home-live-preview-execution.
+
+
 ## Home per-language drafts (ADR0040)
 
 Home now uses `page_locale_content`, one row per language, with versioned full JSON

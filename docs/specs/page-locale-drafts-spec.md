@@ -13,8 +13,10 @@ para Home y las páginas que se adapten después. Antes de Owners.
 - Exactamente dos acciones editoriales: **Guardar borrador** y **Publicar**.
 - Ambas afectan **sólo al idioma seleccionado** EN/ES/PT/FR. El estado indica ese idioma.
 - Guardar borrador persiste su JSON en DB; cerrar/recargar recupera ese borrador.
-- Preview usa siempre el JSON de borrador guardado del idioma cuando existe; si no existe,
-  usa su versión publicada. Cambios aún sin guardar se indican y no aparecen en preview.
+- Al abrir, preview usa el draft guardado o published del idioma. Por petición posterior del
+  usuario, el formulario envía sus cambios locales a preview en vivo, sin persistirlos.
+  Refresh vuelve a representar ese estado local. Recargar el editor recupera sólo lo guardado.
+  Ver home-live-preview-execution.md; esta petición sustituye la restricción saved-only.
 - Publicar toma el borrador **ya guardado** del idioma, valida, actualiza su versión pública
   y elimina únicamente su JSON de borrador (`draft=NULL`). Su preview pasa al JSON público
   y debe verse igual. No limpia borradores ni publica contenidos de otros idiomas.
@@ -25,7 +27,7 @@ para Home y las páginas que se adapten después. Antes de Owners.
 - SEO EN/ES/PT/FR en toolbar, fuera de Sections/Element. Título y descripción SIEMPRE
   visibles y editables en su idioma, incluso con SEO EN vacío/heredado. Sin filtro por
   source EN no vacío. Canonical/hreflang automáticos. OG sigue autoría compartida desde EN.
-- No historial, rollback UI, descartar borrador, autosave, live preview ni formulario nuevo.
+- No historial, rollback UI, descartar borrador, autosave ni formulario nuevo.
   No conversión de otras páginas, Forms público ni cambios a Avantio.
 
 ## Persistencia simple y aislamiento

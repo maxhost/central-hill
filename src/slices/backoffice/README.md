@@ -1,5 +1,15 @@
 # Slice `backoffice` (S12)
 
+## Local live preview
+
+The optional PageEditorAdapter.previewPayload enables an ephemeral same-origin live preview.
+PageEditorLivePreview accepts the owning slice's staff-gated render action, keeps only one
+request and the newest queued snapshot, and ignores obsolete results. The shell debounces
+payloads and refreshes without reloading the iframe; existing saved-only adapters are unchanged.
+The bridge validates origin/source/instance/revision/JSON bounds, rebinds selection after RSC
+updates without focus changes and preserves private preview scroll. No persistence belongs here.
+
+
 The auth-gated **admin app shell** + the **plug-in framework** that every other
 slice's `admin/` composes against (ADR 0009 auth, ADR 0017 routing). It is a
 *skeleton*, not CRUD for an entity: it owns the login, the gated chrome

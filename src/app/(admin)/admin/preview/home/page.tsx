@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { requireStaff } from "@core/auth";
-import { HomePageRenderer, homeEditorBindingIds, getPageDraftPreview } from "@slices/pages/contract";
-import { PageEditorPreviewBridge } from "@slices/backoffice/contract";
+import { HomePageRenderer, homeEditorBindingIds, getPageDraftPreview, renderHomeLivePreview } from "@slices/pages/contract";
+import { PageEditorLivePreview } from "@slices/backoffice/contract";
 import { SiteHeader, SiteFooter } from "@slices/settings/contract";
 import type { Locale } from "@core/db/columns";
 
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const metadata = { robots: { index: false, follow: false } };
 
-/** Staff-only saved-content preview; no snapshot payload or public ISR entry. */
+/** Staff-only preview; saved baseline plus ephemeral local snapshots, never public ISR. */
 export default async function HomePreview({ searchParams }: {
   searchParams: Promise<{ locale?: string; instance?: string }>;
 }) {
@@ -24,8 +24,10 @@ export default async function HomePreview({ searchParams }: {
   const page = await getPageDraftPreview("home", locale as Locale);
   return <NextIntlClientProvider locale={locale} messages={messages}>
     <SiteHeader locale={locale as Locale} />
-    <HomePageRenderer locale={locale as Locale} preview page={page} />
+    <PageEditorLivePreview instance={query.instance} bindingIds={homeEditorBindingIds}
+      renderPreviewAction={renderHomeLivePreview.bind(null, locale)}>
+      <HomePageRenderer locale={locale as Locale} preview page={page} />
+    </PageEditorLivePreview>
     <SiteFooter locale={locale as Locale} />
-    <PageEditorPreviewBridge instance={query.instance} bindingIds={homeEditorBindingIds} />
   </NextIntlClientProvider>;
 }

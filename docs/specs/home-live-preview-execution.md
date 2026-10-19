@@ -75,3 +75,12 @@ pnpm build with safe env. No migration/db:check needed. Logs under home-live-qa.
 those logs, no duplicate checks; one confirmation only for actual defects.
 
 Local commits only, no main/push/deployment/GitHub/production. Handoff and preview3067 final.
+
+## Integration
+
+Contracts5a9257d; renderer733b7e5/ad0c2f8 (A commitsbe03e52/c13d91f);
+bridge9cfc90c cherry-picked by root. Root additionally owns Pages/Backoffice README
+updates documenting the optional read-only seam. No kernel change or migration.
+Page Editor Refresh resends local snapshot without iframe reload when live/ready; if
+not ready it retains existing iframe retry. Node22 focused A2/B5 tests and lint passed
+on branches; global checks only below on integrated code.
