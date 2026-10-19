@@ -1,5 +1,10 @@
 # Home — plan cerrado del editor contextual reutilizable
 
+> Histórico del piloto ya implementado. El nuevo modelo editorial solicitado por el usuario
+> está en [spec de drafts por idioma](page-locale-drafts-spec.md),
+> [plan](page-locale-drafts-plan.md) y ADR0040. Sus reglas Guardar borrador/Publicar
+> por idioma sustituyen aquí las referencias a guardado live, review y ausencia de drafts.
+
 2026-10-18. Estado: alcance y decisiones cerrados con las aclaraciones del usuario;
 **sin implementar Home todavía**. Próximo paso: spec de ejecución/contratos y Home.
 Base de producto64da451, rama actual form-builder/integration,

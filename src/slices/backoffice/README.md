@@ -161,7 +161,10 @@ preview URL/version, pending state, actions and inspector. The shell owns no pag
 queries or persistence. The adapter increments `previewVersion` after a successful
 save; pending edits remain explicitly separate from the saved preview. Desktop,
 tablet and mobile use real iframe document widths1440/768/390 with fit scaling.
-The outline and binding selector retain access to hidden/empty sections and SEO.
+The outline and binding selector retain access to hidden/empty content sections.
+An adapter may set seoSectionId: that section opens from SEO EN/ES/PT/FR beside viewport
+controls and is excluded from Sections/Element. SEO mode keeps the right inspector and
+returns to content selection through the canvas/outline.
 
 Only authenticated private previews mount `PageEditorPreviewBridge({instance,
 bindingIds})`. The route passes the `instance` query parameter and an allowlist of

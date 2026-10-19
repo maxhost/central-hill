@@ -155,3 +155,14 @@ synthetic content and its isolated DB/storage. Previous environment artifacts pr
 final listener read observed3065/9065, not3063/3064/3070 (no assertion they are running).
 
 Independent QA report-only commit14d85fd. Final closure changes documentation only.
+
+## Follow-up UX solicitado por el usuario
+
+Home validada visualmente por el usuario. Nueva petición: SEO EN/ES/PT/FR junto a
+Desktop/Tablet/Mobile y fuera de Sections/Element; muestra todos sus campos en inspector.
+Cambio simple, un único escritor raíz: backoffice/page-editor-types.ts,
+backoffice/ui/page-editor-shell.tsx, pages/admin/ui/home-contextual-editor.tsx y docs.
+Contrato opcional seoSectionId mantiene el shell independiente de Home/Pages. No cambios
+de persistencia, SEO público, traducciones, DB ni migraciones. Verificación enfocada de
+navegación y borradores EN/ES más desktop/mobile; no nueva QA independiente global.
+En paralelo sólo se documenta plan/handoff Owners; no implementación Owners/Forms/Leads.

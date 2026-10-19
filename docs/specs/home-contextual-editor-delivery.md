@@ -112,3 +112,28 @@ src/slices/settings/contract.ts
 ```
 
 Integration checkout has no unrelated changes or omitted source artifacts.
+
+## Validación del usuario y ajuste SEO posterior
+
+El usuario aceptó Home y solicitó plan/handoff Owners. Después pidió mover SEO a
+la toolbar junto a Desktop/Tablet/Mobile, con etiqueta SEO EN/ES/PT/FR según idioma.
+Código del ajuste3c55a1b: contrato opcional seoSectionId y filtro de los menús
+Sections/Element; al entrar se muestran los campos SEO en inspector, conservando
+los datos y semánticas previas. No cambios DB/migraciones/SEO público.
+
+Typecheck/lint/build y9tests afectados exit0. Build/running preview3065 actualizado;
+server session93844, logserver-seo-toolbar.log. Root focused browser check exit0: dedicated SEO buttons in4locales, no SEO in
+Sections/Element, inspector fields, local draft preservation between tabs, return to
+content, reload and desktop/mobile without runtime errors. No DB writes in that check.
+Evidence: seo-toolbar.cjs and seo-toolbar-{desktop,mobile}.png in the Home QA directory. No nueva QA independiente global para este cambio simple.
+Handoff del siguiente contexto: [Owners](owners-contextual-editor-handoff.md),
+[plan](owners-contextual-editor-plan.md). Owners permanece sin implementación.
+
+## Siguiente requisito, todavía sin implementar
+
+El usuario cambió el modelo editorial: sólo Guardar borrador y Publicar, ambos por idioma;
+JSON draft persistente, preview draft→published, publicar EN elimina sólo EN draft y no toca
+ES. Spec/plan/handoff cerrados en page-locale-drafts-*.md y ADR0040. Ese arco precede a Owners.
+La implementación actual3c55a1b todavía tiene el modelo anterior, incluida la limitación de
+SEO target vacío cuando no hay source EN; la nueva spec exige resolverla sin aprobación.
+Esta sesión sólo documenta ese cambio y la propuesta de adaptadores paralelos.

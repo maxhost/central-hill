@@ -1,10 +1,32 @@
 # Central Hill agent instructions
 
+## Next: Home draft/publish per language (spec/plan only)
+
+Read [spec](docs/specs/page-locale-drafts-spec.md),
+[execution plan](docs/specs/page-locale-drafts-plan.md),
+[fresh-context handoff](docs/specs/page-locale-drafts-handoff.md) and ADR0040.
+User requested documentation before launching implementation agents; do not start code now.
+Exactly Save draft and Publish, both for selected locale. One JSON draft per language;
+private preview uses it if present, otherwise that language's published JSON. Publish EN
+clears only EN draft; ES draft/public/local work stay intact. No translation approve/review.
+Persistent per-locale revision survives draft deletion. Home first, before Owners.
+Maximum10new focused automated cases, one EN/ES desktop/mobile browser pass. Global
+checks once in integrated candidate; QA consumes logs instead of rerunning. No149tests by
+routine or large locale/viewport matrices. Local safe sandbox and QA already authorized.
+Neon production/GitHub need separate approval; no main/push/deployment in local delivery.
+
+Owners plan/handoff now waits for this base. Future page-adapter parallelism is described in
+[parallel plan](docs/specs/page-editors-parallel-plan.md): proposed one agent/page, maximum3
+writers with current4slots including root. No agents launched. Exclude Services CMS,
+Buildings CMS and Blog posts. Shared infrastructure/contracts must land before page agents.
+Preserve Home3065 and all existing environment artifacts.
+
 ## Home contextual editor pilot (2026-10-18)
 
 User authorized implementation from c28615f. Local task branch
 home-contextual/integration at /private/tmp/central-hill-home-contextual-integration;
-corrected executable6359b6d, independently scoped-QA-approved.
+corrected executable6359b6d, independently scoped-QA-approved. User accepted Home.
+SEO toolbar follow-up3c55a1b has focused root verification; see delivery.
 Read [execution](docs/specs/home-contextual-editor-execution.md),
 [delivery](docs/specs/home-contextual-editor-delivery.md) and
 [QA](docs/specs/home-contextual-editor-qa.md). Closed scope remains in

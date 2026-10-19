@@ -7,6 +7,7 @@ they are made by the **orchestrator**, not by feature agents mid-task.
 Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 
 ## Index
+- [0040 — Page JSON drafts and publication per locale](0040-page-locale-drafts.md) — Home first; planning accepted, implementation pending.
 - [0001 — Custom build, not WordPress/Webflow](#0001)
 - [0002 — Rendering: Next.js ISR, not a hand-rolled JSON snapshot layer](#0002)
 - [0003 — Hosting: Netlify (not Vercel) + Neon + R2](#0003)

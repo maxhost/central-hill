@@ -1300,3 +1300,8 @@ through private list IDs; new rows use UUID keys and removed IDs cannot be reuse
 Home target locale snapshots use the same revision guard and kernel target seam.
 Needs-review/absent targets fall back to EN; approved stale targets remain visible.
 Local language drafts remain in the adapter while switching tabs.
+
+Home SEO navigation follow-up3c55a1b: dedicated SEO EN/ES/PT/FR toolbar entry, outside
+Sections/Element, full inspector for existing SEO fields. Follow-up draft/publication
+design is now ADR0040 and docs/specs/page-locale-drafts-spec.md; implementation is pending.
+It will supersede the pilot's Save and publish / translation approval model for Home only.
