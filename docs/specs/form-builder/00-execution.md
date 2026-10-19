@@ -104,4 +104,57 @@ Migraciones0000..0022 sólo aplicadas allí. Usuario staff sintético creado. Re
 clave ficticia y preload que captura en mail-capture.jsonl; no tráfico al proveedor.
 Checks preliminares:3tests del transporte exit0; db:check exit0 (warning histórico0008).
 Primer intento tsx en sandbox falló EPERM socket, rerun autorizado local exit0.
-Integración UI/checks finales/QA pendientes.
+Integración UI/checks finales/QA completados; ver cierre al final.
+
+## Candidato integrado y verificaciones
+
+Candidato4cd453c (contratosb0fee3d, backend7768804→0dd23a9,
+editorcee0982→50420c5, validaciónae98b5d→0a4ec57). Checkouts de implementadores
+preservados con sus commits; único no versionado allí: symlink local node_modules.
+Integración limpia al enviar a QA; ejecución local sin cambios a main.
+
+En /private/tmp/central-hill-form-builder-integration, `source
+/private/tmp/central-hill-form-builder-qa/env.sh`, Node22.23.3:
+
+| Check en candidato4cd453c | Exit / evidencia |
+|---|---|
+| `pnpm typecheck` | 0; typecheck.log |
+| `pnpm lint` | 0;7warnings históricos (mock/site3, mock/contextual2, postcss1, i18n/schema1); lint.log |
+| `pnpm exec tsx --test src/slices/forms/tests/forms.test.ts src/core/email/tests/resend.test.ts src/slices/leads/tests/leads.test.ts src/slices/leads/tests/leads-admin.test.ts src/core/i18n/tests/actor-attribution.test.ts` | 0;28/28; tests.log |
+| `pnpm build` | 0;build.log, repetido tras última corrección UI para verificar el candidato exacto |
+| `pnpm db:check` | 0;23migraciones, warning histórico0008; db-check.log |
+
+Logs en /private/tmp/central-hill-form-builder-qa. Detector Impeccable ejecutado
+una vez sobre admin/ui de Forms: exit0 sin salida; no sustituye revisión visual.
+Revisión manual de boundaries: Forms consume Backoffice sólo por contract;
+core/i18n conserva ownership de escrituras de traducción, shell agrega screens y
+rutas delgadas. No cambios de código en rutas/componentes públicos existentes;
+no nuevos tags/SEO públicos porque todavía no existen placements.
+
+Preview3064: nextdev PID2556, sesión3469, checkout de integración. DB/role
+formbuilderqa, PostgreSQL17 puerto5598, proxy4498, red central-hill-form-builder-qa.
+QA inició sobre4cd453c y aprobó ejecutablee33f078 tras correcciones acotadas; ver01-qa.md.
+
+## Cierre local
+
+**QA independiente aprobado** sobre códigoe33f078; informe localb7d8d4c.
+Hallazgo P2 stepProgress corregido en4idiomas. Revisión de raíz detectó carrera de
+edición mientras guardaba: fieldset/cambioidioma se bloquean en pending; QA confirmó
+la corrección sin repetir la matriz. Capturas desktop/mobile inspeccionadas por QA
+(y raíz sobre las mismas imágenes). No P1/P2 abiertos dentro del alcance.
+
+Checks finales **sobree33f078**, todos exit0: typecheck-final.log,
+lint-final.log (mismos7warnings históricos), tests-final.log (28/28),
+build-final.log, db-check-final.log (mismo warning0008). Comprobación literal de102
+llamadas i18n presente en todos los JSONs EN/PT/ES/FR; exit0.
+
+Preview final3064 reiniciada por su dueño en **EMAIL_PROVIDER=console** para pruebas
+manuales del usuario, PID16368, sesión23653, logserver-console.log. Selector real de
+core/email comprobado en proceso local: resultado `{ok:true,id:"console"}`; no envío.
+El QA anterior de Resend usó exclusivamente fake capture/rechazo503, con marcador de
+fallo retirado. No se promete entrega real ni configuración de dominio/credenciales.
+
+Handoff [02-handoff](02-handoff.md). Entrega permanece en rama de tarea, sin main,
+push, deploy, GitHub o Neon producción. Se conservan todos los worktrees/commits y
+previews anteriores. Quedan únicamente las exclusiones deliberadas (placements,
+publicación/release pública y editor contextual de páginas) para el siguiente arco.
