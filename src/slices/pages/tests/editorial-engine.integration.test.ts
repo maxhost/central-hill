@@ -17,7 +17,7 @@ test("Real Buildings bootstrap retains pending ES and page/language CAS revision
   const [source] = await db.select().from(page_content).where(eq(page_content.key, "buildings"));
   assert.ok(source, "Synthetic Buildings fixture required");
   const originalTranslations = await db.select().from(translation).where(eq(translation.entity_id, source.id));
-  const actor = "pageeditorsqa-staff";
+  const actor = "pageeditors2qa-staff";
   try {
     await db.delete(page_locale_content).where(inArray(page_locale_content.page_key, keys));
     await db.insert(translation).values({ entity_type: "page_content", entity_id: source.id, locale: "es", field: "block:seo.meta_title", value: "Pending Buildings ES", state: "draft" })

@@ -120,7 +120,7 @@ export const getRealEstatePage = (locale: Locale): Promise<RealEstatePage | null
   published("real_estate", locale);
 
 export const getAboutPage = (locale: Locale): Promise<AboutPage | null> =>
-  cached<AboutPage["content"]>("about", locale);
+  published("about", locale);
 
 /**
  * The CTA closing every post's sticky aside, from the `blog` row (`defaultBlog` while no row
@@ -172,7 +172,7 @@ export async function getBuildingsPage(locale: Locale): Promise<BuildingsPage> {
 
 /** Cached editorial overrides, with locale-message fallback for missing/invalid content. */
 export async function getServicesPage(locale: Locale): Promise<ServicesPage> {
-  const page = await cached<unknown>("services", locale);
+  const page = await published("services", locale);
   const parsed = page ? servicesSchema.safeParse(page.content) : null;
   if (parsed?.success && page) return { ...page, content: parsed.data };
   return { content: defaultServices, media: {}, ogImage: page?.ogImage ?? null };

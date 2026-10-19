@@ -192,3 +192,13 @@ con enablement separado, seam `legacySource/legacyEditorialRows`, renderers inye
 shared asides extraídos, `surface` validada servidor y `publicationScope` antes de consumidores.
 Tanda1 tendrá worktrees Services/About con los paths de la tabla; tanda2 Guides/Blog.
 Sin cambios DDL/kernel. Preparación entorno pageeditors2qa en curso; no writes a3068.
+
+Contratos e2dffe6; Services integrado17a64dd desde1d63814, About desdefbef7785.
+Expansión mínima autorizada: About mueve ABOUT_LIST_PATHS a schemas/about.ts y
+form-model cambia sólo import, para romper ciclo ESM descriptor→form-model→About.
+NodeField ya da destination=buildings a nuevas contact.cards; no se cambió esa lógica.
+Tanda1 dos tests por adapter y eslint focal exit0. Sin globals por rama.
+Nueva DB SQL identidad pageeditors2qa/pageeditors2qa verificada; migraciones existentes
+aplicadas exit0. Infra técnica del proxy local corregida, ningún DDL de producto nuevo.
+Storage9069 PID85502. Tanda2 usa la integración de tanda1 con registry/getters Services/About
+habilitados y seam legacy con pending exacto separado del published validado.

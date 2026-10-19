@@ -10,7 +10,7 @@ import { bootstrapEditorial, editorialModel, legacyEditorialRows, publishEditori
 import { getPublishedPageLocale, resolveEditorialEnvelope } from "../server/editorial-publication";
 import type { PageEnvelope, PageLocaleEditorialModel, PageEditorialResult } from "../editorial-types";
 import { assertEditorialTestDatabase } from "./editorial-test-environment";
-const actor = "pageeditorsqa-staff";
+const actor = "pageeditors2qa-staff";
 let originals: typeof page_locale_content.$inferSelect[];
 let legacy: typeof page_content.$inferSelect | undefined;
 let empty: PageEnvelope;

@@ -50,7 +50,7 @@ export async function readEditorialRows<K extends EditorialPageKey = "home">(
     .from(page_locale_content)
     .where(eq(page_locale_content.page_key, key));
   if (rows.length === 4) return rows as EditorialRow<K>[];
-  const baseline = await legacyEditorialRows(key);
+  const baseline = await legacyEditorialRows(key).catch(() => [] as EditorialRow<K>[]);
   return editorialLocales.flatMap((locale) => {
     const row =
       rows.find((row) => row.locale === locale) ??
