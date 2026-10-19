@@ -17,7 +17,7 @@
   "placementLater": "These forms can be tested by staff. Selecting a form for a public page will be added with the visual page editor. Existing public forms remain separate.",
   "editorTitle": "Form editor",
   "editorDescription": "Select a field in the preview to edit its content and rules.",
-  "backToCatalog": "All forms",
+  "backToCatalog": "Back to Forms",
   "archivedHint": "Archived form. Restore it from the catalog before saving or testing.",
   "language": "Form language",
   "source": "Source",

@@ -163,3 +163,8 @@ Follow-up L0 de estilo solicitado por usuario: selector de plantilla normalizado
 `appearance-none` y chevron, sólo en catálogo. Browser confirma ambos controles38px,
 misma alineación/fuente14px/fondo/radio; seleccionar plantilla sigue funcionando.
 ESLint del archivo y diff-check exit0; captura localstyle-fix.png. Sin cambios de lógica.
+
+Follow-up L0 aprobado por usuario: enlace del editor renombrado a “Back to Forms”
+(con equivalentes ES/PT/FR) y flecha Iconoir arrow-left mediante SpriteIcon. Mantiene
+destino /admin/forms. ESLint puntual y diff-check exit0. Verificación automatizada
+de navegación fue interrumpida por el usuario; no se reclama como pasada.

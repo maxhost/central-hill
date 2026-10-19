@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { AdminButton, AdminPageHeader, Field, TextInput, TextArea, Select, Checkbox, StateBadge } from "@slices/backoffice/contract";
+import { AdminButton, AdminPageHeader, Field, TextInput, TextArea, Select, Checkbox, StateBadge, SpriteIcon } from "@slices/backoffice/contract";
 import { approvedBlueprint, localizedBlueprint, newField, textFields } from "../domain";
 import { saveForm, saveFormLocale, testForm } from "../server/actions";
 import { FormRuntime } from "../ui/form-runtime";
@@ -128,7 +128,7 @@ export function FormEditor({ model }: { model: FormEditorModel }) {
     </Field>;
   };
   return <div className="space-y-5">
-    <AdminPageHeader title={name || t("editorTitle")} description={t("editorDescription")} actions={<Link href="/admin/forms" className="text-sm text-accent-deep underline underline-offset-4">{t("backToCatalog")}</Link>} />
+    <AdminPageHeader title={name || t("editorTitle")} description={t("editorDescription")} actions={<Link href="/admin/forms" className="inline-flex items-center gap-2 text-sm text-accent-deep underline underline-offset-4"><SpriteIcon name="arrow-left" size={18} />{t("backToCatalog")}</Link>} />
     {saved.status === "archived" && <p className="text-sm text-ink-soft">{t("archivedHint")}</p>}
     <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-4">
       <div className="flex flex-wrap gap-1" aria-label={t("language")}>
