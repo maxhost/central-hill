@@ -24,7 +24,7 @@ import { SIDE_MEDIA_CLASS, sideMedia } from "./side-media";
  * Each section takes the page read once by the listing (`getBuildingsPage(locale)`) + `locale`.
  */
 
-type SectionProps = { page: BuildingsPage; locale: Locale };
+type SectionProps = { page: BuildingsPage; locale: Locale; preview?: boolean };
 
 /**
  * `core/ui`'s `Hero`, single-column (no `aside`), with the strengthened overlay, vertically
@@ -32,12 +32,13 @@ type SectionProps = { page: BuildingsPage; locale: Locale };
  * docstring). Background = the picked asset, else the stock Unsplash photo. The contact button
  * and dialog fall back to Owners' `pages.owners.contact*` (the same text it always showed).
  */
-export async function BuildingsHero({ page, locale }: SectionProps) {
+export async function BuildingsHero({ page, locale, preview = false }: SectionProps) {
   const t = await getTranslations({ locale, namespace: "pages" });
   const hero = page.content.hero;
   const heroMedia = page.media[hero?.image_media_id ?? ""];
-  return (
+  const result = (
     <Hero
+      editorBindings={preview ? { background: "hero.image_media_id", eyebrow: "hero.eyebrow", subtitle: "hero.copy" } : undefined}
       background={
         heroMedia ? (
           <MediaImage
@@ -64,7 +65,7 @@ export async function BuildingsHero({ page, locale }: SectionProps) {
       subtitleClassName="mt-5 max-w-[60ch] text-lg"
       actionsClassName="mt-2"
       eyebrow={orMessage(hero?.eyebrow, t("buildings.heroEyebrow"))}
-      headline={orMessage(hero?.headline, t("buildings.heroTitle"))}
+      headline={preview ? <span data-editor-binding="hero.headline">{orMessage(hero?.headline, t("buildings.heroTitle"))}</span> : orMessage(hero?.headline, t("buildings.heroTitle"))}
       subtitle={orMessage(hero?.copy, t("buildings.heroCopy"))}
       actions={
         <ContactDialog
@@ -77,6 +78,7 @@ export async function BuildingsHero({ page, locale }: SectionProps) {
       }
     />
   );
+  return preview ? <div data-editor-binding="hero">{result}</div> : result;
 }
 
 /**
@@ -85,7 +87,7 @@ export async function BuildingsHero({ page, locale }: SectionProps) {
  * always scrolls to the calculator (`#estimate`); a blank contact line is built from Settings
  * with the localized "Call {phone}" prefix, exactly like Owners' closing band.
  */
-export async function BuildingsOwnerPanel({ page, locale }: SectionProps) {
+export async function BuildingsOwnerPanel({ page, locale, preview = false }: SectionProps) {
   const [t, globals] = await Promise.all([
     getTranslations({ locale, namespace: "pages" }),
     getGlobals(locale),
@@ -95,7 +97,7 @@ export async function BuildingsOwnerPanel({ page, locale }: SectionProps) {
     t("owners.finalCall", { phone }),
   );
   return (
-    <div className="pb-[clamp(64px,10vw,160px)]">
+    <div {...(preview ? { "data-editor-binding": "owner_panel" } : {})} className="pb-[clamp(64px,10vw,160px)]">
       <Container>
         <Reveal label="buildings-owner-panel">
           <FeaturePanel
@@ -116,11 +118,11 @@ export async function BuildingsOwnerPanel({ page, locale }: SectionProps) {
  * page's 0–8 figures with each one's second line (`description`); desktop columns follow the
  * row count (`statBandColumns`; 3 figures → 3, as always). No figures → nothing, title included.
  */
-export async function BuildingsStats({ page, locale }: SectionProps) {
+export async function BuildingsStats({ page, locale, preview = false }: SectionProps) {
   const cells = describedStatFigureCells(page.content.stats?.figures ?? []);
   if (cells.length === 0) return null;
   const t = await getTranslations({ locale, namespace: "pages" });
-  return (
+  const result = (
     <Reveal label="buildings-stats">
       <StatBand
         title={orMessage(page.content.stats?.title, t("buildings.statsTitle"))}
@@ -129,6 +131,7 @@ export async function BuildingsStats({ page, locale }: SectionProps) {
       />
     </Reveal>
   );
+  return preview ? <div data-editor-binding="stats">{result}</div> : result;
 }
 
 /**
@@ -138,12 +141,12 @@ export async function BuildingsStats({ page, locale }: SectionProps) {
  * `sideMedia` (photo / animated WebP / video / Lottie by mime) in the 4:5 frame, else the stock
  * Pexels photo. `#estimate` is the target of the owner panel's button.
  */
-export async function BuildingsCalculator({ page, locale }: SectionProps) {
+export async function BuildingsCalculator({ page, locale, preview = false }: SectionProps) {
   const t = await getTranslations({ locale, namespace: "pages" });
   const calc = page.content.calculator;
   const calcMedia = page.media[calc?.media_media_id ?? ""];
   return (
-    <div id="estimate" className="scroll-mt-[84px]">
+    <div {...(preview ? { "data-editor-binding": "calculator" } : {})} id="estimate" className="scroll-mt-[84px]">
       <Section className="border-t border-line bg-[color-mix(in_srgb,var(--color-line)_26%,var(--color-bg))]">
         <Container>
           <Reveal label="buildings-calculator">
@@ -160,7 +163,7 @@ export async function BuildingsCalculator({ page, locale }: SectionProps) {
                 doneTitle={calc?.done_step?.title}
                 doneBody={calc?.done_step?.body}
               />
-              <div className="order-first min-[981px]:order-none">
+              <div {...(preview ? { "data-editor-binding": "calculator.media_media_id" } : {})} className="order-first min-[981px]:order-none">
                 {(calcMedia ? sideMedia(calcMedia) : null) ?? (
                   // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
                   <img src={BUILDINGS_CALC_FALLBACK_IMG} alt={BUILDINGS_CALC_FALLBACK_ALT} className={SIDE_MEDIA_CLASS} />

@@ -15,6 +15,7 @@
  * See docs/data-model.md → Page content model → buildings.
  */
 import { z } from "zod";
+import { adminHidden } from "./admin-hidden";
 import { seoShape, tStrOpt } from "@core/validation/primitives";
 import {
   between,
@@ -55,6 +56,8 @@ const buildingsFigure = statFigure.extend({
 });
 
 export const buildingsSchema = z.object({
+  _list_ids: adminHidden(z.record(z.string(), z.array(z.string()))).optional(),
+  _retired_ids: adminHidden(z.array(z.string())).optional(),
   /** Search/social meta for `/<locale>/buildings`. Blank → `pages.buildings.metaTitle` / `metaDescription`. */
   seo: z.object({ ...seoShape }).optional(),
   /** Blank → `pages.buildings.hero*`; the contact button/dialog → `pages.owners.contact*`. */
