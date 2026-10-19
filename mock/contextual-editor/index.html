@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Central Hill · Editor contextual — concepto</title><link rel="stylesheet" href="editor.css"></head>
+<body>
+<svg class="svg-defs" xmlns="http://www.w3.org/2000/svg"><defs>
+<symbol id="desktop" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="13" rx="1.5"/><path d="M8 21h8M12 16v5"/></symbol>
+<symbol id="tablet" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M11 18h2"/></symbol>
+<symbol id="mobile" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></symbol>
+<symbol id="sections" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="5" rx="1"/><rect x="3" y="11" width="7" height="10" rx="1"/><path d="M14 12h7M14 16h7M14 20h7"/></symbol>
+<symbol id="arrow" viewBox="0 0 24 24"><path d="m14 7-5 5 5 5"/></symbol>
+<symbol id="chevron" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol>
+<symbol id="refresh" viewBox="0 0 24 24"><path d="M20 8a8 8 0 1 0 0 8M20 3v5h-5"/></symbol>
+<symbol id="image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 4-6 5 7"/></symbol>
+<symbol id="lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></symbol>
+<symbol id="check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+<symbol id="external" viewBox="0 0 24 24"><path d="M14 3h7v7M21 3 10 14M10 3H4v17h17v-6"/></symbol>
+<symbol id="close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+<symbol id="text" viewBox="0 0 24 24"><path d="M4 6V3h16v3M12 3v18M8 21h8"/></symbol>
+<symbol id="forms" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h4"/></symbol>
+<symbol id="eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+</defs></svg>
+<header class="app-header">
+ <a class="brand" href="index.html" aria-label="Central Hill, concepto de editor">Central<span>Hill</span><span class="brand-divider"></span><span class="workspace-name">Editor de contenido</span></a>
+ <nav aria-label="Área de edición"><button class="top-tab active" aria-current="page">Páginas</button><a class="top-tab" href="forms.html">Formularios <span class="small-label">Concepto</span></a></nav>
+ <span class="prototype-tag">Prototipo · Sin conexión al CMS</span>
+</header>
+<header class="page-header">
+ <div class="page-identity"><button class="icon-button" id="back-overview" aria-label="Ver secciones de Home"><svg><use href="#arrow"/></svg></button><div><div class="page-title">Home <span class="page-chip">Página fija</span></div><div class="page-path">centralhill.pt<span id="locale-path">/en</span></div></div></div>
+ <div class="language-tabs" role="tablist" aria-label="Idioma del contenido"><button role="tab" aria-selected="true" data-locale="en">EN <span class="language-dot source"></span></button><button role="tab" aria-selected="false" data-locale="es">ES <span class="language-dot"></span></button><button role="tab" aria-selected="false" data-locale="pt">PT <span class="language-dot review"></span></button><button role="tab" aria-selected="false" data-locale="fr">FR <span class="language-dot missing"></span></button></div>
+ <div class="page-actions"><span class="draft-state" id="draft-state">Sin cambios</span><button class="button primary" id="save-draft">Guardar demo <svg><use href="#check"/></svg></button></div>
+</header>
+<main class="editor-shell">
+ <section class="workspace" aria-label="Vista de la página">
+  <div class="canvas-toolbar"><button class="toolbar-button" id="outline-toggle" aria-expanded="false" aria-controls="outline"><svg><use href="#sections"/></svg><span>Secciones</span><svg class="small"><use href="#chevron"/></svg></button>
+   <div class="viewport-control" role="group" aria-label="Ancho de la vista previa"><button class="icon-button active" data-viewport="1440" aria-label="Desktop, 1440 píxeles" aria-pressed="true"><svg><use href="#desktop"/></svg></button><button class="icon-button" data-viewport="768" aria-label="Tablet, 768 píxeles" aria-pressed="false"><svg><use href="#tablet"/></svg></button><button class="icon-button" data-viewport="390" aria-label="Móvil, 390 píxeles" aria-pressed="false"><svg><use href="#mobile"/></svg></button><span class="toolbar-divider"></span><span id="viewport-size">1440 px</span><span class="zoom" id="zoom">Ajustar</span></div>
+   <button class="toolbar-button refresh-button" id="refresh-preview"><svg><use href="#refresh"/></svg><span>Actualizar vista</span></button>
+  </div>
+  <nav class="outline" id="outline" aria-label="Secciones de Home" hidden><div class="outline-heading">Estructura de la página <svg><use href="#lock"/></svg></div>
+   <button data-select="hero" class="outline-item">Hero <span>Contenido y medios</span></button><button data-select="booking" class="outline-item">Buscador de alojamiento <span>Integración Avantio</span></button><button data-select="stats" class="outline-item">Cifras <span>Texto y elementos</span></button><button data-select="guests" class="outline-item">Para huéspedes <span>Contenido y medios</span></button><button data-select="portfolio" class="outline-item">Apartamentos <span>Contenido del catálogo</span></button><button data-select="services" class="outline-item">Servicios <span>Copy y catálogo</span></button><button data-select="faq" class="outline-item">Preguntas frecuentes <span>Sin grupo seleccionado</span></button><button data-select="dual" class="outline-item">Cierre propietarios / huéspedes <span>Contenido y medios</span></button><div class="outline-rule"></div><button data-select="seo" class="outline-item">SEO y redes sociales <span>Metadatos de la página</span></button>
+  </nav>
+  <div class="preview-status"><span><span class="status-dot"></span><span id="preview-state">Vista guardada · EN</span></span><span class="preview-hint">Selecciona un texto, imagen o sección</span></div>
+  <div class="canvas" id="canvas"><div class="frame-scaler" id="frame-scaler"><iframe id="page-preview" title="Home: vista de edición conceptual" src="home-preview.html"></iframe></div></div>
+  <footer class="canvas-footer"><span><svg><use href="#lock"/></svg> Diseño y orden protegidos</span><span>Datos ilustrativos · Los cambios sólo viven en esta pestaña</span></footer>
+ </section>
+ <aside class="inspector" aria-label="Editor del elemento seleccionado" id="inspector">
+  <div class="inspector-breadcrumb"><button data-select="hero">Home</button><span>/</span><span id="selected-section">Hero</span></div>
+  <div class="inspector-heading"><div class="element-icon" id="element-icon"><svg><use href="#text"/></svg></div><div><h1 id="inspector-title">Título del hero</h1><p id="inspector-subtitle">Texto principal de la portada</p></div></div>
+  <div class="inspector-tabs"><span class="selected">Contenido</span><span class="protected"><svg><use href="#lock"/></svg> Diseño fijo</span></div>
+  <div class="inspector-body" id="inspector-body"></div>
+  <div class="inspector-bottom"><svg><use href="#eye"/></svg><p>Los cambios no se publican. Usa <b>Actualizar vista</b> para ver tu edición.</p></div>
+ </aside>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="editor.js"></script>
+</body></html>

@@ -1,5 +1,21 @@
 # Central Hill agent instructions
 
+## Contextual editor concept (2026-10-18)
+
+Current branch `contextual-editor/concept`, checkout
+`/private/tmp/central-hill-contextual-editor-concept`, baseline b4c97e4.
+Read [spec](docs/specs/contextual-editor/00-spec.md),
+[plan/effort](docs/specs/contextual-editor/01-plan.md),
+[reusable forms](docs/specs/contextual-editor/02-formularios.md) and
+[concept QA](docs/specs/contextual-editor/03-review.md).
+User authorized only spec/plan and a standalone HTML/CSS interaction study,
+with agents, before polishing/reviewing and later authorizing the React feature.
+Prototype: `mock/contextual-editor/`, static local3070, no CMS/DB persistence.
+No changes to src, packages, databases or previews3059–3063. Typography polish
+and user design feedback remain; concept is not production feature approval.
+Home keeps Avantio; reusable Lead forms are a separate future catalog feature.
+No main integration, push, deployment, GitHub changes or Neon production writes.
+
 ## Current Blog page handoff (2026-10-18)
 
 Read [Blog CMS audit](docs/specs/blog-cms-audit.md) and
