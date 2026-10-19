@@ -23,7 +23,7 @@ export async function renderHomeLivePreview(locale: string, payload: unknown): P
       url: local.url, width: local.width ?? 1200, height: local.height ?? 1500,
       mime: local.mime, alt: "", blurhash: null,
     };
-    if (Object.keys(homeMediaErrors(envelope.content, envelope.ogImageMediaId, new Map(Object.entries(resolved.media)))).length) return { ok: false, error: "validation" };
+    if (Object.keys(homeMediaErrors(envelope.content, envelope.ogImageMediaId, new Map(Object.entries(resolved.media).map(([id, media]) => [id, { mime: media.mime ?? "" }])))).length) return { ok: false, error: "validation" };
     resolved.ogImage = envelope.ogImageMediaId ? resolved.media[envelope.ogImageMediaId] ?? null : null;
     const content = await HomePage({ locale: locale as Locale, preview: true, page: { content: envelope.content, ...resolved } });
     return { ok: true, content };
