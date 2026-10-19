@@ -114,3 +114,15 @@ test("Concurrent revisions and publish deletion reject stale saves; first target
   assert.equal((await model("en")).draft, null);
   assert.deepEqual(await save(target), { ok: false, error: "conflict" });
 });
+
+test("Home legacy translation generation is blocked before any stored translation changes", async () => {
+  const { getPageEditorialRedirect } = await import("../server/editorial-translation-policy");
+  const { generateDrafts } = await import("@slices/translation/contract");
+  const { loadTranslationRows } = await import("@core/i18n");
+  assert.ok(legacy);
+  const before = await loadTranslationRows({ type: "page_content", id: legacy.id });
+  assert.equal(await getPageEditorialRedirect("page_content", legacy.id), "/admin/pages/home");
+  assert.equal(await getPageEditorialRedirect("building", legacy.id), null);
+  await assert.rejects(generateDrafts("page_content", legacy.id), /page editor/);
+  assert.deepEqual(await loadTranslationRows({ type: "page_content", id: legacy.id }), before);
+});

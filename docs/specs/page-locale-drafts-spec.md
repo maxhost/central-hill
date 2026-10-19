@@ -1,6 +1,7 @@
 # Home — spec cerrada de borradores y publicación por idioma
 
-2026-10-18. **Sólo documentación en esta sesión; no lanzar agentes ni implementar.**
+2026-10-18. Diseño cerrado; implementación autorizada por el usuario desde e06272b.
+La ejecución y evidencia vigentes se registran en page-locale-drafts-plan.md.
 Base de producto3c55a1b; checkout /private/tmp/central-hill-home-contextual-integration,
 rama home-contextual/integration. Home6359b6d aprobado por QA; toolbar SEO3c55a1b
 comprobada por raíz. El siguiente contexto registra el HEAD documental final como base.

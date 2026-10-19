@@ -1,7 +1,7 @@
 # Ejecución propuesta — borrador/publicación Home por idioma
 
-2026-10-18. Alcance cerrado en page-locale-drafts-spec.md y ADR0040. Esta sesión prepara
-los documentos y handoff; no crea worktrees de implementación ni lanza agentes.
+2026-10-18. Alcance cerrado en page-locale-drafts-spec.md y ADR0040.
+El usuario autorizó implementación desde e06272b; ver Active execution al final.
 
 ## Base y preparación
 
@@ -134,3 +134,10 @@ env.sh/preload.cjs/fixtures.cjs/seed.cjs under QA artifact directory; no copied 
 All0000..0023 migrations applied with psql ON_ERROR_STOP. drizzle-kit migrate failed
 (local WebSocket transport unavailable), psql exit0; record logs. Existing3065 preserved.
 ES pending legacy SEO fixture includes value when EN SEO empty; baseline must retain it.
+
+Integrated editor commits042741c/2028271 and backend7c7fed8 (cherry-picked candidate).
+Root additionally owns the final ninth case in page-locale-drafts.integration.test.ts
+(identity policy + legacy generator rejects Home before mutation). Backend owns8 cases
+(two pure, six DB); final total9. Independent QA reviews auth-wrapped legacy mutation guards.
+ES unpublished legacy SEO persisted without EN value; all baseline data remains synthetic.
+QA-only ESM loader stubs server-only for standalone Node tests; Next uses its normal guard.
