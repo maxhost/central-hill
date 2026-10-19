@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   captureLegacyPending,
   prepareTargetEnvelope,
+  sameEditorialSnapshot,
 } from "../editorial-content";
 import {
   normalizeEditorial,
@@ -34,6 +35,12 @@ test("Representative Owners bootstrap captures pending copy privately and retain
     content,
     ogImageMediaId: null,
   };
+  const reorderedKeys: PageEnvelope<"owners"> = {
+    ogImageMediaId: published.ogImageMediaId,
+    content: Object.fromEntries(Object.entries(published.content).reverse()) as typeof published.content,
+    schemaVersion: 1,
+  };
+  assert.equal(sameEditorialSnapshot(published, reorderedKeys), true, "Key order cannot create unsaved work");
   const pending = captureLegacyPending(
     published,
     [
@@ -51,6 +58,7 @@ test("Representative Owners bootstrap captures pending copy privately and retain
   const template = structuredClone(published);
   template.content.plans.tiers.reverse();
   (template.content as typeof content)._list_ids!["plans.tiers"]!.reverse();
+  assert.equal(sameEditorialSnapshot(template, published), false, "List order remains an editorial change");
   const prepared = prepareTargetEnvelope(template, pending, descriptor);
   assert.equal(
     prepared.content.plans.tiers.at(-1)!.features[0],

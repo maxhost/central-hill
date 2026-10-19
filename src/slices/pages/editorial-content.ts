@@ -94,3 +94,14 @@ export function captureLegacyPending<K extends EditorialPageKey>(
   }
   return draft;
 }
+
+/** Object insertion order has no editorial meaning; array order still does. */
+export function sameEditorialSnapshot<K extends EditorialPageKey>(
+  left: PageEnvelope<K>, right: PageEnvelope<K> | null,
+): boolean {
+  const ordered = (_key: string, value: unknown): unknown =>
+    value && typeof value === "object" && !Array.isArray(value)
+      ? Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
+      : value;
+  return JSON.stringify(left, ordered) === JSON.stringify(right, ordered);
+}

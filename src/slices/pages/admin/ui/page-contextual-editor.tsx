@@ -4,7 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { AdminButton, Field, MediaField, PageEditorShell, TextArea, useMediaQueue, type EditorLocale, type AdminMediaPreview } from "@slices/backoffice/contract";
 import type { EditorialPageKey, PageContentMap, PageEditorialModel, PageLocaleEditorialModel } from "../../editorial-types";
-import { prepareTargetEnvelope } from "../../editorial-content";
+import { prepareTargetEnvelope, sameEditorialSnapshot } from "../../editorial-content";
 import { homeNode, pageSections, descriptorMediaIds, isEditableFieldPath } from "../home-contextual";
 import { editorialAt, editorialListScope, editorialListIds, editorialTextPaths, editorialTranslationField, normalizeEditorial } from "../../editorial-identities";
 import { publishPageDraft, savePageDraft } from "../editorial-actions";
@@ -28,7 +28,7 @@ function setValue(root: unknown, path: (string | number)[], value: unknown): unk
 }
 
 function isDirty<K extends EditorialPageKey>(model: PageLocaleEditorialModel<K>): boolean {
-  return JSON.stringify(model.working) !== JSON.stringify(model.draft ?? model.published);
+  return !sameEditorialSnapshot(model.working, model.draft ?? model.published);
 }
 
 export function PageContextualEditor<K extends EditorialPageKey = "home">({ model }: { model: PageEditorialModel<K> }) {
