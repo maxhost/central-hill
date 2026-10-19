@@ -18,7 +18,8 @@ export async function renderHomeLivePreview(locale: string, payload: unknown): P
   try {
     const { envelope, localMedia } = checked;
     const resolved = await resolveMedia(envelope.content, envelope.ogImageMediaId, locale as Locale);
-    for (const [id, local] of Object.entries(localMedia)) resolved.media[id] = {
+    // A completed upload wins over the earlier raw local preview for its ID.
+    for (const [id, local] of Object.entries(localMedia)) if (!resolved.media[id]) resolved.media[id] = {
       url: local.url, width: local.width ?? 1200, height: local.height ?? 1500,
       mime: local.mime, alt: "", blurhash: null,
     };
