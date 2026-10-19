@@ -1,3 +1,4 @@
+import type { PageEditorialDescriptor } from "../editorial-adapter-types";
 import type { EditorSection } from "@slices/backoffice/contract";
 import type { FieldNode } from "./form-model";
 export type HomeTargetLocale = "es" | "pt" | "fr";
@@ -29,3 +30,42 @@ export const homeEditorBindingIds = ["hero","avantio","stats","guests_pitch","po
  "stats.title","stats.figures","guests_pitch.headline","guests_pitch.subheadline","guests_pitch.benefits","guests_pitch.image_media_id","guests_pitch.cta.label","guests_pitch.cta.url","guests_pitch.cta.note","guests_pitch.badge.label","guests_pitch.badge.icon_key",
  "portfolio.title","portfolio.cta_label","portfolio.card_view_label","services_carousel.eyebrow","services_carousel.headline","services_carousel.assurances","services_carousel.service_category_slug","faq.title",
  ...["owner","guest"].flatMap(side=>["image_media_id","eyebrow","title","body","cta_label"].map(key=>`dual_cta.${side}.${key}`)),"seo.meta_title","seo.meta_description"] ;
+
+/** One outline policy; Home retains its validated section grouping and order. */
+export function pageSections(descriptor: PageEditorialDescriptor, label: (key: string) => string): EditorSection[] {
+  if (descriptor.key === "home") return homeSections(descriptor.rootNode, label);
+  const root = descriptor.rootNode;
+  if (root.kind !== "object") return [];
+  const sections: EditorSection[] = root.fields.filter(field => field.node.kind !== "hidden").map(field => ({
+    id: field.key, label: label(field.key),
+    bindings: bindings(field.node, field.key, label).map(binding => ({ ...binding, sectionId: field.key })),
+  }));
+  for (const id of descriptor.externalSections) {
+    if (!sections.some(section => section.id === id)) sections.push({ id, label: label(id), bindings: [], external: true });
+  }
+  const faq = sections.find(section => section.id === "faq");
+  const group = sections.find(section => section.id === "faq_group_key");
+  if (faq && group) {
+    faq.bindings.push(...group.bindings.map(binding => ({ ...binding, sectionId: "faq" })));
+    sections.splice(sections.indexOf(group), 1);
+  }
+  const seo = sections.find(section => section.id === "seo");
+  if (seo) {
+    sections.splice(sections.indexOf(seo), 1);
+    seo.bindings.push({ id: "og_image_media_id", label: label("ogImage"), sectionId: "seo" });
+    sections.push(seo);
+  }
+  return sections;
+}
+
+/** Read only declared slots; no schema/server registry enters the client bundle. */
+export function descriptorMediaIds(content: unknown, og: string | null, descriptor: PageEditorialDescriptor): string[] {
+  function read(root: unknown, keys: string[]): unknown[] {
+    if (!keys.length) return [root];
+    const [key, ...rest] = keys;
+    if (!root || typeof root !== "object") return [];
+    const value = (root as Record<string, unknown>)[key!.replace(/\[\]$/, "")];
+    return key!.endsWith("[]") ? (Array.isArray(value) ? value.flatMap(item => read(item, rest)) : []) : read(value, rest);
+  }
+  return [...new Set([og, ...descriptor.mediaSlots.flatMap(slot => read(content, slot.path.split(".")))].filter((id): id is string => typeof id === "string" && Boolean(id)))];
+}

@@ -6,7 +6,7 @@ import { UiIcon } from "@core/ui";
 import { type AboutListOperation } from "../form-model";
 
 /** About list rows use persistent identities as React keys and translation keys. */
-export function AboutListEditor({ label, itemLabel, addLabel, items, ids, min, max, renderItem, createItem, onChange, error }: {
+export function AboutListEditor({ label, itemLabel, addLabel, items, ids, min, max, renderItem, createItem, onChange, error, fixedOrder }: {
   label: string;
   itemLabel: string;
   addLabel: string;
@@ -18,6 +18,7 @@ export function AboutListEditor({ label, itemLabel, addLabel, items, ids, min, m
   createItem: () => unknown;
   onChange: (operation: AboutListOperation) => void;
   error?: string;
+  fixedOrder?: boolean;
 }) {
   const tb = useTranslations("backoffice");
   const t = useTranslations("pages");
@@ -33,7 +34,7 @@ export function AboutListEditor({ label, itemLabel, addLabel, items, ids, min, m
     {items.map((item, index) => <div key={ids[index]} className="space-y-3 rounded-md border border-line p-3">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs text-ink-soft">{itemLabel} {index + 1}</span>
-        <div className="flex items-center gap-1">{actions.map(({ action, icon, label: actionLabel }) =>
+        <div className="flex items-center gap-1">{actions.filter(({ action }) => !fixedOrder || action === "remove").map(({ action, icon, label: actionLabel }) =>
           <button key={action} type="button" aria-label={`${tb(actionLabel)}: ${itemLabel} ${index + 1}`} title={tb(actionLabel)}
             disabled={action === "up" ? index === 0 : action === "down" ? index === items.length - 1 : items.length <= min}
             onClick={() => onChange(action === "remove" ? { action: "remove", index } : { action: "move", index, to: index + (action === "up" ? -1 : 1) })}
@@ -43,7 +44,7 @@ export function AboutListEditor({ label, itemLabel, addLabel, items, ids, min, m
       </div>
       {renderItem(item, index)}
     </div>)}
-    {items.length < max ? <button type="button" className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-accent"
+    {!fixedOrder && items.length < max ? <button type="button" className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-accent"
       onClick={() => onChange({ action: "add", value: createItem(), id: crypto.randomUUID() })}>+ {addLabel}</button> : null}
   </div>;
 }

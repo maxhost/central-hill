@@ -66,6 +66,8 @@ interface RenderProps {
   pageKey?: string;
   inheritedValues?: Record<string, string>;
   listIds?: Record<string, string[]>;
+  /** Explicit contextual-editor policy; omitted keeps legacy About/Home behavior. */
+  listPolicy?: { paths: string[]; scope: (path: string) => string | null };
   onListChange?: (path: string, operation: AboutListOperation) => void;
   node: FieldNode;
   value: unknown;
@@ -83,6 +85,7 @@ export function NodeField(props: RenderProps) {
     pageKey,
     inheritedValues,
     listIds,
+    listPolicy,
     onListChange,
     node,
     value,
@@ -127,6 +130,7 @@ export function NodeField(props: RenderProps) {
         pageKey={pageKey}
         inheritedValues={inheritedValues}
         listIds={listIds}
+        listPolicy={listPolicy}
         onListChange={onListChange}
         node={f.node}
         value={(value as Record<string, unknown> | undefined)?.[f.key]}
@@ -152,10 +156,11 @@ export function NodeField(props: RenderProps) {
 
   if (node.kind === "array") {
     const items = Array.isArray(value) ? value : [];
-    if (onListChange && ((pageKey === "about" && (ABOUT_EDITOR_LIST_PATHS as readonly string[]).includes(errorKey)) || (pageKey === "home" && ["stats.figures", "guests_pitch.benefits", "services_carousel.assurances"].includes(errorKey)))) {
+    const listScope = listPolicy ? listPolicy.scope(errorKey) : null;
+    if (onListChange && (listScope !== null || (!listPolicy && ((pageKey === "about" && (ABOUT_EDITOR_LIST_PATHS as readonly string[]).includes(errorKey)) || (pageKey === "home" && ["stats.figures", "guests_pitch.benefits", "services_carousel.assurances"].includes(errorKey)))))) {
       const itemLabel = labels.item(path, label);
       return <AboutListEditor label={label} itemLabel={itemLabel} addLabel={labels.add(path, itemLabel)}
-        items={items} ids={listIds?.[errorKey] ?? []} min={node.min} max={node.max} error={errors[errorKey]}
+        items={items} ids={listIds?.[listScope ?? errorKey] ?? []} fixedOrder={node.fixedOrder} min={node.min} max={node.max} error={errors[errorKey]}
         onChange={(operation) => onListChange(errorKey, operation)}
         createItem={() => {
           const item = emptyValue(node.element);
@@ -209,6 +214,7 @@ export function NodeField(props: RenderProps) {
               pageKey={pageKey}
               inheritedValues={inheritedValues}
               listIds={listIds}
+              listPolicy={listPolicy}
               onListChange={onListChange}
               node={node.element}
               value={item}
