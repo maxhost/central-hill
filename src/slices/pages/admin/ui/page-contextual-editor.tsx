@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { AdminButton, Field, MediaField, PageEditorShell, TextArea, useMediaQueue, type EditorLocale, type AdminMediaPreview } from "@slices/backoffice/contract";
 import type { EditorialPageKey, PageContentMap, PageEditorialModel, PageLocaleEditorialModel } from "../../editorial-types";
 import { prepareTargetEnvelope } from "../../editorial-content";
-import { homeNode, pageSections, descriptorMediaIds } from "../home-contextual";
+import { homeNode, pageSections, descriptorMediaIds, isEditableFieldPath } from "../home-contextual";
 import { editorialAt, editorialListScope, editorialListIds, editorialTextPaths, editorialTranslationField, normalizeEditorial } from "../../editorial-identities";
 import { publishPageDraft, savePageDraft } from "../editorial-actions";
 import { NodeField, useFieldLabels } from "./schema-fields";
@@ -160,7 +160,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
 
   const visible = selected === section.id ? section.bindings : section.bindings.filter(b => b.id === selected);
   // Include blank and absent optional copy, especially SEO, in every target locale.
-  const targetPaths = editorialTextPaths(content, descriptor).filter(path => visible.some(b => path === b.id || path.startsWith(`${b.id}.`)));
+  const targetPaths = editorialTextPaths(content, descriptor).filter(path => isEditableFieldPath(descriptor.rootNode, path) && visible.some(b => path === b.id || path.startsWith(`${b.id}.`)));
   const english = (states.en.model.draft ?? states.en.model.published ?? states.en.model.working).content;
   const englishText = Object.fromEntries(editorialTextPaths(english, descriptor).map(path => [editorialTranslationField(english, path, descriptor), editorialAt(english, path)]));
   const inspector = <fieldset disabled={busy} className="min-w-0 space-y-5">

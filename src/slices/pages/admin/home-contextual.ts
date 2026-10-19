@@ -69,3 +69,15 @@ export function descriptorMediaIds(content: unknown, og: string | null, descript
   }
   return [...new Set([og, ...descriptor.mediaSlots.flatMap(slot => read(content, slot.path.split(".")))].filter((id): id is string => typeof id === "string" && Boolean(id)))];
 }
+
+/** Mirror NodeField visibility while following concrete indexes through nested lists. */
+export function isEditableFieldPath(root: FieldNode, path: string): boolean {
+  let node: FieldNode | undefined = root;
+  for (const part of path.split(".")) {
+    if (node?.kind === "object") node = node.fields.find(field => field.key === part)?.node;
+    else if (node?.kind === "array" && /^(0|[1-9]\d*)$/.test(part)) node = node.element;
+    else return false;
+    if (!node || node.kind === "hidden") return false;
+  }
+  return node !== undefined && node.kind !== "hidden";
+}
