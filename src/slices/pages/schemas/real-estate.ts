@@ -49,6 +49,8 @@ const CAPABILITIES_MEDIA_HINT = `${SHOWCASE_MEDIA_HINT} Rendered on the LEFT of 
  * visitor's locale, so a row saved before these keys existed renders exactly as before.
  */
 export const realEstateSchema = z.object({
+  _list_ids: adminHidden(z.record(z.string(), z.array(z.string()))).optional(),
+  _retired_ids: adminHidden(z.array(z.string())).optional(),
   /** Search/social meta for `/<locale>/real-estate`. Blank → `pages.realEstate.metaTitle` / `metaDescription`. */
   seo: z.object({ ...seoShape }).optional(),
   hero: z.object({

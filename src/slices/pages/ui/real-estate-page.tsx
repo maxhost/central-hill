@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { MediaImage } from "@core/media";
@@ -15,7 +16,7 @@ import {
   TwoColumnShowcase,
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
-import { getRealEstatePage, type PageMedia } from "../contract";
+import { getRealEstatePage, type PageMedia, type RealEstatePage as RealEstatePageResult } from "../contract";
 import {
   defaultCapabilities,
   defaultDealStructures,
@@ -116,12 +117,20 @@ const showcaseIcon = (iconKey: string) => (
   <Icon name={iconKey} size={26} className="mt-0.5 flex-none text-accent-deep" />
 );
 
-export async function RealEstatePage({ locale }: { locale: Locale }) {
+/** Public calls keep their existing DOM; annotation wrappers exist only in private preview. */
+function PreviewBinding({ preview, id, children }: { preview: boolean; id: string; children: ReactNode }) {
+  return preview ? <div data-editor-binding={id}>{children}</div> : <>{children}</>;
+}
+
+export async function RealEstatePage({ locale, preview = false, page: injectedPage }: {
+  locale: Locale; preview?: boolean; page?: RealEstatePageResult | null;
+}) {
   setRequestLocale(locale);
-  const [page, t] = await Promise.all([getRealEstatePage(locale), getTranslations("pages")]);
+  const [page, t] = await Promise.all([injectedPage === undefined ? getRealEstatePage(locale) : Promise.resolve(injectedPage), getTranslations("pages")]);
   if (!page) notFound();
 
   const { content, media } = page;
+  const binding = (id: string) => preview ? { "data-editor-binding": id } : {};
   const heroFallbackAlt = t("realEstate.heroAlt");
   const capFallbackAlt = t("realEstate.capabilitiesAlt");
   const assetFallbackAlt = t("realEstate.assetsAlt");
@@ -168,7 +177,8 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * `#f1ece2` lede), which differed from Buildings' by a hair. CTAs are `ButtonLink`
        * primary/light, the same look as Buildings' light hero button.
        */}
-      <Hero
+      <PreviewBinding preview={preview} id="hero"><Hero
+        editorBindings={preview ? { background: "hero.image_media_id", eyebrow: "hero.subheadline", subtitle: "hero.positioning" } : undefined}
         id="top"
         background={
           heroMedia?.url && heroMedia.width > 0 && heroMedia.height > 0 ? (
@@ -199,15 +209,16 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
         subtitleClassName="mt-5 max-w-[60ch] text-lg"
         actionsClassName="mt-2"
         eyebrow={hero.subheadline || undefined}
-        headline={hero.headline}
+        headline={preview ? <span {...binding("hero.headline")}>{hero.headline}</span> : hero.headline}
         subtitle={hero.positioning}
         actions={
           <>
-            <ButtonLink href="#deal-enquiry">{`${hero.cta_primary.label} →`}</ButtonLink>
+            <ButtonLink href="#deal-enquiry">{preview ? <span {...binding("hero.cta_primary.label")}>{`${hero.cta_primary.label} →`}</span> : `${hero.cta_primary.label} →`}</ButtonLink>
             {capStmtPdf ? (
               // A plain `<a>`: a download target, not a route — no prefetch, and a new tab even
               // for the dev fallback's relative URL (`ButtonLink` only does that for http(s)).
               <a
+                {...binding("hero.capability_statement_media_id")}
                 href={capStmtPdf}
                 target="_blank"
                 rel="noopener"
@@ -222,7 +233,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
             )}
           </>
         }
-      />
+      /></PreviewBinding>
       {/*
        * "Built for Institutional Partners" (`#partners`, SECTION 2) — `core/ui`'s
        * `EditorialSplit`, configured exactly like Owners' `#why` (same wrapper `id` — but
@@ -231,7 +242,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * 1240px/28px `.wrap`. The entrance animation is `EditorialSplit`'s own internal `Reveal`s (sticky-safe), so no call-site `Reveal`.
        * `#deal-structures` below is the secondary CTA's target.
        */}
-      <div id="partners" className="scroll-mt-[84px]">
+      <div {...binding("partners")} id="partners" className="scroll-mt-[84px]">
         <EditorialSplit
           headline={partners.headline}
           body={partners.subheadline}
@@ -259,7 +270,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * `#deal-enquiry` anchor and renders only with a label; the badge is the CTA note. The
        * wrapper keeps the `id` with this page's 84px scroll offset.
        */}
-      <div id="capabilities" className="scroll-mt-[84px]">
+      <div {...binding("capabilities")} id="capabilities" className="scroll-mt-[84px]">
         <Reveal label="real-estate-capabilities">
           <TwoColumnShowcase
             headline={capabilities.headline}
@@ -297,7 +308,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * 84px scroll offset (the mock `section`'s `scroll-margin-top`). Its icons share
        * `#capabilities`' `showcaseIcon`.
        */}
-      <div id="manage" className="scroll-mt-[84px]">
+      <div {...binding("asset_management")} id="manage" className="scroll-mt-[84px]">
         <Reveal label="real-estate-manage">
           <TwoColumnShowcase
             headline={assets.headline}
@@ -327,7 +338,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * `Reveal` (`.model-note`'s metrics in Tailwind). The `id` is the partners section's
        * secondary-CTA target.
        */}
-      <section id="deal-structures" className={`${SECTION_SHELL} ${ALT_BAND}`}>
+      <section {...binding("deal_structures")} id="deal-structures" className={`${SECTION_SHELL} ${ALT_BAND}`}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
@@ -350,7 +361,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
             />
           </Reveal>
           {dealStructures.note ? (
-            <p className="mx-auto mt-[34px] max-w-[80ch] text-center text-[13.5px] leading-[1.6] text-ink-soft">
+            <p {...binding("deal_structures.note")} className="mx-auto mt-[34px] max-w-[80ch] text-center text-[13.5px] leading-[1.6] text-ink-soft">
               {dealStructures.note}
             </p>
           ) : null}
@@ -361,7 +372,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * `StatBento`, each in its own `Reveal`. The original's per-cell stagger is not
        * reproduced, the same accepted trade-off as About's `NumberedFeatureGrid`.
        */}
-      <section id="market" className={SECTION_SHELL}>
+      <section {...binding("market")} id="market" className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead headline={market.headline} intro={market.subheadline || undefined} />
@@ -386,7 +397,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * `alt` band, a `SectionHead`, then `core/ui`'s `StatTiles`, which count up on scroll-in.
        * The head and the tiles each have their own `Reveal`.
        */}
-      <section id="track-record" className={`${SECTION_SHELL} ${ALT_BAND}`}>
+      <section {...binding("track_record")} id="track-record" className={`${SECTION_SHELL} ${ALT_BAND}`}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
@@ -407,7 +418,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * are the items' `icon` (`STEP_NUMBER_CLASS`). The entrance animation is `EditorialSplit`'s own internal `Reveal`s (sticky-safe), so no call-site
        * `Reveal`.
        */}
-      <div id="process" className="scroll-mt-[84px]">
+      <div {...binding("process")} id="process" className="scroll-mt-[84px]">
         <EditorialSplit
           headline={howItWorks.headline}
           body={howItWorks.subheadline}
@@ -421,7 +432,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * `realEstate.faqTitle`, spec real-estate-admin-editor S2).
        */}
       {faqGroupKey ? (
-        <div id="faq" style={{ scrollMarginTop: 130 }}>
+        <div {...binding("faq")} id="faq" style={{ scrollMarginTop: 130 }}>
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
@@ -436,7 +447,7 @@ export async function RealEstatePage({ locale }: { locale: Locale }) {
        * raw `BODY_BOTTOM` markup + its `.enquiry`/`.form-card`/`.ffield`/`.facc` CSS. Copy from
        * `content.deal_enquiry` (blank → i18n), contact lines from Settings (spec S5).
        */}
-      <DealEnquirySection locale={locale} content={content.deal_enquiry} />
+      <PreviewBinding preview={preview} id="deal_enquiry"><DealEnquirySection locale={locale} content={content.deal_enquiry} /></PreviewBinding>
     </>
   );
 }
