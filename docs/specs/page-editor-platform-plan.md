@@ -264,3 +264,10 @@ con getter/editor/preview/policy simultáneos. Resto parte del siguiente commit 
 Buildings A y Real Estate B con write sets exactos de tabla; después Guest A. Seam Buildings
 ya exportada por contract, renderer acepta {locale,page?,preview?}; secciones Pages deben
 aceptar preview opcional, grid readonly se anota catalogue. A no modifica seam fuera de scope.
+
+Fase adaptadores Buildings/Real Estate creada desde7e077ec en los paths/ramas propuestos,
+identidad verificada por ambos agentes; dependencias locales clonadas. Root toma de vuelta
+page-contextual-editor.tsx tras cierre B del scope compartido para seleccionar el mensaje
+externo genérico en páginas distintas de Home; cuatro mensajes externalPage/catalogue nuevos.
+No hay escritor concurrente en ese archivo. Root actualiza ADR0040 para las cinco keys
+explícitas y prepara entrega docs/specs/page-editor-platform-delivery.md.

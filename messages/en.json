@@ -1456,6 +1456,7 @@
         }
       },
       "labels": {
+        "catalogue": "Published catalogue",
         "seo": "SEO",
         "meta_title": "Meta title (search results)",
         "meta_description": "Meta description (search results)",
@@ -1713,6 +1714,7 @@
         "conflict": "This content changed in another session. Reload before saving.",
         "sourceInvalid": "Saved Home content is invalid. Repair it before saving.",
         "external": "Avantio is an external booking integration. It cannot be edited here.",
+        "externalPage": "This content comes from its own catalogue. Manage it in the corresponding section of the backoffice.",
         "portfolioNote": "Cards are managed in Buildings.",
         "servicesNote": "Cards are managed in Services.",
         "faqNote": "Questions are managed in FAQ."

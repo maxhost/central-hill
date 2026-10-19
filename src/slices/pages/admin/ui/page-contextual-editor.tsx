@@ -171,7 +171,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
         {tb(`nav.${section.id === "portfolio" ? "buildings" : section.id === "faq" ? "faq" : "services"}`)}
       </a>
     </p> : null}
-    {section.external ? <p className="text-sm text-ink-soft">{t("admin.contextual.external")}</p> : null}
+    {section.external ? <p className="text-sm text-ink-soft">{t(descriptor.key === "home" ? "admin.contextual.external" : "admin.contextual.externalPage")}</p> : null}
     {state.notice ? <p role={state.conflict || Object.keys(state.errors).length ? "alert" : "status"} className="text-sm text-ink">{state.notice}</p> : null}
     {state.errors._source ? <p role="alert" className="text-sm text-ink">{state.errors._source}</p> : null}
     {model.sourceInvalid ? <p role="alert">{t("admin.contextual.sourceInvalid")}</p> : null}

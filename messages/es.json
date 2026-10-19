@@ -1456,6 +1456,7 @@
         }
       },
       "labels": {
+        "catalogue": "Catálogo publicado",
         "seo": "SEO",
         "meta_title": "Meta título (resultados de búsqueda)",
         "meta_description": "Meta descripción (resultados de búsqueda)",
@@ -1713,6 +1714,7 @@
         "conflict": "El contenido cambió en otra sesión. Recarga antes de guardar.",
         "sourceInvalid": "El contenido guardado de Home no es válido. Repáralo antes de guardar.",
         "external": "Avantio es una integración externa de reservas. No se edita aquí.",
+        "externalPage": "Este contenido procede de su propio catálogo. Se gestiona en la sección correspondiente del panel.",
         "portfolioNote": "Las tarjetas se gestionan en Buildings.",
         "servicesNote": "Las tarjetas se gestionan en Services.",
         "faqNote": "Las preguntas se gestionan en FAQ."

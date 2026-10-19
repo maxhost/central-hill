@@ -1456,6 +1456,7 @@
         }
       },
       "labels": {
+        "catalogue": "Catalogue publié",
         "seo": "SEO",
         "meta_title": "Méta-titre (résultats de recherche)",
         "meta_description": "Méta-description (résultats de recherche)",
@@ -1713,6 +1714,7 @@
         "conflict": "Le contenu a changé dans une autre session. Rechargez avant d’enregistrer.",
         "sourceInvalid": "Le contenu Home enregistré est invalide. Corrigez-le avant d’enregistrer.",
         "external": "Avantio est une intégration externe de réservation. Elle ne se modifie pas ici.",
+        "externalPage": "Ce contenu provient de son propre catalogue. Gérez-le dans la rubrique correspondante de l’administration.",
         "portfolioNote": "Les cartes sont gérées dans Buildings.",
         "servicesNote": "Les cartes sont gérées dans Services.",
         "faqNote": "Les questions sont gérées dans FAQ."

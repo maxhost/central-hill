@@ -46,3 +46,11 @@ Local blob media metadata is accepted only in this ephemeral read path, never pu
 or persistence. Existing per-locale Save draft/Publish semantics remain unchanged.
 The previous no-live-preview/saved-only restriction is superseded only for this adapter.
 See home-live-preview-execution.md for boundaries and verification.
+
+## Shared editor rollout
+
+The user authorized the common engine and contextual UI for Home, Owners, Buildings
+listing, Real Estate and Guest after the spec/plan handoff. The ephemeral preview follow-up
+now applies to these explicitly registered adapters. Each uses the same independent
+page/locale draft, publication and revision semantics; other pages keep their existing
+workflow. No new table or kernel change. Public forms remain the existing implementations.
