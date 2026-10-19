@@ -31,7 +31,7 @@ import { AboutListEditor } from "./about-list-editor";
  * Errors are keyed by the same dotted path the page schema produces on validation.
  */
 
-export type PathOnChange = (path: (string | number)[], value: unknown) => void;
+export type PathOnChange = (path: (string | number)[], value: unknown, preview?: AdminMediaPreview | null) => void;
 
 /**
  * Readable editor labels (owner request, spec S3). A field key resolves to
@@ -259,7 +259,7 @@ export function NodeField(props: RenderProps) {
             value={id}
             accept={node.accept}
             preview={id ? (previews[id] ?? null) : null}
-            onChange={(next) => onChange(path, next ?? "")}
+            onChange={(next, preview) => onChange(path, next ?? "", preview)}
           />
         </div>
       </Field>

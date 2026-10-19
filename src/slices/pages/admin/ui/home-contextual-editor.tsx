@@ -1,14 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { AdminButton, Field, MediaField, PageEditorShell, TextArea, useMediaQueue, type EditorLocale } from "@slices/backoffice/contract";
+import { AdminButton, Field, MediaField, PageEditorShell, TextArea, useMediaQueue, type EditorLocale, type AdminMediaPreview } from "@slices/backoffice/contract";
 import type { HomeEditorialModel, PageLocaleEditorialModel } from "../../editorial-types";
 import { prepareTargetEnvelope } from "../../editorial-content";
 import { homeNode, homeSections } from "../home-contextual";
 import { HOME_LIST_PATHS, homeAt, homeTextPaths, homeTranslationField } from "../../home-content";
 import type { HomeContent } from "../../schemas/home";
 import { publishPageDraft, savePageDraft } from "../editorial-actions";
+import { homeMediaReferences } from "../home-media-validation";
 import { NodeField, useFieldLabels } from "./schema-fields";
 import type { AboutListOperation } from "../form-model";
 
@@ -42,6 +43,8 @@ export function HomeContextualEditor({ model }: { model: HomeEditorialModel }) {
       model: value, errors: {}, notice: "", conflict: false, previewVersion: 0,
     }]),
   ) as Record<EditorLocale, LocaleState>);
+  const [localPreviews, setLocalPreviews] = useState<Record<string, AdminMediaPreview>>({});
+  const previews = useMemo(() => ({ ...model.previews, ...localPreviews }), [model.previews, localPreviews]);
   const [locale, setLocale] = useState<EditorLocale>("en");
   const [selected, setSelected] = useState("hero");
   const [operation, setOperation] = useState<"save" | "publish" | null>(null);
@@ -51,6 +54,11 @@ export function HomeContextualEditor({ model }: { model: HomeEditorialModel }) {
   const state = states[locale];
   const content = state.model.working.content;
   const og = state.model.working.ogImageMediaId;
+  const previewPayload = useMemo(() => ({
+    envelope: state.model.working,
+    localMedia: Object.fromEntries(homeMediaReferences(state.model.working.content, state.model.working.ogImageMediaId)
+      .flatMap(({ id }) => localPreviews[id]?.url.startsWith("blob:") ? [[id, localPreviews[id]!]] : [])),
+  }), [state.model.working, localPreviews]);
   const dirty = isDirty(state.model);
   const busy = operation !== null || queue.isPreparing;
   const sections = homeSections(model.rootNode, labels.field);
@@ -77,7 +85,11 @@ export function HomeContextualEditor({ model }: { model: HomeEditorialModel }) {
   function patchState(selectedLocale: EditorLocale, patch: Partial<LocaleState>) {
     setStates(previous => ({ ...previous, [selectedLocale]: { ...previous[selectedLocale], ...patch } }));
   }
-  function change(path: (string | number)[], value: unknown) {
+  function rememberPreview(preview?: AdminMediaPreview | null) {
+    if (preview) setLocalPreviews(previous => ({ ...previous, [preview.id]: preview }));
+  }
+  function change(path: (string | number)[], value: unknown, preview?: AdminMediaPreview | null) {
+    rememberPreview(preview);
     startedLocales.current.add(locale);
     setStates(previous => {
       const own = previous[locale];
@@ -156,14 +168,14 @@ export function HomeContextualEditor({ model }: { model: HomeEditorialModel }) {
     {model.sourceInvalid ? <p role="alert">{t("admin.contextual.sourceInvalid")}</p> : null}
     {locale === "en" ? visible.map(binding => binding.id === "og_image_media_id"
       ? <Field key={binding.id} label={t("admin.fields.ogImage")} error={state.errors.og_image_media_id}>
-          <MediaField value={og} preview={og ? model.previews[og] ?? null : null} onChange={id => setStates(previous => {
+          <MediaField value={og} preview={og ? previews[og] ?? null : null} onChange={(id, preview) => { rememberPreview(preview); setStates(previous => {
             const own = previous.en;
             return { ...previous, en: { ...own, notice: "", model: { ...own.model, working: { ...own.model.working, ogImageMediaId: id } } } };
-          })} />
+          }); }} />
         </Field>
       : <NodeField key={`${locale}-${binding.id}`} pageKey="home" node={homeNode(model.rootNode, binding.id)!}
           value={homeAt(content, binding.id)} path={binding.id.split(".")} label={binding.label} depth={0}
-          onChange={change} onListChange={listChange} listIds={content._list_ids} errors={state.errors} previews={model.previews} options={model.options} />)
+          onChange={change} onListChange={listChange} listIds={content._list_ids} errors={state.errors} previews={previews} options={model.options} />)
       : <>
         <p className="text-xs text-ink-soft">{t("admin.contextual.sourceOnly")}</p>
         {targetPaths.map(path => {
@@ -179,9 +191,9 @@ export function HomeContextualEditor({ model }: { model: HomeEditorialModel }) {
   return <PageEditorShell adapter={{
     title: "Home", sections, seoSectionId: "seo", selectedId: selected, onSelect: setSelected,
     locale, onLocaleChange: selectLocale, previewUrl: `/admin/preview/home?locale=${locale}`,
-    previewVersion: state.previewVersion, dirty, busy,
+    previewVersion: state.previewVersion, previewPayload, dirty, busy,
     editorialState: `${locale.toUpperCase()} · ${t(dirty ? "admin.editorial.unsaved" : state.model.draft ? "admin.editorial.draft" : "admin.editorial.published")}`,
-    status: <span>{t("admin.editorial.savedPreview")}</span>, inspector,
+    status: <span>{t("admin.editorial.livePreview")}</span>, inspector,
     actions: <div className="flex flex-wrap gap-2">
       <AdminButton disabled={busy || state.conflict || model.sourceInvalid} onClick={() => void mutate("save")}>
         {t(operation === "save" ? "admin.editorial.savingDraft" : "admin.editorial.saveDraft")}
