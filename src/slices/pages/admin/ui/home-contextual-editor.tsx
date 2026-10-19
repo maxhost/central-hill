@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { AdminButton, Field, MediaField, PageEditorShell, TextArea, useMediaQueue, type EditorLocale } from "@slices/backoffice/contract";
 import type { HomeEditorialModel, PageLocaleEditorialModel } from "../../editorial-types";
+import { prepareTargetEnvelope } from "../../editorial-content";
 import { homeNode, homeSections } from "../home-contextual";
 import { HOME_LIST_PATHS, homeAt, homeTextPaths, homeTranslationField } from "../../home-content";
 import type { HomeContent } from "../../schemas/home";
@@ -46,6 +47,7 @@ export function HomeContextualEditor({ model }: { model: HomeEditorialModel }) {
   const [operation, setOperation] = useState<"save" | "publish" | null>(null);
   const queue = useMediaQueue();
   const lock = useRef(false);
+  const startedLocales = useRef(new Set<EditorLocale>(["en"]));
   const state = states[locale];
   const content = state.model.working.content;
   const og = state.model.working.ogImageMediaId;
@@ -54,10 +56,29 @@ export function HomeContextualEditor({ model }: { model: HomeEditorialModel }) {
   const sections = homeSections(model.rootNode, labels.field);
   const section = sections.find(s => s.id === selected || s.bindings.some(b => b.id === selected)) ?? sections[0]!;
 
+  function selectLocale(nextLocale: EditorLocale) {
+    if (busy) return;
+    // A target starts once, from the latest saved EN template. Returning to an
+    // already started tab preserves even its unsaved prepared structure and copy.
+    if (!startedLocales.current.has(nextLocale)) {
+      startedLocales.current.add(nextLocale);
+      setStates(previous => {
+        const own = previous[nextLocale];
+        const source = previous.en.model;
+        const template = source.draft ?? source.published;
+        if (own.model.draft || !template) return previous;
+        return { ...previous, [nextLocale]: { ...own, model: {
+          ...own.model, working: prepareTargetEnvelope(template, own.model.published), templateRevision: source.revision,
+        } } };
+      });
+    }
+    setLocale(nextLocale);
+  }
   function patchState(selectedLocale: EditorLocale, patch: Partial<LocaleState>) {
     setStates(previous => ({ ...previous, [selectedLocale]: { ...previous[selectedLocale], ...patch } }));
   }
   function change(path: (string | number)[], value: unknown) {
+    startedLocales.current.add(locale);
     setStates(previous => {
       const own = previous[locale];
       return { ...previous, [locale]: { ...own, notice: "", model: { ...own.model, working: {
@@ -95,6 +116,7 @@ export function HomeContextualEditor({ model }: { model: HomeEditorialModel }) {
         ? await savePageDraft({ ...input, templateRevision: state.model.templateRevision, payload: state.model.working })
         : await publishPageDraft(input);
       if (result.ok) {
+        if (action === "publish" && locale !== "en") startedLocales.current.delete(locale);
         patchState(locale, {
           model: result.model, errors: {}, conflict: false,
           previewVersion: state.previewVersion + 1,
@@ -156,7 +178,7 @@ export function HomeContextualEditor({ model }: { model: HomeEditorialModel }) {
   </fieldset>;
   return <PageEditorShell adapter={{
     title: "Home", sections, seoSectionId: "seo", selectedId: selected, onSelect: setSelected,
-    locale, onLocaleChange: setLocale, previewUrl: `/admin/preview/home?locale=${locale}`,
+    locale, onLocaleChange: selectLocale, previewUrl: `/admin/preview/home?locale=${locale}`,
     previewVersion: state.previewVersion, dirty, busy,
     editorialState: `${locale.toUpperCase()} · ${t(dirty ? "admin.editorial.unsaved" : state.model.draft ? "admin.editorial.draft" : "admin.editorial.published")}`,
     status: <span>{t("admin.editorial.savedPreview")}</span>, inspector,
