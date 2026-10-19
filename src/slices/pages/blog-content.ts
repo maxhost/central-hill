@@ -1,5 +1,10 @@
+import type { Locale } from "@core/db/columns";
+import type { BlogAsideCta } from "./contract";
 import { translatablePaths } from "@core/validation/primitives";
 import { blogSchema, defaultBlog, type BlogContent } from "./schemas/blog";
+import { applyDefaults, describe } from "./admin/form-model";
+import type { PageEditorialDescriptor } from "./editorial-adapter-types";
+import { editorialTextPaths, editorialTranslationField } from "./editorial-identities";
 
 /** Blank overrides inherit visitor-locale messages; these values are never persisted as defaults. */
 export const BLOG_FALLBACK_KEYS = {
@@ -45,4 +50,40 @@ export function blogLocalizedContent(source: BlogContent, translated: unknown): 
     if (typeof candidate === "string" && candidate.trim()) (result[group] as Record<string, unknown>)[leaf] = candidate;
   }
   return result as BlogContent;
+}
+
+/** Optional groups expose blank controls; locale messages remain renderer fallbacks. */
+export const blogDescriptor: PageEditorialDescriptor = {
+  key: "blog",
+  title: "Blog",
+  publicPath: "/blog",
+  rootNode: describe(blogSchema),
+  textPatterns: translatablePaths(blogSchema),
+  listPaths: [],
+  mediaSlots: [],
+  maxLocalMedia: 1,
+  externalSections: [],
+  sectionPreviews: { post_aside: "shared_aside" },
+};
+export const normalizeBlog = (content: BlogContent): BlogContent =>
+  applyDefaults(blogDescriptor.rootNode, content) as BlogContent;
+export const blogTextPaths = (content: BlogContent) => editorialTextPaths(content, blogDescriptor);
+export const blogTranslationField = (content: BlogContent, path: string) =>
+  editorialTranslationField(content, path, blogDescriptor);
+
+/** Shared copy stays global; a post override replaces only its own button. */
+export function blogAsideCta(
+  content: BlogContent,
+  locale: Locale,
+  postCta?: { label: string; url: string } | null,
+): BlogAsideCta {
+  const aside = content.post_aside;
+  return {
+    eyebrow: aside.eyebrow || undefined,
+    title: aside.title,
+    body: aside.body || undefined,
+    cta: postCta
+      ? { label: postCta.label, href: postCta.url }
+      : { label: aside.cta_label, href: `/${locale}/owners` },
+  };
 }

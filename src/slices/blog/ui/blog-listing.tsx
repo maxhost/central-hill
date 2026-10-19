@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { BlogPage } from "@slices/pages/contract";
 import type { Locale } from "@core/db/columns";
@@ -78,12 +79,15 @@ const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
  * whatever category chip is selected. It sits inside the provider only because the provider
  * must enclose both the tabs (above it) and the grid (below it).
  */
+function PreviewBinding({ preview, id, children }: { preview: boolean; id: string; children: ReactNode }) {
+  return preview ? <div data-editor-binding={id}>{children}</div> : <>{children}</>;
+}
+
 export async function BlogListing({ locale }: { locale: Locale }) {
   return BlogListingRenderer({ locale });
 }
 
 export async function BlogListingRenderer({ locale, page: suppliedPage, preview = false }: { locale: Locale; page?: BlogPage | null; preview?: boolean }) {
-  void preview;
   setRequestLocale(locale);
   const [t, categories, featured, posts, globals, page] = await Promise.all([
     getTranslations("blog"),
@@ -91,9 +95,10 @@ export async function BlogListingRenderer({ locale, page: suppliedPage, preview 
     getFeaturedPost(locale),
     listPosts(locale),
     getGlobals(locale),
-    suppliedPage ?? getBlogPage(locale),
+    suppliedPage === undefined ? getBlogPage(locale) : Promise.resolve(suppliedPage),
   ]);
-  const { hero, featured: featuredCopy, journal: journalCopy, newsletter } = page.content;
+  const { hero, featured: featuredCopy, journal: journalCopy, newsletter } = page?.content ?? {};
+  const binding = (id: string) => preview ? { "data-editor-binding": id } : {};
   // Site icons (Settings → "Site icons", ADR 0034 amendment 2).
   const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
   const readingTimeIcon = icons.reading_time;
@@ -102,7 +107,7 @@ export async function BlogListingRenderer({ locale, page: suppliedPage, preview 
 
   return (
     <>
-      <PageHead
+      <PreviewBinding preview={preview} id="hero"><PageHead
         eyebrow={orMessage(hero?.eyebrow, t("eyebrow"))}
         headline={orMessage(hero?.headline, t("title"))}
         intro={orMessage(hero?.intro, t("intro"))}
@@ -112,7 +117,7 @@ export async function BlogListingRenderer({ locale, page: suppliedPage, preview 
           label={orMessage(hero?.search_label, t("searchLabel"))}
           icon={<Icon name={icons.search} size={20} />}
         />
-      </PageHead>
+      </PageHead></PreviewBinding>
       <CategoryFilterProvider pageSize={JOURNAL_PAGE_SIZE}>
         <section className="pt-[48px]">
           <CategoryTabs
@@ -121,7 +126,7 @@ export async function BlogListingRenderer({ locale, page: suppliedPage, preview 
           />
         </section>
         {featured ? (
-          <section className="pt-[52px]">
+          <section {...binding("featured")} className="pt-[52px]">
             <div className="mx-auto max-w-[1240px] px-[28px]">
               <SectionHead eyebrow={orMessage(featuredCopy?.eyebrow, t("featured"))} flush className="mb-[28px]" />
               <FeaturedPost
@@ -138,7 +143,7 @@ export async function BlogListingRenderer({ locale, page: suppliedPage, preview 
           </section>
         ) : null}
         {journal.length ? (
-          <section className={SECTION_SHELL}>
+          <section {...binding("journal")} className={SECTION_SHELL}>
             <div className={SECTION_WRAP}>
               <SectionHead
                 eyebrow={orMessage(journalCopy?.eyebrow, t("latestEyebrow"))}
@@ -173,6 +178,7 @@ export async function BlogListingRenderer({ locale, page: suppliedPage, preview 
         )}
       </CategoryFilterProvider>
       <NewsletterSignup
+        preview={preview}
         eyebrow={orMessage(newsletter?.eyebrow, t("newsletter.eyebrow"))}
         title={orMessage(newsletter?.title, t("newsletter.title"))}
         description={orMessage(newsletter?.description, t("newsletter.description"))}

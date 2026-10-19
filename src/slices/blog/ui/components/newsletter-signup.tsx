@@ -19,17 +19,20 @@ export function NewsletterSignup({
   title,
   description,
   source = "blog",
+  preview = false,
 }: {
   eyebrow: string;
   title: string;
   description: string;
   source?: string;
+  preview?: boolean;
 }) {
-  return (
+  const band = (
     <CenteredCtaBand eyebrow={eyebrow} headline={title} body={description}>
-      <div className="mx-auto max-w-[480px] text-left">
+      <div className="mx-auto max-w-[480px] text-left" inert={preview || undefined}>
         <NewsletterForm theme="dark" source={source} />
       </div>
     </CenteredCtaBand>
   );
+  return preview ? <div data-editor-binding="newsletter">{band}</div> : band;
 }

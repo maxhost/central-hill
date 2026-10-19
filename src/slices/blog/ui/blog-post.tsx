@@ -14,7 +14,7 @@ import {
   TocList,
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
-import { getBlogAsideCta, getBlogPage } from "@slices/pages/contract";
+import { blogAsideCta, getBlogPage } from "@slices/pages/contract";
 import { SITE_ICON_DEFAULTS, getGlobals } from "@slices/settings/contract";
 import { getPostBySlug } from "../contract";
 import { BodyRenderer, type CalloutChrome } from "./components/body-renderer";
@@ -74,10 +74,9 @@ export async function BlogPost({ locale, slug }: { locale: Locale; slug: string 
   const post = await getPostBySlug(locale, slug);
   if (!post) notFound();
 
-  const [t, globals, asideCta, page] = await Promise.all([
+  const [t, globals, page] = await Promise.all([
     getTranslations("blog"),
     getGlobals(locale),
-    getBlogAsideCta(locale),
     getBlogPage(locale),
   ]);
   // Site icons (Settings → "Site icons", ADR 0034 amendment 2).
@@ -98,7 +97,7 @@ export async function BlogPost({ locale, slug }: { locale: Locale; slug: string 
     note: { icon: icons.callout_note, label: t("callout.note") },
   };
 
-  const cta = post.cta ? { label: post.cta.label, href: post.cta.url } : asideCta.cta;
+  const asideCta = blogAsideCta(page.content, locale, post.cta);
   const related = post.related.filter((r) => r.slug);
 
   const ld = [
@@ -200,7 +199,7 @@ export async function BlogPost({ locale, slug }: { locale: Locale; slug: string 
                 className="max-[980px]:hidden"
               />
             ) : null}
-            <BlogSharedAside asideCta={asideCta} cta={cta} divided={toc.length > 0} />
+            <BlogSharedAside asideCta={asideCta} divided={toc.length > 0} />
           </StickyAside>
         }
       />
