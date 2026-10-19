@@ -74,7 +74,7 @@ no se convierten en snapshots internos de Home.
 
 Al iniciar un trabajo target SIN draft persistido, preparar su modelo local desde el template
 EN guardado más reciente (draft EN si existe, si no published EN), conservando textos target
-por IDs estables. La preview sigue publicada hasta Guardar borrador. Si hay diferencia local,
+por IDs estables. La preview privada refleja ese modelo local sin publicarlo; Guardar borrador lo persiste. Si hay diferencia local,
 indicar cambios pendientes. La primera escritura valida su template/base de campos compartidos.
 Cuando YA existe un draft target, editar ese JSON tal cual: no sustituirlo ni reordenarlo
 al publicar EN. Guardar/publicar ese target usa su propia revisión. No exige publicar EN

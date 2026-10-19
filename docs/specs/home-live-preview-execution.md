@@ -84,3 +84,50 @@ updates documenting the optional read-only seam. No kernel change or migration.
 Page Editor Refresh resends local snapshot without iframe reload when live/ready; if
 not ready it retains existing iframe retry. Node22 focused A2/B5 tests and lint passed
 on branches; global checks only below on integrated code.
+
+## Integrated checks
+
+Code8da3519 (base5ea4608); safe env pagedraftsqa only, Node22.23.3.
+Logs/private/tmp/central-hill-home-live-qa:
+
+| Command | Exit | Evidence |
+|---|---:|---|
+| pnpm typecheck |0|typecheck.log final|
+| pnpm lint |0|lint.log;7 existing warnings|
+| pnpm exec eslint src/slices/pages/admin/live-preview-actions.tsx |0|lint-mime-fix.log|
+| pnpm exec tsx --test src/slices/backoffice/tests/page-editor-bridge.test.ts src/slices/pages/tests/home-live-preview.test.ts |0|tests.log;7 cases,4 new|
+| pnpm build |0|build.log final|
+
+Initial typecheck/build caught PageMedia.mime optional vs strict MIME helper; A fixed
+to explicit media.mime??"" (01b58cf→8da3519), rejecting unknown types, then both passed.
+Initial failed logs preserved with initial-failed suffix. Lint/tests ran on597fb2d; after
+that one-line type-mapping correction only affected action lint was repeated, test files
+unchanged. No broad persistence suite or migration check required. Boundaries reviewed:
+public Home routes/renderer unchanged; all cross-slice new imports through contracts;
+no kernel edits, DB write/queue flush/ISR call in read renderer. Four-locale keys match.
+Design detector once on changed UI returns[]; no styling polish loop.
+Production3067 serves8da3519, root PID25042/session29066, synthetic storage9067 remains
+PID90200/session59103. Home3065 unchanged. Independent QA browser completed; see home-live-preview-qa.md.
+
+## Delivery / browser result
+
+Executable8da3519: single EN/ES desktop/mobile edit pass passed continuous typing/focus/caret,
+latest-wins delayed request, Refresh with stable iframe URL, language separation, structural
+stats changes, decoded local blob image without PUT/upload, scroll/selection after rerender
+and invalid-input last-good output. Read-only continuation confirmed full content/translation
+rows + media count byte-identical, public EN/ES headline/SEO unchanged, reopen/reload saved
+baseline and no blobs/browser errors. No Save draft or Publish calls in this QA.
+
+Harness-only continuation details: full public innerText included animated counters0 vs25/12;
+use stable published headline/SEO and complete DB snapshot for final comparison. The fresh
+APIRequest login after public pages (cookies present) needed the normal Origin header;
+header addition resolved it. Initial non-ok boolean lacked captured status, so no specific
+403/rate-limit claim. No app/auth code changed or full edit sequence repeated.
+
+No new migration/dependency/kernel changes. Integrated branch remains page-drafts/integration,
+no main/push/deploy/GitHub/production. Worktrees home-live/render/bridge retained with
+be03e52/c13d91f/01b58cf and9cfc90c. Only root closure docs follow executable code.
+
+Independent QA approved8da3519 with no open defects; report commitf8d7c91. Final
+closure only documentation, no code changes after verified candidate. Git clean after
+closure commit; preview3067 remains available.

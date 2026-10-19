@@ -1,5 +1,19 @@
 # Central Hill agent instructions
 
+## Home ephemeral live preview follow-up
+
+Current executable8da3519, independently QA-approved (report f8d7c91), on page-drafts/integration. Read
+[execution](docs/specs/home-live-preview-execution.md) and
+[QA](docs/specs/home-live-preview-qa.md). The user's later request replaces the saved-only
+preview rule for Home. Current form changes render privately after300ms idle through the
+same Home renderer. Refresh resends local state without reload. No autosave, upload flush,
+content DB writes, public invalidation or publish from preview. Local images use same-origin
+blob metadata until Save draft flushes them; persisted normalized media takes precedence.
+Save draft/Publish and locale revisions remain explicit and independent.
+Production local preview3067 PID25042/session29066, same synthetic pagedraftsqa environment.
+Global typecheck/lint/7focused cases/build pass; final independent QA evidence linked above.
+No kernel/migration/package changes, no main/push/deploy/production. Preserve3065/others.
+
 ## Home draft/publish per language — local implementation
 
 Implemented from e06272b on page-drafts/integration in
@@ -7,14 +21,15 @@ Implemented from e06272b on page-drafts/integration in
 Follow-up63a628a fixes typing focus loss in shared shell; root verified continuous
 EN/ES single/multiple fields/mobile, preview selection, typecheck/lint/3bridge tests/build.
 This follow-up has focused root verification, not a new independent QA claim.
-Current3067 PID5230/session43430.
+Previous focus verification used3067 PID5230/session43430 (superseded by live preview above).
 Read [delivery](docs/specs/page-locale-drafts-delivery.md),
 [handoff](docs/specs/page-locale-drafts-handoff.md),
 [spec](docs/specs/page-locale-drafts-spec.md),
 [execution](docs/specs/page-locale-drafts-plan.md),
 [QA](docs/specs/page-locale-drafts-qa.md) and ADR0040.
 Exactly Save draft and Publish, both for selected locale. One JSON draft per language;
-private preview uses it if present, otherwise that language's published JSON. Publish EN
+private preview opens it if present, otherwise that language's published JSON, then
+renders ephemeral local changes per the later live-preview request. Publish EN
 clears only EN draft; ES draft/public/local work stay intact. No translation approve/review.
 Persistent per-locale revision survives draft deletion. Home first; Owners not implemented.
 Nine focused tests, typecheck/lint/build/db:check passed; one EN/ES desktop/mobile

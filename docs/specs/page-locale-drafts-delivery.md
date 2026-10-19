@@ -1,5 +1,11 @@
 # Home: Guardar borrador y Publicar por idioma — entrega local
 
+Latest code8da3519, independently QA-approved (report f8d7c91): Home live preview of unsaved form state, requested after original
+delivery. Debounced, authenticated, same renderer; local blob images stay unuploaded.
+No autosave/content DB writes/public invalidation. Refresh reflects local state; saving
+and publishing remain explicit. [Execution](home-live-preview-execution.md),
+[QA](home-live-preview-qa.md). Preview3067 now PID25042/session29066.
+
 Actualización: fix de foco63a628a, verificado por raíz en escritura continua EN/ES y móvil.
 La aprobación independiente original corresponde a b4bb282; ver seguimiento en QA.
 Preview3067 actualizado PID5230/session43430.
@@ -108,4 +114,56 @@ src/slices/translation/admin/actions.ts
 src/slices/translation/admin/queries.ts
 src/slices/translation/admin/ui/review.tsx
 src/slices/translation/server/generate.ts
+```
+
+## Live preview follow-up (code8da3519)
+
+User requested local live preview after validating the focus fix. The editor now debounces
+working envelopes300ms to its same-origin private iframe. A staff-gated read action validates
+payload/media and reuses HomePage RSC; no DOM copy patcher, autosave, upload or public invalidation.
+One active render + newest queued snapshot prevents old results overriding new input.
+Refresh replays local data, form focus/caret and iframe scroll/selection remain usable.
+New image/video/Lottie refs use same-origin local blob metadata in memory; after upload on
+explicit Save draft, persisted media takes precedence. Public renderer/ISR unchanged.
+
+Node22 checks: typecheck0, lint0(7 prior warnings), focused tests7/7 (4 new), build0.
+One optional-MIME map type fix corrected initial typecheck/build failure; affected action
+lint repeated0. No migration/db:check, persistence9case rerun or149-case routine suite.
+Independent QA confirmed EN/ES desktop/mobile live behavior, unchanged content/translation
+DB rows/media count, unchanged public pages and reload-to-saved baseline. See
+[QA](home-live-preview-qa.md), [execution](home-live-preview-execution.md).
+Artifacts/logs/screenshots outside repo:/private/tmp/central-hill-home-live-qa.
+Preview3067 root PID25042/session29066, existing synthetic DB/storage preserved.
+
+Archivos de este seguimiento (base5ea4608):
+
+```text
+AGENTS.md
+docs/decisions/0040-page-locale-drafts.md
+docs/specs/home-live-preview-execution.md
+docs/specs/home-live-preview-qa.md
+docs/specs/page-locale-drafts-delivery.md
+docs/specs/page-locale-drafts-handoff.md
+docs/specs/page-locale-drafts-spec.md
+messages/en.json
+messages/es.json
+messages/fr.json
+messages/pt.json
+src/app/(admin)/admin/preview/home/page.tsx
+src/slices/backoffice/README.md
+src/slices/backoffice/contract.ts
+src/slices/backoffice/page-editor-types.ts
+src/slices/backoffice/tests/page-editor-bridge.test.ts
+src/slices/backoffice/ui/page-editor-bridge.ts
+src/slices/backoffice/ui/page-editor-live-preview.tsx
+src/slices/backoffice/ui/page-editor-preview-bridge.tsx
+src/slices/backoffice/ui/page-editor-shell.tsx
+src/slices/pages/README.md
+src/slices/pages/admin/live-preview-actions.tsx
+src/slices/pages/admin/live-preview-validation.ts
+src/slices/pages/admin/ui/home-contextual-editor.tsx
+src/slices/pages/admin/ui/schema-fields.tsx
+src/slices/pages/contract.ts
+src/slices/pages/editorial-types.ts
+src/slices/pages/tests/home-live-preview.test.ts
 ```

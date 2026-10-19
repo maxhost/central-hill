@@ -1,6 +1,13 @@
 # Home drafts por idioma — handoff de implementación
 
-Código actual63a628a incluye corrección de foco del shell; verificación focal de raíz:
+Current code8da3519, QA-approved (report f8d7c91), adds ephemeral Home live preview by later user request. Read
+[execution](home-live-preview-execution.md) / [QA](home-live-preview-qa.md).
+Private form snapshots render without Save after300ms, using the same renderer. No content
+persistence/public invalidation/upload from preview. Refresh resends local state; reload
+recovers saved baseline. Explicit per-locale Save draft/Publish remain unchanged.
+Preview3067 PID25042/session29066; same synthetic environment, no new migration.
+
+Seguimiento previo63a628a incluye corrección de foco del shell; verificación focal de raíz:
 escritura continua EN/ES desktop/mobile, selección preview, typecheck/lint/3tests/build0.
 QA independiente original b4bb282; seguimiento documentado en QA.
 Preview3067 actual PID5230/session43430.
