@@ -1716,6 +1716,19 @@
         "portfolioNote": "Les cartes sont gérées dans Buildings.",
         "servicesNote": "Les cartes sont gérées dans Services.",
         "faqNote": "Les questions sont gérées dans FAQ."
+      },
+      "editorial": {
+        "saveDraft": "Enregistrer le brouillon",
+        "publish": "Publier",
+        "savingDraft": "Enregistrement…",
+        "publishing": "Publication…",
+        "draft": "Brouillon",
+        "published": "Publié",
+        "unsaved": "Modifications non enregistrées",
+        "savedPreview": "L’aperçu affiche le contenu enregistré",
+        "conflict": "Cette langue a changé dans un autre onglet. Rechargez avant de continuer.",
+        "refreshWarning": "Publié. L’actualisation publique a échoué ; réessayez avant de vérifier le site.",
+        "noDraft": "Enregistrez un brouillon avant de publier."
       }
     }
   },

@@ -42,9 +42,9 @@ const HERO_FALLBACK_POSTER =
  * editor (`dual_cta`), with the owner panel's target still hardcoded to `/owners` (not
  * CMS-editable — same reasoning as the hero's secondary CTA above).
  */
-export async function HomePage({ locale, preview = false }: { locale: Locale; preview?: boolean }) {
+export async function HomePage({ locale, preview = false, page: injectedPage }: { locale: Locale; preview?: boolean; page?: Awaited<ReturnType<typeof getHomePage>> }) {
   setRequestLocale(locale);
-  const [page, t] = await Promise.all([getHomePage(locale), getTranslations("pages")]);
+  const [page, t] = await Promise.all([injectedPage === undefined ? getHomePage(locale) : Promise.resolve(injectedPage), getTranslations("pages")]);
   if (!page) notFound();
 
   const { content, media } = page;

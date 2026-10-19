@@ -1,5 +1,21 @@
 # Slice `pages` (S9)
 
+## Home per-language drafts (ADR0040)
+
+Home now uses `page_locale_content`, one row per language, with versioned full JSON
+`published`/`draft` and a persistent numeric revision. Save draft affects only the
+selected locale and never invalidates public caches. Publish validates and atomically
+moves that saved draft to published, clears only its own draft and increments revision.
+EN/ES/PT/FR drafts and local tab work remain independent; there is no translation approval.
+
+The staff editorial model prepares a first target draft from the latest saved EN template,
+keeping translated leaves by stable IDs. Existing target drafts remain exact snapshots.
+Public `getHomePage` reads published JSON only, cached by `page:home:<locale>`; private
+preview injects draft-or-published into the same Home renderer. The legacy content remains
+a read-only bootstrap source, preserving published translations and importing unpublished
+legacy copy as drafts. Legacy Home/Translation mutation entrypoints are blocked.
+Other pages retain the workflows documented below. See page-locale-drafts spec/plan/QA.
+
 ## Blog listing editor (2026-10-18)
 
 Pages→Blog now groups SEO/social image, header/search copy, Featured label,

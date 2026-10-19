@@ -9,7 +9,7 @@ import {
 } from "@core/i18n";
 import { cacheTags, revalidatePath, updateTag } from "@core/revalidate";
 import { isGuideTranslationEntity, revalidateGuides } from "@slices/guides/contract";
-import { revalidatePageTranslation } from "@slices/pages/contract";
+import { getPageEditorialRedirect, revalidatePageTranslation } from "@slices/pages/contract";
 import { SOURCE_LOCALE, TARGET_LOCALES } from "./derive";
 import { generateDrafts } from "../server/generate";
 
@@ -51,6 +51,7 @@ export async function approveField(
 ): Promise<TranslationActionResult> {
   await requireStaff();
   if (!type || !id || !field || !isTargetLocale(locale)) return { ok: false, error: "validation" };
+  if (await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
   await setTranslationState(type, id, field, locale, "approved");
   await revalidateEntity(type, id);
   return { ok: true };
@@ -65,6 +66,7 @@ export async function resetField(
 ): Promise<TranslationActionResult> {
   await requireStaff();
   if (!type || !id || !field || !isTargetLocale(locale)) return { ok: false, error: "validation" };
+  if (await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
   await setTranslationState(type, id, field, locale, "needs_review");
   await revalidateEntity(type, id);
   return { ok: true };
@@ -84,6 +86,7 @@ export async function saveField(
 ): Promise<TranslationActionResult> {
   const staff = await requireStaff();
   if (!type || !id || !field || !isTargetLocale(locale)) return { ok: false, error: "validation" };
+  if (await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
 
   const sourceRows = await loadTranslationRows({ type, id, locale: SOURCE_LOCALE });
   const source = sourceRows.find((r) => r.field === field);
@@ -113,6 +116,7 @@ export async function clearField(
 ): Promise<TranslationActionResult> {
   await requireStaff();
   if (!type || !id || !field || !isTargetLocale(locale)) return { ok: false, error: "validation" };
+  if (await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
   await deleteTranslation(type, id, field, locale);
   await revalidateEntity(type, id);
   return { ok: true };
@@ -122,6 +126,7 @@ export async function clearField(
 export async function approveEntity(type: string, id: string): Promise<TranslationActionResult> {
   await requireStaff();
   if (!type || !id) return { ok: false, error: "validation" };
+  if (await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
 
   const rows = await loadTranslationRows({ type, id });
   for (const r of rows) {
@@ -145,6 +150,7 @@ export async function generateEntityDrafts(
 ): Promise<TranslationActionResult> {
   const staff = await requireStaff();
   if (!type || !id) return { ok: false, error: "validation" };
+  if (await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
   await generateDrafts(type, id, { overwrite, updatedBy: staff.userId });
   await revalidateEntity(type, id);
   return { ok: true };

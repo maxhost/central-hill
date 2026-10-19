@@ -1716,6 +1716,19 @@
         "portfolioNote": "Os cartões são geridos em Buildings.",
         "servicesNote": "Os cartões são geridos em Services.",
         "faqNote": "As perguntas são geridas em FAQ."
+      },
+      "editorial": {
+        "saveDraft": "Guardar rascunho",
+        "publish": "Publicar",
+        "savingDraft": "A guardar rascunho…",
+        "publishing": "A publicar…",
+        "draft": "Rascunho",
+        "published": "Publicado",
+        "unsaved": "Alterações por guardar",
+        "savedPreview": "A pré-visualização mostra o conteúdo guardado",
+        "conflict": "Este idioma foi alterado noutro separador. Recarrega antes de continuar.",
+        "refreshWarning": "Publicado. A atualização pública falhou; tenta atualizar antes de verificar o site.",
+        "noDraft": "Guarda um rascunho antes de publicar."
       }
     }
   },

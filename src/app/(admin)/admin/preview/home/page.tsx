@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { requireStaff } from "@core/auth";
-import { HomePageRenderer, homeEditorBindingIds } from "@slices/pages/contract";
+import { HomePageRenderer, homeEditorBindingIds, getPageDraftPreview } from "@slices/pages/contract";
 import { PageEditorPreviewBridge } from "@slices/backoffice/contract";
 import { SiteHeader, SiteFooter } from "@slices/settings/contract";
 import type { Locale } from "@core/db/columns";
@@ -21,9 +21,10 @@ export default async function HomePreview({ searchParams }: {
   if (!["en", "es", "pt", "fr"].includes(locale) || !query.instance || !/^[a-zA-Z0-9_-]{1,100}$/.test(query.instance)) notFound();
   setRequestLocale(locale);
   const messages = await getMessages({ locale });
+  const page = await getPageDraftPreview("home", locale as Locale);
   return <NextIntlClientProvider locale={locale} messages={messages}>
     <SiteHeader locale={locale as Locale} />
-    <HomePageRenderer locale={locale as Locale} preview />
+    <HomePageRenderer locale={locale as Locale} preview page={page} />
     <SiteFooter locale={locale as Locale} />
     <PageEditorPreviewBridge instance={query.instance} bindingIds={homeEditorBindingIds} />
   </NextIntlClientProvider>;

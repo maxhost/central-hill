@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { getPageEditorialRedirect } from "@slices/pages/contract";
+import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import {
@@ -39,6 +40,8 @@ export async function TranslationReview({
   id: string;
   locale?: string;
 }) {
+  const editor = await getPageEditorialRedirect(type, id);
+  if (editor) redirect(editor);
   const t = await getTranslations("translation");
   const entity = await getEntityTranslations(type, id);
   if (!entity) notFound();

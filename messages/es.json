@@ -1716,6 +1716,19 @@
         "portfolioNote": "Las tarjetas se gestionan en Buildings.",
         "servicesNote": "Las tarjetas se gestionan en Services.",
         "faqNote": "Las preguntas se gestionan en FAQ."
+      },
+      "editorial": {
+        "saveDraft": "Guardar borrador",
+        "publish": "Publicar",
+        "savingDraft": "Guardando borrador…",
+        "publishing": "Publicando…",
+        "draft": "Borrador",
+        "published": "Publicado",
+        "unsaved": "Cambios sin guardar",
+        "savedPreview": "La vista previa muestra el contenido guardado",
+        "conflict": "Este idioma cambió en otra pestaña. Recarga antes de continuar.",
+        "refreshWarning": "Publicado. Falló la actualización pública; vuelve a intentar actualizar antes de comprobar la web.",
+        "noDraft": "Guarda un borrador antes de publicar."
       }
     }
   },

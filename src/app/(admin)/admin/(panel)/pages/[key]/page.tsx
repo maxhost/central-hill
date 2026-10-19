@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireStaff } from "@core/auth";
 import { getPageEditModel } from "@slices/pages/admin/queries";
-import { getHomeContextualModel } from "@slices/pages/admin/home-queries";
+import { getHomeEditorialModel } from "@slices/pages/admin/editorial-queries";
 import { HomeContextualEditor } from "@slices/pages/admin/ui/home-contextual-editor";
 import { PageEditor } from "@slices/pages/admin/ui/page-editor";
 
@@ -11,7 +11,7 @@ export default async function EditPageRoute({ params }: { params: Promise<{ key:
   const { key } = await params;
 
   if (key === "home") {
-    const model = await getHomeContextualModel();
+    const model = await getHomeEditorialModel();
     return <HomeContextualEditor model={model} />;
   }
 

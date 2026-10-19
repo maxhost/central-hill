@@ -14,8 +14,6 @@ import { pageKey, pageSchemas } from "../schemas";
 import { revalidatePage } from "../server/publish";
 import { saveBlog } from "./blog-save";
 import type { BlogContent } from "../schemas/blog";
-import { saveHome } from "./home-save";
-import type { HomeContent } from "../schemas/home";
 import { saveAbout } from "./about-save";
 import type { AboutContent } from "../schemas/about";
 
@@ -54,6 +52,7 @@ export async function savePage(
   const keyParsed = pageKey.safeParse(rawKey);
   if (!keyParsed.success) return { ok: false, error: "bad_key" };
   const key = keyParsed.data;
+  if (key === "home") return { ok: false, error: "validation", fieldErrors: { _source: "Use Save draft and Publish in the Home editor." } };
 
   const dataParsed = pageSchemas[key].safeParse(payload.data);
   if (!dataParsed.success) {
@@ -64,11 +63,6 @@ export async function savePage(
   const ogImage = payload.og_image_media_id || null;
 
   try {
-    if (key === "home") {
-      const result = await saveHome(dataParsed.data as HomeContent, ogImage, payload.revision, staff.userId);
-      if (result.ok) revalidatePage("home");
-      return result;
-    }
     if (key === "blog") {
       const result = await saveBlog(dataParsed.data as BlogContent, ogImage, staff.userId);
       if (result.ok) revalidatePage("blog");

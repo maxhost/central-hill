@@ -1716,6 +1716,19 @@
         "portfolioNote": "Cards are managed in Buildings.",
         "servicesNote": "Cards are managed in Services.",
         "faqNote": "Questions are managed in FAQ."
+      },
+      "editorial": {
+        "saveDraft": "Save draft",
+        "publish": "Publish",
+        "savingDraft": "Saving draft…",
+        "publishing": "Publishing…",
+        "draft": "Draft",
+        "published": "Published",
+        "unsaved": "Unsaved changes",
+        "savedPreview": "Preview shows saved content",
+        "conflict": "This language changed in another tab. Reload before continuing.",
+        "refreshWarning": "Published. Public refresh failed; retry the refresh before checking the website.",
+        "noDraft": "Save a draft before publishing."
       }
     }
   },

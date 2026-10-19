@@ -124,3 +124,13 @@ root owns cases8 and10 if not already covered by A; B adds no automated cases, b
 checks cover dirty/tab state. Required DB cases4/6/7 remain real DB.
 QA environment pending new synthetic pagedraftsqa, preview3067; Home3065 preserved.
 Global checks once after integration, logs under /private/tmp/central-hill-page-drafts-qa.
+
+Root scope additions: server/editorial-translation-policy.ts (Pages-owned identity lookup
+exported via contract for Translation guards), global messages/en|es|pt|fr.json (actual
+message registry), Translation README, Pages README/data-model docs. No kernel change.
+Environment ready: pagedraftsqa DB/role, owned containers central-hill-page-drafts-db5618
+and proxy4518, network central-hill-page-drafts-qa, synthetic staff only. New files
+env.sh/preload.cjs/fixtures.cjs/seed.cjs under QA artifact directory; no copied production env.
+All0000..0023 migrations applied with psql ON_ERROR_STOP. drizzle-kit migrate failed
+(local WebSocket transport unavailable), psql exit0; record logs. Existing3065 preserved.
+ES pending legacy SEO fixture includes value when EN SEO empty; baseline must retain it.

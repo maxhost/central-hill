@@ -608,3 +608,13 @@ recipient, exact localized definition snapshot and normalized values JSON, creat
 staff ID, delivery accepted/logged/skipped/failed, provider ID/error, timestamps.
 Checkbox consent and exact labels retained in snapshot. Only staff tests, never
 production Leads or visitor data; no public placements/releases yet.
+
+### Home locale snapshots (ADR0040, migration0023)
+
+Pages owns `page_locale_content` with unique `(page_key, locale)`, versioned JSONB
+`published`/`draft`, persistent integer `revision`, timestamps and text staff actor ID.
+Home alone is enabled initially. Each language publishes independently through a
+revision-guarded atomic update; clearing draft never deletes its row/revision.
+Public read-only fallback uses the existing legacy pipeline until staff bootstrap;
+bootstrap preserves existing four-locale public output and unpublished legacy translations.
+Other page_content and Translation rows keep their existing semantics.

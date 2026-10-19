@@ -1,4 +1,5 @@
 import "server-only";
+import { getPageEditorialRedirect } from "@slices/pages/contract";
 import type { Locale } from "@core/db/columns";
 import {
   getTranslateProvider,
@@ -39,6 +40,7 @@ export async function generateDrafts(
   id: string,
   opts: GenerateOptions = {},
 ): Promise<GenerateSummary> {
+  if (await getPageEditorialRedirect(type, id)) throw new Error("Use the page editor to save and publish this page by language.");
   const provider = getTranslateProvider();
   const targets = (opts.locales ?? TARGET_LOCALES).filter((l) => l !== SOURCE_LOCALE);
   const summary: GenerateSummary = { provider: provider.name, written: {}, total: 0 };

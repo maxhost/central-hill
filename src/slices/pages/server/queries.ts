@@ -1,4 +1,6 @@
 import "server-only";
+import { pageLocaleTag } from "../editorial-registry";
+import { getPublishedPageLocale } from "./editorial-publication";
 import { unstable_cache } from "next/cache";
 import { eq } from "drizzle-orm";
 import { db } from "@core/db/client";
@@ -103,7 +105,7 @@ const cached = <T>(key: PageKey, locale: Locale): Promise<PageResult<T> | null> 
   })();
 
 export const getHomePage = (locale: Locale): Promise<HomePage | null> =>
-  cached<HomePage["content"]>("home", locale);
+  unstable_cache(() => getPublishedPageLocale("home", locale), ["pages:publishedLocale:v1", "home", locale], { tags: [pageLocaleTag("home", locale)] })();
 
 export const getOwnersPage = (locale: Locale): Promise<OwnersPage | null> =>
   cached<OwnersPage["content"]>("owners", locale);
