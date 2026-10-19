@@ -56,19 +56,51 @@ export function FormEditor({ model }: { model: FormEditorModel }) {
     [fields[a], fields[b]] = [fields[b]!, fields[a]!];
     changeDefinition({ ...definition, fields });
   };
+  const validationMessage = (result: { error: string; fieldErrors?: Record<string, string> }, selectError = false) => {
+    const issues = Object.entries(result.fieldErrors ?? {});
+    if (!issues.length) return result.error;
+    return issues.map(([rawPath, message], index) => {
+      const path = rawPath.replace(/^values\./, "");
+      let label = t("formSettings");
+      let element = "form";
+      let stepId: string | undefined;
+      if (path === "name") label = t("internalName");
+      else if (path === "recipient") label = t("recipient");
+      else if (path === "definition.replyToFieldId") label = t("replyTo");
+      else if (path === "definition.columns") label = t("columns");
+      else {
+        const copyKey = path.match(/^(?:definition\.copy\.|block:copy\.)([^.]+)$/)?.[1];
+        const fieldIndex = path.match(/^definition\.fields\.(\d+)/)?.[1];
+        const stepIndex = path.match(/^definition\.steps\.(\d+)/)?.[1];
+        const stableFieldId = path.match(/^block:fields\.([^.]+)/)?.[1];
+        const stableStepId = path.match(/^block:steps\.([^.]+)/)?.[1];
+        const field = fieldIndex !== undefined ? definition.fields[Number(fieldIndex)] : definition.fields.find(item => item.id === stableFieldId || item.id === path);
+        const step = stepIndex !== undefined ? definition.steps[Number(stepIndex)] : definition.steps.find(item => item.id === stableStepId);
+        if (copyKey && copyKey in definition.copy) label = t(`copy.${copyKey as keyof FormCopy}`);
+        else if (field) {
+          element = field.id; stepId = field.stepId;
+          const suffix = path.split(".").at(-1);
+          const detail = suffix === "label" ? t("label") : suffix === "help" ? t("help") : suffix === "placeholder" ? t("placeholder") : suffix === "min" ? t("min") : suffix === "max" ? t("max") : path.includes("options") ? t("options") : t("fieldType");
+          label = `${field.label || t("newField")} · ${detail}`;
+        } else if (step) { element = step.id; stepId = step.id; label = `${step.title || t("newStep")} · ${t("stepTitle")}`; }
+      }
+      if (selectError && index === 0) { setSelected(element); if (stepId) setActiveStep(stepId); setTesting(false); }
+      return `${label}: ${message}`;
+    }).join(" · ");
+  };
   const save = async (approve = false) => {
     setBusy(true); setError(""); setNotice("");
     try {
       if (language === "en") {
         const result = await saveForm({ id: saved.id, expectedRevision: saved.revision, name, recipient, definition });
-        if (!result.ok) { setError(result.code === "conflict" ? t("conflict") : result.error); return; }
+        if (!result.ok) { setError(result.code === "conflict" ? t("conflict") : validationMessage(result, true)); return; }
         setSaved({ ...saved, name, recipient, definition, revision: result.data.revision });
         setTranslations(previous => Object.fromEntries(Object.entries(previous).map(([locale, rows]) => [locale, Object.fromEntries(Object.entries(rows).map(([key, row]) => [key, { ...row, stale: row.stale || source[key] !== textFields(saved.definition)[key] }]))])) as FormTranslations);
         setDirty(false);
       } else {
         if (dirty) { setError(t("saveSourceFirst")); return; }
         const result = await saveFormLocale({ id: saved.id, expectedRevision: saved.revision, locale: language, values: Object.fromEntries(Object.entries(targets[language]).filter(([key]) => key in source)), approve });
-        if (!result.ok) { setError(result.code === "conflict" ? t("conflict") : result.error); return; }
+        if (!result.ok) { setError(result.code === "conflict" ? t("conflict") : validationMessage(result, true)); return; }
         setSaved({ ...saved, revision: result.data.revision });
         setTranslations(previous => ({ ...previous, [language]: Object.fromEntries(Object.entries(targets[language]).filter(([, value]) => value.trim()).map(([key, value]) => [key, { value, stale: false, state: approve ? "approved" : "needs_review" }])) }));
         setTargetDirty(previous => ({ ...previous, [language]: false }));
@@ -91,7 +123,7 @@ export function FormEditor({ model }: { model: FormEditorModel }) {
     const id = `edit-${path}`;
     return <Field key={path} label={label} htmlFor={id}>
       {!sourceMode && <p className="mb-1 whitespace-pre-wrap break-words text-sm text-ink-soft">EN: {source[path] || t("emptySource")}</p>}
-      {multiline ? <TextArea id={id} maxLength={path.endsWith(".help") ? 1000 : 2000} value={value} onChange={event => update(event.target.value)} /> : <TextInput id={id} maxLength={300} value={value} onChange={event => update(event.target.value)} />}
+      {multiline ? <TextArea id={id} maxLength={path.startsWith("block:copy.") && ["description", "successMessage", "errorMessage"].some(key => path.endsWith(`.${key}`)) ? 2000 : path.endsWith(".help") ? 1000 : 300} value={value} onChange={event => update(event.target.value)} /> : <TextInput id={id} maxLength={300} value={value} onChange={event => update(event.target.value)} />}
       {!sourceMode && <div className="flex flex-wrap gap-2 text-xs text-ink-soft"><span>{!value.trim() ? t("fallback") : row && row.value === value ? t(row.state) : t("unsaved")}</span>{row?.stale && <StateBadge label={t("stale")} tone="review" />}</div>}
     </Field>;
   };
@@ -108,7 +140,7 @@ export function FormEditor({ model }: { model: FormEditorModel }) {
     <div className="flex flex-wrap items-center gap-2"><span className="mr-2 text-sm text-ink-soft">{t("previewSize")}</span><AdminButton aria-pressed={!compact} onClick={() => setCompact(false)}>{t("desktop")}</AdminButton><AdminButton aria-pressed={compact} onClick={() => setCompact(true)}>{t("mobile")}</AdminButton><span className="text-sm text-ink-soft">{t("revision", { revision: saved.revision })}</span></div>
     {testing ? <section className="space-y-5 rounded-lg border border-line bg-bg p-4 sm:p-7"><p className="max-w-3xl text-sm leading-relaxed text-ink-soft">{t("savedTestHint", { recipient: saved.recipient, revision: saved.revision })}</p><div className="mx-auto w-full rounded-lg border border-line bg-surface p-5 sm:p-7" style={{ maxWidth: compact ? 390 : 760 }}><FormRuntime key={`${saved.revision}-${language}`} compact={compact} definition={approvedBlueprint(saved.definition, translations, language)} onSubmit={async values => {
       const result = await testForm({ id: saved.id, expectedRevision: saved.revision, locale: language, values });
-      if (!result.ok) return { ok: false, error: result.code === "conflict" ? t("conflict") : result.error };
+      if (!result.ok) return { ok: false, error: result.code === "conflict" ? t("conflict") : validationMessage(result) };
       setNotice(t(`delivery.${result.data.delivery}`)); return result.data.delivery === "failed" ? { ok: false, error: t("delivery.failed") } : { ok: true };
     }} /></div></section> : <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
       <section className="min-w-0 rounded-lg border border-line bg-bg p-4 sm:p-6" aria-label={t("canvas")}>
