@@ -1,79 +1,215 @@
 import "server-only";
 import { z } from "zod";
 import { editorialLocale } from "../server/editorial-policy";
-import { validateDraftMutation, validateEnvelope } from "./editorial-validation";
-import { applyDefaults, describe } from "./form-model";
-function emptyEditorialEnvelope(): PageEnvelope { return { schemaVersion: 1, content: normalizeHome(applyDefaults(describe(homeSchema), {}) as import("../schemas/home").HomeContent), ogImageMediaId: null }; }
+import {
+  validateDraftMutation,
+  validateEnvelope,
+} from "./editorial-validation";
+import { getEditorialAdapter } from "../server/editorial-adapters";
+import {
+  isEditorialPageKey,
+  usesPageLocaleDrafts,
+} from "../editorial-registry";
+import { homeSet } from "../home-content";
+import { loadContent } from "@core/i18n";
+function emptyEditorialEnvelope<K extends EditorialPageKey>(
+  key: K,
+): PageEnvelope<K> {
+  return {
+    schemaVersion: 1,
+    content: getEditorialAdapter(key).defaultContent(),
+    ogImageMediaId: null,
+  };
+}
 import { eq, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { loadTranslationRows } from "@core/i18n";
 import type { Locale } from "@core/db/columns";
 import { page_content, page_locale_content } from "../schema";
-import { homeSchema } from "../schemas/home";
-import { homeIdentityErrors, homeSet, homeTextPaths, homeTranslationField, normalizeHome } from "../home-content";
-import { prepareTargetEnvelope } from "../editorial-content";
-import type { PageEnvelope, PageLocaleEditorialModel, PageEditorialResult, PublishPageDraftInput, SavePageDraftInput } from "../editorial-types";
-import { resolveHomeData } from "../server/home-translations";
+import {
+  prepareTargetEnvelope,
+  captureLegacyPending,
+} from "../editorial-content";
+import type {
+  EditorialPageKey,
+  PageEnvelope,
+  PageLocaleEditorialModel,
+  PageEditorialResult,
+  PublishPageDraftInput,
+  SavePageDraftInput,
+} from "../editorial-types";
 
 export const editorialLocales = ["en", "es", "pt", "fr"] as const;
-export type EditorialRow = typeof page_locale_content.$inferSelect;
-export async function legacyEditorialRows(): Promise<EditorialRow[]> {
-  const [source] = await db.select().from(page_content).where(eq(page_content.key, "home")).limit(1);
-  const parsed = homeSchema.safeParse(source?.data);
-  if (source && !parsed.success) throw new Error("Invalid legacy Home content");
-  if (!source || !parsed.success) return [];
-  const content = normalizeHome(parsed.data);
-  if (Object.keys(homeIdentityErrors(content)).length) throw new Error("Invalid legacy Home identities");
-  const translations = await loadTranslationRows({ type: "page_content", id: source.id });
-  return Promise.all(editorialLocales.map(async locale => {
-    const published: PageEnvelope = { schemaVersion: 1, content: await resolveHomeData(source.id, content, locale), ogImageMediaId: source.og_image_media_id };
-    let draft: PageEnvelope | null = null;
-    const pending = translations.filter(row => row.locale === locale && row.state !== "approved" && row.field.startsWith("block:"));
-    if (locale !== "en" && pending.length) {
-      draft = structuredClone(published);
-      if (pending.some(row => row.field.startsWith("block:seo."))) draft.content.seo ??= { meta_title: "", meta_description: "" };
-      for (const path of homeTextPaths(draft.content)) {
-        const row = pending.find(row => row.field === homeTranslationField(content, path));
-        if (row) homeSet(draft.content, path, row.value);
+export type EditorialRow<K extends EditorialPageKey = "home"> = Omit<
+  typeof page_locale_content.$inferSelect,
+  "published" | "draft"
+> & { published: PageEnvelope<K> | null; draft: PageEnvelope<K> | null };
+export async function legacyEditorialRows<K extends EditorialPageKey = "home">(
+  key: K = "home" as K,
+): Promise<EditorialRow<K>[]> {
+  const [source] = await db
+    .select()
+    .from(page_content)
+    .where(eq(page_content.key, key))
+    .limit(1);
+  const adapter = getEditorialAdapter(key);
+  const parsed = adapter.publishSchema.safeParse(source?.data);
+  if (!parsed.success && key !== "buildings") {
+    if (source) throw new Error("Invalid legacy page content");
+    return [];
+  }
+  const content = adapter.normalize(
+    parsed.success ? parsed.data : adapter.defaultContent(),
+  );
+  if (Object.keys(adapter.identityErrors(content)).length)
+    throw new Error("Invalid legacy page identities");
+  const translations =
+    source && parsed.success
+      ? await loadTranslationRows({ type: "page_content", id: source.id })
+      : [];
+  return Promise.all(
+    editorialLocales.map(async (locale) => {
+      const localized = structuredClone(content);
+      if (source && parsed.success && locale !== "en") {
+        const resolver = await loadContent(
+          [{ type: "page_content", id: source.id }],
+          locale,
+        );
+        for (const path of adapter.textPaths(localized)) {
+          const value = resolver.get(
+            "page_content",
+            source.id,
+            adapter.translationField(content, path),
+          );
+          if (value !== undefined) homeSet(localized, path, value);
+        }
       }
-    }
-    return { id: source.id, page_key: "home", locale, published, draft, revision: 0, published_at: source.updated_at, draft_saved_at: draft ? source.updated_at : null, updated_by: null, created_at: source.created_at, updated_at: source.updated_at };
-  }));
+      const published: PageEnvelope<K> = {
+        schemaVersion: 1,
+        content: localized,
+        ogImageMediaId: source?.og_image_media_id ?? null,
+      };
+      const pending = translations.filter(
+        (row) =>
+          row.locale === locale &&
+          row.state !== "approved" &&
+          row.field.startsWith("block:"),
+      );
+      const draft =
+        locale === "en"
+          ? null
+          : captureLegacyPending(published, pending, adapter.descriptor);
+      return {
+        id: source?.id ?? "",
+        page_key: key,
+        locale,
+        published,
+        draft,
+        revision: 0,
+        published_at: source?.updated_at ?? new Date(),
+        draft_saved_at: draft ? (source?.updated_at ?? new Date()) : null,
+        updated_by: null,
+        created_at: source?.created_at ?? new Date(),
+        updated_at: source?.updated_at ?? new Date(),
+      };
+    }),
+  );
 }
-export async function readEditorialRows(): Promise<EditorialRow[]> {
-  const rows = await db.select().from(page_locale_content).where(eq(page_locale_content.page_key, "home"));
-  if (rows.length === 4) return rows;
-  const baseline = await legacyEditorialRows();
-  return editorialLocales.flatMap(locale => {
-    const row = rows.find(row => row.locale === locale) ?? baseline.find(row => row.locale === locale);
-    return row ? [row] : [];
+export async function readEditorialRows<K extends EditorialPageKey = "home">(
+  key: K = "home" as K,
+): Promise<EditorialRow<K>[]> {
+  const rows = await db
+    .select()
+    .from(page_locale_content)
+    .where(eq(page_locale_content.page_key, key));
+  if (rows.length === 4) return rows as EditorialRow<K>[];
+  const baseline = await legacyEditorialRows(key);
+  return editorialLocales.flatMap((locale) => {
+    const row =
+      rows.find((row) => row.locale === locale) ??
+      baseline.find((row) => row.locale === locale);
+    return row ? [row as EditorialRow<K>] : [];
   });
 }
 /** A single idempotent INSERT initializes every baseline without replacing live rows. */
-export async function bootstrapEditorial(actor: string): Promise<void> {
-  const existing = await db.select({ locale: page_locale_content.locale }).from(page_locale_content).where(eq(page_locale_content.page_key, "home"));
+export async function bootstrapEditorial(
+  actor: string,
+  key: EditorialPageKey = "home",
+): Promise<void> {
+  const existing = await db
+    .select({ locale: page_locale_content.locale })
+    .from(page_locale_content)
+    .where(eq(page_locale_content.page_key, key));
   if (existing.length === 4) return;
-  const baseline = await legacyEditorialRows();
-  const values = editorialLocales.map(locale => {
-    const row = baseline.find(row => row.locale === locale);
-    return { page_key: "home", locale, published: row?.published ?? null, draft: row?.draft ?? null, revision: 0, published_at: row?.published_at ?? null, draft_saved_at: row?.draft_saved_at ?? null, updated_by: actor };
+  const baseline = await legacyEditorialRows(key);
+  const values = editorialLocales.map((locale) => {
+    const row = baseline.find((row) => row.locale === locale);
+    return {
+      page_key: key,
+      locale,
+      published: row?.published ?? null,
+      draft: row?.draft ?? null,
+      revision: 0,
+      published_at: row?.published_at ?? null,
+      draft_saved_at: row?.draft_saved_at ?? null,
+      updated_by: actor,
+    };
   });
   await db.insert(page_locale_content).values(values).onConflictDoNothing();
 }
-export function editorialModel(rows: EditorialRow[], locale: Locale, empty: PageEnvelope): PageLocaleEditorialModel {
-  const row = rows.find(row => row.locale === locale);
-  const en = rows.find(row => row.locale === "en");
+export function editorialModel<K extends EditorialPageKey = "home">(
+  rows: EditorialRow<K>[],
+  locale: Locale,
+  empty: PageEnvelope<K>,
+  key: K = "home" as K,
+): PageLocaleEditorialModel<K> {
+  const row = rows.find((row) => row.locale === locale) as
+    | (Omit<EditorialRow, "draft" | "published"> & {
+        draft: PageEnvelope<K> | null;
+        published: PageEnvelope<K> | null;
+      })
+    | undefined;
+  const en = rows.find((row) => row.locale === "en") as typeof row;
   const template = en?.draft ?? en?.published ?? empty;
   const own = row?.draft ?? row?.published ?? null;
-  const working = row?.draft ?? (locale === "en" ? own ?? empty : prepareTargetEnvelope(template, own));
-  return { locale, revision: row?.revision ?? 0, published: row?.published ?? null, draft: row?.draft ?? null, working: structuredClone(working), templateRevision: locale !== "en" && !row?.draft ? en?.revision ?? 0 : null };
+  const working =
+    row?.draft ??
+    (locale === "en"
+      ? (own ?? empty)
+      : prepareTargetEnvelope(
+          template,
+          own,
+          getEditorialAdapter(key).descriptor,
+        ));
+  return {
+    locale,
+    revision: row?.revision ?? 0,
+    published: row?.published ?? null,
+    draft: row?.draft ?? null,
+    working: structuredClone(working),
+    templateRevision:
+      locale !== "en" && !row?.draft ? (en?.revision ?? 0) : null,
+  };
 }
-export async function commitEditorial(input: { locale: Locale; revision: number; payload?: PageEnvelope; templateRevision?: number | null; publish?: boolean; actor: string }): Promise<boolean> {
+export async function commitEditorial<
+  K extends EditorialPageKey = "home",
+>(input: {
+  key?: K;
+  locale: Locale;
+  revision: number;
+  payload?: PageEnvelope<K>;
+  templateRevision?: number | null;
+  publish?: boolean;
+  actor: string;
+}): Promise<boolean> {
   // The EN lock serializes first-target writes with template changes. Locks are
   // always acquired EN first to keep concurrent EN/target saves deadlock-free.
-  const templateGuard = input.templateRevision != null ? sql`and exists(select 1 from template where revision=${input.templateRevision})` : sql``;
+  const templateGuard =
+    input.templateRevision != null
+      ? sql`and exists(select 1 from template where revision=${input.templateRevision})`
+      : sql``;
   const result = await db.execute(sql`with template as materialized (
-    select revision from page_locale_content where page_key='home' and locale='en' for update
+    select revision from page_locale_content where page_key=${input.key ?? "home"} and locale='en' for update
   ), saved as (
     update page_locale_content set
       published=${input.publish ? sql`draft` : sql`published`},
@@ -81,7 +217,7 @@ export async function commitEditorial(input: { locale: Locale; revision: number;
       revision=revision+1, updated_at=now(), updated_by=${input.actor},
       published_at=${input.publish ? sql`now()` : sql`published_at`},
       draft_saved_at=${input.publish ? sql`null` : sql`now()`}
-    where page_key='home' and locale=${input.locale} and revision=${input.revision}
+    where page_key=${input.key ?? "home"} and locale=${input.locale} and revision=${input.revision}
       and exists(select 1 from template) ${templateGuard}
       ${input.publish ? sql`and draft is not null` : sql``}
     returning id
@@ -89,41 +225,136 @@ export async function commitEditorial(input: { locale: Locale; revision: number;
   return result.rows.length === 1;
 }
 
-const request = z.object({ key: z.literal("home"), locale: editorialLocale, expectedRevision: z.number().int().nonnegative() });
-const saving = request.extend({ templateRevision: z.number().int().nonnegative().nullable(), payload: z.unknown() });
-const invalid = (errors: Record<string, string>): PageEditorialResult => ({ ok: false, error: "validation", fieldErrors: errors });
+const request = z.object({
+  key: z
+    .string()
+    .refine((key) => isEditorialPageKey(key) && usesPageLocaleDrafts(key)),
+  locale: editorialLocale,
+  expectedRevision: z.number().int().nonnegative(),
+});
+const saving = request.extend({
+  templateRevision: z.number().int().nonnegative().nullable(),
+  payload: z.unknown(),
+});
+const invalid = <K extends EditorialPageKey>(
+  errors: Record<string, string>,
+): PageEditorialResult<K> => ({
+  ok: false,
+  error: "validation",
+  fieldErrors: errors,
+});
 
-
-export async function saveEditorialDraft(input: SavePageDraftInput, actor: string): Promise<PageEditorialResult> {
+export async function saveEditorialDraft<K extends EditorialPageKey = "home">(
+  input: SavePageDraftInput<K>,
+  actor: string,
+): Promise<PageEditorialResult<K>> {
   const parsed = saving.safeParse(input);
   if (!parsed.success) return invalid({ _source: "Invalid draft request." });
-  const checked = validateEnvelope(parsed.data.payload);
-  if (!checked.payload || Object.keys(checked.errors).length) return invalid(checked.errors);
+  const checked = validateEnvelope(parsed.data.payload, false, input.key);
+  if (!checked.payload || Object.keys(checked.errors).length)
+    return invalid(checked.errors);
   try {
-    await bootstrapEditorial(actor);
-    const rows = await readEditorialRows();
-    const current = editorialModel(rows, input.locale, emptyEditorialEnvelope());
-    if (current.revision !== input.expectedRevision || (input.locale !== "en" && !current.draft && current.templateRevision !== input.templateRevision)) return { ok: false, error: "conflict" };
-    const validation = await validateDraftMutation(checked.payload, current.working, input.locale);
-    if (!validation.payload || Object.keys(validation.errors).length) return invalid(validation.errors);
-    const saved = await commitEditorial({ locale: input.locale, revision: input.expectedRevision, payload: validation.payload, templateRevision: input.locale !== "en" && !current.draft ? input.templateRevision : null, actor: actor });
+    await bootstrapEditorial(actor, input.key);
+    const rows = await readEditorialRows(input.key);
+    const current = editorialModel(
+      rows,
+      input.locale,
+      emptyEditorialEnvelope(input.key),
+      input.key,
+    );
+    if (
+      current.revision !== input.expectedRevision ||
+      (input.locale !== "en" &&
+        !current.draft &&
+        current.templateRevision !== input.templateRevision)
+    )
+      return { ok: false, error: "conflict" };
+    const validation = await validateDraftMutation(
+      checked.payload,
+      current.working,
+      input.locale,
+      false,
+      input.key,
+    );
+    if (!validation.payload || Object.keys(validation.errors).length)
+      return invalid(validation.errors);
+    const saved = await commitEditorial({
+      key: input.key,
+      locale: input.locale,
+      revision: input.expectedRevision,
+      payload: validation.payload,
+      templateRevision:
+        input.locale !== "en" && !current.draft ? input.templateRevision : null,
+      actor: actor,
+    });
     if (!saved) return { ok: false, error: "conflict" };
     // Return this mutation's value/revision even if another staff save follows it.
-    return { ok: true, model: { ...current, revision: current.revision + 1, draft: validation.payload, working: validation.payload, templateRevision: null } };
-  } catch { return { ok: false, error: "server" }; }
+    return {
+      ok: true,
+      model: {
+        ...current,
+        revision: current.revision + 1,
+        draft: validation.payload,
+        working: validation.payload,
+        templateRevision: null,
+      },
+    };
+  } catch {
+    return { ok: false, error: "server" };
+  }
 }
-export async function publishEditorialDraft(input: PublishPageDraftInput, actor: string): Promise<PageEditorialResult> {
-  if (!request.safeParse(input).success) return invalid({ _source: "Invalid publication request." });
+export async function publishEditorialDraft<
+  K extends EditorialPageKey = "home",
+>(
+  input: PublishPageDraftInput<K>,
+  actor: string,
+): Promise<PageEditorialResult<K>> {
+  if (!request.safeParse(input).success)
+    return invalid({ _source: "Invalid publication request." });
   try {
-    await bootstrapEditorial(actor);
-    const rows = await readEditorialRows();
-    const current = editorialModel(rows, input.locale, emptyEditorialEnvelope());
-    if (current.revision !== input.expectedRevision) return { ok: false, error: "conflict" };
+    await bootstrapEditorial(actor, input.key);
+    const rows = await readEditorialRows(input.key);
+    const current = editorialModel(
+      rows,
+      input.locale,
+      emptyEditorialEnvelope(input.key),
+      input.key,
+    );
+    if (current.revision !== input.expectedRevision)
+      return { ok: false, error: "conflict" };
     if (!current.draft) return { ok: false, error: "no_draft" };
-    const checked = await validateDraftMutation(current.draft, current.draft, input.locale, true);
-    if (!checked.payload || Object.keys(checked.errors).length) return invalid(checked.errors);
-    if (!await commitEditorial({ locale: input.locale, revision: input.expectedRevision, publish: true, actor: actor })) return { ok: false, error: "conflict" };
-    const model = { ...current, revision: current.revision + 1, published: current.draft, draft: null, working: current.draft, templateRevision: input.locale === "en" ? null : rows.find(row => row.locale === "en")?.revision ?? 0 };
+    const checked = await validateDraftMutation(
+      current.draft,
+      current.draft,
+      input.locale,
+      true,
+      input.key,
+    );
+    if (!checked.payload || Object.keys(checked.errors).length)
+      return invalid(checked.errors);
+    if (
+      !(await commitEditorial({
+        key: input.key,
+        locale: input.locale,
+        revision: input.expectedRevision,
+        publish: true,
+        actor: actor,
+      }))
+    )
+      return { ok: false, error: "conflict" };
+    const model = {
+      ...current,
+      revision: current.revision + 1,
+      published: current.draft,
+      draft: null,
+      working: current.draft,
+      templateRevision:
+        input.locale === "en"
+          ? null
+          : (rows.find((row) => row.locale === "en")?.revision ?? 0),
+    };
     return { ok: true, model };
-  } catch { return { ok: false, error: "server" }; }
+  } catch {
+    return { ok: false, error: "server" };
+  }
 }

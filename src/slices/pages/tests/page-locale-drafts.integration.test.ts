@@ -9,7 +9,8 @@ import { applyDefaults, describe } from "../admin/form-model";
 import { bootstrapEditorial, editorialModel, legacyEditorialRows, publishEditorialDraft, readEditorialRows, saveEditorialDraft } from "../admin/editorial-store";
 import { getPublishedPageLocale, resolveEditorialEnvelope } from "../server/editorial-publication";
 import type { PageEnvelope, PageLocaleEditorialModel, PageEditorialResult } from "../editorial-types";
-const actor = "pagedraftsqa-staff";
+import { assertEditorialTestDatabase } from "./editorial-test-environment";
+const actor = "pageeditorsqa-staff";
 let originals: typeof page_locale_content.$inferSelect[];
 let legacy: typeof page_content.$inferSelect | undefined;
 let empty: PageEnvelope;
@@ -18,7 +19,7 @@ async function model(locale: "en" | "es") { return editorialModel(await readEdit
 async function save(current: PageLocaleEditorialModel, payload = current.working) { return saveEditorialDraft({ key: "home", locale: current.locale, expectedRevision: current.revision, templateRevision: current.templateRevision, payload }, actor); }
 async function publish(current: PageLocaleEditorialModel) { return publishEditorialDraft({ key: "home", locale: current.locale, expectedRevision: current.revision }, actor); }
 before(async () => {
-  assert.match(process.env.DATABASE_URL ?? "", /pagedraftsqa/, "Only the isolated pagedraftsqa DB is allowed");
+  await assertEditorialTestDatabase();
   originals = await db.select().from(page_locale_content).where(eq(page_locale_content.page_key, "home"));
   [legacy] = await db.select().from(page_content).where(eq(page_content.key, "home")).limit(1);
   assert.ok(legacy, "Synthetic Home fixture required");
