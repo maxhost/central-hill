@@ -1,3 +1,20 @@
+# Handoff actual — entrega implementada localmente
+
+Código final48cc3c2, base documental85676c3. Leer
+[entrega](page-editor-editorial-pages-delivery.md), [QA](page-editor-editorial-pages-qa.md),
+[spec](page-editor-editorial-pages-spec.md) y [plan](page-editor-editorial-pages-plan.md).
+Checkout `/private/tmp/central-hill-page-editors-editorial-integration`, rama
+`page-editors-editorial/integration`. HEAD final añade sólo cierre documental.
+Cuatro adapters completos; QA agrupado y confirmación focal del guard Services pasan.
+Preview3069PID8680/session73545, entorno sintético pageeditors2qa5638/4538/storage9069.
+Preview3068 original reabierto mismo build/env/DB, PID9272/session34102; contenido intacto.
+No main/push/despliegue/producción. QA local continúa autorizado automáticamente para
+futuros defectos concretos, sin reabrir matrices históricas por rutina.
+Estado/documentación/commits/worktrees y checks exactos en entrega. Sin tarea pendiente
+de implementación ni QA requerido de esta spec. Historial de la planificación abajo.
+
+---
+
 # Handoff — segunda tanda del editor común
 
 Usuario validó la entrega7e13d9f/cierre13fdec8 y pidió plan para Pages Services, Guides,

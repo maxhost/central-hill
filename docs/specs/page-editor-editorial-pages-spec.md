@@ -5,7 +5,7 @@ Base documental13fdec8, ejecutable7e13d9f, checkout
 /private/tmp/central-hill-page-editors-integration, rama page-editors/integration,
 limpio al planificar. Base documental de ejecución85676c3; integración local nueva
 /private/tmp/central-hill-page-editors-editorial-integration, rama page-editors-editorial/integration.
-Ejecución/ownership/checks registrados al final del plan; QA independiente en curso.
+Ejecución/ownership/checks registrados al final del plan; QA independiente aprobada; entrega y límites en [delivery](page-editor-editorial-pages-delivery.md).
 Procedimiento: [plan](page-editor-editorial-pages-plan.md). Retomar: [handoff](page-editor-editorial-pages-handoff.md).
 
 ## Resultado propuesto y rutas confirmadas

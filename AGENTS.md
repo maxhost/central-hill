@@ -1,15 +1,19 @@
 # Central Hill agent instructions
 
-## Remaining Pages adapters — implementation in progress
+## Remaining Pages adapters — local delivery approved
 
 User authorized implementation from documentary85676c3 and automatic scoped local QA.
 Integration `/private/tmp/central-hill-page-editors-editorial-integration`, branch
 `page-editors-editorial/integration`. Follow spec/plan/handoff under
 `docs/specs/page-editor-editorial-pages-*`. Two waves Services/About then Guides/Blog
-implemented in disjoint worktrees; root integrated, independent QA next.
-New synthetic pageeditors2qa DB5638/proxy4538/storage9069, preview3069; SQL db/role
+implemented in disjoint worktrees; root integrated, independent scoped QA approved
+code48cc3c2. Read [delivery](docs/specs/page-editor-editorial-pages-delivery.md) and
+[QA](docs/specs/page-editor-editorial-pages-qa.md). Typecheck/lint/build pass;59cases
+verified (58initial +1Buildings fixture correction),10new exactly. No product migration.
+New synthetic pageeditors2qa DB5638/proxy4538/storage9069, preview3069PID8680/session73545; SQL db/role
 both verified pageeditors2qa. Preserve validated3068 and all earlier artifacts.
-No new product migration, no main/push/deploy/GitHub/production.
+3068 re-opened unchanged original build/env/DB after final check found no listener,
+PID9272/session34102, login200. No new product migration, no main/push/deploy/GitHub/production.
 
 ## Common Pages editor platform — local delivery approved
 
