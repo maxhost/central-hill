@@ -1,22 +1,46 @@
 import { IMAGE_MIMES, VIDEO_MIMES } from "@core/media/mime";
 import { uuid } from "@core/validation/primitives";
 import type { GuidesContent } from "../schemas/guides";
+import type { EditorialMediaReference } from "../editorial-adapter-types";
 
-export function guidesMediaReferences(content: GuidesContent, ogImage: string | null) {
+export function guidesMediaReferences(
+  content: GuidesContent,
+  ogImage: string | null,
+): EditorialMediaReference[] {
   return [
-    { path: "og_image_media_id", id: ogImage, video: false },
-    { path: "hero.video_media_id", id: content.hero?.video_media_id, video: true },
-    { path: "hero.poster_media_id", id: content.hero?.poster_media_id, video: false },
-    { path: "guide_aside.image_media_id", id: content.guide_aside.image_media_id, video: false },
-  ].filter((ref): ref is typeof ref & { id: string } => Boolean(ref.id));
+    { path: "og_image_media_id", id: ogImage, kind: "image" },
+    {
+      path: "hero.video_media_id",
+      id: content.hero?.video_media_id,
+      kind: "video",
+    },
+    {
+      path: "hero.poster_media_id",
+      id: content.hero?.poster_media_id,
+      kind: "image",
+    },
+    {
+      path: "guide_aside.image_media_id",
+      id: content.guide_aside.image_media_id,
+      kind: "image",
+    },
+  ].filter((ref) => Boolean(ref.id)) as EditorialMediaReference[];
 }
-export function guidesMediaErrors(content: GuidesContent, ogImage: string | null, assets: ReadonlyMap<string, { mime: string }>): Record<string, string> {
+export function guidesMediaErrors(
+  content: GuidesContent,
+  ogImage: string | null,
+  assets: ReadonlyMap<string, { mime: string }>,
+): Record<string, string> {
   const errors: Record<string, string> = {};
   for (const ref of guidesMediaReferences(content, ogImage)) {
     const mime = assets.get(ref.id)?.mime;
-    const allowed: readonly string[] = ref.video ? VIDEO_MIMES : IMAGE_MIMES;
+    const allowed: readonly string[] =
+      ref.kind === "video" ? VIDEO_MIMES : IMAGE_MIMES;
     if (!uuid.safeParse(ref.id).success || !mime || !allowed.includes(mime)) {
-      errors[ref.path] = ref.video ? "Select an uploaded MP4 or WebM video." : "Select an uploaded image.";
+      errors[ref.path] =
+        ref.kind === "video"
+          ? "Select an uploaded MP4 or WebM video."
+          : "Select an uploaded image.";
     }
   }
   return errors;
