@@ -17,14 +17,27 @@ import {
   ServicesMedia,
 } from "./services-media";
 
-type SectionProps = { page: ServicesPage; locale: Locale };
+type SectionProps = { page: ServicesPage; locale: Locale; preview?: boolean };
 
 /** Existing Services visual configuration; blank overrides keep visitor-locale messages. */
-export async function ServicesHero({ page, locale }: SectionProps) {
+export async function ServicesHero({
+  page,
+  locale,
+  preview = false,
+}: SectionProps) {
   const t = await getTranslations({ locale, namespace: "services" });
   const hero = page.content.hero;
   return (
     <Hero
+      editorBindings={
+        preview
+          ? {
+              background: "hero.media_media_id",
+              eyebrow: "hero.eyebrow",
+              subtitle: "hero.body",
+            }
+          : undefined
+      }
       background={
         <ServicesMedia
           media={page.media[hero?.media_media_id ?? ""]}
@@ -42,22 +55,58 @@ export async function ServicesHero({ page, locale }: SectionProps) {
       headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
       subtitleClassName="mt-5 max-w-[60ch] text-lg"
       eyebrow={orMessage(hero?.eyebrow, t("eyebrow"))}
-      headline={orMessage(hero?.headline, t("title"))}
+      headline={
+        preview ? (
+          <span data-editor-binding="hero.headline">
+            {orMessage(hero?.headline, t("title"))}
+          </span>
+        ) : (
+          orMessage(hero?.headline, t("title"))
+        )
+      }
       subtitle={orMessage(hero?.body, t("intro"))}
     />
   );
 }
 
-export async function ServicesIntro({ page, locale }: SectionProps) {
+export async function ServicesIntro({
+  page,
+  locale,
+  preview = false,
+}: SectionProps) {
   const t = await getTranslations({ locale, namespace: "services" });
   const intro = page.content.intro;
   return (
     <Reveal>
       <SectionHead
         align="center"
-        eyebrow={orMessage(intro?.eyebrow, t("gridEyebrow"))}
-        headline={orMessage(intro?.headline, t("gridTitle"))}
-        intro={orMessage(intro?.body, t("gridIntro"))}
+        eyebrow={
+          preview ? (
+            <span data-editor-binding="intro.eyebrow">
+              {orMessage(intro?.eyebrow, t("gridEyebrow"))}
+            </span>
+          ) : (
+            orMessage(intro?.eyebrow, t("gridEyebrow"))
+          )
+        }
+        headline={
+          preview ? (
+            <span data-editor-binding="intro.headline">
+              {orMessage(intro?.headline, t("gridTitle"))}
+            </span>
+          ) : (
+            orMessage(intro?.headline, t("gridTitle"))
+          )
+        }
+        intro={
+          preview ? (
+            <span data-editor-binding="intro.body">
+              {orMessage(intro?.body, t("gridIntro"))}
+            </span>
+          ) : (
+            orMessage(intro?.body, t("gridIntro"))
+          )
+        }
       />
     </Reveal>
   );
@@ -98,7 +147,11 @@ export async function ServicesHowItWorks({ page, locale }: SectionProps) {
   );
 }
 
-export async function ServicesFinalCta({ page, locale }: SectionProps) {
+export async function ServicesFinalCta({
+  page,
+  locale,
+  preview = false,
+}: SectionProps) {
   const [t, globals] = await Promise.all([
     getTranslations({ locale, namespace: "services" }),
     getGlobals(locale),
@@ -116,7 +169,11 @@ export async function ServicesFinalCta({ page, locale }: SectionProps) {
     "",
   );
   return (
-    <div id="plan" className="scroll-mt-[84px]">
+    <div
+      {...(preview ? { "data-editor-binding": "final_cta" } : {})}
+      id="plan"
+      className="scroll-mt-[84px]"
+    >
       <Reveal label="services-cta">
         <FeatureCtaBand
           eyebrow={orMessage(cta?.eyebrow, t("ctaEyebrow"))}
