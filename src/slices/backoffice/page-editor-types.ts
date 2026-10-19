@@ -7,6 +7,8 @@ export interface EditorSection { id: string; label: string; bindings: EditorBind
 export interface PageEditorAdapter {
   title: string;
   sections: EditorSection[];
+  /** Dedicated metadata inspector, surfaced beside viewport controls. */
+  seoSectionId?: string;
   selectedId: string;
   onSelect: (id: string) => void;
   locale: EditorLocale;
