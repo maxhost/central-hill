@@ -1,5 +1,11 @@
 # Owners — plan para adoptar el editor contextual
 
+**Alcance actual de conversión:** [spec común](page-editor-platform-spec.md) y
+[plan](page-editor-platform-plan.md) prevalecen. Owners se adapta conservando su formulario
+actual. Releases/selector/captura/Leads de Forms descritos aquí quedan pendientes en otro arco
+y no bloquean esta conversión. Este documento conserva el inventario/propuesta histórica;
+no se ha implementado Forms público ni debe declararse completo al terminar el editor.
+
 2026-10-18. Estado: planificación solicitada; **implementación de Owners no iniciada**.
 Base de producto3c55a1b (Home97d8bc5, código inicial QA-aprobado6359b6d y ajuste
 SEO de toolbar3c55a1b). Ver el handoff Home para sus comprobaciones. Checkout actual

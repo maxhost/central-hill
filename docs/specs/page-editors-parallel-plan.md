@@ -1,5 +1,15 @@
 # Adaptación de editores de página en paralelo — propuesta posterior
 
+**Sustituido para el siguiente arco por [spec](page-editor-platform-spec.md),
+[plan](page-editor-platform-plan.md) y [handoff](page-editor-platform-handoff.md).**
+El usuario acordó Owners, Buildings listado, Real Estate y Guest; Home se conserva.
+About no entra. Formularios actuales conservados; Forms público es otro arco.
+Máximo dos escritores, sin excepción de tres. Sólo documentación antes de clear;
+ningún agente/worktree/implementación iniciado hoy. La propuesta histórica de abajo
+no amplía alcance ni restablece la dependencia de Forms.
+
+## Propuesta histórica, no ejecutable
+
 2026-10-18. Plan, sin agentes lanzados. Depende de cerrar primero ADR0040 y Home
 Guardar borrador/Publicar POR IDIOMA. No es permiso para convertir todas las páginas hoy.
 

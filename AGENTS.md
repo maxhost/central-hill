@@ -1,5 +1,23 @@
 # Central Hill agent instructions
 
+## Next after clear: shared Pages editor and four adapters — spec/plan only
+
+User requested spec/plan before clear, then a fresh-context implementation turn. Read
+[handoff](docs/specs/page-editor-platform-handoff.md),
+[spec](docs/specs/page-editor-platform-spec.md) and
+[execution plan](docs/specs/page-editor-platform-plan.md).
+Planning base8de459a; executable Home8da3519/independent QA f8d7c91 remains unchanged.
+No implementation agents, new worktrees/DB or product edits in this planning turn.
+New scope: Owners, Buildings LISTING, Real Estate, Guest; Home remains the regression adapter.
+One generic engine/UI plus per-page descriptors/validators/renderers, independent locale
+Draft/Publish and ephemeral live preview. Preserve current forms; public Forms/catalog
+selection/release/capture/Leads deferred separately. Old Owners Forms dependency and old
+About/three-writer parallel proposal do not govern this scope. Two implementers then QA.
+New isolated pageeditorsqa proposed3068/9068/5628/4528 (verify before launch); preserve
+validated3067/3065 and other environments. Max10new focused cases, one grouped browser
+pass, global checks once integrated; no149tests/matrices or repeated QA permission questions.
+No main/push/deploy/GitHub/production. Start only after the user's new implementation request.
+
 ## Home ephemeral live preview follow-up
 
 Current executable8da3519, independently QA-approved (report f8d7c91), on page-drafts/integration. Read
