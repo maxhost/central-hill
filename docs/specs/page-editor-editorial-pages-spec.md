@@ -1,9 +1,11 @@
 # Editor común — Services, About, Guides y Blog
 
-Spec y planificación solicitadas por el usuario después de validar la primera entrega.
+Implementación autorizada por el usuario tras aceptar la planificación de los cuatro adaptadores.
 Base documental13fdec8, ejecutable7e13d9f, checkout
 /private/tmp/central-hill-page-editors-integration, rama page-editors/integration,
-limpio al comenzar. Este encargo no inicia implementación, agentes, worktrees, DB ni preview.
+limpio al planificar. Base documental de ejecución85676c3; integración local nueva
+/private/tmp/central-hill-page-editors-editorial-integration, rama page-editors-editorial/integration.
+Ejecución/ownership/checks registrados al final del plan; QA independiente en curso.
 Procedimiento: [plan](page-editor-editorial-pages-plan.md). Retomar: [handoff](page-editor-editorial-pages-handoff.md).
 
 ## Resultado propuesto y rutas confirmadas
@@ -147,4 +149,4 @@ Aceptación: cuatro adaptadores en la UI común, identidad About preservada, fal
 pendientes legacy equivalentes, city-filter collapse y {city} correctos, ambos shared asides
 previsualizables, publicación de copy compartida efectiva en fichas, SEO/cuatro locales,
 autenticación y preview guardada/live con foco estable. QA concreto y presupuesto en plan.
-Entrega sólo local en nueva tarea después de autorización de implementación;3068 preservado.
+Entrega sólo local autorizada por la orden de implementación;3068 preservado.

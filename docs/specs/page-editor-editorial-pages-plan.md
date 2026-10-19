@@ -1,8 +1,10 @@
 # Plan — segunda tanda de adaptadores Pages
 
-Sólo planificación en este encargo. Base13fdec8 limpia, ejecutable7e13d9f aceptado por el
+Plan aceptado e implementación autorizada desde base documental85676c3.
+La planificación partió de13fdec8 limpia, ejecutable7e13d9f aceptado por el
 usuario. [Spec](page-editor-editorial-pages-spec.md), [handoff](page-editor-editorial-pages-handoff.md).
-Sin agentes de implementación ni provisión/worktrees/DB en este encargo. No cambios src/messages/kernel.
+Ejecución y verificaciones reales al final de este documento; entrega sólo local.
+Sin cambios de kernel ni migraciones de producto.
 
 ## Preparación futura y orden
 
@@ -214,3 +216,18 @@ excepción Buildings y confirma sólo ese test. Lint exit0 (warnings históricos
 warning wrapper Home corregido). Typecheck inicial detectó narrowing never en guard
 legacy al completar9keys; guard runtime conserva comportamiento con Boolean.
 Build/checks finales y QA independiente en curso; evidencias en directorio QA.
+
+Verificación integrada real: typecheck-final0, lint0 (warnings históricos; wrapper
+Home corregido y eslint focal0), build0. Suite59 inicial58pass/1fail; el primer fix
+restauró la excepción histórica Buildings, la segunda confirmación detectó fixture
+hero.image_media_id faltante. Se corrigió sólo fixture aislada; confirmación final1pass0.
+Ninguna suite amplia repetida. Tests nuevos exactamente10; About-editor6existentes extra
+por cambio import justificado. QA browser por checkpoints; fallos de selectores/fixtures
+se registran separadamente de defectos de producto.
+
+Revisión raíz y QA independiente confirmó guard de Services: getPageForEdit debía
+calcular sourceInvalid antes de recoger medios legacy, para evitar SQL UUID inválido
+incluso con snapshots completos. Fix mínimo en admin/queries.ts, sin tocar kernel;
+typecheck-legacy-guard0 y eslint focal0. Build final y confirmación afectada pendientes.
+Fixtures corregidas con imagen neutra y segunda guía Porto completa; guardado CMS local
+invalida guide-list. Todo limitado a pageeditors2qa y storage9069,3068 intacto.

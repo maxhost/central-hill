@@ -65,8 +65,9 @@ export async function getPageForEdit(key: PageKey): Promise<PageEditBundle> {
   ) : undefined;
   const homeInvalid = key === "home" && Boolean(row) && (!homeParsed?.success || Boolean(homeData && Object.keys(homeIdentityErrors(homeData)).length));
   const editableData = homeData ?? editorDefaults?.data ?? data;
-  const ids = homeInvalid ? [] : collectMediaIds(editableData);
-  if (ogImageMediaId && !homeInvalid && !editorDefaults?.sourceInvalid) ids.push(ogImageMediaId);
+  const sourceInvalid = homeInvalid || Boolean(editorDefaults?.sourceInvalid) || (key === "services" && Boolean(row) && !servicesSchema.safeParse(row?.data).success);
+  const ids = sourceInvalid ? [] : collectMediaIds(editableData);
+  if (ogImageMediaId && !sourceInvalid) ids.push(ogImageMediaId);
   const previews = await resolvePreviews(ids);
 
   const englishBlog = key === "blog" ? await getTranslations({ locale: "en", namespace: "blog" }) : undefined;
@@ -77,7 +78,7 @@ export async function getPageForEdit(key: PageKey): Promise<PageEditBundle> {
     key,
     data: editableData,
     sourceStatus: editorDefaults?.sourceStatus,
-    sourceInvalid: homeInvalid || editorDefaults?.sourceInvalid || (key === "services" && Boolean(row) && !servicesSchema.safeParse(row?.data).success),
+    sourceInvalid,
     ogImageMediaId,
     previews,
   };
