@@ -37,3 +37,9 @@ export type PageEditorialResult =
   | { ok: true; model: PageLocaleEditorialModel; refreshWarning?: boolean }
   | { ok: false; error: "validation"; fieldErrors: Record<string, string> }
   | { ok: false; error: "conflict" | "server" | "no_draft" };
+
+/** Ephemeral private preview only; local URLs must never enter PageEnvelope storage. */
+export interface HomeLivePreviewInput {
+  envelope: PageEnvelope;
+  localMedia: Record<string, import("@slices/backoffice/contract").AdminMediaPreview>;
+}

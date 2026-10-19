@@ -36,3 +36,13 @@ Otras páginas/entidades mantienen su comportamiento hasta adaptarse explícitam
 Consecuencia: migración aditiva de una tabla, modelo/publicación genéricos reutilizables,
 adaptador Home actualizado y QA de persistencia/aislamiento acotado. Las implementaciones
 por página posteriores consumen contratos estabilizados, con un propietario por editor.
+
+## Follow-up: ephemeral live preview
+
+The user subsequently requested local unsaved preview. Home may send its current form
+envelope to an authenticated read-only renderer, with debouncing and latest-response
+guards. Render through the same Home composition, no DB write/auto-save/public invalidation.
+Local blob media metadata is accepted only in this ephemeral read path, never publication
+or persistence. Existing per-locale Save draft/Publish semantics remain unchanged.
+The previous no-live-preview/saved-only restriction is superseded only for this adapter.
+See home-live-preview-execution.md for boundaries and verification.

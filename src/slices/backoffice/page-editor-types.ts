@@ -15,6 +15,8 @@ export interface PageEditorAdapter {
   onLocaleChange: (locale: EditorLocale) => void;
   previewUrl: string;
   previewVersion: number;
+  /** Optional in-memory snapshot; never persisted by the shell. */
+  previewPayload?: unknown;
   dirty: boolean;
   busy: boolean;
   /** Adapter-specific selected-locale draft/publication status. */
@@ -28,6 +30,13 @@ export interface PageEditorShellProps { adapter: PageEditorAdapter }
 export type PageEditorBridgeMessage = {
   channel: "central-hill-page-editor";
   instance: string;
-  type: "ready" | "select";
-  bindingId?: string;
-};
+} & (
+  | { type: "ready"; bindingId?: undefined }
+  | { type: "select"; bindingId: string }
+  | { type: "preview"; revision: number; payload: unknown }
+);
+
+export type PageLivePreviewResult =
+  | { ok: true; content: ReactNode }
+  | { ok: false; error: "validation" | "server" };
+export type PageLivePreviewRenderer = (payload: unknown) => Promise<PageLivePreviewResult>;
