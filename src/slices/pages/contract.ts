@@ -217,3 +217,7 @@ export { buildBlogMetadata } from "./server/metadata";
 export { revalidatePageTranslation } from "./server/translation-revalidation";
 // Sections take {page: GuidesPage, locale: Locale}; no catalogue reads.
 export { GuidesHero, GuidesFinalCta } from "./ui/components/guides-sections";
+
+/** Shared Home RSC renderer, optionally instrumented only in staff previews. */
+export { HomePage as HomePageRenderer } from "./ui/home-page";
+export { homeEditorBindingIds } from "./admin/home-contextual";

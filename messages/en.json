@@ -1699,7 +1699,24 @@
       "aboutListBounds": "{count} items · {min}–{max} allowed",
       "blogSourceNote": "Source text is authored in English. Review Portuguese, Spanish and French in Translations. Blank fields inherit the current text in each visitor language; the placeholder shows the English default.",
       "blogSourceInvalid": "The saved Blog content is invalid. Reload or repair it before saving.",
-      "blogInheritedHint": "Use the default text for the visitor language."
+      "blogInheritedHint": "Use the default text for the visitor language.",
+      "contextual": {
+        "savePublish": "Save and publish",
+        "saveReview": "Save for review",
+        "approve": "Approve translation",
+        "savedPreview": "Preview shows saved content.",
+        "sourceOnly": "Structure and media are shared. Edit these in English.",
+        "fallback": "English fallback",
+        "needs_review": "Needs review",
+        "approved": "Approved",
+        "stale": "Source changed",
+        "conflict": "This content changed in another session. Reload before saving.",
+        "sourceInvalid": "Saved Home content is invalid. Repair it before saving.",
+        "external": "Avantio is an external booking integration. It cannot be edited here.",
+        "portfolioNote": "Cards are managed in Buildings.",
+        "servicesNote": "Cards are managed in Services.",
+        "faqNote": "Questions are managed in FAQ."
+      }
     }
   },
   "leads": {
@@ -1916,6 +1933,29 @@
       "saveError": "Couldn’t save. Please check the fields and try again.",
       "deleted": "Deleted.",
       "deleteError": "Couldn’t delete. Please try again."
+    },
+    "pageEditor": {
+      "sections": "Sections",
+      "preview": "Preview",
+      "inspector": "Inspector",
+      "contentLanguage": "Content language",
+      "source": "English source",
+      "pending": "Unsaved changes",
+      "saved": "Saved",
+      "savedPreview": "Preview of saved content",
+      "pendingPreview": "Save to refresh the preview",
+      "selectHint": "Select an element or a section to edit.",
+      "refresh": "Refresh preview",
+      "desktop": "Desktop",
+      "tablet": "Tablet",
+      "mobile": "Mobile",
+      "fixedLayout": "Fixed page layout",
+      "external": "External integration",
+      "loading": "Loading preview…",
+      "unavailable": "Preview unavailable",
+      "retry": "Try again",
+      "element": "Element",
+      "fit": "Fit"
     }
   },
   "testimonials": {

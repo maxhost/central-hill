@@ -2,6 +2,9 @@ import "server-only";
 import { getTranslations } from "next-intl/server";
 import { blogEditorDefaults, blogInheritedValues } from "./blog-defaults";
 import { aboutEditorDefaults } from "./about-defaults";
+import { homeRevision } from "./home-save";
+import { homeSchema, type HomeContent } from "../schemas/home";
+import { normalizeHome, homeIdentityErrors } from "../home-content";
 import { aboutRevision } from "./about-save";
 import { eq } from "drizzle-orm";
 import { db } from "@core/db/client";
@@ -55,20 +58,25 @@ export async function getPageForEdit(key: PageKey): Promise<PageEditBundle> {
   const ogImageMediaId = row?.og_image_media_id ?? null;
 
   const editorDefaults = key === "blog" ? blogEditorDefaults(row?.data, Boolean(row)) : key === "guides" ? guidesEditorDefaults(row?.data, Boolean(row)) : key === "about" ? aboutEditorDefaults(row?.data, Boolean(row)) : undefined;
-  const editableData = editorDefaults?.data ?? data;
-  const ids = collectMediaIds(editableData);
-  if (ogImageMediaId && !editorDefaults?.sourceInvalid) ids.push(ogImageMediaId);
+  const homeParsed = key === "home" ? homeSchema.safeParse(row?.data) : undefined;
+  const homeData = key === "home" ? normalizeHome(
+    (homeParsed?.success ? homeParsed.data : applyDefaults(describe(homeSchema), data)) as HomeContent,
+  ) : undefined;
+  const homeInvalid = key === "home" && Boolean(row) && (!homeParsed?.success || Boolean(homeData && Object.keys(homeIdentityErrors(homeData)).length));
+  const editableData = homeData ?? editorDefaults?.data ?? data;
+  const ids = homeInvalid ? [] : collectMediaIds(editableData);
+  if (ogImageMediaId && !homeInvalid && !editorDefaults?.sourceInvalid) ids.push(ogImageMediaId);
   const previews = await resolvePreviews(ids);
 
   const englishBlog = key === "blog" ? await getTranslations({ locale: "en", namespace: "blog" }) : undefined;
   return {
     pageId: row?.id,
     inheritedValues: englishBlog ? blogInheritedValues(englishBlog) : undefined,
-    revision: key === "about" ? aboutRevision(row) : undefined,
+    revision: key === "home" ? homeRevision(row) : key === "about" ? aboutRevision(row) : undefined,
     key,
     data: editableData,
     sourceStatus: editorDefaults?.sourceStatus,
-    sourceInvalid: editorDefaults?.sourceInvalid,
+    sourceInvalid: homeInvalid || editorDefaults?.sourceInvalid,
     ogImageMediaId,
     previews,
   };

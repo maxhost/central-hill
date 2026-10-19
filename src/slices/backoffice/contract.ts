@@ -98,3 +98,5 @@ export { ToastProvider, useToast } from "./ui/toast";
 export type { ToastApi, ToastVariant, ToastOptions } from "./ui/toast";
 
 export type { PageEditorAdapter, PageEditorShellProps, EditorLocale, EditorSection, EditorBinding, PageEditorBridgeMessage } from "./page-editor-types";
+export { PageEditorShell } from "./ui/page-editor-shell";
+export { PageEditorPreviewBridge } from "./ui/page-editor-preview-bridge";

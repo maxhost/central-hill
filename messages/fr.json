@@ -1699,7 +1699,24 @@
       "aboutListBounds": "{count} éléments · autorisés : {min}–{max}",
       "blogSourceNote": "Le contenu source est rédigé en anglais. Révisez le portugais, l’espagnol et le français dans Traductions. Les champs vides utilisent le texte actuel dans la langue du visiteur ; le placeholder affiche la valeur anglaise.",
       "blogSourceInvalid": "Le contenu Blog enregistré est invalide. Rechargez ou corrigez-le avant d’enregistrer.",
-      "blogInheritedHint": "Utiliser le texte par défaut dans la langue du visiteur."
+      "blogInheritedHint": "Utiliser le texte par défaut dans la langue du visiteur.",
+      "contextual": {
+        "savePublish": "Enregistrer et publier",
+        "saveReview": "Enregistrer pour révision",
+        "approve": "Approuver la traduction",
+        "savedPreview": "L’aperçu affiche le contenu enregistré.",
+        "sourceOnly": "Structure et médias partagés. Modifiez-les en anglais.",
+        "fallback": "Contenu de secours en anglais",
+        "needs_review": "À réviser",
+        "approved": "Approuvé",
+        "stale": "Source modifiée",
+        "conflict": "Le contenu a changé dans une autre session. Rechargez avant d’enregistrer.",
+        "sourceInvalid": "Le contenu Home enregistré est invalide. Corrigez-le avant d’enregistrer.",
+        "external": "Avantio est une intégration externe de réservation. Elle ne se modifie pas ici.",
+        "portfolioNote": "Les cartes sont gérées dans Buildings.",
+        "servicesNote": "Les cartes sont gérées dans Services.",
+        "faqNote": "Les questions sont gérées dans FAQ."
+      }
     }
   },
   "leads": {
@@ -1916,6 +1933,29 @@
       "saveError": "Impossible d’enregistrer. Vérifiez les champs et réessayez.",
       "deleted": "Supprimé.",
       "deleteError": "Suppression impossible. Veuillez réessayer."
+    },
+    "pageEditor": {
+      "sections": "Sections",
+      "preview": "Aperçu",
+      "inspector": "Inspecteur",
+      "contentLanguage": "Langue du contenu",
+      "source": "Source anglaise",
+      "pending": "Modifications non enregistrées",
+      "saved": "Enregistré",
+      "savedPreview": "Aperçu du contenu enregistré",
+      "pendingPreview": "Enregistrez pour actualiser l’aperçu",
+      "selectHint": "Sélectionnez un élément ou une section à modifier.",
+      "refresh": "Actualiser l’aperçu",
+      "desktop": "Ordinateur",
+      "tablet": "Tablette",
+      "mobile": "Mobile",
+      "fixedLayout": "Structure fixe de la page",
+      "external": "Intégration externe",
+      "loading": "Chargement de l’aperçu…",
+      "unavailable": "Aperçu indisponible",
+      "retry": "Réessayer",
+      "element": "Élément",
+      "fit": "Ajuster"
     }
   },
   "testimonials": {

@@ -134,3 +134,7 @@ export { ContactDialog } from "./ui/components/contact-dialog";
  * safe to import anywhere.
  */
 export { settingsAdminScreens } from "./admin/screens";
+
+/** Shared public chrome for authenticated contextual previews. */
+export { SiteHeader } from "./ui/site-header";
+export { SiteFooter } from "./ui/site-footer";

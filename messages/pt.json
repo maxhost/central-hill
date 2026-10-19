@@ -1699,7 +1699,24 @@
       "aboutListBounds": "{count} itens · permitidos: {min}–{max}",
       "blogSourceNote": "O conteúdo de origem é escrito em inglês. Reveja português, espanhol e francês em Traduções. Os campos vazios usam o texto atual no idioma do visitante; o placeholder mostra o valor inglês.",
       "blogSourceInvalid": "O conteúdo guardado do Blog é inválido. Recarregue ou repare antes de guardar.",
-      "blogInheritedHint": "Usar o texto predefinido do idioma do visitante."
+      "blogInheritedHint": "Usar o texto predefinido do idioma do visitante.",
+      "contextual": {
+        "savePublish": "Guardar e publicar",
+        "saveReview": "Guardar para revisão",
+        "approve": "Aprovar tradução",
+        "savedPreview": "A pré-visualização mostra o conteúdo guardado.",
+        "sourceOnly": "Estrutura e meios partilhados. Edite em inglês.",
+        "fallback": "Conteúdo de recurso em inglês",
+        "needs_review": "Aguarda revisão",
+        "approved": "Aprovado",
+        "stale": "Fonte alterada",
+        "conflict": "O conteúdo mudou noutra sessão. Recarregue antes de guardar.",
+        "sourceInvalid": "O conteúdo guardado da Home é inválido. Corrija antes de guardar.",
+        "external": "Avantio é uma integração externa de reservas. Não pode ser editada aqui.",
+        "portfolioNote": "Os cartões são geridos em Buildings.",
+        "servicesNote": "Os cartões são geridos em Services.",
+        "faqNote": "As perguntas são geridas em FAQ."
+      }
     }
   },
   "leads": {
@@ -1916,6 +1933,29 @@
       "saveError": "Não foi possível guardar. Verifique os campos e tente novamente.",
       "deleted": "Eliminado.",
       "deleteError": "Não foi possível eliminar. Tente novamente."
+    },
+    "pageEditor": {
+      "sections": "Secções",
+      "preview": "Pré-visualização",
+      "inspector": "Inspetor",
+      "contentLanguage": "Idioma do conteúdo",
+      "source": "Fonte em inglês",
+      "pending": "Alterações por guardar",
+      "saved": "Guardado",
+      "savedPreview": "Pré-visualização do conteúdo guardado",
+      "pendingPreview": "Guarde para atualizar a pré-visualização",
+      "selectHint": "Selecione um elemento ou secção para editar.",
+      "refresh": "Atualizar pré-visualização",
+      "desktop": "Computador",
+      "tablet": "Tablet",
+      "mobile": "Telemóvel",
+      "fixedLayout": "Estrutura fixa da página",
+      "external": "Integração externa",
+      "loading": "A carregar pré-visualização…",
+      "unavailable": "Pré-visualização indisponível",
+      "retry": "Tentar novamente",
+      "element": "Elemento",
+      "fit": "Ajustar"
     }
   },
   "testimonials": {

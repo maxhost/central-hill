@@ -34,8 +34,9 @@ revision protection, stable stats identities, validation, existing controls/medi
 B exports getHomeContextualModel() from admin/home-queries, HomeContextualEditor({model}),
 HomePage({locale,preview?:boolean}); private Home preview bridge is root-owned route.
 Root integrates admin/actions.ts, admin/queries.ts, server/queries.ts, form-model.ts if needed,
-backoffice/contract.ts, Pages contract.ts, routes, four Pages message JSON files, ADR/spec/docs,
-new isolated local QA environment. B may request scope expansion before editing other files.
+backoffice/contract.ts, Pages contract.ts, routes, four root messages/{en,es,pt,fr}.json files, ADR/spec/docs,
+new isolated local QA environment. Root scope additions: pages/admin/ui/schema-fields.tsx
+(reuse identity-aware list control for Home stats) and settings/contract.ts (public chrome exports). B may request scope expansion before editing other files.
 No migrations expected; root owns any necessary schema registry/migration changes.
 
 ## Acceptance and checks
@@ -55,4 +56,20 @@ QA environment must use new synthetic DB/storage/user and distinct ports, record
 
 ## Progress
 
-Contracts and ADR prepared; implementation not yet delegated. QA pending.
+Contracts1a90e63; A759937d integrated as3e4f586; B76e739c integrated as9d64d30.
+Root integrated route, private preview/public chrome contract exports, four-locale messages,
+Home dispatch, revision/source-invalid model, public stable-identity translation resolution,
+and existing identity-aware list control reuse. No kernel changes or migrations.
+
+New isolated Home environment: synthetic DB/user homecontextualqa; Docker containers
+central-hill-home-contextual-db (5608), central-hill-home-contextual-proxy (4508), network
+central-hill-home-contextual-qa. Existing0000..0022 applied only there. Synthetic staff
+homecontextualqa@example.test/test1234. S3rver9065, bucket homecontextualqa, session36345/PID63044.
+Preview planned3065. Environment/harness/logs /private/tmp/central-hill-home-contextual-qa;
+no production credentials copied. EMAIL_PROVIDER=console. Home fixture sourced from demo
+builder with blank media and2synthetic figures. Existing Forms3064/concept3070 preserved.
+Dependencies installed with Node22/pnpm frozen lockfile (no lock changes).
+
+Initial integrated typecheck0, lint0 (7baseline warnings), explicit7tests0.
+Build in progress; independent scoped QA pending. Final candidate and evidence below.
+

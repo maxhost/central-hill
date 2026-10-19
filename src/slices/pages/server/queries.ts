@@ -28,6 +28,9 @@ import { servicesSchema, defaultServices } from "../schemas/services";
 import { uuid } from "@core/validation/primitives";
 import { guidesSourceContent, guidesLocalizedContent } from "./guides-content";
 import { resolveData, resolveMedia } from "./resolve";
+import { homeSchema } from "../schemas/home";
+import { normalizeHome, homeIdentityErrors } from "../home-content";
+import { resolveHomeData } from "./home-translations";
 import { aboutSchema } from "../schemas/about";
 import { normalizeAbout, aboutIdentityErrors } from "../about-content";
 import { resolveAboutData } from "./about-translations";
@@ -54,6 +57,15 @@ async function _loadPage<T>(locale: Locale, key: PageKey): Promise<PageResult<T>
     const localized = await resolveData(row.id, source, locale, translatablePathsByPage.blog);
     const content = blogLocalizedContent(source, localized);
     const media = await resolveMedia(source, uuid.safeParse(row.og_image_media_id).success ? row.og_image_media_id : null, locale);
+    return { content: content as T, ...media };
+  }
+  if (key === "home") {
+    const parsed = homeSchema.safeParse(row.data);
+    if (!parsed.success) return null;
+    const source = normalizeHome(parsed.data);
+    if (Object.keys(homeIdentityErrors(source)).length) return null;
+    const content = await resolveHomeData(row.id, source, locale);
+    const media = await resolveMedia(source, row.og_image_media_id ?? null, locale);
     return { content: content as T, ...media };
   }
   if (key === "about") {
