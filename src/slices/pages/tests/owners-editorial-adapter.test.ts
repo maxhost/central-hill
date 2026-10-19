@@ -82,7 +82,7 @@ test("Owners adapter covers existing copy, hidden values, list cardinalities and
   content.journey.steps.forEach(
     (step, index) => (step.image_media_id = id(index + 5)),
   );
-  content.final_cta ??= {};
+  content.final_cta ??= { image_media_id: "" };
   content.final_cta.image_media_id = id(10);
   const refs = ownersAdapter.collectMediaReferences(content, og);
   assert.equal(refs.length, 10);

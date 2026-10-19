@@ -55,7 +55,12 @@ export const homeAdapter: PageEditorialAdapter<"home"> = {
   retireIds: retireHomeIds,
   textPaths: homeTextPaths,
   translationField: homeTranslationField,
-  collectMediaReferences: homeMediaReferences,
+  collectMediaReferences(content, og) {
+    return homeMediaReferences(content, og).map(ref => ({
+      path: ref.path, id: ref.id,
+      kind: ref.kind === "video" ? "video" : ref.kind === "mixed" ? "mixed" : "image",
+    }));
+  },
   mediaErrors: homeMediaErrors,
   async render(input) {
     const { HomePage } = await import("../ui/home-page");

@@ -288,3 +288,9 @@ A sólo escribe Guest, sin conflicto. Se ejecutarán en el único pase integrado
 Guest9346883 integrado,2tests0/eslint0, dieciséis slots confirmados inclOG. Las5keys
 quedan habilitadas; contrato+renderer+getter+SEO+guards están conectados juntos. Candidato
 completo entra ahora a globals una vez y QA independiente sobre3068. No DDL nuevo.
+
+Primer pase integrado cf9064b: lint0 (7warnings preexistentes),26tests0 (16existentes+10nuevos),
+typecheck2 detectó sólo anotación kind:string de refs Home y fixture Owners {} incompatible
+con image_media_id requerido. Root corrige en adapters/home.ts y test Owners (scopes ya
+cerrados), sin cambio funcional. Se conserva typecheck-initial.log y se repite sólo typecheck,
+eslint focal y pruebas Home+Owners afectadas antes de build (aún no ejecutado).
