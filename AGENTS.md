@@ -1,5 +1,22 @@
 # Central Hill agent instructions
 
+## Next: remaining Pages adapters — spec/plan only
+
+User accepted the common editor and requested the same planning workflow for Services,
+About, Guides listing and Blog listing. Read
+[handoff](docs/specs/page-editor-editorial-pages-handoff.md),
+[spec](docs/specs/page-editor-editorial-pages-spec.md) and
+[plan](docs/specs/page-editor-editorial-pages-plan.md). Planning base13fdec8, executable
+7e13d9f/preview3068 remains unchanged. No implementation agents/worktrees/DB/product edits
+in this planning turn. Future implementation starts only on a new user order.
+Tanda1 Services/About, tanda2 Guides/Blog, two writers then independent scoped QA.
+Plan covers per-adapter legacy snapshot policies, About stable IDs, Guides city-filter
+collapse and {city}, shared aside preview surfaces, and locale subtree invalidation for
+Blog/Guides shared copy. Preserve newsletter/forms/catalogues and individual entity editors.
+Max10new tests, affected regressions once, one grouped browser pass plus realfixconfirmation.
+Proposed pageeditors2qa3069/9069/5638/4538 not provisioned; preserve3068 and prior artifacts.
+No main/push/deploy/GitHub/production. Automatic safe local QA authorization persists.
+
 ## Common Pages editor platform — local delivery approved
 
 User authorized implementation from8223f4a after fresh context. Integration
