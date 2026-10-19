@@ -14,7 +14,8 @@ import {
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import { ContactDialog, getGlobals } from "@slices/settings/contract";
-import { getGuestPage, type PageMedia } from "../contract";
+import { guestFallbackIndex } from "../guest-content";
+import { getGuestPage, type GuestPage as GuestPageResult, type PageMedia } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
 import { sideMedia } from "./components/side-media";
@@ -154,10 +155,10 @@ function dualCtaContactLines(globals: Awaited<ReturnType<typeof getGlobals>>): {
   };
 }
 
-export async function GuestPage({ locale }: { locale: Locale }) {
+export async function GuestPage({ locale, preview = false, page: injectedPage }: { locale: Locale; preview?: boolean; page?: GuestPageResult | null }) {
   setRequestLocale(locale);
   const [page, globals, t, tSettings] = await Promise.all([
-    getGuestPage(locale),
+    injectedPage === undefined ? getGuestPage(locale) : Promise.resolve(injectedPage),
     getGlobals(locale),
     getTranslations("pages"),
     // The owner dual-CTA button opens the header's contact dialog; blank copy → its texts.
@@ -166,6 +167,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
   if (!page) notFound();
 
   const { content, media } = page;
+  const binding = (id: string) => preview ? { "data-editor-binding": id } : {};
   const { hero, welcome, portfolio } = content;
   const welcomeMedia = media[welcome.image_media_id ?? ""];
   // Alt (spec S3): the field → the asset's alt → `pages.guests.welcomeAlt`.
@@ -188,26 +190,18 @@ export async function GuestPage({ locale }: { locale: Locale }) {
     icon: <Icon name={item.icon_key} size={30} className="block" />,
     title: item.title,
     description: item.description,
-    image: cardBgSrc(media[item.image_media_id ?? ""], SERVICES_TEASER_BG[i]),
+    image: cardBgSrc(media[item.image_media_id ?? ""], SERVICES_TEASER_BG[guestFallbackIndex(content,"services_teaser.items",i)]),
   }));
   const activitiesTeaserItems = content.activities_teaser.items.map((item, i) => ({
     icon: <Icon name={item.icon_key} size={30} className="block" />,
     title: item.title,
     description: item.description,
-    image: cardBgSrc(media[item.image_media_id ?? ""], ACTIVITIES_TEASER_BG[i]),
+    image: cardBgSrc(media[item.image_media_id ?? ""], ACTIVITIES_TEASER_BG[guestFallbackIndex(content,"activities_teaser.items",i)]),
   }));
 
-  return (
-    <>
-      {/*
-       * Hero — real JSX, `core/ui`'s `<Hero compact align="center">`, with exactly the same
-       * configuration as Buildings' listing hero (`buildings-listing.tsx`) and Real Estate's
-       * hero, so the compact page heroes stay consistent — the user's call over 1:1 fidelity to
-       * this page's own mock overrides (`.46/.36/.8` scrim, `#ecdcc2` 600/.18em eyebrow, 1.08 h1
-       * leading, 19px `#f1ece2` lede). The `<video>` background is copied verbatim from Home's
-       * hero (same attributes, poster and classes). CTA is a `ButtonLink` primary.
-       */}
+  const heroNode = (
       <Hero
+        editorBindings={preview ? {background:"hero.video_media_id",eyebrow:"hero.eyebrow",subtitle:"hero.subheadline"} : undefined}
         background={
           <video
             className="absolute inset-0 -z-10 h-full w-full object-cover"
@@ -229,12 +223,25 @@ export async function GuestPage({ locale }: { locale: Locale }) {
         subtitleClassName="mt-5 max-w-[60ch] text-lg"
         actionsClassName="mt-2"
         eyebrow={hero.eyebrow || undefined}
-        headline={hero.headline}
+        headline={preview ? <span {...binding("hero.headline")}>{hero.headline}</span> : hero.headline}
         subtitle={hero.subheadline || undefined}
         actions={
-          <ButtonLink href={routes.buildings}>{`${hero.cta.label} →`}</ButtonLink>
+          <ButtonLink href={routes.buildings}>{preview ? <span {...binding("hero.cta.label")}>{`${hero.cta.label} →`}</span> : `${hero.cta.label} →`}</ButtonLink>
         }
       />
+  );
+
+  return (
+    <>
+      {/*
+       * Hero — real JSX, `core/ui`'s `<Hero compact align="center">`, with exactly the same
+       * configuration as Buildings' listing hero (`buildings-listing.tsx`) and Real Estate's
+       * hero, so the compact page heroes stay consistent — the user's call over 1:1 fidelity to
+       * this page's own mock overrides (`.46/.36/.8` scrim, `#ecdcc2` 600/.18em eyebrow, 1.08 h1
+       * leading, 19px `#f1ece2` lede). The `<video>` background is copied verbatim from Home's
+       * hero (same attributes, poster and classes). CTA is a `ButtonLink` primary.
+       */}
+      {preview ? <div {...binding("hero")}>{heroNode}</div> : heroNode}
       {/*
        * "Welcome to Central Hill": `core/ui`'s `IntroSplit` (see its docstring for why
        * `TwoColumnShowcase` doesn't fit) in the plain section shell, one `Reveal`. The guarantee
@@ -242,7 +249,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
        * is `welcomeSideMedia()` or the approved mock photo (lazy), sized by the component to
        * cover its full-height cell. Alt = `image_alt` → asset alt → `pages.guests.welcomeAlt`.
        */}
-      <section className={SECTION_SHELL}>
+      <section {...binding("welcome")} className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal label="guests-welcome">
             <IntroSplit
@@ -292,7 +299,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
        * cards each have their own `Reveal`; the original per-card `.reveal-stagger` becomes one
        * fade. Icons come from `why.benefits`' `icon_key`s; an empty `cta.note` is omitted.
        */}
-      <section className={`${SECTION_SHELL} ${ALT_BAND}`}>
+      <section {...binding("why")} className={`${SECTION_SHELL} ${ALT_BAND}`}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
@@ -316,7 +323,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
       </section>
 
       {/* Featured properties — cards from the buildings slice, headings from `guest.portfolio`. */}
-      <div id="portfolio" className="scroll-mt-[84px]">
+      <div {...binding("portfolio")} id="portfolio" className="scroll-mt-[84px]">
         <FeaturedPortfolio
           locale={locale}
           eyebrow={portfolio.eyebrow}
@@ -335,7 +342,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
        * own `Reveal`. The shell keeps the mock's metrics rather than `core/ui`'s generic
        * `Section`/`Container`, so its edges line up with the neighbouring sections.
        */}
-      <section className={`${SECTION_SHELL} ${ALT_BAND}`}>
+      <section {...binding("services_teaser")} className={`${SECTION_SHELL} ${ALT_BAND}`}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
@@ -363,7 +370,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
        * differences carried over from the original markup: no `alt` tint (the page's
        * alternating bands are kept) and a ghost CTA (`btn-ghost`).
        */}
-      <section className={SECTION_SHELL}>
+      <section {...binding("activities_teaser")} className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
@@ -388,7 +395,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
       </section>
 
       {/* Guest reviews — the same shared marquee as Home/Owners, filtered to `audience='guest'`. */}
-      <div id="testimonials" className="scroll-mt-[84px]">
+      <div {...binding("testimonials")} id="testimonials" className="scroll-mt-[84px]">
         <TestimonialsRow
           locale={locale}
           audience="guest"
@@ -399,7 +406,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
       </div>
 
       {faqGroupKey ? (
-        <div id="faq" className="scroll-mt-[84px]">
+        <div {...binding("faq")} id="faq" className="scroll-mt-[84px]">
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
@@ -416,7 +423,7 @@ export async function GuestPage({ locale }: { locale: Locale }) {
        * unless overridden), styled with the dark panel's own button class and "→" so it looks
        * identical; an empty contact line is omitted by the component.
        */}
-      <section className={SECTION_SHELL}>
+      <section {...binding("dual_cta")} className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal label="guests-dual-cta">
             <SplitCtaPanels

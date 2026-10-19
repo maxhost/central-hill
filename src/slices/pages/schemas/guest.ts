@@ -98,6 +98,8 @@ const ownerPanel = dualPanel.extend({
  * before.
  */
 export const guestSchema = z.object({
+  _list_ids: adminHidden(z.record(z.string(), z.array(z.string()))).optional(),
+  _retired_ids: adminHidden(z.array(z.string())).optional(),
   /** Search/social meta for `/<locale>/guests`. Blank → `pages.guests.metaTitle` / `metaDescription`. */
   seo: z.object({ ...seoShape }).optional(),
   hero: z.object({
