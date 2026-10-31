@@ -133,7 +133,8 @@ export const homeSchema = z.object({
    * renders nothing when no published service matches.
    */
   services_carousel: z.object({
-    eyebrow: tStrOpt({ max: 60 }),
+    // Retain legacy values without exposing a field for copy no longer rendered.
+    eyebrow: adminHidden(tStrOpt({ max: 60 })),
     headline: tStr({ max: 160 }),
     assurances: fixed(assurance, ASSURANCE_COUNT),
     service_category_slug: serviceCategorySlug,
@@ -158,7 +159,7 @@ export type HomeContent = z.infer<typeof homeSchema>;
  * `icon_key` with the icon picker (any Iconoir name, ADR 0034).
  */
 export const defaultServicesCarousel: HomeContent["services_carousel"] = {
-  eyebrow: "Partners & Services",
+  eyebrow: "",
   headline: "Central Hill Partners and Services",
   assurances: [
     { icon_key: "check-circle", label: "Exclusive Selection" },

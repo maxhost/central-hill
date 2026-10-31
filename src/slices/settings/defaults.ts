@@ -28,7 +28,7 @@ export const DEFAULT_GLOBALS: SiteGlobals = {
     buildings: { value: "", label: "Buildings" },
     apartments: { value: "", label: "Apartments" },
   },
-  officeAddress: "Lisbon, Portugal",
+  officeAddress: "Rua da Bempostinha 21A, 1150-065 Lisboa",
   officeHours: null,
   officeHoursLabel: null,
   currency: "EUR",

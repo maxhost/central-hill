@@ -1,5 +1,12 @@
 # Central Hill agent instructions
 
+## Latest local visual work — 2026-10-31
+
+Before continuing after a context clear, read [session handoff](docs/specs/handoff-visual-refinements-2026-10-31.md).
+Current user requests: local commit before clear; no push/deploy. Aesthetic changes
+are L0, user validates in localhost, no automatic tests/QA. Contact DB update via
+Neon MCP was explicitly deferred; do not resume it without a new request.
+
 ## Remaining Pages adapters — local delivery approved
 
 User authorized implementation from documentary85676c3 and automatic scoped local QA.
@@ -183,6 +190,7 @@ No main integration, push, deployment or production writes. Preserve previews
 
 ## Working agreement
 
+- User update 2026-10-30: code changes and QA are preauthorized; request authorization for database changes or production actions. Aesthetic changes are L0: do not run tests or automatic QA; the user validates them on localhost. Environment sandbox permissions still apply. This overrides broader verification requirements below for aesthetic-only work.
 - For an authorized agentic implementation: one orchestrator, two implementers with disjoint file assignments, then one independent QA agent reviewing the integrated result. Simple tasks remain with the main agent. Do not start implementation when the request is only for a spec or review.
 - The orchestrator records the base commit, branch/worktree paths, exact writable files, contracts, acceptance criteria and verification commands in the active spec before delegating. Shared files have one writer. Contracts land before consumers.
 - Subagents may share the same checkout by default. Spawning an agent does not create a worktree. Verify each agent's actual working directory and branch. Use a separate worktree/branch for each parallel writer; if the runtime cannot target them, serialize writes and explain the limitation.

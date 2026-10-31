@@ -49,6 +49,11 @@ them. **Consumers that embed globals/nav in their own cached reads (e.g. S9 page
 stats, default OG image) should add `SETTINGS_TAGS.globals` to those reads' tags** so a
 settings publish cascades.
 
+Footer contact details (ADR 0044) reuse Settings' office address, bookings phone,
+check-in phone and email. The existing BO check-in field now feeds both Footer
+and About; blank hides the check-in row. Phone/email links have matching icons
+and labels in all four locales. No new schema or database writes are required.
+
 **Booking links (client feedback B2)** — `avantioBookingUrl(locale)`, `AVANTIO_LOCALES`,
 `AVANTIO_OWNERS_LOGIN_URL` (pure, from `booking.ts`; safe in server + client). Every
 "search / book" CTA points at the Avantio rentals engine for the active locale, falling
@@ -112,8 +117,25 @@ and the browser-verified checks: `docs/specs/avantio-search-widget.md`.
 
 ## Header chrome — top-right cluster + sub-tabs (client feedback B1)
 
+Desktop's **Earn With Us** CTA is a persistent rounded tab (`header-earn`),
+centered below the utility icons and attached to the navbar's bottom edge.
+It is 140px wide and 100px tall with 30px top padding for its label, following
+the user's final image reference. The navbar
+permanently uses the footer's feature gradient; the tab shares that gradient's
+width and coordinates, updated by HeaderScroll to match the colors at the seam,
+with light text over heroes and after scrolling (ADR 0042).
+It links to the active locale's Owners page.
+While a header submenu is open (hover/focus, or the pinned Owners submenu),
+the tab keeps its top attached to the navbar and stretches by the submenu's
+measured height. Its label gains the same top padding so it remains below the
+submenu. The tab returns to its base height when the submenu closes.
+The mobile drawer retains its standard CTA layout. Aesthetic L0 change requested
+2026-10-31; visual validation is performed by the user on localhost.
+
 `ui/site-header.tsx` is laid out in **three sections**: (1) the brand logo; (2) the **menu** —
-the primary nav links plus a ghost **Book Now** CTA (→ `avantioBookingUrl`) set off at the end;
+the primary nav links plus a ghost **Book Now** CTA set off at the end. On desktop and mobile,
+this CTA opens `https://www.centralhill.pt/en/rentals/holidays-rentals-rentals-d0/`
+in a new tab (`noopener noreferrer`), per the user's 2026-10-31 request;
 (3) a top-right **utilities** cluster — an **owner-login / account** icon
 (→ `AVANTIO_OWNERS_LOGIN_URL`), a **contact** icon (`ui/components/contact-dialog.tsx`,
 `variant="icon"` — a client modal embedding the leads `ContactForm`, `kind="contact"`; staff

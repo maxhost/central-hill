@@ -29,6 +29,7 @@ const CAROUSEL_LIMIT = 12;
 
 /** The section's editable copy (a legacy `page_content` row may not have it yet). */
 export interface ServicesCarouselContent {
+  /** Legacy stored copy, retained for compatibility; no longer rendered or edited. */
   eyebrow?: string;
   headline: string;
   assurances: { icon_key?: string; label: string }[];
@@ -60,7 +61,7 @@ export async function ServicesCarousel({
   return (
     <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
       <div className="mx-auto max-w-[1240px] px-[28px]">
-        <SectionHead flush eyebrow={content.eyebrow || undefined} headline={content.headline} />
+        <SectionHead flush headline={content.headline} />
 
         {assurances.length > 0 ? (
           <ul className="mt-8 grid gap-4 sm:grid-cols-3 sm:gap-8">

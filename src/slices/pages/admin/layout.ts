@@ -230,7 +230,7 @@ const OWNERS_LAYOUT: EditorLayoutItem[] = [
     kind: "card",
     id: "stats",
     titleKey: `${L}.cards.stats`,
-    paths: ["stats"],
+    paths: ["stats_title", "stats"],
     note: { textKey: `${L}.notes.stats` },
   },
   { kind: "card", id: "why", titleKey: `${L}.cards.why`, paths: ["why"] },

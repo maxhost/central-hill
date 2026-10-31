@@ -844,6 +844,9 @@
       "guides": "What to Do"
     },
     "footer": {
+      "office": "Office",
+      "bookings": "Bookings",
+      "checkin": "Check-in",
       "toggle": "Are you a guest or an owner?",
       "owner": "Owner",
       "guest": "Guest",
@@ -898,7 +901,7 @@
           "phone": "Phone",
           "whatsapp": "WhatsApp",
           "checkinPhone": "Check-in phone",
-          "checkinPhoneHint": "Shown in the About page office panel. Leave blank to hide the row.",
+          "checkinPhoneHint": "Shown in the footer and the About page office panel. Leave blank to hide the row.",
           "website": "Website",
           "websiteHint": "Full https:// address, shown in the About page office panel. Leave blank to hide the row.",
           "statValue": "Figure",
@@ -1156,6 +1159,7 @@
       "heroEyebrow": "Portugal – managing real estate"
     },
     "owners": {
+      "statsTitle": "Numbers That Speak for Themselves",
       "metaTitle": "For Owners — Central Hill",
       "metaDescription": "Turn your Portugal property into a high-performing asset — fully managed, transparent, with consistently above-market returns. AI-driven pricing and a 24/7 owner dashboard.",
       "heroCta": "Get Your Free Earnings Estimate",
@@ -1456,6 +1460,7 @@
         }
       },
       "labels": {
+        "stats_title": "Numbers section title",
         "catalogue": "Published catalogue",
         "seo": "SEO",
         "meta_title": "Meta title (search results)",

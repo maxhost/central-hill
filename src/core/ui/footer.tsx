@@ -19,6 +19,13 @@ export interface FooterContact {
   callLabel: string;
   phone: string;
   email: string;
+  officeAddress?: string;
+  officeLabel?: string;
+  bookingsLabel?: string;
+  checkinPhone?: string;
+  checkinLabel?: string;
+  phoneIcon?: ReactNode;
+  emailIcon?: ReactNode;
   /** Omit together with `whatsapp` to hide that line entirely. */
   whatsappLabel?: string;
   whatsapp?: string;
@@ -91,16 +98,37 @@ export function Footer({
           <div>
             {brand}
             <div className="mt-[18px] text-sm leading-[1.9] text-on-feature-soft">
-              <div>
-                {contact.callLabel}{" "}
-                <a
-                  href={`tel:${contact.phone.replace(/\s+/g, "")}`}
-                  className="hover:text-on-feature"
-                >
-                  {contact.phone}
-                </a>
+              {contact.officeAddress ? (
+                <p className="mb-4 max-w-sm">
+                  <strong className="font-semibold text-on-feature">{contact.officeLabel}:</strong>{" "}
+                  {contact.officeAddress}
+                </p>
+              ) : null}
+              <div className="flex items-start gap-3">
+                {contact.phoneIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.phoneIcon}</span> : null}
+                <span>
+                  {!contact.bookingsLabel ? `${contact.callLabel} ` : null}
+                  <a
+                    href={`tel:${contact.phone.replace(/\s+/g, "")}`}
+                    className="hover:text-on-feature"
+                  >
+                    {contact.phone}
+                  </a>
+                  {contact.bookingsLabel ? ` ${contact.bookingsLabel}` : null}
+                </span>
               </div>
-              <div>
+              {contact.checkinPhone ? (
+                <div className="flex items-start gap-3">
+                  {contact.phoneIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.phoneIcon}</span> : null}
+                  <span>
+                    <a href={`tel:${contact.checkinPhone.replace(/[^\d+]/g, "")}`} className="hover:text-on-feature">
+                      {contact.checkinPhone}
+                    </a>{" "}{contact.checkinLabel}
+                  </span>
+                </div>
+              ) : null}
+              <div className="flex items-start gap-3">
+                {contact.emailIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.emailIcon}</span> : null}
                 <a href={`mailto:${contact.email}`} className="hover:text-on-feature">
                   {contact.email}
                 </a>

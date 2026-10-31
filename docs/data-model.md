@@ -165,7 +165,8 @@ page_content
   | `earnings_form{badge?, headline, subheadline?, cta_label, note?}` | step 1 of the form card | T | — |
   | `earnings_form.contact_step?{title? ≤120, lede? ≤280, submit_label? ≤60, back_label? ≤30}` | step 2 | T | i18n `pages.estimateForm.contactTitle` / `contactLede` / `submit` / `back` |
   | `earnings_form.done_step?{title? ≤120, body? ≤400}` | step 3 | T | i18n `pages.estimateForm.doneTitle` / `doneBody` |
-  | `stats` | **0–8** × `statFigure` (was exactly 4; drizzle 0009 rows stay valid) | `label` T · rest C | **no rows → no band** (anchor `#numbers` kept) |
+  | `stats_title?` | optional string ≤160 | T | blank/missing → localized `pages.owners.statsTitle`; editable in BO Numbers section |
+  | `stats` | **0–8** × `statFigure` (was exactly 4; drizzle 0009 rows stay valid) | `label` T · rest C | **no rows → no band or title** (anchor `#numbers` kept) |
   | `why{headline, subheadline?, benefits[×6]{icon_key,title,description}, cta_primary, cta_secondary}` | CTAs = `{label, url, note?}`, **`url` hidden** | text T · icon/url C | — |
   | `services` / `dashboard` `{headline, subheadline?, benefits[×4], cta{label, url, note?}}` | **`cta.url` hidden** | text T · icon/url C | — |
   | `services.image_media_id` / `dashboard.image_media_id` | `"" \| uuid`; image (incl. animated WebP), MP4/WebM or Lottie (`optionalAnimated`) | C | stock photos |

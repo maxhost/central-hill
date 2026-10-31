@@ -15,7 +15,11 @@
   (the single highest-leverage "editorial luxury" tell).
 - **Perf:** variable fonts, `font-display:swap`, self-host + preload the LCP display weight, Latin subset.
 
-## Color — Warm Editorial is the LOCKED production palette (ADR 0022)
+## Color — Warm Editorial is the LOCKED production palette (ADRs 0022, 0041)
+
+ADR 0041 updates feature backgrounds to `linear-gradient(90deg, #4c3d32 0%, #926c52 100%)`
+by explicit user request. The shared `bg-feature` utility applies this surface,
+with `#4c3d32` as the solid fallback. The table below records the original palette.
 **Production ships only Warm Editorial.** The other five directions below are design-exploration
 only (kept for the record / the mock preview); there is **no runtime palette switching**, and
 changing the production palette requires a new ADR. Live tokens are in `app/globals.css @theme`.

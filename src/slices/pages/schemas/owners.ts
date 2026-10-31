@@ -141,6 +141,7 @@ export const ownersSchema = z.object({
    * 0–8 rows since spec owners-admin-editor S4 (was exactly 4; stored rows stay valid), like
    * Home's `stats.figures`. No rows → the band is hidden (the `#numbers` anchor stays).
    */
+  stats_title: tStrOpt({ max: 160 }),
   stats: between(statFigure, 0, 8),
   // "Why owners trust us" — Editorial Split (sticky title + CTAs beside a hairline benefit list).
   why: z.object({

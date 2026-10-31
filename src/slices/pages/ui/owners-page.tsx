@@ -253,13 +253,17 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
        * Like Home (spec owners-admin-editor S4): 0–8 editable rows, desktop columns follow the
        * row count (`statBandColumns`; 4 rows → 4, the `StatBand` default, so today's band is
        * unchanged), mobile stays 2-up. No rows → no band, but the `#numbers` anchor div stays
-       * (the header's Owners menu links to it). No `title` → the bare proof band the locked
-       * design uses here (Home passes a heading).
+       * (the header's Owners menu links to it). The optional editable title falls back to
+       * localized copy, using the same heading treatment as Home.
        */}
       <div {...binding("stats")} id="numbers" style={{ scrollMarginTop: 130 }}>
         {statCells.length > 0 ? (
           <Reveal label="owners-stats">
-            <StatBand cells={statCells} columns={statBandColumns(statCells.length)} />
+            <StatBand
+              title={orMessage(content.stats_title, t("owners.statsTitle"))}
+              cells={statCells}
+              columns={statBandColumns(statCells.length)}
+            />
           </Reveal>
         ) : null}
       </div>

@@ -29,7 +29,7 @@ export function homeNode(root:FieldNode,path:string):FieldNode|undefined {
 export const homeEditorBindingIds = ["hero","avantio","stats","guests_pitch","portfolio","services_carousel","faq","dual_cta","seo","faq_group_key","og_image_media_id",
  "hero.video_media_id","hero.poster_media_id","hero.eyebrow","hero.headline","hero.subtitle","hero.cta_primary.label","hero.cta_primary.url","hero.cta_secondary.label",
  "stats.title","stats.figures","guests_pitch.headline","guests_pitch.subheadline","guests_pitch.benefits","guests_pitch.image_media_id","guests_pitch.cta.label","guests_pitch.cta.url","guests_pitch.cta.note","guests_pitch.badge.label","guests_pitch.badge.icon_key",
- "portfolio.title","portfolio.cta_label","portfolio.card_view_label","services_carousel.eyebrow","services_carousel.headline","services_carousel.assurances","services_carousel.service_category_slug","faq.title",
+ "portfolio.title","portfolio.cta_label","portfolio.card_view_label","services_carousel.headline","services_carousel.assurances","services_carousel.service_category_slug","faq.title",
  ...["owner","guest"].flatMap(side=>["image_media_id","eyebrow","title","body","cta_label"].map(key=>`dual_cta.${side}.${key}`)),"seo.meta_title","seo.meta_description"] ;
 
 /** One outline policy; Home retains its validated section grouping and order. */
@@ -43,6 +43,14 @@ export function pageSections(descriptor: PageEditorialDescriptor, label: (key: s
   }));
   for (const id of descriptor.externalSections) {
     if (!sections.some(section => section.id === id)) sections.push({ id, label: label(id), bindings: [], external: true });
+  }
+  if (descriptor.key === "owners") {
+    const title = sections.find(section => section.id === "stats_title");
+    const stats = sections.find(section => section.id === "stats");
+    if (title && stats) {
+      stats.bindings.unshift(...title.bindings.map(binding => ({ ...binding, sectionId: "stats" })));
+      sections.splice(sections.indexOf(title), 1);
+    }
   }
   const faq = sections.find(section => section.id === "faq");
   const group = sections.find(section => section.id === "faq_group_key");

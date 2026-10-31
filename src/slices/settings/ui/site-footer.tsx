@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { Footer, type FooterNavGroup, type FooterSocialLink } from "@core/ui";
+import { Icon } from "@core/ui/icon";
 import { DEFAULT_GLOBALS } from "../defaults";
 import { getGlobals, getNav } from "../server/queries";
 import { FooterNewsletter } from "./components/footer-newsletter";
@@ -101,6 +102,13 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
         callLabel: t("footer.call"),
         phone: g.phone,
         email: g.email,
+        officeAddress: g.officeAddress,
+        officeLabel: t("footer.office"),
+        bookingsLabel: t("footer.bookings"),
+        checkinPhone: g.checkinPhone || undefined,
+        checkinLabel: t("footer.checkin"),
+        phoneIcon: <Icon name="phone" size={18} />,
+        emailIcon: <Icon name="mail" size={18} />,
         whatsappLabel: g.whatsapp ? t("footer.whatsapp") : undefined,
         whatsapp: g.whatsapp || undefined,
       }}

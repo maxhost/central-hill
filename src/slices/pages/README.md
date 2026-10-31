@@ -21,6 +21,11 @@ The Home notes below record the pilot; common behavior now covers all five regis
 
 ## Local live preview
 
+Owners' numbers band now includes an optional editable `stats_title` grouped
+with its figures in BO. Blank uses “Numbers That Speak for Themselves” localized
+in EN/PT/ES/FR; the title uses Home's shared StatBand styling. See
+`docs/specs/owners-numbers-heading.md`. No migration or database writes.
+
 Home now offers ephemeral live preview after the user's follow-up request. Current form
 snapshots and same-origin queued blob media go through a staff-only read action to the
 same Home renderer. It never saves, flushes uploads or invalidates public caches. Refresh
@@ -686,7 +691,7 @@ table with types and [T]/shared classes: `docs/data-model.md` → Page content m
 | Figures | `stats?{title?, figures? (0–8 × statFigure)}` | title → `pages.stats.title`; **no rows → no band** (heading included) |
 | Guests pitch | `headline`, `subheadline?`, `benefits[×4]`, `image_media_id` (`optionalAnimated`), `cta{label,url,note?}`, `badge?{label?, icon_key?}` | stock Unsplash photo; badge label → `cta.note`, icon → `check` |
 | Portfolio | `portfolio?{title?, cta_label?, card_view_label?}` (cards come from `buildings`) | `pages.portfolio.title` / `viewAll` / `view` |
-| Services carousel | `services_carousel{eyebrow?, headline, assurances[×3], service_category_slug?}` (ADR 0032) | section hidden without cards |
+| Services carousel | `services_carousel{headline, assurances[×3], service_category_slug?}` (ADR 0032); legacy `eyebrow` retained but hidden in the BO and omitted from public output | section hidden without cards |
 | FAQ | `faq_group_key` (root) + `faq?{title?}` | no FAQ; title → `pages.faqTitle` |
 | Dual CTA | `dual_cta{owner,guest}{image_media_id, eyebrow, title, body, cta_label}` | mock photos; links fixed (`/owners`, Avantio); contact line from Settings |
 

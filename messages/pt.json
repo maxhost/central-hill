@@ -844,6 +844,9 @@
       "guides": "O Que Fazer"
     },
     "footer": {
+      "office": "Escritório",
+      "bookings": "Reservas",
+      "checkin": "Check-in",
       "toggle": "É hóspede ou proprietário?",
       "owner": "Proprietário",
       "guest": "Hóspede",
@@ -898,7 +901,7 @@
           "phone": "Telefone",
           "whatsapp": "WhatsApp",
           "checkinPhone": "Telefone de check-in",
-          "checkinPhoneHint": "Aparece no painel do escritório da página Sobre nós. Deixe em branco para ocultar a linha.",
+          "checkinPhoneHint": "Aparece no rodapé e no painel do escritório de Sobre nós. Deixe em branco para ocultar a linha.",
           "website": "Website",
           "websiteHint": "Endereço completo https://, aparece no painel do escritório da página Sobre nós. Deixe em branco para ocultar a linha.",
           "statValue": "Número",
@@ -1156,6 +1159,7 @@
       "heroEyebrow": "Portugal – gestão imobiliária"
     },
     "owners": {
+      "statsTitle": "Números que falam por si",
       "metaTitle": "Para Proprietários — Central Hill",
       "metaDescription": "Transforme o seu imóvel em Portugal num ativo de elevado desempenho — totalmente gerido, transparente e com retornos consistentemente acima do mercado. Preços otimizados por IA e um painel do proprietário disponível 24/7.",
       "heroCta": "Obtenha a Sua Estimativa de Rendimento Gratuita",
@@ -1456,6 +1460,7 @@
         }
       },
       "labels": {
+        "stats_title": "Título da secção de números",
         "catalogue": "Catálogo publicado",
         "seo": "SEO",
         "meta_title": "Meta título (resultados de pesquisa)",

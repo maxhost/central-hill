@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { ButtonLink, MobileDrawer, NavBar, buttonClassName, type NavEntry } from "@core/ui";
+import { MobileDrawer, NavBar, buttonClassName, type NavEntry } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import { Link } from "@/i18n/navigation";
 import { AVANTIO_OWNERS_LOGIN_URL } from "../contract";
@@ -53,6 +53,8 @@ body:has([data-page="owners"]) [data-site-header].scrolled [data-nav-item="/owne
   visibility:visible;opacity:1;
 }
 `;
+
+const HEADER_BOOKING_URL = "https://www.centralhill.pt/en/rentals/holidays-rentals-rentals-d0/";
 
 /**
  * The "Owners" menu reveals the owners-page sections directly, hardcoded rather than read from the
@@ -146,32 +148,20 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
         links={links}
         ctas={
           <>
-            {/*
-             * "Book Now" — anchors to the embedded Avantio search bar on Home (hero/stats
-             * seam) rather than opening the external Avantio engine — the locale-aware `Link`
-             * re-adds the prefix from any page, landing on Home and scrolling to
-             * `#booking-engine`.
-             */}
-            <Link
-              href="/#booking-engine"
+            {/* Booking opens the requested external rentals page in a new tab. */}
+            <a
+              href={HEADER_BOOKING_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               data-cta="ghost"
               className={buttonClassName("ghost", undefined, "sm")}
             >
               {t("ctaBook")}
-            </Link>
-            {/*
-             * "Earn With Us" — the owner-acquisition CTA (client feedback), solid accent fill
-             * (`ButtonLink`'s `primary` variant — design-system.md) so it reads as the one
-             * standout action next to the outlined "Book Now". Always routes to `/owners` in
-             * the active locale.
-             */}
-            <ButtonLink href={`/${locale}/owners`} size="sm">
-              {t("ctaEarn")}
-            </ButtonLink>
+            </a>
           </>
         }
         utilities={
-          <>
+          <div className="header-utilities">
             <a
               href={AVANTIO_OWNERS_LOGIN_URL}
               target="_blank"
@@ -195,7 +185,10 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
               label={t("language")}
               icon={<Icon name={icons.language} size={18} />}
             />
-          </>
+            <Link href="/owners" data-cta="earn" className="header-earn">
+              {t("ctaEarn")}
+            </Link>
+          </div>
         }
         mobileDrawer={
           <MobileDrawer
@@ -213,7 +206,7 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
                 intro={t("contactDialog.intro")}
               />
             }
-            book={{ href: `/${locale}#booking-engine`, label: t("ctaBook") }}
+            book={{ href: HEADER_BOOKING_URL, label: t("ctaBook"), external: true }}
             earn={{ href: `/${locale}/owners`, label: t("ctaEarn") }}
             openLabel={t("menu")}
             closeLabel={t("close")}

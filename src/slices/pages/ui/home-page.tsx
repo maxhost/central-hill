@@ -85,6 +85,7 @@ export async function HomePage({ locale, preview = false, page: injectedPage }: 
         }
         eyebrow={orMessage(hero.eyebrow, t("home.heroEyebrow"))}
         headline={preview ? <span {...binding("hero.headline")}>{hero.headline}</span> : hero.headline}
+        headlineClassName="max-w-[15ch] text-[clamp(2.2rem,5.6vw,4.4rem)]"
         subtitle={hero.subtitle}
         actions={
           <>
@@ -131,7 +132,7 @@ export async function HomePage({ locale, preview = false, page: injectedPage }: 
       ) : null}
 
       {/* Guests pitch now sits directly under stats, ahead of the carousel (client feedback). */}
-      <div {...binding("guests_pitch")}><Reveal label="guests-pitch">
+      <div {...binding("guests_pitch")} className="[&_section]:py-[70px]!"><Reveal label="guests-pitch">
         <GuestsSection
           content={guests_pitch}
           image={media[guests_pitch.image_media_id ?? ""] ?? null}
@@ -142,7 +143,7 @@ export async function HomePage({ locale, preview = false, page: injectedPage }: 
        * Featured portfolio (restored, client direction) — composes from `buildings`, ahead
        * of the services carousel. No intro copy under the title (client feedback).
        */}
-      <div {...binding("portfolio")}><Reveal label="featured-portfolio">
+      <div {...binding("portfolio")} className="[&_section]:pt-[70px]"><Reveal label="featured-portfolio">
         <FeaturedPortfolio
           locale={locale}
           showEyebrow={false}
@@ -155,7 +156,7 @@ export async function HomePage({ locale, preview = false, page: injectedPage }: 
       </Reveal></div>
 
       {/* Services & partners (ADR 0032) — copy from the page, cards from `services`. */}
-      <div {...binding("services_carousel")}><Reveal label="services-carousel">
+      <div {...binding("services_carousel")} className="[&_section]:py-[70px]"><Reveal label="services-carousel">
         <ServicesCarousel locale={locale} content={services_carousel} />
       </Reveal></div>
 
@@ -168,7 +169,7 @@ export async function HomePage({ locale, preview = false, page: injectedPage }: 
       ) : null}
 
       {/* Closing owner/guest dual CTA (restored, client direction) — sits right before the footer. */}
-      <div {...binding("dual_cta")}><Reveal label="dual-cta">
+      <div {...binding("dual_cta")} className="[&_section]:pt-[70px] [&_section]:pb-0"><Reveal label="dual-cta">
         <DualCta locale={locale} content={dual_cta} media={media} />
       </Reveal></div>
     </main>
