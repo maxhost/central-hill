@@ -55,7 +55,6 @@ export async function GuidesFinalCta({ page, locale }: Props) {
   );
   return (
     <CenteredCtaBand
-      eyebrow={orMessage(cta?.eyebrow, t("ctaEyebrow"))}
       headline={orMessage(cta?.headline, t("ctaTitle"))}
       body={orMessage(cta?.body, t("ctaBody"))}
       cta={{ href: `/${locale}/buildings`, label: `${label} →` }}

@@ -1,5 +1,17 @@
 # Service detail four-photo mosaic — 2026-11-01
 
+## Later user update: temporary Pexels photos
+
+After the restart/commitf70e75f, user requested Pexels photos to complete missing
+mosaic positions. This supersedes the original available-only preference below.
+Public rendering now fills only empty positions up to4 with temporary Pexels
+photos259962/3182812/271624/210265, reused from existing site sample imagery.
+Actual cover/gallery images always lead and automatically replace the samples.
+Samples are decorative, not service media records, and do not enter Show all
+photos. BO guidance reflects the temporary behavior in EN/PT/ES/FR. No database
+or storage writes. Aesthetic L0 follow-up: no automatic tests/visual QA; user
+reviews3071. No commit/push/deployment requested for this follow-up.
+
 User requests the supplied four-photo layout for every service detail, including
 BO image selection. Confirmed: services with fewer photos show their available
 photos until staff complete the four, without stock replacements or duplicates.

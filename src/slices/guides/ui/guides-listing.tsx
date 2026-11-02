@@ -25,7 +25,7 @@ import {
   listingCopy,
 } from "./listing-presentation";
 
-const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
+const SECTION_SHELL = "scroll-mt-[84px] py-[70px]";
 const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
 const GRID =
   "grid grid-cols-1 gap-[26px] min-[681px]:grid-cols-2 min-[981px]:grid-cols-3";
@@ -75,7 +75,6 @@ export async function GuidesListingRenderer({
     >
       <div className={SECTION_WRAP}>
         <SectionHead
-          eyebrow={listingCopy(catalogue?.eyebrow, t("citiesEyebrow"))}
           headline={guideCityHeadline(
             catalogue?.headline,
             group.city.name,
@@ -112,7 +111,6 @@ export async function GuidesListingRenderer({
       >
         <div className={SECTION_WRAP}>
           <SectionHead
-            eyebrow={listingCopy(recCopy?.eyebrow, t("recEyebrow"))}
             headline={listingCopy(recCopy?.headline, t("recTitle"))}
             intro={listingCopy(recCopy?.body, t("recIntro"))}
           />
@@ -171,7 +169,6 @@ export async function GuidesListingRenderer({
         panels={panels}
         empty={empty}
         label={listingCopy(filter?.label, t("chooseCity"))}
-        note={listingCopy(filter?.note, t("cityNote"))}
         soonLabel={listingCopy(filter?.soon_label, t("citySoon"))}
         icon={
           <Icon
@@ -208,13 +205,9 @@ export async function GuidesListingRenderer({
       ) : (
         catalogueContent
       )}
-      {preview ? (
-        <div data-editor-binding="final_cta">
-          <GuidesFinalCta page={page} locale={locale} />
-        </div>
-      ) : (
+      <div {...(preview ? { "data-editor-binding": "final_cta" } : {})} className="[&_section]:py-[70px]">
         <GuidesFinalCta page={page} locale={locale} />
-      )}
+      </div>
     </>
   );
 }

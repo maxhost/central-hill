@@ -612,7 +612,7 @@
         "slug": "Slug",
         "slugHint": "Usado nos URLs públicos; minúsculas em kebab-case.",
         "excerpt": "Resumo",
-        "mosaicHint": "O mosaico do serviço usa quatro imagens: a capa e as três primeiras fotografias da galeria. Com menos fotografias, só são mostradas as disponíveis.",
+        "mosaicHint": "O mosaico do serviço usa quatro imagens: a capa e as três primeiras fotografias da galeria. Os espaços vazios mostram fotografias temporárias do Pexels até adicionar as suas.",
         "mosaicPosition1": "1 · Capa: fotografia grande à esquerda",
         "mosaicPosition2": "2 · Fotografia 1 da galeria: horizontal no topo à direita",
         "mosaicPosition3": "3 · Fotografia 2 da galeria: em baixo, à esquerda da metade direita",

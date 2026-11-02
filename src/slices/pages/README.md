@@ -21,6 +21,13 @@ The Home notes below record the pilot; common behavior now covers all five regis
 
 ## Local live preview
 
+Guides listing also omits “Local Favourites” and “Your Base in the City”.
+`recommendations.eyebrow` and `final_cta.eyebrow` remain hidden/preserved in BO.
+
+Guides listing omits the city-filter note “More cities coming as Central Hill
+grows.” and the catalogue eyebrow “Explore”. Their `city_filter.note` and
+`catalogue.eyebrow` fields are hidden/preserved in both BO editor paths.
+
 Services' closing CTA omits “Planning your stay?” and hides/preserves its
 `final_cta.eyebrow` field in BO. The section “Find your apartment, then we'll
 handle the rest” uses70px top/bottom padding through its page-scoped wrapper.

@@ -7,7 +7,7 @@ import { initialListingCity, selectListingCity, type ListingCityChoice } from ".
 /** Server-rendered cards remain in HTML; selection only controls their containing panels. */
 export function GuidesCityFilter({ cities, label, note, soonLabel, icon, panels, empty }: {
   cities: ListingCityChoice[];
-  label: string; note: string; soonLabel: string; icon: ReactNode;
+  label: string; note?: string; soonLabel: string; icon: ReactNode;
   panels: { cityId: string; guides: ReactNode; recommendations: ReactNode }[];
   empty: ReactNode;
 }) {

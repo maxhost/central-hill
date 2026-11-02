@@ -43,6 +43,20 @@ export const SERVICE_COPY_KEYS = [
 export type ServiceCopyKey = (typeof SERVICE_COPY_KEYS)[number];
 export type ServiceCopy = Partial<Record<ServiceCopyKey, string>>;
 
+/** Retired public labels: keep stored overrides compatible, but expose no editor fields. */
+export const SERVICE_HIDDEN_COPY_KEYS: readonly ServiceCopyKey[] = [
+  "whatsappCta",
+  "aboutEyebrowService",
+  "aboutEyebrowExperience",
+  "includedEyebrow",
+  "optionsEyebrow",
+  "ratesEyebrow",
+  "partnersEyebrow",
+  "knowEyebrow",
+  "relatedEyebrow",
+  "enquiryEyebrow",
+];
+
 export function serviceCopyLimit(key: ServiceCopyKey): number {
   if (key === "enquiryIntro") return 1200;
   if (key === "noPayment") return 400;

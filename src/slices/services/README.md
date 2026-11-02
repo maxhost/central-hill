@@ -1,8 +1,23 @@
 # Slice `services` (S5)
 
+Service booking cards omit the Ask on WhatsApp button. Its legacy whatsappCta
+override is hidden/preserved in BO; the primary request/booking action remains.
+
+Service details omit the small labels About this service/experience, What's
+included, Options, Rates, Our Partners, Good to know, Add This to Your Stay and
+More Ways We Can Help. Their copy overrides remain compatible in stored data
+but SERVICE_HIDDEN_COPY_KEYS excludes them from general/section BO controls.
+Main section titles/content and itinerary labels remain available.
+
+Service detail headers omit the category eyebrow. Categories remain assigned
+through the service BO and visible on listing-card labels; category data and
+management are preserved.
+
 Service details now show at most four photos in their header mosaic: cover as
 the large left tile, first gallery photo across the top right, next two below.
-With fewer photos, only those available render; extras remain in Show all photos.
+Missing positions now use temporary Pexels samples (later user request); uploaded
+photos replace them automatically. Extras remain in Show all photos; temporary
+samples are never saved to the database or included in that dialog.
 The BO media section labels the cover/gallery roles and all four positions,
 retaining its image upload/removal and gallery reorder controls. No additional
 photos are required to save old services. See `docs/specs/service-four-photo-mosaic.md`.

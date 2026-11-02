@@ -612,7 +612,7 @@
         "slug": "Slug",
         "slugHint": "Used in public URLs; lowercase kebab-case.",
         "excerpt": "Excerpt",
-        "mosaicHint": "The service photo mosaic uses four images: the cover plus the first three gallery photos. With fewer photos, only the available images are shown.",
+        "mosaicHint": "The service photo mosaic uses four images: the cover plus the first three gallery photos. Empty positions show temporary Pexels photos until you add your own images.",
         "mosaicPosition1": "1 · Cover: large photo on the left",
         "mosaicPosition2": "2 · Gallery photo 1: wide photo at the top right",
         "mosaicPosition3": "3 · Gallery photo 2: lower photo on the left of the right half",

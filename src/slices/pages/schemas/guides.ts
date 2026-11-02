@@ -12,6 +12,7 @@
 import { z } from "zod";
 import { seoShape, tStr, tStrOpt } from "@core/validation/primitives";
 import { optionalIconKey, optionalImage, optionalVideo } from "./_shared";
+import { adminHidden } from "./admin-hidden";
 
 const ASIDE_IMG_HINT =
   "Apartment photo above the text. Landscape 16:10 — recommended 760×475px, JPG or WebP, under 300 KB.";
@@ -40,12 +41,12 @@ export const guidesSchema = z.object({
   city_filter: z.object({
     enabled: z.boolean().optional(),
     label: tStrOpt({ max: 80 }),
-    note: tStrOpt({ max: 240 }),
+    note: adminHidden(tStrOpt({ max: 240 })),
     soon_label: tStrOpt({ max: 60 }),
     location_icon_key: optionalIconKey,
   }).optional(),
   catalogue: z.object({
-    eyebrow: tStrOpt({ max: 80 }),
+    eyebrow: adminHidden(tStrOpt({ max: 80 })),
     headline: cityHeadline,
     view_label: tStrOpt({ max: 80 }),
     empty_message: tStrOpt({ max: 400 }),
@@ -59,12 +60,13 @@ export const guidesSchema = z.object({
   }).optional(),
   recommendations: z.object({
     ...copy,
+    eyebrow: adminHidden(copy.eyebrow),
     restaurant_label: tStrOpt({ max: 80 }),
     viewpoint_label: tStrOpt({ max: 80 }),
     beach_label: tStrOpt({ max: 80 }),
     location_icon_key: optionalIconKey,
   }).optional(),
-  final_cta: z.object({ ...copy, cta_label: tStrOpt({ max: 80 }) }).optional(),
+  final_cta: z.object({ ...copy, eyebrow: adminHidden(copy.eyebrow), cta_label: tStrOpt({ max: 80 }) }).optional(),
   guide_aside: z
     .object({
       image_media_id: optionalImage(ASIDE_IMG_HINT),

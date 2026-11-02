@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { FieldGrid, TextArea, TextInput } from "@slices/backoffice/contract";
 import {
   SERVICE_COPY_KEYS,
+  SERVICE_HIDDEN_COPY_KEYS,
   serviceCopyLimit,
   type ServiceCopy,
   type ServiceCopyKey,
@@ -11,29 +12,23 @@ import {
 import { ServiceField } from "./service-section-controls";
 
 const BLOCK_KEYS: ServiceCopyKey[] = [
-  "includedEyebrow",
   "itineraryEyebrow",
   "itineraryTitle",
-  "optionsEyebrow",
   "optionsTitle",
-  "ratesEyebrow",
   "ratesTitle",
-  "partnersEyebrow",
   "partnersTitle",
-  "knowEyebrow",
   "knowTitle",
   "knowIncluded",
   "knowCancellation",
   "knowPractical",
 ];
 export const SECTION_COPY_KEYS: Record<string, ServiceCopyKey[]> = {
-  included: ["includedEyebrow"],
+  included: [],
   itinerary: ["itineraryEyebrow", "itineraryTitle"],
-  options: ["optionsEyebrow", "optionsTitle"],
-  pricing: ["ratesEyebrow", "ratesTitle"],
-  partners: ["partnersEyebrow", "partnersTitle"],
+  options: ["optionsTitle"],
+  pricing: ["ratesTitle"],
+  partners: ["partnersTitle"],
   good_to_know: [
-    "knowEyebrow",
     "knowTitle",
     "knowIncluded",
     "knowCancellation",
@@ -45,8 +40,6 @@ const GROUPS: [string, ServiceCopyKey[]][] = [
   [
     "admin.sections.identity",
     [
-      "aboutEyebrowService",
-      "aboutEyebrowExperience",
       "guestFavourite",
       "breadcrumbLabel",
       "home",
@@ -58,7 +51,6 @@ const GROUPS: [string, ServiceCopyKey[]][] = [
     [
       "from",
       "onRequest",
-      "whatsappCta",
       "seePartners",
       "noPayment",
       "requestShort",
@@ -68,7 +60,6 @@ const GROUPS: [string, ServiceCopyKey[]][] = [
   [
     "detail.enquiryInfoTitle",
     [
-      "enquiryEyebrow",
       "enquiryTitle",
       "enquiryIntro",
       "enquiryInfoTitle",
@@ -77,7 +68,7 @@ const GROUPS: [string, ServiceCopyKey[]][] = [
       "email",
     ],
   ],
-  ["detail.relatedTitle", ["relatedEyebrow", "relatedTitle"]],
+  ["detail.relatedTitle", ["relatedTitle"]],
 ];
 
 export function ServiceCopyFields({
@@ -93,9 +84,11 @@ export function ServiceCopyFields({
 }) {
   const t = useTranslations("services");
   const p = useTranslations("services.admin.presentation");
+  const visibleKeys = keys.filter((key) => !SERVICE_HIDDEN_COPY_KEYS.includes(key));
+  if (!visibleKeys.length) return null;
   return (
     <FieldGrid>
-      {keys.map((key) => {
+      {visibleKeys.map((key) => {
         const example = t(
           `detail.${key}`,
           key === "enquiryTitle" ? { name: "{name}" } : undefined,
@@ -137,7 +130,7 @@ export function ServiceCopyEditor(props: {
   const t = useTranslations("services");
   const p = useTranslations("services.admin.presentation");
   const hasError = SERVICE_COPY_KEYS.some(
-    (key) => !BLOCK_KEYS.includes(key) && props.errors[`copy.${key}`],
+    (key) => !SERVICE_HIDDEN_COPY_KEYS.includes(key) && !BLOCK_KEYS.includes(key) && props.errors[`copy.${key}`],
   );
   return (
     <details

@@ -51,8 +51,8 @@ import {
  * text (escaped). UI copy: `services.detail.*`.
  *
  * Skeleton, top to bottom (component → origin):
- * 1. Title block — `core/ui` `DetailTitle`: breadcrumb (Home / Services / name), eyebrow =
- *    category, `<h1>` = name, tagline = excerpt, meta line = ★ rating (+ "Guest favourite" at
+ * 1. Title block — `core/ui` `DetailTitle`: breadcrumb (Home / Services / name),
+ *    `<h1>` = name, tagline = excerpt, meta line = ★ rating (+ "Guest favourite" at
  *    ≥ 4.8) and the `badges` (shield glyph each).
  * 2. Gallery — `core/ui` `MosaicGallery adaptive` (cover + gallery, count-aware 1/2/3/4
  *    layouts); "Show all photos" (`ServicePhotos` dialog) only when there are more photos than
@@ -65,8 +65,8 @@ import {
  *      itinerary → option groups → rates (+ extras) → partners · Good to know (non-empty
  *      columns only);
  *    - `ServiceBookingCard` (in `core/ui` `StickyAside`): price, note, rows, actions by booking
- *      type — `enquiry`: "Request…" → `#enquire` + "Ask on WhatsApp" (company WhatsApp, when
- *      set) + no-payment note; `external`: the CTA (new tab); `none`: "See partners" → `#partners`
+ *      type — `enquiry`: "Request…" → `#enquire` + no-payment note;
+ *      `external`: the CTA (new tab); `none`: "See partners" → `#partners`
  *      when partners exist.
  *    - `ServiceMobileBar` (≤980px) with the price + the primary action, when there is one.
  * 4. Enquiry (`enquiry` only) — `core/ui` `EnquirySplit` on the warm `alt` band (eyebrow, title,
@@ -83,6 +83,9 @@ const WRAP = "mx-auto max-w-[1240px] px-[28px]";
 const ALT_BAND =
   "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
 const MORE_MAX = 4;
+// Temporary Pexels photos, reused from the site's existing sample imagery.
+// Only fill empty mosaic positions; never persist them as service media.
+const MOSAIC_SAMPLE_PHOTOS = ["259962", "3182812", "271624", "210265"];
 
 // Gallery `sizes`, per adaptive layout (1184px content column; 10px gaps; 780px breakpoint).
 const SIZES_FULL = "(max-width: 1240px) 100vw, 1184px";
@@ -173,7 +176,7 @@ export async function ServiceDetail({
   const others = all.filter((s) => s.id !== svc.id).slice(0, MORE_MAX);
 
   // ---- actions by booking type -------------------------------------------------------------
-  const { enquiry, primary, secondary, mobileLabel } = serviceBookingView(
+  const { enquiry, primary, mobileLabel } = serviceBookingView(
     svc,
     copy,
     t(experience ? "detail.requestExperience" : "detail.requestService"),
@@ -183,7 +186,7 @@ export async function ServiceDetail({
   // ---- gallery ---------------------------------------------------------------------------------
   const gallery = serviceGalleryView(svc.cover, svc.gallery);
   const { photos } = gallery;
-  const shown = gallery.visible.length;
+  const shown = 4;
   const tiles = gallery.visible.map((p, i) => (
     <MediaImage
       key={i}
@@ -192,6 +195,20 @@ export async function ServiceDetail({
       priority={i === 0}
     />
   ));
+  for (const photo of MOSAIC_SAMPLE_PHOTOS.slice(0, shown - tiles.length)) {
+    tiles.push(
+      // eslint-disable-next-line @next/next/no-img-element -- temporary Pexels sample; actual service images retain MediaImage
+      <img
+        key={`sample-${photo}`}
+        src={`https://images.pexels.com/photos/${photo}/pexels-photo-${photo}.jpeg?auto=compress&cs=tinysrgb&w=1200`}
+        alt=""
+        width={1200}
+        height={800}
+        loading="lazy"
+        decoding="async"
+      />,
+    );
+  }
   const showAll =
     gallery.showAll ? (
       <ServicePhotos
@@ -259,7 +276,6 @@ export async function ServiceDetail({
           { label: t("breadcrumb"), href: `/${locale}/services` },
           { label: svc.name },
         ]}
-        eyebrow={svc.category.name}
         title={svc.name}
         tagline={svc.excerpt || undefined}
         meta={meta}
@@ -279,7 +295,7 @@ export async function ServiceDetail({
 
       {/* 3 · body: content column + sticky booking card */}
       <DetailLayout
-        className="[overflow-wrap:anywhere] [&>div]:min-w-0"
+        className="pb-[70px]! [overflow-wrap:anywhere] [&>div]:min-w-0"
         main={
           <>
             {detail.facts.length ? (
@@ -295,11 +311,6 @@ export async function ServiceDetail({
             ) : null}
 
             <ContentBlock
-              eyebrow={copy(
-                experience
-                  ? "aboutEyebrowExperience"
-                  : "aboutEyebrowService",
-              )}
               title={detail.about_title ?? t("detail.aboutTitle")}
             >
               {paragraphs.length ? (
@@ -322,7 +333,6 @@ export async function ServiceDetail({
 
             {detail.highlights.length ? (
               <ContentBlock
-                eyebrow={copy("includedEyebrow")}
                 title={detail.included_title ?? t("detail.includedTitle")}
               >
                 <ServiceIncluded items={detail.highlights} icon={icons.service_included} />
@@ -345,7 +355,6 @@ export async function ServiceDetail({
             {detail.option_groups.length ? (
               <ContentBlock
                 id="options"
-                eyebrow={copy("optionsEyebrow")}
                 title={copy("optionsTitle")}
               >
                 <ServiceOptionGroups groups={detail.option_groups} />
@@ -355,7 +364,6 @@ export async function ServiceDetail({
             {detail.pricing || detail.extras.length ? (
               <ContentBlock
                 id="rates"
-                eyebrow={copy("ratesEyebrow")}
                 title={copy("ratesTitle")}
               >
                 <ServiceRates pricing={detail.pricing} extras={detail.extras} />
@@ -365,7 +373,6 @@ export async function ServiceDetail({
             {detail.partners.length ? (
               <ContentBlock
                 id="partners"
-                eyebrow={copy("partnersEyebrow")}
                 title={copy("partnersTitle")}
               >
                 <ServicePartners partners={detail.partners} />
@@ -374,7 +381,6 @@ export async function ServiceDetail({
 
             {hasKnow ? (
               <ContentBlock
-                eyebrow={copy("knowEyebrow")}
                 title={copy("knowTitle")}
               >
                 <ServiceGoodToKnow
@@ -405,7 +411,6 @@ export async function ServiceDetail({
             priceNote={priceView.priceNote}
             rows={detail.booking_rows}
             primary={primary}
-            secondary={secondary}
             note={enquiry ? copy("noPayment") : undefined}
             noteIcon={icons.service_note}
           />
@@ -414,10 +419,9 @@ export async function ServiceDetail({
 
       {/* 4 · enquiry (booking type `enquiry` only) */}
       {enquiry ? (
-        <div className={`${ALT_BAND} [overflow-wrap:anywhere]`}>
+        <div className={`${ALT_BAND} [overflow-wrap:anywhere] [&_section]:py-[70px]`}>
           <EnquirySplit
             id="enquire"
-            eyebrow={copy("enquiryEyebrow")}
             title={copy("enquiryTitle")}
             lede={copy("enquiryIntro")}
             contact={(() => {
@@ -434,10 +438,9 @@ export async function ServiceDetail({
 
       {/* 5 · more services */}
       {others.length ? (
-        <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
+        <section className="scroll-mt-[84px] py-[70px]">
           <div className={WRAP}>
             <SectionHead
-              eyebrow={copy("relatedEyebrow")}
               headline={copy("relatedTitle")}
             />
             <div className="grid grid-cols-1 gap-[22px] min-[561px]:grid-cols-2 min-[981px]:grid-cols-4">

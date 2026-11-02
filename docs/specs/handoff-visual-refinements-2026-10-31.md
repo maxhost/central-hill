@@ -2,6 +2,12 @@
 
 ## Working state and authorization
 
+- Latest local commit request2026-11-01: user authorized committing the15-file
+  aesthetic follow-up afterf70e75f: temporary service mosaic photos, hidden
+  service/Guides labels and BO controls, service WhatsApp-button removal and
+  section spacing. `git diff --check` passes; no new automatic tests/QA under
+  the L0 agreement. Local delivery only, no push/deployment or database writes.
+
 - Service mosaic follow-up after81200da: user requested restarting3071 and then
   committing this change locally. Restarted Node22 pnpm dev (session52122,
   listener PID95629) after stopping only this workspace's prior3071 process.
@@ -26,6 +32,51 @@
 - Existing historical task worktrees/previews and their artifacts are preserved.
 
 ## Final implemented behavior
+
+- Guides listing spacing afterf70e75f: city catalogue (e.g. Guides for Lisbon),
+  Top Recommendations and closing Make It a Stay to Remember each use70px top/
+  bottom at all viewports. Closing band overridden through a Guides-only wrapper.
+  Aesthetic L0: user reviews3071; no tests/automatic QA, DB writes or commit.
+
+- Guides additional labels afterf70e75f: remove “Local Favourites” from Top
+  Recommendations and “Your Base in the City” from the closing CTA. Hide/preserve
+  recommendations.eyebrow and final_cta.eyebrow in BO using adminHidden.
+  Aesthetic L0: user reviews3071; no tests/automatic QA, DB writes or commit.
+
+- Guides listing labels afterf70e75f: remove “More cities coming as Central
+  Hill grows.” from the city filter and “Explore” from catalogue headings.
+  Hide/preserve city_filter.note and catalogue.eyebrow via adminHidden in BO.
+  Aesthetic L0: user reviews3071; no tests/automatic QA, DB writes or commit.
+
+- Service enquiry button follow-up afterf70e75f: remove the Ask on WhatsApp
+  booking-card action from every service detail. Hide/preserve its whatsappCta
+  override in BO through SERVICE_HIDDEN_COPY_KEYS. Primary request actions
+  remain. Aesthetic L0: user reviews3071; no tests/automatic QA or DB writes.
+
+- Service detail spacing afterf70e75f: content/booking DetailLayout uses70px
+  bottom padding, scoped important override of its shared responsive default.
+  Enquiry (e.g. Request Babysitting) and Other Guest Services each use70px top/
+  bottom at every viewport. Aesthetic L0: user reviews3071; no automatic tests/
+  QA, database writes or commit.
+
+- Service detail label removal afterf70e75f: hide About this service/experience,
+  What's included, Options, Rates, Our Partners, Good to know, Add This to Your
+  Stay and More Ways We Can Help. Remove their eyebrow props and BO copy fields
+  (including section-specific controls), preserving stored overrides/schema
+  compatibility and section titles/content. Itinerary labels remain available.
+  Aesthetic L0: user reviews3071; no tests/automatic QA, DB writes or commit.
+
+- Service detail category follow-up afterf70e75f: hide the category eyebrow
+  above each service title, e.g. Arrival & Transfers. It is the same shared
+  Services category used by the listing-card pill, chosen in the service BO
+  category selector. Preserve category management and card labels. Aesthetic L0:
+  user reviews3071; no tests/automatic QA, DB writes or commit.
+
+- Service mosaic temporary photos follow-up afterf70e75f: user now requests
+  Pexels images to complete missing positions, overriding available-only layout.
+  Renderer fills up to4 with sample photos (same source assets as existing site
+  placeholders); actual uploaded images take precedence. No DB/storage writes.
+  BO guidance updated EN/PT/ES/FR. Aesthetic L0: no automatic tests/QA or commit.
 
 - Service detail mosaic follow-up after81200da,2026-11-01: all service details
   now cap the header mosaic at4 photos (cover large left, first gallery photo
