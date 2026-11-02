@@ -3,7 +3,7 @@ import { NewsletterForm } from "@slices/leads/contract";
 
 /**
  * Newsletter signup band (blog listing) — the mock's `section.newsletter`. A thin composer:
- * `core/ui`'s `CenteredCtaBand` (the full-bleed centred dark band Guides closes with; eyebrow,
+ * `core/ui`'s `CenteredCtaBand` (the full-bleed centred dark band Guides closes with;
  * `<h2>`, lede) with the leads slice's `NewsletterForm` in its action slot instead of a button.
  * The form (S10) owns the email field, GDPR consent, submit (`submitLead`, `kind: "newsletter"`)
  * and the success state; it sits on `bg-feature`, so `theme="dark"`.
@@ -15,20 +15,18 @@ import { NewsletterForm } from "@slices/leads/contract";
  * label/consent read naturally inside the centred band.
  */
 export function NewsletterSignup({
-  eyebrow,
   title,
   description,
   source = "blog",
   preview = false,
 }: {
-  eyebrow: string;
   title: string;
   description: string;
   source?: string;
   preview?: boolean;
 }) {
   const band = (
-    <CenteredCtaBand eyebrow={eyebrow} headline={title} body={description}>
+    <CenteredCtaBand headline={title} body={description}>
       <div className="mx-auto max-w-[480px] text-left" inert={preview || undefined}>
         <NewsletterForm theme="dark" source={source} />
       </div>

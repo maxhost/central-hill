@@ -22,8 +22,8 @@ export const blogAdapter: PageEditorialAdapter<"blog"> = {
   retireIds: content => structuredClone(content),
   textPaths: blogTextPaths,
   translationField: blogTranslationField,
-  collectMediaReferences: (_content, og) => blogMediaReferences(og).map(ref => ({ ...ref, kind: "image" })),
-  mediaErrors: (_content, og, assets) => blogMediaErrors(og, assets),
+  collectMediaReferences: blogMediaReferences,
+  mediaErrors: blogMediaErrors,
   async render(input) {
     const { BlogListingRenderer, BlogSharedAside } = await import("@slices/blog/contract");
     if (input.surface === "shared_aside") {

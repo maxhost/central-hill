@@ -3,12 +3,32 @@
 ## Blog page copy (2026-10-18)
 
 The index now reads `getBlogPage(locale)` from the Pages contract for header and
-search text, Featured label, Journal headings and newsletter copy. Blank overrides
+search text, Journal title and newsletter copy. Blank overrides
 inherit the existing localized messages per field. The article newsletter consumes
 the same page fields. Listing metadata uses Pages' `buildBlogMetadata`, including
 its editable localized title/description and social image. Cards, categories,
 article fields, filtering and pagination keep their existing source/behavior;
 the search field still has no search implementation in this scoped delivery.
+
+The Blog hero, featured, journal and shared newsletter eyebrows are removed from
+public rendering (2026-11-01). Pages preserves their old values with `adminHidden`
+and hides the four controls in both BO editors, including the entire featured
+copy group. The shared article newsletter also omits its eyebrow.
+
+The listing uses the shared photo `Hero` (2026-11-01), with editable
+`hero.image_media_id` in Pages→Blog, a decorative priority background and the
+existing search field. Until selected, the background is the site's existing
+Lisbon stock photo. The title, introduction, search placeholder and accessible
+search label remain locale-owned. The Pages adapter collects/validates hero and
+OG image references and supports both in local preview. See
+`docs/specs/blog-hero-background.md` for functional checks and limits.
+
+After From the Journal and before Newsletter, the listing embeds Pages'
+`PublishedHomeDualCta`: the same Owners/Guests photo panels as Home, with its
+published locale text/images (edited in Pages→Home) and Settings contact lines.
+This also appears in Blog's private preview, always using Home's published
+content. Home drafts remain private; Home's locale cache dependency carries
+publication updates through to Blog. No separate Blog CTA fields are stored.
 
 Editorial blog — listing + article detail. Public, statically rendered (ISR), 4 locales.
 See `docs/vertical-slices.md` → S4, `docs/content-briefs.md` → §6, ADR 0013 (body block set).
@@ -40,10 +60,11 @@ Consumed by S9 pages (featured/teasers), S13 seo-geo (URLs), S14 translation-pip
   `CategoryFilterProvider` wraps tabs + Featured + grid, each grid card sits in a
   `CategoryFilterItem` (page stays ISR — no `searchParams`). Visibility rules are pure in
   `category-filter-logic.ts` (unit-tested in `tests/blog.test.ts`).
-  — the Featured section is `core/ui` `SectionHead` (eyebrow only) + `ui/components/featured-post.tsx`
+  — the Featured section is `ui/components/featured-post.tsx`
   (`FeaturedPost`), fed by `getFeaturedPost(locale)` (tagged `blog_post-list`); omitted when there
   is no featured post, and never category-filtered.
-  — "From the Journal" is `SectionHead` (`blog.latestEyebrow` + `blog.latestTitle`) over a 3/2/1
+  Its image and Read Article action both link to the corresponding localized post.
+  — "From the Journal" is `SectionHead` (`blog.latestTitle`) over a 3/2/1
   grid of `ui/components/journal-card.tsx` (`JournalCard`, a whole-card link mirroring the Guides
   listing card), fed by `listPosts(locale)` (published, newest first) **minus the featured post
   (by id)**. "Load more" (`CategoryLoadMore`, `blog.loadMore`) reveals already-rendered cards
@@ -55,7 +76,7 @@ Consumed by S9 pages (featured/teasers), S13 seo-geo (URLs), S14 translation-pip
   — the newsletter band is `ui/components/newsletter-signup.tsx` (`NewsletterSignup`): `core/ui`
   `CenteredCtaBand` (Guides' closing band; its `children` action slot) wrapping the leads slice's
   `NewsletterForm` (`theme="dark"`, `source="blog"`; email + consent + submit → a `newsletter`
-  lead), copy from `blog.newsletter.eyebrow|title|description`. The listing is fully
+  lead), copy from `blog.newsletter.title|description`. The listing is fully
   componentised (no `.mk` subtree). Icons are `core/ui` `<Icon>` (ADR 0034); no `mock.css`.
 - `app/[locale]/blog/[slug]/page.tsx` → `ui/blog-post.tsx`, the approved `mock/blog-post.html` on
   the service-detail skeleton, all `core/ui`: `DetailTitle` (Home / Blog / category; author ·

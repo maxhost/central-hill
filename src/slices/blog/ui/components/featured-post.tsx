@@ -25,8 +25,8 @@ const IMG_CLASS = "absolute inset-0 h-full w-full object-cover";
  * wrapper's inherited `line-height:1.6` is restated on the root (`leading-[1.6]`), and the `h3`
  * carries `mock.css`'s serif `500` / `-0.015em` / `ink`.
  *
- * As in the mock, only the read link is an anchor (not the whole card); it goes to the
- * article detail, `/${locale}/blog/${post.slug}`.
+ * The image and read link each open the article detail,
+ * `/${locale}/blog/${post.slug}`.
  *
  * **Blog-only, not a `core/ui` primitive**: it owns its `PostSummary` coupling. Labels come
  * pre-translated from the caller (`blog.byAuthor`, `blog.readingMinutes`, `blog.readArticle`),
@@ -61,14 +61,18 @@ export function FeaturedPost({
 
   return (
     <article className="grid grid-cols-[1.15fr_0.85fr] overflow-hidden border border-line bg-surface leading-[1.6] text-ink max-[880px]:grid-cols-1">
-      <div className="relative min-h-[340px] max-[880px]:min-h-[240px]">
+      <Link
+        href={`/${locale}/blog/${post.slug}`}
+        aria-label={post.title}
+        className="relative block min-h-[340px] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent max-[880px]:min-h-[240px]"
+      >
         {cover?.url && cover.width > 0 && cover.height > 0 ? (
           <MediaImage data={{ ...cover, alt }} className={IMG_CLASS} sizes={FEATURED_SIZES} priority />
         ) : (
           // eslint-disable-next-line @next/next/no-img-element -- `mediaImgTag`'s unoptimised fallback (no asset / no dimensions)
           <img src={cover?.url || EMPTY_SRC} alt={alt} className={IMG_CLASS} loading="eager" decoding="async" />
         )}
-      </div>
+      </Link>
       <div className="flex flex-col justify-center px-12 py-[46px] max-[880px]:px-[30px] max-[880px]:py-[34px]">
         <div>
           <CategoryTag category={post.category} />

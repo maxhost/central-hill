@@ -16,9 +16,11 @@ export async function saveBlog(content: BlogContent, og: string | null, actor: s
     return { ok: false, error: "validation", fieldErrors: { _source: "The saved Blog content is invalid. Repair it before saving." } };
   }
   // Reject malformed IDs before asking the media query to cast them to UUIDs.
-  if (og && !uuid.safeParse(og).success) return { ok: false, error: "validation", fieldErrors: { og_image_media_id: "Select an uploaded image." } };
-  const assets = await loadMedia(blogMediaReferences(og).map(ref => ref.id));
-  const errors = blogMediaErrors(og, assets);
+  const refs = blogMediaReferences(content, og);
+  const malformed = refs.filter(ref => !uuid.safeParse(ref.id).success);
+  if (malformed.length) return { ok: false, error: "validation", fieldErrors: Object.fromEntries(malformed.map(ref => [ref.path, "Select an uploaded image."])) };
+  const assets = await loadMedia(refs.map(ref => ref.id));
+  const errors = blogMediaErrors(content, og, assets);
   if (Object.keys(errors).length) return { ok: false, error: "validation", fieldErrors: errors };
   const sync = sourceSnapshotCtes("page_content", sql`select id from saved`, blogSourceFields(content), actor);
   await db.execute(sql`with saved as (

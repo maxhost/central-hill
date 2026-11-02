@@ -218,6 +218,9 @@ export { revalidatePageTranslation } from "./server/translation-revalidation";
 // Sections take {page: GuidesPage, locale: Locale}; no catalogue reads.
 export { GuidesHero, GuidesFinalCta } from "./ui/components/guides-sections";
 
+/** Home's published Owners/Guests photo panels, shared with Blog; edited in Pages→Home. */
+export { PublishedHomeDualCta } from "./ui/components/dual-cta";
+
 /** Shared Home RSC renderer, optionally instrumented only in staff previews. */
 export { HomePage as HomePageRenderer } from "./ui/home-page";
 export { homeEditorBindingIds } from "./admin/home-contextual";

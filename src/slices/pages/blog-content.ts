@@ -60,8 +60,8 @@ export const blogDescriptor: PageEditorialDescriptor = {
   rootNode: describe(blogSchema),
   textPatterns: translatablePaths(blogSchema),
   listPaths: [],
-  mediaSlots: [],
-  maxLocalMedia: 1,
+  mediaSlots: [{ path: "hero.image_media_id", kind: "image" }],
+  maxLocalMedia: 2,
   externalSections: [],
   sectionPreviews: { post_aside: "shared_aside" },
 };

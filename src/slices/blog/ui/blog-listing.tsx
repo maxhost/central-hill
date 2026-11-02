@@ -2,9 +2,10 @@ import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { BlogPage } from "@slices/pages/contract";
 import type { Locale } from "@core/db/columns";
-import { PageHead, PageHeadSearch, SectionHead } from "@core/ui";
+import { Hero, PageHeadSearch, SectionHead } from "@core/ui";
+import { MediaImage } from "@core/media";
 import { Icon } from "@core/ui/icon";
-import { getBlogPage } from "@slices/pages/contract";
+import { getBlogPage, PublishedHomeDualCta } from "@slices/pages/contract";
 import { SITE_ICON_DEFAULTS, getGlobals } from "@slices/settings/contract";
 import { getFeaturedPost, listCategories, listPosts } from "../contract";
 import { CategoryFilterItem, CategoryFilterProvider, CategoryLoadMore, CategoryTabs } from "./components/category-tabs";
@@ -14,9 +15,9 @@ import { NewsletterSignup } from "./components/newsletter-signup";
 
 /**
  * Blog listing — the approved `mock/blog.html` inside the live app shell.
- * The header band (eyebrow, `<h1>`, lede, search field) is the `core/ui` `PageHead` +
+ * The photo hero (`<h1>`, lede, search field) is the `core/ui` `Hero` +
  * `PageHeadSearch`, rendered as JSX with Pages overrides and localized fallback copy
- * (`blog.eyebrow|title|intro|searchPlaceholder|searchLabel`). Below it, the **category tabs** are JSX too and
+ * (`blog.title|intro|searchPlaceholder|searchLabel`). Below it, the **category tabs** are JSX too and
  * **DB-driven**: the slice's `CategoryTabs` (`core/ui`'s `ChipBar`, plain + centred) fed by
  * `listCategories(locale)`, which is `unstable_cache`d per locale and tagged `blog_post-list`,
  * so a category save/delete in the backoffice (`revalidateBlogList`) refreshes the page. "All"
@@ -24,18 +25,18 @@ import { NewsletterSignup } from "./components/newsletter-signup";
  * the category colour as the swatch (only if it's a valid `#hex`). The chips **filter** the
  * "From the Journal" grid client-side (`CategoryFilterProvider` around tabs + Featured + grid,
  * each card in a `CategoryFilterItem`; see `category-tabs.tsx`). Next, the **"Featured"
- * section** is JSX and **DB-driven** as well: `core/ui`'s `SectionHead` (eyebrow only,
- * `blog.featured`) over the slice's `FeaturedPost` card, fed by `getFeaturedPost(locale)` (the
+ * section** is JSX and **DB-driven** as well: the slice's `FeaturedPost` card,
+ * fed by `getFeaturedPost(locale)` (the
  * most recently published post flagged `is_featured`; `unstable_cache`d per locale, tagged
  * `blog_post-list`, so publishing/unfeaturing a post in the backoffice refreshes it). No
  * featured post → the whole section is omitted. Then **"From the Journal"** (JSX, DB):
- * `SectionHead` (`blog.latestEyebrow` + `blog.latestTitle`) over a 3/2/1 grid of the slice's
+ * `SectionHead` (`blog.latestTitle`) over a 3/2/1 grid of the slice's
  * `JournalCard`s, fed by `listPosts(locale)` (published, newest `published_at` first; cached +
  * tagged like the others) minus the featured post, with a client "Load more"
  * (`CategoryLoadMore`, `blog.loadMore`) that only appears when there are more than
  * `JOURNAL_PAGE_SIZE` cards. Last, the **newsletter** band (JSX, i18n, wired): the slice's
  * `NewsletterSignup` — `core/ui`'s `CenteredCtaBand` with the leads slice's `NewsletterForm`
- * (`theme="dark"`, `source="blog"`) in its action slot, copy from `blog.newsletter.eyebrow|title|
+ * (`theme="dark"`, `source="blog"`) in its action slot, copy from `blog.newsletter.title|
  * description` (form labels from `leads.*`); submitting creates a `newsletter` lead. The page is
  * now **fully componentised** — no `.mk` subtree, no raw mock markup or page styles. The real
  * header/footer come from the app layout. (The search field is inert until blog search lands.)
@@ -47,6 +48,8 @@ import { NewsletterSignup } from "./components/newsletter-signup";
  * a page at a time, so the page needs no `searchParams` and stays ISR.
  */
 const JOURNAL_PAGE_SIZE = 9;
+// Existing Lisbon stock photo used by the site's Guides hero until an image is authored.
+const HERO_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70";
 
 /** Blank page overrides inherit the visitor’s existing localized copy. */
 function orMessage(value: string | undefined, fallback: string): string {
@@ -59,14 +62,13 @@ const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
 const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
 
 /**
- * Blog listing: `PageHead` header (JSX, i18n) + category tabs (JSX, DB) + featured (JSX, DB) +
+ * Blog listing: photo `Hero` (JSX, i18n) + category tabs (JSX, DB) + featured (JSX, DB) +
  * "From the Journal" grid (JSX, DB) + newsletter band (JSX, i18n, leads form). The search field is
  * inert: no `action`, and this page never reads `searchParams` (that would make it dynamic), so
  * submitting just reloads `?q=…`. The tabs section reproduces the mock's
  * `<section style="padding-top:48px;padding-bottom:0">`; its 1240px/28px column comes from
  * `ChipBar` itself. The featured section reproduces `<section style="padding-top:52px;
- * padding-bottom:0">` + `.wrap` + a `28px`-gap `.sec-head` (`SectionHead` `flush` +
- * `mb-[28px]`); the journal section the default `.mk section` padding + `.wrap` + a `34px`-gap
+ * padding-bottom:0">` + `.wrap`; the journal section the default `.mk section` padding + `.wrap` + a `34px`-gap
  * `.sec-head` (`flush` + `mb-[34px]`) over the Guides/Buildings listing grid. The page has no
  * `.mk` subtree (see `ChipBar`'s / `SectionHead`'s docstrings for why they must sit outside one).
  *
@@ -97,7 +99,8 @@ export async function BlogListingRenderer({ locale, page: suppliedPage, preview 
     getGlobals(locale),
     suppliedPage === undefined ? getBlogPage(locale) : Promise.resolve(suppliedPage),
   ]);
-  const { hero, featured: featuredCopy, journal: journalCopy, newsletter } = page?.content ?? {};
+  const { hero, journal: journalCopy, newsletter } = page?.content ?? {};
+  const heroImage = page?.media[hero?.image_media_id ?? ""];
   const binding = (id: string) => preview ? { "data-editor-binding": id } : {};
   // Site icons (Settings → "Site icons", ADR 0034 amendment 2).
   const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
@@ -107,17 +110,34 @@ export async function BlogListingRenderer({ locale, page: suppliedPage, preview 
 
   return (
     <>
-      <PreviewBinding preview={preview} id="hero"><PageHead
-        eyebrow={orMessage(hero?.eyebrow, t("eyebrow"))}
-        headline={orMessage(hero?.headline, t("title"))}
-        intro={orMessage(hero?.intro, t("intro"))}
-      >
-        <PageHeadSearch
-          placeholder={orMessage(hero?.search_placeholder, t("searchPlaceholder"))}
-          label={orMessage(hero?.search_label, t("searchLabel"))}
-          icon={<Icon name={icons.search} size={20} />}
-        />
-      </PageHead></PreviewBinding>
+      <PreviewBinding preview={preview} id="hero"><Hero
+        background={heroImage ? (
+          <MediaImage data={{ ...heroImage, alt: "" }} sizes="100vw" priority className="absolute inset-0 -z-10 h-full w-full object-cover" />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element -- existing stock background until a BO image is authored
+          <img src={HERO_FALLBACK_IMAGE} alt="" width={1920} height={1080} fetchPriority="high" loading="eager" className="absolute inset-0 -z-10 h-full w-full object-cover" />
+        )}
+        editorBindings={preview ? { background: "hero.image_media_id", eyebrow: "hero", subtitle: "hero.intro" } : undefined}
+        compact
+        align="center"
+        overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.5)_0%,rgba(18,16,13,0.46)_45%,rgba(18,16,13,0.88)_100%)]"
+        wrapClassName="mx-auto w-full max-w-[1600px] px-10 pb-10 pt-[60px]"
+        copyClassName="max-w-none text-center"
+        headlineClassName="mx-auto max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
+        subtitleClassName="mx-auto mt-5 max-w-[60ch] text-lg"
+        headline={preview ? <span {...binding("hero.headline")}>{orMessage(hero?.headline, t("title"))}</span> : orMessage(hero?.headline, t("title"))}
+        subtitle={orMessage(hero?.intro, t("intro"))}
+        actionsClassName="mt-0 justify-center"
+        actions={
+          <div {...binding("hero.search_placeholder")} className="w-full max-w-[560px]">
+            <PageHeadSearch
+              placeholder={orMessage(hero?.search_placeholder, t("searchPlaceholder"))}
+              label={orMessage(hero?.search_label, t("searchLabel"))}
+              icon={<Icon name={icons.search} size={20} />}
+            />
+          </div>
+        }
+      /></PreviewBinding>
       <CategoryFilterProvider pageSize={JOURNAL_PAGE_SIZE}>
         <section className="pt-[48px]">
           <CategoryTabs
@@ -128,7 +148,6 @@ export async function BlogListingRenderer({ locale, page: suppliedPage, preview 
         {featured ? (
           <section {...binding("featured")} className="pt-[52px]">
             <div className="mx-auto max-w-[1240px] px-[28px]">
-              <SectionHead eyebrow={orMessage(featuredCopy?.eyebrow, t("featured"))} flush className="mb-[28px]" />
               <FeaturedPost
                 post={featured}
                 locale={locale}
@@ -143,10 +162,9 @@ export async function BlogListingRenderer({ locale, page: suppliedPage, preview 
           </section>
         ) : null}
         {journal.length ? (
-          <section {...binding("journal")} className={SECTION_SHELL}>
+          <section {...binding("journal")} className="scroll-mt-[84px] pt-[clamp(72px,10vw,150px)] pb-[70px]">
             <div className={SECTION_WRAP}>
               <SectionHead
-                eyebrow={orMessage(journalCopy?.eyebrow, t("latestEyebrow"))}
                 headline={orMessage(journalCopy?.title, t("latestTitle"))}
                 flush
                 className="mb-[34px]"
@@ -177,9 +195,9 @@ export async function BlogListingRenderer({ locale, page: suppliedPage, preview 
           </section>
         )}
       </CategoryFilterProvider>
+      <PublishedHomeDualCta locale={locale} />
       <NewsletterSignup
         preview={preview}
-        eyebrow={orMessage(newsletter?.eyebrow, t("newsletter.eyebrow"))}
         title={orMessage(newsletter?.title, t("newsletter.title"))}
         description={orMessage(newsletter?.description, t("newsletter.description"))}
         source="blog"

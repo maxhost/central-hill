@@ -1,5 +1,98 @@
 # Local visual refinements — resume after context clear
 
+## Commit and production release authorized —2026-11-01
+
+User now explicitly requests committing and deploying to maxhost/central-hill,
+and checking whether Neon needs migrations. This supersedes the prior local-only
+delivery boundary for these accumulated changes. Preserve the deferred contact
+data update; no content/media DB writes are requested here.
+
+Fresh origin/main is0d44203; local main contains five unpublished commits through
+f371a9a, plus the19 pending Blog source/test/doc files. User is informed the
+release includes those five previous commits and the new Blog commit. No remote
+divergence (0behind/5ahead before committing). GitHub's existing commit status
+identifies Vercel as the connected deployment provider.
+
+Read-only Neon MCP audit: project central-hill/weathered-cake-89640915, primary
+branch main/br-little-heart-aihh9v63, database neondb. All24 migration ledger
+hashes and timestamps match local drizzle files/journal,0000..0023 inclusive.
+No migration files differ from origin/main. No migration is needed or applied;
+new media fields are optional leaves in existing JSON content.
+
+Final Node22 `pnpm build` on the complete working tree passes (exit0,210 static
+pages). Earlier focused tests/typecheck/lint retain their recorded candidate
+limits; no new aesthetic tests/automatic visual QA performed. `git diff --check`
+passes. Deployment health and final commit must be confirmed after Git push;
+use git log -1 and GitHub/Vercel status for the resulting checkpoint.
+
+## Blog Journal bottom spacing —2026-11-01
+
+User requests From the Journal bottom padding70px. Applied directly to the
+Journal section at all viewports, preserving its existing responsive top
+padding. Aesthetic L0; user reviews3071, no tests/automatic QA or DB writes.
+
+## Blog Owners/Guests panels —2026-11-01
+
+User requests the Home two-column Owners/Guests band on the Blog. Placement
+explicitly confirmed: immediately after From the Journal, before Newsletter.
+Reuse the existing DualCta composer with published Home content/media for the
+current locale; editing remains Pages→Home, contacts Settings. Home drafts and
+Blog-local preview never alter the shared published content. Existing localized
+fallbacks, Owners route and Avantio booking target remain. No independent Blog
+copy/schema or persistence changes. New wrapper uses70px top/bottom spacing.
+
+Bounded root-owned aesthetic L0 follow-up, base f371a9a plus all preceding
+uncommitted Blog changes, preserved. Writable: Pages dual-cta component and
+contract, Blog listing, existing Blog presentation dependency stub, both slice
+READMEs and this handoff. User reviews3071; no automatic tests/QA, database or
+storage writes, migration, commit, push or deployment.
+
+## Blog featured image link —2026-11-01
+
+User requests clicking the featured post image opens its article. FeaturedPost's
+image cell now uses Next Link to the same localized post route as Read Article,
+with the post title as accessible name and an inset keyboard focus outline.
+Both uploaded image and placeholder are linked; layout is unchanged. Updated
+Blog README and JournalCard comment. Bounded low-impact link change; no new
+tests/automatic QA, DB writes, commit, push or deployment. User reviews3071.
+
+## Blog hero centering follow-up —2026-11-01
+
+User reports different lateral padding/alignment, then clarifies Blog copy and
+search should remain centered as before the photo. Blog uses40px horizontal
+padding like other heroes,60px top/40px bottom; full-width max1600px wrapper,
+centered headline/intro and search row. See blog-hero-background.md. Aesthetic
+L0; no new tests/automatic QA or DB writes. User validates3071. Previous
+functional checks precede this class-only adjustment.
+
+## Blog hero photo —2026-11-01, after f371a9a
+
+User requested a BO-editable background image like the other heroes, retaining
+headline, intro and search strings by locale. Blog now uses the shared compact
+Hero and standard image picker; photo/OG validation, private local preview and
+descriptor capacity2 are wired. Old snapshots fall back to the existing Lisbon
+stock photo used by Guides. Preceding uncommitted Blog label removal preserved.
+See blog-hero-background.md for exact files, coverage and commands. Node22
+typecheck/lint/build and19 focused Blog cases pass; seven old lint warnings.
+No visual QA, actual BO save/upload, DB/storage write, migration, commit, push
+or deployment. User reviews3071; no new required implementation work remains.
+
+## Blog label removal —2026-11-01, after f371a9a
+
+User requested removing Newsletter, Latest Articles, Featured and The Central
+Hill Journal from the Blog listing and its BO page editor. Removed all four
+eyebrow renders; the shared article newsletter also omits its eyebrow. Schema
+uses adminHidden for hero/journal/newsletter eyebrow fields and the whole
+featured copy group, preserving existing stored values without exposing controls
+in contextual or legacy BO. Main titles, articles and subscription form remain.
+
+Root owns changes in blog/ui/blog-listing.tsx, blog/ui/blog-post.tsx,
+blog/ui/components/newsletter-signup.tsx, pages/schemas/blog.ts (under src/slices),
+both slice READMEs and this handoff. Simple aesthetic L0 change in the main
+workspace, clean base f371a9a. User validates localhost3071; no tests/automatic
+QA, DB writes, migrations, push or deployment. Existing3071 listenerPID95629
+belongs to this workspace. No commit requested in this follow-up.
+
 ## Latest checkpoint before clear —2026-11-01
 
 User requested committing About changes before clearing context. Previous local

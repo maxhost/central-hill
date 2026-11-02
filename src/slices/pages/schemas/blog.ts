@@ -12,6 +12,8 @@
  */
 import { z } from "zod";
 import { tStr, tStrOpt } from "@core/validation/primitives";
+import { adminHidden } from "./admin-hidden";
+import { optionalImage } from "./_shared";
 
 export const blogSchema = z.object({
   seo: z.object({
@@ -19,19 +21,20 @@ export const blogSchema = z.object({
     meta_description: tStrOpt({ max: 200 }),
   }).optional(),
   hero: z.object({
-    eyebrow: tStrOpt({ max: 100 }),
+    image_media_id: optionalImage("Hero background photo. Landscape 1920×1080, JPEG/WebP/AVIF, ideally under 500 KB. Leave blank for the default Lisbon photo.").optional(),
+    eyebrow: adminHidden(tStrOpt({ max: 100 })),
     headline: tStrOpt({ max: 240 }),
     intro: tStrOpt({ max: 600 }),
     search_placeholder: tStrOpt({ max: 120 }),
     search_label: tStrOpt({ max: 120 }),
   }).optional(),
-  featured: z.object({ eyebrow: tStrOpt({ max: 100 }) }).optional(),
+  featured: adminHidden(z.object({ eyebrow: adminHidden(tStrOpt({ max: 100 })) }).optional()),
   journal: z.object({
-    eyebrow: tStrOpt({ max: 100 }),
+    eyebrow: adminHidden(tStrOpt({ max: 100 })),
     title: tStrOpt({ max: 160 }),
   }).optional(),
   newsletter: z.object({
-    eyebrow: tStrOpt({ max: 100 }),
+    eyebrow: adminHidden(tStrOpt({ max: 100 })),
     title: tStrOpt({ max: 200 }),
     description: tStrOpt({ max: 600 }),
   }).optional(),

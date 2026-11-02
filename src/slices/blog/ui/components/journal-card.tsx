@@ -31,8 +31,8 @@ const IMG_CLASS =
  * **Whole card is the link** (`/${locale}/blog/${post.slug}`), unlike the mock where only the
  * "Read Article →" anchor is clickable: consistency with the sibling listing cards (GuideCard,
  * Buildings) that are whole-card links, a bigger hit target, and one tab stop per card. The read
- * line is therefore a plain `<span>` (no nested anchor). `FeaturedPost` keeps the mock's
- * read-link-only behaviour (a wide split panel, not a grid card).
+ * line is therefore a plain `<span>` (no nested anchor). `FeaturedPost` links its
+ * image and read action separately (a wide split panel, not a grid card).
  *
  * **Blog-only, not a `core/ui` primitive**: it owns its `PostSummary` coupling. Labels come
  * pre-translated from the caller (`blog.readingMinutes`, `blog.readArticle`), so it stays

@@ -206,7 +206,6 @@ export async function BlogPost({ locale, slug }: { locale: Locale; slug: string 
 
       {/* 4 · newsletter */}
       <NewsletterSignup
-        eyebrow={orMessage(page.content.newsletter?.eyebrow, t("newsletter.eyebrow"))}
         title={orMessage(page.content.newsletter?.title, t("newsletter.title"))}
         description={orMessage(page.content.newsletter?.description, t("newsletter.description"))}
         source="blog"

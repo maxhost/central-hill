@@ -159,12 +159,30 @@ Other pages retain the workflows documented below. See page-locale-drafts spec/p
 
 ## Blog listing editor (2026-10-18)
 
-Pages→Blog now groups SEO/social image, header/search copy, Featured label,
-Journal headings, shared newsletter and the existing article aside. New groups
+Pages→Blog now groups SEO/social image, header/search copy,
+Journal title, shared newsletter and the existing article aside. Hero, featured,
+journal and newsletter eyebrows are hidden/preserved via `adminHidden` in both
+BO editor paths (2026-11-01); the entire featured copy group is hidden. New groups
 are optional overrides: blank values inherit visitor-locale `blog` messages;
 English inherited placeholders in the editor never become stored values merely
 by saving. Existing aside data/translation paths and its Owners destination stay.
 The shared newsletter is consumed by listing and articles; Leads owns its form.
+
+Blog Hero also accepts optional `image_media_id` through the standard image
+picker. Its descriptor declares one hero image slot and capacity2 (hero + OG),
+validated as existing images and resolved for public/private rendering. Existing
+snapshots without an image remain valid. Locale preparation adopts template
+media while retaining each target's headline, intro and both search strings;
+existing locale drafts and explicit Save draft/Publish remain independent.
+See `docs/specs/blog-hero-background.md`.
+
+The Blog listing also composes the Home Owners/Guests band after its Journal
+grid and before Newsletter through the exported `PublishedHomeDualCta` server
+component. It reads `getHomePage(locale)` for published text/photos and reuses
+DualCta's localized fallbacks, Settings contacts and fixed Owners/Avantio links.
+Editing remains in Pages→Home; no Blog CTA schema or draft persistence changes.
+The shared read subscribes Blog to Home's locale cache tag, and Blog's private
+preview uses only the published Home block.
 
 `getBlogPage(locale)` and `buildBlogMetadata(locale)` expose the content and
 listing SEO/OG through the contract. Blog saves compose Pages' saved row with

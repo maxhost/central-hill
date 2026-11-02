@@ -4,6 +4,17 @@ import { MediaImage, type MediaImageData } from "@core/media";
 import { DualCtaPanels, type DualCtaPanel } from "@core/ui";
 import { avantioBookingUrl, getGlobals } from "@slices/settings/contract";
 import { settingsContactLine } from "../contact-line";
+import { getHomePage } from "../../server/queries";
+
+/** Reuse Home's published locale copy/photos on other pages; Home drafts stay private. */
+export async function PublishedHomeDualCta({ locale }: { locale: Locale }) {
+  const page = await getHomePage(locale);
+  return (
+    <div className="[&_section]:py-[70px]">
+      <DualCta locale={locale} content={page?.content.dual_cta} media={page?.media} />
+    </div>
+  );
+}
 
 /**
  * Owner/Guest dual call-to-action band (Home) — data composer for the presentational

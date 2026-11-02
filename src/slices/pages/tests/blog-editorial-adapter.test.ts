@@ -11,6 +11,9 @@ import { blogAdapter } from "../adapters/blog";
 import { defaultBlog } from "../schemas/blog";
 import { captureLegacyPending, prepareTargetEnvelope } from "../editorial-content";
 import type { PageEnvelope } from "../editorial-types";
+import { descriptorMediaIds, isEditableFieldPath } from "../admin/home-contextual";
+import { validatePageLivePreview } from "../admin/live-preview-validation";
+import { blogSchema } from "../schemas/blog";
 
 test("Blog keeps blank inherited overrides and suppresses stale published targets while preserving pending copy", () => {
   const content = blogAdapter.defaultContent();
@@ -35,7 +38,7 @@ test("Blog keeps blank inherited overrides and suppresses stale published target
   assert.equal(prepared.content.seo?.meta_title, "SEO español", "Adopted target JSON may author SEO independently of empty EN");
 });
 
-test("Blog shares article copy and preserves a post button while limiting media to image OG and layout publication", () => {
+test("Blog shares article copy and preserves a post button with image-only media and layout publication", () => {
   const content = blogAdapter.defaultContent();
   content.post_aside.title = "Shared title";
   content.newsletter!.title = "Shared newsletter";
@@ -48,11 +51,46 @@ test("Blog shares article copy and preserves a post button while limiting media 
   assert.equal(blogAdapter.publicationScope, "layout");
   assert.deepEqual(blogDescriptor.sectionPreviews, { post_aside: "shared_aside" });
   assert.deepEqual(blogDescriptor.listPaths, []);
-  assert.deepEqual(blogDescriptor.mediaSlots, []);
-  assert.equal(blogDescriptor.maxLocalMedia, 1);
+  assert.deepEqual(blogDescriptor.mediaSlots, [{ path: "hero.image_media_id", kind: "image" }]);
+  assert.equal(blogDescriptor.maxLocalMedia, 2);
   const og = "00000000-0000-4000-8000-000000000001";
   assert.deepEqual(blogAdapter.collectMediaReferences(content, og), [{ path: "og_image_media_id", id: og, kind: "image" }]);
   assert.deepEqual(blogAdapter.mediaErrors(content, og, new Map([[og, { mime: "image/png" }]])), {});
   assert.ok(blogAdapter.mediaErrors(content, og, new Map([[og, { mime: "video/mp4" }]])).og_image_media_id);
   assert.deepEqual(blogAdapter.collectMediaReferences(content, null), []);
+});
+
+test("Blog hero picker and all four text controls survive locale preparation with independent copy", () => {
+  const content = blogAdapter.defaultContent();
+  assert.equal(blogSchema.safeParse(defaultBlog).success, true, "Legacy snapshots need no image");
+  assert.equal(content.hero?.image_media_id, "");
+  const fields = ["headline", "intro", "search_placeholder", "search_label"] as const;
+  for (const field of ["image_media_id", ...fields]) {
+    assert.ok(isEditableFieldPath(blogDescriptor.rootNode, `hero.${field}`));
+  }
+  const imageId = "00000000-0000-4000-8000-000000000003";
+  content.hero!.image_media_id = imageId;
+  for (const field of fields) content.hero![field] = `EN ${field}`;
+  const template: PageEnvelope<"blog"> = { schemaVersion: 1, content, ogImageMediaId: null };
+  for (const locale of ["es", "pt", "fr"]) {
+    const target = structuredClone(template);
+    for (const field of fields) target.content.hero![field] = `${locale} ${field}`;
+    target.content.hero!.image_media_id = "";
+    const prepared = prepareTargetEnvelope(template, target, blogDescriptor);
+    assert.equal(prepared.content.hero!.image_media_id, imageId);
+    for (const field of fields) assert.equal(prepared.content.hero![field], `${locale} ${field}`);
+    assert.equal(target.content.hero!.image_media_id, "", "Existing target is not mutated");
+  }
+  assert.equal(blogSourceFields(content)["block:hero.image_media_id"], undefined);
+  assert.deepEqual(descriptorMediaIds(content, null, blogDescriptor), [imageId]);
+  const origin = "http://localhost:3071";
+  const ogId = "00000000-0000-4000-8000-000000000004";
+  template.ogImageMediaId = ogId;
+  const localMedia = Object.fromEntries([imageId, ogId].map(id => [id, {
+    id, url: `blob:${origin}/${id}`, width: 1920, height: 1080, mime: "image/jpeg",
+  }]));
+  const payload = { envelope: template, localMedia };
+  assert.ok(validatePageLivePreview("blog", payload, origin), "Both queued images work before upload");
+  localMedia[imageId]!.mime = "video/mp4";
+  assert.equal(validatePageLivePreview("blog", payload, origin), null);
 });
