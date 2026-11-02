@@ -1,5 +1,12 @@
 # Slice `services` (S5)
 
+Service details now show at most four photos in their header mosaic: cover as
+the large left tile, first gallery photo across the top right, next two below.
+With fewer photos, only those available render; extras remain in Show all photos.
+The BO media section labels the cover/gallery roles and all four positions,
+retaining its image upload/removal and gallery reorder controls. No additional
+photos are required to save old services. See `docs/specs/service-four-photo-mosaic.md`.
+
 Guest **services & experiences** — a public **index + detail** catalog (transfers, day
 trips, chef at home, etc.). See `docs/vertical-slices.md` → S5, `docs/data-model.md` →
 Slice services.
@@ -34,7 +41,7 @@ Slice services.
   `.mk`/`mock.css`) and **DB-driven** via `getServiceBySlug(locale, slug)`:
   title block (`core/ui` `DetailTitle`: breadcrumb, category eyebrow, name, excerpt, ★ rating +
   "Guest favourite" ≥ 4.8, badges) → gallery (`core/ui` `MosaicGallery adaptive`, cover +
-  gallery, count-aware 1–5 layouts; "Show all photos" dialog `ServicePhotos` only for 6+) →
+  gallery, count-aware 1–4 layouts; "Show all photos" dialog `ServicePhotos` only for 5+) →
   body grid: content column of `core/ui` `ContentBlock`s (key facts `IconFactGrid`, About,
   What's included, the **variable module** — itinerary `ServiceItinerary` (thumbnails from
   `stepImages` or the step number) → option groups `ServiceOptionGroups` (cards / chips) →

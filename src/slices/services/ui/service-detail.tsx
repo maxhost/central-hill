@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { MediaImage, type MediaImageData } from "@core/media";
+import { MediaImage } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import { JsonLd, breadcrumbLd } from "@core/seo";
 import { Icon } from "@core/ui/icon";
@@ -11,7 +11,6 @@ import {
   DetailTitle,
   EnquirySplit,
   IconFactGrid,
-  MOSAIC_ADAPTIVE_MAX,
   MosaicGallery,
   SectionHead,
   type EnquiryContactLine,
@@ -36,6 +35,7 @@ import { ServiceOptionGroups } from "./components/service-option-groups";
 import { ServicePartners } from "./components/service-partners";
 import { ServicePhotos } from "./components/service-photos";
 import { ServiceRates } from "./components/service-rates";
+import { serviceGalleryView } from "./service-gallery";
 import {
   createServiceCopyResolver,
   serviceBookingView,
@@ -54,7 +54,7 @@ import {
  * 1. Title block — `core/ui` `DetailTitle`: breadcrumb (Home / Services / name), eyebrow =
  *    category, `<h1>` = name, tagline = excerpt, meta line = ★ rating (+ "Guest favourite" at
  *    ≥ 4.8) and the `badges` (shield glyph each).
- * 2. Gallery — `core/ui` `MosaicGallery adaptive` (cover + gallery, count-aware 1/2/3/4/5
+ * 2. Gallery — `core/ui` `MosaicGallery adaptive` (cover + gallery, count-aware 1/2/3/4
  *    layouts); "Show all photos" (`ServicePhotos` dialog) only when there are more photos than
  *    the mosaic shows.
  * 3. Body — `core/ui` `DetailLayout` (`minmax(0,1fr) 380px`, one column ≤980px):
@@ -94,7 +94,8 @@ function gallerySizes(count: number, i: number): string {
   if (count === 1) return SIZES_FULL;
   if (count === 2) return SIZES_HALF;
   if (i === 0) return SIZES_LEAD;
-  if (count === 3 || (count === 4 && i === 1)) return SIZES_HALF;
+  if (count === 4 && i === 1) return SIZES_LEAD;
+  if (count === 3) return SIZES_HALF;
   return SIZES_CELL;
 }
 
@@ -180,12 +181,10 @@ export async function ServiceDetail({
   );
 
   // ---- gallery ---------------------------------------------------------------------------------
-  const photos: MediaImageData[] = [
-    ...(svc.cover ? [svc.cover] : []),
-    ...svc.gallery,
-  ];
-  const shown = Math.min(photos.length, MOSAIC_ADAPTIVE_MAX);
-  const tiles = photos.map((p, i) => (
+  const gallery = serviceGalleryView(svc.cover, svc.gallery);
+  const { photos } = gallery;
+  const shown = gallery.visible.length;
+  const tiles = gallery.visible.map((p, i) => (
     <MediaImage
       key={i}
       data={p}
@@ -194,7 +193,7 @@ export async function ServiceDetail({
     />
   ));
   const showAll =
-    photos.length > MOSAIC_ADAPTIVE_MAX ? (
+    gallery.showAll ? (
       <ServicePhotos
         label={copy("showAllPhotos")}
         title={copy("allPhotos")}
@@ -269,7 +268,12 @@ export async function ServiceDetail({
       {/* 2 · gallery */}
       {tiles.length ? (
         <div className={WRAP}>
-          <MosaicGallery adaptive images={tiles} overlay={showAll} />
+          <MosaicGallery
+            adaptive
+            images={tiles}
+            overlay={showAll}
+            className={shown === 4 ? "[&>:nth-child(2)]:col-[1/3] min-[781px]:[&>:nth-child(2)]:col-[2/4]" : undefined}
+          />
         </div>
       ) : null}
 

@@ -3,8 +3,8 @@
 import { useRef, type ReactNode } from "react";
 
 /**
- * "Show all photos" for a gallery with more photos than the `MosaicGallery adaptive` mosaic shows
- * (`MOSAIC_ADAPTIVE_MAX`): the mock's `.svc-gallery .all` pill (surface, hairline, 13px/500, grid
+ * "Show all photos" for a service gallery with more than four mosaic photos:
+ * the mock's `.svc-gallery .all` pill (surface, hairline, 13px/500, grid
  * glyph) opening a native modal `<dialog>` with every photo stacked in one scrollable column
  * and a close button. Native `showModal()` gives focus trapping, Esc-to-close and the backdrop
  * for free; clicking the backdrop also closes it. The photos arrive as server-rendered nodes

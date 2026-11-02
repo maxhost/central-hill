@@ -62,6 +62,20 @@ const original: ServiceEditData = {
   integrity: { detail: "valid", presentation: "missing" },
 };
 
+test("cover plus gallery selections preserve mosaic order and all extra photos through save/reload models", () => {
+  const gallery = [1, 2, 3, 4, 5].map((n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`);
+  const state = initialState({ ...original, gallery }, "");
+  const parsed = serviceSaveInput.parse(buildPayload(state, original.id));
+  assert.equal(parsed.cover_media_id, original.cover_media_id);
+  assert.deepEqual(parsed.gallery, gallery);
+  const reloaded = initialState({ ...original, gallery: parsed.gallery, cover_media_id: parsed.cover_media_id }, "");
+  assert.deepEqual(reloaded.gallery, gallery);
+  reloaded.gallery.reverse();
+  assert.deepEqual(buildPayload(reloaded, original.id).gallery, [...gallery].reverse());
+  assert.equal(serviceSaveInput.safeParse(buildPayload(initialState(original, ""), original.id)).success, true,
+    "legacy one-photo services can still be saved without requiring more images");
+});
+
 test("exact EUR conversion accepts comma, point, cents and zero; enforces PostgreSQL bound", () => {
   for (const [input, expected] of [
     ["35,50", 3550],

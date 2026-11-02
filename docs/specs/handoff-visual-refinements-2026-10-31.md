@@ -2,6 +2,12 @@
 
 ## Working state and authorization
 
+- Service mosaic follow-up after81200da: user requested restarting3071 and then
+  committing this change locally. Restarted Node22 pnpm dev (session52122,
+  listener PID95629) after stopping only this workspace's prior3071 process.
+  Preserved old cache:/private/tmp/central-hill-dev-cache-service-mosaic-BgjB6Ptr/dev.
+  No push/deployment. Details/checks:service-four-photo-mosaic.md.
+
 -2026-11-01: user explicitly requested a local commit of all accumulated session
   work, including the preceding uncommitted Owners/Buildings/Real Estate changes
   and the Guests/Services follow-ups documented below. No push or deployment.
@@ -20,6 +26,15 @@
 - Existing historical task worktrees/previews and their artifacts are preserved.
 
 ## Final implemented behavior
+
+- Service detail mosaic follow-up after81200da,2026-11-01: all service details
+  now cap the header mosaic at4 photos (cover large left, first gallery photo
+  wide top right, next two below). Extras remain in Show all photos. User chose
+  available-only layouts until missing photos are uploaded, without repeating/
+  stock photos. BO explicitly labels the four roles and existing gallery upload/
+  reorder controls. Node22 typecheck/lint/build and36 focused tests pass; read-only
+  browser check covers all10 published services and Sintra at390px. No schema/
+  DB/storage changes or visual QA. See service-four-photo-mosaic.md.
 
 - Services closing CTA follow-up2026-11-01: remove “Planning your stay?” from
   public output and hide/preserve final_cta.eyebrow in contextual/legacy BO.

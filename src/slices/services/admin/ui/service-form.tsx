@@ -486,8 +486,15 @@ export function ServiceForm({
         <AdminCard title={t("admin.sections.media")}>
           <div className="space-y-5">
             <p className="text-sm text-ink-soft">{tp("mediaAltHint")}</p>
+            <p className="text-sm text-ink-soft">{t("admin.fields.mosaicHint")}</p>
+            <ol className="grid gap-2 rounded-md border border-line bg-bg p-4 text-sm text-ink-soft sm:grid-cols-2">
+              <li>{t("admin.fields.mosaicPosition1")}</li>
+              <li>{t("admin.fields.mosaicPosition2")}</li>
+              <li>{t("admin.fields.mosaicPosition3")}</li>
+              <li>{t("admin.fields.mosaicPosition4")}</li>
+            </ol>
             <Field
-              label={t("admin.fields.cover")}
+              label={t("admin.fields.mosaicCover")}
               required
               error={err("cover_media_id")}
               fieldPath="cover_media_id"
@@ -499,7 +506,8 @@ export function ServiceForm({
               />
             </Field>
             <Field
-              label={t("admin.fields.gallery")}
+              label={t("admin.fields.mosaicGallery")}
+              hint={t("admin.fields.mosaicGalleryHint")}
               fieldPath="gallery"
               error={
                 Object.entries(errors).find(([path]) =>
