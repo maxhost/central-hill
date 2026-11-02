@@ -92,6 +92,7 @@ const certification = z.object({
  * legacy positions are normalized once, and routes stay on the visitor's locale.
  */
 const contactCard = z.object({
+  image_media_id: optionalImage(AUDIENCE_IMG_HINT).optional(),
   destination: z.enum(["buildings", "owners", "real_estate"]).optional(),
   icon_key: iconKey,
   title: tStr({ max: 120 }),
@@ -122,7 +123,7 @@ export const aboutSchema = z.object({
     mission: tStr({ max: 600 }),
   }),
   story: z.object({
-    eyebrow: tStrOpt({ max: 80 }),
+    eyebrow: adminHidden(tStrOpt({ max: 80 })),
     headline: tStr({ max: 160 }),
     narrative: between(tStr({ max: 1200 }), 1, 8),
     image_media_id: optionalAnimated(SPLIT_IMG_HINT + " Also accepts animated WebP (under 5 MB), MP4/WebM muted loops (6–15 seconds, under 10 MB), and Lottie JSON/dotLottie."),
@@ -131,19 +132,19 @@ export const aboutSchema = z.object({
   }),
   stats: between(stat, 0, 8),
   serve: z.object({
-    eyebrow: tStrOpt({ max: 80 }),
+    eyebrow: adminHidden(tStrOpt({ max: 80 })),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
     audiences: between(iconCard.extend({ image_media_id: optionalImage(AUDIENCE_IMG_HINT) }), 1, 12),
   }),
   values: z.object({
-    eyebrow: tStrOpt({ max: 80 }),
+    eyebrow: adminHidden(tStrOpt({ max: 80 })),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
     items: between(titledItem, 1, 12),
   }),
   organisation: z.object({
-    eyebrow: tStrOpt({ max: 80 }),
+    eyebrow: adminHidden(tStrOpt({ max: 80 })),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
     /** Floating label on the photo (blank = none). */
@@ -155,14 +156,14 @@ export const aboutSchema = z.object({
     departments: between(department, 1, 12),
   }),
   certifications: z.object({
-    eyebrow: tStrOpt({ max: 80 }),
+    eyebrow: adminHidden(tStrOpt({ max: 80 })),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
     /** Variable since S4: 1–12 rows (the 3 legacy rows stay valid). Add/remove in the editor. */
     items: between(certification, 1, 12),
   }),
   community: z.object({
-    eyebrow: tStrOpt({ max: 80 }),
+    eyebrow: adminHidden(tStrOpt({ max: 80 })),
     headline: tStr({ max: 160 }),
     copy: between(tStr({ max: 1200 }), 1, 8),
     image_media_id: optionalAnimated(SPLIT_IMG_HINT + " Also accepts animated WebP (under 5 MB), MP4/WebM muted loops (6–15 seconds, under 10 MB), and Lottie JSON/dotLottie."),
@@ -170,7 +171,7 @@ export const aboutSchema = z.object({
     image_alt: imageAlt("People sharing a meal together at a community table in Lisbon"),
   }),
   contact: z.object({
-    eyebrow: tStrOpt({ max: 80 }),
+    eyebrow: adminHidden(tStrOpt({ max: 80 })),
     headline: tStr({ max: 160 }),
     cards: between(contactCard, 1, 12),
     office_title: tStr({ max: 80 }),

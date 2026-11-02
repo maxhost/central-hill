@@ -1,5 +1,24 @@
 # Local visual refinements — resume after context clear
 
+## Latest checkpoint before clear —2026-11-01
+
+User requested committing About changes before clearing context. Previous local
+checkpoint:a4633ed; the new HEAD commit contains this checkpoint (read git log -1).
+Workspace/main remains the delivery location. Latest change: About contact cards
+now use audience-style PhotoFeatureGrid backgrounds/overlay, with optional
+per-card image selectors in BO, preserved same-tab links/action labels and41
+maximum media references. Seven About section eyebrows are hidden/preserved in
+BO and removed publicly. Story uses50px top/70px bottom; the other six requested
+sections use70px top/bottom. See about-contact-photo-cards.md and ADR0052.
+
+Final Node22 typecheck/lint/build and14 focused About tests pass; lint has seven
+existing unrelated warnings. No automatic visual QA or real BO image save/upload
+against the remote DB. No DB/storage writes, migrations, push or deployment.
+Pre-existing historical task environments/worktrees/cache backups are preserved.
+No pending implementation work; next turn follows the next user request. The
+deferred contact DB task remains deferred. Localhost3071 was last restarted as
+Node22 pnpm dev, session52122/PID95629; verify current listener before acting.
+
 ## Working state and authorization
 
 - Latest local commit request2026-11-01: user authorized committing the15-file
@@ -32,6 +51,24 @@
 - Existing historical task worktrees/previews and their artifacts are preserved.
 
 ## Final implemented behavior
+
+- About contact photo cards aftera4633ed: Let's Start a Conversation reuses
+  PhotoFeatureGrid and the audience section's photo/overlay design, retaining
+  per-card semantic links and action text. Each card has an optional BO image
+  selector; media/preview validation includes its image, capacity41. Old content
+  stays compatible; missing images use existing illustrative audience photos.
+  No DB/storage writes or visual QA. See about-contact-photo-cards.md and ADR0052.
+
+- About spacing aftera4633ed: Story keeps50px top and now70px bottom. Audiences,
+  Values, Organisation, Certifications, Community and Contact each use70px top/
+  bottom at all viewports, scoped to About. Aesthetic L0: user reviews3071;
+  no tests/automatic QA, DB writes or commit.
+
+- About section labels aftera4633ed: remove How We Started, Our Platform,
+  What We Stand For (Values and Certifications), Our Structure, Our Responsibility
+  and Get in Touch from section eyebrows. Hide/preserve the seven schema fields
+  with adminHidden in contextual/legacy BO. Main section titles/content remain.
+  Aesthetic L0: user reviews3071; no tests/automatic QA, DB writes or commit.
 
 - Guides listing spacing afterf70e75f: city catalogue (e.g. Guides for Lisbon),
   Top Recommendations and closing Make It a Stay to Remember each use70px top/

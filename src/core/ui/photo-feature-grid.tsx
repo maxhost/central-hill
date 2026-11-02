@@ -7,6 +7,8 @@ export type PhotoFeatureGridItem = {
   id?: string;
   /** Optional card destination. Navigates in the same tab. */
   href?: string;
+  /** Optional action line beneath a linked card's description; the whole card is one link. */
+  linkLabel?: string;
   /** Caller-built icon element (e.g. a server parent's `<Icon name="car" size={30} />` from
    * `@core/ui/icon`, ADR 0034; same precedent as `IconFeatureGrid`'s `item.icon`). Rendered at
    * 30px, white, with a drop-shadow so it stays legible over any photo. */
@@ -127,6 +129,11 @@ export function PhotoFeatureGrid({
                 {item.title}
               </h3>
               <p className="text-[14.5px] leading-[1.6] text-white/[0.88]">{item.description}</p>
+              {item.href && item.linkLabel ? (
+                <span className="mt-[18px] block text-[14px] font-semibold text-white transition-transform duration-[350ms] group-hover:translate-x-1">
+                  {item.linkLabel}
+                </span>
+              ) : null}
             </div>
           </>;
           return item.href ? (

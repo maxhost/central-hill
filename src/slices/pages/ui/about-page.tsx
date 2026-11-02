@@ -3,7 +3,6 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { MediaImage, type MediaImageData } from "@core/media";
 import {
-  BenefitCards,
   CertificationCards,
   ContactSplit,
   Hero,
@@ -14,7 +13,6 @@ import {
   SectionHead,
   StatBand,
   TwoColumnShowcase,
-  type BenefitCardItem,
   type CertificationCardItem,
   type ContactSplitRow,
 } from "@core/ui";
@@ -30,6 +28,7 @@ import { FaqSection } from "./components/faq-section";
 import { certLogoAlt } from "./about-certifications";
 import { type OfficeRow, officeRows, resolveOfficeLabels } from "./about-office";
 import { orMessage } from "./or-message";
+import { cardBgSrc } from "./optimized-src";
 
 /**
  * About page (`mock/about.html`), fully ported to components. Every string, icon and image comes
@@ -38,7 +37,7 @@ import { orMessage } from "./or-message";
  *
  * Every section uses existing `core/ui` components (consistency over mock fidelity):
  * - Hero: `Hero` with the Buildings listing configuration (as on Guests and Real Estate).
- * - "How We Started" and "Giving Back…": `IntroSplit` (`imagePosition="left"`, `eyebrow`).
+ * - Story and community: `IntroSplit` (`imagePosition="left"`, no section eyebrow).
  * - Company numbers: `StatBand` (up to five columns), whose `CountUp` replaces the page's old
  *   `OwnerStatsCounter`.
  * - "One Platform. Three Audiences.": `SectionHead` + `PhotoFeatureGrid`.
@@ -48,8 +47,8 @@ import { orMessage } from "./or-message";
  *   now one `Reveal` fade).
  * - FAQ: the shared `FaqSection` (only when `faq_group_key` is set); title from `faq.title`
  *   (blank → `pages.faqTitle`).
- * - "Let's Start a Conversation": `SectionHead`, then `BenefitCards` as link cards
- *   (`columns={3}`, per-item semantic destination + `linkLabel`), then `ContactSplit` — the dark office panel
+ * - "Let's Start a Conversation": `SectionHead`, then `PhotoFeatureGrid` as photo link cards
+ *   (per-item semantic destination + image + `linkLabel`), then `ContactSplit` — the dark office panel
  *   (address / bookings and check-in phones / email / website / office hours from company_settings
  *   via `getGlobals`, so they're edited once in /admin/settings; a blank check-in phone or website
  *   hides its row; row labels from `contact.office_labels`, see `./about-office`) beside the
@@ -80,10 +79,15 @@ const AUDIENCE_FALLBACK_IMGS = [
   "https://images.pexels.com/photos/7415097/pexels-photo-7415097.jpeg?auto=compress&cs=tinysrgb&w=1200",
   "https://images.pexels.com/photos/36733412/pexels-photo-36733412.jpeg?auto=compress&cs=tinysrgb&w=1200",
 ] as const;
+const CONTACT_FALLBACK_IMGS = {
+  buildings: AUDIENCE_FALLBACK_IMGS[0],
+  owners: AUDIENCE_FALLBACK_IMGS[1],
+  real_estate: AUDIENCE_FALLBACK_IMGS[2],
+};
 
 // Standard page shell (Real Estate, Guests): padding, 84px scroll margin, 1240px/28px column,
 // and the warm `alt` band.
-const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
+const SECTION_SHELL = "scroll-mt-[84px] py-[70px]";
 const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
 const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
 
@@ -189,12 +193,14 @@ export async function AboutPage({ locale, preview = false, page: injectedPage }:
       description: cert.description,
     };
   });
-  const contactCards: BenefitCardItem[] = c.contact.cards.map((card) => ({
+  const contactCards = c.contact.cards.map((card, i) => ({
+    id: c._list_ids?.["contact.cards"]?.[i],
     icon: <Icon name={card.icon_key} size={30} className="block" />,
     title: card.title,
     description: card.description,
     href: aboutContactHref(card, locale),
     linkLabel: card.link_label,
+    image: cardBgSrc(media[card.image_media_id ?? ""], CONTACT_FALLBACK_IMGS[card.destination ?? "buildings"]),
   }));
 
   return (
@@ -229,12 +235,11 @@ export async function AboutPage({ locale, preview = false, page: injectedPage }:
        * "How We Started": `IntroSplit` with the image on the left. The tighter top padding
        * (50px, it sits right under the hero) is the client tweak the old `#story` rule carried.
        */}
-      <section {...binding("story")} id="story" className="scroll-mt-[84px] pt-[50px] pb-[clamp(72px,10vw,150px)]">
+      <section {...binding("story")} id="story" className="scroll-mt-[84px] pt-[50px] pb-[70px]">
         <div className={SECTION_WRAP}>
           <Reveal label="about-story">
             <IntroSplit
               imagePosition="left"
-              eyebrow={c.story.eyebrow || undefined}
               headline={c.story.headline}
               paragraphs={c.story.narrative}
               image={<AboutMedia media={media[c.story.image_media_id]} fallback={STORY_FALLBACK_SRC} alt={alts.story} />}
@@ -255,7 +260,6 @@ export async function AboutPage({ locale, preview = false, page: injectedPage }:
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
-              eyebrow={c.serve.eyebrow || undefined}
               headline={c.serve.headline}
               intro={c.serve.intro || undefined}
             />
@@ -271,7 +275,6 @@ export async function AboutPage({ locale, preview = false, page: injectedPage }:
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
-              eyebrow={c.values.eyebrow || undefined}
               headline={c.values.headline}
               intro={c.values.intro || undefined}
             />
@@ -286,10 +289,9 @@ export async function AboutPage({ locale, preview = false, page: injectedPage }:
        * "How We Are Organised": `TwoColumnShowcase` with Owners' showcase configuration (the
        * original was already a page-scoped copy of it), on the `alt` band, no CTA.
        */}
-      <div {...binding("organisation")} id="organised" className="scroll-mt-[84px]">
+      <div {...binding("organisation")} id="organised" className="scroll-mt-[84px] [&_section]:py-[70px]">
         <Reveal label="about-organised">
           <TwoColumnShowcase
-            eyebrow={c.organisation.eyebrow || undefined}
             headline={c.organisation.headline}
             body={c.organisation.intro || undefined}
             bullets={departmentBullets}
@@ -307,7 +309,6 @@ export async function AboutPage({ locale, preview = false, page: injectedPage }:
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
-              eyebrow={c.certifications.eyebrow || undefined}
               headline={c.certifications.headline}
               intro={c.certifications.intro || undefined}
             />
@@ -324,7 +325,6 @@ export async function AboutPage({ locale, preview = false, page: injectedPage }:
           <Reveal label="about-community">
             <IntroSplit
               imagePosition="left"
-              eyebrow={c.community.eyebrow || undefined}
               headline={c.community.headline}
               paragraphs={c.community.copy}
               image={<AboutMedia media={media[c.community.image_media_id]} fallback={COMMUNITY_FALLBACK_SRC} alt={alts.community} />}
@@ -344,16 +344,16 @@ export async function AboutPage({ locale, preview = false, page: injectedPage }:
       ) : null}
 
       {/*
-       * "Let's Start a Conversation": `SectionHead`, `BenefitCards` link cards (3 columns), then
+       * "Let's Start a Conversation": `SectionHead`, photo link cards (3 columns), then
        * `ContactSplit` — office details (company_settings) beside the leads `ContactForm`.
        */}
       <section {...binding("contact")} id="contact" className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal>
-            <SectionHead eyebrow={c.contact.eyebrow || undefined} headline={c.contact.headline} />
+            <SectionHead headline={c.contact.headline} />
           </Reveal>
           <Reveal label="about-touch">
-            <BenefitCards items={contactCards} columns={3} />
+            <PhotoFeatureGrid items={contactCards} />
           </Reveal>
           <Reveal label="about-contact">
             <ContactSplit

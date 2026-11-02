@@ -21,6 +21,19 @@ The Home notes below record the pilot; common behavior now covers all five regis
 
 ## Local live preview
 
+About's Let's Start a Conversation now uses PhotoFeatureGrid with the same
+photo/overlay treatment as One Platform. Three Audiences. Each linked card keeps
+its title, description, action label and locale-aware semantic destination, and
+adds an optional BO image selector. Uploaded images override illustrative
+audience-photo fallbacks by destination. Nested media slots/validation cover
+contact.cards[].image_media_id; local media capacity is41 at maximum list sizes.
+Old snapshots remain valid. See `docs/specs/about-contact-photo-cards.md` and ADR0052.
+
+About's story, audiences, values, organisation, certifications, community and
+contact sections omit their small eyebrow labels. The seven corresponding
+`eyebrow` fields are hidden/preserved via adminHidden in both BO editor paths.
+Main titles and section content remain editable.
+
 Guides listing also omits “Local Favourites” and “Your Base in the City”.
 `recommendations.eyebrow` and `final_cta.eyebrow` remain hidden/preserved in BO.
 

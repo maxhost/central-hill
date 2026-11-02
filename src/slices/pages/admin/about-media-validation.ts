@@ -7,6 +7,7 @@ export function aboutMediaReferences(c: AboutContent, og: string | null) {
     ...(["hero", "story", "organisation", "community"] as const).map(section => ({ path: `${section}.image_media_id`, id: c[section].image_media_id, mixed: section !== "hero" })),
     ...c.serve.audiences.map((a, i) => ({ path: `serve.audiences.${i}.image_media_id`, id: a.image_media_id, mixed: false })),
     ...c.certifications.items.map((a, i) => ({ path: `certifications.items.${i}.logo_media_id`, id: a.logo_media_id, mixed: false })),
+    ...c.contact.cards.map((card, i) => ({ path: `contact.cards.${i}.image_media_id`, id: card.image_media_id, mixed: false })),
   ].filter((r): r is typeof r & { id: string } => Boolean(r.id));
 }
 export function aboutMediaErrors(c: AboutContent, og: string | null, assets: ReadonlyMap<string, { mime: string }>) {

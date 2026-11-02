@@ -1,11 +1,19 @@
 # Central Hill agent instructions
 
-## Latest local visual work — 2026-10-31
+## Latest local visual work — 2026-11-01
 
 Before continuing after a context clear, read [session handoff](docs/specs/handoff-visual-refinements-2026-10-31.md).
 Current user requests: local commit before clear; no push/deploy. Aesthetic changes
 are L0, user validates in localhost, no automatic tests/QA. Contact DB update via
 Neon MCP was explicitly deferred; do not resume it without a new request.
+
+Latest arc aftera4633ed: About section labels removed/hidden in BO, section
+spacing adjusted, and Let's Start a Conversation now uses audience-style photo
+cards with independent BO image fields. Read
+[About photo cards](docs/specs/about-contact-photo-cards.md). Node22 typecheck/
+lint/build and14 focused functional tests pass; no automatic visual QA or actual
+BO uploads/saves/DB writes. User requested a local commit before clear; resolve
+the checkpoint commit with git log -1. No push/deploy; next work follows the user.
 
 ## Remaining Pages adapters — local delivery approved
 

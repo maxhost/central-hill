@@ -80,7 +80,7 @@ export const aboutDescriptor: PageEditorialDescriptor = {
   rootNode: describe(aboutSchema),
   textPatterns: translatablePaths(aboutSchema),
   listPaths: [...ABOUT_LIST_PATHS],
-  maxLocalMedia: 29,
+  maxLocalMedia: 41,
   externalSections: [],
   mediaSlots: [
     { path: "hero.image_media_id", kind: "image" },
@@ -89,6 +89,7 @@ export const aboutDescriptor: PageEditorialDescriptor = {
     { path: "community.image_media_id", kind: "mixed" },
     { path: "serve.audiences[].image_media_id", kind: "image" },
     { path: "certifications.items[].logo_media_id", kind: "image" },
+    { path: "contact.cards[].image_media_id", kind: "image" },
   ],
 };
 export const aboutTextPaths = (content: AboutContent): string[] =>

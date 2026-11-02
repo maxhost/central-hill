@@ -18,7 +18,7 @@ import type { PageEnvelope } from "../editorial-types";
 
 const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 
-test("About adapter preserves eight bounded lists, rejects malformed authored metadata and validates 29 media references", () => {
+test("About adapter preserves eight bounded lists, rejects malformed authored metadata and validates 41 media references", () => {
   const content = aboutAdapter.defaultContent();
   assert.equal(aboutSchema.safeParse(content).success, true);
   assert.deepEqual(aboutIdentityErrors(content), {});
@@ -46,15 +46,16 @@ test("About adapter preserves eight bounded lists, rejects malformed authored me
   assert.ok(aboutIdentityErrors(normalizeAbout(malformed))["community.copy"], "Authored metadata holes are never repaired");
   content.serve.audiences = Array.from({ length: 12 }, (_, i) => ({ ...content.serve.audiences[0]!, image_media_id: uuid(i + 5) }));
   content.certifications.items = Array.from({ length: 12 }, (_, i) => ({ ...content.certifications.items[0]!, logo_media_id: uuid(i + 17) }));
+  content.contact.cards = Array.from({ length: 12 }, (_, i) => ({ ...content.contact.cards[0]!, image_media_id: uuid(i + 30) }));
   content.hero.image_media_id = uuid(1);
   content.story.image_media_id = uuid(2);
   content.organisation.image_media_id = uuid(3);
   content.community.image_media_id = uuid(4);
   const og = uuid(29);
   const refs = aboutAdapter.collectMediaReferences(content, og);
-  assert.equal(refs.length, 29);
-  assert.equal(new Set(refs.map(ref => ref.id)).size, 29);
-  assert.equal(aboutDescriptor.maxLocalMedia, 29);
+  assert.equal(refs.length, 41);
+  assert.equal(new Set(refs.map(ref => ref.id)).size, 41);
+  assert.equal(aboutDescriptor.maxLocalMedia, 41);
   const assets = new Map(refs.map(ref => [ref.id, { mime: ref.kind === "mixed" ? "video/mp4" : "image/png" }]));
   assert.deepEqual(aboutAdapter.mediaErrors(content, og, assets), {});
   assets.set(content.hero.image_media_id, { mime: "video/mp4" });
@@ -69,6 +70,7 @@ test("About target preparation follows paragraph, audience and contact identitie
   target.content.story.narrative[0] = "Primer párrafo";
   target.content.serve.audiences[0]!.title = "Huéspedes";
   target.content.contact.cards[0]!.title = "Una estancia";
+  target.content.contact.cards[0]!.image_media_id = uuid(42);
   const template = structuredClone(target);
   for (const path of ["story.narrative", "serve.audiences", "contact.cards"]) {
     (aboutAt(template.content, path) as unknown[]).reverse();
@@ -82,6 +84,7 @@ test("About target preparation follows paragraph, audience and contact identitie
   assert.equal(prepared.content.story.narrative[2], "Primer párrafo");
   assert.equal(prepared.content.serve.audiences[2]!.title, "Huéspedes");
   assert.equal(prepared.content.contact.cards[2]!.title, "Una estancia");
+  assert.equal(prepared.content.contact.cards[2]!.image_media_id, uuid(42));
   assert.equal(aboutTranslationField(prepared.content, "story.narrative.2"), "block:story.narrative.0");
   assert.equal(aboutAudienceImage(undefined, 2, ["photo0", "photo1", "photo2"], prepared.content._list_ids!["serve.audiences"]![2]), "photo0");
   assert.equal(aboutContactHref(prepared.content.contact.cards[2]!, "es"), "/es/buildings");
