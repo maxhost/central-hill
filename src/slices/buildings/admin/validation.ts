@@ -43,9 +43,10 @@ export const buildingSaveInput = z.object({
   booking_enabled: z.boolean(),
   // [T] source values (en):
   name: tStr({ min: 1, max: 160 }),
-  headline: tStr({ min: 1, max: 160 }),
+  // Retired prose fields remain in the payload to preserve legacy content on edit.
+  headline: tStr({ max: 160 }),
   teaser: tStr({ min: 1, max: 200 }),
-  description_intro: tStr({ min: 1, max: 2000 }),
+  description_intro: tStr({ max: 2000 }),
   description_neighbourhood: tStr({ max: 2000 }).nullable(),
   meta_title: tStr({ max: 70 }).nullable(),
   meta_description: tStr({ max: 200 }).nullable(),

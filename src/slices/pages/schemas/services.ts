@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { seoShape, tStrOpt } from "@core/validation/primitives";
 import { fixed, optionalAnimated, optionalIconKey, optionalImage } from "./_shared";
+import { adminHidden } from "./admin-hidden";
 
 const visual = (hint: string) => ({
   media_media_id: optionalAnimated(hint).optional(),
@@ -19,8 +20,9 @@ export const servicesSchema = z.object({
     ...copy,
     ...visual("Landscape 16:9, 1920×1080. Photo ideally under 500 KB; silent MP4 H.264 loop, 10–20 seconds, ideally under 15 MB. Animated WebP and WebM are also supported."),
   }).optional(),
-  intro: z.object(copy).optional(),
-  how_it_works: z.object({
+  intro: z.object({ ...copy, eyebrow: adminHidden(copy.eyebrow) }).optional(),
+  /** Removed public section; retain legacy content without exposing editor controls. */
+  how_it_works: adminHidden(z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStrOpt({ max: 200 }),
     items: fixed(z.object({
@@ -28,9 +30,10 @@ export const servicesSchema = z.object({
       title: tStrOpt({ max: 160 }),
       body: tStrOpt({ max: 600 }),
     }), 3).meta({ fixed_order: true }).optional(),
-  }).optional(),
+  }).optional()),
   final_cta: z.object({
     ...copy,
+    eyebrow: adminHidden(copy.eyebrow),
     ...visual("Portrait 4:5, 1200×1500. Photo ideally under 500 KB; silent MP4 H.264 loop, 6–15 seconds, ideally under 10 MB; animated WebP ideally under 5 MB. WebM is also supported."),
     cta_label: tStrOpt({ max: 80 }),
     contact_note: tStrOpt({ max: 240 }),

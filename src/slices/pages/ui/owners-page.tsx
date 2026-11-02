@@ -4,11 +4,9 @@ import { notFound } from "next/navigation";
 import { MediaImage } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import {
-  CalloutBand,
   EditorialSplit,
   FeatureCtaBand,
   Hero,
-  PricingCards,
   Reveal,
   StatBand,
   StepGallery,
@@ -21,10 +19,12 @@ import { ownersFallbackIndex } from "../owners-content";
 import { FaqSection } from "./components/faq-section";
 import { ownersFinalContactLine } from "./contact-line";
 import { OwnerEstimateForm } from "./components/owner-estimate-form";
+import { OwnersPlanPicker } from "./components/owners-plan-picker";
 import { sideMedia } from "./components/side-media";
 import { TestimonialsRow } from "./components/testimonials-row";
 import { orMessage, orNamedMessage } from "./or-message";
 import { statBandColumns, statFigureCells } from "./stat-figure-value";
+import { planPercentage } from "./plan-percentage";
 
 // Benefit icons are each item's admin-editable `icon_key`, rendered by `core/ui` `<Icon>`
 // (inline Iconoir SVG, ADR 0034).
@@ -55,7 +55,7 @@ const HERO_FALLBACK_ALT = "Bright, designer-furnished Lisbon apartment interior"
  * Handled") and `dashboard` ("Always in Sight") use the home's Image-Showcase layout (4 benefit
  * highlights + CTA beside a 4:5 image with a floating badge) — `dashboard` mirrored with the
  * image on the left; `journey` ("Your growth path") uses `core/ui`'s `StepGallery`; the closing
- * CTA ("Start Earning More Today") uses `core/ui`'s `FeatureCtaBand`, editable via `final_cta`
+ * CTA ("Ready to Make Your Property Work for You?") uses `core/ui`'s `FeatureCtaBand`, editable via `final_cta`
  * (spec owners-admin-editor S6); `testimonials` is the shared <TestimonialsRow>
  * marquee (the home "Partners & Guests" carousel). Marketing sections are mirrored in the owners
  * schema (editor-ready, drizzle 0005→0007).
@@ -115,6 +115,19 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
   const { content, media } = page;
   const binding = (id: string) => preview ? { "data-editor-binding": id } : {};
   const { hero, earnings_form, stats, why, services, plans, journey, dashboard } = content;
+  const estimateFormCopy = {
+    badge: earnings_form.badge,
+    headline: earnings_form.headline,
+    subheadline: earnings_form.subheadline,
+    ctaLabel: earnings_form.cta_label,
+    note: earnings_form.note,
+    contactTitle: earnings_form.contact_step?.title,
+    contactLede: earnings_form.contact_step?.lede,
+    submitLabel: earnings_form.contact_step?.submit_label,
+    backLabel: earnings_form.contact_step?.back_label,
+    doneTitle: earnings_form.done_step?.title,
+    doneBody: earnings_form.done_step?.body,
+  };
   const faqGroupKey = content.faq_group_key ?? "";
   // Optional copy overrides (spec owners-admin-editor S2): blank / absent → today's i18n message.
   const contact = hero.contact;
@@ -232,17 +245,7 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
         }
         aside={
           <PreviewBinding preview={preview} id="earnings_form"><OwnerEstimateForm
-            badge={earnings_form.badge}
-            headline={earnings_form.headline}
-            subheadline={earnings_form.subheadline}
-            ctaLabel={earnings_form.cta_label}
-            note={earnings_form.note}
-            contactTitle={earnings_form.contact_step?.title}
-            contactLede={earnings_form.contact_step?.lede}
-            submitLabel={earnings_form.contact_step?.submit_label}
-            backLabel={earnings_form.contact_step?.back_label}
-            doneTitle={earnings_form.done_step?.title}
-            doneBody={earnings_form.done_step?.body}
+            {...estimateFormCopy}
           /></PreviewBinding>
         }
       /></PreviewBinding>
@@ -256,7 +259,7 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
        * (the header's Owners menu links to it). The optional editable title falls back to
        * localized copy, using the same heading treatment as Home.
        */}
-      <div {...binding("stats")} id="numbers" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("stats")} id="numbers" className="[&_section]:py-[70px]" style={{ scrollMarginTop: 130 }}>
         {statCells.length > 0 ? (
           <Reveal label="owners-stats">
             <StatBand
@@ -276,7 +279,7 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
        * (`#numbers`/`#testimonials`/`#faq`) rather than the component's own generic anchor,
        * to match this page's 130px fixed-nav offset.
        */}
-      <div {...binding("why")} id="why" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("why")} id="why" className="[&_section]:py-[70px]" style={{ scrollMarginTop: 130 }}>
         <EditorialSplit
           headline={why.headline}
           body={why.subheadline}
@@ -295,7 +298,7 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
        * `<GuestsSection>` — unlike `EditorialSplit`, nothing here needs `position:sticky`, so
        * there's no reason to wire the animation inside the component itself.
        */}
-      <div {...binding("services")} id="services" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("services")} id="services" className="[&_section]:py-[70px]" style={{ scrollMarginTop: 130 }}>
         <Reveal label="owners-services">
           <TwoColumnShowcase
             headline={services.headline}
@@ -320,25 +323,26 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
         </Reveal>
       </div>
       {/*
-       * "A management plan built around your goals" — `core/ui`'s new `PricingCards`, with
-       * the "Not sure which plan fits?" band slotted into its `footer` prop so it keeps the
-       * original's tight `mt-20` coupling (both sit inside `PricingCards`' own Section —
-       * see that component's docstring for why `CalloutBand` itself stays un-sectioned).
-       * The "Choose <plan>"/helper CTA `href`s are `#`, matching the original markup exactly
-       * (the schema's `planHelper.cta.url` field exists but was never actually wired to the
-       * href there either — preserved as-is, not silently fixed).
+       * "A management plan built around your goals" — PricingCards with a live fee summary
+       * summing the percentages displayed on the selected cards.
+       * Choose buttons select one of the first two base plans and independently toggle
+       * the remaining extras. The summary CTA opens the hero wizard in a package-aware modal.
        */}
-      <div {...binding("plans")} id="plans" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("plans")} id="plans" className="[&_section]:py-[70px]" style={{ scrollMarginTop: 130 }}>
         <Reveal label="owners-plans">
-          <PricingCards
+          <OwnersPlanPicker
+            form={estimateFormCopy}
             headline={plans.headline}
             body={plans.subheadline}
             popularLabel={orMessage(plans.popular_label, t("owners.popular"))}
-            tiers={plans.tiers.map((tier) => ({
+            tiers={plans.tiers.map((tier, index) => ({
               name: tier.name,
               tag: tier.tag,
               cornerBadge: tier.corner_badge,
               isPopular: tier.is_popular,
+              separatorBefore: index >= 2 ? <Icon name="plus" size={24} /> : undefined,
+              selectionMode: index < 2 ? "single" : "multiple",
+              feePercent: planPercentage(tier.corner_badge),
               features: tier.features,
               cta: {
                 href: "#",
@@ -347,11 +351,17 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
                 ),
               },
             }))}
-            footer={plans.helpers.map((h, i) =>
-              h.cta ? (
-                <CalloutBand key={i} title={h.title} body={h.copy} cta={{ href: "#", label: `${h.cta.label} →` }} />
-              ) : null,
-            )}
+            summary={{
+              title: t("owners.planTotal"),
+              description: t("owners.planServiceFee"),
+              emptyLabel: t("owners.planSelectPackages"),
+              unavailableLabel: t("owners.planFeeUnavailable"),
+              locale,
+              cta: {
+                href: "#worth",
+                label: plans.helpers[0]?.cta?.label?.trim() || t("owners.plansCta"),
+              },
+            }}
           />
         </Reveal>
       </div>
@@ -360,7 +370,7 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
        * 1:1 from the old `.mk`-scoped CSS (`.steps`/`.step`/`.step-img`/`.step-scrim`/`.snum`,
        * now deleted along with the rest of `OWNERS_STYLE`/the `.mk` wrapper/`ScrollReveal`).
        */}
-      <div {...binding("journey")} id="journey" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("journey")} id="journey" className="[&_section]:py-[70px]" style={{ scrollMarginTop: 130 }}>
         <Reveal label="owners-journey">
           <StepGallery headline={journey.headline} body={journey.subheadline} items={journeyItems} tone="alt" />
         </Reveal>
@@ -370,7 +380,7 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
        * mirrored (`imagePosition="left"`). This was the last `.owner-showcase` raw-HTML user,
        * so that CSS block is gone from `OWNERS_STYLE` entirely now.
        */}
-      <div {...binding("dashboard")} id="technology" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("dashboard")} id="technology" className="[&_section]:py-[70px]" style={{ scrollMarginTop: 130 }}>
         <Reveal label="owners-dashboard">
           <TwoColumnShowcase
             headline={dashboard.headline}
@@ -399,7 +409,7 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
        * anchor + scroll offset the header's Owners section menu links to. The FAQ group is
        * editable per page (`faq_group_key`); blank/empty → nothing renders.
        */}
-      <div {...binding("testimonials")} id="testimonials" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("testimonials")} id="testimonials" className="[&_section]:py-[70px]" style={{ scrollMarginTop: 130 }}>
         <TestimonialsRow
           locale={locale}
           showEyebrow={false}
@@ -407,7 +417,7 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
         />
       </div>
       {faqGroupKey ? (
-        <div {...binding("faq")} id="faq" style={{ scrollMarginTop: 130 }}>
+        <div {...binding("faq")} id="faq" className="[&_section]:py-[70px]" style={{ scrollMarginTop: 130 }}>
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
@@ -418,15 +428,14 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
       {/*
        * Closing band — `core/ui`'s `FeatureCtaBand` (ported 1:1 from the old `.mk`-scoped
        * `.cta-band`/`.cta-wrap` CSS; see its docstring for why it isn't `TwoColumnShowcase`).
-       * Editable via `final_cta` (spec owners-admin-editor S6): blank eyebrow / headline / body /
-       * button → `pages.owners.finalEyebrow` / `finalTitle` / `finalCopy` / `finalCta` (the
+       * Editable via `final_cta` (spec owners-admin-editor S6): blank headline / body /
+       * button → `pages.owners.finalTitle` / `finalCopy` / `finalCta` (the
        * " →" is added here; the button always targets `#worth`); blank contact line → built
        * from Settings ("Call {phone} · email · WhatsApp …"); no image asset → the Pexels photo.
        */}
-      <div {...binding("final_cta")} id="start" style={{ scrollMarginTop: 130 }}>
+      <div {...binding("final_cta")} id="start" className="[&_section]:py-[70px]" style={{ scrollMarginTop: 130 }}>
         <Reveal label="owners-cta">
           <FeatureCtaBand
-            eyebrow={orMessage(finalCta?.eyebrow, t("owners.finalEyebrow"))}
             headline={orMessage(finalCta?.headline, t("owners.finalTitle"))}
             body={orMessage(finalCta?.body, t("owners.finalCopy"))}
             cta={{ href: "#worth", label: `${orMessage(finalCta?.cta_label, t("owners.finalCta"))} →` }}

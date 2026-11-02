@@ -1001,6 +1001,10 @@
       }
     },
     "subnav": {
+      "guests": {
+        "services": "Servicios y experiencias para huéspedes",
+        "guides": "Qué hacer: lo mejor y nuestras recomendaciones"
+      },
       "realEstate": {
         "top": "Alianzas Inmobiliarias",
         "partners": "Nuestros Socios",
@@ -1136,6 +1140,10 @@
       "next": "Reseñas siguientes",
       "eyebrow": "Reseñas"
     },
+    "guidesCarousel": {
+      "prev": "Guías anteriores",
+      "next": "Más guías"
+    },
     "servicesCarousel": {
       "prev": "Servicios anteriores",
       "next": "Más servicios",
@@ -1176,6 +1184,10 @@
       "journeyEyebrow": "Tu Camino de Crecimiento",
       "dashboardEyebrow": "Visibilidad Total desde Cualquier Lugar",
       "choosePlan": "Elegir {name}",
+      "planTotal": "Total",
+      "planServiceFee": "Tarifa de servicio",
+      "planSelectPackages": "Selecciona tus paquetes",
+      "planFeeUnavailable": "Consúltanos la tarifa",
       "finalEyebrow": "Empieza a Ganar Más Hoy",
       "finalTitle": "¿Listo para Hacer que Tu Propiedad Trabaje para Ti?",
       "finalCopy": "Únete al creciente número de propietarios en Portugal que confían en Central Hill Apartments para ofrecer resultados excepcionales. Empieza con un análisis de rentabilidad gratuito y sin compromiso.",
@@ -1204,6 +1216,9 @@
       "calcCta": "Calcular Mis Ingresos"
     },
     "estimateForm": {
+      "selectedPackages": "Paquetes seleccionados:",
+      "noPackagesSelected": "Ningún paquete seleccionado",
+      "closeDialog": "Cerrar formulario",
       "addressLabel": "Dirección de la Propiedad",
       "addressPlaceholder": "Calle, barrio, ciudad",
       "propertiesLabel": "Nº de Propiedades",
@@ -1236,6 +1251,8 @@
       "welcomeAlt": "Interior luminoso y de diseño de un apartamento Central Hill"
     },
     "realEstate": {
+      "marketImageLeftAlt": "Tejados y edificios históricos de Lisboa",
+      "marketImageRightAlt": "Vista aérea de Lisboa, Portugal",
       "metaTitle": "Alianzas Inmobiliarias — Central Hill",
       "metaDescription": "Central Hill Apartments es el socio de gestión hotelera de fondos de inversión, promotores inmobiliarios, operadores a gran escala y clientes corporativos que buscan rentabilidades de nivel institucional para sus activos en Portugal.",
       "partnersEyebrow": "Con Quién Trabajamos",
@@ -1426,13 +1443,13 @@
           "buildingsGrid": "Las tarjetas de edificios vienen de Edificios.",
           "ownerPanel": "El botón lleva a la calculadora de ganancias. Deja la línea de contacto en blanco para generarla desde Ajustes.",
           "realEstateHero": "El botón 2 descarga el PDF; sin PDF, baja hasta el formulario de contacto.",
-          "processSteps": "Los números de los pasos siguen el orden.",
+          "processSteps": "Edita la foto, el texto alternativo, el título y la descripción de cada paso. Los números siguen el orden.",
           "dealStructuresFeatured": "Una tarjeta destacada sin texto en la etiqueta muestra “Recomendado”.",
           "dealEnquiry": "El email, el teléfono y LinkedIn vienen de Ajustes. Los campos del formulario son fijos y se traducen automáticamente. El formulario aún no envía solicitudes.",
           "ctaBuildings": "El botón siempre abre Edificios.",
           "guestPortfolio": "Las propiedades vienen de Edificios (destacados). El botón siempre abre Edificios.",
-          "ctaServices": "El botón siempre abre Servicios.",
-          "ctaGuides": "El botón siempre abre Guías.",
+          "ctaServices": "Las tarjetas se sincronizan con los servicios publicados: título, descripción, imagen y enlace. Gestiona las tarjetas en Servicios. El botón de la sección abre Servicios.",
+          "ctaGuides": "Las tarjetas se sincronizan con las guías publicadas: título, descripción, imagen y enlace. Gestiona las tarjetas en Guías. Descubrir más abre el listado completo de Guías.",
           "guestTestimonials": "Las reseñas vienen de Testimonios (público Huésped).",
           "guestDualCta": "El botón del huésped siempre abre Edificios; el del propietario abre el formulario de contacto. La línea de contacto viene de Ajustes.",
           "aboutStats": "Añade o elimina cifras. Sin cifras se oculta la franja.",

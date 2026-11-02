@@ -21,12 +21,14 @@ Slice services.
 
 ## Routes (App Router, ISR)
 
-- `/[locale]/services` — React composition of the Pages contract's four editable editorial
-  sections (hero, catalogue introduction, three How it works steps and closing CTA), around
+- `/[locale]/services` — React composition of the Pages contract's editable editorial
+  sections (hero, catalogue introduction and closing CTA), around
   this slice's published service cards. Edit page copy, icons, media/posters and SEO at
   `/admin/pages/services`; catalogue cards and categories stay in this slice's admin.
   Blank overrides preserve `services.*` messages and Settings icons/contact details.
   Reads retain `service-list`, `page:services` and Settings cache dependencies.
+  The catalogue intro eyebrow and complete How It Works section were removed
+  from public output and BO; legacy content remains hidden/preserved in Pages.
 - `/[locale]/services/[slug]` — detail (`ui/service-detail.tsx`): the approved
   `mock/service-detail.html` — ONE fixed skeleton for every service — fully componentised (no
   `.mk`/`mock.css`) and **DB-driven** via `getServiceBySlug(locale, slug)`:

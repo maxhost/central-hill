@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
-import { Container, Reveal, Section } from "@core/ui";
+import { Container, Section } from "@core/ui";
 import {
   BuildingsCalculator,
   BuildingsHero,
@@ -63,20 +63,17 @@ export async function BuildingsListing({ locale, page: injectedPage, preview = f
       {/*
        * Real JSX — the building grid, `./components/building-listing-card.tsx`'s
        * `BuildingListingCard` (the locked `.pcard` design, ported to Tailwind) inside
-       * `core/ui`'s `Section`/`Container`, wrapped in one `<Reveal>` (the simplification
-       * already used for every other migrated section's entrance animation this session,
-       * e.g. Owners' `StepGallery`/`StatBand` — not a per-card stagger).
+       * `core/ui`'s `Section`/`Container`. The catalogue is visible on initial load;
+       * the surrounding editorial sections retain their own reveal animations.
        */}
-      <Section {...(preview ? { "data-editor-binding": "catalogue" } : {})}>
+      <Section className="py-[60px]!" {...(preview ? { "data-editor-binding": "catalogue" } : {})}>
         <Container>
           {buildings.length > 0 ? (
-            <Reveal label="buildings-grid">
-              <div className="grid grid-cols-1 gap-[26px] min-[681px]:grid-cols-2 min-[981px]:grid-cols-3">
-                {buildings.map((b) => (
-                  <BuildingListingCard key={b.id} building={b} locale={locale} />
-                ))}
-              </div>
-            </Reveal>
+            <div className="grid grid-cols-1 gap-[26px] min-[681px]:grid-cols-2 min-[981px]:grid-cols-3">
+              {buildings.map((b) => (
+                <BuildingListingCard key={b.id} building={b} locale={locale} />
+              ))}
+            </div>
           ) : (
             <p className="text-ink-soft">{t("empty")}</p>
           )}

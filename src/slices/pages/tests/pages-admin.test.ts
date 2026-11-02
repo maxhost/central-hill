@@ -731,12 +731,14 @@ test("real estate layout + labels: every i18n key exists in the 4 locales", () =
 
 // ── Real Estate showcase media (spec real-estate-admin-editor S3) ────────────
 
-test("realEstateSchema media accepts: capabilities/asset_management animated (4:5 hint), hero image — S3", () => {
+test("realEstateSchema media accepts: capabilities animated; old asset side media hidden; six card images editable", () => {
   const root = describe(realEstateSchema);
   const hero = nodeAt(root, ["hero", "image_media_id"]);
   assert.ok(hero.kind === "media" && hero.accept === "image");
   for (const section of ["capabilities", "asset_management"]) {
-    const node = nodeAt(root, [section, "image_media_id"]);
+    const field = nodeAt(root, [section, "image_media_id"]);
+    if (section === "asset_management") assert.equal(field.kind, "hidden");
+    const node = field.kind === "hidden" ? field.node : field;
     assert.equal(node.kind, "media", section);
     if (node.kind !== "media") continue;
     assert.equal(node.accept, "animated", section);
@@ -745,6 +747,8 @@ test("realEstateSchema media accepts: capabilities/asset_management animated (4:
   }
   const caps = nodeAt(root, ["capabilities", "image_media_id"]);
   assert.match(caps.kind === "media" ? caps.hint ?? "" : "", /LEFT/);
+  const cardImage = nodeAt(root, ["asset_management", "benefits", "[]", "image_media_id"]);
+  assert.ok(cardImage.kind === "media" && cardImage.accept === "image");
 });
 
 test("realEstateSchema: capabilities/asset_management media still accept \"\" and a uuid — S3", () => {

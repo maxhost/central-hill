@@ -13,6 +13,7 @@ import {
   SectionHead,
   StatBento,
   StatTiles,
+  StepGallery,
   TwoColumnShowcase,
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
@@ -24,6 +25,8 @@ import {
   defaultTrackRecord,
 } from "../schemas/real-estate";
 import { DealEnquirySection } from "./components/deal-enquiry-section";
+import { AssetTypeCards } from "./components/asset-type-cards";
+import { realEstateAssetFallbackIndex, realEstateProcessFallbackIndex } from "../real-estate-content";
 import { FaqSection } from "./components/faq-section";
 import { SIDE_MEDIA_CLASS, sideMedia } from "./components/side-media";
 import { capabilityStatementHref } from "./capability-statement";
@@ -39,12 +42,10 @@ import { orMessage } from "./or-message";
  * Sections, top to bottom:
  * - `#top`: `Hero` (compact, centred) with Buildings' listing-hero configuration. The hero image
  *   is the LCP element.
- * - `#partners` and `#process`: `EditorialSplit` with Owners' `#why` configuration. It has its
- *   own internal `Reveal`s. `#process` passes zero-padded step numbers through the items' `icon`
- *   slot.
- * - `#capabilities` (`tone="alt"`, media left) and `#manage`: `TwoColumnShowcase` with Owners'
- *   `#technology`/`#services` configuration. Their side media (photo, animated WebP, video loop or
- *   Lottie) go through the shared `sideMedia()`, as on Owners, with the stock photo as fallback.
+ * - `#partners`: `EditorialSplit` with Owners' `#why` configuration and internal `Reveal`s.
+ * - `#process`: Owners' `StepGallery` with editable photos and an enquiry CTA underneath.
+ * - `#capabilities` (`tone="alt"`, media left): `TwoColumnShowcase` with a single-column list.
+ * - `#manage`: six AssetTypeCards with independently editable images, icons and copy.
  * - `#deal-structures` (centred head, warm `alt` band), `#market` and `#track-record` (`alt`
  *   band): `SectionHead` above `ChecklistCards` (plus the disclaimer note), `StatBento` and
  *   `StatTiles` respectively. Each sits in a hand-written section shell that keeps the mock's
@@ -69,10 +70,19 @@ import { orMessage } from "./or-message";
 // `real-estate-admin-editor` S2: `pages.realEstate.heroAlt` / `capabilitiesAlt` / `assetsAlt`.
 const HERO_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1585208798174-6cedd86e019a?auto=format&fit=crop&w=1900&q=70";
-const ASSET_FALLBACK_IMG =
-  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1400&q=72";
+// Temporary illustrative images; each card's BO image overrides its own fallback.
+const ASSET_FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=72",
+  "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=900&q=72",
+  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=72",
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=72",
+  "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=900&q=72",
+  "https://images.unsplash.com/photo-1555881400-74d7acaacd8b?auto=format&fit=crop&w=900&q=72",
+];
 const CAP_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=72";
+// Illustrative stock photos, matching Owners' growth-path gallery until BO images are set.
+const PROCESS_FALLBACK_PHOTOS = ["259962", "3182812", "210265", "271624", "313782"];
 
 // `#capabilities`/`#manage`'s side media (spec real-estate-admin-editor S3): photo, animated WebP,
 // MP4/WebM loop or Lottie in the fixed 4:5 frame via the shared `sideMedia()` — the element Home's
@@ -99,15 +109,9 @@ function showcaseMedia(m: PageMedia | undefined, fallbackSrc: string, fallbackAl
 // Shell shared by `#deal-structures`/`#market`/`#track-record`: the mock's `section` padding and
 // 84px scroll margin, its 1240px/28px `.wrap` column, and its warm `.alt` band (the same
 // `color-mix` formula `TwoColumnShowcase`/`StepGallery` use).
-const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
+const SECTION_SHELL = "scroll-mt-[84px] py-[70px]";
 const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
 const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
-
-// `#process`'s step-number marker, passed through `EditorialSplit`'s `items[].icon` slot in
-// place of an icon: the old `.mk .process-split .pitch-list .snum` (`flex:0 0 auto; width:44px;
-// font-family:var(--serif); font-size:30px; line-height:1; color:var(--accent); opacity:.9;
-// margin-top:-2px`) in theme tokens only.
-const STEP_NUMBER_CLASS = "-mt-0.5 w-11 flex-none font-serif text-3xl leading-none text-accent opacity-90";
 
 // Bullet icons for both `TwoColumnShowcase` sections (`#capabilities`, `#manage`) — Owners'
 // exact `TwoColumnShowcase` bullet-icon config (26px, `mt-0.5`, accent-deep). Like every benefit
@@ -133,9 +137,38 @@ export async function RealEstatePage({ locale, preview = false, page: injectedPa
   const binding = (id: string) => preview ? { "data-editor-binding": id } : {};
   const heroFallbackAlt = t("realEstate.heroAlt");
   const capFallbackAlt = t("realEstate.capabilitiesAlt");
-  const assetFallbackAlt = t("realEstate.assetsAlt");
   const faqGroupKey = content.faq_group_key ?? "";
   const market = content.market;
+  const marketImages = (
+    <div className="grid grid-cols-2 gap-3">
+      {([ ["left", "6391897", "marketImageLeftAlt"], ["right", "16343720", "marketImageRightAlt"] ] as const).map(([side, photo, altKey]) => {
+        const path = `market.fundamentals.image_${side}_media_id`;
+        const image = media[market.fundamentals[`image_${side}_media_id`] ?? ""];
+        const isImage = image && (image.mime ?? "image/").startsWith("image/");
+        const alt = market.fundamentals[`image_${side}_alt`]?.trim() || image?.alt || (isImage ? market.fundamentals.title : t(`realEstate.${altKey}`));
+        return (
+          <div key={side} {...binding(path)} className="h-[110px] overflow-hidden rounded-[6px] min-[681px]:h-[130px]">
+            {isImage && image.width > 0 && image.height > 0 ? (
+              <MediaImage
+                data={{ ...image, alt }}
+                className="h-full w-full object-cover"
+                sizes="(max-width: 980px) 50vw, 320px"
+                unoptimized={image.mime === "image/webp"}
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element -- temporary Pexels photo or dimensionless asset
+              <img
+                src={(isImage ? image.url : undefined) || `https://images.pexels.com/photos/${photo}/pexels-photo-${photo}.jpeg?auto=compress&cs=tinysrgb&w=640&h=320&fit=crop`}
+                alt={alt}
+                loading="lazy"
+                className="h-full w-full object-cover"
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
   const trackRecord = content.track_record ?? defaultTrackRecord;
   const dealStructures = content.deal_structures ?? defaultDealStructures;
   const hero = content.hero;
@@ -151,21 +184,67 @@ export async function RealEstatePage({ locale, preview = false, page: injectedPa
   }));
   // Same default-copy fallback `#process` always had (`content.process ?? defaultProcess`).
   const howItWorks = content.process ?? defaultProcess;
-  const processItems = howItWorks.steps.map((s, i) => ({
-    icon: (
-      <span className={STEP_NUMBER_CLASS} aria-hidden>
-        {String(i + 1).padStart(2, "0")}
-      </span>
-    ),
-    title: s.title,
-    description: s.description,
-  }));
+  const processItems = howItWorks.steps.map((step, index) => {
+    const image = media[step.image_media_id ?? ""];
+    const isImage = image && (image.mime ?? "image/").startsWith("image/");
+    const alt = step.image_alt?.trim() || image?.alt || step.title;
+    const photo = PROCESS_FALLBACK_PHOTOS[realEstateProcessFallbackIndex(content, index) % PROCESS_FALLBACK_PHOTOS.length];
+    const imageClass = "absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-in-out motion-safe:group-hover:scale-[1.06]";
+    return {
+      title: step.title,
+      description: step.description,
+      image: isImage && image.width > 0 && image.height > 0 ? (
+        <MediaImage
+          data={{ ...image, alt }}
+          className={imageClass}
+          sizes="(max-width: 680px) 100vw, (max-width: 980px) 50vw, 20vw"
+          unoptimized={image.mime === "image/webp"}
+        />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element -- same temporary stock photos as Owners, or dimensionless uploaded image
+        <img
+          src={(isImage ? image.url : undefined) || `https://images.pexels.com/photos/${photo}/pexels-photo-${photo}.jpeg?auto=compress&cs=tinysrgb&w=900`}
+          alt={alt}
+          className={imageClass}
+          loading="lazy"
+          decoding="async"
+        />
+      ),
+    };
+  });
   // `capabilities` is newer than the original seed — fall back to the approved default copy
   // so a `real_estate` row authored before this section existed still renders correctly.
   const capabilities = content.capabilities ?? defaultCapabilities;
   const capMedia = media[capabilities.image_media_id ?? ""];
   const assets = content.asset_management;
-  const assetMedia = media[assets.image_media_id ?? ""];
+  const assetCards = assets.benefits.map((item, index) => {
+    const image = media[item.image_media_id ?? ""];
+    const isImage = image && (image.mime ?? "image/").startsWith("image/");
+    const imageClass = "absolute inset-0 -z-20 h-full w-full object-cover";
+    const alt = item.image_alt?.trim() || image?.alt || item.title;
+    return {
+      id: content._list_ids?.["asset_management.benefits"]?.[index] ?? `legacy_${index}`,
+      title: item.title,
+      description: item.description,
+      icon: <Icon name={item.icon_key} size={28} />,
+      image: isImage && image.width > 0 && image.height > 0 ? (
+        <MediaImage
+          data={{ ...image, alt }}
+          className={imageClass}
+          sizes="(max-width: 680px) 100vw, (max-width: 980px) 50vw, 400px"
+          unoptimized={image.mime === "image/webp"}
+        />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element -- temporary external photo or dimensionless asset
+        <img
+          src={(isImage ? image.url : undefined) || ASSET_FALLBACK_IMAGES[realEstateAssetFallbackIndex(content, index)] || ASSET_FALLBACK_IMAGES[0]}
+          alt={alt}
+          loading="lazy"
+          className={imageClass}
+        />
+      ),
+    };
+  });
 
   return (
     <>
@@ -203,7 +282,7 @@ export async function RealEstatePage({ locale, preview = false, page: injectedPa
         compact
         align="center"
         overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.5)_0%,rgba(18,16,13,0.46)_45%,rgba(18,16,13,0.88)_100%)]"
-        wrapClassName="mx-auto max-w-[1600px] p-10"
+        wrapClassName="mx-auto max-w-[1600px] px-10 pb-10 pt-[60px]"
         copyClassName="max-w-none"
         headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
         subtitleClassName="mt-5 max-w-[60ch] text-lg"
@@ -242,7 +321,7 @@ export async function RealEstatePage({ locale, preview = false, page: injectedPa
        * 1240px/28px `.wrap`. The entrance animation is `EditorialSplit`'s own internal `Reveal`s (sticky-safe), so no call-site `Reveal`.
        * `#deal-structures` below is the secondary CTA's target.
        */}
-      <div {...binding("partners")} id="partners" className="scroll-mt-[84px]">
+      <div {...binding("partners")} id="partners" className="scroll-mt-[84px] [&_section]:py-[70px]">
         <EditorialSplit
           headline={partners.headline}
           body={partners.subheadline}
@@ -270,7 +349,7 @@ export async function RealEstatePage({ locale, preview = false, page: injectedPa
        * `#deal-enquiry` anchor and renders only with a label; the badge is the CTA note. The
        * wrapper keeps the `id` with this page's 84px scroll offset.
        */}
-      <div {...binding("capabilities")} id="capabilities" className="scroll-mt-[84px]">
+      <div {...binding("capabilities")} id="capabilities" className="scroll-mt-[84px] [&_ul]:grid-cols-1 [&_section]:py-[70px]">
         <Reveal label="real-estate-capabilities">
           <TwoColumnShowcase
             headline={capabilities.headline}
@@ -296,37 +375,10 @@ export async function RealEstatePage({ locale, preview = false, page: injectedPa
           />
         </Reveal>
       </div>
-      {/*
-       * "Asset Types" (`#manage`, SECTION 4): `core/ui`'s
-       * existing `TwoColumnShowcase` with Owners' exact `#services` configuration (same role,
-       * and the old `.asset-showcase` CSS was byte-identical to Owners' `.owner-showcase`) — the
-       * user's call: consistency with Owners over 1:1 fidelity to this page's mock. Wrapped in
-       * `Reveal` at the call site, same as Owners. Still DB-driven (`asset_management`); the CTA
-       * keeps the original hard-wired `#deal-enquiry` anchor, renders only with a label, and the
-       * floating badge is the CTA note (shown only when there is one), exactly as before. The
-       * wrapper keeps the `id` the header's "What We Manage" link targets, with this page's own
-       * 84px scroll offset (the mock `section`'s `scroll-margin-top`). Its icons share
-       * `#capabilities`' `showcaseIcon`.
-       */}
+      {/* Six asset-type cards with independently editable background, icon and copy. */}
       <div {...binding("asset_management")} id="manage" className="scroll-mt-[84px]">
         <Reveal label="real-estate-manage">
-          <TwoColumnShowcase
-            headline={assets.headline}
-            body={assets.subheadline || undefined}
-            bullets={assets.benefits.map((b) => ({
-              icon: showcaseIcon(b.icon_key),
-              title: b.title,
-              description: b.description,
-            }))}
-            cta={
-              assets.cta.label
-                ? { href: "#deal-enquiry", label: `${assets.cta.label} →`, note: assets.cta.note }
-                : undefined
-            }
-            badge={assets.cta.note || undefined}
-            imagePosition="right"
-            image={showcaseMedia(assetMedia, ASSET_FALLBACK_IMG, assetFallbackAlt)}
-          />
+          <AssetTypeCards headline={assets.headline} body={assets.subheadline || undefined} items={assetCards} cta={assets.cta} preview={preview} />
         </Reveal>
       </div>
       {/*
@@ -380,6 +432,7 @@ export async function RealEstatePage({ locale, preview = false, page: injectedPa
           <Reveal>
             <StatBento
               feature={{
+                media: marketImages,
                 title: market.fundamentals.title,
                 stats: market.stats,
                 paragraphs: market.fundamentals.body,
@@ -410,21 +463,17 @@ export async function RealEstatePage({ locale, preview = false, page: injectedPa
           </Reveal>
         </div>
       </section>
-      {/*
-       * "How it works" (`#process`, SECTION 8 — "A Structured Path…") — `core/ui`'s
-       * `EditorialSplit`, configured exactly like `#partners` above (wrapper `id` with this
-       * page's `scroll-mt-[84px]`, headline/body/items, `→`-suffixed primary CTA →
-       * `#deal-enquiry`); `process` has no secondary CTA or note. The zero-padded step numbers
-       * are the items' `icon` (`STEP_NUMBER_CLASS`). The entrance animation is `EditorialSplit`'s own internal `Reveal`s (sticky-safe), so no call-site
-       * `Reveal`.
-       */}
-      <div {...binding("process")} id="process" className="scroll-mt-[84px]">
-        <EditorialSplit
+      {/* Same photo-card gallery as Owners; existing process copy and enquiry CTA remain editable. */}
+      <div {...binding("process")} id="process" className={`scroll-mt-[84px] [&_section]:pt-[70px] [&_section]:pb-10 ${ALT_BAND}`}>
+        <StepGallery
           headline={howItWorks.headline}
           body={howItWorks.subheadline}
           items={processItems}
-          primaryCta={{ href: "#deal-enquiry", label: `${howItWorks.cta.label} →` }}
+          tone="alt"
         />
+        <div className={`${SECTION_WRAP} pb-[70px] text-center`}>
+          <ButtonLink href="#deal-enquiry">{howItWorks.cta.label} →</ButtonLink>
+        </div>
       </div>
       {/*
        * The institutional FAQ (former SECTION 9) — the shared, editable `<FaqSection>` island
@@ -432,7 +481,7 @@ export async function RealEstatePage({ locale, preview = false, page: injectedPa
        * `realEstate.faqTitle`, spec real-estate-admin-editor S2).
        */}
       {faqGroupKey ? (
-        <div {...binding("faq")} id="faq" style={{ scrollMarginTop: 130 }}>
+        <div {...binding("faq")} id="faq" className="[&_section]:py-[70px]" style={{ scrollMarginTop: 130 }}>
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
@@ -447,7 +496,7 @@ export async function RealEstatePage({ locale, preview = false, page: injectedPa
        * raw `BODY_BOTTOM` markup + its `.enquiry`/`.form-card`/`.ffield`/`.facc` CSS. Copy from
        * `content.deal_enquiry` (blank → i18n), contact lines from Settings (spec S5).
        */}
-      <PreviewBinding preview={preview} id="deal_enquiry"><DealEnquirySection locale={locale} content={content.deal_enquiry} /></PreviewBinding>
+      <div {...binding("deal_enquiry")} className="[&_section]:py-[70px]"><DealEnquirySection locale={locale} content={content.deal_enquiry} /></div>
     </>
   );
 }

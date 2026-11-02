@@ -89,6 +89,8 @@ export function OwnerEstimateForm({
   backLabel,
   doneTitle,
   doneBody,
+  selectedPackages,
+  idPrefix,
 }: {
   badge?: string;
   headline: string;
@@ -107,12 +109,17 @@ export function OwnerEstimateForm({
   doneTitle?: string;
   /** Step 3 text. Blank / absent → `pages.estimateForm.doneBody`. */
   doneBody?: string;
+  /** Modal-only package summary; omitted by the hero and Buildings. */
+  selectedPackages?: string[];
+  /** Distinguishes a second mounted wizard's field IDs from the hero's IDs. */
+  idPrefix?: string;
 }) {
   const t = useTranslations("pages.estimateForm");
   const [step, setStep] = useState(1);
   const [properties, setProperties] = useState(1);
   const next = () => setStep((s) => Math.min(STEPS, s + 1));
   const back = () => setStep((s) => Math.max(1, s - 1));
+  const fieldId = (name: string) => idPrefix ? `${idPrefix}-${name}` : name;
 
   return (
     <FormCard data-wizard data-step={step} onSubmit={(e) => e.preventDefault()} className="leading-[1.6] text-ink">
@@ -128,30 +135,39 @@ export function OwnerEstimateForm({
         <h3 className={headingClass}>{headline}</h3>
         {subheadline ? <p className={ledeClass}>{subheadline}</p> : null}
 
-        <FormField label={t("addressLabel")} htmlFor="addr">
-          <FormInput id="addr" type="text" placeholder={t("addressPlaceholder")} autoComplete="off" />
+        <FormField label={t("addressLabel")} htmlFor={fieldId("addr")}>
+          <FormInput id={fieldId("addr")} type="text" placeholder={t("addressPlaceholder")} autoComplete="off" />
         </FormField>
 
         <FormRow stack={false}>
-          <FormField label={t("propertiesLabel")} labelId="nprop-label">
+          <FormField label={t("propertiesLabel")} labelId={fieldId("nprop-label")}>
             <FormStepper
-              aria-labelledby="nprop-label"
+              aria-labelledby={fieldId("nprop-label")}
               data-stepper
               data-value={properties}
               data-min="1"
               value={properties}
               onChange={setProperties}
               min={1}
-              id="nprop"
+              id={fieldId("nprop")}
               name="nprop"
               decrementLabel={t("decreaseProperties")}
               incrementLabel={t("increaseProperties")}
             />
           </FormField>
-          <FormField label={t("bedroomsLabel")} htmlFor="nbed">
-            <FormSelect id="nbed" options={[t("studio"), ...BEDROOM_COUNTS]} chevron />
+          <FormField label={t("bedroomsLabel")} htmlFor={fieldId("nbed")}>
+            <FormSelect id={fieldId("nbed")} options={[t("studio"), ...BEDROOM_COUNTS]} chevron />
           </FormField>
         </FormRow>
+
+        {selectedPackages ? (
+          <p data-selected-packages className="mb-5 overflow-x-auto whitespace-nowrap text-sm text-ink-soft">
+            {t("selectedPackages")}{" "}
+            <span className="font-semibold text-accent-deep">
+              {selectedPackages.length ? selectedPackages.join(" + ") : t("noPackagesSelected")}
+            </span>
+          </p>
+        ) : null}
 
         <FormButton data-wiz-next onClick={next} className="mt-[6px] w-full">
           {ctaLabel} →
@@ -163,18 +179,18 @@ export function OwnerEstimateForm({
         <h3 className={headingClass}>{orMessage(contactTitle, t("contactTitle"))}</h3>
         <p className={ledeClass}>{orMessage(contactLede, t("contactLede"))}</p>
 
-        <FormField label={t("nameLabel")} htmlFor="fname">
-          <FormInput id="fname" type="text" placeholder={t("namePlaceholder")} autoComplete="name" />
+        <FormField label={t("nameLabel")} htmlFor={fieldId("fname")}>
+          <FormInput id={fieldId("fname")} type="text" placeholder={t("namePlaceholder")} autoComplete="name" />
         </FormField>
-        <FormField label={t("emailLabel")} htmlFor="femail">
-          <FormInput id="femail" type="email" placeholder={t("emailPlaceholder")} autoComplete="email" />
+        <FormField label={t("emailLabel")} htmlFor={fieldId("femail")}>
+          <FormInput id={fieldId("femail")} type="email" placeholder={t("emailPlaceholder")} autoComplete="email" />
         </FormField>
-        <FormField label={t("phoneLabel")} htmlFor="fphone">
+        <FormField label={t("phoneLabel")} htmlFor={fieldId("fphone")}>
           <div className="flex gap-[10px]">
             <div className="w-[124px] flex-none">
-              <FormSelect id="fphone-code" aria-label={t("phoneCodeLabel")} defaultValue="+351" options={PHONE_CODES} chevron />
+              <FormSelect id={fieldId("fphone-code")} aria-label={t("phoneCodeLabel")} defaultValue="+351" options={PHONE_CODES} chevron />
             </div>
-            <FormInput id="fphone" type="tel" placeholder={t("phonePlaceholder")} autoComplete="tel" className="min-w-0 flex-1" />
+            <FormInput id={fieldId("fphone")} type="tel" placeholder={t("phonePlaceholder")} autoComplete="tel" className="min-w-0 flex-1" />
           </div>
         </FormField>
 

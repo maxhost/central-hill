@@ -126,6 +126,14 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
     if (l.href === "/owners") return { ...l, children: OWNERS_SECTIONS };
     if (l.href === "/real-estate") return { ...l, children: realEstateSections };
     if (l.href === "/about") return { ...l, children: ABOUT_SECTIONS };
+    if (l.href === "/guests") return {
+      ...l,
+      children: l.children?.map((child) => ({
+        ...child,
+        label: child.href === "/services" ? t("subnav.guests.services")
+          : child.href === "/guides" ? t("subnav.guests.guides") : child.label,
+      })),
+    };
     return l;
   });
 

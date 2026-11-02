@@ -7,7 +7,7 @@ import {
   editorialTranslationField,
 } from "./editorial-identities";
 
-/** Fixed steps intentionally keep numeric legacy translation paths and have no list IDs. */
+/** Hidden legacy steps retain numeric translation paths and have no list IDs. */
 export const servicesDescriptor: PageEditorialDescriptor = {
   key: "services",
   title: "Services",

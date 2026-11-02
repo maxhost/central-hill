@@ -6,22 +6,23 @@ import {
   ButtonLink,
   Hero,
   IntroSplit,
-  PhotoFeatureGrid,
   Reveal,
   SectionHead,
   SplitCtaPanels,
   splitCtaButtonClassName,
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
-import { ContactDialog, getGlobals } from "@slices/settings/contract";
-import { guestFallbackIndex } from "../guest-content";
+import { ContactDialog, getGlobals, SITE_ICON_DEFAULTS } from "@slices/settings/contract";
+import { listServices } from "@slices/services/contract";
+import { listGuideCityGroups } from "@slices/guides/contract";
 import { getGuestPage, type GuestPage as GuestPageResult, type PageMedia } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
+import { GuestServiceCards } from "./components/guest-service-cards";
+import { GuestGuideCards } from "./components/guest-guide-cards";
 import { sideMedia } from "./components/side-media";
 import { TestimonialsRow } from "./components/testimonials-row";
 import { heroPosterSrc } from "./hero-poster";
-import { cardBgSrc } from "./optimized-src";
 import { orMessage } from "./or-message";
 
 /**
@@ -41,17 +42,18 @@ import { orMessage } from "./or-message";
  *   mock photo).
  * - "Why Book Directly" (warm `alt` band): a centred `SectionHead`, then `BenefitCards` + CTA.
  * - `#portfolio`: `FeaturedPortfolio` (cards from the buildings slice; the CTA note renders when set).
- * - Services teaser (`alt` band) and what-to-do teaser (plain, ghost CTA): a centred
- *   `SectionHead`, then `PhotoFeatureGrid` + CTA. Each card's photo is its optional
- *   `image_media_id` (optimized, `cardBgSrc`), else the stock photo at its position.
+ * - Services teaser (`alt` band): published Services catalogue, in carousel groups of six
+ *   linked photo cards. Names, descriptions, covers and slugs come from Services.
+ * - What-to-do teaser: published Guides catalogue in the same six-card carousel,
+ *   with translated guide/city slugs, title/intro/hero and Settings template icons.
  * - `#testimonials`: `TestimonialsRow`, `audience='guest'`; heading from `testimonials.*`
- *   (blank → `pages.reviews.eyebrow` / `titleGuests`, no intro).
+ *   (blank title → `pages.reviews.titleGuests`, no eyebrow).
  * - `#faq`: the shared `FaqSection` island, picked by `faq_group_key` (only when set); title
  *   from `faq.title` (blank → `pages.faqTitle`).
  * - Closing dual CTA: `SplitCtaPanels`, contact lines from company_settings (`getGlobals`); the
  *   owner button is the settings `ContactDialog` (`dual_cta.owner.contact`, blank → header texts).
  * Every section, including the shared slice ones (portfolio, testimonials, FAQ), uses the same
- * shell (`clamp(72px,10vw,150px)` vertical padding, 84px scroll margin, a 1240px/28px column)
+ * shell (70px top/bottom padding, 84px scroll margin, a 1240px/28px column)
  * and `core/ui`'s `SectionHead`.
  *
  * Composed from other slices at render time, so publishing there refreshes this page: buildings
@@ -75,32 +77,12 @@ const HERO_FALLBACK_POSTER =
 const WELCOME_FALLBACK_IMG =
   "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=70";
 
-// Shell shared by the hand-written sections: the mock's `section` padding and 84px scroll
+// Shell shared by the hand-written sections: 70px vertical padding and 84px scroll
 // margin, its 1240px/28px `.wrap` column, and its warm `.alt` band (the same `color-mix`
 // formula Real Estate, `TwoColumnShowcase` and `StepGallery` use).
-const SECTION_SHELL = "scroll-mt-[84px] py-[clamp(72px,10vw,150px)]";
+const SECTION_SHELL = "scroll-mt-[84px] py-[70px]";
 const SECTION_WRAP = "mx-auto max-w-[1240px] px-[28px]";
 const ALT_BAND = "bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))]";
-
-// Stock photo backgrounds for the Services/What-to-do teaser cards (Pexels, by position): the
-// fallback for any card whose `image_media_id` is blank or has no uploaded asset (spec
-// guests-admin-editor S4). An uploaded card photo replaces the one at its position.
-const SERVICES_TEASER_BG = [
-  "https://images.pexels.com/photos/29112731/pexels-photo-29112731.jpeg?auto=compress&cs=tinysrgb&w=1200", // Private Transfers
-  "https://images.pexels.com/photos/19627783/pexels-photo-19627783.jpeg?auto=compress&cs=tinysrgb&w=1200", // Day Tours
-  "https://images.pexels.com/photos/4581314/pexels-photo-4581314.jpeg?auto=compress&cs=tinysrgb&w=1200", // Boat Trips
-  "https://images.pexels.com/photos/21706254/pexels-photo-21706254.jpeg?auto=compress&cs=tinysrgb&w=1200", // Surf Experience
-  "https://images.pexels.com/photos/18337050/pexels-photo-18337050.jpeg?auto=compress&cs=tinysrgb&w=1200", // Chef at Home
-  "https://images.pexels.com/photos/34629931/pexels-photo-34629931.jpeg?auto=compress&cs=tinysrgb&w=1200", // Luggage Storage
-];
-const ACTIVITIES_TEASER_BG = [
-  "https://images.pexels.com/photos/31630076/pexels-photo-31630076.jpeg?auto=compress&cs=tinysrgb&w=1200", // Historic Districts
-  "https://images.pexels.com/photos/8163130/pexels-photo-8163130.jpeg?auto=compress&cs=tinysrgb&w=1200", // UNESCO Sites
-  "https://images.pexels.com/photos/35554378/pexels-photo-35554378.jpeg?auto=compress&cs=tinysrgb&w=1200", // Food & Wine
-  "https://images.pexels.com/photos/20715202/pexels-photo-20715202.jpeg?auto=compress&cs=tinysrgb&w=1200", // Beaches
-  "https://images.pexels.com/photos/25016471/pexels-photo-25016471.jpeg?auto=compress&cs=tinysrgb&w=1200", // Music & Festivals
-  "https://images.pexels.com/photos/16382447/pexels-photo-16382447.jpeg?auto=compress&cs=tinysrgb&w=1200", // Day Trips & Hidden Gems
-];
 
 /**
  * Fixed, locale-relative button destinations (spec guests-admin-editor → "Destinos de los
@@ -157,12 +139,14 @@ function dualCtaContactLines(globals: Awaited<ReturnType<typeof getGlobals>>): {
 
 export async function GuestPage({ locale, preview = false, page: injectedPage }: { locale: Locale; preview?: boolean; page?: GuestPageResult | null }) {
   setRequestLocale(locale);
-  const [page, globals, t, tSettings] = await Promise.all([
+  const [page, globals, t, tSettings, services, guideGroups] = await Promise.all([
     injectedPage === undefined ? getGuestPage(locale) : Promise.resolve(injectedPage),
     getGlobals(locale),
     getTranslations("pages"),
     // The owner dual-CTA button opens the header's contact dialog; blank copy → its texts.
     getTranslations("settings"),
+    listServices(locale),
+    listGuideCityGroups(locale),
   ]);
   if (!page) notFound();
 
@@ -180,23 +164,12 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
   const dualCta = content.dual_cta;
   const contactLines = dualCtaContactLines(globals);
   const routes = ctaRoutes(locale);
+  const guides = guideGroups.flatMap((group) => group.guides).filter((guide) => guide.slug && guide.city.slug);
 
   const whyItems = content.why.benefits.map((item) => ({
     icon: <Icon name={item.icon_key} size={30} className="block" />,
     title: item.title,
     description: item.description,
-  }));
-  const servicesTeaserItems = content.services_teaser.items.map((item, i) => ({
-    icon: <Icon name={item.icon_key} size={30} className="block" />,
-    title: item.title,
-    description: item.description,
-    image: cardBgSrc(media[item.image_media_id ?? ""], SERVICES_TEASER_BG[guestFallbackIndex(content,"services_teaser.items",i)]),
-  }));
-  const activitiesTeaserItems = content.activities_teaser.items.map((item, i) => ({
-    icon: <Icon name={item.icon_key} size={30} className="block" />,
-    title: item.title,
-    description: item.description,
-    image: cardBgSrc(media[item.image_media_id ?? ""], ACTIVITIES_TEASER_BG[guestFallbackIndex(content,"activities_teaser.items",i)]),
   }));
 
   const heroNode = (
@@ -217,16 +190,16 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
         compact
         align="center"
         overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.5)_0%,rgba(18,16,13,0.46)_45%,rgba(18,16,13,0.88)_100%)]"
-        wrapClassName="mx-auto max-w-[1600px] p-10"
+        wrapClassName="mx-auto max-w-[1600px] px-10 pb-10 pt-[60px]"
         copyClassName="max-w-none"
-        headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
+        headlineClassName="w-[26ch] max-w-full text-[clamp(2.5rem,5.4vw,4.25rem)]"
         subtitleClassName="mt-5 max-w-[60ch] text-lg"
         actionsClassName="mt-2"
         eyebrow={hero.eyebrow || undefined}
-        headline={preview ? <span {...binding("hero.headline")}>{hero.headline}</span> : hero.headline}
+        headline={<span {...binding("hero.headline")} className="block max-w-[20ch] text-balance">{hero.headline}</span>}
         subtitle={hero.subheadline || undefined}
         actions={
-          <ButtonLink href={routes.buildings}>{preview ? <span {...binding("hero.cta.label")}>{`${hero.cta.label} →`}</span> : `${hero.cta.label} →`}</ButtonLink>
+          <ButtonLink href="https://www.centralhill.pt/en/rentals/holidays-rentals-rentals-d0/">{tSettings("ctaBook")}</ButtonLink>
         }
       />
   );
@@ -304,7 +277,6 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
           <Reveal>
             <SectionHead
               align="center"
-              eyebrow={content.why.eyebrow || undefined}
               headline={content.why.headline}
               intro={content.why.intro || undefined}
             />
@@ -323,10 +295,10 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
       </section>
 
       {/* Featured properties — cards from the buildings slice, headings from `guest.portfolio`. */}
-      <div {...binding("portfolio")} id="portfolio" className="scroll-mt-[84px]">
+      <div {...binding("portfolio")} id="portfolio" className="scroll-mt-[84px] [&_section]:py-[70px]">
         <FeaturedPortfolio
           locale={locale}
-          eyebrow={portfolio.eyebrow}
+          showEyebrow={false}
           title={portfolio.headline}
           intro={portfolio.intro}
           ctaLabel={portfolio.cta.label}
@@ -342,19 +314,21 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
        * own `Reveal`. The shell keeps the mock's metrics rather than `core/ui`'s generic
        * `Section`/`Container`, so its edges line up with the neighbouring sections.
        */}
-      <section {...binding("services_teaser")} className={`${SECTION_SHELL} ${ALT_BAND}`}>
+      {services.some((service) => service.slug) || preview ? <section {...binding("services_teaser")} className={`${SECTION_SHELL} ${ALT_BAND}`}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
               align="center"
-              eyebrow={content.services_teaser.eyebrow || undefined}
               headline={content.services_teaser.headline}
               intro={content.services_teaser.intro || undefined}
             />
           </Reveal>
           <Reveal label="guests-services-teaser">
-            <PhotoFeatureGrid
-              items={servicesTeaserItems}
+            <GuestServiceCards
+              services={services}
+              locale={locale}
+              prevLabel={t("servicesCarousel.prev")}
+              nextLabel={t("servicesCarousel.next")}
               cta={{
                 href: routes.services,
                 label: `${content.services_teaser.cta.label} →`,
@@ -363,50 +337,48 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
             />
           </Reveal>
         </div>
-      </section>
+      </section> : null}
 
-      {/*
-       * "The Best of Portugal" what-to-do teaser: the services teaser's configuration, with two
-       * differences carried over from the original markup: no `alt` tint (the page's
-       * alternating bands are kept) and a ghost CTA (`btn-ghost`).
-       */}
-      <section {...binding("activities_teaser")} className={SECTION_SHELL}>
+      {/* The published Guides catalogue, with the same card carousel as Services. */}
+      {guides.length > 0 || preview ? <section {...binding("activities_teaser")} className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal>
             <SectionHead
               align="center"
-              eyebrow={content.activities_teaser.eyebrow || undefined}
               headline={content.activities_teaser.headline}
               intro={content.activities_teaser.intro || undefined}
             />
           </Reveal>
           <Reveal label="guests-activities-teaser">
-            <PhotoFeatureGrid
-              items={activitiesTeaserItems}
+            <GuestGuideCards
+              guides={guides}
+              locale={locale}
+              icons={globals?.icons ?? SITE_ICON_DEFAULTS}
+              prevLabel={t("guidesCarousel.prev")}
+              nextLabel={t("guidesCarousel.next")}
               cta={{
                 href: routes.guides,
                 label: `${content.activities_teaser.cta.label} →`,
                 note: content.activities_teaser.cta.note,
-                variant: "ghost",
               }}
             />
           </Reveal>
         </div>
-      </section>
+      </section> : null}
 
       {/* Guest reviews — the same shared marquee as Home/Owners, filtered to `audience='guest'`. */}
-      <div {...binding("testimonials")} id="testimonials" className="scroll-mt-[84px]">
+      <div {...binding("testimonials")} id="testimonials" className="scroll-mt-[84px] [&_section]:py-[70px]">
         <TestimonialsRow
           locale={locale}
           audience="guest"
-          eyebrow={orMessage(content.testimonials?.eyebrow, t("reviews.eyebrow"))}
+          showEyebrow={false}
           title={orMessage(content.testimonials?.title, t("reviews.titleGuests"))}
           intro={content.testimonials?.intro}
         />
       </div>
 
       {faqGroupKey ? (
-        <div {...binding("faq")} id="faq" className="scroll-mt-[84px]">
+        <div {...binding("faq")} id="faq" className="scroll-mt-[84px] [&_section]:py-[70px]">
           <FaqSection
             locale={locale}
             groupKey={faqGroupKey}
@@ -430,7 +402,6 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
               panels={[
                 {
                   tone: "light",
-                  eyebrow: dualCta.guest.eyebrow,
                   title: dualCta.guest.title,
                   body: dualCta.guest.body,
                   cta: { href: routes.buildings, label: dualCta.guest.cta.label },
@@ -438,7 +409,6 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
                 },
                 {
                   tone: "dark",
-                  eyebrow: dualCta.owner.eyebrow,
                   title: dualCta.owner.title,
                   body: dualCta.owner.body,
                   action: (

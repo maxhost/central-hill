@@ -92,7 +92,7 @@ export const ABOUT_CARD_IDS = [
 ] as const;
 
 /** Stable card ids of the Services editor (spec services-admin-editor). */
-export const SERVICES_CARD_IDS = ["seo", "hero", "intro", "how_it_works", "final_cta"] as const;
+export const SERVICES_CARD_IDS = ["seo", "hero", "intro", "final_cta"] as const;
 
 /** Stable cards of the Guides listing and its shared detail CTA. */
 export const GUIDES_CARD_IDS = ["seo", "hero", "city_filter", "catalogue", "recommendations", "final_cta", "guide_aside"] as const;
@@ -413,14 +413,14 @@ const GUEST_LAYOUT: EditorLayoutItem[] = [
     id: "services_teaser",
     titleKey: `${L}.cards.services_teaser`,
     paths: ["services_teaser"],
-    note: { textKey: `${L}.notes.ctaServices` },
+    note: { textKey: `${L}.notes.ctaServices`, link: link("/admin/services", "services") },
   },
   {
     kind: "card",
     id: "activities_teaser",
     titleKey: `${L}.cards.activities_teaser`,
     paths: ["activities_teaser"],
-    note: { textKey: `${L}.notes.ctaGuides` },
+    note: { textKey: `${L}.notes.ctaGuides`, link: link("/admin/guides", "guides") },
   },
   {
     kind: "card",
@@ -513,7 +513,6 @@ const SERVICES_LAYOUT: EditorLayoutItem[] = [
     kind: "info", id: "services_catalogue", titleKey: `${L}.cards.servicesCatalogue`,
     note: { textKey: `${L}.notes.servicesCatalogue`, link: link("/admin/services", "services") },
   },
-  { kind: "card", id: "how_it_works", titleKey: `${L}.cards.how_it_works`, paths: ["how_it_works"] },
   {
     kind: "card", id: "final_cta", titleKey: `${L}.cards.final_cta`, paths: ["final_cta"],
     note: { textKey: `${L}.notes.servicesFinalCta`, link: link("/admin/settings", "settings") },

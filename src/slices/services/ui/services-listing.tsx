@@ -6,7 +6,6 @@ import {
   getServicesPage,
   ServicesHero,
   ServicesIntro,
-  ServicesHowItWorks,
   ServicesFinalCta,
 } from "@slices/pages/contract";
 import { listServices } from "../contract";
@@ -49,7 +48,7 @@ export async function ServicesListingRenderer({
       <section
         {...(preview ? { "data-editor-binding": "intro" } : {})}
         id="services"
-        className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]"
+        className="scroll-mt-[84px] py-[70px]"
       >
         <div className="mx-auto max-w-[1240px] px-[28px]">
           <ServicesIntro page={page} locale={locale} preview={preview} />
@@ -75,13 +74,6 @@ export async function ServicesListingRenderer({
           )}
         </div>
       </section>
-      {preview ? (
-        <div data-editor-binding="how_it_works">
-          <ServicesHowItWorks page={page} locale={locale} />
-        </div>
-      ) : (
-        <ServicesHowItWorks page={page} locale={locale} />
-      )}
       <ServicesFinalCta page={page} locale={locale} preview={preview} />
     </>
   );

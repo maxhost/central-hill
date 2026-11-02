@@ -1,7 +1,12 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { ButtonLink } from "./button";
 
 export type PhotoFeatureGridItem = {
+  /** Stable identity for dynamic catalogues; static callers may omit it. */
+  id?: string;
+  /** Optional card destination. Navigates in the same tab. */
+  href?: string;
   /** Caller-built icon element (e.g. a server parent's `<Icon name="car" size={30} />` from
    * `@core/ui/icon`, ADR 0034; same precedent as `IconFeatureGrid`'s `item.icon`). Rendered at
    * 30px, white, with a drop-shadow so it stays legible over any photo. */
@@ -81,6 +86,7 @@ export function PhotoFeatureGrid({
   items,
   cta,
   className,
+  overlayClassName = "bg-[linear-gradient(180deg,rgba(12,10,8,0.15)_0%,rgba(12,10,8,0.55)_60%,rgba(12,10,8,0.82)_100%)]",
 }: {
   items: PhotoFeatureGridItem[];
   cta?: {
@@ -92,19 +98,21 @@ export function PhotoFeatureGrid({
     variant?: "primary" | "ghost";
   };
   className?: string;
+  /** Replaces only the photo scrim treatment; omitted preserves the standard gradient. */
+  overlayClassName?: string;
 }) {
   return (
     <div className={className}>
       <div className="grid grid-cols-1 gap-[26px] min-[641px]:grid-cols-2 min-[881px]:grid-cols-3">
-        {items.map((item, i) => (
-          <div
-            key={i}
-            className="group relative isolate flex min-h-[260px] flex-col justify-end overflow-hidden border border-line bg-cover bg-center px-[30px] py-[34px] transition-transform duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-1"
-            style={item.image ? { backgroundImage: `url(${item.image})` } : undefined}
-          >
+        {items.map((item, i) => {
+          const cardProps = {
+            className: "group relative isolate flex min-h-[260px] flex-col justify-end overflow-hidden border border-line bg-cover bg-center px-[30px] py-[34px] transition-transform duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)] hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent",
+            style: item.image ? { backgroundImage: `url(${item.image})` } : undefined,
+          };
+          const content = <>
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 z-0 bg-[linear-gradient(180deg,rgba(12,10,8,0.15)_0%,rgba(12,10,8,0.55)_60%,rgba(12,10,8,0.82)_100%)]"
+              className={`pointer-events-none absolute inset-0 z-0 ${overlayClassName}`}
             />
             <div className="relative z-[1]">
               {item.icon ? (
@@ -120,8 +128,13 @@ export function PhotoFeatureGrid({
               </h3>
               <p className="text-[14.5px] leading-[1.6] text-white/[0.88]">{item.description}</p>
             </div>
-          </div>
-        ))}
+          </>;
+          return item.href ? (
+            <Link key={item.id ?? i} href={item.href} {...cardProps}>{content}</Link>
+          ) : (
+            <div key={item.id ?? i} {...cardProps}>{content}</div>
+          );
+        })}
       </div>
 
       {cta ? (

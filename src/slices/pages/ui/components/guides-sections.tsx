@@ -28,7 +28,7 @@ export async function GuidesHero({ page, locale, preview = false }: Props) {
       compact
       align="center"
       overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.5)_0%,rgba(18,16,13,0.46)_45%,rgba(18,16,13,0.88)_100%)]"
-      wrapClassName="mx-auto max-w-[1600px] p-10"
+      wrapClassName="mx-auto max-w-[1600px] px-10 pb-10 pt-[60px]"
       copyClassName="max-w-none"
       headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
       subtitleClassName="mt-5 max-w-[60ch] text-lg"

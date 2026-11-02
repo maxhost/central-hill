@@ -8,6 +8,13 @@ page (ISR). See `docs/vertical-slices.md` → S2, `docs/data-model.md` → Slice
 
 ## Owns
 
+Visual follow-up2026-10-31: “The Building” (including its neighbourhood prose)
+is retired from every public building detail and from the building editor.
+Legacy headline/intro/neighbourhood values remain in state and save payloads;
+hidden headline/intro accept empty strings so new buildings are not blocked.
+No database changes. Aesthetic L0; no automatic tests/QA for this adjustment.
+This supersedes historical prose-rendering notes below.
+
 **Tables** (`schema.ts`, migration `0000`):
 - `building` — `slug, status, position, is_new, is_featured, city_id, neighbourhood_id,
   street_address, latitude?, longitude?, cover_media_id, og_image_media_id?, avantio_id?,
@@ -84,8 +91,7 @@ README → "Consumers must subscribe to `GEO_TAGS.list`").
 - `/{locale}/buildings/{slug}` — detail (`ui/building-detail.tsx`): the approved
   `mock/building-detail.html` design, now **DB-driven** from `getBuildingBySlug(locale, slug)`
   (`notFound()` when unknown/unpublished): hero, gallery, the apartments-count/capacity/beds
-  spec strip, the "THE BUILDING" prose block (optionally "The Neighbourhood"), the
-  "Apartments in this Building" grid, building amenities, FAQ, and the Avantio "Book an
+  spec strip, the "Apartments in this Building" grid, building amenities, FAQ, and the Avantio "Book an
   apartment" CTA. Sparse-content
   resilient: empty gallery / amenities / FAQ and an empty unit set each omit their section
   (never an empty shell). The **"Apartments in this Building" grid is real JSX**: `core/ui`'s

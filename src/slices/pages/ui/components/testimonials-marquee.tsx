@@ -80,7 +80,7 @@ function Card({ tm, ariaHidden }: { tm: GridItem; ariaHidden?: boolean }) {
         {tm.roleLabel}
       </span>
       <Stars rating={tm.rating} />
-      <blockquote className="grow font-serif text-xl leading-snug text-ink">
+      <blockquote className="grow font-serif text-[1.125rem] leading-snug text-ink">
         “{tm.quote}”
       </blockquote>
       <figcaption className="mt-5 text-sm text-ink-soft">

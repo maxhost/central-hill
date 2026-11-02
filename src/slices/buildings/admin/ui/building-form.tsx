@@ -454,43 +454,6 @@ export function BuildingForm({
         </Field>
       </AdminCard>
 
-      <AdminCard title={t("admin.sections.theBuilding")}>
-        <div className="space-y-4">
-          <Field
-            label={t("admin.fields.headline")}
-            required
-            error={err("headline")}
-          >
-            <TextInput
-              value={state.headline}
-              onChange={(e) => set("headline", e.target.value)}
-            />
-          </Field>
-          <Field
-            label={t("admin.fields.descriptionIntro")}
-            required
-            hint={t("admin.fields.descriptionIntroHint")}
-            error={err("description_intro")}
-          >
-            <TextArea
-              rows={5}
-              value={state.description_intro}
-              onChange={(e) => set("description_intro", e.target.value)}
-            />
-          </Field>
-          <Field
-            label={t("admin.fields.descriptionNeighbourhood")}
-            hint={t("admin.fields.descriptionNeighbourhoodHint")}
-          >
-            <TextArea
-              rows={5}
-              value={state.description_neighbourhood}
-              onChange={(e) => set("description_neighbourhood", e.target.value)}
-            />
-          </Field>
-        </div>
-      </AdminCard>
-
       <AdminCard title={t("admin.sections.amenities")}>
         <p className="mb-4 text-xs text-ink-soft">
           {t.rich("admin.sectionHints.amenities", {

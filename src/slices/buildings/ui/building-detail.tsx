@@ -8,11 +8,11 @@ import { JsonLd, faqPageLd } from "@core/seo";
 import {
   ActionBand,
   AmenityGrid,
+  ButtonLink,
   Container,
   FaqAccordion,
   Hero,
   MosaicGallery,
-  ProseSection,
   SectionHead,
   SpecStrip,
   UnitCard,
@@ -21,7 +21,7 @@ import {
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import { type ApartmentSummary, listByBuilding } from "@slices/apartments/contract";
-import { SITE_ICON_DEFAULTS, type SiteIcons, getGlobals } from "@slices/settings/contract";
+import { SITE_ICON_DEFAULTS, type SiteIcons, avantioBookingUrl, getGlobals } from "@slices/settings/contract";
 import { getBuildingBySlug } from "../server/queries";
 
 /**
@@ -60,22 +60,8 @@ import { getBuildingBySlug } from "../server/queries";
  * Verified computed-style- and screenshot-identical at 1440/834/390 with 8 photos; one attribute
  * deviation: the lead photo is now `loading="lazy"` (was `eager`) — see `galleryImage()`.
  *
- * **"THE BUILDING" is real JSX** too — `core/ui`'s new `ProseSection` (eyebrow + serif `<h2>`
- * + free-prose paragraphs, with an optional "The Neighbourhood" `<h3>` subsection), replacing
- * the old `.mk`-scoped `buildingSection` HTML string in `bodyHtml()`. DB-sourced
- * `detail.descriptionIntro`/`descriptionNeighbourhood` are plain text, split into paragraph
- * arrays by `splitParagraphs()` (blank-line/newline split, same rule the old `paragraphs()`
- * HTML-string helper used) and passed as real `<p>` children — React escapes them. Renders
- * right after the spec strip and before the apartments grid, the amenities grid, the FAQ and
- * the book band — see `ProseSection`'s own docstring for the full cascade-layers reasoning (same trap
- * as `SpecStrip`) and for a flagged pre-existing drift between `mock/assets/site.css`'s
- * `--section-y`/`--max` tokens (used here, to stay pixel-identical to the live page) and
- * `core/ui`'s canonical `Section`/`Container` values (ported, not reconciled — see that
- * docstring). Resilient to a building with no `descriptionNeighbourhood` at all (the
- * subsection is omitted, not rendered empty) — confirmed live against the DB that
- * "Bairro Alto View" (`bairro-alto-view`) currently has only `description_intro` populated,
- * no `description_neighbourhood` row; the mock's richer two-subsection copy was used only to
- * verify `ProseSection` renders the optional subsection correctly, never written to the DB.
+ * The former "The Building" / "The Neighbourhood" prose section is retired from
+ * public details and the building editor. Legacy content remains stored for compatibility.
  *
  * **"Apartments in this Building" is real JSX** too — `core/ui`'s new `UnitCard` +
  * `UnitCardGrid` (cover w/ hover zoom, badge, icon+value spec chips with per-chip `title`, the
@@ -128,15 +114,6 @@ import { getBuildingBySlug } from "../server/queries";
  * is the building's Avantio URL (no button at all when the building has none either).
  */
 
-/** Split source prose into paragraph strings (blank lines or newlines split) for
- *  `ProseSection`'s real `<p>` children — no HTML-escaping needed, React escapes text nodes. */
-function splitParagraphs(text: string): string[] {
-  return text
-    .split(/\n+/)
-    .map((p) => p.trim())
-    .filter(Boolean);
-}
-
 const PLACEHOLDER_BUILDING = "/placeholders/building.svg";
 const PLACEHOLDER_APARTMENT = "/placeholders/apartment.svg";
 
@@ -173,8 +150,6 @@ interface BuildingLabels {
   statCapacity: string;
   statBeds: string;
   statNeighbourhood: string;
-  theBuilding: string;
-  theNeighbourhood: string;
   amenities: string;
   faq: string;
   bookEyebrow: string;
@@ -185,7 +160,6 @@ interface BuildingLabels {
 }
 
 interface ApartmentLabels {
-  eyebrow: string;
   title: string;
   intro: string;
   poweredBy: string;
@@ -242,11 +216,12 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
   const detail = await getBuildingBySlug(locale, slug);
   if (!detail) notFound();
 
-  const [apartments, t, ta, globals] = await Promise.all([
+  const [apartments, t, ta, globals, tSettings] = await Promise.all([
     listByBuilding(locale, detail.id),
     getTranslations("buildings"),
     getTranslations("apartments"),
     getGlobals(locale),
+    getTranslations("settings"),
   ]);
   const SPEC_ICONS = specIcons(globals?.icons ?? SITE_ICON_DEFAULTS);
 
@@ -258,8 +233,6 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
     statCapacity: t("statCapacity"),
     statBeds: t("statBeds"),
     statNeighbourhood: t("statNeighbourhood"),
-    theBuilding: t("theBuilding"),
-    theNeighbourhood: t("theNeighbourhood"),
     amenities: t("amenities"),
     faq: t("faq"),
     bookEyebrow: t("bookEyebrow"),
@@ -270,7 +243,6 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
   };
 
   const AL: ApartmentLabels = {
-    eyebrow: ta("eyebrow"),
     title: ta("title"),
     intro: ta("intro"),
     poweredBy: ta("poweredBy"),
@@ -362,26 +334,6 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
         />
       </Container>
       {/*
-       * Real JSX — "THE BUILDING" (eyebrow + headline + free prose, optional "The
-       * Neighbourhood" subsection), `core/ui`'s new `ProseSection` (see that component's
-       * docstring for the reuse check, the `.mk`-cascade-layers requirement, and the flagged
-       * `--section-y`/`--max` drift vs. `core/ui`'s canonical `Section`/`Container`).
-       * Rendered *outside* `.mk`, same requirement as `Hero`/`SpecStrip` above. Omitted
-       * entirely when the building has neither an intro nor a neighbourhood description yet.
-       */}
-      {detail.descriptionIntro.trim() || detail.descriptionNeighbourhood?.trim() ? (
-        <ProseSection
-          eyebrow={L.theBuilding}
-          headline={detail.headline || detail.name}
-          paragraphs={detail.descriptionIntro.trim() ? splitParagraphs(detail.descriptionIntro) : []}
-          subsection={
-            detail.descriptionNeighbourhood?.trim()
-              ? { heading: L.theNeighbourhood, paragraphs: splitParagraphs(detail.descriptionNeighbourhood) }
-              : undefined
-          }
-        />
-      ) : null}
-      {/*
        * Real JSX — "Apartments in this Building": `core/ui`'s new `UnitCard`/`UnitCardGrid`
        * (see that file's docstring for why not `PropertyCard`), with the section shell (alt
        * band, `--section-y` rhythm, 1240px/28px column), sec-head and the "Booking powered by
@@ -395,14 +347,18 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
       {apartments.length > 0 ? (
         <section
           id="apartments"
-          className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)] leading-[1.6] text-ink"
+          className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[70px] leading-[1.6] text-ink"
         >
           <div className="mx-auto max-w-[1240px] px-[28px]">
-            <div className="mb-[54px] max-w-[720px]">
-              <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-accent-deep">{AL.eyebrow}</span>
-              <h2 className="mt-[14px] font-serif text-[clamp(30px,4vw,50px)] font-medium leading-[1.08] tracking-[-0.015em] text-ink">
-                {AL.title}
-              </h2>
+            <div className="mb-[54px]">
+              <div className="flex flex-col items-start justify-between gap-5 min-[981px]:flex-row min-[981px]:items-center">
+                <h2 className="max-w-[720px] font-serif text-[clamp(30px,4vw,50px)] font-medium leading-[1.08] tracking-[-0.015em] text-ink">
+                  {AL.title}
+                </h2>
+                <ButtonLink href={avantioBookingUrl("en")} className="shrink-0">
+                  {tSettings("ctaBook")}
+                </ButtonLink>
+              </div>
               <p className="mt-4 max-w-[62ch] text-[18px] text-ink-soft">{AL.intro}</p>
             </div>
             <UnitCardGrid>

@@ -209,7 +209,7 @@ export { OwnerEstimateForm } from "./ui/components/owner-estimate-form";
 export { buildServicesMetadata } from "./server/metadata";
 
 /** Editable editorial sections composed by the Services catalogue through this contract. */
-export { ServicesHero, ServicesIntro, ServicesHowItWorks, ServicesFinalCta } from "./ui/components/services-sections";
+export { ServicesHero, ServicesIntro, ServicesFinalCta } from "./ui/components/services-sections";
 
 export { buildGuidesMetadata } from "./server/metadata";
 export { buildBlogMetadata } from "./server/metadata";

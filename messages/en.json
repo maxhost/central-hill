@@ -1001,6 +1001,10 @@
       }
     },
     "subnav": {
+      "guests": {
+        "services": "Guest Services & Experiences",
+        "guides": "Top Things to Do & Recommendations"
+      },
       "realEstate": {
         "top": "Real Estate Partnerships",
         "partners": "Our Partners",
@@ -1136,6 +1140,10 @@
       "next": "Next reviews",
       "eyebrow": "Reviews"
     },
+    "guidesCarousel": {
+      "prev": "Previous guides",
+      "next": "More guides"
+    },
     "servicesCarousel": {
       "prev": "Previous services",
       "next": "More services",
@@ -1176,6 +1184,10 @@
       "journeyEyebrow": "Your Growth Path",
       "dashboardEyebrow": "Full Visibility from Anywhere",
       "choosePlan": "Choose {name}",
+      "planTotal": "Total",
+      "planServiceFee": "Service fee",
+      "planSelectPackages": "Select your packages",
+      "planFeeUnavailable": "Contact us for pricing",
       "finalEyebrow": "Start Earning More Today",
       "finalTitle": "Ready to Make Your Property Work for You?",
       "finalCopy": "Join the growing number of property owners across Portugal who trust Central Hill Apartments to deliver exceptional results. Start with a free, no-obligation profitability analysis.",
@@ -1204,6 +1216,9 @@
       "calcCta": "Calculate My Earnings"
     },
     "estimateForm": {
+      "selectedPackages": "Selected packages:",
+      "noPackagesSelected": "No packages selected",
+      "closeDialog": "Close form",
       "addressLabel": "Property Address",
       "addressPlaceholder": "Street, neighbourhood, city",
       "propertiesLabel": "Nº of Properties",
@@ -1236,6 +1251,8 @@
       "welcomeAlt": "Bright, design-led Central Hill apartment interior"
     },
     "realEstate": {
+      "marketImageLeftAlt": "Lisbon rooftops and historic buildings",
+      "marketImageRightAlt": "Aerial view of Lisbon, Portugal",
       "metaTitle": "Real Estate Partnerships — Central Hill",
       "metaDescription": "Central Hill Apartments is the hospitality management partner for investment funds, real estate developers, large-scale operators, and corporate clients seeking institutional-grade returns on their assets in Portugal.",
       "partnersEyebrow": "Who We Work With",
@@ -1426,13 +1443,13 @@
           "buildingsGrid": "The building cards come from Buildings.",
           "ownerPanel": "The button scrolls to the earnings calculator. Leave the contact line blank to build it from Settings.",
           "realEstateHero": "Button 2 downloads the PDF; without a PDF it scrolls to the enquiry form.",
-          "processSteps": "Step numbers follow the order.",
+          "processSteps": "Edit each step's photo, alternative text, title and description. Step numbers follow the order.",
           "dealStructuresFeatured": "A featured card without a badge text shows “Recommended”.",
           "dealEnquiry": "Email, phone and LinkedIn come from Settings. Form fields are fixed and translated automatically. The form doesn't send enquiries yet.",
           "ctaBuildings": "The button always opens Buildings.",
           "guestPortfolio": "Properties come from Buildings (featured). The button always opens Buildings.",
-          "ctaServices": "The button always opens Services.",
-          "ctaGuides": "The button always opens Guides.",
+          "ctaServices": "Cards sync automatically with published Services: title, description, image and link. Manage cards in Services. The section button opens Services.",
+          "ctaGuides": "Cards sync automatically with published Guides: title, description, image and link. Manage cards in Guides. Discover more opens the full Guides listing.",
           "guestTestimonials": "Reviews come from Testimonials (audience Guest).",
           "guestDualCta": "The guest button always opens Buildings; the owner button opens the contact form. The contact line comes from Settings.",
           "aboutStats": "Add or remove figures. With no figures the band is hidden.",

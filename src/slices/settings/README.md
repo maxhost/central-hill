@@ -153,6 +153,10 @@ a white hairline that fills white on hover (chrome rule in `globals.css`, keyed 
 no JS; mirrors the `mock/` owner sub-nav); the bar is `data-chrome-keep` so its ink links stay
 readable over a hero. The fallback menu ships Guests → Services / What to Do so the mechanism is
 visible before the back office seeds nav. The mobile drawer mirrors all of the above.
+Guests' Services/Guides child labels now use `settings.subnav.guests` in all four
+locales, including when navigation is configured in DB. English labels are
+“Guest Services & Experiences” and “Top Things to Do & Recommendations”. This
+presentation override keeps their destinations and other navigation labels intact.
 Owners / Real Estate / About sub-tabs are hardcoded section-anchor lists (not DB nav). The Real
 Estate list lives in `ui/subnav-sections.ts` (`{ key, href }`) and its labels are i18n keys
 `settings.subnav.realEstate.<key>` in all 4 locales (real-estate spec S6); Owners and About labels

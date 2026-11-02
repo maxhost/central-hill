@@ -11,8 +11,22 @@
  * model → real_estate.
  */
 import { z } from "zod";
-import { ctaWithNote, mediaId, seoShape, tStr, tStrOpt, url } from "@core/validation/primitives";
-import { between, faqGroupKey, fixed, iconCard, optionalAnimated, optionalImage } from "./_shared";
+import {
+  ctaWithNote,
+  mediaId,
+  seoShape,
+  tStr,
+  tStrOpt,
+  url,
+} from "@core/validation/primitives";
+import {
+  between,
+  faqGroupKey,
+  fixed,
+  iconCard,
+  optionalAnimated,
+  optionalImage,
+} from "./_shared";
 import { adminHidden } from "./admin-hidden";
 import { withMediaAccept } from "./media-accept";
 
@@ -42,6 +56,8 @@ const SHOWCASE_MEDIA_HINT =
   "Portrait 4:5 — the frame is fixed at 4:5, so other ratios are cropped. Photo: 1200×1500 px (min 960×1200), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1080×1350 or 1200×1500, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×1500, under 5 MB. Lottie (.lottie or .json): 4:5 canvas (e.g. 1200×1500).";
 /** Capabilities' media sits on the LEFT of the section; the guidance is the shared one. */
 const CAPABILITIES_MEDIA_HINT = `${SHOWCASE_MEDIA_HINT} Rendered on the LEFT of the section.`;
+const ASSET_CARD_IMAGE_HINT =
+  "Background image for this asset-type card. Landscape or square, at least 900px wide; JPG, PNG, WebP or AVIF. A dark overlay keeps the text readable.";
 
 /*
  * Optional copy added by spec `real-estate-admin-editor` S2 (`seo`, `faq`). Both are optional
@@ -81,7 +97,9 @@ export const realEstateSchema = z.object({
     benefits: fixed(iconCard, 4),
     cta_primary: realEstateCta,
     // `EditorialSplit` only renders the primary CTA's note → this one is hidden too.
-    cta_secondary: realEstateCta.extend({ note: adminHidden(ctaWithNote.shape.note) }),
+    cta_secondary: realEstateCta.extend({
+      note: adminHidden(ctaWithNote.shape.note),
+    }),
   }),
   // "Institutional-Grade Management, End to End" — Image Showcase, MIRRORED (image on the
   // LEFT, text on the right): headline + subheadline + three capability highlights (single
@@ -96,15 +114,19 @@ export const realEstateSchema = z.object({
     image_media_id: optionalAnimated(CAPABILITIES_MEDIA_HINT),
     cta: realEstateCta,
   }),
-  // "A Management Partner for Every Asset Type" — Image Showcase (the home guests-pitch /
-  // owners services layout): headline + subheadline + six benefit highlights (2-col grid) +
-  // CTA beside 4:5 side media (photo / animated WebP / video / Lottie) with a floating
-  // reassurance badge (the CTA note). Each benefit's `icon_key` is rendered (`core/ui` `<Icon>`).
+  // Six image-backed asset-type cards; optional new fields preserve older page snapshots.
   asset_management: z.object({
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
-    benefits: fixed(iconCard, 6),
-    image_media_id: optionalAnimated(SHOWCASE_MEDIA_HINT),
+    benefits: fixed(
+      iconCard.extend({
+        image_media_id: optionalImage(ASSET_CARD_IMAGE_HINT).optional(),
+        image_alt: tStrOpt({ max: 200 }).optional(),
+      }),
+      6,
+    ),
+    /** Retired single side-media slot: hidden in BO, preserved for legacy snapshots. */
+    image_media_id: adminHidden(optionalAnimated(SHOWCASE_MEDIA_HINT)),
     cta: realEstateCta,
   }),
   // "Deal Structures Built Around Your Risk Profile" — the three partnership-model cards
@@ -157,6 +179,14 @@ export const realEstateSchema = z.object({
     fundamentals: z.object({
       title: tStr({ max: 120 }),
       body: fixed(tStr({ max: 600 }), 2),
+      image_left_media_id: optionalImage(
+        "Left image above Market Fundamentals. Landscape image, at least 600px wide; cropped to a small horizontal frame.",
+      ).optional(),
+      image_right_media_id: optionalImage(
+        "Right image above Market Fundamentals. Landscape image, at least 600px wide; cropped to a small horizontal frame.",
+      ).optional(),
+      image_left_alt: tStrOpt({ max: 200 }).optional(),
+      image_right_alt: tStrOpt({ max: 200 }).optional(),
     }),
     /** Regulatory cell: title + one paragraph. */
     regulatory: z.object({
@@ -192,10 +222,8 @@ export const realEstateSchema = z.object({
     ),
   }),
   // "A Structured Path from First Conversation to Full Performance" — the onboarding process,
-  // rendered as an Editorial Split (sticky headline + lede + a single CTA beside a numbered
-  // step list) with `core/ui`'s `EditorialSplit`, configured like the partners section. The
-  // step numbers (01, 02, …) are positional — derived from the step order in the renderer and
-  // passed as each item's `icon` — so only each step's title + description are data-driven.
+  // rendered with Owners' StepGallery: centered heading and numbered photo cards, followed
+  // by the enquiry CTA. Optional image fields keep legacy drafts/public content compatible.
   // Fully DB-driven. See `ui/real-estate-page.tsx` → `RealEstatePage` (`#process`).
   process: z.object({
     headline: tStr({ max: 160 }),
@@ -206,6 +234,10 @@ export const realEstateSchema = z.object({
     /** The numbered onboarding steps (3–8). Numbers are derived from order, not stored. */
     steps: between(
       z.object({
+        image_media_id: optionalImage(
+          "Step card background, cropped to a portrait frame. Recommended 900×1350 px, JPG/WebP, under 500 KB. A dark overlay keeps the text readable.",
+        ).optional(),
+        image_alt: tStrOpt({ max: 300 }),
         title: tStr({ max: 120 }),
         description: tStr({ max: 600 }),
       }),
@@ -217,7 +249,11 @@ export const realEstateSchema = z.object({
   faq_group_key: faqGroupKey,
   /** FAQ section heading (the group stays in `faq_group_key`). Blank → `pages.realEstate.faqTitle`. */
   faq: z
-    .object({ title: tStrOpt({ max: 160 }).describe("Leave blank for “Investor Questions, Answered”.") })
+    .object({
+      title: tStrOpt({ max: 160 }).describe(
+        "Leave blank for “Investor Questions, Answered”.",
+      ),
+    })
     .optional(),
   /**
    * Closing "Ready to Explore a Partnership?" section (`#deal-enquiry`, spec
@@ -227,11 +263,15 @@ export const realEstateSchema = z.object({
    */
   deal_enquiry: z
     .object({
-      headline: tStrOpt({ max: 160 }).describe("Leave blank for “Ready to Explore a Partnership?”"),
+      headline: tStrOpt({ max: 160 }).describe(
+        "Leave blank for “Ready to Explore a Partnership?”",
+      ),
       lede: tStrOpt({ max: 600 }).describe(
         "Leave blank for “Whether you represent an investment fund, a development company, a large property operator, or a corporate seeking managed accommodation — we want to hear from you. Complete the enquiry form below and one of our senior team will respond within 24 hours.”",
       ),
-      contact_title: tStrOpt({ max: 120 }).describe("Leave blank for “Contact Our Institutional Team Directly”."),
+      contact_title: tStrOpt({ max: 120 }).describe(
+        "Leave blank for “Contact Our Institutional Team Directly”.",
+      ),
       submit_label: tStrOpt({ max: 80 }).describe(
         "The arrow is added automatically. Leave blank for “Submit Partnership Enquiry”.",
       ),
@@ -351,12 +391,36 @@ export const defaultTrackRecord: RealEstateContent["track_record"] = {
   subheadline:
     "Our track record is built on consistent, data-driven results across a growing portfolio of managed assets. We report transparently, benchmark rigorously, and continuously optimise performance for every asset under management.",
   tiles: [
-    { value: "85%+", label: "Average Occupancy", caption: "Across all managed properties year-round" },
-    { value: "+25%", label: "Revenue Premium", caption: "Vs. traditional residential letting" },
-    { value: "24/7", label: "Operational Coverage", caption: "Guest support, reporting, and management" },
-    { value: "10+", label: "Years of Experience", caption: "Managing assets in Portugal's prime markets" },
-    { value: "14+", label: "Buildings Managed", caption: "Across Lisbon's most in-demand locations" },
-    { value: "100%", label: "Transparent Reporting", caption: "Real-time dashboard access for all partners" },
+    {
+      value: "85%+",
+      label: "Average Occupancy",
+      caption: "Across all managed properties year-round",
+    },
+    {
+      value: "+25%",
+      label: "Revenue Premium",
+      caption: "Vs. traditional residential letting",
+    },
+    {
+      value: "24/7",
+      label: "Operational Coverage",
+      caption: "Guest support, reporting, and management",
+    },
+    {
+      value: "10+",
+      label: "Years of Experience",
+      caption: "Managing assets in Portugal's prime markets",
+    },
+    {
+      value: "14+",
+      label: "Buildings Managed",
+      caption: "Across Lisbon's most in-demand locations",
+    },
+    {
+      value: "100%",
+      label: "Transparent Reporting",
+      caption: "Real-time dashboard access for all partners",
+    },
   ],
 };
 

@@ -59,7 +59,7 @@ export async function BuildingsHero({ page, locale, preview = false }: SectionPr
       compact
       align="center"
       overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.5)_0%,rgba(18,16,13,0.46)_45%,rgba(18,16,13,0.88)_100%)]"
-      wrapClassName="mx-auto max-w-[1600px] p-10"
+      wrapClassName="mx-auto max-w-[1600px] px-10 pb-10 pt-[60px]"
       copyClassName="max-w-none"
       headlineClassName="max-w-[26ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
       subtitleClassName="mt-5 max-w-[60ch] text-lg"
@@ -97,7 +97,7 @@ export async function BuildingsOwnerPanel({ page, locale, preview = false }: Sec
     t("owners.finalCall", { phone }),
   );
   return (
-    <div {...(preview ? { "data-editor-binding": "owner_panel" } : {})} className="pb-[clamp(64px,10vw,160px)]">
+    <div {...(preview ? { "data-editor-binding": "owner_panel" } : {})} className="pb-[70px]">
       <Container>
         <Reveal label="buildings-owner-panel">
           <FeaturePanel
@@ -123,7 +123,7 @@ export async function BuildingsStats({ page, locale, preview = false }: SectionP
   if (cells.length === 0) return null;
   const t = await getTranslations({ locale, namespace: "pages" });
   const result = (
-    <Reveal label="buildings-stats">
+    <Reveal label="buildings-stats" className="[&_section]:py-[70px]">
       <StatBand
         title={orMessage(page.content.stats?.title, t("buildings.statsTitle"))}
         columns={statBandColumns(cells.length)}
@@ -138,8 +138,9 @@ export async function BuildingsStats({ page, locale, preview = false }: SectionP
  * Earnings calculator — the Owners hero wizard (`OwnerEstimateForm`), two columns (form left,
  * media right on desktop; media first when stacked). Step 1 blank → `pages.buildings.calc*`;
  * steps 2/3 take the same overrides Owners passes (blank → `pages.estimateForm.*`). Media =
- * `sideMedia` (photo / animated WebP / video / Lottie by mime) in the 4:5 frame, else the stock
- * Pexels photo. `#estimate` is the target of the owner panel's button.
+ * `sideMedia` (photo / animated WebP / video / Lottie by mime), else the stock Pexels photo.
+ * Desktop media fills the form's height; stacked mobile media retains its 4:5 frame.
+ * `#estimate` is the target of the owner panel's button.
  */
 export async function BuildingsCalculator({ page, locale, preview = false }: SectionProps) {
   const t = await getTranslations({ locale, namespace: "pages" });
@@ -147,10 +148,10 @@ export async function BuildingsCalculator({ page, locale, preview = false }: Sec
   const calcMedia = page.media[calc?.media_media_id ?? ""];
   return (
     <div {...(preview ? { "data-editor-binding": "calculator" } : {})} id="estimate" className="scroll-mt-[84px]">
-      <Section className="border-t border-line bg-[color-mix(in_srgb,var(--color-line)_26%,var(--color-bg))]">
+      <Section className="py-[60px]! border-t border-line bg-[color-mix(in_srgb,var(--color-line)_26%,var(--color-bg))]">
         <Container>
           <Reveal label="buildings-calculator">
-            <div className="grid grid-cols-1 items-center gap-[34px] min-[981px]:grid-cols-2 min-[981px]:gap-16">
+            <div className="grid grid-cols-1 items-center gap-[34px] min-[981px]:grid-cols-2 min-[981px]:items-stretch min-[981px]:gap-16">
               <OwnerEstimateForm
                 badge={orMessage(calc?.badge, t("buildings.calcBadge"))}
                 headline={orMessage(calc?.headline, t("buildings.calcTitle"))}
@@ -163,7 +164,7 @@ export async function BuildingsCalculator({ page, locale, preview = false }: Sec
                 doneTitle={calc?.done_step?.title}
                 doneBody={calc?.done_step?.body}
               />
-              <div {...(preview ? { "data-editor-binding": "calculator.media_media_id" } : {})} className="order-first min-[981px]:order-none">
+              <div {...(preview ? { "data-editor-binding": "calculator.media_media_id" } : {})} className="order-first min-[981px]:relative min-[981px]:order-none min-[981px]:overflow-hidden min-[981px]:rounded-sm min-[981px]:[&>*]:absolute min-[981px]:[&>*]:inset-0 min-[981px]:[&>*]:h-full min-[981px]:[&>*]:w-full min-[981px]:[&>*]:aspect-auto">
                 {(calcMedia ? sideMedia(calcMedia) : null) ?? (
                   // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
                   <img src={BUILDINGS_CALC_FALLBACK_IMG} alt={BUILDINGS_CALC_FALLBACK_ALT} className={SIDE_MEDIA_CLASS} />

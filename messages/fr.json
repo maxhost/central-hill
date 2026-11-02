@@ -1001,6 +1001,10 @@
       }
     },
     "subnav": {
+      "guests": {
+        "services": "Services et expériences pour les voyageurs",
+        "guides": "Activités incontournables et recommandations"
+      },
       "realEstate": {
         "top": "Partenariats Immobiliers",
         "partners": "Nos Partenaires",
@@ -1136,6 +1140,10 @@
       "next": "Avis suivants",
       "eyebrow": "Avis"
     },
+    "guidesCarousel": {
+      "prev": "Guides précédents",
+      "next": "Plus de guides"
+    },
     "servicesCarousel": {
       "prev": "Services précédents",
       "next": "Plus de services",
@@ -1176,6 +1184,10 @@
       "journeyEyebrow": "Votre Parcours de Croissance",
       "dashboardEyebrow": "Une Visibilité Totale où que Vous Soyez",
       "choosePlan": "Choisir {name}",
+      "planTotal": "Total",
+      "planServiceFee": "Frais de service",
+      "planSelectPackages": "Sélectionnez vos formules",
+      "planFeeUnavailable": "Contactez-nous pour connaître le tarif",
       "finalEyebrow": "Commencez à Gagner Plus Dès Aujourd'hui",
       "finalTitle": "Prêt à Faire Travailler Votre Bien pour Vous ?",
       "finalCopy": "Rejoignez le nombre croissant de propriétaires au Portugal qui font confiance à Central Hill Apartments pour des résultats exceptionnels. Commencez par une analyse de rentabilité gratuite et sans engagement.",
@@ -1204,6 +1216,9 @@
       "calcCta": "Calculer Mes Revenus"
     },
     "estimateForm": {
+      "selectedPackages": "Formules sélectionnées :",
+      "noPackagesSelected": "Aucune formule sélectionnée",
+      "closeDialog": "Fermer le formulaire",
       "addressLabel": "Adresse du Bien",
       "addressPlaceholder": "Rue, quartier, ville",
       "propertiesLabel": "Nº de Biens",
@@ -1236,6 +1251,8 @@
       "welcomeAlt": "Intérieur lumineux et design d’un appartement Central Hill"
     },
     "realEstate": {
+      "marketImageLeftAlt": "Toits et bâtiments historiques de Lisbonne",
+      "marketImageRightAlt": "Vue aérienne de Lisbonne, Portugal",
       "metaTitle": "Partenariats Immobiliers — Central Hill",
       "metaDescription": "Central Hill Apartments est le partenaire de gestion hôtelière des fonds d'investissement, promoteurs immobiliers, opérateurs de grande envergure et entreprises en quête de rendements de niveau institutionnel pour leurs actifs au Portugal.",
       "partnersEyebrow": "Avec Qui Nous Travaillons",
@@ -1426,13 +1443,13 @@
           "buildingsGrid": "Les cartes des immeubles proviennent d’Immeubles.",
           "ownerPanel": "Le bouton fait défiler jusqu’au calculateur de revenus. Laissez la ligne de contact vide pour la générer depuis les Paramètres.",
           "realEstateHero": "Le bouton 2 télécharge le PDF ; sans PDF, il fait défiler jusqu’au formulaire de contact.",
-          "processSteps": "Les numéros des étapes suivent l’ordre.",
+          "processSteps": "Modifiez la photo, le texte alternatif, le titre et la description de chaque étape. Les numéros suivent l’ordre.",
           "dealStructuresFeatured": "Une carte mise en avant sans texte de badge affiche « Recommandé ».",
           "dealEnquiry": "L'e-mail, le téléphone et LinkedIn proviennent des Paramètres. Les champs du formulaire sont fixes et traduits automatiquement. Le formulaire n'envoie pas encore de demandes.",
           "ctaBuildings": "Le bouton ouvre toujours Immeubles.",
           "guestPortfolio": "Les biens viennent d’Immeubles (à la une). Le bouton ouvre toujours Immeubles.",
-          "ctaServices": "Le bouton ouvre toujours Services.",
-          "ctaGuides": "Le bouton ouvre toujours Guides.",
+          "ctaServices": "Les cartes sont synchronisées avec les services publiés : titre, description, image et lien. Gérez les cartes dans Services. Le bouton de la section ouvre Services.",
+          "ctaGuides": "Les cartes sont synchronisées avec les guides publiés : titre, description, image et lien. Gérez les cartes dans Guides. Découvrir plus ouvre la liste complète des guides.",
           "guestTestimonials": "Les avis viennent de Témoignages (public Voyageur).",
           "guestDualCta": "Le bouton voyageur ouvre toujours Immeubles ; le bouton propriétaire ouvre le formulaire de contact. La ligne de contact vient des Paramètres.",
           "aboutStats": "Ajoutez ou supprimez des chiffres. Sans chiffres, la bande est masquée.",

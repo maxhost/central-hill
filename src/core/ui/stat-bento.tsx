@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { cn } from "./cn";
 
 export type StatBentoStat = { value: string; label: string };
@@ -53,7 +54,12 @@ export function StatBento({
   cells,
   className,
 }: {
-  feature: { title: string; stats: StatBentoStat[]; paragraphs: string[] };
+  feature: {
+    title: string;
+    stats: StatBentoStat[];
+    paragraphs: string[];
+    media?: ReactNode;
+  };
   /** Exactly the two side cells stacked beside the feature cell — see docstring. */
   cells: [StatBentoCell, StatBentoCell];
   className?: string;
@@ -65,7 +71,8 @@ export function StatBento({
     "hover:border-[color-mix(in_srgb,var(--color-accent)_38%,var(--color-line))] " +
     "before:absolute before:left-0 before:top-0 before:h-[3px] before:w-0 before:bg-accent " +
     "before:transition-[width] before:duration-[450ms] before:ease-in-out hover:before:w-full";
-  const cellTitle = "mb-[14px] font-serif text-[22px] font-medium leading-[1.08] tracking-[-0.015em] text-ink";
+  const cellTitle =
+    "mb-[14px] font-serif text-[22px] font-medium leading-[1.08] tracking-[-0.015em] text-ink";
 
   return (
     <div
@@ -75,6 +82,7 @@ export function StatBento({
       )}
     >
       <div className={cn(cellChrome, "flex flex-col min-[981px]:row-span-2")}>
+        {feature.media ? <div className="mb-6">{feature.media}</div> : null}
         <h3 className={cellTitle}>{feature.title}</h3>
         <div className="mb-[30px] grid grid-cols-1 gap-px overflow-hidden rounded-lg border border-line bg-line min-[681px]:grid-cols-3">
           {feature.stats.map((s) => (
@@ -92,7 +100,10 @@ export function StatBento({
           ))}
         </div>
         {feature.paragraphs.map((p, i) => (
-          <p key={i} className="mb-[14px] text-[15px] leading-[1.7] text-ink-soft last:mb-0">
+          <p
+            key={i}
+            className="mb-[14px] text-[15px] leading-[1.7] text-ink-soft last:mb-0"
+          >
             {p}
           </p>
         ))}
@@ -102,7 +113,9 @@ export function StatBento({
         <div key={i} className={cellChrome}>
           <h3 className={cellTitle}>{cell.title}</h3>
           {cell.kind === "text" ? (
-            <p className="text-[15px] leading-[1.7] text-ink-soft">{cell.body}</p>
+            <p className="text-[15px] leading-[1.7] text-ink-soft">
+              {cell.body}
+            </p>
           ) : (
             <ul className="m-0 list-none">
               {cell.items.map((item, j) => (

@@ -22,7 +22,7 @@ export const guestDescriptor: PageEditorialDescriptor = {
   textPatterns: translatablePaths(guestSchema),
   listPaths: [...GUEST_LIST_PATHS],
   maxLocalMedia: 16,
-  externalSections: ["portfolio", "testimonials", "faq"],
+  externalSections: ["portfolio", "services_teaser", "activities_teaser", "testimonials", "faq"],
   mediaSlots: [
     { path: "hero.video_media_id", kind: "video" },
     { path: "hero.poster_media_id", kind: "image" },

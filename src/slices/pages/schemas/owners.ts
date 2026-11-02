@@ -205,12 +205,13 @@ export const ownersSchema = z.object({
     .optional(),
   /**
    * Closing CTA band (`#start`, spec owners-admin-editor S6). Every field is optional: blank →
-   * `pages.owners.finalEyebrow` / `finalTitle` / `finalCopy` / `finalCta`; a blank contact line
+   * `pages.owners.finalTitle` / `finalCopy` / `finalCta`; a blank contact line
    * is built from Settings (phone · email · WhatsApp); no image → the stock photo.
    */
   final_cta: z
     .object({
-      eyebrow: tStrOpt({ max: 60 }).describe("Leave blank for “Start Earning More Today”."),
+      /** Retired public eyebrow: preserve legacy content, omit from both page editors. */
+      eyebrow: adminHidden(tStrOpt({ max: 60 })),
       headline: tStrOpt({ max: 160 }).describe("Leave blank for “Ready to Make Your Property Work for You?”."),
       body: tStrOpt({ max: 600 }).describe(
         "Leave blank for “Join the growing number of property owners across Portugal who trust Central Hill Apartments to deliver exceptional results. Start with a free, no-obligation profitability analysis.”",

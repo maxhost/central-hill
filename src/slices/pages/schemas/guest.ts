@@ -4,7 +4,7 @@
  *   - featured portfolio cards → buildings slice (`is_featured`, by position)
  *   - guest reviews → testimonials slice (`audience='guest'`, managed in /admin/testimonials);
  *     only the section heading is authored here (`testimonials`, optional — blank → the
- *     i18n `pages.reviews.eyebrow` / `titleGuests`)
+ *     i18n `pages.reviews.titleGuests`; the legacy eyebrow is hidden/preserved)
  *   - the dual-CTA contact line (phone / email / WhatsApp) → company_settings
  *   - the optional FAQ accordion → faq slice, chosen by `faq_group_key`
  * Every other section on the page is authored here and edited at /admin/pages/guest.
@@ -69,7 +69,8 @@ const teaserCard = iconCard.extend({ image_media_id: optionalImage(TEASER_CARD_H
 
 /** One side of the closing two-column CTA band (the mock's `.dual`). No image. */
 const dualPanel = z.object({
-  eyebrow: tStrOpt({ max: 60 }),
+  /** Legacy audience label, hidden in both public panels and the page editor. */
+  eyebrow: adminHidden(tStrOpt({ max: 60 })),
   title: tStr({ max: 160 }),
   body: tStr({ max: 400 }),
   cta: guestCta,
@@ -109,7 +110,8 @@ export const guestSchema = z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
-    cta: guestCta,
+    /** Hero booking label/destination are shared chrome copy and the fixed Avantio URL. */
+    cta: adminHidden(guestCta),
   }),
   welcome: z.object({
     headline: tStr({ max: 160 }),
@@ -126,7 +128,7 @@ export const guestSchema = z.object({
     ),
   }),
   why: z.object({
-    eyebrow: tStrOpt({ max: 80 }),
+    eyebrow: adminHidden(tStrOpt({ max: 80 })),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
     benefits: fixed(iconCard, 4),
@@ -134,23 +136,25 @@ export const guestSchema = z.object({
   }),
   /** Headings + CTA only — the cards come from the buildings slice at render time. */
   portfolio: z.object({
-    eyebrow: tStrOpt({ max: 80 }),
+    eyebrow: adminHidden(tStrOpt({ max: 80 })),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
     cta: guestCtaWithNote,
   }),
   services_teaser: z.object({
-    eyebrow: tStrOpt({ max: 80 }),
+    eyebrow: adminHidden(tStrOpt({ max: 80 })),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
-    items: fixed(teaserCard, 6),
+    /** Legacy manual cards, preserved; public cards now come from the Services catalogue. */
+    items: adminHidden(fixed(teaserCard, 6)),
     cta: guestCtaWithNote,
   }),
   activities_teaser: z.object({
-    eyebrow: tStrOpt({ max: 80 }),
+    eyebrow: adminHidden(tStrOpt({ max: 80 })),
     headline: tStr({ max: 160 }),
     intro: tStrOpt({ max: 600 }),
-    items: fixed(teaserCard, 6),
+    /** Legacy manual cards, preserved; public cards now come from the Guides catalogue. */
+    items: adminHidden(fixed(teaserCard, 6)),
     cta: guestCtaWithNote,
   }),
   /**
@@ -163,11 +167,12 @@ export const guestSchema = z.object({
   }),
   /**
    * Testimonials heading (the reviews come from the testimonials slice, `audience='guest'`).
-   * Blank → `pages.reviews.eyebrow` / `pages.reviews.titleGuests`; blank intro → no intro.
+   * Blank title → `pages.reviews.titleGuests`; blank intro → no intro.
+   * These five section eyebrows stay in legacy payloads but are hidden in BO/public output.
    */
   testimonials: z
     .object({
-      eyebrow: tStrOpt({ max: 60 }).describe("Leave blank for “Reviews”."),
+      eyebrow: adminHidden(tStrOpt({ max: 60 })),
       title: tStrOpt({ max: 160 }).describe("Leave blank for “We Care About Our Guests”."),
       intro: tStrOpt({ max: 400 }).describe("Short line under the title. Leave blank for none."),
     })

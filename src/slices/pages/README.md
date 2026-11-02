@@ -21,6 +21,94 @@ The Home notes below record the pilot; common behavior now covers all five regis
 
 ## Local live preview
 
+Services' closing CTA omits “Planning your stay?” and hides/preserves its
+`final_cta.eyebrow` field in BO. The section “Find your apartment, then we'll
+handle the rest” uses70px top/bottom padding through its page-scoped wrapper.
+
+Services listing no longer displays the catalogue intro eyebrow “Guest Services
+& Experiences” or the entire How It Works section. `intro.eyebrow` and legacy
+`how_it_works` content are hidden/preserved via adminHidden; the latter's BO
+layout card and public renderer/export are removed. Contextual/legacy editors
+retain the catalogue's main intro title/body and the other active sections.
+
+Guests' closing dual CTA panels omit the “Guests”/“Owners” audience eyebrows.
+Both legacy `dual_cta.*.eyebrow` fields are hidden/preserved via adminHidden in
+the page schema, removing the controls from contextual and legacy BO editors.
+
+“The Best of Portugal” now uses the published Guides catalogue through
+listGuideCityGroups(locale), including only published guides in published cities.
+Cards use guide title/intro/hero, Settings template icons and localized city/guide
+slugs, opening their detail in the same tab. The shared Guests catalogue carousel
+shows up to six cards per group, matching Services, with Discover More linking
+to the complete Guides listing. Guide/geography cache invalidation feeds the
+section automatically. Old activities cards are hidden/preserved in BO, with a
+Guides management link; section copy/CTA remain editable in Guests. See
+`docs/specs/guests-guide-catalogue.md`.
+
+Guests' “Make the Most of Your Stay” reads all published services through the
+Services contract, including localized names, excerpts, category icons, covers,
+slugs and catalogue order. Shared Carousel controls show groups of at most six
+cards (3×2 on desktop), with same-tab service detail links. Explore All Services
+opens the full listing; its helper note appears below the button. Service-list
+invalidation refreshes the section after catalogue changes. Its obsolete manual
+card array is hidden/preserved in BO; staff edit services in Services and retain
+section heading/intro/CTA editing in Guests. See ADR0050 and
+`docs/specs/guests-service-catalogue.md`.
+
+All Guests content modules use70px top/bottom section padding at every viewport,
+including the portfolio, reviews and FAQ through page-scoped wrappers. Hero and
+footer spacing remain unchanged; shared component defaults are preserved.
+
+Guests' hero CTA uses the navbar's localized Book Now label and opens the fixed
+English Avantio rentals URL in a new tab. Its obsolete hero.cta object is hidden
+in BO and preserved in payloads. Other Guests CTAs keep their existing targets.
+
+Guests no longer displays the section eyebrows “Best Price, Guaranteed”, “The
+Portfolio”, “Services”, “What to Do” or “Reviews”. The corresponding `why`,
+`portfolio`, `services_teaser`, `activities_teaser` and `testimonials` eyebrow
+fields use adminHidden in the Guests schema, removing them from contextual and
+legacy BO controls while preserving stored values. Portfolio/reviews explicitly
+disable shared fallback eyebrows. Other headings and pages retain their behavior.
+
+Real Estate's Asset Management section now uses six image-backed cards (3/2/1
+responsive columns). Each `asset_management.benefits[]` item retains its stable
+identity, icon and text and adds optional `image_media_id` and translatable
+`image_alt`. The old single side image is hidden/preserved. Six nested image
+slots participate in preview/media validation and draft/publish; local-media
+capacity is13 including existing slots, two Market Fundamentals images and OG. Missing images use illustrative
+sample photos. See `docs/specs/real-estate-asset-cards.md`.
+
+Market Fundamentals now has optional left/right images and translatable alt
+fields in BO, with a small two-column image row above its heading, matching
+the inner width of the statistics strip. Temporary Pexels photos are overridden
+independently by each uploaded image. See ADR0049 and
+`docs/specs/real-estate-market-images.md`.
+
+Real Estate's process section now uses Owners' StepGallery: centered heading,
+numbered photo cards and the existing enquiry CTA below. Each step has optional
+`image_media_id` and translatable `image_alt`, alongside its existing title and
+description. BO supports these fields through the schema-driven editor; media
+references cover validation and live preview. Local media capacity is now21
+(previous13 plus up to8 process images). Old snapshots need no backfill and
+fallback photos follow legacy stable IDs after reorder. See
+`docs/specs/real-estate-process-gallery.md` for functional checks and limits.
+
+Owners' closing CTA no longer renders the “Start Earning More Today” eyebrow.
+`final_cta.eyebrow` is hidden in both contextual and legacy editors using the
+existing admin-hidden metadata; stored values remain compatible and preserved.
+
+Owners plans support local selection through native inputs and Choose buttons:
+Core/Prime are mutually exclusive; Manage/Complete are independent extras.
+Selection remains local to the browser without persistence or submission.
+The live Total service fee band replaces the static helper band and sums the
+selected cards' visible percentage badges; hidden legacy commission is unused.
+The existing helper CTA label opens a native modal with the same hero wizard,
+including selected package names in brand accent color. Names reflect the
+current cards; form IDs are scoped separately from the hero. See ADR0048.
+Missing or invalid
+selected badges display unavailable copy. See ADR0047.
+See `docs/specs/owners-plan-selection.md` and ADR0046.
+
 Owners' numbers band now includes an optional editable `stats_title` grouped
 with its figures in BO. Blank uses “Numbers That Speak for Themselves” localized
 in EN/PT/ES/FR; the title uses Home's shared StatBand styling. See
@@ -462,23 +550,15 @@ instead of the mock's `.btn` (52px, 3px) (the `#partners` anchor keeps this page
 live Editorial Split was already the shipped design. (The `.partner-pitch` CSS was later
 removed with the `#process` port below.)
 
-Its `process` ("How it works" / "A Structured Path from First Conversation to Full Performance",
-`#process`, SECTION 8) section is real JSX too, ported exactly like `#partners`: `core/ui`'s
-`EditorialSplit` in `<div id="process" className="scroll-mt-[84px]">`, `headline`/`body`
-(subheadline)/`items`, primary CTA label + ` →` → `#deal-enquiry`; no secondary CTA and no note
-(the `process` schema has neither). The zero-padded step numbers (01, 02, …; positional, derived
-from order) go through `items[].icon` as a caller-built `<span aria-hidden>` with
-`STEP_NUMBER_CLASS` (`-mt-0.5 w-11 flex-none font-serif text-3xl leading-none text-accent
-opacity-90` — the old `.snum` in theme tokens, computed-identical: 44px box, Fraunces 30px,
-accent, .9 opacity). Rendered outside `.mk` after `#track-record` and before the FAQ; the rendered
-class tree matches `#partners` minus the ghost button and note. Still DB-driven (`content.process
-?? defaultProcess`). Same accepted deltas as `#partners`: Container width/padding instead of the
-1240px/28px `.wrap`, sans step `<h3>`s instead of serif, `ButtonLink` (44px, 6px radius) instead
-of `.btn` (52px, 3px), and the stacked (≤980px) column gap is 64px instead of 36px. `bodyTopB`,
-`processSection` and the `.partner-pitch`/`.process-split`/`.snum` CSS are gone, as are the
-dead `.steps`/`.step` and `.faq` rules (no markup on this page used them; the FAQ is the
-Tailwind `FaqSection` island outside `.mk`) and the now-empty `.mk` wrapper that held
-`bodyTopB`. `esc` stays for the three raw sec-heads.
+Its `process` ("A Structured Path from First Conversation to Full Performance",
+`#process`, SECTION8) now reuses Owners' `StepGallery`, replacing the earlier
+EditorialSplit treatment. A centered title/intro leads into five columns on
+desktop, two on tablet and one on mobile, with photo backgrounds, dark scrims,
+positional step numbers and editable titles/descriptions. Existing3–8 step
+support remains (additional cards wrap). Each photo and optional alt text can
+be edited independently; absent images use temporary Pexels photos. The existing
+CTA remains centered below the gallery and links to `#deal-enquiry`. Section
+top/bottom padding remains70px. Content still uses `content.process ?? defaultProcess`.
 
 "Asset Types" (`#manage`, SECTION 4) is real JSX too: `core/ui`'s existing `TwoColumnShowcase`
 with **exactly** Owners' `#services` configuration (26px `mt-0.5` accent-deep bullet icons, 4:5
@@ -935,8 +1015,8 @@ i18n message through `orMessage`. Full field table: `docs/data-model.md` → gue
 | Hero | `poster_media_id?` (`optionalImage`, Home's poster hint); video `<source type>` = the asset's mime | stock Unsplash poster; `video/mp4` |
 | Welcome | `image_media_id` → `optionalAnimated` (3:2 hint), `image_alt?` ≤160, `guarantee_icon_key` (`optionalIconKey`) | stock photo; alt → asset alt → `pages.guests.welcomeAlt`; `percentage-circle` |
 | Portfolio | *(existing)* `cta.note` — now rendered | no note (empty in PROD today) |
-| Services / What to do | `items[×6].image_media_id?` (local `teaserCard = iconCard.extend(…)`, 3:2 hint) | the Pexels photo at that position |
-| Testimonials | `testimonials?{eyebrow? ≤60, title? ≤160, intro? ≤400}` (+ `TestimonialsRow intro?`) | `pages.reviews.eyebrow` / `titleGuests`; no intro |
+| Services / What to do | Heading/intro/CTA here; cards from published Services/Guides catalogues | catalogue cover/hero or illustrative fallback; old manual item arrays hidden/preserved |
+| Testimonials | `testimonials?{title? ≤160, intro? ≤400}` (+ hidden/preserved legacy `eyebrow?`) | `pages.reviews.titleGuests`; no eyebrow or intro |
 | FAQ | `faq_group_key` (root, existing) + `faq?{title? ≤160}` | no FAQ (no group set in PROD today); `pages.faqTitle` |
 | Dual CTA | `dual_cta.owner.contact?{title? ≤80, intro? ≤280}` | `settings.contactDialog.title` / `intro` (the header dialog's copy) |
 
@@ -947,6 +1027,8 @@ i18n message through `orMessage`. Full field table: `docs/data-model.md` → gue
 ignores them: `ctaRoutes(locale)` in `guest-page.tsx` fixes hero / why / portfolio / dual guest →
 `/{locale}/buildings`, services teaser → `/{locale}/services`, what to do → `/{locale}/guides`
 (locale-relative, decision D1; `localizeUrl` was deleted).
+The five section eyebrows (`why`, `portfolio`, `services_teaser`,
+`activities_teaser`, `testimonials`) are also hidden/preserved and no longer rendered.
 
 **Media.** Hero poster → `heroPosterSrc` (now a thin wrapper over `optimizedSrc`). Welcome →
 `welcomeSideMedia()`: `sideMedia()` (image / `unoptimized` WebP / `LoopVideo` / `LottiePlayer`) in a
@@ -1302,13 +1384,14 @@ Destinations are fixed in code so they stay on the visitor's locale. `revalidate
 
 ## Services listing editor
 
-`/admin/pages/services` edits SEO, hero, catalogue introduction, three fixed-order How it works
-items and the closing CTA. The catalogue remains in `/admin/services`; contact data remains
+`/admin/pages/services` edits SEO, hero, catalogue introduction and the closing CTA.
+The retired intro eyebrow and How It Works fields are hidden/preserved.
+The catalogue remains in `/admin/services`; contact data remains
 in Settings. `servicesSchema` accepts empty overrides, so no initial row or migration is needed.
 `getServicesPage(locale): Promise<ServicesPage>` never returns null: missing or invalid content
 uses `defaultServices` and each public section resolves blank copy through `services.*` in the
 visitor's language. Translation paths include copy/alt/SEO, excluding icons and media IDs.
-`ServicesHero`, `ServicesIntro`, `ServicesHowItWorks`, `ServicesFinalCta` are exported by the
+`ServicesHero`, `ServicesIntro`, `ServicesFinalCta` are exported by the
 contract for composition by Services around its own catalogue. Both visual slots accept images,
 original animated WebP and MP4/WebM; optional still posters/default photos replace animation
 with reduced motion. Lottie uses the existing player after visibility/motion checks; reduced motion keeps a real still.
