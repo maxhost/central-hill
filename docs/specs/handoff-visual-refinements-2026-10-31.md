@@ -1,5 +1,35 @@
 # Local visual refinements — resume after context clear
 
+## Brevo release authorized —2026-11-03
+
+User now requests commit/push/deploy of the footer+Blog Brevo integration to
+maxhost/central-hill, using their token for this operation without changing
+saved55mais credentials. Base/fresh origin main1701436. Source newsletter
+exports and prior test source included, no tests/check suites/automatic browser
+QA or actual subscribers sent per user's explicit instruction. Vercel's build
+and GitHub deployment status confirm publication; no migration/Neon write or
+new environment variable. See footer-newsletter-brevo.md. Two unused original
+logo files stay untracked; commit is resolved with git log -1.
+
+## Newsletter Brevo integration —2026-11-03, after1701436
+
+User authorizes connecting the footer modal and then the Blog newsletter band
+to the supplied docs/newsletter/HTML.txt form. Footer keeps inline email →
+prefilled editable modal; Blog keeps the same dark form-card UI. Shared Settings
+helper posts EMAIL/OPT_IN=1/locale/honeypot as FormData to the fixed HTML action
+with isAjax=1, requiring explicit provider success. No API key/global vendor
+script, local Leads record, Resend or Neon write. Blog listing and articles share
+the new form through the Settings contract. Private preview stays disabled.
+
+IMPORTANT: user explicitly stopped tests/QA; they inspect localhost without
+clicking Subscribe. Do not resume automatic tests/checks/browser QA or submit
+subscriptions without a new request. No real subscriber created by the agent.
+Previous unit-test attempt failed on tsx sandbox socket; escalated retry was
+interrupted, no pass claimed. See footer-newsletter-brevo.md for exact state.
+No commit/push/deploy requested for this integration; previous logo release
+1701436 was already pushed and Vercel-successful. Preserve untracked newsletter
+exports, the new helper/form/test/spec and the two unused original logos.
+
 ## Logo commit/push authorized —2026-11-03
 
 User explicitly requests pushing these logo changes to maxhost/central-hill

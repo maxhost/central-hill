@@ -95,9 +95,10 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
             modalTitle: t("footer.newsletter.modalTitle"),
             modalIntro: t("footer.newsletter.modalIntro"),
             emailLabel: t("footer.newsletter.emailLabel"),
-            termsLabel: t("footer.newsletter.termsLabel"),
-            marketingLabel: t("footer.newsletter.marketingLabel"),
+            consentLabel: t("footer.newsletter.consentLabel"),
             submit: t("footer.newsletter.submit"),
+            pending: t("footer.newsletter.pending"),
+            error: t("footer.newsletter.error"),
             success: t("footer.newsletter.success"),
             close: t("footer.newsletter.close"),
           }}

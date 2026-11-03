@@ -127,6 +127,9 @@ export { AvantioSearchBar } from "./ui/components/avantio-search-bar";
  */
 export { ContactDialog } from "./ui/components/contact-dialog";
 
+/** Newsletter band form using the same Brevo HTML destination as the footer modal. */
+export { BrevoNewsletterForm } from "./ui/components/brevo-newsletter-form";
+
 /**
  * Backoffice contribution (S12). `settingsAdminScreens` is spread into
  * `composeAdminNav` by the admin panel layout; the globals + navigation editors mount

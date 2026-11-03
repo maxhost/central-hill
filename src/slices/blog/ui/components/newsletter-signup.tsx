@@ -1,12 +1,12 @@
 import { CenteredCtaBand } from "@core/ui";
-import { NewsletterForm } from "@slices/leads/contract";
+import { BrevoNewsletterForm } from "@slices/settings/contract";
 
 /**
  * Newsletter signup band (blog listing) — the mock's `section.newsletter`. A thin composer:
  * `core/ui`'s `CenteredCtaBand` (the full-bleed centred dark band Guides closes with;
- * `<h2>`, lede) with the leads slice's `NewsletterForm` in its action slot instead of a button.
- * The form (S10) owns the email field, GDPR consent, submit (`submitLead`, `kind: "newsletter"`)
- * and the success state; it sits on `bg-feature`, so `theme="dark"`.
+ * `<h2>`, lede) with Settings' `BrevoNewsletterForm` in its action slot instead of a button.
+ * The form owns email/consent and submits to the same Brevo HTML form as the footer.
+ * Its appearance retains the existing form-card primitives with `theme="dark"`.
  *
  * Consistency over mock fidelity: the band's title/lede use `CenteredCtaBand`'s classes (Guides'
  * closing band) rather than the mock's `44px`/`17px` newsletter values, and the form keeps the
@@ -28,7 +28,7 @@ export function NewsletterSignup({
   const band = (
     <CenteredCtaBand headline={title} body={description}>
       <div className="mx-auto max-w-[480px] text-left" inert={preview || undefined}>
-        <NewsletterForm theme="dark" source={source} />
+        <BrevoNewsletterForm theme="dark" source={source} disabled={preview} />
       </div>
     </CenteredCtaBand>
   );

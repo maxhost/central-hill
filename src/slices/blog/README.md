@@ -1,5 +1,17 @@
 # Slice `blog` (S4)
 
+## Newsletter provider —2026-11-03
+
+Listing and article NewsletterSignup now embed BrevoNewsletterForm through the
+Settings contract, sharing the public HTML form destination with the footer
+modal. Their UI stays on the same form-card primitives, dark tone,480px column,
+field/consent/button copy and spacing. Responses use localized acceptance/error
+messages; a provider acceptance is not proof of completed double opt-in.
+This band no longer creates a local Leads record. Private preview keeps the form
+inert and explicitly disables submissions. User requested no automatic tests/QA
+or real subscription sends; review is in localhost. Historical Leads wiring
+descriptions below are superseded by this provider change.
+
 ## Blog page copy (2026-10-18)
 
 The index now reads `getBlogPage(locale)` from the Pages contract for header and

@@ -882,8 +882,11 @@
         "emailLabel": "Email",
         "termsLabel": "Acepto los Términos y Condiciones",
         "marketingLabel": "Quiero recibir información comercial y ofertas por email",
+        "consentLabel": "Acepto recibir sus newsletters y la declaración de privacidad de datos.",
         "submit": "Suscribirme",
-        "success": "¡Listo! Ya estás suscrito.",
+        "pending": "Enviando…",
+        "error": "No pudimos completar tu solicitud. Inténtalo de nuevo.",
+        "success": "Hemos recibido tu solicitud. Si recibes un correo de confirmación, sigue su enlace para completar la suscripción.",
         "close": "Cerrar"
       }
     },

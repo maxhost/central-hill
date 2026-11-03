@@ -882,8 +882,11 @@
         "emailLabel": "Email",
         "termsLabel": "J'accepte les Conditions Générales",
         "marketingLabel": "Je souhaite recevoir des informations commerciales et des offres par email",
+        "consentLabel": "J'accepte de recevoir vos newsletters et la déclaration de confidentialité des données.",
         "submit": "S'abonner",
-        "success": "Inscription réussie. Merci !",
+        "pending": "Envoi en cours…",
+        "error": "Nous n'avons pas pu traiter votre demande. Veuillez réessayer.",
+        "success": "Votre demande a été reçue. Si vous recevez un email de confirmation, suivez son lien pour finaliser votre inscription.",
         "close": "Fermer"
       }
     },

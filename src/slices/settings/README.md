@@ -1,5 +1,22 @@
 # Slice `settings` / `globals` (S11)
 
+## Brevo newsletter integration —2026-11-03
+
+FooterNewsletter retains inline capture → modal with editable prefilled email.
+Final confirmation posts the EMAIL/OPT_IN/locale/honeypot fields from the supplied
+docs/newsletter/HTML.txt to its public form action with isAjax=1. An explicit
+provider success is required; rejection/network/unexpected response show an
+error and allow retry. Consent starts unchecked; pending submits are disabled,
+timeout is20s, close/unmount abort and ignore late results. Localized success
+copy does not claim any double opt-in has already been completed.
+
+The Settings contract also exports BrevoNewsletterForm for Blog listing/article
+bands, reusing that same transport and the existing core form-card appearance,
+including dark tone and the original field/consent/button copy. Its source prop
+is a UI marker, not a Neon lead. No Brevo API key, vendor global JS/CSS, Leads or
+Resend call is involved. User explicitly owns local browser review; do not run
+automatic tests/QA or actual subscription submits. See footer-newsletter-brevo.md.
+
 The **site-wide singleton + navigation**. Owns the company globals (contact, social,
 headline stats, office, currency, default OG image, Avantio account config) and the
 header/footer navigation trees. Renders the **app-shell chrome** (sticky header +
