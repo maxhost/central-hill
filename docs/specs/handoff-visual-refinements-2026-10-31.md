@@ -1,5 +1,58 @@
 # Local visual refinements — resume after context clear
 
+## Logo commit/push authorized —2026-11-03
+
+User explicitly requests pushing these logo changes to maxhost/central-hill
+using the supplied token only for this operation. Do not alter saved55mais
+credentials. Main and fresh origin/main both fca0414 before this release.
+Node22 `pnpm build` passes (exit0,210 static pages), and diff-check passes.
+No tests/automatic visual QA under the L0 agreement, no DB writes/migrations.
+
+Commit scope: site-header.tsx, site-footer.tsx, Settings README, this handoff,
+logos/Logo Barra Topo bg.png and logos/Logo footer.png. The two other unused
+user-supplied logo files remain untracked and untouched. Header includes the
+three successive10% enlargements; footer uses200px natural-width rendering.
+Final commit is resolved through git log -1; GitHub/Vercel status confirms
+publication after push. This authorization supersedes the local-only boundary
+in the historical implementation entries below.
+
+## Footer image logo —2026-11-03
+
+User requests replacing Footer's text Central Hill with logos/Logo footer.png.
+Root owns site-footer.tsx, Settings README and this handoff. Preserve the
+preceding uncommitted header-logo changes and all user-supplied logos/ files.
+Static Next Image import of the original transparent3508×2481 white PNG,
+200px width/max-width100%, natural proportions, alt Central Hill, default lazy
+loading. Shared Footer kernel/contacts/navigation unchanged. Include this PNG
+and the referenced top-bar PNG in a later commit; no commit/deploy requested
+here. Aesthetic L0; user reviews3071, no automatic tests/QA or DB/storage writes.
+
+## Top-bar image logo —2026-11-03
+
+Third follow-up: another10%, now47.916px mobile/53.24px from768px, retaining
+natural proportions; sizes hint170/189px. Same L0 scope, user reviews localhost.
+
+Second follow-up: another10% over the current size, now43.56px mobile/48.4px
+from768px (21% above the original36/40), with sizes hint155/172px. Same L0 scope.
+
+Follow-up: user requests10% larger. Height is now39.6px mobile/44px from768px
+(previously36/40), natural aspect ratio retained; image sizes hint141/156px.
+Aesthetic L0, user reviews3071; no tests/automatic QA or deployment.
+
+User requests replacing the text Central Hill in the top navigation with the
+provided logos/Logo Barra Topo bg.png. Base main/fca0414 (already deployed to
+GitHub/Vercel in the preceding conversation;24 Neon migrations were current).
+Pre-existing untracked logos/ directory contains four user-supplied originals;
+preserve all. Root owns site-header.tsx, Settings README and this handoff.
+
+Header now statically imports the requested transparent3397×958 PNG using Next
+Image, priority-loaded, at36px high mobile/40px from768px, with its natural
+aspect ratio. Existing localized Home link/aria label preserved; image alt is
+Central Hill. No logo recreation, image editing, footer or other asset changes.
+The referenced PNG must be included in any later commit; the other supplied
+logos remain unmodified/untracked. Aesthetic L0: user validates localhost,
+no automatic tests/QA, DB/storage writes, commit, push or deployment requested.
+
 ## Commit and production release authorized —2026-11-01
 
 User now explicitly requests committing and deploying to maxhost/central-hill,

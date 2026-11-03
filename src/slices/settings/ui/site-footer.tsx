@@ -1,4 +1,6 @@
 import { getTranslations } from "next-intl/server";
+import Image from "next/image";
+import footerLogo from "../../../../logos/Logo footer.png";
 import type { Locale } from "@core/db/columns";
 import { Footer, type FooterNavGroup, type FooterSocialLink } from "@core/ui";
 import { Icon } from "@core/ui/icon";
@@ -74,9 +76,12 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
   return (
     <Footer
       brand={
-        <div className="font-serif text-[27px] font-semibold">
-          Central<span className="text-feature-accent">Hill</span>
-        </div>
+        <Image
+          src={footerLogo}
+          alt="Central Hill"
+          className="h-auto w-[200px] max-w-full"
+          sizes="200px"
+        />
       }
       toggleLabel={t("footer.toggle")}
       ownerLabel={t("footer.owner")}

@@ -1,4 +1,6 @@
 import { getTranslations } from "next-intl/server";
+import Image from "next/image";
+import topBarLogo from "../../../../logos/Logo Barra Topo bg.png";
 import type { Locale } from "@core/db/columns";
 import { MobileDrawer, NavBar, buttonClassName, type NavEntry } from "@core/ui";
 import { Icon } from "@core/ui/icon";
@@ -148,9 +150,15 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
             href="/"
             aria-label={t("home")}
             data-brand
-            className="font-serif text-xl font-semibold text-ink"
+            className="inline-flex shrink-0 items-center"
           >
-            Central<span className="text-accent">Hill</span>
+            <Image
+              src={topBarLogo}
+              alt="Central Hill"
+              className="h-[47.916px] w-auto md:h-[53.24px]"
+              sizes="(min-width: 768px) 189px, 170px"
+              priority
+            />
           </Link>
         }
         links={links}

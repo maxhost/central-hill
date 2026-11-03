@@ -54,6 +54,12 @@ check-in phone and email. The existing BO check-in field now feeds both Footer
 and About; blank hides the check-in row. Phone/email links have matching icons
 and labels in all four locales. No new schema or database writes are required.
 
+Footer branding uses the supplied transparent white `logos/Logo footer.png`
+(2026-11-03), statically imported through Next Image with alt Central Hill,
+200px width and natural proportions, capped to the available column width.
+The original file is preserved and loading stays lazy. Aesthetic L0; user
+validates on localhost.
+
 **Booking links (client feedback B2)** — `avantioBookingUrl(locale)`, `AVANTIO_LOCALES`,
 `AVANTIO_OWNERS_LOGIN_URL` (pure, from `booking.ts`; safe in server + client). Every
 "search / book" CTA points at the Avantio rentals engine for the active locale, falling
@@ -116,6 +122,13 @@ throws `jQuery.cookie is not a function`, and supplying that plugin makes it wri
 and the browser-verified checks: `docs/specs/avantio-search-widget.md`.
 
 ## Header chrome — top-right cluster + sub-tabs (client feedback B1)
+
+The top-bar brand uses the supplied transparent `logos/Logo Barra Topo bg.png`
+(2026-11-03), statically imported through Next Image. It retains the locale-aware
+Home link and accessible naming. Following three successive10% enlargements, the
+original proportions are preserved at47.916px high on mobile and53.24px from768px,
+within the existing64px navbar. The footer uses its separate supplied logo.
+This is an aesthetic L0 change, user-reviewed on localhost.
 
 Desktop's **Earn With Us** CTA is a persistent rounded tab (`header-earn`),
 centered below the utility icons and attached to the navbar's bottom edge.
