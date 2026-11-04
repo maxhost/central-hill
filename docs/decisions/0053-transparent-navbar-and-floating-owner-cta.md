@@ -3,6 +3,10 @@
 Accepted2026-11-04, explicit user request. Supersedes ADR0042's permanent navbar
 gradient/tab presentation; shared feature gradients elsewhere remain unchanged.
 
+Opacity follow-up: user requests the navbar and submenu surfaces both at70%.
+Scoped unlayered CSS applies color-mix(bg70%,transparent), overriding the
+primitive's older85%/95% utilities. The initial hero header stays transparent.
+
 Restore transparent header/light foreground over a hero at scrollY≤2; scroll,
 submenu hover/focus and pages without a hero use bg-bg/85 (#FBF8F3 at85%) with
 blur and dark foreground. Submenus use their original light surface. HeaderScroll
@@ -10,6 +14,11 @@ only reflects scroll state; the removed owner tab needs no resize measurements.
 
 Use the supplied light top-bar logo over heroes and its dark base variant on
 light header backgrounds, with identical dimensions. Preserve the approved size.
+
+Runtime filename follow-up: import the dark logo as logos/logo-barra-topo-base.png,
+an identical copy of the supplied base PNG. Preserve its original filename as
+well; an ASCII runtime path avoids the NFC/NFD mismatch across local Turbopack
+and Linux deployments.
 
 Remove Earn With Us from header utilities and mobile drawer. MobileDrawer's
 earn prop becomes optional, rendering the existing CTA only when supplied;

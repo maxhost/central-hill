@@ -39,7 +39,7 @@
   }
 }
 
-/* ADR0053: transparent over a hero at the top; the NavBar's bg-bg/85 and blur
+/* ADR0053: transparent over a hero at the top; a70% warm background and blur
  * take over on scroll, submenu hover/focus, or pages without a hero.
  * Popovers and mobile drawer retain their own palette via data-chrome-keep.
  */
@@ -48,6 +48,11 @@
 }
 body:has([data-hero], .mk .hero) #main {
   padding-top: 0; /* hero pages: the nav overlays the hero */
+}
+
+[data-site-header],
+[data-site-header] [data-subnav-panel] {
+  background-color: color-mix(in srgb, var(--color-bg) 70%, transparent);
 }
 
 body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav] :focus-visible)) {

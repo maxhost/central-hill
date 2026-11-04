@@ -141,17 +141,21 @@ and the browser-verified checks: `docs/specs/avantio-search-widget.md`.
 ## Header chrome — top-right cluster + sub-tabs (client feedback B1)
 
 The top-bar brand uses the supplied light `logos/Logo Barra Topo bg.png` over a
-hero, and `logos/Logo Barra Topo (versão base).png` on light header surfaces
+hero, and `logos/logo-barra-topo-base.png` on light header surfaces
 (ADR0053), statically imported through Next Image. It retains the locale-aware
 Home link and accessible naming. Following three successive10% enlargements, the
 original proportions are preserved at47.916px high on mobile and53.24px from768px,
 within the existing64px navbar. The footer uses its separate supplied logo.
 This is an aesthetic L0 change, user-reviewed on localhost.
 
+The dark logo runtime file is an identical copy of the supplied base variant
+under an ASCII filename, avoiding Unicode normalization differences between
+macOS/Turbopack and Vercel/Linux. The original supplied PNG remains preserved.
+
 The navbar is transparent over a hero at the top (scrollY≤2), with light text and
 logo. Scrolling, opening a desktop submenu or visiting a page without a hero
-uses the original warm paper #FBF8F3 at85% with blur, dark text/logo and light
-submenus. HeaderScroll only toggles the scroll class; tab-gradient measurements
+uses warm paper #FBF8F3 at70% with blur, dark text/logo and light
+submenus at the same70% opacity. HeaderScroll only toggles the scroll class; tab-gradient measurements
 are removed. This2026-11-04 request supersedes ADR0042 via ADR0053.
 
 **Earn With Us** is removed from the header and mobile drawer. WhatsAppFab now

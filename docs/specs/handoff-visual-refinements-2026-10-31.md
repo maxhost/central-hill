@@ -1,5 +1,37 @@
 # Local visual refinements — resume after context clear
 
+## Opacity/logo release authorized —2026-11-04
+
+User requests commit/push of the70% navbar/submenu opacity and portable dark
+logo import to maxhost/central-hill. Base/fresh origin maincf21750. Include the
+new identical ASCII-named PNG copy, header import, globals.css and accompanying
+README/ADR0053/handoff. Preserve the unused Central Hill base logo untracked.
+Use the supplied token only for this push without modifying saved credentials.
+No tests/automatic QA, subscription sends or DB writes. Vercel deployment status
+confirms publication; no new environment variable or migration needed.
+Final commit is resolved with git log -1.
+
+## Dark logo portable import fix —2026-11-04
+
+User reports local Turbopack cannot resolve the NFC logo import introduced for
+Vercel. Normalizing only the import fixed that deployment but not local module
+resolution. Copy the original supplied dark PNG unchanged to
+logos/logo-barra-topo-base.png and use that ASCII path in SiteHeader. Preserve
+the original PNG and all pending70% opacity work. The new runtime copy must be
+included in a later commit. Root owns the PNG copy, header import, Settings
+README, ADR0053 note and this handoff. No tests/check suites/automatic QA,
+DB writes, commit, push or deployment requested; user reloads3071.
+
+## Navbar/submenu opacity —2026-11-04, aftercf21750
+
+User requests matching both surfaces at70% (previously navbar85%/submenu95%).
+Scoped globals.css rule sets background-color using the bg token at70% on
+data-site-header and data-subnav-panel. Initial hero transparency, blur, text,
+logos and submenu hover behavior preserved. Updated ADR0053/Settings README.
+Previous navigation release cf21750 is GitHub-synced and Vercel-successful.
+This follow-up is local aesthetic L0: user reviews3071; no tests/automatic QA,
+DB writes, commit, push or deployment requested.
+
 ## Navigation/spacing release authorized —2026-11-04
 
 First push35fc36c reached GitHub but Vercel deployment failed. Source inspection
