@@ -355,7 +355,7 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
                 <h2 className="max-w-[720px] font-serif text-[clamp(30px,4vw,50px)] font-medium leading-[1.08] tracking-[-0.015em] text-ink">
                   {AL.title}
                 </h2>
-                <ButtonLink href={avantioBookingUrl("en")} className="shrink-0">
+                <ButtonLink href={avantioBookingUrl("en")} className="shrink-0 mr-[60px] mt-[5px]">
                   {tSettings("ctaBook")}
                 </ButtonLink>
               </div>

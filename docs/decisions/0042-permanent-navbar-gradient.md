@@ -2,6 +2,10 @@
 
 Accepted: explicit user request, 2026-10-31.
 
+Navbar presentation superseded2026-11-04 by [ADR0053](0053-transparent-navbar-and-floating-owner-cta.md):
+transparent hero/frosted scroll behavior restored, owner CTA moved above WhatsApp.
+The implementation below records the historical decision.
+
 The navbar always uses the footer's shared feature gradient,
 `linear-gradient(90deg, #4c3d32 0%, #926c52 100%)`.
 This replaces the transparent hero and frosted scrolled header appearances.

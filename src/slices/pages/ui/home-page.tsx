@@ -169,7 +169,7 @@ export async function HomePage({ locale, preview = false, page: injectedPage }: 
       ) : null}
 
       {/* Closing owner/guest dual CTA (restored, client direction) — sits right before the footer. */}
-      <div {...binding("dual_cta")} className="[&_section]:pt-[70px] [&_section]:pb-0"><Reveal label="dual-cta">
+      <div {...binding("dual_cta")} className="[&_section]:py-[70px]"><Reveal label="dual-cta">
         <DualCta locale={locale} content={dual_cta} media={media} />
       </Reveal></div>
     </main>

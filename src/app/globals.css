@@ -39,8 +39,9 @@
   }
 }
 
-/* Fixed navbar uses the footer's opaque feature gradient at every scroll position.
- * Light popovers and mobile drawer retain their own palette via data-chrome-keep.
+/* ADR0053: transparent over a hero at the top; the NavBar's bg-bg/85 and blur
+ * take over on scroll, submenu hover/focus, or pages without a hero.
+ * Popovers and mobile drawer retain their own palette via data-chrome-keep.
  */
 #main {
   padding-top: 4rem; /* reserve the fixed nav height (Container h-16) */
@@ -49,61 +50,46 @@ body:has([data-hero], .mk .hero) #main {
   padding-top: 0; /* hero pages: the nav overlays the hero */
 }
 
-[data-site-header] {
-  background-color: var(--color-feature);
-  background-image: var(--background-image-feature);
-  border-color: color-mix(in srgb, var(--color-on-feature) 20%, transparent);
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav] :focus-visible)) {
+  background-color: transparent;
+  border-color: transparent;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-  color: var(--color-on-feature);
+  color: #fff;
 }
-/* Tab coordinates are measured by HeaderScroll to share the navbar's color stops. */
-[data-site-header] {
-  background-size: 100% 100%;
-  background-position: left top;
-  background-repeat: no-repeat;
-}
-[data-site-header]
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav] :focus-visible))
   :is(.text-ink, .text-ink-soft):not([data-chrome-keep], [data-chrome-keep] *) {
   color: #fff;
 }
-[data-site-header]
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav] :focus-visible))
   .border-line:not([data-chrome-keep], [data-chrome-keep] *) {
   border-color: rgba(255, 255, 255, 0.6);
 }
-[data-site-header] [data-brand] span {
-  color: var(--color-feature-accent);
+/* Supplied logo variants have identical proportions and keep the same layout box. */
+[data-site-header] [data-header-logo="light"] {
+  display: none;
+}
+[data-site-header] [data-header-logo="dark"] {
+  display: block;
+}
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav] :focus-visible)) [data-header-logo="light"] {
+  display: block;
+}
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav] :focus-visible)) [data-header-logo="dark"] {
+  display: none;
 }
 
-/* Full-width subnavigation continues the navbar's gradient and light foreground. */
-[data-site-header] [data-subnav-panel] {
-  background-color: var(--color-feature);
-  background-image: var(--background-image-feature);
-  border-color: color-mix(in srgb, var(--color-on-feature) 20%, transparent);
-  color: #fff;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-[data-site-header] [data-subnav-panel] a {
-  color: #fff;
-}
-[data-site-header] [data-subnav-panel] a:hover,
-[data-site-header] [data-subnav-panel] a:focus-visible {
-  color: #fff;
-  border-bottom-color: #fff;
-}
-
-/* Booking keeps a light outline against the permanent gradient. */
-[data-site-header] [data-cta="ghost"] {
+/* Booking uses a light outline only over the transparent hero. */
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav] :focus-visible)) [data-cta="ghost"] {
   border-color: rgba(255, 255, 255, 0.6);
   color: #fff;
 }
-[data-site-header] [data-cta="ghost"]:hover {
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav] :focus-visible)) [data-cta="ghost"]:hover {
   background-color: #fff;
   color: var(--color-ink);
 }
 
-/* Owner tab hangs below the utilities, as in the user's reference. */
+/* Utilities stay aligned in the navbar after the owner CTA moves to the floating stack. */
 [data-site-header] .header-utilities {
   position: relative;
   display: flex;
@@ -116,58 +102,30 @@ body:has([data-hero], .mk .hero) #main {
   height: 64px;
   white-space: nowrap;
 }
-[data-site-header] .header-utilities > :not(.header-earn) {
+[data-site-header] .header-utilities > * {
   flex-shrink: 0;
 }
-[data-site-header] .header-earn {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  display: inline-flex;
-  align-items: flex-start;
-  justify-content: center;
-  width: 140px;
-  height: 100px;
-  box-sizing: border-box;
-  padding: 30px 8px 0;
-  border-radius: 0 0 70px 70px;
-  white-space: normal;
-  background-color: var(--color-feature);
-  background-image: var(--background-image-feature);
-  background-size: var(--header-gradient-width, 100vw) 100%;
-  background-position: var(--earn-gradient-offset, 0px) top;
-  background-repeat: no-repeat;
-  color: var(--color-on-feature);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.3;
-  text-align: center;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition: color 300ms, height 200ms ease, padding-top 200ms ease;
-}
-[data-site-header]:has([data-subnav]:hover, [data-subnav]:focus-within) .header-earn,
-body:has([data-page="owners"]) [data-site-header].scrolled .header-earn {
-  height: calc(100px + var(--header-subnav-height, 48px));
-  padding-top: calc(30px + var(--header-subnav-height, 48px));
-}
-[data-site-header] .header-earn:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
-}
-[data-site-header] .header-earn:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: -4px;
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-site-header] .header-earn {
-    transition: none;
-  }
-}
-
-/* Utility icons retain light foreground on the permanent gradient. */
-[data-site-header] [data-icon-btn]:hover {
+/* Utility hover remains legible while the header is transparent. */
+body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([data-subnav]:hover, [data-subnav] :focus-visible)) [data-icon-btn]:hover {
   background-color: var(--color-accent);
   color: #fff;
+}
+
+/* Full-height menu targets connect directly to their submenu without a hover gap. */
+[data-site-header] nav:has(> [data-subnav]) {
+  height: 100%;
+}
+[data-site-header] [data-subnav] {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+/* Mouse focus after a click must not keep a submenu open after leaving both regions.
+ * Keyboard focus-visible retains the original focus-within navigation behavior.
+ */
+[data-site-header] [data-subnav]:not(:hover):not(:has(:focus-visible)) [data-subnav-panel] {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
 }

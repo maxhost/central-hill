@@ -47,8 +47,8 @@ export function MobileDrawer({
   /** Caller's own contact trigger (e.g. `<ContactDialog variant="button" .../>`). */
   contactSlot: ReactNode;
   book: NavCta;
-  /** Owner-acquisition CTA ("Earn With Us") — standout accent fill, drawer-only. */
-  earn: NavCta;
+  /** Optional owner-acquisition CTA; omit when the site provides a floating action. */
+  earn?: NavCta;
   openLabel: string;
   closeLabel: string;
 }) {
@@ -147,18 +147,17 @@ export function MobileDrawer({
               >
                 {book.label}
               </a>
-              {/* Owner-acquisition CTA, drawer-only (client feedback) — solid accent fill
-               * (mirrors `core/ui` `ButtonLink`'s `primary` variant) so it stands out next to
-               * the outlined "Book Now" above it. */}
-              <a
-                href={earn.href}
-                target={earn.external ? "_blank" : undefined}
-                rel={earn.external ? "noopener noreferrer" : undefined}
-                onClick={close}
-                className={buttonClassName("primary", undefined, "sm")}
-              >
-                {earn.label}
-              </a>
+              {earn ? (
+                <a
+                  href={earn.href}
+                  target={earn.external ? "_blank" : undefined}
+                  rel={earn.external ? "noopener noreferrer" : undefined}
+                  onClick={close}
+                  className={buttonClassName("primary", undefined, "sm")}
+                >
+                  {earn.label}
+                </a>
+              ) : null}
               {contactSlot}
             </div>
           </nav>

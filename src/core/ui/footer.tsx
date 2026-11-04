@@ -72,7 +72,7 @@ export function Footer({
 }) {
   return (
     <footer className="bg-feature text-on-feature">
-      <Container className="pb-9 pt-[74px]">
+      <Container className="pb-9 pt-[35px]">
         <div className="mb-[38px] flex flex-col gap-5 border-b border-white/[0.12] pb-[26px] sm:flex-row sm:items-center sm:justify-between">
           <div className="text-[13px] tracking-[0.02em] text-on-feature-soft">
             {toggleLabel}{" "}

@@ -1,5 +1,87 @@
 # Local visual refinements — resume after context clear
 
+## Navigation/spacing release authorized —2026-11-04
+
+User explicitly requests committing and publishing accumulated local adjustments
+to maxhost/central-hill, with their token used only for the push and no changes
+to saved55mais credentials. Base/fresh origin maina312986. Scope: transparent
+hero/frosted-scroll navbar with light/dark logos; hover submenu close behavior;
+owner floating CTA above WhatsApp (12px gap,73.92/84.48px circle); Home closing
+panels70px bottom; shared Footer35px top; building detail Book Now60px right/
+5px top margins. Include the now-referenced dark top-bar PNG and ADR0053/0054.
+The unused Central Hill base logo stays untracked and untouched.
+
+User-owned localhost visual review; no automatic tests/check suites/browser QA
+or subscription submits run. No migrations/DB writes or new environment variables.
+Commit is resolved with git log -1; publication is confirmed by GitHub/Vercel
+deployment status after push. Earlier local-only notes below are historical.
+
+## Submenu hover lifetime —2026-11-04
+
+User requests submenus expand on hover and hide after leaving menu/submenu.
+Remove Owners' scroll-pinned OWNERS_NAV_CSS from SiteHeader. Scoped globals.css
+override hides panels immediately when neither hovered nor keyboard-focused
+(:focus-visible), so mouse-click focus-within cannot leave them stuck open.
+Header/logo hero rules now use the same keyboard-visible focus condition.
+Desktop nav/group fill the64px row to remove the gap before top-full submenus.
+Keyboard navigation and mobile accordions preserved. Updated HeaderScroll
+comment/Settings README. Aesthetic L0; user reviews3071, no tests/automatic QA,
+DB writes, commit, push or deployment.
+
+## Building detail Book Now margins —2026-11-04
+
+User requests60px right margin and5px top margin only on the Book Now button
+with shrink-0 in every building detail design (example big-chiado-terrace).
+Applied mr-[60px] mt-[5px] directly to that ButtonLink in building-detail.tsx;
+shared button primitive and other CTAs unchanged. Aesthetic L0; user reviews
+localhost3071, no tests/automatic QA, DB writes, commit, push or deployment.
+
+## Footer audience row top spacing —2026-11-04
+
+Follow-up: user requests35px for this exact footer Container. Updated70→35px
+site-wide; bottom padding remains pb-9. Same aesthetic L0 scope.
+
+User requests70px top padding above Are you a guest or an owner? Owner · Guest.
+The row is in the shared Footer; its Container top padding changes74→70px
+site-wide. Root-owned kernel adjustment recorded in ADR0054. Aesthetic L0,
+user reviews3071; no tests/automatic QA, DB writes, commit, push or deployment.
+
+## Home Owners/Guests bottom spacing —2026-11-04
+
+User requests70px bottom padding for Home's two-column Owners/Guests section
+before the footer newsletter. Home-only wrapper now applies70px top/bottom
+(bottom previously0), leaving the shared panels and Blog spacing unchanged.
+Aesthetic L0; user reviews3071, no tests/automatic QA, DB writes, commit or deploy.
+
+## Floating Earn With Us size —2026-11-04
+
+Second follow-up: another10% over current size, now73.92px mobile/84.48px
+desktop; label13.2/14.52px, proportional horizontal padding. Same L0 scope.
+
+User requests20% larger owner circle only. Diameter56→67.2px mobile and
+64→76.8px desktop; label10→12px and11→13.2px, proportional horizontal padding.
+WhatsApp unchanged; shared stack keeps12px gap and --fab-lift. Aesthetic L0,
+user reviews3071; no tests/automatic QA, DB writes, commit, push or deployment.
+
+## Transparent navbar / floating owner CTA —2026-11-04
+
+User requests restoring transparent-at-top / warm-paper-scroll navigation,
+removing Earn With Us from navbar and placing it as a circle above WhatsApp.
+Bounded root-owned aesthetic L0 change on main, basea312986. Source state was
+clean except two unused original logos. No agents, tests/check suites/automatic
+visual QA, database/storage writes, commit, push or deploy requested.
+
+Changed globals.css header rules only (feature gradients elsewhere preserved),
+HeaderScroll (scroll toggle only), SiteHeader (light/dark supplied PNG switch,
+remove owner tab and drawer prop), MobileDrawer (additive optional earn prop)
+and WhatsAppFab (shared fixed stack, localized owner circle,12px gap). All four
+locale labels/Owners navigation preserved. Stack keeps56/64px circle sizes,
+existing viewport offsets and --fab-lift for the service mobile booking bar.
+Dark base logo is now referenced and must be included in a later commit;
+the other unused original logo stays untracked. Updated Settings README and
+ADR0042 supersession note; root-owned ADR0053 documents the kernel seam change.
+User validates localhost3071; no new QA or deployment claim.
+
 ## Brevo release authorized —2026-11-03
 
 User now requests commit/push/deploy of the footer+Blog Brevo integration to

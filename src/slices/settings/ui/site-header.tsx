@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import topBarLogo from "../../../../logos/Logo Barra Topo bg.png";
+import darkTopBarLogo from "../../../../logos/Logo Barra Topo (versão base).png";
 import type { Locale } from "@core/db/columns";
 import { MobileDrawer, NavBar, buttonClassName, type NavEntry } from "@core/ui";
 import { Icon } from "@core/ui/icon";
@@ -42,28 +43,14 @@ const DEFAULT_HEADER: Array<{ key: string; href: string; children?: Array<{ key:
   { key: "blog", href: "/blog" },
 ];
 
-/**
- * On the Owners page the "Owners" mega-menu IS the page's section sub-nav (the page no longer
- * renders its own bar). Two reveal triggers, both also giving the header its frosted background
- * (handled by the hero-chrome rules in `globals.css`): (1) hover — the normal `group-hover`
- * dropdown; (2) scroll — once `[data-site-header]` gains `.scrolled` (past the top) we pin the
- * Owners panel open so it behaves like a sticky section bar. Scoped to the owners page via
- * `body:has([data-page="owners"])`; every other page/menu is untouched. No JS, no kernel edit.
- */
-const OWNERS_NAV_CSS = `
-body:has([data-page="owners"]) [data-site-header].scrolled [data-nav-item="/owners"] [data-subnav-panel]{
-  visibility:visible;opacity:1;
-}
-`;
-
 const HEADER_BOOKING_URL = "https://www.centralhill.pt/en/rentals/holidays-rentals-rentals-d0/";
 
 /**
  * The "Owners" menu reveals the owners-page sections directly, hardcoded rather than read from the
  * DB nav sub-tabs (owner-directed). Hrefs map to the section anchors on the owners page — kept in
  * sync with `slices/pages/ui/owners-page.tsx` (see ADR 0023 updates / drizzle 0004→0007). On the
- * owners page this dropdown doubles as the page's section sub-nav — opened on hover and pinned open
- * on scroll (see `OWNERS_NAV_CSS`); on mobile they appear under "Owners" in the burger drawer.
+ * owners page this dropdown doubles as the page's section sub-nav, opened on hover or keyboard
+ * navigation; on mobile they appear under "Owners" in the burger drawer.
  */
 const OWNERS_SECTIONS: Array<{ label: string; href: string }> = [
   { label: "What's My Property Worth?", href: "/owners#worth" },
@@ -142,7 +129,6 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
   return (
     <>
       <HeaderScroll />
-      <style>{OWNERS_NAV_CSS}</style>
       <NavBar
         skipLinkLabel={t("skip")}
         brand={
@@ -153,11 +139,20 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
             className="inline-flex shrink-0 items-center"
           >
             <Image
+              data-header-logo="light"
               src={topBarLogo}
               alt="Central Hill"
               className="h-[47.916px] w-auto md:h-[53.24px]"
               sizes="(min-width: 768px) 189px, 170px"
               priority
+            />
+            <Image
+              data-header-logo="dark"
+              src={darkTopBarLogo}
+              alt="Central Hill"
+              className="h-[47.916px] w-auto md:h-[53.24px]"
+              sizes="(min-width: 768px) 189px, 170px"
+              loading="eager"
             />
           </Link>
         }
@@ -201,9 +196,6 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
               label={t("language")}
               icon={<Icon name={icons.language} size={18} />}
             />
-            <Link href="/owners" data-cta="earn" className="header-earn">
-              {t("ctaEarn")}
-            </Link>
           </div>
         }
         mobileDrawer={
@@ -223,7 +215,6 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
               />
             }
             book={{ href: HEADER_BOOKING_URL, label: t("ctaBook"), external: true }}
-            earn={{ href: `/${locale}/owners`, label: t("ctaEarn") }}
             openLabel={t("menu")}
             closeLabel={t("close")}
           />

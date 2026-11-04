@@ -140,27 +140,27 @@ and the browser-verified checks: `docs/specs/avantio-search-widget.md`.
 
 ## Header chrome — top-right cluster + sub-tabs (client feedback B1)
 
-The top-bar brand uses the supplied transparent `logos/Logo Barra Topo bg.png`
-(2026-11-03), statically imported through Next Image. It retains the locale-aware
+The top-bar brand uses the supplied light `logos/Logo Barra Topo bg.png` over a
+hero, and `logos/Logo Barra Topo (versão base).png` on light header surfaces
+(ADR0053), statically imported through Next Image. It retains the locale-aware
 Home link and accessible naming. Following three successive10% enlargements, the
 original proportions are preserved at47.916px high on mobile and53.24px from768px,
 within the existing64px navbar. The footer uses its separate supplied logo.
 This is an aesthetic L0 change, user-reviewed on localhost.
 
-Desktop's **Earn With Us** CTA is a persistent rounded tab (`header-earn`),
-centered below the utility icons and attached to the navbar's bottom edge.
-It is 140px wide and 100px tall with 30px top padding for its label, following
-the user's final image reference. The navbar
-permanently uses the footer's feature gradient; the tab shares that gradient's
-width and coordinates, updated by HeaderScroll to match the colors at the seam,
-with light text over heroes and after scrolling (ADR 0042).
-It links to the active locale's Owners page.
-While a header submenu is open (hover/focus, or the pinned Owners submenu),
-the tab keeps its top attached to the navbar and stretches by the submenu's
-measured height. Its label gains the same top padding so it remains below the
-submenu. The tab returns to its base height when the submenu closes.
-The mobile drawer retains its standard CTA layout. Aesthetic L0 change requested
-2026-10-31; visual validation is performed by the user on localhost.
+The navbar is transparent over a hero at the top (scrollY≤2), with light text and
+logo. Scrolling, opening a desktop submenu or visiting a page without a hero
+uses the original warm paper #FBF8F3 at85% with blur, dark text/logo and light
+submenus. HeaderScroll only toggles the scroll class; tab-gradient measurements
+are removed. This2026-11-04 request supersedes ADR0042 via ADR0053.
+
+**Earn With Us** is removed from the header and mobile drawer. WhatsAppFab now
+composes two fixed circles: the localized Owners link above WhatsApp with12px
+gap. Following successive20% and10% enlargements, Owners is73.92px mobile/84.48px
+desktop; WhatsApp stays56/64px. It uses the existing accent and visible translated
+label. Both share --fab-lift to stay above service mobile booking bars. The
+MobileDrawer earn prop is optional, so unrelated callers can retain a drawer
+CTA. Aesthetic L0: user validates localhost, no automatic tests/QA.
 
 `ui/site-header.tsx` is laid out in **three sections**: (1) the brand logo; (2) the **menu** —
 the primary nav links plus a ghost **Book Now** CTA set off at the end. On desktop and mobile,
@@ -187,6 +187,12 @@ Guests' Services/Guides child labels now use `settings.subnav.guests` in all fou
 locales, including when navigation is configured in DB. English labels are
 “Guest Services & Experiences” and “Top Things to Do & Recommendations”. This
 presentation override keeps their destinations and other navigation labels intact.
+Desktop submenus now open on hover across their parent menu/submenu region and
+close immediately when leaving both. Mouse focus left after clicking does not
+pin them open; keyboard focus-visible still supports navigation. Owners no longer
+auto-expands on scroll. Full-height menu targets bridge directly to the panels.
+Mobile drawer accordions retain their existing touch behavior.
+
 Owners / Real Estate / About sub-tabs are hardcoded section-anchor lists (not DB nav). The Real
 Estate list lives in `ui/subnav-sections.ts` (`{ key, href }`) and its labels are i18n keys
 `settings.subnav.realEstate.<key>` in all 4 locales (real-estate spec S6); Owners and About labels
