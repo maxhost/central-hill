@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import topBarLogo from "../../../../logos/Logo Barra Topo bg.png";
-import darkTopBarLogo from "../../../../logos/Logo Barra Topo (versão base).png";
+import darkTopBarLogo from "../../../../logos/Logo Barra Topo (versão base).png";
 import type { Locale } from "@core/db/columns";
 import { MobileDrawer, NavBar, buttonClassName, type NavEntry } from "@core/ui";
 import { Icon } from "@core/ui/icon";

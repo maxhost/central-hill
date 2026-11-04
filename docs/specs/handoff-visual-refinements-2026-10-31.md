@@ -2,6 +2,13 @@
 
 ## Navigation/spacing release authorized —2026-11-04
 
+First push35fc36c reached GitHub but Vercel deployment failed. Source inspection
+identified the dark logo import using decomposed a+U0303 while Git stores
+precomposed U00E3 in versão. They resolve alike on macOS but differ on Linux.
+Follow-up normalizes the import to the exact Git path before republishing;
+no tests/check suites or subscription sends. Final deploy status must be read
+against the follow-up commit rather than claiming35fc36c deployed successfully.
+
 User explicitly requests committing and publishing accumulated local adjustments
 to maxhost/central-hill, with their token used only for the push and no changes
 to saved55mais credentials. Base/fresh origin maina312986. Scope: transparent
