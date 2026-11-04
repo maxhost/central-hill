@@ -135,8 +135,16 @@ see the open Avantio request in §11 of the restyle spec.
 
 The vendor's `its--scripts.js` is **deliberately off** (`LOAD_FRAMEWORK_BUNDLE = false`): it
 throws `jQuery.cookie is not a function`, and supplying that plugin makes it write a 360-day
-`acepta_cookie` consent cookie with no prompt. The search bar does not need it. Full rationale
-and the browser-verified checks: `docs/specs/avantio-search-widget.md`.
+`acepta_cookie` consent cookie with no prompt. `avantio-children-ages.ts` supplies the
+`abroPopupNinyosWebPlus` hook otherwise missing from this disabled framework. It displays
+Avantio's returned age fields inside the original form with the existing popover styling;
+OK validates through `validaEdades`, Escape/outside click dismiss, and hidden fields retain
+their selected values for serialization. Reopen with the same Children selection (click,
+or Enter with keyboard); changing the count preserves remaining ages and clearing it removes
+them. The hook/listeners are cleaned up on unmount, and widget initialization restarts safely
+after Strict Mode effect cleanup. No Bootstrap or cookie bundle is loaded.
+Full rationale and historical checks: `docs/specs/avantio-search-widget.md`.
+Current correction/user-owned localhost review: `docs/specs/avantio-children-ages-fix.md`.
 
 ## Header chrome — top-right cluster + sub-tabs (client feedback B1)
 

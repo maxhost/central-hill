@@ -72,10 +72,18 @@ That writes a 360-day "consent accepted" cookie on our domain, with no prompt, f
 element (`#its--container_cook`) this site never renders. For a Portugal/EU business that is a
 consent decision to take deliberately, not a side effect of adding a search widget.
 
-Nothing is lost. The search button calls `validaForm()` and `enviaForm()`, both defined by
-`formulario_miniselects.js`, which **is** loaded. The rest of the bundle targets elements we do
-not render: a Bootstrap popover, a `#multimoneda` currency dropdown, and a parallax gated on
-`#miniformulario_slider.enable` (our container has no `.enable` class).
+**Dependency correction, 2026-11-04:** The search button calls `validaForm()` and
+`enviaForm()`, both defined by `formulario_miniselects.js`, which **is** loaded. However,
+selecting children calls `OcultaBoton()` → `ninyosAjaxExterno(1)` →
+`abroPopupNinyosWebPlus(response)`. That last function lives in the disabled framework;
+the original assessment missed this dependency. `avantio-children-ages.ts` now supplies
+only that hook using native DOM events and the existing styled `.popover` markup.
+The age fields and validation remain Avantio's; Bootstrap and cookie handling stay off.
+See [children-ages correction](avantio-children-ages-fix.md) for scope and review limits.
+
+The other framework features target elements we do not render: a `#multimoneda`
+currency dropdown and a parallax gated on `#miniformulario_slider.enable`
+(our container has no `.enable` class).
 
 Re-enable it by flipping the constant — and load `jquery.cookie` first if you do.
 

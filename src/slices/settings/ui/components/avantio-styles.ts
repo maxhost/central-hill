@@ -242,6 +242,40 @@ li.ui-menu-item:hover {
 }
 
 /* ---- Children-ages popover ---- */
+#miniformulario_slider .wrapper-FRMNinyos {
+  position: relative;
+}
+#miniformulario_slider .popover.avantio-children-popover {
+  top: calc(100% + 12px);
+  right: 0;
+  left: auto;
+  z-index: 100;
+  display: block;
+  opacity: 1;
+  width: 320px;
+  max-width: calc(100vw - 48px);
+  margin: 0;
+  padding: 16px;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+}
+#miniformulario_slider .popover.avantio-children-popover[hidden] {
+  display: none;
+}
+#miniformulario_slider .avantio-children-popover .popover-content {
+  display: flow-root;
+  padding: 0;
+}
+#miniformulario_slider .avantio-children-popover .cerrar_ninyos {
+  clear: both;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+#miniformulario_slider .avantio-children-popover .cerrar_ninyos:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
 #miniformulario_slider .popover {
   border-color: var(--color-line);
   border-radius: 10px;

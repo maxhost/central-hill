@@ -57,10 +57,12 @@ export const AVANTIO_JQUERY_SRC = "https://crs.avantio.com/default/js/jquery-3.4
 /**
  * Framework bundle the vendor appends before `</body>` (step 4) — **deliberately not loaded.**
  *
- * The search bar does not need it: `enviaForm` / `validaForm`, the two functions the search
- * button calls, come from `formulario_miniselects.js`, and everything this bundle adds targets
- * elements we do not render — Avantio's own cookie banner (`#its--container_cook`), a Bootstrap
- * popover, a `#multimoneda` currency dropdown, and a parallax that requires
+ * `enviaForm` / `validaForm`, the two functions the search button calls, come from
+ * `formulario_miniselects.js`. Its children-ages callback DOES depend on the framework's
+ * `abroPopupNinyosWebPlus`; `ui/components/avantio-children-ages.ts` supplies a scoped native
+ * replacement for that hook. The remaining framework features target elements we do not
+ * render — Avantio's cookie banner (`#its--container_cook`), a `#multimoneda` currency dropdown,
+ * and a parallax that requires
  * `#miniformulario_slider.enable`.
  *
  * It also misbehaves here. It calls `jQuery.cookie`, a plugin the bundle does not ship, so it

@@ -1,5 +1,24 @@
 # Local visual refinements — resume after context clear
 
+## Avantio children-ages publication authorized —2026-11-04
+
+After local delivery the user replies "Listo" and requests push to GitHub with the
+supplied token. Commit/push the scoped Settings correction and its docs to
+maxhost/central-hill main from0547d67. Keep credentials transient and preserve the
+unused untracked logo. No automatic checks, searches/reservations or DB changes.
+Resolve final commit with git log -1; report actual GitHub/Vercel status after push.
+
+## Avantio children-ages correction —2026-11-04, after0547d67
+
+User authorizes restoring missing ages after selecting Children. Root adds a scoped native
+`abroPopupNinyosWebPlus` hook, registered by the client island, to show the age fields returned
+by Avantio without its disabled framework/cookie bundle. Existing palette and vendor form
+serialization/validation retained. Effect cleanup/restart supports Strict Mode. Read
+[correction scope](avantio-children-ages-fix.md). Local3071 user review only: no automatic
+tests/check suites/browser QA, searches/reservations, DB changes, commit, push or deploy.
+Unused Central Hill base logo remains untouched. Source changes are in Settings only,
+plus this handoff and the two Avantio specs; public contracts and locales unchanged.
+
 ## Opacity/floating-position release authorized —2026-11-04
 
 User requests committing/pushing the final local adjustments to

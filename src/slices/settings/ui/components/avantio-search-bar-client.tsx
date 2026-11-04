@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { AvantioScript } from "../../server/avantio-widget";
+import { installAvantioChildrenAges } from "./avantio-children-ages";
 
 /**
  * Mounts the Avantio search widget and brings it to life.
@@ -11,7 +12,8 @@ import type { AvantioScript } from "../../server/avantio-widget";
  * form exists in the DOM. Sequencing matters and is the whole point of this island:
  *
  *   1. `window.CRS_DOMAIN` — `includeJs.php` sets it before anything else reads it.
- *   2. the form markup, so the helpers in step 4 have `#formBusquedaAlquileres` to bind to.
+ *   2. the form markup and local children-ages hook, so the helpers in step 4 have
+ *      `#formBusquedaAlquileres` and `abroPopupNinyosWebPlus` to bind to.
  *   3. jQuery 3.4.1 — the vendor pins this exact build. Loaded explicitly because the branch
  *      that would have injected it uses `document.write`, which we refuse to run.
  *   4. every fetched script in document order, awaiting each external one so `xajax.js` cannot
@@ -19,7 +21,7 @@ import type { AvantioScript } from "../../server/avantio-widget";
  *   5. optionally the Avantio framework bundle. It is off by default — see
  *      `LOAD_FRAMEWORK_BUNDLE` in `server/avantio-widget.ts` for why.
  *
- * Runs once per mount and is idempotent across React strict-mode double-effects. Shared script
+ * Restarts safely across React strict-mode effect cleanup. Shared script
  * URLs are de-duplicated globally, so a second widget on the same page reuses them.
  */
 
@@ -74,22 +76,20 @@ export function AvantioSearchBarClient({
   frameworkSrc?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const startedRef = useRef(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (startedRef.current) return;
     const container = containerRef.current;
     if (!container) return;
-    startedRef.current = true;
 
     let cancelled = false;
+    container.innerHTML = html;
+    const removeChildrenAges = installAvantioChildrenAges(container);
 
     void (async () => {
       const w = window as unknown as { CRS_DOMAIN?: string; jQuery?: unknown };
       w.CRS_DOMAIN ??= "crs.avantio.com";
 
-      container.innerHTML = html;
       setReady(true);
 
       if (!w.jQuery) await loadScript(jquerySrc);
@@ -107,6 +107,7 @@ export function AvantioSearchBarClient({
 
     return () => {
       cancelled = true;
+      removeChildrenAges();
     };
   }, [html, scripts, jquerySrc, frameworkSrc]);
 
