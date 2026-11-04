@@ -1,5 +1,46 @@
 # Local visual refinements — resume after context clear
 
+## Opacity/floating-position release authorized —2026-11-04
+
+User requests committing/pushing the final local adjustments to
+maxhost/central-hill with the supplied token used only for this operation;
+saved55mais credentials remain unchanged. Base/fresh origin maindf7f42f.
+Final behavior: navbar/submenu85% opacity, floating stack bottom320px from640px
+and20px below, inter-button gap30px. Both retain --fab-lift. Root commit scope:
+globals.css, WhatsAppFab, Settings README, ADR0053 and this handoff. Unused
+Central Hill base logo remains untracked and untouched. No tests/automatic QA,
+subscription submits, DB writes/migrations or new environment variables.
+Use git log -1 for the commit and GitHub/Vercel status after push for publication.
+
+## Floating actions bottom offset —2026-11-04
+
+Current gap: user reduces40→30px between the buttons at all viewports;
+desktop/sm bottom320px and mobile20px retained.
+
+Latest gap: user requests40px between Earn With Us and WhatsApp. Applied
+gap-[40px] at all viewports; desktop/sm bottom320px and mobile20px retained.
+
+Current user revision: desktop/sm offset320px; gap increases20% from12px to
+14.4px at all viewports. Both circles move together; mobile bottom20px retained.
+
+Latest user revision: desktop/sm offset is now220px (previously120px). Both
+circles move together; same12px gap, mobile20px and --fab-lift. Same L0 scope.
+
+User requests WhatsApp120px above the viewport bottom on desktop, and asks
+whether Earn With Us also moves. Both share the fixed stack; confirmed they
+move together with12px gap. Existing sm (≥640px) offset28→120px, mobile20px
+unchanged; --fab-lift still adds service booking-bar clearance. Aesthetic L0,
+user reviews3071; no tests/automatic QA, DB writes, commit, push or deploy.
+
+## Navbar/submenu opacity85% —2026-11-04, afterdf7f42f
+
+User requests revising both backgrounds70→85%. Updated the shared scoped
+background-color in globals.css plus Settings README/ADR0053 note. Initial
+hero remains transparent. User also asks the current WhatsApp bottom offset:
+1.25rem (20px) below640px,1.75rem (28px) from640px, plus --fab-lift when service
+mobile booking chrome is visible. No offset change requested. Aesthetic L0,
+user reviews3071; no tests/automatic QA, DB writes, commit, push or deploy.
+
 ## Opacity/logo release authorized —2026-11-04
 
 User requests commit/push of the70% navbar/submenu opacity and portable dark

@@ -3,6 +3,9 @@
 Accepted2026-11-04, explicit user request. Supersedes ADR0042's permanent navbar
 gradient/tab presentation; shared feature gradients elsewhere remain unchanged.
 
+Latest opacity revision: user requests both navbar/submenu backgrounds at85%.
+The initial hero header stays transparent; scoped CSS uses bg85%,transparent.
+
 Opacity follow-up: user requests the navbar and submenu surfaces both at70%.
 Scoped unlayered CSS applies color-mix(bg70%,transparent), overriding the
 primitive's older85%/95% utilities. The initial hero header stays transparent.
@@ -36,6 +39,22 @@ User size follow-up2026-11-04: enlarge the owner circle and its label20%, to
 
 Second size follow-up: another10% over that size, now73.92px mobile/84.48px
 desktop, with proportional label/padding. WhatsApp size and12px gap retained.
+
+Position follow-up: user requests WhatsApp120px above the viewport bottom on
+the existing sm-and-up layout (previously28px). The shared stack moves Owners
+with it and keeps the12px gap. Below640px the20px offset is retained; both still
+honor --fab-lift above service mobile booking chrome.
+
+Latest position revision: user raises that same sm-and-up offset120→220px.
+Both circles move together; mobile20px,12px gap and --fab-lift remain unchanged.
+
+Next revision: desktop/sm bottom offset220→320px; inter-button gap grows20%,
+12→14.4px at all viewports. Mobile bottom20px and --fab-lift are preserved.
+
+Latest gap revision: user requests40px between Owners and WhatsApp, replacing
+14.4px at all viewports. Existing bottom offsets and circle sizes are retained.
+
+Final gap follow-up: user reduces that gap40→30px, with other positions unchanged.
 
 Aesthetic L0: user validates localhost; no tests/automatic QA, DB writes,
 commit, push or deployment requested. No new dependencies or message keys.

@@ -154,15 +154,16 @@ macOS/Turbopack and Vercel/Linux. The original supplied PNG remains preserved.
 
 The navbar is transparent over a hero at the top (scrollY≤2), with light text and
 logo. Scrolling, opening a desktop submenu or visiting a page without a hero
-uses warm paper #FBF8F3 at70% with blur, dark text/logo and light
-submenus at the same70% opacity. HeaderScroll only toggles the scroll class; tab-gradient measurements
+uses warm paper #FBF8F3 at85% with blur, dark text/logo and light
+submenus at the same85% opacity. HeaderScroll only toggles the scroll class; tab-gradient measurements
 are removed. This2026-11-04 request supersedes ADR0042 via ADR0053.
 
 **Earn With Us** is removed from the header and mobile drawer. WhatsAppFab now
-composes two fixed circles: the localized Owners link above WhatsApp with12px
+composes two fixed circles: the localized Owners link above WhatsApp with30px
 gap. Following successive20% and10% enlargements, Owners is73.92px mobile/84.48px
 desktop; WhatsApp stays56/64px. It uses the existing accent and visible translated
-label. Both share --fab-lift to stay above service mobile booking bars. The
+label. The stack sits320px above the viewport bottom from640px, and20px below
+that breakpoint. Both share --fab-lift to stay above service mobile booking bars. The
 MobileDrawer earn prop is optional, so unrelated callers can retain a drawer
 CTA. Aesthetic L0: user validates localhost, no automatic tests/QA.
 

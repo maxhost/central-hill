@@ -24,7 +24,7 @@ export async function WhatsAppFab() {
   const ownerLabel = t("ctaEarn");
 
   return (
-    <div className="fixed bottom-[calc(1.25rem_+_var(--fab-lift,0px))] right-5 z-50 flex flex-col items-center gap-3 sm:bottom-[calc(1.75rem_+_var(--fab-lift,0px))] sm:right-7">
+    <div className="fixed bottom-[calc(1.25rem_+_var(--fab-lift,0px))] right-5 z-50 flex flex-col items-center gap-[30px] sm:bottom-[calc(320px_+_var(--fab-lift,0px))] sm:right-7">
       <Link
         href="/owners"
         aria-label={ownerLabel}
