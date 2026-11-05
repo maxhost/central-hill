@@ -7,5 +7,5 @@ import type { AdminScreen } from "@slices/backoffice/contract";
  * resolves against the `backoffice` namespace.
  */
 export const testimonialsAdminScreens: AdminScreen[] = [
-  { id: "testimonials.list", href: "/admin/testimonials", label: "nav.testimonials", group: "content", order: 50 },
+  { id: "testimonials.list", href: "/admin/testimonials", label: "nav.testimonials", group: "content", order: 20 },
 ];

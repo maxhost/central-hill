@@ -10,6 +10,7 @@ import { editorialAt, editorialListScope, editorialListIds, editorialTextPaths, 
 import { publishPageDraft, savePageDraft } from "../editorial-actions";
 import { NodeField, useFieldLabels } from "./schema-fields";
 import type { AboutListOperation } from "../form-model";
+import { PageNavigation } from "./page-navigation";
 
 type LocaleState<K extends EditorialPageKey> = {
   model: PageLocaleEditorialModel<K>;
@@ -49,7 +50,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   const [operation, setOperation] = useState<"save" | "publish" | null>(null);
   const queue = useMediaQueue();
   const lock = useRef(false);
-  const startedLocales = useRef(new Set<EditorLocale>(["en"]));
+  const [startedLocales, setStartedLocales] = useState(() => new Set<EditorLocale>(["en"]));
   const state = states[locale];
   const content = state.model.working.content;
   const og = state.model.working.ogImageMediaId;
@@ -60,6 +61,9 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   }), [state.model.working, localPreviews, descriptor]);
   const dirty = isDirty(state.model);
   const busy = operation !== null || queue.isPreparing;
+  const unsavedPage = Object.entries(states).some(([key, value]) =>
+    startedLocales.has(key as EditorLocale) && isDirty(value.model),
+  ) || Object.keys(localPreviews).some(queue.isQueued);
   const sections = pageSections(descriptor, labels.field, content);
   const section = sections.find(s => s.id === selected || s.bindings.some(b => b.id === selected)) ?? sections[0]!;
 
@@ -69,8 +73,8 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     if (busy) return;
     // A target starts once, from the latest saved EN template. Returning to an
     // already started tab preserves even its unsaved prepared structure and copy.
-    if (!startedLocales.current.has(nextLocale)) {
-      startedLocales.current.add(nextLocale);
+    if (!startedLocales.has(nextLocale)) {
+      setStartedLocales(previous => new Set([...previous, nextLocale]));
       setStates(previous => {
         const own = previous[nextLocale];
         const source = previous.en.model;
@@ -91,7 +95,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   }
   function change(path: (string | number)[], value: unknown, preview?: AdminMediaPreview | null) {
     rememberPreview(preview);
-    startedLocales.current.add(locale);
+    setStartedLocales(previous => previous.has(locale) ? previous : new Set([...previous, locale]));
     setStates(previous => {
       const own = previous[locale];
       return { ...previous, [locale]: { ...own, notice: "", model: { ...own.model, working: {
@@ -139,7 +143,11 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
         ? await savePageDraft({ ...input, templateRevision: state.model.templateRevision, payload: state.model.working })
         : await publishPageDraft(input);
       if (result.ok) {
-        if (action === "publish" && locale !== "en") startedLocales.current.delete(locale);
+        if (action === "publish" && locale !== "en") setStartedLocales(previous => {
+          const next = new Set(previous);
+          next.delete(locale);
+          return next;
+        });
         patchState(locale, {
           model: result.model, errors: {}, conflict: false,
           previewVersion: state.previewVersion + 1,
@@ -200,6 +208,16 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
       </>}
   </fieldset>;
   return <PageEditorShell adapter={{
+    pageNavigation: <PageNavigation currentKey={descriptor.key} hasUnsavedChanges={unsavedPage} busy={busy} onLeave={() => {
+      // These previews/queued files belong to this page, never to the destination.
+      // Discard only local bytes; saved media and drafts are untouched.
+      for (const preview of Object.values(localPreviews)) {
+        if (preview.url.startsWith("blob:")) {
+          queue.dequeue(preview.id);
+          URL.revokeObjectURL(preview.url);
+        }
+      }
+    }} />,
     title: descriptor.title, sections, seoSectionId: "seo", selectedId: selected, onSelect: setSelected,
     locale, onLocaleChange: selectLocale, previewUrl: `/admin/preview/${descriptor.key}?locale=${locale}&surface=${surface}`,
     previewVersion: state.previewVersion * 2 + (surface === "shared_aside" ? 1 : 0), previewPayload, dirty, busy,

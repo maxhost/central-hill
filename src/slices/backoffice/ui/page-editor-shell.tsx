@@ -101,7 +101,7 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
 
   return (
     <div className="min-w-0 selection:bg-accent/20 selection:text-ink" data-page-editor="">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-5">
+      <header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-4 border-b border-line bg-bg pb-5">
         <h1 className="font-serif text-3xl text-ink">{adapter.title}</h1>
         <div role="group" aria-label={t("contentLanguage")} className="flex gap-1 rounded-md border border-line bg-surface p-1">
           {LOCALES.map((locale) => (
@@ -117,8 +117,10 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
         </div>
       </header>
 
-      <div className="mt-5 grid min-w-0 items-start border border-line bg-surface xl:grid-cols-[minmax(0,1fr)_320px]">
-        <section aria-label={t("preview")} className="relative min-w-0 bg-bg">
+      {adapter.pageNavigation ? <div className="mt-5 min-w-0">{adapter.pageNavigation}</div> : null}
+
+      <div className={`${adapter.pageNavigation ? "mt-3" : "mt-5"} grid min-w-0 items-start border border-line bg-surface xl:grid-cols-[500px_minmax(0,1fr)]`}>
+        <section aria-label={t("preview")} className="relative min-w-0 bg-bg xl:col-start-2 xl:row-start-1">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-2">
             <button type="button" aria-expanded={outlineOpen} aria-controls={`${editorId}-outline`} onClick={() => setOutlineOpen(!outlineOpen)} className={`${buttonClass} text-ink`}>
               {t("sections")}
@@ -165,7 +167,7 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
           <footer className="flex flex-wrap justify-between gap-2 px-4 py-3 text-[11px] text-ink-soft"><span>{t("fixedLayout")}</span><span>{t("selectHint")}</span></footer>
         </section>
 
-        <aside aria-label={t("inspector")} className="min-w-0 border-t border-line xl:border-t-0 xl:border-l">
+        <aside aria-label={t("inspector")} className="min-w-0 border-t border-line xl:col-start-1 xl:row-start-1 xl:border-t-0 xl:border-r">
           <div className="border-b border-line px-5 pt-5 pb-4">
             <p className="mb-2 text-xs text-ink-soft">{adapter.title}{selectedSection ? ` / ${selectedSection.label}` : ""}</p>
             <h2 ref={inspectorTitle} tabIndex={-1} className="font-serif text-xl text-ink focus:outline-none">{selectedBinding?.label ?? selectedSection?.label ?? t("element")}</h2>

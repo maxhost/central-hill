@@ -7,5 +7,5 @@ import type { AdminScreen } from "@slices/backoffice/contract";
  * `backoffice` namespace.
  */
 export const faqAdminScreens: AdminScreen[] = [
-  { id: "faq.list", href: "/admin/faq", label: "nav.faq", group: "content", order: 40 },
+  { id: "faq.list", href: "/admin/faq", label: "nav.faq", group: "content", order: 10 },
 ];

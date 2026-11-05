@@ -1350,6 +1350,14 @@
       "title": "Páginas",
       "subtitle": "Edita las páginas de marketing fijas.",
       "backToList": "Volver a páginas",
+      "pageNavigation": {
+        "label": "Navegación entre editores de páginas",
+        "page": "Página",
+        "unsavedTitle": "Cambios sin guardar",
+        "unsavedMessage": "Los cambios no están guardados. Si te mueves a otra página, se perderán.",
+        "cancel": "Cancelar",
+        "continue": "Continuar"
+      },
       "formSubtitle": "El contenido de origen se redacta en inglés; los demás idiomas se traducen en el pipeline.",
       "validationError": "Algunos campos necesitan revisión antes de guardar.",
       "columns": {
@@ -1889,6 +1897,7 @@
       "dashboard": "Panel",
       "groups": {
         "overview": "Resumen",
+        "website": "Sitio web",
         "content": "Contenido",
         "crm": "Leads y CRM",
         "translation": "Traducciones",
@@ -1903,17 +1912,19 @@
       "faq": "FAQ",
       "cities": "Ciudades",
       "serviceCategories": "Categorías de servicios",
-      "services": "Servicios",
+      "services": "Servicios para huéspedes",
       "blogCategories": "Categorías del blog",
       "authors": "Autores",
       "posts": "Entradas del blog",
       "settings": "Ajustes",
       "navigation": "Navegación",
       "translations": "Traducciones",
-      "guides": "Guías",
+      "guides": "Guías para huéspedes",
       "forms": "Formularios"
     },
     "shell": {
+      "showSidebar": "Mostrar navegación",
+      "hideSidebar": "Ocultar navegación",
       "signedInAs": "Sesión iniciada como",
       "signOut": "Cerrar sesión",
       "roles": {

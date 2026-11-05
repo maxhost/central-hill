@@ -1,19 +1,29 @@
 # Central Hill agent instructions
 
-## Latest local visual work — 2026-11-01
+## Latest local Backoffice work — 2026-11-05
 
 Before continuing after a context clear, read [session handoff](docs/specs/handoff-visual-refinements-2026-10-31.md).
 Current user requests: local commit before clear; no push/deploy. Aesthetic changes
 are L0, user validates in localhost, no automatic tests/QA. Contact DB update via
 Neon MCP was explicitly deferred; do not resume it without a new request.
 
-Latest arc aftera4633ed: About section labels removed/hidden in BO, section
-spacing adjusted, and Let's Start a Conversation now uses audience-style photo
-cards with independent BO image fields. Read
-[About photo cards](docs/specs/about-contact-photo-cards.md). Node22 typecheck/
-lint/build and14 focused functional tests pass; no automatic visual QA or actual
-BO uploads/saves/DB writes. User requested a local commit before clear; resolve
-the checkpoint commit with git log -1. No push/deploy; next work follows the user.
+Latest arc afterc9484b6: Pages order and sidebar grouping updated; visual Pages
+editors start with sidebar hidden, toggle it via topbar icon, use a500px inspector
+on the left and sticky language/Save draft/Publish header. Page navigator switches
+directly between editors, with English Cancel/Continue warning for unsaved work
+across started locales; saved drafts can be left unpublished. Read
+[sidebar](docs/specs/backoffice-sidebar-organization.md),
+[workspace](docs/specs/backoffice-editor-workspace.md) and
+[page navigation](docs/specs/page-editor-page-navigation.md).
+User reviews localhost3071; no automatic tests/QA/check suites or DB writes in
+this arc. Local login403 fixed only in ignored.env.local by matching
+BETTER_AUTH_URL to localhost3071; it still points to remote Neon, not an isolated
+test DB. User requests local checkpoint commit before clear; resolve it with
+git log -1. No push/deploy. Preserve unused untracked base-logo PNG and running
+localhost; no pending authorized task after commit, next work follows the user.
+
+Earlier About photo cards and their validation remain documented in
+[About photo cards](docs/specs/about-contact-photo-cards.md) and the session handoff.
 
 ## Remaining Pages adapters — local delivery approved
 

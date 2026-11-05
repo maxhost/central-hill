@@ -8,7 +8,7 @@ import type { StaffRole } from "@core/auth";
  */
 
 /** Sidebar groups, rendered top-to-bottom in this order. */
-export type AdminNavGroupId = "overview" | "content" | "crm" | "translation" | "system";
+export type AdminNavGroupId = "overview" | "website" | "content" | "crm" | "translation" | "system";
 
 /**
  * One backoffice screen contributed to the admin shell. Core screens live in

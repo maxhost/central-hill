@@ -1,5 +1,122 @@
 # Local visual refinements — resume after context clear
 
+## Backoffice checkpoint before clear —2026-11-05
+
+User requests one local commit, then clear to work on something else. Base/main
+c9484b6 (last published Avantio correction); this checkpoint is local only, no push
+or deployment. Resolve the final hash with git log -1. No required task remains
+after recording the checkpoint; wait for the user's next objective.
+
+Final BO changes: ordered Pages list; Website group with Buildings→Amenities/Cities,
+Guest Services→Guest Guides→Blog Posts; separate Content heading with FAQ,
+Testimonials, Forms always visible. Page editors default to hidden sidebar with
+topbar toggle, full main width,500px left inspector, right preview, sticky header
+with languages/status/Save draft/Publish. Horizontal page navigator uses the same
+order as Pages; native English Cancel/Continue modal guards unsaved changes in
+started locales/queued images. Saved drafts need not be published to navigate.
+Guard covers the page strip only (not browser Back, sidebar or external links).
+User iterated visually on localhost; no automatic test/typecheck/lint/build/browser
+QA or actual save/publish/upload/form submissions run. No new independent QA claim.
+
+Owned paths: Pages admin order/query/screens/editor/navigator + README; Backoffice
+types/registry/editor types/AdminShell/new AdminWorkspace/PageEditorShell + README;
+Blog/Buildings/FAQ/Geography/Guides/Services/Testimonials screen contributions;
+Forms contract contribution; Geography README; four message files; AGENTS.md and
+the sidebar/workspace/page-navigation specs plus this handoff. No core/kernel,
+database/schema/migration or public site code changes.
+
+Ignored.env.local authentication URL now http://localhost:3071 (previous3000);
+no credentials committed. This environment uses remote Neon: do not assume local
+QA isolation. Account lookup was read-only; no password/account/DB writes.
+Local dev3071 remains running (latest session28126, Node22); preserve it unless
+user asks to stop. Untracked unused Central Hill base-logo PNG remains outside
+the commit. Earlier notes below retain historical delivery boundaries.
+
+## Visual editor sticky language/action header —2026-11-05
+
+User requests screenshot header remain visible while scrolling. PageEditorShell
+header now sticky top0/z20 with opaque bg token; title, languages, editorial state,
+Save draft and Publish stay together. Layout/actions and page navigation unchanged.
+Local L0/user review on3071; no tests/automatic QA, DB changes, commit/push/deploy.
+
+## Visual editor page navigator and unsaved modal —2026-11-05
+
+User requests direct page switching above device preview controls, with English
+unsaved-change confirmation. Pages supplies a Page strip and native Cancel/Continue
+dialog via a new optional Backoffice adapter view slot. Aggregate dirty flag covers
+started languages and local queued images; saved drafts can be left unpublished.
+Confirmed navigation drops only this page's local blob queue; no auto save/publish.
+Shared page-order constant also feeds the Pages list. Left500px inspector retained.
+Read [scope](page-editor-page-navigation.md). Local/user review on3071, no automatic
+tests/QA, persistence/media actions, commit/push/deploy. Preserve all earlier pending
+BO work, ignored auth URL correction and unused logo.
+
+## Visual editor inspector on the left —2026-11-05
+
+User moves the500px inspector to the left, canvas to the right at xl. Explicit
+grid columns/positions and separator switch sides; existing stacked layout below
+xl retained. Update workspace spec/Backoffice README. Local L0/user review on3071;
+no automatic tests/QA, DB changes, commit, push or deployment.
+
+## Visual editor inspector500px —2026-11-05
+
+User revises right inspector450→500px at xl. Update shared PageEditorShell grid,
+Backoffice README and workspace spec. Local L0, user reviews on running3071;
+no tests/automatic QA, DB changes, commit, push or deployment.
+
+## Visual editor inspector450px —2026-11-05
+
+User revises right inspector400→450px at xl. Update shared PageEditorShell grid,
+Backoffice README and workspace spec. Local L0, user reviews on running3071;
+no tests/automatic QA, DB changes, commit, push or deployment.
+
+## Visual editor inspector400px —2026-11-05
+
+User revises right inspector384→400px at xl. Update shared PageEditorShell grid,
+Backoffice README and workspace spec. Local L0, user reviews on running3071;
+no tests/automatic QA, DB changes, commit, push or deployment.
+
+## Localhost login origin fix —2026-11-05
+
+After reopening3071 for user review, login POSTs failed403 with Better Auth
+`Invalid origin: http://localhost:3071`. Ignored `.env.local` still set
+BETTER_AUTH_URL to localhost3000. Change only that local URL to localhost3071
+and restart this checkout's dev server. No account/password/DB changes,
+credential dumps, automated login submissions or production changes. User
+retries their login; this fixes the origin rejection, not a password reset.
+
+## Focused visual page editor workspace —2026-11-05
+
+User requests hiding sidebar on page-editor entry, reopening with an icon and +20%
+inspector width. Add private AdminWorkspace client layout with desktop topbar toggle;
+AdminShell retains server identity/nav slots. Page routes use full available width,
+sidebar initially hidden, inspector320→384px at xl. Other BO routes default visible;
+mobile remains stacked with sidebar hidden. Toggling does not remount the editor.
+Read [scope](backoffice-editor-workspace.md). Local L0/user review; no automatic
+QA/tests, DB changes, commit/push/deploy or localhost restart. Preserve preceding
+Pages/sidebar organization changes and unused untracked logo.
+
+## Backoffice sidebar organization —2026-11-05
+
+User requests Buildings→Amenities/Cities; Guest Services, Guest Guides, Blog Posts;
+then Content→FAQ, Testimonials, Forms. Explicit answer selects a Content heading
+with always-visible options. Add website group before content, adjust screen
+contributions/order and four-locale labels. Existing nested service/blog menus and
+permissions retained; no nav renderer changes. Read
+[scope](backoffice-sidebar-organization.md). Root-only local L0 change, no automatic
+QA/tests, DB writes, commit, push, deployment or localhost restart. Prior pending
+Pages list-order edits and unrelated untracked logo preserved.
+
+## Backoffice Pages list order —2026-11-05, afterc9484b6
+
+User requests `/admin/pages` order: Home, Owners, Buildings, Real Estate,
+Guest Landing Page, Guest Guides, Guest Services, About Us, Blog. Root changes
+only the display array in Pages `admin/queries.ts`, plus Pages README/this handoff.
+Schema registry order, content and database are unchanged. Aesthetic L0: no tests
+or automatic QA; user reviews. Local source change only, no commit/push/deploy
+requested for this follow-up. Local3071 remains stopped per the user's last request.
+Unrelated untracked Central Hill base-logo PNG preserved.
+
 ## Avantio children-ages publication authorized —2026-11-04
 
 After local delivery the user replies "Listo" and requests push to GitHub with the

@@ -1,7 +1,7 @@
 import type { AdminScreen } from "@slices/backoffice/contract";
 
 /**
- * Backoffice screens contributed by slice `services` (S12 plug-in). Two `content`-group
+ * Backoffice screens contributed by slice `services` (S12 plug-in). Two `website`-group
  * screens: the category manager and the service list; create/edit for both live at
  * child routes. Label keys resolve against the `backoffice` namespace.
  */
@@ -10,9 +10,9 @@ export const servicesAdminScreens: AdminScreen[] = [
     id: "services.categories",
     href: "/admin/service-categories",
     label: "nav.serviceCategories",
-    group: "content",
+    group: "website",
     order: 60,
     parentId: "services.list",
   },
-  { id: "services.list", href: "/admin/services", label: "nav.services", group: "content", order: 20 },
+  { id: "services.list", href: "/admin/services", label: "nav.services", group: "website", order: 20 },
 ];

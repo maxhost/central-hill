@@ -51,8 +51,9 @@ the sitemap tag. Called by the geography admin actions once the backoffice shell
 
 ## Backoffice (`admin/`) — city editor with inline neighbourhoods (S12)
 
-Plugs into the backoffice shell. Contributes one `content`-group screen ("Cities",
-`admin/screens.ts` → `geographyAdminScreens`, order 50); the city list + editor mount under
+Plugs into the backoffice shell. Contributes one `website`-group screen ("Cities",
+`admin/screens.ts` → `geographyAdminScreens`, order 16), nested beneath Buildings after
+Amenities; the city list + editor mount under
 `app/(admin)/admin/(panel)/cities/…`. A city is edited together with its neighbourhoods.
 
 - `admin/validation.ts` — `citySaveInput` (city slug/status/country/hero + [T] name/intro,

@@ -1,5 +1,18 @@
 # Slice `pages` (S9)
 
+The `/admin/pages` list and visual editor page navigator share `admin/page-order.ts`: Home,
+Owners, Buildings, Real Estate, Guest Landing Page, Guest Guides, Guest Services,
+About Us, Blog. This presentation order is independent of schema/DB enum order.
+
+The visual editor's horizontal page navigator sits above its device preview controls,
+with the active page highlighted. Changing through this navigator prompts in English
+when any started locale has changes beyond its saved draft/published snapshot, or
+when this page has locally queued media. Untouched target-language templates are
+excluded. Saved drafts do not require publication to leave. Cancel/Escape keeps the
+editor intact; Continue discards local work and opens the chosen editor. It never
+saves/publishes or flushes media automatically. Its guard covers this navigator;
+see `docs/specs/page-editor-page-navigation.md` for scope and review limits.
+
 ## Common page editor platform
 
 Home, Owners, Buildings listing, Real Estate and Guest share `PageContextualEditor` and

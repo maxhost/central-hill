@@ -2,7 +2,7 @@
 import type { AdminScreen } from "@slices/backoffice/contract";
 export type * from "./types";
 export { createBlueprint, textFields, localizedBlueprint, approvedBlueprint } from "./domain";
-export const formsAdminScreens: AdminScreen[] = [{ id: "forms.catalog", href: "/admin/forms", label: "nav.forms", group: "content", order: 85 }];
+export const formsAdminScreens: AdminScreen[] = [{ id: "forms.catalog", href: "/admin/forms", label: "nav.forms", group: "content", order: 30 }];
 
 export { FormCatalog } from "./admin/form-catalog";
 export { FormEditor } from "./admin/form-editor";

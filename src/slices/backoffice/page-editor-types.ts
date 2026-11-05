@@ -6,6 +6,8 @@ export interface EditorBinding { id: string; label: string; sectionId: string }
 export interface EditorSection { id: string; label: string; bindings: EditorBinding[]; external?: boolean }
 export interface PageEditorAdapter {
   title: string;
+  /** Optional page navigation, including leave confirmation, supplied by its owning slice. */
+  pageNavigation?: ReactNode;
   sections: EditorSection[];
   /** Dedicated metadata inspector, surfaced beside viewport controls. */
   seoSectionId?: string;

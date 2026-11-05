@@ -1350,6 +1350,14 @@
       "title": "Pages",
       "subtitle": "Edit the fixed marketing pages.",
       "backToList": "Back to pages",
+      "pageNavigation": {
+        "label": "Page editor navigation",
+        "page": "Page",
+        "unsavedTitle": "Unsaved changes",
+        "unsavedMessage": "Your changes haven't been saved. If you move to another page, they will be lost.",
+        "cancel": "Cancel",
+        "continue": "Continue"
+      },
       "formSubtitle": "Source content is authored in English; other languages are translated in the pipeline.",
       "validationError": "Some fields need attention before saving.",
       "columns": {
@@ -1889,6 +1897,7 @@
       "dashboard": "Dashboard",
       "groups": {
         "overview": "Overview",
+        "website": "Website",
         "content": "Content",
         "crm": "Leads & CRM",
         "translation": "Translations",
@@ -1903,17 +1912,19 @@
       "faq": "FAQ",
       "cities": "Cities",
       "serviceCategories": "Service categories",
-      "services": "Services",
+      "services": "Guest Services",
       "blogCategories": "Blog categories",
       "authors": "Authors",
       "posts": "Blog Posts",
       "settings": "Settings",
       "navigation": "Navigation",
       "translations": "Translations",
-      "guides": "Guides",
+      "guides": "Guest Guides",
       "forms": "Forms"
     },
     "shell": {
+      "showSidebar": "Show navigation",
+      "hideSidebar": "Hide navigation",
       "signedInAs": "Signed in as",
       "signOut": "Sign out",
       "roles": {

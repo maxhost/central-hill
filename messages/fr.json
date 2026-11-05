@@ -1350,6 +1350,14 @@
       "title": "Pages",
       "subtitle": "Modifiez les pages marketing fixes.",
       "backToList": "Retour aux pages",
+      "pageNavigation": {
+        "label": "Navigation entre les éditeurs de pages",
+        "page": "Page",
+        "unsavedTitle": "Modifications non enregistrées",
+        "unsavedMessage": "Vos modifications ne sont pas enregistrées. Si vous changez de page, elles seront perdues.",
+        "cancel": "Annuler",
+        "continue": "Continuer"
+      },
       "formSubtitle": "Le contenu source est rédigé en anglais ; les autres langues sont traduites dans le pipeline.",
       "validationError": "Certains champs nécessitent votre attention avant l'enregistrement.",
       "columns": {
@@ -1889,6 +1897,7 @@
       "dashboard": "Tableau de bord",
       "groups": {
         "overview": "Aperçu",
+        "website": "Site web",
         "content": "Contenu",
         "crm": "Leads et CRM",
         "translation": "Traductions",
@@ -1903,17 +1912,19 @@
       "faq": "FAQ",
       "cities": "Villes",
       "serviceCategories": "Catégories de services",
-      "services": "Services",
+      "services": "Services voyageurs",
       "blogCategories": "Catégories du blog",
       "authors": "Auteurs",
       "posts": "Articles du blog",
       "settings": "Paramètres",
       "navigation": "Navigation",
       "translations": "Traductions",
-      "guides": "Guides",
+      "guides": "Guides voyageurs",
       "forms": "Formulaires"
     },
     "shell": {
+      "showSidebar": "Afficher la navigation",
+      "hideSidebar": "Masquer la navigation",
       "signedInAs": "Connecté en tant que",
       "signOut": "Se déconnecter",
       "roles": {

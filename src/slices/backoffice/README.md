@@ -1,5 +1,41 @@
 # Slice `backoffice` (S12)
 
+## Focused page editor workspace
+
+`AdminShell` keeps authentication-derived identity and nav composition on the server,
+passing rendered slots to the private `AdminWorkspace` client layout. At `/admin/pages/[key]`,
+the desktop sidebar starts hidden; its topbar icon button opens/closes it without remounting
+the current editor. A route change resets the layout default. Other BO routes start with
+the sidebar visible. The toggle has localized labels, focus styling and expanded/control
+attributes; below `md` the existing hidden-sidebar layout is retained.
+
+Page-editor routes use the available main width instead of `max-w-6xl`. The shared
+`PageEditorShell` inspector is 500px on the left at `xl` (latest user revision); the canvas occupies
+the remaining width on the right and its existing ResizeObserver adjusts fit. Smaller screens keep their
+stacked layout. No editor, draft, preview or persistence contracts change.
+See `docs/specs/backoffice-editor-workspace.md` for delivery/review scope.
+
+`PageEditorAdapter.pageNavigation` is an optional rendered slot above the preview/inspector
+grid and device controls. Pages supplies its route navigator and unsaved-change dialog;
+Backoffice does not import page keys or own their draft/locale state. The inspector stays
+500px on the left and the existing preview/device controls remain available.
+The editor title/language/state/Save draft/Publish header sticks to the viewport top
+while scrolling, with an opaque bg-token surface above preview controls.
+
+## Sidebar organization
+
+The main catalogue block is headed **Website**: Pages, Buildings (Amenities, then
+Cities as children), Guest Services, Guest Guides, Blog Posts. Service categories
+remain under Guest Services; blog categories/authors remain under Blog Posts.
+The separate **Content** heading follows Website and always shows FAQ, Testimonials,
+Forms, in that order. It is a group heading, not a dropdown. Overview, CRM,
+Translations and System retain their order and existing permissions.
+
+`AdminNavGroupId` includes `website` before `content`; contributions declare their
+group/order/parent through the existing AdminScreen contract. Group headings and
+guest catalogue labels resolve in EN/PT/ES/FR. See
+`docs/specs/backoffice-sidebar-organization.md` for scope and review limits.
+
 ## Local live preview
 
 The optional PageEditorAdapter.previewPayload enables an ephemeral same-origin live preview.

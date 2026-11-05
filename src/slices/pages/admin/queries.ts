@@ -17,6 +17,7 @@ import { page_content } from "../schema";
 import { type PageKey, pageKey, pageSchemas } from "../schemas";
 import { guidesEditorDefaults, type GuidesSourceStatus } from "./guides-defaults";
 import { type FieldNode, type SelectOptions, applyDefaults, describe } from "./form-model";
+import { PAGE_ADMIN_ORDER } from "./page-order";
 
 /**
  * Backoffice reads for slice `pages` (S12, ADR 0012). The five fixed pages each
@@ -25,7 +26,8 @@ import { type FieldNode, type SelectOptions, applyDefaults, describe } from "./f
  * cache-wrapped (admin is dynamic).
  */
 
-export const PAGE_KEYS = pageKey.options as readonly PageKey[];
+/** Display order for /admin/pages, independent of the schema registry order. */
+export const PAGE_KEYS = PAGE_ADMIN_ORDER;
 
 export interface PageAdminListItem {
   key: PageKey;
@@ -33,7 +35,7 @@ export interface PageAdminListItem {
   exists: boolean;
 }
 
-/** The five fixed pages (pages are always live — no draft/published state). */
+/** The nine fixed pages in their Backoffice display order. */
 export async function listPagesAdmin(): Promise<PageAdminListItem[]> {
   const rows = await db.select({ key: page_content.key }).from(page_content);
   const present = new Set(rows.map((r) => r.key));

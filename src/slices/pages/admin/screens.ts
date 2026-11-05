@@ -6,5 +6,5 @@ import type { AdminScreen } from "@slices/backoffice/contract";
  * (`/admin/pages/[key]`).
  */
 export const pagesAdminScreens: AdminScreen[] = [
-  { id: "pages.list", href: "/admin/pages", label: "nav.pages", group: "content", order: 0 },
+  { id: "pages.list", href: "/admin/pages", label: "nav.pages", group: "website", order: 0 },
 ];
