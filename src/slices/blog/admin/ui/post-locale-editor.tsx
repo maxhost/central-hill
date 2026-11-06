@@ -1,17 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { UiIcon } from "@core/ui";
 import {
-  AdminButton, Checkbox, Field, MediaField, PageEditorShell, Select, TextArea,
+  AdminButton, Checkbox, Field, MediaField, Select, TextArea,
   TextInput, useMediaQueue, type AdminMediaPreview, type EditorLocale,
 } from "@slices/backoffice/contract";
 import { BLOG_EDITOR_LOCALES, type BlogPostContent, type BlogPostEditorialModel, type BlogPostEditorialResult } from "../editorial-contract";
 import { archivePost, publishPostLocaleDraft, savePostLocaleDraft } from "../post-locale-actions";
 import { deletePost } from "../actions";
-import { BodyEditor } from "./body-editor";
-import { postEditorSections } from "./post-editor-adapter";
+import { PostRichTextEditor } from "./post-rich-text-editor";
 import {
   adoptPostSourceDetails, applyPostLocaleResult, changePostField, emptyPostEnvelope, hasNewPostSourceDetails, postEnvelopeEqual,
   postLocaleDirty, postMediaIds, preparePostTarget, type PostWorkspace,
@@ -47,7 +47,7 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
   }])) as PostWorkspace);
   const selectedLocale: EditorLocale = initial && BLOG_EDITOR_LOCALES.includes(initialLocale as EditorLocale) ? initialLocale as EditorLocale : "en";
   const [locale, setLocale] = useState<EditorLocale>(selectedLocale);
-  const [selection, setSelection] = useState("header");
+  const [relatedPage, setRelatedPage] = useState(1);
   const [started, setStarted] = useState(() => new Set<EditorLocale>(["en", selectedLocale]));
   const [operation, setOperation] = useState<Operation>(null);
   const [navigating, startNavigation] = useTransition();
@@ -58,6 +58,8 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
   const skipLeave = useRef(false);
   const leaveDialog = useRef<HTMLDialogElement>(null);
   const actionDialog = useRef<HTMLDialogElement>(null);
+  const formRoot = useRef<HTMLDivElement>(null);
+  const pendingValidationFocus = useRef<string | null>(null);
   const state = states[locale];
   const content = state.model.working.content;
   const busy = operation !== null || queue.isPreparing || navigating;
@@ -65,9 +67,8 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
     : !postEnvelopeEqual(state.model.working, emptyPostEnvelope(categories[0]?.id, authors[0]?.id)) || Boolean(slug);
   const anyDirty = [...started].some(key => persisted ? postLocaleDirty(states[key].model)
     : !postEnvelopeEqual(states[key].model.working, emptyPostEnvelope(categories[0]?.id, authors[0]?.id))) || (!persisted && Boolean(slug));
-  const previews = useMemo(() => ({ ...initial?.previews, ...localMedia }), [initial?.previews, localMedia]);
-  const sections = useMemo(() => postEditorSections(te), [te]);
-  const onSelect = useCallback((id: string) => setSelection(id), []);
+  // Server-resolved media replaces its reservation blob after a successful save.
+  const previews = useMemo(() => ({ ...localMedia, ...initial?.previews }), [initial?.previews, localMedia]);
   const editableShared = locale === "en" && !archived;
   const currentUrl = useRef("");
 
@@ -113,6 +114,21 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
     if (!confirmAction && actionDialog.current?.open) actionDialog.current?.close();
   }, [confirmAction]);
 
+  useEffect(() => {
+    if (busy || !pendingValidationFocus.current) return;
+    const key = pendingValidationFocus.current;
+    pendingValidationFocus.current = null;
+    const frame = window.requestAnimationFrame(() => {
+      const location = [...(formRoot.current?.querySelectorAll<HTMLElement>("[data-post-field]") ?? [])]
+        .find(element => element.dataset.postField === key);
+      if (!location) return;
+      const control = location.querySelector<HTMLElement>("[contenteditable='true'], input:not(:disabled):not([type='hidden']), textarea:not(:disabled), select:not(:disabled), button:not(:disabled)");
+      (control ?? location).focus({ preventScroll: true });
+      location.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [busy, locale, state.errors]);
+
   function set<K extends keyof BlogPostContent>(key: K, value: BlogPostContent[K]) {
     if (busy || archived) return;
     setStates(previous => changePostField(previous, locale, key, value));
@@ -148,10 +164,8 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
       errors: result.error === "validation" ? result.fieldErrors : {},
     } }));
     if (result.error === "validation") {
-      const first = Object.keys(result.fieldErrors)[0]?.replace(/^content\./, "") ?? "";
-      setSelection(first.startsWith("body") ? "body" : first.startsWith("meta_") || first.startsWith("og_") ? "seo"
-        : first.startsWith("cta_") ? "cta" : first.startsWith("related") ? "related"
-        : ["category_id", "author_id", "slug", "published_at", "reading_minutes", "is_featured"].includes(first) ? "article" : "header");
+      const first = Object.keys(result.fieldErrors)[0]?.replace(/^(?:payload\.)?content\./, "") ?? "_source";
+      pendingValidationFocus.current = first.split(".")[0] ?? "_source";
     }
   }
   async function mutate(action: "save" | "publish") {
@@ -212,16 +226,27 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
     } finally { setOperation(null); lock.current = false; }
   }
 
-  const error = (key: string) => state.errors[key] ?? state.errors[`content.${key}`] ?? state.errors[`payload.content.${key}`];
+  const error = (key: string) => Object.entries(state.errors).find(([path]) => {
+    const normalized = path.replace(/^(?:payload\.)?content\./, "");
+    return normalized === key || normalized.startsWith(`${key}.`);
+  })?.[1];
   const fieldId = (key: string) => `${fieldPrefix}-${locale}-${key}`;
   const input = (key: "title" | "excerpt" | "cta_label" | "cta_url" | "meta_title" | "meta_description", label: string, multiline = false) => (
-    <Field key={key} label={label} htmlFor={fieldId(key)} error={error(key)}>
-      {multiline ? <TextArea id={fieldId(key)} value={content[key] ?? ""} onChange={event => set(key, event.target.value)} disabled={busy || archived} />
-        : <TextInput id={fieldId(key)} value={content[key] ?? ""} onChange={event => set(key, event.target.value)} disabled={busy || archived} />}
-    </Field>
+    <div key={key} data-post-field={key} tabIndex={-1} className="scroll-mt-40 focus:outline-none">
+      <Field label={label} htmlFor={fieldId(key)} error={error(key)}>
+        {multiline ? <TextArea id={fieldId(key)} value={content[key] ?? ""} onChange={event => set(key, event.target.value)} disabled={busy || archived}
+          aria-invalid={Boolean(error(key))} rows={key === "excerpt" ? 3 : 4} />
+          : <TextInput id={fieldId(key)} value={content[key] ?? ""} onChange={event => set(key, event.target.value)} disabled={busy || archived}
+            aria-invalid={Boolean(error(key))} className={key === "title" ? "py-3 font-serif text-2xl leading-tight sm:text-3xl" : undefined} />}
+      </Field>
+    </div>
   );
   const canAdoptSource = hasNewPostSourceDetails(states, locale);
-  const sharedNotice = locale !== "en" ? <div className="space-y-2">
+  const relatedPosts = posts.filter(post => post.id !== postId);
+  const relatedPageCount = Math.max(1, Math.ceil(relatedPosts.length / 10));
+  const currentRelatedPage = Math.min(relatedPage, relatedPageCount);
+  const visibleRelatedPosts = relatedPosts.slice((currentRelatedPage - 1) * 10, currentRelatedPage * 10);
+  const sharedNotice = locale !== "en" ? <div className="space-y-2 border-b border-line pb-5">
     <p className="text-xs leading-relaxed text-ink-soft">{te("sourceFields")}</p>
     {canAdoptSource ? <>
       <AdminButton disabled={busy || archived || state.conflict} onClick={() => {
@@ -230,61 +255,6 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
       <p className="text-xs leading-relaxed text-ink-soft">{te("adoptSourceHint")}</p>
     </> : null}
   </div> : null;
-  const inspector = selection === "article" ? <div className="space-y-5">
-    {sharedNotice}
-    <Field label={t("admin.post.fields.category")} htmlFor={fieldId("category_id")} error={error("category_id")} required>
-      <Select id={fieldId("category_id")} value={content.category_id} onChange={event => set("category_id", event.target.value)} disabled={!editableShared || busy}>
-        <option value="">{t("admin.post.fields.choose")}</option>{categories.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
-      </Select>
-    </Field>
-    <Field label={t("admin.post.fields.author")} htmlFor={fieldId("author_id")} error={error("author_id")} required>
-      <Select id={fieldId("author_id")} value={content.author_id} onChange={event => set("author_id", event.target.value)} disabled={!editableShared || busy}>
-        <option value="">{t("admin.post.fields.choose")}</option>{authors.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
-      </Select>
-    </Field>
-    <Field label={t("admin.post.fields.slug")} htmlFor={fieldId("slug")} error={error("slug")} hint={persisted ? te("immutableSlug") : undefined}>
-      <TextInput id={fieldId("slug")} value={persisted ? slugByLocale[locale] ?? slug : slug} onChange={event => setSlug(event.target.value)} disabled={persisted || busy} />
-    </Field>
-    <Field label={t("admin.post.fields.publishedAt")} htmlFor={fieldId("published_at")} error={error("published_at")}>
-      <TextInput id={fieldId("published_at")} type="datetime-local" value={content.published_at?.slice(0, 16) ?? ""}
-        onChange={event => set("published_at", event.target.value || null)} disabled={!editableShared || busy} />
-    </Field>
-    <Field label={t("admin.post.fields.readingMinutes")} htmlFor={fieldId("reading_minutes")} error={error("reading_minutes")}>
-      <TextInput id={fieldId("reading_minutes")} type="number" min={1} max={120} value={content.reading_minutes ?? ""}
-        onChange={event => set("reading_minutes", event.target.value === "" ? null : Number(event.target.value))} disabled={busy || archived} />
-    </Field>
-    <Checkbox label={t("admin.post.fields.featuredLabel")} checked={content.is_featured} onChange={event => set("is_featured", event.target.checked)} disabled={!editableShared || busy} />
-  </div> : selection === "header" ? <div className="space-y-5">
-    {input("title", t("admin.post.fields.title"))}{input("excerpt", t("admin.post.fields.excerpt"), true)}
-    {sharedNotice}
-    <Field label={t("admin.post.fields.cover")} error={error("cover_media_id")}>
-      <fieldset disabled={!editableShared || busy}><MediaField value={content.cover_media_id} preview={content.cover_media_id ? previews[content.cover_media_id] ?? null : null}
-        onChange={(id, preview) => { set("cover_media_id", id); remember(preview); }} /></fieldset>
-    </Field>
-  </div> : selection === "body" ? <div className="space-y-4">
-    {Object.entries(state.errors).filter(([key]) => key.includes("body")).map(([key, message]) => <p key={key} role="alert" className="text-xs text-red-700">{message}</p>)}
-    <fieldset disabled={busy || archived}>
-      <BodyEditor key={locale} value={content.body} onChange={body => set("body", body)} previews={previews} onPreview={remember} errors={state.errors} />
-    </fieldset>
-  </div> : selection === "cta" ? <div className="space-y-5">
-    {input("cta_label", t("admin.post.fields.ctaLabel"))}{input("cta_url", t("admin.post.fields.ctaUrl"))}
-  </div> : selection === "related" ? <div className="space-y-4">
-    {sharedNotice}<p className="text-xs text-ink-soft">{t("admin.post.related.hint", { max: 3 })}</p>
-    {posts.filter(post => post.id !== postId).map(post => <div key={post.id}><Checkbox label={post.title} checked={content.related_ids.includes(post.id)}
-      disabled={!editableShared || busy || (!content.related_ids.includes(post.id) && content.related_ids.length >= 3)}
-      onChange={() => set("related_ids", content.related_ids.includes(post.id) ? content.related_ids.filter(id => id !== post.id) : [...content.related_ids, post.id])} /></div>)}
-    {error("related_ids") ? <p role="alert" className="text-xs text-red-700">{error("related_ids")}</p> : null}
-  </div> : <div className="space-y-5">
-    {input("meta_title", t("admin.post.fields.metaTitle"))}{input("meta_description", t("admin.post.fields.metaDescription"), true)}
-    {sharedNotice}<Field label={t("admin.post.fields.ogImage")} error={error("og_image_media_id")}>
-      <fieldset disabled={!editableShared || busy}><MediaField value={content.og_image_media_id} preview={content.og_image_media_id ? previews[content.og_image_media_id] ?? null : null}
-        onChange={(id, preview) => { set("og_image_media_id", id); remember(preview); }} /></fieldset>
-    </Field>
-  </div>;
-
-  const previewPayload = { postId, locale, envelope: state.model.working, slug: slugByLocale[locale] ?? slug,
-    localMedia: Object.fromEntries(postMediaIds(state.model.working).flatMap(id => localMedia[id]?.url.startsWith("blob:") ? [[id, localMedia[id]!]] : [])),
-  };
   const editorialState = `${locale.toUpperCase()} · ${archived ? te("archived") : [
     state.model.published ? te("published") : te("unpublished"),
     ...(state.model.draft ? [te("draftSaved")] : []),
@@ -293,38 +263,174 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
   const titleId = `${fieldPrefix}-leave-title`;
   const descriptionId = `${fieldPrefix}-leave-description`;
   return <>
-    <PageEditorShell adapter={{
-      title: content.title || te("newPost"), locale, onLocaleChange: selectLocale, sections,
-      disabledLocales: persisted ? [] : ["es", "pt", "fr"],
-      selectedId: selection, onSelect, seoSectionId: "seo", inspector,
-      previewUrl: `/admin/preview/posts/${postId}?locale=${locale}${persisted ? "" : "&new=1"}`,
-      previewVersion: 0, previewPayload, dirty, busy, editorialState,
-      pageNavigation: <div className="flex flex-wrap items-center justify-between gap-3">
-        <AdminButton onClick={() => leave("/admin/posts")} disabled={busy}>{te("back")}</AdminButton>
-        <span className="text-xs text-ink-soft">{persisted ? te("manual") : te("firstSave")}</span>
-        {persisted ? <div className="flex gap-2">
-          {!archived ? <AdminButton disabled={busy} onClick={() => setConfirmAction("archive")}>{te("archive")}</AdminButton> : null}
-          <AdminButton variant="danger" disabled={busy} onClick={() => setConfirmAction("delete")}>{tb("actions.delete")}</AdminButton>
-        </div> : null}
-      </div>,
-      status: <div className="space-y-2">
-        <span>{state.notice || (queue.isPreparing ? te("preparing") : te("manual"))}</span>
+    <div ref={formRoot} className="min-w-0 selection:bg-accent/20 selection:text-ink" data-post-editor="form" aria-busy={busy}>
+      <header className="sticky top-0 z-20 space-y-3 border-b border-line bg-bg py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <AdminButton onClick={() => leave("/admin/posts")} disabled={busy} className="shrink-0">
+            <UiIcon name="nav-arrow-left" size={16} />
+            {te("back")}
+          </AdminButton>
+          <h1 className="min-w-0 max-w-full flex-1 truncate font-serif text-2xl" title={content.title || te("newPost")}>
+            {content.title || te("newPost")}
+          </h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <AdminButton onClick={() => void mutate("save")} disabled={busy || archived || state.conflict || !postId}>
+              {te(operation === "save" ? "saving" : "saveDraft")}
+            </AdminButton>
+            <AdminButton variant="primary" onClick={() => void mutate("publish")} disabled={busy || archived || state.conflict || !persisted || !state.model.draft || dirty}>
+              {te(operation === "publish" ? "publishing" : "publish")}
+            </AdminButton>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div role="tablist" aria-label={tb("pageEditor.contentLanguage")} className="flex gap-1 rounded-md border border-line bg-surface p-1">
+            {BLOG_EDITOR_LOCALES.map(key => <button key={key} type="button" role="tab"
+              id={`${fieldPrefix}-tab-${key}`} aria-controls={`${fieldPrefix}-panel-${key}`}
+              aria-selected={locale === key} tabIndex={locale === key ? 0 : -1}
+              disabled={busy || (!persisted && key !== "en")} onClick={() => selectLocale(key)}
+              onKeyDown={event => {
+                if (busy || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+                event.preventDefault();
+                const available = persisted ? BLOG_EDITOR_LOCALES : ["en"] as const;
+                const index = available.findIndex(item => item === key);
+                const next = event.key === "Home" ? available[0] : event.key === "End" ? available[available.length - 1]
+                  : available[(index + (event.key === "ArrowRight" ? 1 : -1) + available.length) % available.length];
+                if (!next) return;
+                selectLocale(next);
+                document.getElementById(`${fieldPrefix}-tab-${next}`)?.focus();
+              }}
+              className={`min-h-10 min-w-11 rounded px-3 py-2 text-xs font-semibold transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === key ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}>
+              {key.toUpperCase()}
+            </button>)}
+          </div>
+          <p className={`text-xs ${dirty ? "text-accent-deep" : "text-ink-soft"}`} role="status">{editorialState}</p>
+        </div>
+      </header>
+
+      <div className="flex flex-wrap items-center justify-end gap-3 py-5">
+        <p className="text-xs text-ink-soft">{persisted ? te("manual") : te("firstSave")}</p>
+      </div>
+      <div data-post-field="_source" tabIndex={-1} className="mb-6 space-y-2 text-sm text-ink-soft focus:outline-none" role="status" aria-live="polite">
+        {state.notice || queue.isPreparing ? <p>{state.notice || te("preparing")}</p> : null}
         {state.errors._source ? <p role="alert">{state.errors._source}</p> : null}
         {state.conflict ? <AdminButton disabled={busy} onClick={() => {
           if (anyDirty) setLeaveTarget("__reload__");
           else { skipLeave.current = true; window.location.reload(); }
         }}>{te("reload")}</AdminButton> : null}
-        {persisted ? <p className="break-all">{te("url")}: /{locale}/blog/{slugByLocale[locale] ?? ""}</p> : null}
-      </div>,
-      actions: <>
-        <AdminButton onClick={() => void mutate("save")} disabled={busy || archived || state.conflict || !postId}>
-          {te(operation === "save" ? "saving" : "saveDraft")}
-        </AdminButton>
-        <AdminButton variant="primary" onClick={() => void mutate("publish")} disabled={busy || archived || state.conflict || !persisted || !state.model.draft || dirty}>
-          {te(operation === "publish" ? "publishing" : "publish")}
-        </AdminButton>
-      </>,
-    }} />
+      </div>
+
+      <div role="tabpanel" id={`${fieldPrefix}-panel-${locale}`} aria-labelledby={`${fieldPrefix}-tab-${locale}`}
+        className="grid min-w-0 items-start gap-10 xl:grid-cols-[minmax(0,1fr)_19rem]">
+        <div className="min-w-0 space-y-8">
+          <section aria-label={t("richText.content")} className="space-y-6">
+            {input("title", t("admin.post.fields.title"))}
+            {input("excerpt", t("admin.post.fields.excerpt"), true)}
+            <div data-post-field="body" tabIndex={-1} className="min-w-0 scroll-mt-40 space-y-3 focus:outline-none">
+              <h2 className="text-sm font-semibold">{te("sectionBody")}</h2>
+              {Object.entries(state.errors).filter(([key]) => /^(?:(?:payload\.)?content\.)?body(?:\.|$)/.test(key)).map(([key, message]) =>
+                <p key={key} role="alert" className="text-xs text-red-700">{message}</p>)}
+              <PostRichTextEditor value={content.body} onChange={(body: BlogPostContent["body"]) => set("body", body)} previews={previews}
+                onPreview={remember} errors={state.errors} disabled={busy || archived} localeKey={locale} />
+            </div>
+          </section>
+          <section aria-labelledby={fieldId("cta-heading")} className="space-y-4 border-t border-line pt-6">
+            <h2 id={fieldId("cta-heading")} className="font-serif text-xl">{te("sectionCta")}</h2>
+            {input("cta_label", t("admin.post.fields.ctaLabel"))}
+            {input("cta_url", t("admin.post.fields.ctaUrl"))}
+          </section>
+          <section data-post-field="related_ids" tabIndex={-1} aria-labelledby={fieldId("related-heading")} className="scroll-mt-40 space-y-4 border-t border-line pt-6 focus:outline-none">
+            <h2 id={fieldId("related-heading")} className="font-serif text-xl">{te("sectionRelated")}</h2>
+            <p className="text-xs text-ink-soft">{t("admin.post.related.hint", { max: 3 })}</p>
+            {locale !== "en" ? <p className="text-xs text-ink-soft">{te("shared")}</p> : null}
+            <div className="space-y-3" data-related-options>
+              {relatedPosts.length ? visibleRelatedPosts.map(post => <div key={post.id}><Checkbox label={post.title} checked={content.related_ids.includes(post.id)}
+                disabled={!editableShared || busy || (!content.related_ids.includes(post.id) && content.related_ids.length >= 3)}
+                onChange={() => set("related_ids", content.related_ids.includes(post.id) ? content.related_ids.filter(id => id !== post.id) : [...content.related_ids, post.id])} /></div>)
+                : <p className="text-sm text-ink-soft">{t("admin.post.related.empty")}</p>}
+            </div>
+            {relatedPageCount > 1 ? <nav aria-label={t("admin.post.related.pagination")} className="flex items-center justify-between gap-3" data-related-pagination>
+              <AdminButton disabled={busy || currentRelatedPage === 1} onClick={() => setRelatedPage(currentRelatedPage - 1)}>
+                {t("admin.post.related.previous")}
+              </AdminButton>
+              <span aria-current="page" role="status" className="text-sm tabular-nums text-ink-soft" aria-label={t("admin.post.related.page", { page: currentRelatedPage, total: relatedPageCount })}>
+                {currentRelatedPage} / {relatedPageCount}
+              </span>
+              <AdminButton disabled={busy || currentRelatedPage === relatedPageCount} onClick={() => setRelatedPage(currentRelatedPage + 1)}>
+                {t("admin.post.related.next")}
+              </AdminButton>
+            </nav> : null}
+            {error("related_ids") ? <p role="alert" className="text-xs text-red-700">{error("related_ids")}</p> : null}
+          </section>
+        </div>
+        <aside className="min-w-0 space-y-8 border-t border-line pt-6 xl:border-t-0 xl:border-l xl:pl-7 xl:pt-0" aria-label={te("sectionArticle")}>
+          <section aria-labelledby={fieldId("details-heading")} className="space-y-5">
+            <h2 id={fieldId("details-heading")} className="font-serif text-xl">{te("sectionArticle")}</h2>
+            {sharedNotice}
+            <div data-post-field="category_id" tabIndex={-1} className="scroll-mt-40 focus:outline-none">
+              <Field label={t("admin.post.fields.category")} htmlFor={fieldId("category_id")} error={error("category_id")} required>
+                <Select id={fieldId("category_id")} value={content.category_id} onChange={event => set("category_id", event.target.value)} disabled={!editableShared || busy} aria-invalid={Boolean(error("category_id"))}>
+                  <option value="">{t("admin.post.fields.choose")}</option>{categories.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
+                </Select>
+              </Field>
+            </div>
+            <div data-post-field="author_id" tabIndex={-1} className="scroll-mt-40 focus:outline-none">
+              <Field label={t("admin.post.fields.author")} htmlFor={fieldId("author_id")} error={error("author_id")} required>
+                <Select id={fieldId("author_id")} value={content.author_id} onChange={event => set("author_id", event.target.value)} disabled={!editableShared || busy} aria-invalid={Boolean(error("author_id"))}>
+                  <option value="">{t("admin.post.fields.choose")}</option>{authors.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
+                </Select>
+              </Field>
+            </div>
+            <div data-post-field="slug" tabIndex={-1} className="scroll-mt-40 focus:outline-none">
+              <Field label={t("admin.post.fields.slug")} htmlFor={fieldId("slug")} error={error("slug")} hint={persisted ? te("immutableSlug") : t("admin.post.fields.slugHint")}>
+                <TextInput id={fieldId("slug")} value={persisted ? slugByLocale[locale] ?? slug : slug} onChange={event => setSlug(event.target.value)} disabled={persisted || busy || archived} aria-invalid={Boolean(error("slug"))} />
+              </Field>
+              {persisted ? <p className="mt-2 break-all text-xs text-ink-soft">{te("url")}: /{locale}/blog/{slugByLocale[locale] ?? ""}</p> : null}
+            </div>
+            <div data-post-field="published_at" tabIndex={-1} className="scroll-mt-40 focus:outline-none">
+              <Field label={t("admin.post.fields.publishedAt")} htmlFor={fieldId("published_at")} error={error("published_at")}>
+                <TextInput id={fieldId("published_at")} type="datetime-local" value={content.published_at?.slice(0, 16) ?? ""}
+                  onChange={event => set("published_at", event.target.value || null)} disabled={!editableShared || busy} aria-invalid={Boolean(error("published_at"))} />
+              </Field>
+            </div>
+            <div data-post-field="reading_minutes" tabIndex={-1} className="scroll-mt-40 focus:outline-none">
+              <Field label={t("admin.post.fields.readingMinutes")} htmlFor={fieldId("reading_minutes")} error={error("reading_minutes")}>
+                <TextInput id={fieldId("reading_minutes")} type="number" min={1} max={120} value={content.reading_minutes ?? ""}
+                  onChange={event => set("reading_minutes", event.target.value === "" ? null : Number(event.target.value))} disabled={busy || archived} aria-invalid={Boolean(error("reading_minutes"))} />
+              </Field>
+            </div>
+            <div data-post-field="is_featured" tabIndex={-1} className="scroll-mt-40 focus:outline-none">
+              <Checkbox label={t("admin.post.fields.featuredLabel")} checked={content.is_featured} onChange={event => set("is_featured", event.target.checked)} disabled={!editableShared || busy} />
+              {error("is_featured") ? <p role="alert" className="text-xs text-red-700">{error("is_featured")}</p> : null}
+            </div>
+          </section>
+          <section data-post-field="cover_media_id" tabIndex={-1} aria-labelledby={fieldId("cover-heading")} className="scroll-mt-40 space-y-4 border-t border-line pt-6 focus:outline-none">
+            <h2 id={fieldId("cover-heading")} className="font-serif text-xl">{t("admin.post.fields.cover")}</h2>
+            <fieldset disabled={!editableShared || busy}>
+              <MediaField key={`${locale}-cover-${content.cover_media_id}-${content.cover_media_id ? previews[content.cover_media_id]?.url : ""}`} value={content.cover_media_id} preview={content.cover_media_id ? previews[content.cover_media_id] ?? null : null}
+                onChange={(id, preview) => { set("cover_media_id", id); remember(preview); }} />
+            </fieldset>
+            {error("cover_media_id") ? <p role="alert" className="text-xs text-red-700">{error("cover_media_id")}</p> : null}
+          </section>
+          <section aria-labelledby={fieldId("seo-heading")} className="space-y-5 border-t border-line pt-6">
+            <h2 id={fieldId("seo-heading")} className="font-serif text-xl">{te("seo")}</h2>
+            {input("meta_title", t("admin.post.fields.metaTitle"))}
+            {input("meta_description", t("admin.post.fields.metaDescription"), true)}
+            <div data-post-field="og_image_media_id" tabIndex={-1} className="scroll-mt-40 focus:outline-none">
+              <Field label={t("admin.post.fields.ogImage")} error={error("og_image_media_id")} hint={t("admin.post.fields.ogImageHint")}>
+                <fieldset disabled={!editableShared || busy}>
+                  <MediaField key={`${locale}-social-${content.og_image_media_id}-${content.og_image_media_id ? previews[content.og_image_media_id]?.url : ""}`} value={content.og_image_media_id} preview={content.og_image_media_id ? previews[content.og_image_media_id] ?? null : null}
+                    onChange={(id, preview) => { set("og_image_media_id", id); remember(preview); }} />
+                </fieldset>
+              </Field>
+            </div>
+          </section>
+        </aside>
+      </div>
+      {persisted ? <div className="mt-10 flex flex-wrap justify-end gap-3 border-t border-line pt-5">
+        {!archived ? <AdminButton disabled={busy} onClick={() => setConfirmAction("archive")}>{te("archive")}</AdminButton> : null}
+        <AdminButton variant="danger" disabled={busy} onClick={() => setConfirmAction("delete")}>{tb("actions.delete")}</AdminButton>
+      </div> : null}
+    </div>
     <dialog ref={leaveDialog} aria-labelledby={titleId} aria-describedby={descriptionId}
       onCancel={() => setLeaveTarget(null)} onClose={() => setLeaveTarget(null)}
       className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md rounded-lg border border-line bg-surface p-6 text-ink backdrop:bg-ink/40">

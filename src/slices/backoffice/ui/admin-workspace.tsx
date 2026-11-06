@@ -16,7 +16,7 @@ interface AdminWorkspaceProps {
 export function AdminWorkspace(props: AdminWorkspaceProps) {
   const pathname = usePathname();
   const workspaceKey = /^\/admin\/posts\/[^/]+\/?$/.test(pathname) ? "blog-post-editor" : pathname;
-  return <AdminWorkspaceLayout key={workspaceKey} isPageEditor={/^\/admin\/pages\/[^/]+\/?$/.test(pathname) || pathname === "/admin/pages/blog/article-sidebar" || /^\/admin\/posts\/[^/]+\/?$/.test(pathname)} {...props} />;
+  return <AdminWorkspaceLayout key={workspaceKey} isPageEditor={/^\/admin\/pages\/[^/]+\/?$/.test(pathname) || pathname === "/admin/pages/blog/article-sidebar"} {...props} />;
 }
 
 function AdminWorkspaceLayout({
@@ -54,7 +54,7 @@ function AdminWorkspaceLayout({
               onClick={() => setSidebarOpen((open) => !open)}
               className="hidden size-11 shrink-0 cursor-pointer items-center justify-center rounded-md border border-line text-ink transition-colors hover:bg-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:inline-flex"
             >
-              <UiIcon name={sidebarOpen ? "nav-arrow-left" : "menu"} size={20} />
+              <UiIcon name="layout-left" size={20} />
             </button>
             {identity}
           </div>

@@ -23,8 +23,21 @@ export function preparePostTarget(source: BlogPostEnvelopeV1, own: BlogPostEnvel
   return { schemaVersion: 1, content };
 }
 
+/** JSONB and the editor can order object keys differently without changing content. */
+function jsonContentEqual(left: unknown, right: unknown): boolean {
+  if (left === right) return true;
+  if (left === null || right === null || typeof left !== "object" || typeof right !== "object") return false;
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return Array.isArray(left) && Array.isArray(right) && left.length === right.length &&
+      left.every((value, index) => jsonContentEqual(value, right[index]));
+  }
+  const a = left as Record<string, unknown>, b = right as Record<string, unknown>;
+  const keys = Object.keys(a).filter(key => a[key] !== undefined);
+  return keys.length === Object.keys(b).filter(key => b[key] !== undefined).length &&
+    keys.every(key => Object.hasOwn(b, key) && jsonContentEqual(a[key], b[key]));
+}
 export function postEnvelopeEqual(a: BlogPostEnvelopeV1 | null, b: BlogPostEnvelopeV1 | null): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
+  return jsonContentEqual(a, b);
 }
 
 export function postLocaleDirty(model: BlogPostLocaleModel): boolean {
@@ -65,6 +78,8 @@ export function applyPostLocaleResult(states: PostWorkspace, locale: Locale, mod
 
 export function changePostField<K extends keyof BlogPostContent>(states: PostWorkspace, locale: Locale, key: K, value: BlogPostContent[K]): PostWorkspace {
   const own = states[locale];
+  // Editor normalization (e.g. a trailing empty paragraph) is not an authored edit.
+  if (jsonContentEqual(own.model.working.content[key], value)) return states;
   const source = states.en.model.draft ?? states.en.model.published;
   // Publishing an existing target draft retains its frozen references. Its next
   // actual edit starts a new draft from the latest saved EN template, without

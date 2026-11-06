@@ -1,5 +1,14 @@
 # Contenidos del CMS — edición y publicación por idioma
 
+Actualización2026-11-06: Blog y topbar se preparan para main con autorización
+explícita del usuario, **sin** incluir Edificios/Departamentos. Ese otro editor
+está QA-aprobado en su rama y3073, pendiente de revisión manual del usuario.
+Blog usa formulario de título/rich text/portada/SEO, con tabs y Save/Publish por
+idioma; compartir flujo con Pages no implica copiar su editor visual. Ver
+[selección e integración](blog-main-integration.md) y
+[entrega Blog form](blog-form-editor-delivery.md).
+
+
 2026-11-05. **Piloto Blog aceptado y autorizado para implementación local.**
 Base auditada: `2aa031d`, rama `main`, checkout
 `/Users/maxi/Documents/claude-workspace/central-hill`.

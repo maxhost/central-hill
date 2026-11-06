@@ -410,6 +410,13 @@ default; Home/Guest/About start blank.
 
 ### Slice `blog`
 
+**ADR0059, Blog form/rich text follow-up (no migration):** body plain-text fields
+remain canonical; optional `inline` runs `{text,bold?,italic?,href?}` and list
+`inline_items` retain formatting. Runs concatenate exactly to plain text, safe
+links only; legacy blocks remain valid and round-trip. Rich text is structured
+JSON rendered as React elements, never arbitrary HTML. The form replaces the
+individual-post canvas while locale snapshots and publication semantics remain.
+
 **ADR0057 / migration0024, individual article editor:**
 `blog_post_locale_content`: `id`, `post_id→blog_post` (ON DELETE CASCADE),
 `locale` (EN/ES/PT/FR), `published?`/`draft?` JSONB envelopes version1, monotonic

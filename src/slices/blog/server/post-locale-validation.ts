@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { locale, slug, uuid } from "@core/validation/primitives";
-import { headingBlock, paragraphBlock, listBlock, imageBlock, quoteBlock, calloutBlock, dividerBlock, ctaBlock, postBody } from "../body";
+import { headingBlock, paragraphBlock, listBlock, imageBlock, quoteBlock, calloutBlock, dividerBlock, ctaBlock, postBody, bodyInlineErrors } from "../body";
 import type { BlogPostEnvelopeV1 } from "../editorial-types";
 
 const safeLink = z.string().max(2048).refine(value => {
@@ -47,7 +47,7 @@ export function checkBlogEnvelope(raw: unknown, publish = false): { envelope?: B
   const parsed = blogEnvelopeSchema.safeParse(raw);
   if (!parsed.success) return { errors: issuesByField(parsed.error.issues) };
   const envelope: BlogPostEnvelopeV1 = parsed.data;
-  const errors: Record<string, string> = {};
+  const errors: Record<string, string> = bodyInlineErrors(envelope.content.body);
   if (publish) {
     const c = envelope.content;
     if (!c.title.trim()) errors.title = "Title is required.";

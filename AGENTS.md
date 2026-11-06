@@ -1,5 +1,22 @@
 # Central Hill agent instructions
 
+## Blog-only main integration —2026-11-06
+
+Usuario autoriza merge local y confirma: **sólo Blog y topbar**, mantener nuevo
+editor Buildings/Apartments fuera de main hasta revisión propia. Preparación en
+/private/tmp/central-hill-blog-main-integration, rama blog-main/integration,
+baseBlogaf3a4a1 sobre main48ae09c; deltaBlog/topbar validado29db0c5 seleccionado
+sin historia/codeProps. Ver docs/specs/blog-main-integration.md. Blog entero igual
+al candidato revisado; workspace conserva reglas legacy de Properties. Sólo
+migraciónBlog0024, no0025 ni namespacepropertyEditor/guardasProperty nuevas.
+Validar ensamblaje en DB sintética antes de fast-forward; no DBremota/migraciones,
+main env remoto no se usa para pruebas. Original logo sin rastrear se preserva.
+Edificios/Departamentos QA aprobado pero pendiente revisión usuario en3073,
+property-locales/integration, /private/tmp/central-hill-property-locales-integration.
+ÚltimoBlog revisado3075 permanece intacto. Services aún no implementado, spec/plan
+propuestos en blog-form/integration deben alinearse a formularios antes de comenzar.
+
+
 ## Latest local Backoffice work — 2026-11-05
 
 Before continuing after a context clear, read [session handoff](docs/specs/handoff-visual-refinements-2026-10-31.md).

@@ -3,6 +3,7 @@ import { MediaImage, type MediaImageData } from "@core/media";
 import { Callout, type CalloutVariant, buttonClassName, cn } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import type { BodyBlock, PostBody } from "../../contract";
+import { InlineRichText } from "./inline-rich-text";
 
 /** Per-variant icon + label for the `callout` block (site icons + `blog.callout.*`). */
 export type CalloutChrome = Record<CalloutVariant, { icon: string; label: string }>;
@@ -115,7 +116,7 @@ function Block({
         return (
           <h2 id={id} className={cn(space, HEADING_BASE, "text-[clamp(26px,3vw,34px)] leading-[1.15]")}>
             {block.number ? <span className="mr-3 text-accent">{block.number}</span> : null}
-            {block.text}
+            <InlineRichText text={block.text} runs={block.inline} />
           </h2>
         );
       }
@@ -126,15 +127,15 @@ function Block({
           className={cn(space, HEADING_BASE, block.level === 3 ? "text-[21px]" : "text-lg", "leading-[1.25]")}
         >
           {block.number ? <span className="mr-2.5 text-accent">{block.number}</span> : null}
-          {block.text}
+          <InlineRichText text={block.text} runs={block.inline} />
         </Tag>
       );
     }
     case "paragraph":
       return lead ? (
-        <p className={cn(space, "text-[19px] leading-[1.6] text-ink")}>{block.text}</p>
+        <p className={cn(space, "text-[19px] leading-[1.6] text-ink")}><InlineRichText text={block.text} runs={block.inline} /></p>
       ) : (
-        <p className={cn(space, "text-[17px] leading-[1.7] text-ink-soft")}>{block.text}</p>
+        <p className={cn(space, "text-[17px] leading-[1.7] text-ink-soft")}><InlineRichText text={block.text} runs={block.inline} /></p>
       );
     case "list":
       return block.ordered ? (
@@ -147,7 +148,7 @@ function Block({
                 "grid grid-cols-[30px_1fr] gap-2.5 [counter-increment:n] before:font-serif before:text-base before:text-accent-deep before:content-[counter(n,decimal-leading-zero)]",
               )}
             >
-              <span>{item}</span>
+              <span><InlineRichText text={item} runs={block.inline_items?.[i]} /></span>
             </li>
           ))}
         </ol>
@@ -156,7 +157,7 @@ function Block({
           {block.items.map((item, i) => (
             <li key={i} className={cn(ITEM, "flex items-start gap-3")}>
               <Icon name={bulletIcon} size={19} className="mt-px block flex-none text-accent-deep" />
-              <span>{item}</span>
+              <span><InlineRichText text={item} runs={block.inline_items?.[i]} /></span>
             </li>
           ))}
         </ul>
@@ -181,7 +182,7 @@ function Block({
     case "quote":
       return (
         <blockquote className={cn(space, "mb-[18px] border-l-2 border-accent pl-[26px]")}>
-          <p className="font-serif text-[clamp(22px,2.4vw,27px)] leading-[1.3] text-ink">{block.text}</p>
+          <p className="font-serif text-[clamp(22px,2.4vw,27px)] leading-[1.3] text-ink"><InlineRichText text={block.text} runs={block.inline} /></p>
           {block.attribution ? (
             <cite className="mt-3 block text-[13.5px] not-italic leading-[1.6] text-ink-soft">— {block.attribution}</cite>
           ) : null}
@@ -196,7 +197,7 @@ function Block({
           label={chrome.label}
           className={space}
         >
-          <p>{block.body}</p>
+          <p><InlineRichText text={block.body} runs={block.inline} /></p>
         </Callout>
       );
     }

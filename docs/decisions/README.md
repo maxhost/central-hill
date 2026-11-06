@@ -1312,3 +1312,6 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 - The hand-written copies are gone. The footer newsletter input moves to the same 46px height
   as its `sm` button.
 - The backoffice (`/admin`) is out of scope and keeps its own buttons.
+
+- [0059 — Blog form and continuous rich text](0059-blog-form-rich-text.md).
+- [0060 — Client-safe sidebar icon](0060-client-safe-sidebar-icon.md).

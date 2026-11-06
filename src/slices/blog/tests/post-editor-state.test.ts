@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { adoptPostSourceDetails, applyPostLocaleResult, changePostField, emptyPostEnvelope, hasNewPostSourceDetails, postMediaIds, preparePostTarget, type PostWorkspace } from "../admin/ui/post-editor-state";
+import { adoptPostSourceDetails, applyPostLocaleResult, postEnvelopeEqual, postLocaleDirty, changePostField, emptyPostEnvelope, hasNewPostSourceDetails, postMediaIds, preparePostTarget, type PostWorkspace } from "../admin/ui/post-editor-state";
 import type { BlogPostLocaleModel } from "../editorial-types";
 
 test("preparing a target keeps its complete differently ordered body and localized links", () => {
@@ -150,4 +150,49 @@ test("explicit source-details adoption recovers an incomplete saved target draft
   assert.equal(adopted.pt, states.pt);
   assert.equal(adopted.en, states.en);
   assert.equal(hasNewPostSourceDetails(adopted, "es"), false);
+});
+
+
+test("saved rich JSONB content stays clean when the editor reorders object keys", () => {
+  const editor = emptyPostEnvelope("category", "author");
+  editor.content.body = [
+    { type: "paragraph", text: "Hello rich", inline: [{ text: "Hello ", bold: true }, { text: "rich", href: "https://example.test/article" }] },
+    { type: "heading", level: 2, number: "01", text: "A heading" },
+  ];
+  const persisted = JSON.parse(JSON.stringify(editor), (_key, value) =>
+    value && typeof value === "object" && !Array.isArray(value)
+      ? Object.fromEntries(Object.entries(value).reverse()) : value);
+  assert.notEqual(JSON.stringify(editor), JSON.stringify(persisted));
+  assert.deepEqual(editor, persisted);
+  assert.equal(postEnvelopeEqual(editor, persisted), true);
+  assert.equal(postLocaleDirty({ locale: "en", revision: 6, templateRevision: null,
+    working: editor, draft: persisted, published: null }), false);
+  const textChanged = structuredClone(editor);
+  textChanged.content.title = "A real title change";
+  assert.equal(postEnvelopeEqual(textChanged, persisted), false);
+  const formattingChanged = structuredClone(editor);
+  const paragraph = formattingChanged.content.body[0];
+  if (paragraph?.type !== "paragraph" || !paragraph.inline) throw new Error("Missing fixture paragraph");
+  paragraph.inline[0]!.bold = false;
+  assert.equal(postEnvelopeEqual(formattingChanged, persisted), false);
+  const reorderedBlocks = structuredClone(editor);
+  reorderedBlocks.content.body.reverse();
+  assert.equal(postEnvelopeEqual(reorderedBlocks, persisted), false);
+});
+
+
+test("a semantic body echo does not adopt EN references in a published target", () => {
+  const states = Object.fromEntries((["en", "es", "pt", "fr"] as const).map(locale => {
+    const envelope = emptyPostEnvelope("category", "author");
+    envelope.content.cover_media_id = locale === "en" ? "new-english-cover" : "frozen-target-cover";
+    envelope.content.body = [{ type: "paragraph", text: "Same saved text" }];
+    return [locale, { model: { locale, revision: 4, templateRevision: locale === "en" ? null : 4,
+      published: structuredClone(envelope), draft: null, working: envelope }, errors: {}, notice: "", conflict: false }];
+  })) as PostWorkspace;
+  const echo = [{ text: "Same saved text", type: "paragraph" as const }];
+  assert.equal(changePostField(states, "fr", "body", echo), states);
+  assert.equal(states.fr.model.working.content.cover_media_id, "frozen-target-cover");
+  const edited = changePostField(states, "fr", "body", [{ type: "paragraph", text: "An actual edit" }]);
+  assert.equal(edited.fr.model.working.content.cover_media_id, "new-english-cover");
+  assert.equal(states.fr.model.published!.content.cover_media_id, "frozen-target-cover");
 });

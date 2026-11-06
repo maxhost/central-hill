@@ -179,7 +179,7 @@ export async function listPostsAdmin(): Promise<PostAdminListItem[]> {
       published_at: blog_post.published_at,
     })
     .from(blog_post)
-    .orderBy(desc(blog_post.published_at));
+    .orderBy(desc(blog_post.published_at), desc(blog_post.created_at), asc(blog_post.id));
   if (rows.length === 0) return [];
 
   const [snapshots, legacyRows] = await Promise.all([

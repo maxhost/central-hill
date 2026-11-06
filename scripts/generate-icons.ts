@@ -34,6 +34,7 @@ const UI_ICON_NAMES = [
   "check-circle",
   "info-circle",
   "language",
+  "layout-left",
   "mail",
   "menu",
   "minus",

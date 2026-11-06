@@ -1,5 +1,28 @@
 # Slice `blog` (S4)
 
+## Individual posts: form and continuous rich text (ADR0059)
+
+The locale workflow remains complete draft/published snapshots (ADR0057), but the
+post authoring UI is now a form: separate title/excerpt, a continuous Tiptap body
+with formatting and inserted media, and cover/SEO/social metadata forms. It no
+longer uses the Pages visual canvas/inspector. The older body-editor/form notes
+below describe historical code; the active route mounts PostLocaleEditor and
+PostRichTextEditor. Pages listing/article-sidebar editors retain their own UI.
+
+BodyBlock preserves all eight legacy types and plain text. Optional inline runs
+encode bold/italic/safe links; lists have aligned optional inline_items. Plain
+text must equal concatenated runs. React renders validated elements, no stored
+HTML. No migration or existing snapshot rewrite. Locale Save/Publish, revisions,
+shared EN references, media queue and dirty guards retain their existing policy.
+
+Execution and QA status: [Blog form](../../../docs/specs/blog-form-editor-execution.md).
+Implemented on8064fab with scoped independent functional QA; see the final
+[delivery](../../../docs/specs/blog-form-editor-delivery.md) and
+[QA](../../../docs/specs/blog-form-editor-qa.md). Real synthetic Save/Publish,
+reload, formatting, two uploads and desktop/mobile cases passed. Old private preview endpoints remain for
+compatibility; they are not the active article authoring interface.
+
+
 ## Individual articles: locale draft/publication —2026-11-05
 
 ADR0057 supersedes the source-only post editor/workflow described historically
