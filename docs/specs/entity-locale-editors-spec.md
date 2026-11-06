@@ -1,6 +1,6 @@
 # Contenidos del CMS — edición y publicación por idioma
 
-Actualización2026-11-06: Blog y topbar se preparan para main con autorización
+Actualización2026-11-06: Blog y topbar integrados en main local con autorización
 explícita del usuario, **sin** incluir Edificios/Departamentos. Ese otro editor
 está QA-aprobado en su rama y3073, pendiente de revisión manual del usuario.
 Blog usa formulario de título/rich text/portada/SEO, con tabs y Save/Publish por

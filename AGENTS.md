@@ -1,6 +1,6 @@
 # Central Hill agent instructions
 
-## Blog-only main integration —2026-11-06
+## Blog-only main integration completed —2026-11-06
 
 Usuario autoriza merge local y confirma: **sólo Blog y topbar**, mantener nuevo
 editor Buildings/Apartments fuera de main hasta revisión propia. Preparación en
@@ -11,11 +11,13 @@ al candidato revisado; workspace conserva reglas legacy de Properties. Sólo
 migraciónBlog0024, no0025 ni namespacepropertyEditor/guardasProperty nuevas.
 Ensamblaje2aabcc4 verificado: typecheck/lint/build0,26tests+10icon0,db:check0,
 lecturas browser3076 sin errores ni content writes. Fast-forward local autorizado;
-no DBremota/migraciones,
+main actualizado48ae09c→554dd27 por fast-forward. Dependencias instaladas offline
+según lockfile, exit0. Cierre documental posterior se resuelve con git log -1.
+Sin DBremota/migraciones,
 main env remoto no se usa para pruebas. Original logo sin rastrear se preserva.
 Edificios/Departamentos QA aprobado pero pendiente revisión usuario en3073,
 property-locales/integration, /private/tmp/central-hill-property-locales-integration.
-ÚltimoBlog revisado3075 permanece intacto. Services aún no implementado, spec/plan
+ÚltimoBlog revisado3075 permanece intacto;3076 temporal de validación detenido. No nueva QA pendiente de este merge. Services aún no implementado, spec/plan
 propuestos en blog-form/integration deben alinearse a formularios antes de comenzar.
 
 

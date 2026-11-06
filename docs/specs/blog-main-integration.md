@@ -51,3 +51,19 @@ de QA independiente: producto tiene informe original y aquí root verifica selec
 Main se actualizará por fast-forward desde48ae09c a este candidato + cierre
 documental, usando esta rama selectiva; no merge de blog-form/integration.
 Luego instalar deps main según lockfile, sin build/test contra su.env remoto.
+
+## Integración local completada
+
+Main fast-forward48ae09c→554dd27 completado, sin conflicto; contiene pilotoBlog
+y delta final selectivo, no el árbol/historia de Properties. `pnpm install
+--frozen-lockfile --offline` en main exit0, de caché, package/lock sin cambios.
+No se ejecutó build ni pruebas con.env remoto de main; verificaciones anteriores
+usaron sólo el checkout/DB sintéticos. El logo previo continúa sin rastrear y no
+se añadió ninguna fixture/env/storage de QA a main.
+
+3076 fue sólo verificación temporal y se detuvo por su owner tras pasar.3073
+(Edificios/Departamentos) y3075(Blog revisado) siguen disponibles. Pendiente usuario
+revisar Properties en http://localhost:3073/admin/buildings, misma cuenta sintética
+propertyqa@example.test/PropertyLocalesQA2026!. Esa revisión NO está mergeada.
+Sin push/deploy, migraciones ni DBremota; se conserva3071proceso y su.env previo.
+Próxima acción: seguir revisión del usuario, no iniciarServices/Guías automáticamente.
