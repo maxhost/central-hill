@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -50,6 +50,7 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
   const [selection, setSelection] = useState("header");
   const [started, setStarted] = useState(() => new Set<EditorLocale>(["en", selectedLocale]));
   const [operation, setOperation] = useState<Operation>(null);
+  const [navigating, startNavigation] = useTransition();
   const [localMedia, setLocalMedia] = useState<Record<string, AdminMediaPreview>>({});
   const [leaveTarget, setLeaveTarget] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<"archive" | "delete" | null>(null);
@@ -59,7 +60,7 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
   const actionDialog = useRef<HTMLDialogElement>(null);
   const state = states[locale];
   const content = state.model.working.content;
-  const busy = operation !== null || queue.isPreparing;
+  const busy = operation !== null || queue.isPreparing || navigating;
   const dirty = persisted ? postLocaleDirty(state.model)
     : !postEnvelopeEqual(state.model.working, emptyPostEnvelope(categories[0]?.id, authors[0]?.id)) || Boolean(slug);
   const anyDirty = [...started].some(key => persisted ? postLocaleDirty(states[key].model)
@@ -172,8 +173,11 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
       setSlugByLocale(result.slugByLocale);
       if (!persisted) {
         setPersisted(true);
-        window.history.replaceState(window.history.state, "", `/admin/posts/${result.postId}`);
-        currentUrl.current = window.location.href;
+        // Creation moves to the real Edit route. Keeping the New route's RSC
+        // tree after changing browser history can later reinitialize this form.
+        // Targets are still locked while this saved EN model is being reopened.
+        skipLeave.current = true;
+        startNavigation(() => router.replace(`/admin/posts/${result.postId}`));
       }
     } catch {
       setStates(previous => ({ ...previous, [locale]: { ...previous[locale], notice: te("error") } }));
