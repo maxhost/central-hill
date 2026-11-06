@@ -47,3 +47,44 @@ test("scoped media collection excludes unreferenced and other-language assets", 
   envelope.content.body = [{ type: "image", media_id: "inline" }, { type: "image", media_id: "" }];
   assert.deepEqual(postMediaIds(envelope), ["cover", "inline"]);
 });
+
+test("source save and publish advance unsaved targets without losing localized work or changing saved drafts", () => {
+  const model = (locale: BlogPostLocaleModel["locale"]): BlogPostLocaleModel => ({
+    locale, revision: 4, templateRevision: locale === "en" ? null : 4,
+    published: emptyPostEnvelope("old-category", "old-author"), draft: null,
+    working: emptyPostEnvelope("old-category", "old-author"),
+  });
+  const states = Object.fromEntries((["en", "es", "pt", "fr"] as const).map(locale => [locale, {
+    model: model(locale), errors: {}, conflict: false, notice: "",
+  }])) as PostWorkspace;
+  states.es.model.working.content.title = "Título todavía sin guardar";
+  states.es.model.working.content.reading_minutes = 7;
+  states.es.model.working.content.cta_url = "https://example.test/es/reservar";
+  states.es.model.working.content.body = [{ type: "paragraph", text: "Mi texto local" },
+    { type: "cta", label: "Continuar", url: "https://example.test/es/continuar" }];
+  states.pt.model.draft = structuredClone(states.pt.model.working);
+  states.pt.model.draft.content.title = "Rascunho guardado";
+  const savedTarget = states.pt;
+  const previousPublic = states.es.model.published;
+  const source = emptyPostEnvelope("new-category", "new-author");
+  source.content.cover_media_id = "new-cover";
+  source.content.related_ids = ["related-post"];
+  const savedEn = { ...states.en.model, revision: 5, draft: source, working: source };
+  const afterSave = applyPostLocaleResult(states, "en", savedEn, "Saved");
+  assert.equal(afterSave.es.model.templateRevision, 5);
+  assert.equal(afterSave.es.model.working.content.category_id, "new-category");
+  assert.equal(afterSave.es.model.working.content.cover_media_id, "new-cover");
+  assert.equal(afterSave.es.model.working.content.title, "Título todavía sin guardar");
+  assert.equal(afterSave.es.model.working.content.reading_minutes, 7);
+  assert.equal(afterSave.es.model.working.content.cta_url, "https://example.test/es/reservar");
+  assert.deepEqual(afterSave.es.model.working.content.body, states.es.model.working.content.body);
+  assert.equal(afterSave.es.model.published, previousPublic);
+  assert.equal(afterSave.pt, savedTarget);
+  const publishedEn = { ...savedEn, revision: 6, draft: null, published: source };
+  const afterPublish = applyPostLocaleResult(afterSave, "en", publishedEn, "Published");
+  assert.equal(afterPublish.es.model.templateRevision, 6);
+  assert.deepEqual(afterPublish.es.model.working, afterSave.es.model.working);
+  assert.equal(afterPublish.es.model.published, previousPublic);
+  assert.equal(afterPublish.pt, savedTarget);
+  assert.equal(afterPublish.pt.model.templateRevision, 4);
+});

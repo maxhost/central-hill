@@ -46,9 +46,21 @@ export interface PostLocaleWorkspace {
 }
 export type PostWorkspace = Record<Locale, PostLocaleWorkspace>;
 
-/** Applying a selected-locale response cannot reset any other locale's work. */
+/** Saved EN changes refresh only derived shared fields, retaining local target copy. */
 export function applyPostLocaleResult(states: PostWorkspace, locale: Locale, model: BlogPostLocaleModel, notice: string): PostWorkspace {
-  return { ...states, [locale]: { model, errors: {}, notice, conflict: false } };
+  const next = { ...states, [locale]: { model, errors: {}, notice, conflict: false } };
+  if (locale !== "en") return next;
+  const template = model.draft ?? model.published ?? model.working;
+  for (const target of ["es", "pt", "fr"] as const) {
+    const own = states[target];
+    // A persisted target draft owns its complete document and source provenance.
+    if (own.model.draft) continue;
+    next[target] = { ...own, model: { ...own.model,
+      templateRevision: model.revision,
+      working: preparePostTarget(template, own.model.working),
+    } };
+  }
+  return next;
 }
 
 export function changePostField<K extends keyof BlogPostContent>(states: PostWorkspace, locale: Locale, key: K, value: BlogPostContent[K]): PostWorkspace {
