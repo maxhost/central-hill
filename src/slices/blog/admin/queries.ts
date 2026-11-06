@@ -1,7 +1,7 @@
 import "server-only";
 import { asc, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@core/db/client";
-import { loadContent } from "@core/i18n/content";
+import { loadContent, loadTranslationRows } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import { getPostEditorialModel } from "../server/post-locale-model";
@@ -182,15 +182,25 @@ export async function listPostsAdmin(): Promise<PostAdminListItem[]> {
     .orderBy(desc(blog_post.published_at));
   if (rows.length === 0) return [];
 
-  const content = await loadContent(
-    rows.flatMap((r) => [
-      { type: BLOG_POST, id: r.id },
-      { type: "blog_category", id: r.category_id },
-    ]),
-    SOURCE,
-  );
+  const [snapshots, legacyRows] = await Promise.all([
+    db.select().from(blog_post_locale_content).where(inArray(blog_post_locale_content.post_id, rows.map(row => row.id))),
+    loadTranslationRows({ type: BLOG_POST }),
+  ]);
+  const categoryIds = [...new Set([
+    ...rows.map(row => row.category_id),
+    ...snapshots.flatMap(row => [row.draft?.content.category_id, row.published?.content.category_id].filter((id): id is string => Boolean(id))),
+  ])];
+  const content = await loadContent([
+    ...rows.map(row => ({ type: BLOG_POST, id: row.id })),
+    ...categoryIds.map(id => ({ type: "blog_category", id })),
+  ], SOURCE);
+  // Bootstrap imports these pending target fields as drafts. Show that work in
+  // the list before the first write, without initializing any snapshot on GET.
+  const importedFields = new Set(["title", "excerpt", "body", "cta_label", "meta_title", "meta_description"]);
+  const pendingLegacy = new Set(legacyRows
+    .filter(row => row.locale !== "en" && row.state !== "approved" && importedFields.has(row.field))
+    .map(row => `${row.entity_id}:${row.locale}`));
 
-  const snapshots = await db.select().from(blog_post_locale_content).where(inArray(blog_post_locale_content.post_id, rows.map(row => row.id)));
   return rows.map((r) => {
     const own = snapshots.filter(row => row.post_id === r.id);
     const en = own.find(row => row.locale === "en");
@@ -204,7 +214,7 @@ export async function listPostsAdmin(): Promise<PostAdminListItem[]> {
       publishedAt: doc?.content.published_at ?? r.published_at?.toISOString() ?? null,
       localeStates: Object.fromEntries((["en", "es", "pt", "fr"] as const).map(locale => {
         const row = own.find(row => row.locale === locale);
-        return [locale, row ? { published: r.status !== "archived" && Boolean(row.published), draft: Boolean(row.draft) } : { published: r.status === "published", draft: r.status !== "published" }];
+        return [locale, row ? { published: r.status !== "archived" && Boolean(row.published), draft: Boolean(row.draft) } : { published: r.status === "published", draft: r.status !== "published" || pendingLegacy.has(`${r.id}:${locale}`) }];
       })),
     };
   });
