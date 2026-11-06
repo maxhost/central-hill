@@ -1,10 +1,18 @@
 # Slice `translation` / `translation-pipeline` (S14)
 
-Adapted Pages (ADR0040): Home, Owners, Buildings listing, Real Estate and Guest. Pages owns complete draft/published JSON by locale. These pages
+Adapted Pages (ADR0040): Home, Owners, Buildings listing, Real Estate, Guest, Services, About, Guides and Blog. Pages owns complete draft/published JSON by locale. These pages
 are excluded from this generic review inbox, and direct review routes redirect to their
 contextual editors. Save/clear/approve/reset/generate entrypoints reject these registered pages via the
 Pages contract identity lookup; other entity workflows remain unchanged. Legacy page
 rows are retained for bootstrap and are never deleted by this adaptation.
+
+Adapted Blog Posts (ADR0057): `blog_post` is excluded from this inbox. Direct
+review links redirect to `/admin/posts/[id]?locale=...`; all six legacy mutations
+and direct generation reject articles before touching their translation data.
+The Blog contract owns this identity policy. Articles use manual complete
+draft/published snapshots per language in Blog, preserving legacy rows. Authors,
+categories and other unadapted entities keep this workflow. The historical
+page-content notes below apply only where their legacy workflow is still active.
 
 About follow-up (ADR0037): page-content target writes compare and lock the source
 value in the same SQL statement. If source has changed/disappeared, the write is

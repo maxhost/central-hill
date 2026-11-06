@@ -359,3 +359,11 @@ draft/published referencia el post, manteniendo versiones ajenas; serialización
 DB no interactiva para carrera Delete/Save. Mensajes cuatro locales y estado
 visible Published/Not published + Draft saved + Unsaved se integran antes
 del build candidato final. Revisión de diseño mecánica impeccable exit0 [].
+
+Candidato2f67116: typecheck/lint/build0 y16tests afectados0 (12backend+4UI),
+con Delete/Save race y rechazo draft/publicado. QA confirma caso posterior
+a Publish target con referencias congeladas: helper30ce88a prepara referencias
+EN al primer cambio real del target sin draft, manteniendo preview post-Publish
+igual a público y todo texto/cuerpo/enlace propio. Sólo state/test cambiado;
+5tests de estado/typecheck/lint afectados en confirmación, sin repetir DBsuite.
+Luego rebuild final para confirmación funcional restante de QA.

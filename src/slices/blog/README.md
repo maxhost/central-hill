@@ -1,5 +1,39 @@
 # Slice `blog` (S4)
 
+## Individual articles: locale draft/publication —2026-11-05
+
+ADR0057 supersedes the source-only post editor/workflow described historically
+below. `/admin/posts/new` and `/admin/posts/[id]` use independent EN/ES/PT/FR
+workspaces with Save draft and Publish, manual translation and private ephemeral
+preview through the real BlogPostRenderer. Shared reference fields are authored
+in EN; each published locale freezes its own snapshot. Body/CTA links/SEO and
+reading time are localized; an absent legacy reading time stays absent.
+
+Migration0024 adds Blog-owned blog_post_locale_content (unique post_id/locale),
+nullable draft/published versioned JSON and persistent monotonic revision. Public
+reads use published only; absent rows preserve read-only legacy compatibility,
+while published=NULL stays unpublished. Staff bootstrap preserves current public
+versions and pending target text as drafts. Original translations/slugs remain.
+New identity slug reservation never publishes; existing locale slugs are immutable
+in this pilot. Old savePost/Translation actions/generator cannot publish articles.
+Categories/authors retain their existing editors and translation workflow.
+
+Save/Publish use CAS and parent archive guards. Blog graph mutations acquire an
+advisory transaction lock in a Neon HTTP noninteractive batch, then check references
+with a fresh READ COMMITTED snapshot. Delete refuses incoming draft/published
+related-post references (and applicable legacy joins) rather than changing other
+articles. Category/author deletion also checks snapshot references.
+
+The editor preserves all started-locale local work, handles conflicts explicitly,
+flushes media only for the selected document and shares the Backoffice shell.
+Preview never writes/publishes/uploads; forms and links are inert. The public
+listing/detail/featured/related/metadata/sitemap consume published locales only.
+Historic seed-blog.ts writes are retired; DRY remains read-only.
+
+See [spec](../../../docs/specs/entity-locale-editors-spec.md),
+[execution](../../../docs/specs/blog-post-locale-editors-plan.md) and
+[delivery](../../../docs/specs/blog-post-locale-editors-delivery.md).
+
 ## Shared article sidebar editor —2026-11-05
 
 Pages' `/admin/pages/blog/article-sidebar` edits the shared CTA beside a localized,

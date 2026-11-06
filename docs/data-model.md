@@ -46,6 +46,12 @@ commit generated HTML to git).
 
 ## Translation model (cross-cutting, owned by `core/i18n`)
 
+Adapted Pages (ADR0040) and individual Blog Posts (ADR0057) are explicit
+exceptions to the legacy field-level publication policy below. Their owning
+slices store complete localized draft/published snapshots. Translation rows are
+retained for compatibility/bootstrap and cannot be edited through Translations
+for adapted entities. Other entities retain this model.
+
 ```
 translation
   id            uuid pk
@@ -403,6 +409,21 @@ default; Home/Guest/About start blank.
     were removed in this consolidation — the mockups present them building-wide).
 
 ### Slice `blog`
+
+**ADR0057 / migration0024, individual article editor:**
+`blog_post_locale_content`: `id`, `post_id→blog_post` (ON DELETE CASCADE),
+`locale` (EN/ES/PT/FR), `published?`/`draft?` JSONB envelopes version1, monotonic
+`revision`, `published_at?`, `draft_saved_at?`, `updated_by?` textual staff ID,
+timestamps; unique(post_id,locale), valid-locale/nonnegative-revision checks.
+Envelopes contain complete localized content/body/SEO/button label+URL/nullable
+reading time and frozen EN-authored category/author/media/date/featured/related
+references. No bytes or resolved media URLs. Existing locale slugs are preserved.
+`blog_post` remains the identity/global archive gate; draft/published exposure of
+adapted articles comes from each locale snapshot, not its legacy status column.
+The legacy fields/tables below remain for read-only bootstrap and auxiliary
+editors. Related IDs in drafts/publications prevent deleting a referenced post;
+Blog-owned noninteractive batches serialize graph mutations and recheck them.
+
 - **blog_category**: `id, slug, color, position`. **[T]** `name`. (Seed: Owner Guides/teal, STR
   Tips/blue, Portugal Regulations/red, Lisbon/gold, Portugal/grey.) **One category per post; no tags.**
 - **author**: `id, slug, status, avatar_media_id?`. **[T]** `name`, `bio?`. (Default byline:
