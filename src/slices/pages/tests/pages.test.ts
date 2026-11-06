@@ -346,7 +346,7 @@ test("rejects an unknown page key", () => {
 });
 
 // ── translatable-field contract ─────────────────────────────────────────────────
-test("home exposes prose leaves as translatable but not media ids or urls", () => {
+test("home exposes prose and booking URLs as translatable but not media ids", () => {
   const paths = translatablePathsByPage.home;
   for (const p of [
     "hero.headline",
@@ -372,7 +372,9 @@ test("home exposes prose leaves as translatable but not media ids or urls", () =
   assert.ok(!paths.includes("guests_pitch.image_media_id"), "media ids are not translatable");
   assert.ok(!paths.includes("dual_cta.owner.image_media_id"), "media ids are not translatable");
   assert.ok(!paths.includes("dual_cta.guest.image_media_id"), "media ids are not translatable");
-  assert.ok(!paths.includes("hero.cta_primary.url"), "urls are not translatable");
+  assert.ok(paths.includes("hero.cta_primary.url"), "Home booking URLs are localized");
+  assert.ok(paths.includes("guests_pitch.cta.url"));
+  assert.ok(paths.includes("dual_cta.guest.cta_url"));
   assert.ok(!paths.includes("hero.cta_secondary.url"), "the owners CTA has no stored url");
   // The removed section must not leak back into the translation pipeline, which would
   // queue work for copy that no page renders (ADR 0031).

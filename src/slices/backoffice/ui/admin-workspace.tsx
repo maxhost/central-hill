@@ -15,7 +15,7 @@ interface AdminWorkspaceProps {
 /** A new route starts with its default layout; toggling keeps editor children mounted. */
 export function AdminWorkspace(props: AdminWorkspaceProps) {
   const pathname = usePathname();
-  return <AdminWorkspaceLayout key={pathname} isPageEditor={/^\/admin\/pages\/[^/]+\/?$/.test(pathname)} {...props} />;
+  return <AdminWorkspaceLayout key={pathname} isPageEditor={/^\/admin\/pages\/[^/]+\/?$/.test(pathname) || pathname === "/admin/pages/blog/article-sidebar"} {...props} />;
 }
 
 function AdminWorkspaceLayout({

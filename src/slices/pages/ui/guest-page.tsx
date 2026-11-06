@@ -119,10 +119,9 @@ function welcomeSideMedia(asset: PageMedia | undefined, alt: string) {
 }
 
 /**
- * Closing guest/owner dual CTA's contact lines. Panel copy is admin-authored; the contact line
- * is built from the company_settings singleton (data-model.md → dual-CTA = company_settings), so
- * the phone, email and WhatsApp are edited once in /admin/settings and never duplicated per
- * page. An empty string (no settings row / all fields blank) makes `SplitCtaPanels` omit it.
+ * Default closing contact lines come from company_settings. Each panel's localized
+ * contact_line may override its default; blank uses these Settings values unchanged.
+ * No contact details in either source makes SplitCtaPanels omit the line.
  */
 function dualCtaContactLines(globals: Awaited<ReturnType<typeof getGlobals>>): {
   guest: string;
@@ -177,6 +176,7 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
         editorBindings={preview ? {background:"hero.video_media_id",eyebrow:"hero.eyebrow",subtitle:"hero.subheadline"} : undefined}
         background={
           <video
+            key={heroVideo?.url ?? HERO_FALLBACK_VIDEO}
             className="absolute inset-0 -z-10 h-full w-full object-cover"
             autoPlay
             muted
@@ -199,7 +199,10 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
         headline={<span {...binding("hero.headline")} className="block max-w-[20ch] text-balance">{hero.headline}</span>}
         subtitle={hero.subheadline || undefined}
         actions={
-          <ButtonLink href="https://www.centralhill.pt/en/rentals/holidays-rentals-rentals-d0/">{tSettings("ctaBook")}</ButtonLink>
+          <ButtonLink
+            href={hero.cta_url?.trim() || "https://www.centralhill.pt/en/rentals/holidays-rentals-rentals-d0/"}
+            editorBinding={preview ? "hero.cta_label" : undefined}
+          >{orMessage(hero.cta_label, tSettings("ctaBook"))}</ButtonLink>
         }
       />
   );
@@ -405,7 +408,7 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
                   title: dualCta.guest.title,
                   body: dualCta.guest.body,
                   cta: { href: routes.buildings, label: dualCta.guest.cta.label },
-                  contactLine: contactLines.guest,
+                  contactLine: orMessage(dualCta.guest.contact_line, contactLines.guest),
                 },
                 {
                   tone: "dark",
@@ -417,10 +420,11 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
                       title={orMessage(dualCta.owner.contact?.title, tSettings("contactDialog.title"))}
                       intro={orMessage(dualCta.owner.contact?.intro, tSettings("contactDialog.intro"))}
                       source="guests-dual-cta"
+                      editorPreviewId={preview ? "dual_cta.owner.contact.title" : undefined}
                       triggerClassName={splitCtaButtonClassName("dark")}
                     />
                   ),
-                  contactLine: contactLines.owner,
+                  contactLine: orMessage(dualCta.owner.contact_line, contactLines.owner),
                 },
               ]}
             />

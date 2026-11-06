@@ -56,7 +56,11 @@ function group(n: number, sep: "" | "," | "."): string {
   return n.toLocaleString("en-US").replace(/,/g, sep);
 }
 
-export function CountUp({
+export function CountUp(props: { value: string; className?: string; durationMs?: number }) {
+  return <CountUpValue key={props.value} {...props} />;
+}
+
+function CountUpValue({
   value,
   className,
   durationMs = DEFAULT_DURATION_MS,

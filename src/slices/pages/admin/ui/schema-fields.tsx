@@ -23,6 +23,7 @@ import {
 } from "../form-model";
 
 import { AboutListEditor } from "./about-list-editor";
+import { pageFieldLabel } from "../home-contextual";
 
 /**
  * Recursive, schema-driven field renderer (S12, ADR 0012). Walks a `FieldNode`
@@ -135,7 +136,7 @@ export function NodeField(props: RenderProps) {
         node={f.node}
         value={(value as Record<string, unknown> | undefined)?.[f.key]}
         path={[...path, f.key]}
-        label={labels.field(f.key)}
+        label={pageFieldLabel([...path, f.key].join("."), labels.field)}
         depth={depth + 1}
         onChange={onChange}
         errors={errors}

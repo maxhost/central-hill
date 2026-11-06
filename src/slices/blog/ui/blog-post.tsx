@@ -14,9 +14,9 @@ import {
   TocList,
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
-import { blogAsideCta, getBlogPage } from "@slices/pages/contract";
+import { blogAsideCta, getBlogPage, type BlogPage } from "@slices/pages/contract";
 import { SITE_ICON_DEFAULTS, getGlobals } from "@slices/settings/contract";
-import { getPostBySlug } from "../contract";
+import { getPostBySlug, type PostDetail } from "../contract";
 import { BodyRenderer, type CalloutChrome } from "./components/body-renderer";
 import { headingIds, tocItems } from "./components/headings";
 import { JournalCard } from "./components/journal-card";
@@ -73,11 +73,21 @@ export async function BlogPost({ locale, slug }: { locale: Locale; slug: string 
   setRequestLocale(locale);
   const post = await getPostBySlug(locale, slug);
   if (!post) notFound();
+  return BlogPostRenderer({ locale, post });
+}
 
+/** The same article layout renders published posts and the private illustrative sample. */
+export async function BlogPostRenderer({ locale, post, page: suppliedPage, preview = false }: {
+  locale: Locale;
+  post: PostDetail;
+  page?: BlogPage;
+  preview?: boolean;
+}) {
+  setRequestLocale(locale);
   const [t, globals, page] = await Promise.all([
     getTranslations("blog"),
     getGlobals(locale),
-    getBlogPage(locale),
+    suppliedPage === undefined ? getBlogPage(locale) : Promise.resolve(suppliedPage),
   ]);
   // Site icons (Settings → "Site icons", ADR 0034 amendment 2).
   const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
@@ -138,7 +148,7 @@ export async function BlogPost({ locale, slug }: { locale: Locale; slug: string 
 
   return (
     <>
-      <JsonLd data={ld} />
+      {preview ? null : <JsonLd data={ld} />}
 
       {/* 1 · title block */}
       <DetailTitle
@@ -199,13 +209,14 @@ export async function BlogPost({ locale, slug }: { locale: Locale; slug: string 
                 className="max-[980px]:hidden"
               />
             ) : null}
-            <BlogSharedAside asideCta={asideCta} divided={toc.length > 0} />
+            <BlogSharedAside asideCta={asideCta} divided={toc.length > 0} preview={preview} />
           </StickyAside>
         }
       />
 
       {/* 4 · newsletter */}
       <NewsletterSignup
+        preview={preview}
         title={orMessage(page.content.newsletter?.title, t("newsletter.title"))}
         description={orMessage(page.content.newsletter?.description, t("newsletter.description"))}
         source="blog"

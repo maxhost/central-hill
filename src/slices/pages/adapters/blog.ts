@@ -5,7 +5,6 @@ import {
   normalizeBlog,
   blogTextPaths,
   blogTranslationField,
-  blogAsideCta,
 } from "../blog-content";
 import { blogMediaReferences, blogMediaErrors } from "../admin/blog-media-validation";
 import type { PageEditorialAdapter } from "../editorial-adapter-types";
@@ -25,15 +24,11 @@ export const blogAdapter: PageEditorialAdapter<"blog"> = {
   collectMediaReferences: blogMediaReferences,
   mediaErrors: blogMediaErrors,
   async render(input) {
-    const { BlogListingRenderer, BlogSharedAside } = await import("@slices/blog/contract");
+    const { BlogListingRenderer, BlogArticlePreview } = await import("@slices/blog/contract");
     if (input.surface === "shared_aside") {
-      const { getTranslations } = await import("next-intl/server");
-      const t = await getTranslations({ locale: input.locale, namespace: "pages" });
-      return createElement(BlogSharedAside, {
-        asideCta: blogAsideCta(input.page?.content ?? blogAdapter.defaultContent(), input.locale),
-        preview: true,
-        previewLabel: t("admin.editorial.sharedBlock"),
-      });
+      return createElement(BlogArticlePreview, { locale: input.locale, page: input.page ?? {
+        content: blogAdapter.defaultContent(), media: {}, ogImage: null,
+      } });
     }
     return BlogListingRenderer(input);
   },

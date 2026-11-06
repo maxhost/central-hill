@@ -69,8 +69,11 @@ export async function ServicesHero({
       }
       subtitle={orMessage(hero?.body, t("intro"))}
       actions={
-        <ButtonLink href="https://www.centralhill.pt/en/rentals/holidays-rentals-rentals-d0/">
-          {tSettings("ctaBook")}
+        <ButtonLink
+          href={hero?.cta_url?.trim() || "https://www.centralhill.pt/en/rentals/holidays-rentals-rentals-d0/"}
+          editorBinding={preview ? "hero.cta_label" : undefined}
+        >
+          {orMessage(hero?.cta_label, tSettings("ctaBook"))}
         </ButtonLink>
       }
     />

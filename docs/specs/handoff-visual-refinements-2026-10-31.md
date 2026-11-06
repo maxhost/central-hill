@@ -1,5 +1,329 @@
 # Local visual refinements — resume after context clear
 
+## Checkpoint before user-requested clear —2026-11-05
+
+User asks to clear and start other work. Capture all this conversation's Pages/
+preview/localized button/Guest contact/Blog contextual-editor changes plus docs
+in one local checkpoint on main, base509d785. Resolve final checkpoint hash with
+`git log -1`; no push/deploy. Prior section-specific reports retain exact checks,
+initial failures/corrections and limits; no new QA/check suite for this checkpoint.
+Final implementation13focused tests/typecheck/lint/compile and DB-free browser
+checks passed as recorded below. No real DB save/publish/upload or migration.
+
+All9Pages now group their editable sections. Latest Blog listing exposes Hero/
+Journal/Newsletter + SEO; `/admin/pages/blog/article-sidebar` is a separate staff
+editor with4CTA fields beside a localized sample article. Both views retain the
+same whole Blog locale draft/revision/publication unit, explained in the UI.
+Actual public post renderer and post-specific button precedence preserved.
+
+Preserve unused untracked base-logo PNG, ignored.env.local (remote Neon, NOT an
+isolated DB), all temporary fixture artifacts/worktrees and existing localhost3071
+PID7039/session12390. Owned verification fixtures3185–319x are stopped; no need
+to restart3071. Runtime log may contain encoded action payloads: do not dump it.
+Contact DB update remains deferred. No outstanding authorized work after the
+checkpoint; do not resume historical tasks or production/DB work after clear.
+
+## Separate contextual Blog article sidebar editor —2026-11-05
+
+User replaces isolated Post aside editing with a separate contextual editor.
+`/admin/pages/blog` now has3sections + SEO; new staff route
+`/admin/pages/blog/article-sidebar` exposes only4shared CTA fields. Blog tabs use
+existing unsaved guard across views/started locales and explain both share the
+complete existing per-locale draft/publication unit. No persistence/schema change.
+BlogPostRenderer extracted from real public article composition; private
+BlogArticlePreview injects localized illustrative content and current locale
+snapshot, reusing actual article/index/sticky aside. No public sample/DB post;
+newsletter preview disabled, no sample JSON-LD; public own-post CTA behavior kept.
+Focused workspace supports new nested route.13tests/typecheck/lint/compile pass;
+built DB-free actual-component/browser checks cover4locales/Refresh/reopen,
+desktop380px aside/mobile stacking, navigation Cancel/Escape/Continue + other
+locale guard, public JSON-LD/private annotation absence/post-specific override.
+See [scope/evidence](blog-article-sidebar-editor.md). Only3185fixture stopped;
+3071PID7039 and pending work/logo preserved. No real DB/save/publish/upload/send,
+commit/push/deploy/restart or independent QA claim.
+
+## Blog selector consolidation and preview —2026-11-05
+
+Blog joins selectAsGroup:4Element entries for complete Hero/search, Journal,
+Newsletter and shared article CTA. SEO separate; retired Featured/eyebrows hidden;
+shared_aside surface preserved. Only grouping changed, no renderer/schema/locale/
+transport/persistence fix needed. Actual-editor/action/Blog renderers synthetic
+fixture passes16section/locale cases,8Refresh checks across both surfaces, locale
+reopening, search placeholder/accessible label, aside button href, mobile and
+whole-Hero canvas selection. See [scope/evidence](blog-section-selection.md).
+No aesthetic/full product QA, DB/save/publish/upload/form send/commit/push/deploy/
+restart. Temporary3186stopped;3071PID7039 and all pending work/logo preserved.
+
+## About selector consolidation and preview —2026-11-05
+
+About joins selectAsGroup:10whole-section Element entries for Hero/story/figures/
+audiences/values/organisation/certifications/community/contact/mergedFAQ. Nested
+fields/cards/lists and office/form copy open together; SEO stays separate. Only
+group policy changed, no renderer/schema/locale/transport/persistence change.
+Built actual-editor/action/AboutPage synthetic fixture passes40section/locale
+cases,4Refresh/reopen checks, numeric counter updates, nested/contact/form text,
+localized card href/mobile/whole-Hero canvas selection. See
+[scope/evidence](about-section-selection.md). No aesthetic/full product QA, staff/
+DB/save/publish/upload/form submit/commit/push/deploy/restart. Temporary3187stopped;
+existing3071PID7039 and all previous pending work/logo preserved.
+
+## Services Hero localized booking button —2026-11-05
+
+Optional hero.cta_label/cta_url are editable per EN/ES/PT/FR and consumed by the
+same Services Hero in preview/public. Blank/absent keeps existing Settings label
+and booking URL; untouched targets do not inherit new EN overrides. URL HTTP(S)
+validation, private actual-anchor selection and consolidated Hero retained.
+18focused tests/typecheck/lint/compile and built DB-free actual editor/renderer
+browser checks pass: four locales, Refresh/reopen/mobile/public/legacy fallback.
+See [scope/evidence](services-hero-localized-button.md). No DB/save/publish/upload,
+commit/push/deploy/restart; temporary3188stopped,3071PID7039 preserved.
+
+## Services selector consolidation and preview —2026-11-05
+
+Services joins selectAsGroup: one Element option for each Hero/intro/closing CTA
+with all fields, plus informational external catalogue. SEO separate, retired
+how_it_works hidden. No schema/content/locale/public/transport change. User-requested
+built actual-editor/action/full-renderer synthetic fixture passes12section cases
+in four locales, Refresh/reopen, closing button/contact note/locale href, catalogue
+info, mobile and whole-section canvas selection. Sparse `{}` fixture exercises
+first optional-block edits; fixture build/typecheck/static generation pass. See
+[scope/evidence](services-section-selection.md). No full aesthetic/product check
+suites, staff/DB/save/publish/upload/commit/push/deploy/restart. Preserve all prior
+work/logo and3071; stop only temporary3189fixture.
+
+## Latest localhost relaunch —2026-11-05
+
+User requested relaunch again; no listener remained on3071. Node22/pnpm dev now
+runs Next16.2.9/Turbopack on3071, listenerPID7039/session12390. Login GET200.
+Same checkout/env, no content/DB writes. Runtime log remains
+`/private/tmp/central-hill-3071-relaunch-20261105.log`; avoid dumping action payloads.
+
+## Guides selector consolidation and preview —2026-11-05
+
+Guides now uses selectAsGroup: six whole-section Element entries for Hero, city
+filter, catalogue, recommendations, closing CTA and shared guide aside; SEO
+separate. No schema/content/public/locale/transport change. Existing disabled-filter
+collapse and shared_aside surface retained. User-requested built synthetic actual
+editor/action/full-renderer fixture passes24section cases across four locales,
+8Refresh checks over both surfaces, aside reopening/locale href, city interpolation,
+buttons/type label, filter off/on, mobile and whole-section canvas selection.
+See [scope/evidence](guides-section-selection.md). No full aesthetic QA/check suite,
+staff/DB/save/publish/upload/commit/push/deploy/restart. Preserve all pending work,
+unused logo and3071; stop only temporary3190fixture.
+
+## Localhost restart requested —2026-11-05
+
+User explicitly requested relaunch3071. Old Next dev processes74401/74407 closed;
+Node22 `pnpm dev --port 3071` is now running,
+Next16.2.9/Turbopack, listenerPID99981/session58232. Login GET returns200.
+Log `/private/tmp/central-hill-3071-relaunch-20261105.log`; avoid dumping action
+payload logs. Existing env/data/pending changes preserved; no save/publish/DB write.
+
+## Guest closing contact lines + focus synchronization —2026-11-05
+
+Added localized optional dual_cta.guest.contact_line and owner.contact_line, named
+by panel and placed outside the separate dialog-copy group. Preview/public use
+each locale's override; blank/absent retain Settings defaults. Old target absence
+stays absent instead of adopting EN override. No migration/DB/Settings write.
+Browser diagnostic also confirmed auto preview selection stole inspector focus
+on ready/locale switch: optional select.focus boolean now distinguishes automatic
+scroll/highlight (false) from explicit selection focus. Guards preserved; no
+public behavior change. See [report](guest-closing-contact-lines.md).
+16focused tests, typecheck/lint/compile pass. Built actual-component/CSS synthetic
+fixture passes both lines in four locales/Refresh/reopen/clear/mobile/public
+fallbacks and focus replay; dialog group and live title retained. Independent
+source review has no blockers; no real staff/DB/save/publish/send/upload claim.
+All pending work/logo and3071 preserved; only3191fixture stopped. No commit/push/
+deploy/original-server restart.
+
+## Guest contact form preview + bordered inspector group —2026-11-05
+
+User requested Show/Hide form in Guest Closing dual CTA, then placement immediately
+above Owner contact dialog title and a border around button/title/intro matching
+Owners Why Benefits. Real ContactDialog/ContactForm opens privately and follows
+unsaved locale copy; controlled bridge marker survives RSC/Refresh/locale changes.
+Close/backdrop/Escape (also inspector) work, submissions stay blocked; public
+behavior unchanged. No kernel/DB/schema/persistence change. See
+[report](guest-contact-dialog-preview.md). Functional candidate:13tests,
+typecheck/lint/compile pass, built synthetic actual-component/CSS fixture passes
+four locales/focus/Refresh/close/mobile/submit-block/public controls. Initial dev
+fixture reload and bootstrap limits recorded. Later L0 grouping is source-only,
+no automatic checks/QA/browser after that refinement; user reviews3071. No real
+staff/DB/save/publish/send/upload/commit/push/deploy/restart; preserve all prior
+work/logo and3071. Stop only temporary3192fixture.
+
+## Guest closing CTA: identify dialog Title/Intro —2026-11-05
+
+User's nonvisible Title/Intro fields are dual_cta.owner.contact.title/intro,
+forwarded correctly to the owner button's ContactDialog. Copy appears only when
+that public modal opens; the private bridge blocks form interactions. Clarified
+both exact-path labels and added Guest closing-section explanatory note in four
+UI languages. No preview/dialog/persistence behavior change. See
+[scope](guest-closing-contact-field-labels.md). L0/source only, user review3071;
+no automatic QA/tests/suites/DB/save/publish/upload/commit/push/deploy/restart.
+All earlier pending work and logo preserved.
+
+## Guest Hero Book Now: per-language label/link —2026-11-05
+
+New optional localized hero.cta_label/cta_url overrides appear together inside
+Guest Hero; actual preview/public anchor consumes selected-locale values. HTTP(S)
+or blank (fallback), target URL input, real-anchor selection using existing seam.
+Keep ignored legacy hero.cta hidden/unused: seed stored Browse Our Apartments →
+Buildings, so exposing it would silently change untouched public booking CTA.
+Target legacy absent overrides remain absent instead of adopting EN new values.
+See [report](guest-hero-localized-button.md).13focused +2affected tests pass,
+typecheck/lint/compile pass; real editor/action/GuestPage synthetic browser verifies
+four independent locale states/Refresh/mobile/anchor selection and public hrefs/
+fallback. Independent source reviewer confirmed compatibility correction; no real
+persistence/DB action. Preserve3071/all pending work/logo; stop only3193fixture.
+No save/publish/upload/commit/push/deploy/restart.
+
+## Guest selector consolidation and preview —2026-11-05
+
+Guest now uses selectAsGroup: nine whole-section Element options, both closing
+panels/buttons together, FAQ title/group merged and SEO separate. Hidden catalogue
+items/booking copy/URLs stay hidden. No schema/content/locale/public/transport
+change. User-requested functional fixture uses actual editor/action/full GuestPage:
+EN grouped pass plus ES/PT/FR continuation verify40heading/Refresh cases, nested
+copy/buttons, mobile and child canvas selection. Initial ES iframe timing failure
+and confirmation limits recorded in [report](guest-section-selection.md). No full
+aesthetic QA/check suites, staff/DB/save/publish/upload/commit/push/deploy/restart.
+Preserve3071/all prior work/logo; stop only owned3194fixture.
+
+## Real Estate selector consolidation and preview —2026-11-05
+
+Real Estate joins Home/Owners/Buildings selectAsGroup: ten whole-section Element
+options, nested cards/market/process/buttons together, FAQ title/group merged and
+SEO separate. No schema/content/locale/URL/public/transport change. User explicitly
+requested functional preview checks: actual editor/action/full RealEstatePage
+synthetic fixture passes44cases (ten headings plus Refresh per four locales),
+nested fields/animated number/mobile/child selection. Initial CountUp selector
+ambiguity fixed only in test; synthetic blank market-label key warnings/limits
+recorded in [report](real-estate-section-selection.md). No full aesthetic QA/check
+suites, real staff session, DB/save/publish/upload/commit/push/deploy/restart.
+Preserve3071/all prior work/logo; only temporary3195fixture stopped.
+
+## Buildings selector consolidation and preview —2026-11-05
+
+Buildings now reuses Home/Owners selectAsGroup: one Element option per complete
+block (Hero, owner panel, Figures, calculator), external catalogue unchanged and
+SEO on its toolbar. No schema/content/locale/transport/public change. User explicitly
+requested scoped functional preview verification: real editor/action/full Buildings
+renderer fixture passes unsaved edits/buttons/figures/Refresh across four locales,
+mobile and child selection. Initial partial pass and targeted continuation/limits
+recorded in [report](buildings-section-selection.md). No full automatic aesthetic
+QA/check suites, DB/save/publish/upload/commit/push/deploy/restart. Preserve3071,
+all prior pending work and unused logo; only temporary3196fixture stopped.
+
+## Owners live preview blocked by unresolved Hero media —2026-11-05
+
+Read-only diagnosis of legacy EN finds valid local payload but unresolved Hero
+asset; whole-page resolved-media validation rejected Hero and Figures updates.
+Private live preview now uses renderer fallbacks for missing valid UUID assets,
+matching saved preview; available MIME/ID/blob guards and Save/Publish stay strict.
+See [report](owners-live-preview-media.md).6/6focused tests, typecheck/lint/compile
+pass; isolated real Owners editor/action/full renderer browser verifies four
+locales +Refresh, EN count and FR mobile without saving. Independent source review
+finds no blocker; authenticated3071 persistence was not exercised. No DB repair,
+save/publish/upload/commit/push/deploy; existing runtime/work/logo preserved.
+
+## Owners selector consolidation —2026-11-05
+
+User requests Owners follow Home: one Element entry per section, all fields edited
+together. Owners now uses existing selectAsGroup metadata; merged Figures title/
+list, FAQ, nested lists/buttons and old child selections resolve to whole blocks.
+SEO retains dedicated toolbar. See [scope](owners-section-selection.md).
+L0/manual review3071; no automatic tests/QA/DB writes/save/publish/restart/commit/
+push/deploy. All prior pending work, runtime and unused base-logo PNG preserved.
+
+## Home Element: one entry per block —2026-11-05
+
+User extends Figures consolidation to Hero, Guests pitch and all Home blocks.
+Every Home section now uses existing selectAsGroup: one option opens all fields,
+including when clicking a child annotation. SEO remains on its separate toolbar;
+Avantio remains excluded. No other Page selection changes. See
+[scope](home-figures-group-selection.md). L0/user review3071, no automatic tests/
+QA/DB writes/save/publish/restart/commit/push/deploy. All prior work/logo preserved.
+
+## Home selector excludes Avantio —2026-11-05
+
+User removes the noneditable script-driven booking engine from Element. Home
+outline/descriptor/private allowlist no longer expose Avantio. Preview keeps its
+integration notice without selection binding; public engine unchanged. Stale
+removed selections resolve to a valid section without clearing content. See
+[scope](home-editor-editable-elements.md). L0/user review3071; no automatic tests/
+QA, DB writes, save/publish, commit/push/deploy/restart. Preserve prior work/logo.
+
+## Home Figures selector consolidation —2026-11-05
+
+User wants one Home Figures entry because it already edits title and counter list.
+Optional shared section metadata selectAsGroup hides redundant child options and
+the duplicate group caption only for Home stats. Inspector/preview bindings stay
+intact; previous title/list selections resolve to the complete block. See
+[scope](home-figures-group-selection.md). L0/user review on running3071; no
+tests/automatic QA/DB writes/save/publish/commit/push/deploy/restart.
+
+## All-Pages preview follow-up audit —2026-11-05
+
+User requests same/similar preview defects fixed across all nine Pages editors.
+See [audit, changes and evidence](pages-live-preview-audit-2026-11-05.md).
+Fallback media/empty figures in Buildings and Owners closing media now allow
+omission; optional helper label no longer requires an unused hidden URL. No
+shared-guard weakening or DB migration. Root localized stats title and target
+optional-group copy survive preparation from EN; fresh Home defaults use valid
+icons. CountUp value changes reset its local animation (ADR0056); Home/Guest video
+elements key on resolved URL to actually change playback source. All prior work,
+unused untracked logo and running3071 preserved; no commit/push/deploy/DB write.
+
+## Buildings live preview: first Hero edit —2026-11-05
+
+User reproduces EN Hero Title “Mi titulo” failing to update even with Refresh.
+Legacy Buildings Hero can be absent; the old setter created only headline,
+omitting required blank image_media_id and triggering whole-preview validation.
+New Pages field setter supplies missing required media slots along the edited
+path, recovers already sparse local blocks and preserves optional media/flags/
+lists/other sections. FieldNode now retains optional media metadata. Source
+review caught and confirmed a Home target optional-poster guard regression fix.
+14+1focused cases, typecheck/lint and compile-mode build pass; isolated real
+editor/validator/BuildingsHero Next browser sequence passes title/Refresh/typing/
+mobile without saving. Full limits and inherited broad-test failures in
+[report](live-preview-debug-2026-11-05.md). No DB writes/publish/upload/auth changes,
+no commit/push/deploy. All prior pending work and3071 preserved.
+
+## Button element labels across all Pages —2026-11-05
+
+User asks all nine editors distinguish buttons from Text in Element. Root source
+review covers nine schemas and owning composers. Owners/Buildings hero contact
+label now reads Contact button; Guest closing CTAs retain owner/guest context.
+Action labels consistently name Button/Card/Choose/Submit/Back/Open guide button,
+including Guides' field-label override, in EN/PT/ES/FR. Ordinary text/badge/figure/
+filter labels unchanged. See [scope](page-editor-button-labels.md).
+L0/user review on running3071; no tests/automatic QA/check suites/DB writes.
+Earlier Home per-locale URL code and all pending artifacts preserved; this
+follow-up adds no URL, schema or publication behavior. No commit/push/deploy.
+
+## Home buttons: localized labels and links —2026-11-05
+
+User requests grouped label+URL editing per EN/PT/ES/FR for hero primary,
+guests_pitch.cta and closing guest panel “Planning a stay…”. See
+[active scope/results](home-button-localized-links.md), ADR0055. URLs now belong
+to each locale snapshot. New optional guest-panel URL falls back to localized
+Avantio; old target absence is preserved without false unsaved state. All three
+actual button anchors are selectable privately; public callers omit annotations.
+Existing fixed Owners/navbar links remain. Functional checks used synthetic
+DB-free fixtures; no actual saves/publications/DB writes, no push/deploy/commit.
+Local3071 remains available for the user's review. Preserve untracked base-logo.
+
+## Visual editor button labels —2026-11-05
+
+Follow-up from checkpoint509d785: Book Now in Home's hero selects
+`hero.cta_primary.label`; its generic Link (URL) is `hero.cta_primary.url`,
+independent of navbar booking. Path-aware labels now preserve button/primary/
+secondary identity in selector and controls, with EN/PT/ES/FR URL labels.
+Read [scope](page-editor-button-labels.md). User requested3071 relaunch for
+manual review; no listener present initially. No tests/automatic QA, DB writes,
+commit/push/deploy. Preserve the unrelated base-logo PNG.
+
 ## Backoffice checkpoint before clear —2026-11-05
 
 User requests one local commit, then clear to work on something else. Base/main

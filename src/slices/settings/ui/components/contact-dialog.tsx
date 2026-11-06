@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ContactForm } from "@slices/leads/contract";
 import { UiIcon, buttonClassName, cn } from "@core/ui";
@@ -29,6 +29,7 @@ export function ContactDialog({
   icon,
   source = "header-contact",
   triggerClassName,
+  editorPreviewId,
 }: {
   label: string;
   title: string;
@@ -49,12 +50,25 @@ export function ContactDialog({
    * label renders as given. Omitted → the `variant` styling, unchanged.
    */
   triggerClassName?: string;
+  /** Private editor opt-in; public callers omit this and retain the ordinary dialog. */
+  editorPreviewId?: string;
 }) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
+  const subscribePreview = useCallback((notify: () => void) => {
+    if (!editorPreviewId) return () => {};
+    window.addEventListener("central-hill-preview-dialog", notify);
+    return () => window.removeEventListener("central-hill-preview-dialog", notify);
+  }, [editorPreviewId]);
+  // Reading the guarded bridge's marker also handles commands sent before this island mounts.
+  const previewOpen = useSyncExternalStore(subscribePreview,
+    () => Boolean(editorPreviewId && document.documentElement.getAttribute("data-editor-open-dialog") === editorPreviewId),
+    () => false);
+  const isOpen = editorPreviewId ? previewOpen : open;
+
   useEffect(() => {
-    if (!open) return;
+    if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
@@ -66,7 +80,7 @@ export function ContactDialog({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
     };
-  }, [open]);
+  }, [isOpen]);
 
   return (
     <>
@@ -94,10 +108,11 @@ export function ContactDialog({
         )}
       </button>
 
-      {open
+      {isOpen
         ? createPortal(
             <div
               data-chrome-keep
+              data-editor-dialog-backdrop={editorPreviewId}
               className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto bg-ink/40 p-4 backdrop-blur-sm sm:items-center"
               onClick={(e) => {
                 if (e.target === e.currentTarget) setOpen(false);
@@ -115,6 +130,7 @@ export function ContactDialog({
                   type="button"
                   onClick={() => setOpen(false)}
                   aria-label="Close"
+                  data-editor-dialog-close={editorPreviewId}
                   className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface hover:text-ink"
                 >
                   <UiIcon name="xmark" size={28} />

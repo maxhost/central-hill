@@ -7,6 +7,7 @@ import {
 } from "@core/media/mime";
 import type {
   EditorialPageKey,
+  PageEnvelope,
   PageLivePreviewInput,
 } from "../editorial-types";
 import { validateEnvelope } from "./editorial-validation";
@@ -114,4 +115,24 @@ export function validateHomeLivePreview(
   trustedOrigin: string | undefined,
 ): PageLivePreviewInput<"home"> | null {
   return validatePageLivePreview("home", raw, trustedOrigin);
+}
+
+/** Missing legacy assets use the renderer's fallback, just like the saved preview.
+ * Save/Publish still require uploaded assets; available preview assets retain MIME checks.
+ */
+export function pageLivePreviewMediaErrors<K extends EditorialPageKey>(
+  key: K,
+  envelope: PageEnvelope<K>,
+  assets: ReadonlyMap<string, { mime: string }>,
+): Record<string, string> {
+  const adapter = getEditorialAdapter(key);
+  const errors = adapter.mediaErrors(
+    envelope.content,
+    envelope.ogImageMediaId,
+    assets,
+  );
+  for (const ref of adapter.collectMediaReferences(envelope.content, envelope.ogImageMediaId))
+    if (!assets.has(ref.id) && z.uuid().safeParse(ref.id).success)
+      delete errors[ref.path];
+  return errors;
 }

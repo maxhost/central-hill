@@ -341,6 +341,16 @@
       "info": "Good to know",
       "warning": "Important",
       "note": "Note"
+    },
+    "editorPreview": {
+      "title": "An example article about staying in Lisbon",
+      "intro": "This sample shows where your shared sidebar appears in an article. Only the sidebar call to action is editable here.",
+      "category": "Example article",
+      "authorNote": "Illustrative content for the article sidebar editor.",
+      "firstHeading": "Planning your stay",
+      "firstParagraph": "Imagine reading an article with ideas for your next visit to Lisbon. The main column contains the article, while the sidebar groups its contents and a shared call to action. This example gives you that context while you edit.",
+      "secondHeading": "Exploring the city",
+      "secondParagraph": "The article continues here so you can see the relationship between the reading column and the sidebar. On smaller screens the sidebar moves below the article, using the same layout as published posts."
     }
   },
   "buildings": {
@@ -1518,8 +1528,15 @@
         "cta_primary": "Primary button",
         "cta_secondary": "Secondary button",
         "cta": "Button",
-        "cta_label": "Button text",
-        "card_view_label": "Card button text",
+        "cta_primary_url": "Primary button URL",
+        "cta_secondary_url": "Secondary button URL",
+        "cta_url": "Button URL",
+        "cta_label": "Button",
+        "contact_button": "Contact button",
+        "owner_contact_dialog_title": "Owner contact dialog title",
+        "owner_contact_dialog_intro": "Owner contact dialog intro",
+        "card_view_label": "Card button",
+        "view_label": "Open guide button",
         "badge": "Floating badge",
         "icon_key": "Icon",
         "benefits": "Benefits",
@@ -1543,8 +1560,8 @@
         "contact_step": "Step 2 — contact details",
         "done_step": "Step 3 — confirmation",
         "lede": "Intro text",
-        "submit_label": "Submit button text",
-        "back_label": "Back button text",
+        "submit_label": "Submit button",
+        "back_label": "Back button",
         "why": "Why us",
         "services": "Services",
         "plans": "Plans",
@@ -1556,7 +1573,7 @@
         "is_popular": "Most popular (highlighted)",
         "features": "Features",
         "popular_label": "“Most popular” pill text",
-        "choose_label": "“Choose” button text",
+        "choose_label": "Choose button",
         "journey": "Journey",
         "steps": "Steps",
         "dashboard": "Owner dashboard",
@@ -1620,14 +1637,15 @@
         "email": "Email",
         "website": "Website",
         "form": "Contact form",
-        "link_label": "Link text",
+        "link_label": "Card button",
         "media_alt": "Image description",
         "contact_note": "Contact introduction",
         "how_it_works": "How it works",
         "badge_icon_key": "Badge icon",
         "destination": "Destination",
         "search_placeholder": "Search placeholder",
-        "search_label": "Accessible search label"
+        "search_label": "Accessible search label",
+        "article_sidebar": "Article sidebar"
       },
       "itemLabels": {
         "benefits": "Benefit",
@@ -1699,7 +1717,7 @@
         },
         "catalogue": {
           "headline": "Title template",
-          "view_label": "Open guide label",
+          "view_label": "Open guide button",
           "empty_message": "Empty listing message",
           "template_icons": {
             "_label": "Guide template icons",
@@ -1758,7 +1776,10 @@
         "externalPage": "This content comes from its own catalogue. Manage it in the corresponding section of the backoffice.",
         "portfolioNote": "Cards are managed in Buildings.",
         "servicesNote": "Cards are managed in Services.",
-        "faqNote": "Questions are managed in FAQ."
+        "faqNote": "Questions are managed in FAQ.",
+        "guestOwnerContactNote": "These fields edit the title and introduction inside the owner panel’s contact form. Open it in the preview to see your changes as you type.",
+        "showContactForm": "Show contact form",
+        "hideContactForm": "Hide contact form"
       },
       "editorial": {
         "saveDraft": "Save draft",
@@ -1774,6 +1795,14 @@
         "noDraft": "Save a draft before publishing.",
         "livePreview": "Live preview · changes are not saved automatically",
         "sharedBlock": "Shared block"
+      },
+      "blogEditors": {
+        "navigation": "Blog editors",
+        "listing": "Blog listing",
+        "articleSidebar": "Article sidebar",
+        "articleTitle": "Blog · Article sidebar",
+        "sharedDraft": "Both editors share the Blog draft for each language. Save draft and Publish apply to that complete draft.",
+        "context": "Edit the shared call to action beside this example article. The article is illustrative and cannot be edited here. Articles with their own button keep that button."
       }
     }
   },

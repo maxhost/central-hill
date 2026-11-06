@@ -32,7 +32,7 @@ export const ownersDraftSchema = ownersSchema.extend({
         helper.extend({
           cta: helper.shape.cta
             .unwrap()
-            .extend({ url: unfinishedUrl })
+            .extend({ url: unfinishedUrl.optional() })
             .optional(),
         }),
       )

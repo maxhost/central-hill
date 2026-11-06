@@ -36,8 +36,10 @@ type GuestsContent = {
 export function GuestsSection({
   content,
   image,
+  preview = false,
 }: {
   content: GuestsContent;
+  preview?: boolean;
   /**
    * Resolved asset for `image_media_id` — photo, animated WebP, video or Lottie (S6);
    * missing or of an unknown type → the approved mock photo.
@@ -65,7 +67,7 @@ export function GuestsSection({
         title: b.title,
         description: b.description,
       }))}
-      cta={{ href: content.cta.url, label: content.cta.label, note: content.cta.note }}
+      cta={{ href: content.cta.url, label: content.cta.label, note: content.cta.note, editorBinding: preview ? "guests_pitch.cta.label" : undefined }}
       badge={content.badge?.label?.trim() ? content.badge.label : undefined}
       badgeIcon={
         content.badge?.icon_key ? (

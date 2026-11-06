@@ -109,7 +109,7 @@ test("media leaves carry their picker accept from .meta (default image) — S1",
   assert.deepEqual(field(media, "plain_media_id"), { kind: "media", accept: "image" });
   assert.deepEqual(field(media, "photo_media_id"), { kind: "media", accept: "image", hint: "A photo." });
   assert.deepEqual(field(media, "clip_media_id"), { kind: "media", accept: "video", hint: VIDEO_HINT });
-  assert.deepEqual(field(media, "wrapped_media_id"), { kind: "media", accept: "video" });
+  assert.deepEqual(field(media, "wrapped_media_id"), { kind: "media", accept: "video", optional: true });
 });
 
 test("homeSchema: hero video picks video, guests pitch picks animated — S1/S6", () => {
@@ -516,7 +516,7 @@ test("ownersSchema: services/dashboard media still accept \"\" and a uuid (store
 
 test("buildingsSchema: defaultBuildings, a scaffolded blank row and a filled row validate", () => {
   assert.ok(buildingsSchema.safeParse(defaultBuildings).success, "defaultBuildings");
-  assert.equal(defaultBuildings.stats?.figures.length, 3);
+  assert.equal(defaultBuildings.stats?.figures?.length, 3);
   // A never-authored row: the editor scaffolds blanks (0 figures), which must save.
   const blank = applyDefaults(describe(buildingsSchema), {});
   assert.ok(buildingsSchema.safeParse(blank).success, "applyDefaults({})");
@@ -827,10 +827,14 @@ const GUEST_HIDDEN = [
   ["dual_cta", "owner", "cta", "url"],
 ];
 
-test("guestSchema: the 7 CTA URLs are hidden; labels and notes stay visible — S1", () => {
+test("guestSchema: legacy CTA URLs stay hidden; Hero booking overrides are visible", () => {
   const root = describe(guestSchema);
-  for (const p of GUEST_HIDDEN) assert.equal(nodeAt(root, p).kind, "hidden", p.join("."));
-  for (const p of GUEST_HIDDEN) {
+  assert.equal(nodeAt(root, ["hero", "cta_label"]).kind, "string");
+  assert.equal(nodeAt(root, ["hero", "cta_url"]).kind, "string");
+  assert.equal(nodeAt(root, ["hero", "cta"]).kind, "hidden");
+  const visibleCtas = GUEST_HIDDEN.filter(p => p[0] !== "hero");
+  for (const p of visibleCtas) assert.equal(nodeAt(root, p).kind, "hidden", p.join("."));
+  for (const p of visibleCtas) {
     const label = [...p.slice(0, -1), "label"];
     assert.equal(nodeAt(root, label).kind, "string", label.join("."));
   }

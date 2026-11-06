@@ -66,17 +66,17 @@ test("Buildings stats move their translations with identity while the catalogue 
     content: buildingsAdapter.defaultContent(),
     ogImageMediaId: null,
   };
-  target.content.stats!.figures[0]!.label = "Reservas";
-  target.content.stats!.figures[0]!.description = "Descripción original";
+  target.content.stats!.figures![0]!.label = "Reservas";
+  target.content.stats!.figures![0]!.description = "Descripción original";
   const template = structuredClone(target);
-  template.content.stats!.figures.reverse();
+  template.content.stats!.figures!.reverse();
   template.content._list_ids!["stats.figures"]!.reverse();
-  template.content.stats!.figures[2]!.label = "English";
-  template.content.stats!.figures[2]!.description = "English description";
+  template.content.stats!.figures![2]!.label = "English";
+  template.content.stats!.figures![2]!.description = "English description";
   const prepared = prepareTargetEnvelope(template, target, buildingsDescriptor);
-  assert.equal(prepared.content.stats!.figures[2]!.label, "Reservas");
+  assert.equal(prepared.content.stats!.figures![2]!.label, "Reservas");
   assert.equal(
-    prepared.content.stats!.figures[2]!.description,
+    prepared.content.stats!.figures![2]!.description,
     "Descripción original",
   );
   assert.equal(
@@ -87,12 +87,12 @@ test("Buildings stats move their translations with identity while the catalogue 
     "block:stats.figures.0.description",
   );
   const removed = structuredClone(prepared.content);
-  removed.stats!.figures.pop();
+  removed.stats!.figures!.pop();
   removed._list_ids!["stats.figures"]!.pop();
   const retired = retireBuildingsIds(removed, prepared.content);
   assert.ok(retired._retired_ids!.includes("stats.figures:legacy_0"));
-  retired.stats!.figures.push(
-    structuredClone(target.content.stats!.figures[0]!),
+  retired.stats!.figures!.push(
+    structuredClone(target.content.stats!.figures![0]!),
   );
   retired._list_ids!["stats.figures"]!.push("legacy_0");
   assert.ok(buildingsIdentityErrors(retired, removed)["stats.figures"]);

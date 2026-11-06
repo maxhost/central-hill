@@ -7,7 +7,21 @@ Current user requests: local commit before clear; no push/deploy. Aesthetic chan
 are L0, user validates in localhost, no automatic tests/QA. Contact DB update via
 Neon MCP was explicitly deferred; do not resume it without a new request.
 
-Latest arc afterc9484b6: Pages order and sidebar grouping updated; visual Pages
+Latest arc after509d785: all Pages selectors consolidated by section; localized
+Home/Guest/Services booking buttons, live-preview validation/focus/counter fixes
+and Guest contact fields/dialog preview completed. Blog listing now has3sections;
+its shared article CTA is edited at `/admin/pages/blog/article-sidebar` in a
+localized example article using the actual public article renderer. Both Blog
+editors share the complete existing per-locale draft/publication unit and unsaved
+navigation guard. Read [Blog editor delivery](docs/specs/blog-article-sidebar-editor.md)
+and the session handoff for exact checks and earlier changes. Functional checks
+used DB-free fixtures; no real3071save/publish/upload/DB write. Latest13focused
+tests/typecheck/lint/compile and4locale desktop/mobile browser cases pass; no new
+independent QA claim. User now requests clear: local checkpoint commit, no push/
+deploy; resolve its hash with `git log -1`. Preserve3071PID7039 and untracked logo.
+No pending authorized work after checkpoint; follow the next user request.
+
+Earlier arc afterc9484b6: Pages order and sidebar grouping updated; visual Pages
 editors start with sidebar hidden, toggle it via topbar icon, use a500px inspector
 on the left and sticky language/Save draft/Publish header. Page navigator switches
 directly between editors, with English Cancel/Continue warning for unsaved work

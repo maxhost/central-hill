@@ -5,10 +5,11 @@
  *   - guest reviews → testimonials slice (`audience='guest'`, managed in /admin/testimonials);
  *     only the section heading is authored here (`testimonials`, optional — blank → the
  *     i18n `pages.reviews.titleGuests`; the legacy eyebrow is hidden/preserved)
- *   - the dual-CTA contact line (phone / email / WhatsApp) → company_settings
+ *   - default dual-CTA contact lines (phone / email / WhatsApp) → company_settings;
+ *     each panel may override its line in this page's current locale
  *   - the optional FAQ accordion → faq slice, chosen by `faq_group_key`
  * Every other section on the page is authored here and edited at /admin/pages/guest.
- * Button URLs are hidden in the editor (spec guests-admin-editor → "Campos ocultos"): the
+ * Other button URLs are hidden in the editor (spec guests-admin-editor → "Campos ocultos"): the
  * render sends each button to a fixed locale-relative route, so the stored `url`s are kept
  * (round-tripped unchanged on save) but no longer used.
  * See docs/data-model.md → Page content model → guest, and
@@ -38,6 +39,9 @@ const hiddenUrl = adminHidden(url);
 const guestCta = cta.extend({ url: hiddenUrl });
 /** Local variant of the kernel `ctaWithNote` with its `url` hidden in the editor. */
 const guestCtaWithNote = ctaWithNote.extend({ url: hiddenUrl });
+
+/** Hero booking destination belongs to the selected language's editorial snapshot. */
+export const guestHeroButtonUrl = z.url({ protocol: /^https?$/ }).meta({ t: true });
 
 /** Uploader guidance surfaced in the admin media pickers (form-model reads `.describe`). */
 const HERO_VIDEO_HINT =
@@ -74,6 +78,9 @@ const dualPanel = z.object({
   title: tStr({ max: 160 }),
   body: tStr({ max: 400 }),
   cta: guestCta,
+  contact_line: tStrOpt({ max: 300 }).describe(
+    "Contact text below this panel's button. Leave blank to use the contact details from Settings.",
+  ),
 });
 
 /**
@@ -110,8 +117,12 @@ export const guestSchema = z.object({
     eyebrow: tStrOpt({ max: 80 }),
     headline: tStr({ max: 160 }),
     subheadline: tStrOpt({ max: 280 }),
-    /** Hero booking label/destination are shared chrome copy and the fixed Avantio URL. */
+    /** Legacy unused CTA is preserved; it previously pointed to the property catalogue. */
     cta: adminHidden(guestCta),
+    /** Booking overrides belong to this language; absent/blank retains Book Now + booking URL. */
+    cta_label: tStrOpt({ max: 80 }).describe("Leave blank to use the current language's Book Now label."),
+    cta_url: z.union([z.literal(""), guestHeroButtonUrl]).meta({ t: true }).optional()
+      .describe("Booking link for this language. Leave blank to keep the current booking destination."),
   }),
   welcome: z.object({
     headline: tStr({ max: 160 }),
@@ -158,7 +169,7 @@ export const guestSchema = z.object({
     cta: guestCtaWithNote,
   }),
   /**
-   * Closing band: guest panel left, owner panel right (mock order). Contact line = settings.
+   * Closing band: guest panel left, owner panel right (mock order). Blank contact line → Settings.
    * The owner button opens the contact dialog (S5); its stored `cta.url` is unused.
    */
   dual_cta: z.object({

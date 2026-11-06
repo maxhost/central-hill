@@ -44,8 +44,22 @@ export function prepareTargetEnvelope<K extends EditorialPageKey = "home">(
     const value = texts.get(
       editorialTranslationField(next.content, path, descriptor),
     );
-    if (value !== undefined) homeSet(next.content, path, value);
+    // A target may have authored a text-only optional group while EN kept it absent.
+    if (value !== undefined) homeSet(next.content, path, value, true);
   }
+  // Preserve absent legacy URLs and their localized fallback. Introducing a blank
+  // would create false unsaved changes; inheriting EN would change the destination.
+  if (descriptor.key === "home" && target && homeAt(target.content, "dual_cta.guest.cta_url") === undefined)
+    homeSet(next.content, "dual_cta.guest.cta_url", undefined);
+  // Guest overrides were added after its legacy booking and Settings contact fallbacks.
+  // An untouched target keeps those defaults instead of adopting a new EN override.
+  if (descriptor.key === "guest" && target)
+    for (const path of ["hero.cta_label", "hero.cta_url", "dual_cta.guest.contact_line", "dual_cta.owner.contact_line"])
+      if (homeAt(target.content, path) === undefined) homeSet(next.content, path, undefined);
+  // Services also keeps its pre-existing booking defaults until that locale opts in.
+  if (descriptor.key === "services" && target)
+    for (const path of ["hero.cta_label", "hero.cta_url"])
+      if (homeAt(target.content, path) === undefined) homeSet(next.content, path, undefined);
   return next;
 }
 

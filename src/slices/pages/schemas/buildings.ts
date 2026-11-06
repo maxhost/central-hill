@@ -63,7 +63,7 @@ export const buildingsSchema = z.object({
   /** Blank → `pages.buildings.hero*`; the contact button/dialog → `pages.owners.contact*`. */
   hero: z
     .object({
-      image_media_id: optionalImage(HERO_IMG_HINT),
+      image_media_id: optionalImage(HERO_IMG_HINT).optional(),
       eyebrow: tStrOpt({ max: 60 }).describe("Leave blank for “Lisbon · Portugal”."),
       headline: tStrOpt({ max: 160 }).describe("Leave blank for “Strategic Properties in Prime Locations”."),
       copy: tStrOpt({ max: 600 }).describe(
@@ -106,7 +106,7 @@ export const buildingsSchema = z.object({
   stats: z
     .object({
       title: tStrOpt({ max: 160 }).describe("Leave blank for “Numbers That Speak for Themselves”."),
-      figures: between(buildingsFigure, 0, 8),
+      figures: between(buildingsFigure, 0, 8).optional(),
     })
     .optional(),
   /**
@@ -125,7 +125,7 @@ export const buildingsSchema = z.object({
       ),
       contact_step: estimateContactStep,
       done_step: estimateDoneStep,
-      media_media_id: optionalAnimated(CALC_MEDIA_HINT),
+      media_media_id: optionalAnimated(CALC_MEDIA_HINT).optional(),
     })
     .optional(),
 });

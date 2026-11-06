@@ -40,7 +40,12 @@ export function readPageEditorMessage(
     return { channel: PAGE_EDITOR_CHANNEL, instance: expected.instance, type: "ready" };
   }
   if (message.type === "select" && typeof message.bindingId === "string" && expected.bindingIds.includes(message.bindingId)) {
-    return { channel: PAGE_EDITOR_CHANNEL, instance: expected.instance, type: "select", bindingId: message.bindingId };
+    if (message.focus !== undefined && typeof message.focus !== "boolean") return null;
+    return { channel: PAGE_EDITOR_CHANNEL, instance: expected.instance, type: "select", bindingId: message.bindingId,
+      ...(message.focus !== undefined ? { focus: message.focus } : {}) };
+  }
+  if (message.type === "dialog" && typeof message.bindingId === "string" && expected.bindingIds.includes(message.bindingId) && typeof message.open === "boolean") {
+    return { channel: PAGE_EDITOR_CHANNEL, instance: expected.instance, type: "dialog", bindingId: message.bindingId, open: message.open };
   }
   if (message.type === "preview" && Number.isSafeInteger(message.revision) && (message.revision as number) >= 0
     && Object.hasOwn(message, "payload") && boundedPreviewPayload(message.payload)) {

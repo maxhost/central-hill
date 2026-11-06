@@ -20,17 +20,25 @@ export function PageEditorPreviewBridge({ instance, bindingIds }: { instance: st
     document.head.append(style);
     let selected: HTMLElement | undefined;
     let selectedId = "";
-    const highlight = (id: string, focus: boolean) => {
+    let activeDialog: string | undefined;
+    const showDialog = (bindingId: string, open: boolean, notify = false) => {
+      activeDialog = open ? bindingId : undefined;
+      if (open) document.documentElement.setAttribute("data-editor-open-dialog", bindingId);
+      else document.documentElement.removeAttribute("data-editor-open-dialog");
+      window.dispatchEvent(new CustomEvent("central-hill-preview-dialog", { detail: { bindingId, open } }));
+      if (notify && embedded) window.parent.postMessage({ channel: PAGE_EDITOR_CHANNEL, instance, type: "dialog", bindingId, open }, window.location.origin);
+    };
+    const highlight = (id: string, focus: boolean, scroll = focus) => {
       selectedId = id;
       const element = elements.find((candidate) => candidate.dataset.editorBinding === id);
       selected?.removeAttribute("data-editor-selected");
       selected = element;
       if (!element) return; // Empty and hidden sections remain editable through the outline.
       element.dataset.editorSelected = "true";
-      if (focus) {
+      if (scroll) {
         element.scrollIntoView({ block: "center", behavior: "instant" });
-        element.focus({ preventScroll: true });
       }
+      if (focus) element.focus({ preventScroll: true });
     };
     const bindElements = () => {
       // Do not retain detached RSC trees across an editing session.
@@ -61,8 +69,23 @@ export function PageEditorPreviewBridge({ instance, bindingIds }: { instance: st
       if (embedded) window.parent.postMessage({ channel: PAGE_EDITOR_CHANNEL, instance, type: "select", bindingId }, window.location.origin);
     };
     const block = (event: Event) => { event.preventDefault(); event.stopImmediatePropagation(); };
-    const click = (event: MouseEvent) => { block(event); sendSelection(event.target); };
+    const closeTarget = (target: EventTarget | null) => {
+      if (!(target instanceof Element)) return undefined;
+      const close = target.closest<HTMLElement>("[data-editor-dialog-close]")?.dataset.editorDialogClose;
+      const backdrop = target.getAttribute("data-editor-dialog-backdrop");
+      const id = close ?? backdrop;
+      return id && id === activeDialog && allowed.has(id) ? id : undefined;
+    };
+    const click = (event: MouseEvent) => {
+      block(event);
+      const id = closeTarget(event.target);
+      if (id) showDialog(id, false, true);
+      else sendSelection(event.target);
+    };
     const keyboard = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && activeDialog) { block(event); showDialog(activeDialog, false, true); return; }
+      const closeId = closeTarget(event.target);
+      if ((event.key === "Enter" || event.key === " ") && closeId) { block(event); showDialog(closeId, false, true); return; }
       if (event.key === "Enter" || event.key === " ") { block(event); sendSelection(event.target); return; }
       if (event.target instanceof Element && event.target.closest("input,textarea,select,[contenteditable]")) {
         if (event.key !== "Tab") block(event);
@@ -70,7 +93,11 @@ export function PageEditorPreviewBridge({ instance, bindingIds }: { instance: st
     };
     const message = (event: MessageEvent) => {
       const data = readPageEditorMessage(event, { origin: window.location.origin, source: window.parent, instance, bindingIds: currentBindings });
-      if (data?.type === "select" && data.bindingId) highlight(data.bindingId, true);
+      if (data?.type === "select" && data.bindingId) highlight(data.bindingId, data.focus !== false, true);
+      if (data?.type === "dialog") {
+        if (data.open && activeDialog && activeDialog !== data.bindingId) showDialog(activeDialog, false);
+        showDialog(data.bindingId, data.open);
+      }
     };
     if (embedded) window.addEventListener("message", message);
     document.addEventListener("click", click, true);
@@ -83,6 +110,7 @@ export function PageEditorPreviewBridge({ instance, bindingIds }: { instance: st
       window.parent.postMessage({ channel: PAGE_EDITOR_CHANNEL, instance, type: "ready" }, window.location.origin);
     }
     return () => {
+      if (activeDialog) showDialog(activeDialog, false);
       observer.disconnect();
       if (embedded) window.removeEventListener("message", message);
       document.removeEventListener("click", click, true);

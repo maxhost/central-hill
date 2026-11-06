@@ -12,7 +12,7 @@ import {
 import { prepareTargetEnvelope, sharedEnvelope } from "../editorial-content";
 import type { PageEnvelope } from "../editorial-types";
 
-test("Guest adapter preserves editable copy, seven hidden destinations and all sixteen media slots", () => {
+test("Guest adapter preserves editable copy, seven legacy destinations, localized Hero overrides and all sixteen media slots", () => {
   const content = guestAdapter.defaultContent();
   assert.equal(guestDraftSchema.safeParse(content).success, true);
   assert.equal(
@@ -40,6 +40,8 @@ test("Guest adapter preserves editable copy, seven hidden destinations and all s
     "services_teaser.items[].title",
     "activities_teaser.items[].description",
     "dual_cta.owner.contact.title",
+    "dual_cta.guest.contact_line",
+    "dual_cta.owner.contact_line",
     "testimonials.title",
     "faq.title",
   ])
@@ -57,6 +59,8 @@ test("Guest adapter preserves editable copy, seven hidden destinations and all s
   }
   walk(guestDescriptor.rootNode);
   assert.equal(hidden.filter((path) => path.endsWith(".url")).length, 7);
+  assert.ok(hidden.includes("hero.cta"));
+  assert.ok(guestDescriptor.textPatterns.includes("hero.cta_url"));
   assert.ok(hidden.includes("_list_ids"));
   assert.ok(hidden.includes("_retired_ids"));
   assert.deepEqual(guestIdentityErrors(content), {});

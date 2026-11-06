@@ -68,16 +68,19 @@ type Panel = {
   title?: string;
   body?: string;
   cta_label?: string;
+  cta_url?: string;
 };
 
 export async function DualCta({
   locale,
   content,
   media = {},
+  preview = false,
 }: {
   locale: Locale;
   content?: { owner?: Panel; guest?: Panel };
   media?: Record<string, MediaImageData>;
+  preview?: boolean;
 }) {
   const [globals, t] = await Promise.all([getGlobals(locale), getTranslations("pages")]);
 
@@ -110,8 +113,9 @@ export async function DualCta({
     title: guestTitle,
     body: guest?.body || t("dualCta.guestBody"),
     cta: {
-      href: avantioBookingUrl(locale),
+      href: guest?.cta_url?.trim() || avantioBookingUrl(locale),
       label: guest?.cta_label || t("dualCta.guestCta"),
+      editorBinding: preview ? "dual_cta.guest.cta_label" : undefined,
       variant: "light",
     },
     contactLine: guestContact ?? undefined,

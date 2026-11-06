@@ -6,15 +6,18 @@ import { useTranslations } from "next-intl";
 import { AdminButton } from "@slices/backoffice/contract";
 import type { PageKey } from "../../schemas";
 import { PAGE_ADMIN_ORDER } from "../page-order";
+import { BLOG_ARTICLE_EDITOR_URL, type PageEditorView } from "../editorial-views";
 
 /** Changes editor routes only after local work has been saved or explicitly discarded. */
 export function PageNavigation({
   currentKey,
+  view = "page",
   hasUnsavedChanges,
   busy,
   onLeave,
 }: {
   currentKey: PageKey;
+  view?: PageEditorView;
   hasUnsavedChanges: boolean;
   busy: boolean;
   onLeave: () => void;
@@ -25,7 +28,8 @@ export function PageNavigation({
   const cancelButton = useRef<HTMLButtonElement>(null);
   const titleId = useId();
   const descriptionId = useId();
-  const [target, setTarget] = useState<PageKey | null>(null);
+  const [target, setTarget] = useState<string | null>(null);
+  const currentHref = view === "blog_article" ? BLOG_ARTICLE_EDITOR_URL : `/admin/pages/${currentKey}`;
   const [navigating, startNavigation] = useTransition();
 
   useEffect(() => {
@@ -39,17 +43,17 @@ export function PageNavigation({
     }
   }, [target]);
 
-  function navigate(key: PageKey) {
-    if (busy || navigating || key === currentKey) return;
+  function navigate(href: string) {
+    if (busy || navigating || href === currentHref) return;
     onLeave();
     setTarget(null);
-    startNavigation(() => router.push(`/admin/pages/${key}`));
+    startNavigation(() => router.push(href));
   }
 
-  function choose(key: PageKey) {
-    if (busy || navigating || key === currentKey) return;
-    if (hasUnsavedChanges) setTarget(key);
-    else navigate(key);
+  function choose(href: string) {
+    if (busy || navigating || href === currentHref) return;
+    if (hasUnsavedChanges) setTarget(href);
+    else navigate(href);
   }
 
   return (
@@ -64,13 +68,25 @@ export function PageNavigation({
             type="button"
             aria-current={key === currentKey ? "page" : undefined}
             disabled={busy || navigating}
-            onClick={() => choose(key)}
+            onClick={() => choose(`/admin/pages/${key}`)}
             className={`min-h-11 shrink-0 cursor-pointer border-r border-line px-4 py-3 text-sm transition-colors last:border-r-0 focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${key === currentKey ? "bg-accent/10 font-medium text-accent-deep" : "text-ink hover:bg-surface"}`}
           >
             {t(`pages.${key}`)}
           </button>
         ))}
       </nav>
+
+      {currentKey === "blog" ? <div className="mt-3 space-y-2">
+        <nav aria-label={t("blogEditors.navigation")} className="flex flex-wrap gap-2">
+          {(["page", "blog_article"] as const).map(editor => <button key={editor} type="button"
+            aria-current={view === editor ? "page" : undefined} disabled={busy || navigating}
+            onClick={() => choose(editor === "page" ? "/admin/pages/blog" : BLOG_ARTICLE_EDITOR_URL)}
+            className={`min-h-11 cursor-pointer rounded-md border border-line px-4 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-60 ${view === editor ? "bg-accent/10 font-medium text-accent-deep" : "bg-bg text-ink hover:bg-surface"}`}>
+            {t(editor === "page" ? "blogEditors.listing" : "blogEditors.articleSidebar")}
+          </button>)}
+        </nav>
+        <p className="text-xs text-ink-soft">{t("blogEditors.sharedDraft")}</p>
+      </div> : null}
 
       <dialog
         ref={dialog}

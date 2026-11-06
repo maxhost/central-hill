@@ -82,3 +82,5 @@ export { blogAdminScreens } from "./admin/screens";
 /** Injectable editorial composition, retaining the slice-owned catalogue. */
 export { BlogListingRenderer } from "./ui/blog-listing";
 export { BlogSharedAside } from "./ui/components/blog-shared-aside";
+/** Staff-only article context for the shared sidebar editor, with injected Pages content. */
+export { BlogArticlePreview } from "./ui/blog-article-preview";

@@ -35,6 +35,8 @@ export type TwoColumnShowcaseBullet = {
 export type TwoColumnShowcaseCta = {
   href: string;
   label: string;
+  /** Optional private preview annotation on the actual button link. */
+  editorBinding?: string;
   /** Helper copy under the CTA button; also the image's floating badge text, unless the
    * caller passes its own `badge` (Owners' services/dashboard showcases: the two differ). */
   note?: string;
@@ -113,7 +115,7 @@ export function TwoColumnShowcase({
           ) : null}
           {cta ? (
             <div className="mt-9">
-              <ButtonLink href={cta.href}>{cta.label}</ButtonLink>
+              <ButtonLink href={cta.href} editorBinding={cta.editorBinding}>{cta.label}</ButtonLink>
               {cta.note ? <p className="mt-3 text-sm text-ink-soft">{cta.note}</p> : null}
             </div>
           ) : null}

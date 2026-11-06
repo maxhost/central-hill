@@ -6,8 +6,7 @@ export type HomeTargetLocale = "es" | "pt" | "fr";
 export type HomeTranslations = Record<HomeTargetLocale, Record<string,{value:string;state:string;stale:boolean}>>;
 export function homeSections(root:FieldNode, label:(key:string)=>string):EditorSection[] {
  if(root.kind!=="object") return [];
- const sections = root.fields.filter(f=>f.node.kind!=="hidden").map(f=>({id:f.key,label:label(f.key),bindings: bindings(f.node,f.key,label).map(b=>({...b,sectionId:f.key}))}));
- sections.splice(2,0,{id:"avantio",label:"Avantio",bindings:[],external:true} as EditorSection);
+ const sections: EditorSection[] = root.fields.filter(f=>f.node.kind!=="hidden").map(f=>({id:f.key,label:label(f.key),selectAsGroup:true,bindings: bindings(f.node,f.key,label).map(b=>({...b,sectionId:f.key}))}));
  const seo=sections.find(s=>s.id==="seo");if(seo){sections.splice(sections.indexOf(seo),1);sections.push(seo);}
  const faq=sections.find(s=>s.id==="faq");const group=sections.find(s=>s.id==="faq_group_key");
  if(faq&&group){faq.bindings.push(...group.bindings.map(b=>({...b,sectionId:"faq"})));sections.splice(sections.indexOf(group),1);}
@@ -17,7 +16,41 @@ export function homeSections(root:FieldNode, label:(key:string)=>string):EditorS
 function bindings(node:FieldNode,path:string,label:(key:string)=>string):{id:string;label:string}[] {
  if(node.kind==="hidden")return [];
  if(node.kind==="object")return node.fields.flatMap(f=>bindings(f.node,`${path}.${f.key}`,label));
- return [{id:path,label:label(path.split(".").at(-1)!)}];
+ return [{id:path,label:pageFieldLabel(path,label)}];
+}
+
+/** Keep button identity when object fields are flattened into the element selector. */
+export function pageFieldLabel(path: string, label: (key: string) => string): string {
+ const parts = path.split(".");
+ const key = parts.at(-1)!;
+ const parent = parts.at(-2);
+ if (path === "hero.contact.label") return label("contact_button");
+ if (path === "dual_cta.owner.contact.title") return label("owner_contact_dialog_title");
+ if (path === "dual_cta.owner.contact.intro") return label("owner_contact_dialog_intro");
+ if (parts[0] === "dual_cta" && key === "contact_line" && (parent === "guest" || parent === "owner"))
+  return `${label(parent)} · ${label("contact_line")}`;
+ if (parent && ["cta", "cta_primary", "cta_secondary"].includes(parent)) {
+  if (key === "label") {
+   const panel = parts.at(-3);
+   return parent === "cta" && (panel === "owner" || panel === "guest") ? `${label(panel)} · ${label("cta")}` : label(parent);
+  }
+  if (key === "url") return label(`${parent}_url`);
+ }
+ if (key === "cta_label") {
+  return parent === "owner" || parent === "guest" ? `${label(parent)} · ${label("cta")}` : label("cta");
+ }
+ if (key === "cta_url") return label("cta_url");
+ return label(key);
+}
+
+/** Requested Home buttons expose their label and destination in a single inspector. */
+export function homeButtonFields(selectedId: string): readonly string[] {
+ const groups = [
+  ["hero.cta_primary.label", "hero.cta_primary.url"],
+  ["guests_pitch.cta.label", "guests_pitch.cta.url"],
+  ["dual_cta.guest.cta_label", "dual_cta.guest.cta_url"],
+ ];
+ return groups.find(group => group.includes(selectedId)) ?? [selectedId];
 }
 export function homeNode(root:FieldNode,path:string):FieldNode|undefined {
  let current:FieldNode|undefined=root;
@@ -26,11 +59,11 @@ export function homeNode(root:FieldNode,path:string):FieldNode|undefined {
 }
 
 /** Private preview allowlist, including fields that remain reachable only through the outline. */
-export const homeEditorBindingIds = ["hero","avantio","stats","guests_pitch","portfolio","services_carousel","faq","dual_cta","seo","faq_group_key","og_image_media_id",
+export const homeEditorBindingIds = ["hero","stats","guests_pitch","portfolio","services_carousel","faq","dual_cta","seo","faq_group_key","og_image_media_id",
  "hero.video_media_id","hero.poster_media_id","hero.eyebrow","hero.headline","hero.subtitle","hero.cta_primary.label","hero.cta_primary.url","hero.cta_secondary.label",
  "stats.title","stats.figures","guests_pitch.headline","guests_pitch.subheadline","guests_pitch.benefits","guests_pitch.image_media_id","guests_pitch.cta.label","guests_pitch.cta.url","guests_pitch.cta.note","guests_pitch.badge.label","guests_pitch.badge.icon_key",
  "portfolio.title","portfolio.cta_label","portfolio.card_view_label","services_carousel.headline","services_carousel.assurances","services_carousel.service_category_slug","faq.title",
- ...["owner","guest"].flatMap(side=>["image_media_id","eyebrow","title","body","cta_label"].map(key=>`dual_cta.${side}.${key}`)),"seo.meta_title","seo.meta_description"] ;
+ ...["owner","guest"].flatMap(side=>["image_media_id","eyebrow","title","body","cta_label"].map(key=>`dual_cta.${side}.${key}`)),"dual_cta.guest.cta_url","seo.meta_title","seo.meta_description"] ;
 
 /** One outline policy; Home retains its validated section grouping and order. */
 export function pageSections(descriptor: PageEditorialDescriptor, label: (key: string) => string, content?: unknown): EditorSection[] {
@@ -44,6 +77,8 @@ export function pageSections(descriptor: PageEditorialDescriptor, label: (key: s
   for (const id of descriptor.externalSections) {
     if (!sections.some(section => section.id === id)) sections.push({ id, label: label(id), bindings: [], external: true });
   }
+  if (["owners", "buildings", "real_estate", "guest", "guides", "services", "about", "blog"].includes(descriptor.key))
+    for (const section of sections) section.selectAsGroup = true;
   if (descriptor.key === "owners") {
     const title = sections.find(section => section.id === "stats_title");
     const stats = sections.find(section => section.id === "stats");

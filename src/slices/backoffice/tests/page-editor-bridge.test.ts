@@ -12,6 +12,16 @@ test("accepts allowlisted selection and preview ready", () => {
   assert.equal(readPageEditorMessage({ ...event, data: { ...select, type: "ready", bindingId: undefined } }, expected)?.type, "ready");
 });
 
+test("selection focus is optional, boolean and retains the existing message guards", () => {
+  for (const focus of [true, false]) {
+    const data = { ...select, focus };
+    assert.deepEqual(readPageEditorMessage({ ...event, data }, expected), data);
+    assert.equal(readPageEditorMessage({ ...event, origin: "https://other.test", data }, expected), null);
+  }
+  for (const focus of [null, "false", 0, {}])
+    assert.equal(readPageEditorMessage({ ...event, data: { ...select, focus } }, expected), null);
+});
+
 test("rejects other origins, windows, instances, channels and unknown bindings", () => {
   for (const patch of [{ origin: "https://evil.test" }, { source: {} as MessageEventSource }, { source: null }]) {
     assert.equal(readPageEditorMessage({ ...event, ...patch }, expected), null);
@@ -25,6 +35,18 @@ test("rejects other origins, windows, instances, channels and unknown bindings",
 test("preview URL preserves existing query/hash and replaces bridge parameters", () => {
   assert.equal(pageEditorPreviewUrl("/admin/preview?locale=es&instance=old#hero", "new editor", 3), "/admin/preview?locale=es&instance=new+editor&editorVersion=3#hero");
   assert.equal(pageEditorPreviewUrl("/admin/preview", "one", 0), "/admin/preview?instance=one&editorVersion=0");
+});
+
+test("dialog visibility commands require a boolean and a current allowlisted binding", () => {
+  const data = { channel: PAGE_EDITOR_CHANNEL, instance: expected.instance, type: "dialog", bindingId: "hero.title", open: true };
+  assert.deepEqual(readPageEditorMessage({ ...event, data }, expected), data);
+  assert.equal(readPageEditorMessage({ ...event, data: { ...data, open: false } }, expected)?.type, "dialog");
+  for (const open of [undefined, null, "true", 1, {}])
+    assert.equal(readPageEditorMessage({ ...event, data: { ...data, open } }, expected), null);
+  for (const patch of [{ bindingId: "unknown" }, { instance: "old-locale" }, { channel: "other" }])
+    assert.equal(readPageEditorMessage({ ...event, data: { ...data, ...patch } }, expected), null);
+  assert.equal(readPageEditorMessage({ ...event, origin: "https://other.test", data }, expected), null);
+  assert.equal(readPageEditorMessage({ ...event, source: {} as MessageEventSource, data }, expected), null);
 });
 
 

@@ -19,6 +19,9 @@ export const servicesSchema = z.object({
   hero: z.object({
     ...copy,
     ...visual("Landscape 16:9, 1920×1080. Photo ideally under 500 KB; silent MP4 H.264 loop, 10–20 seconds, ideally under 15 MB. Animated WebP and WebM are also supported."),
+    cta_label: tStrOpt({ max: 80 }).describe("Leave blank to use the current language's Book Now label."),
+    cta_url: z.union([z.literal(""), z.url({ protocol: /^https?$/ })]).meta({ t: true }).optional()
+      .describe("Booking link for this language. Leave blank to keep the current booking destination."),
   }).optional(),
   intro: z.object({ ...copy, eyebrow: adminHidden(copy.eyebrow) }).optional(),
   /** Removed public section; retain legacy content without exposing editor controls. */

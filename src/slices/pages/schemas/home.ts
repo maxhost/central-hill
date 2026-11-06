@@ -45,6 +45,9 @@ const ASSURANCE_COUNT = 3;
 /** Upper bound of the Home figures band (spec S5: 0–8 rows). */
 export const HOME_MAX_FIGURES = 8;
 
+/** Home booking destinations are authored independently in each locale snapshot. */
+export const homeButtonUrl = z.url({ protocol: /^https?$/ }).meta({ t: true });
+
 /** One side of the closing owner/guest dual-CTA band (editable copy + background). */
 const ctaPanel = z.object({
   image_media_id: optionalImage(PANEL_IMG_HINT),
@@ -80,7 +83,7 @@ export const homeSchema = z.object({
     subtitle: tStrOpt({ max: 280 }),
     // External booking engine (Avantio) — genuinely a redirect, so its target is
     // CMS-editable like any other cta.
-    cta_primary: cta,
+    cta_primary: cta.extend({ url: homeButtonUrl }),
     // Always our own internal Owners route — never a CMS-editable target (client
     // feedback: a free-text `url` shared by all 4 locales can only ever be correct for
     // one of them). Staff can only edit the button's copy; `home-page.tsx` hardcodes the
@@ -105,7 +108,7 @@ export const homeSchema = z.object({
     benefits: fixed(iconCard, 4),
     // Photo, animated WebP, MP4/WebM loop or Lottie (spec S6) — the key keeps its name.
     image_media_id: optionalAnimated(GUESTS_MEDIA_HINT),
-    cta: ctaWithNote,
+    cta: ctaWithNote.extend({ url: homeButtonUrl }),
     /**
      * The image's floating reassurance badge. Blank label → `cta.note` (as before);
      * blank icon → `check`.
@@ -146,7 +149,10 @@ export const homeSchema = z.object({
   // Closing band: two image panels (owner / guest) with editable copy + CTA labels.
   dual_cta: z.object({
     owner: ctaPanel,
-    guest: ctaPanel,
+    guest: ctaPanel.extend({
+      /** Missing/blank preserves the existing localized Avantio destination. */
+      cta_url: z.union([z.literal(""), homeButtonUrl]).meta({ t: true }).optional(),
+    }),
   }),
 });
 

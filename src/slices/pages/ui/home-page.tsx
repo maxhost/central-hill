@@ -68,6 +68,7 @@ export async function HomePage({ locale, preview = false, page: injectedPage }: 
         editorBindings={preview ? { background: "hero.video_media_id", eyebrow: "hero.eyebrow", subtitle: "hero.subtitle" } : undefined}
         background={
           <video
+            key={media[hero.video_media_id]?.url ?? HERO_FALLBACK_VIDEO}
             {...binding("hero.video_media_id")}
             className="absolute inset-0 -z-10 h-full w-full object-cover"
             autoPlay
@@ -89,7 +90,7 @@ export async function HomePage({ locale, preview = false, page: injectedPage }: 
         subtitle={hero.subtitle}
         actions={
           <>
-            <ButtonLink href={hero.cta_primary.url}>{preview ? <span {...binding("hero.cta_primary.label")}>{hero.cta_primary.label}</span> : hero.cta_primary.label}</ButtonLink>
+            <ButtonLink href={hero.cta_primary.url} editorBinding={preview ? "hero.cta_primary.label" : undefined}>{hero.cta_primary.label}</ButtonLink>
             {/*
              * Always our own internal Owners route — hardcoded, not CMS-editable, so it can
              * never be pinned to a stale locale/domain the way a free-text CMS url would be
@@ -103,7 +104,7 @@ export async function HomePage({ locale, preview = false, page: injectedPage }: 
       /></div>
 
       {/* Avantio availability search, directly under the hero (client request). */}
-      {preview ? <div {...binding("avantio")} className="border-y border-line bg-surface px-6 py-8 text-center text-sm text-ink-soft">Avantio · External booking integration</div> : <AvantioSearchBar locale={locale} />}
+      {preview ? <div className="border-y border-line bg-surface px-6 py-8 text-center text-sm text-ink-soft">Avantio · External booking integration</div> : <AvantioSearchBar locale={locale} />}
 
       {/*
        * Scroll-reveal from here down (client feedback: bring Home in line with the other
@@ -134,6 +135,7 @@ export async function HomePage({ locale, preview = false, page: injectedPage }: 
       {/* Guests pitch now sits directly under stats, ahead of the carousel (client feedback). */}
       <div {...binding("guests_pitch")} className="[&_section]:py-[70px]!"><Reveal label="guests-pitch">
         <GuestsSection
+          preview={preview}
           content={guests_pitch}
           image={media[guests_pitch.image_media_id ?? ""] ?? null}
         />
@@ -170,7 +172,7 @@ export async function HomePage({ locale, preview = false, page: injectedPage }: 
 
       {/* Closing owner/guest dual CTA (restored, client direction) — sits right before the footer. */}
       <div {...binding("dual_cta")} className="[&_section]:py-[70px]"><Reveal label="dual-cta">
-        <DualCta locale={locale} content={dual_cta} media={media} />
+        <DualCta locale={locale} content={dual_cta} media={media} preview={preview} />
       </Reveal></div>
     </main>
   );

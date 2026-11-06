@@ -114,7 +114,7 @@ page_content
   | `hero.eyebrow?` | string ≤60 | T | i18n `pages.home.heroEyebrow` |
   | `hero.headline` | string ≤160, **required** | T | — |
   | `hero.subtitle?` | string ≤280 | T | omitted |
-  | `hero.cta_primary{label, url}` | label ≤80 **required**; `url` absolute URL **required** | label T · url C | — |
+  | `hero.cta_primary{label, url}` | label ≤80 **required**; `url` absolute HTTP(S) URL **required** | label/url T (per-locale JSON) | — |
   | `hero.cta_secondary{label}` | string ≤80, **required** (href fixed in code: `/<locale>/owners`) | T | — |
   | `stats?.title?` | string ≤160 | T | i18n `pages.stats.title` |
   | `stats?.figures?` | 0–8 × `statFigure{label ≤80, to (digits ≤15), prefix? ≤8, suffix? ≤8, group: bool}` | `label` T · rest C | **no rows → no band** (heading included) |
@@ -122,7 +122,7 @@ page_content
   | `guests_pitch.subheadline?` | string ≤280 | T | omitted |
   | `guests_pitch.benefits` | exactly 4 × `{icon_key, title ≤120, description ≤400}` | icon C · text T | — |
   | `guests_pitch.image_media_id` | `"" \| uuid`; image (incl. animated WebP), MP4/WebM or Lottie (`.json`/`.lottie`) | C | stock Unsplash photo |
-  | `guests_pitch.cta{label, url, note?}` | label ≤80, url absolute URL, note ≤160 | label/note T · url C | — |
+  | `guests_pitch.cta{label, url, note?}` | label ≤80, url absolute HTTP(S) URL, note ≤160 | label/url/note T (per-locale JSON) | — |
   | `guests_pitch.badge?.label?` | string ≤120 | T | `guests_pitch.cta.note` |
   | `guests_pitch.badge?.icon_key?` | `"" \| icon key` | C | `check` |
   | `portfolio?.title?` | string ≤160 | T | i18n `pages.portfolio.title` |
@@ -131,7 +131,8 @@ page_content
   | `services_carousel{eyebrow?, headline, assurances[×3]{icon_key, label ≤60}, service_category_slug?}` | ADR 0032 | text T · icon/slug C | section hidden if the block is absent or no service matches |
   | `faq_group_key?` | `"" \| faq_group.key` | C | no FAQ |
   | `faq?.title?` | string ≤160 | T | i18n `pages.faqTitle` |
-  | `dual_cta.{owner,guest}{image_media_id, eyebrow ≤60, title ≤160, body ≤400, cta_label ≤60}` | text required; image `"" \| uuid` | text T · image C | blank image → mock photo; links fixed in code (`/owners`, Avantio) |
+  | `dual_cta.{owner,guest}{image_media_id, eyebrow ≤60, title ≤160, body ≤400, cta_label ≤60}` | text required; image `"" \| uuid` | text T · image C | blank image → mock photo; owner link fixed to localized `/owners` |
+  | `dual_cta.guest.cta_url?` | absolute HTTP(S) URL, blank/absent allowed | T (per-locale JSON) | localized Avantio booking URL |
 
   → Composed, not stored: featured portfolio cards = **buildings** (featured, by position);
   services carousel cards = **services** (ADR 0032); FAQ questions = **faq**; dual-CTA contact line
@@ -171,7 +172,7 @@ page_content
   | `services` / `dashboard` `{headline, subheadline?, benefits[×4], cta{label, url, note?}}` | **`cta.url` hidden** | text T · icon/url C | — |
   | `services.image_media_id` / `dashboard.image_media_id` | `"" \| uuid`; image (incl. animated WebP), MP4/WebM or Lottie (`optionalAnimated`) | C | stock photos |
   | `services.badge?` / `dashboard.badge?` `{label? ≤120, icon_key?}` | floating badge on the media | label T · icon C | i18n `pages.owners.servicesBadge` / `dashboardBadge`; default icon |
-  | `plans{headline, subheadline?, tiers[1..4], helpers[×1]{title, copy, cta?{label, url}}}` | **`helpers[0].cta.url` hidden** | text T · url C | — |
+  | `plans{headline, subheadline?, tiers[1..4], helpers[×1]{title, copy, cta?{label, url?}}}` | **`helpers[0].cta.url` optional/hidden/ignored**; renderer uses `#worth` | text T · url C | label-only helper CTA allowed |
   | `plans.tiers[]{name, tag?, commission?, corner_badge? ≤12, is_popular, features[1..20]}` | **`commission` hidden** (never rendered; the visible % is `corner_badge`) | text T | — |
   | `plans.popular_label?` ≤30 / `plans.choose_label?` ≤60 (`{name}` = tier name) | pill / tier buttons | T | i18n `pages.owners.popular` / `choosePlan` |
   | `journey{headline, subheadline?, steps[×5]{title, description, image_media_id}}` | step image `"" \| uuid`, 3:4 | text T · image C | stock Pexels photos |
@@ -262,7 +263,7 @@ page_content
   `src/slices/pages/schemas/guest.ts`). Same notation as owners. Base shape wired to the front in
   drizzle 0012 (`docs/specs/guest-page-db-wiring.md`); every field the guests spec added is optional
   and blank-tolerant (no migration, no backfill). **Hidden** = `admin_hidden` (kept and saved back
-  unchanged, not shown in the editor, **unused by the render**: every button target is fixed in code,
+  unchanged, not shown in the editor, **unused by the render**: these legacy targets are fixed in code,
   locale-relative — `/{locale}/buildings`, `/services`, `/guides`; the owner button opens the contact dialog).
 
   | Path | Type | Class | Blank / absent → |
@@ -272,7 +273,8 @@ page_content
   | `hero{eyebrow? ≤80, headline ≤160, subheadline? ≤280}` | | T | — |
   | `hero.video_media_id` | `"" \| uuid`, video (MP4/WebM; `<source type>` from the mime) | C | stock clip |
   | `hero.poster_media_id?` | `"" \| uuid`, image (Home's poster hint) | C | stock Unsplash poster |
-  | `hero.cta{label ≤80, url}` | **`url` hidden** | label T · url C | — (target `/{locale}/buildings`) |
+  | `hero.cta{label ≤80, url}` | hidden/preserved legacy catalogue CTA, unused by render | label T · url C | — |
+  | `hero.cta_label? ≤80` / `hero.cta_url?` | booking label + HTTP(S) URL, editable per locale; blank URL allowed | T | current locale's Settings Book Now / original English booking URL; no migration or activation of legacy CTA |
   | `welcome{headline ≤160, lede ≤400, copy ≤1200, guarantee_label? ≤120}` | `copy` split into paragraphs on blank lines | T | guarantee line omitted |
   | `welcome.guarantee_icon_key` | `"" \| icon key` | C | `percentage-circle` |
   | `welcome.image_media_id` | `"" \| uuid`; image (incl. animated WebP), MP4/WebM or Lottie (`optionalAnimated`, 3:2) | C | stock Unsplash photo |
@@ -283,11 +285,13 @@ page_content
   | `testimonials?{eyebrow? ≤60, title? ≤160, intro? ≤400}` | heading only | T | i18n `pages.reviews.eyebrow` / `titleGuests`; no intro |
   | `faq_group_key?` / `faq?.title?` ≤160 | group key / heading | C / T | no FAQ / i18n `pages.faqTitle` |
   | `dual_cta.{guest,owner}{eyebrow? ≤60, title ≤160, body ≤400, cta{label, url}}` | panel copy; **`cta.url` hidden** | text T · url C | — (guest → `/{locale}/buildings`; owner → contact dialog) |
+  | `dual_cta.{guest,owner}.contact_line?` ≤300 | contact text below each panel's button, independent per locale | T | Settings phone/email for guest; phone/email/WhatsApp for owner; no migration/backfill |
   | `dual_cta.owner.contact?{title? ≤80, intro? ≤280}` | copy of the dialog the owner button opens | T | i18n `settings.contactDialog.title` / `intro` |
 
   → Composed, not stored: featured portfolio = **buildings**; reviews = **testimonials**
   (audience=guest, managed in `/admin/testimonials`; only the heading is stored here); FAQ questions =
-  **faq** via `faq_group_key`; dual-CTA contact line = **company_settings**. The owner button's lead is
+  **faq** via `faq_group_key`; default dual-CTA contact lines = **company_settings**, with optional
+  per-locale page overrides. The owner button's lead is
   `lead.kind='contact'`, `source_page='guests-dual-cta'`.
   → Same language rule (D1) and caching as home: EN only until the per-locale tabs exist;
   `getGuestPage` is tagged `page:guest`, busted by Save on `/admin/pages/guest`.
@@ -330,16 +334,16 @@ page_content
   |---|---|---|---|
   | `seo?.meta_title?` / `seo?.meta_description?` | ≤70 / ≤200 (`seoShape`) | T | i18n `pages.buildings.metaTitle` / `metaDescription` |
   | *(column)* `og_image_media_id` | image | C | no OG override |
-  | `hero?.image_media_id` | `"" \| uuid`, image 16:9 | C | stock Unsplash photo |
+  | `hero?.image_media_id?` | `"" \| uuid`, image 16:9 | C | stock Unsplash photo |
   | `hero?{eyebrow? ≤60, headline? ≤160, copy? ≤600}` | hero texts | T | i18n `pages.buildings.heroEyebrow` / `heroTitle` / `heroCopy` |
   | `hero?.contact?{label? ≤40, title? ≤80, intro? ≤280}` | button + contact dialog | T | i18n `pages.owners.contactLabel` / `contactTitle` / `contactIntro` |
   | `owner_panel?{eyebrow? ≤60, title? ≤160, body? ≤400, cta_label? ≤80}` | "For Owners" panel; button fixed to `#estimate` | T | i18n `pages.buildings.ownerEyebrow` / `ownerTitle` / `ownerBody` / `ownerCta` |
   | `owner_panel?.contact_line?` ≤200 | panel contact line | T | built from **company_settings** (`Call {phone} · email · WhatsApp …`, as Owners' closing CTA) |
   | `stats?.title?` ≤160 | band heading | T | i18n `pages.buildings.statsTitle` |
-  | `stats?.figures` | **0–8** × `buildingsFigure` = `statFigure` + `description?` ≤120 | `label` / `description` T · number and affixes C | **no rows → no band** (heading included) |
+  | `stats?.figures?` | **0–8** × `buildingsFigure` = `statFigure` + `description?` ≤120 | `label` / `description` T · number and affixes C | **absent/no rows → no band** (heading included) |
   | `calculator?{badge? ≤60, headline? ≤160, subheadline? ≤280, cta_label? ≤80}` | step 1 of the wizard | T | i18n `pages.buildings.calcBadge` / `calcTitle` / `calcSubtitle` / `calcCta` |
   | `calculator?.contact_step?` / `done_step?` | same shapes as owners `earnings_form` (`estimateContactStep` / `estimateDoneStep`, `_shared.ts`) | T | i18n `pages.estimateForm.*` |
-  | `calculator?.media_media_id` | `"" \| uuid`; image (incl. animated WebP), MP4/WebM or Lottie (`optionalAnimated`), 4:5 | C | stock Pexels photo |
+  | `calculator?.media_media_id?` | `"" \| uuid`; image (incl. animated WebP), MP4/WebM or Lottie (`optionalAnimated`), 4:5 | C | stock Pexels photo |
 
   → Composed, not stored: building cards = **buildings** (`listBuildings`, edited in
   `/admin/buildings`); panel contact line fallback = **company_settings**; the estimate form's field
@@ -556,6 +560,11 @@ button label and translated contact introduction; the destination and Settings c
 composed in code. [T] leaves use `page_content` / `block:<path>` in the existing pipeline.
 `og_image_media_id` remains the existing column and must reference a still-image MIME.
 No catalogue or company-contact data is duplicated in the page row.
+
+Services Hero also accepts optional [T] `cta_label` (≤80) and `cta_url` (HTTP(S) or
+blank). Each locale owns its booking label/destination; blank/absent retains the
+localized Settings Book Now and original booking URL. These JSON leaves need no
+migration/backfill. The retired steps remain hidden/preserved in the editor.
 
 ### Translation actor attribution (ADR0036, migration0020)
 

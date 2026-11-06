@@ -14,6 +14,9 @@ const buttonClass = "min-h-9 rounded px-2.5 py-1.5 text-xs font-medium transitio
 export function PageEditorShell({ adapter }: PageEditorShellProps) {
   const t = useTranslations("backoffice.pageEditor");
   const { onSelect, selectedId } = adapter;
+  const dialogId = adapter.previewDialog?.bindingId;
+  const dialogOpen = adapter.previewDialog?.open ?? false;
+  const onDialogChange = adapter.previewDialog?.onOpenChange;
   const editorId = useId();
   const [viewport, setViewport] = useState(1440);
   const [refresh, setRefresh] = useState(0);
@@ -44,9 +47,9 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
   const seoSelected = Boolean(seoSection && selectedSection?.id === seoSection.id);
   const scale = Math.min(1, canvasSize.width / viewport);
 
-  const sendSelection = useCallback((id: string) => {
+  const sendSelection = useCallback((id: string, focus = true) => {
     if (!bindingIds.includes(id)) return;
-    frame.current?.contentWindow?.postMessage({ channel: PAGE_EDITOR_CHANNEL, instance, type: "select", bindingId: id }, window.location.origin);
+    frame.current?.contentWindow?.postMessage({ channel: PAGE_EDITOR_CHANNEL, instance, type: "select", bindingId: id, focus }, window.location.origin);
   }, [bindingIds, instance]);
 
   useEffect(() => {
@@ -64,17 +67,36 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
       const message = readPageEditorMessage(event, { origin: window.location.origin, source: frame.current?.contentWindow ?? null, instance, bindingIds });
       if (message?.type === "ready") {
         setLoadedInstance(instance);
-        sendSelection(selectedId);
+        sendSelection(selectedId, false);
       } else if (message?.type === "select" && message.bindingId) {
         onSelect(message.bindingId);
         inspectorTitle.current?.focus({ preventScroll: true });
+      } else if (message?.type === "dialog" && message.bindingId === dialogId) {
+        onDialogChange?.(message.open);
+        if (!message.open) inspectorTitle.current?.focus({ preventScroll: true });
       }
     };
     window.addEventListener("message", listener);
     return () => window.removeEventListener("message", listener);
-  }, [onSelect, selectedId, bindingIds, instance, sendSelection]);
+  }, [onSelect, selectedId, bindingIds, instance, sendSelection, dialogId, onDialogChange]);
 
-  useEffect(() => { if (ready) sendSelection(selectedId); }, [selectedId, ready, sendSelection]);
+  useEffect(() => { if (ready) sendSelection(selectedId, false); }, [selectedId, ready, sendSelection]);
+
+  useEffect(() => {
+    if (!ready || !dialogId || !bindingIds.includes(dialogId)) return;
+    frame.current?.contentWindow?.postMessage({ channel: PAGE_EDITOR_CHANNEL, instance, type: "dialog", bindingId: dialogId, open: dialogOpen }, window.location.origin);
+  }, [ready, instance, dialogId, dialogOpen, bindingIds]);
+
+  useEffect(() => {
+    if (!dialogOpen || !onDialogChange) return;
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || event.defaultPrevented) return;
+      event.preventDefault();
+      onDialogChange(false);
+    };
+    window.addEventListener("keydown", escape);
+    return () => window.removeEventListener("keydown", escape);
+  }, [dialogOpen, onDialogChange]);
 
   useEffect(() => {
     if (!ready || payloadJson === undefined) return;
@@ -174,7 +196,7 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
             {!seoSelected ? <>
             <label htmlFor={`${editorId}-binding`} className="mt-4 mb-1.5 block text-xs text-ink-soft">{t("element")}</label>
             <Select id={`${editorId}-binding`} value={adapter.selectedId} onChange={(event) => select(event.target.value)}>
-              {contentSections.map((section) => <optgroup key={section.id} label={section.label}>
+              {contentSections.map((section) => section.selectAsGroup ? <option key={section.id} value={section.id}>{section.label}</option> : <optgroup key={section.id} label={section.label}>
                 <option value={section.id}>{section.label}</option>
                 {section.bindings.filter((binding) => binding.id !== section.id).map((binding) => <option key={binding.id} value={binding.id}>{binding.label}</option>)}
               </optgroup>)}

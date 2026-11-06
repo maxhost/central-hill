@@ -172,8 +172,16 @@ Other pages retain the workflows documented below. See page-locale-drafts spec/p
 
 ## Blog listing editor (2026-10-18)
 
-Pages→Blog now groups SEO/social image, header/search copy,
-Journal title, shared newsletter and the existing article aside. Hero, featured,
+Pages→Blog groups SEO/social image, header/search copy,
+Journal title and shared newsletter. The article sidebar CTA has its own editor
+at `/admin/pages/blog/article-sidebar`, accessible through the Blog editor's
+Article sidebar tab. It previews a localized example through the actual public
+article renderer, including body, index and sticky sidebar. Only its four CTA
+fields are editable there. Both views share the complete existing Blog draft and
+Publish unit per locale; no content is moved or reset. Switching views uses the
+same aggregate unsaved-work warning as page navigation. See
+`docs/specs/blog-article-sidebar-editor.md` for verification and limits.
+Hero, featured,
 journal and newsletter eyebrows are hidden/preserved via `adminHidden` in both
 BO editor paths (2026-11-01); the entire featured copy group is hidden. New groups
 are optional overrides: blank values inherit visitor-locale `blog` messages;
@@ -824,7 +832,7 @@ table with types and [T]/shared classes: `docs/data-model.md` → Page content m
 | Portfolio | `portfolio?{title?, cta_label?, card_view_label?}` (cards come from `buildings`) | `pages.portfolio.title` / `viewAll` / `view` |
 | Services carousel | `services_carousel{headline, assurances[×3], service_category_slug?}` (ADR 0032); legacy `eyebrow` retained but hidden in the BO and omitted from public output | section hidden without cards |
 | FAQ | `faq_group_key` (root) + `faq?{title?}` | no FAQ; title → `pages.faqTitle` |
-| Dual CTA | `dual_cta{owner,guest}{image_media_id, eyebrow, title, body, cta_label}` | mock photos; links fixed (`/owners`, Avantio); contact line from Settings |
+| Dual CTA | `dual_cta{owner,guest}{image_media_id, eyebrow, title, body, cta_label}` + `guest.cta_url?` | mock photos; owner link fixed (`/owners`), guest URL blank/absent → localized Avantio; contact line from Settings |
 
 **i18n fallback rule (D1).** Until the per-locale editor tabs exist, staff edit EN only. Every
 optional text goes through `orMessage(value, t(...))` (`ui/or-message.ts`): empty, whitespace-only
@@ -1072,12 +1080,18 @@ i18n message through `orMessage`. Full field table: `docs/data-model.md` → gue
 | Dual CTA | `dual_cta.owner.contact?{title? ≤80, intro? ≤280}` | `settings.contactDialog.title` / `intro` (the header dialog's copy) |
 
 **Hidden fields (`admin_hidden`).** Local `guestCta = cta.extend({ url: hiddenUrl })` and
-`guestCtaWithNote = ctaWithNote.extend({ url: hiddenUrl })`: hidden are `hero.cta.url`,
+`guestCtaWithNote = ctaWithNote.extend({ url: hiddenUrl })`: the unused legacy `hero.cta`
+stays hidden, as do
 `why.cta.url`, `portfolio.cta.url`, `services_teaser.cta.url`, `activities_teaser.cta.url`,
 `dual_cta.guest.cta.url`, `dual_cta.owner.cta.url`. They round-trip unchanged on save but the render
-ignores them: `ctaRoutes(locale)` in `guest-page.tsx` fixes hero / why / portfolio / dual guest →
+ignores them: `ctaRoutes(locale)` in `guest-page.tsx` fixes why / portfolio / dual guest →
 `/{locale}/buildings`, services teaser → `/{locale}/services`, what to do → `/{locale}/guides`
 (locale-relative, decision D1; `localizeUrl` was deleted).
+Guest Hero instead exposes optional `hero.cta_label` / `hero.cta_url` overrides
+per EN/ES/PT/FR. The real preview/public anchor uses that language's label and
+HTTP(S) URL; absent/blank retains Settings Book Now and the original booking link.
+The ignored historical catalogue CTA is not activated. See
+`docs/specs/guest-hero-localized-button.md`.
 The five section eyebrows (`why`, `portfolio`, `services_teaser`,
 `activities_teaser`, `testimonials`) are also hidden/preserved and no longer rendered.
 
@@ -1442,6 +1456,12 @@ in Settings. `servicesSchema` accepts empty overrides, so no initial row or migr
 `getServicesPage(locale): Promise<ServicesPage>` never returns null: missing or invalid content
 uses `defaultServices` and each public section resolves blank copy through `services.*` in the
 visitor's language. Translation paths include copy/alt/SEO, excluding icons and media IDs.
+Hero also exposes optional localized `hero.cta_label` (≤80) and `hero.cta_url`
+(HTTP(S) or blank). EN/ES/PT/FR own both values in draft, preview and public render;
+blank/absent keeps the Settings Book Now label and the existing booking destination.
+Untouched target locales keep their defaults when EN adds an override. The actual
+private button selects the complete Hero inspector. See
+`docs/specs/services-hero-localized-button.md` for scoped verification.
 `ServicesHero`, `ServicesIntro`, `ServicesFinalCta` are exported by the
 contract for composition by Services around its own catalogue. Both visual slots accept images,
 original animated WebP and MP4/WebM; optional still posters/default photos replace animation
@@ -1471,6 +1491,102 @@ page:guides and layout revalidation across four locales, including the shared as
 Media references/MIMEs are validated before persistence; OG/poster/aside are images.
 
 ## Home contextual pilot (2026-10-18)
+
+Owners also uses one Element option per section with all its fields together,
+including the merged Figures title/list and FAQ fields. Child preview selections
+open the complete block; SEO remains separate. See
+`docs/specs/owners-section-selection.md` (L0/local user review).
+
+Buildings uses the same one-option-per-section selection for Hero, owner panel,
+Figures and calculator. Nested fields remain together, SEO stays in its toolbar,
+and catalogue remains external to Pages. See
+`docs/specs/buildings-section-selection.md` for scoped live-preview verification.
+
+Real Estate also opens every editable section as one Element entry, including
+its nested cards, market subgroups, process, buttons and merged FAQ copy/group.
+SEO stays in its toolbar. See `docs/specs/real-estate-section-selection.md` for
+the scoped functional preview check.
+
+Guest uses one Element option per whole section as well, including both closing
+CTA panels, optional testimonials and merged FAQ title/group. Hidden catalogue
+items and fixed legacy destinations remain hidden. Hero booking overrides are
+editable independently per locale. See
+`docs/specs/guest-section-selection.md` for scoped live-preview verification.
+
+Guest Closing dual CTA can Show/Hide contact form in the preview. It opens the
+actual Settings dialog so unsaved owner contact title/intro changes remain visible
+while editing or switching locale; it remains a read-only preview. The optional
+private dialog prop is omitted in public renderers. See
+`docs/specs/guest-contact-dialog-preview.md`.
+
+Both Guest closing panels also expose their own optional localized `contact_line`
+text below the button, separate from the owner contact-dialog fields. Preview and
+public renderer use the selected locale's text; blank/absent falls back to Settings
+(guest phone/email, owner phone/email/WhatsApp). Existing target snapshots retain
+that fallback until explicitly edited. See `docs/specs/guest-closing-contact-lines.md`.
+
+Guides uses one Element option per section too: Hero, city filter, catalogue,
+recommendations, closing CTA and shared guide aside. Filter-off collapse and
+the aside's dedicated preview surface remain intact; SEO stays in its toolbar.
+See `docs/specs/guides-section-selection.md` for scoped live-preview verification.
+
+Services also uses a single Element option per Hero, intro and closing CTA; the
+catalogue retains its informational external entry. Retired steps stay hidden,
+and SEO remains on its toolbar. See `docs/specs/services-section-selection.md`.
+
+About also opens each complete section from one Element entry, including nested
+cards/lists, the contact office/form copy and merged FAQ title/group. SEO stays
+in its toolbar and legacy hidden fields remain preserved. See
+`docs/specs/about-section-selection.md` for scoped live-preview verification.
+
+Blog uses one Element option for each Hero/search, Journal and Newsletter. Its
+shared article CTA is edited separately in article context, using the existing
+shared_aside preview surface. Hidden Featured/eyebrow fields stay hidden, and SEO
+stays in the listing toolbar. The earlier consolidation evidence remains in
+`docs/specs/blog-section-selection.md`; the later editor separation is documented
+in `docs/specs/blog-article-sidebar-editor.md`.
+
+Avantio is excluded from Home Element/Sections because the script-driven booking
+integration has no editable page fields. Its private preview notice remains
+nonselectable; public booking is unchanged. See
+`docs/specs/home-editor-editable-elements.md`.
+
+Every Home block now has one Element entry opening all its fields together:
+Hero, Figures, Guests pitch, portfolio, services, FAQ and closing CTA. Child
+bindings remain internal; clicking a child in preview or selecting an old child
+opens its complete block. SEO keeps its separate toolbar and Avantio stays
+excluded. See `docs/specs/home-figures-group-selection.md` (local UI/user review).
+
+All nine live-preview adapters have scoped regression coverage for first edits in
+raw optional groups and EN/PT/ES/FR template preparation. Buildings fallback media
+and empty figures, Owners closing media and ignored helper URL are optional where
+the public renderers already support omission. Target-only text groups and the
+root Owners stats title survive preparing from EN. Fresh Home defaults seed valid
+icons. CountUp resets its animation state on value changes, and Home/Guest videos
+remount only when their resolved source URL changes. No shared guard relaxation,
+automatic saving or DB backfill. See `docs/specs/pages-live-preview-audit-2026-11-05.md`.
+
+Contextual edits of previously absent nested blocks initialize required empty
+media slots along the changed path, so first Buildings Hero title/contact edits
+pass live-preview validation without Save. Optional media remain absent to
+preserve target shared-field guards. Unrelated sections/flags/lists stay intact.
+See `docs/specs/live-preview-debug-2026-11-05.md` for cause and verification limits.
+The subsequent all-Pages audit aligns the fallback media schema itself with
+omission, so Buildings no longer needs inserted blank shared media for those fields.
+
+Home's hero primary, Guests pitch and closing guest panel buttons now expose label
+and HTTP(S) URL together for each EN/PT/ES/FR snapshot. URLs are locale-specific
+leaves; new optional `dual_cta.guest.cta_url` preserves the localized Avantio
+fallback when blank/absent. Private annotations cover the actual anchors, including
+padding. No DB backfill/migration. See `docs/specs/home-button-localized-links.md`
+and ADR0055 for scope and verification limits.
+
+Visual editor button labels retain their CTA parent context: primary/secondary
+button and matching button URL instead of generic Text/Link (URL). Ordinary
+badge/figure labels remain Text. See `docs/specs/page-editor-button-labels.md`.
+This policy covers all nine Pages editors: hero contact reads Contact button;
+card/guide/choose/submit/back actions name buttons directly, while Guest closing
+panels retain owner/guest identity. Guides' field override matches the selector.
 
 Home uses the common Backoffice contextual shell with schema-derived bindings and
 the existing NodeField/media upload queue. The private saved-content preview uses

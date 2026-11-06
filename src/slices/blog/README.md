@@ -1,5 +1,17 @@
 # Slice `blog` (S4)
 
+## Shared article sidebar editor —2026-11-05
+
+Pages' `/admin/pages/blog/article-sidebar` edits the shared CTA beside a localized,
+illustrative article. `BlogArticlePreview` creates no post and supplies fixed
+sample content plus the selected Blog locale snapshot to `BlogPostRenderer`.
+Public `BlogPost` still reads the actual post and uses the same renderer; public
+SEO, newsletter, related posts and per-post button precedence are preserved.
+Private preview annotates the CTA inside the actual StickyAside and disables
+newsletter submission. It emits no sample JSON-LD or public sample route.
+Listing and sidebar views retain the existing complete Blog draft/publication
+unit per locale. See `docs/specs/blog-article-sidebar-editor.md`.
+
 ## Newsletter provider —2026-11-03
 
 Listing and article NewsletterSignup now embed BrevoNewsletterForm through the

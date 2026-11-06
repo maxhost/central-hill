@@ -1,4 +1,4 @@
-import { homeSchema } from "../schemas/home";
+import { homeButtonUrl, homeSchema } from "../schemas/home";
 import {
   normalizeHome,
   homeIdentityErrors,
@@ -12,7 +12,7 @@ import {
   homeMediaErrors,
 } from "../admin/home-media-validation";
 import { z } from "zod";
-const unfinishedUrl = z.union([z.literal(""), z.url()]);
+const unfinishedUrl = z.union([z.literal(""), homeButtonUrl]);
 export const homeDraftSchema = homeSchema.extend({
   hero: homeSchema.shape.hero.extend({
     cta_primary: homeSchema.shape.hero.shape.cta_primary.extend({
@@ -37,7 +37,7 @@ export const homeAdapter: PageEditorialAdapter<"home"> = {
     textPatterns: translatablePaths(homeSchema),
     listPaths: [...HOME_LIST_PATHS],
     maxLocalMedia: 6,
-    externalSections: ["avantio", "portfolio", "services_carousel", "faq"],
+    externalSections: ["portfolio", "services_carousel", "faq"],
     mediaSlots: [
       { path: "hero.video_media_id", kind: "video" },
       { path: "hero.poster_media_id", kind: "image" },
@@ -48,8 +48,11 @@ export const homeAdapter: PageEditorialAdapter<"home"> = {
   },
   draftSchema: homeDraftSchema,
   publishSchema: homeSchema,
-  defaultContent: () =>
-    normalizeHome(applyDefaults(describe(homeSchema), {}) as HomeContent),
+  defaultContent() {
+    const content = applyDefaults(describe(homeSchema), {}) as HomeContent;
+    for (const item of [...content.guests_pitch.benefits, ...content.services_carousel.assurances]) item.icon_key = "check";
+    return normalizeHome(content);
+  },
   normalize: normalizeHome,
   identityErrors: homeIdentityErrors,
   retireIds: retireHomeIds,

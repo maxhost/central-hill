@@ -284,3 +284,13 @@ check-in phone and https website, S3) + the translatable-path contract.
 `tests/settings-admin.test.ts` — the admin save schemas (globals + navigation trees; check-in
 phone and website: valid, `null` or rejected). Run:
 `npx tsx --test src/slices/settings/tests/settings.test.ts src/slices/settings/tests/settings-admin.test.ts`.
+
+## Private page-editor contact preview
+
+`ContactDialog.editorPreviewId` is an optional private-preview seam. Guest supplies
+it only from its authenticated preview renderer. The guarded Backoffice bridge
+owns the document visibility marker and `central-hill-preview-dialog` event;
+`useSyncExternalStore` keeps the actual dialog visible across live content updates.
+The preview bridge handles Close/backdrop/Escape and continues blocking form
+submissions. Public callers omit the prop and retain ordinary trigger/close/form
+behavior. See `docs/specs/guest-contact-dialog-preview.md`.

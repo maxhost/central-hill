@@ -341,6 +341,16 @@
       "info": "Conviene saber",
       "warning": "Importante",
       "note": "Nota"
+    },
+    "editorPreview": {
+      "title": "Un artículo de ejemplo sobre una estancia en Lisboa",
+      "intro": "Este ejemplo muestra dónde aparece la barra lateral compartida en un artículo. Aquí solo se edita su llamada a la acción.",
+      "category": "Artículo de ejemplo",
+      "authorNote": "Contenido ilustrativo para el editor de la barra lateral.",
+      "firstHeading": "Planificar tu estancia",
+      "firstParagraph": "Imagina un artículo con ideas para tu próxima visita a Lisboa. La columna principal contiene el artículo, mientras que la barra lateral reúne su índice y una llamada a la acción compartida. Este ejemplo te permite editar dentro de ese contexto.",
+      "secondHeading": "Explorar la ciudad",
+      "secondParagraph": "El artículo continúa aquí para mostrar la relación entre la columna de lectura y la barra lateral. En pantallas pequeñas, la barra lateral pasa debajo del artículo, con el mismo diseño que las publicaciones."
     }
   },
   "buildings": {
@@ -1518,8 +1528,15 @@
         "cta_primary": "Botón principal",
         "cta_secondary": "Botón secundario",
         "cta": "Botón",
-        "cta_label": "Texto del botón",
-        "card_view_label": "Texto del botón de la tarjeta",
+        "cta_primary_url": "URL del botón principal",
+        "cta_secondary_url": "URL del botón secundario",
+        "cta_url": "URL del botón",
+        "cta_label": "Botón",
+        "contact_button": "Botón de contacto",
+        "owner_contact_dialog_title": "Título del diálogo de contacto para propietarios",
+        "owner_contact_dialog_intro": "Introducción del diálogo de contacto para propietarios",
+        "card_view_label": "Botón de la tarjeta",
+        "view_label": "Botón para abrir guía",
         "badge": "Etiqueta flotante",
         "icon_key": "Icono",
         "benefits": "Ventajas",
@@ -1543,8 +1560,8 @@
         "contact_step": "Paso 2 — datos de contacto",
         "done_step": "Paso 3 — confirmación",
         "lede": "Texto de introducción",
-        "submit_label": "Texto del botón de envío",
-        "back_label": "Texto del botón volver",
+        "submit_label": "Botón de envío",
+        "back_label": "Botón volver",
         "why": "Por qué nosotros",
         "services": "Servicios",
         "plans": "Planes",
@@ -1556,7 +1573,7 @@
         "is_popular": "Más popular (destacado)",
         "features": "Características",
         "popular_label": "Texto de la etiqueta “Más popular”",
-        "choose_label": "Texto del botón “Elegir”",
+        "choose_label": "Botón elegir",
         "journey": "Recorrido",
         "steps": "Pasos",
         "dashboard": "Panel del propietario",
@@ -1620,14 +1637,15 @@
         "email": "Email",
         "website": "Sitio web",
         "form": "Formulario de contacto",
-        "link_label": "Texto del enlace",
+        "link_label": "Botón de la tarjeta",
         "media_alt": "Descripción de la imagen",
         "contact_note": "Introducción de contacto",
         "how_it_works": "Cómo funciona",
         "badge_icon_key": "Icono del distintivo",
         "destination": "Destino",
         "search_placeholder": "Placeholder del buscador",
-        "search_label": "Etiqueta accesible del buscador"
+        "search_label": "Etiqueta accesible del buscador",
+        "article_sidebar": "Barra lateral de artículos"
       },
       "itemLabels": {
         "benefits": "Ventaja",
@@ -1699,7 +1717,7 @@
         },
         "catalogue": {
           "headline": "Plantilla del título",
-          "view_label": "Label para abrir guía",
+          "view_label": "Botón para abrir guía",
           "empty_message": "Mensaje del listado vacío",
           "template_icons": {
             "_label": "Iconos por tipo de guía",
@@ -1758,7 +1776,10 @@
         "externalPage": "Este contenido procede de su propio catálogo. Se gestiona en la sección correspondiente del panel.",
         "portfolioNote": "Las tarjetas se gestionan en Buildings.",
         "servicesNote": "Las tarjetas se gestionan en Services.",
-        "faqNote": "Las preguntas se gestionan en FAQ."
+        "faqNote": "Las preguntas se gestionan en FAQ.",
+        "guestOwnerContactNote": "Estos campos editan el título y la introducción del formulario de contacto del panel de propietarios. Ábrelo en la vista previa para ver los cambios mientras escribes.",
+        "showContactForm": "Mostrar formulario de contacto",
+        "hideContactForm": "Ocultar formulario de contacto"
       },
       "editorial": {
         "saveDraft": "Guardar borrador",
@@ -1774,6 +1795,14 @@
         "noDraft": "Guarda un borrador antes de publicar.",
         "livePreview": "Vista previa en vivo · los cambios no se guardan automáticamente",
         "sharedBlock": "Bloque compartido"
+      },
+      "blogEditors": {
+        "navigation": "Editores del blog",
+        "listing": "Listado del blog",
+        "articleSidebar": "Barra lateral de artículos",
+        "articleTitle": "Blog · Barra lateral de artículos",
+        "sharedDraft": "Ambos editores comparten el borrador de Blog de cada idioma. Guardar borrador y Publicar se aplican a ese borrador completo.",
+        "context": "Edita la llamada a la acción compartida junto a este artículo de ejemplo. El artículo es ilustrativo y no se edita aquí. Los artículos con un botón propio lo conservan."
       }
     }
   },

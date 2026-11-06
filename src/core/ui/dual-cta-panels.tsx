@@ -7,7 +7,7 @@ export type DualCtaPanel = {
   eyebrow: string;
   title: string;
   body: string;
-  cta: { href: string; label: string; variant?: "primary" | "light" };
+  cta: { href: string; label: string; variant?: "primary" | "light"; editorBinding?: string };
   /** Pre-joined "phone · email · WhatsApp …" (or omitted). */
   contactLine?: string;
 };
@@ -51,7 +51,7 @@ export function DualCtaPanels({ panels }: { panels: [DualCtaPanel, DualCtaPanel]
                 <h3 className="mt-3 font-serif text-2xl leading-snug">{panel.title}</h3>
                 <p className="mt-3 max-w-md leading-relaxed text-white/85">{panel.body}</p>
                 <div className="mt-6">
-                  <ButtonLink href={panel.cta.href} variant={panel.cta.variant}>
+                  <ButtonLink href={panel.cta.href} variant={panel.cta.variant} editorBinding={panel.cta.editorBinding}>
                     {panel.cta.label}
                   </ButtonLink>
                 </div>

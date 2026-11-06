@@ -62,12 +62,15 @@ export function ButtonLink({
   variant = "primary",
   size = "md",
   className,
+  editorBinding,
 }: {
   href: string;
   children: ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;
+  /** Private preview selection supplied by the owning page; public callers omit it. */
+  editorBinding?: string;
 }) {
   // Absolute http(s) targets are external (e.g. the Avantio/CentralHill booking engine) — open
   // them in a new tab so the catalog stays put. Internal (relative) links navigate in place.
@@ -75,6 +78,7 @@ export function ButtonLink({
   return (
     <Link
       href={href}
+      data-editor-binding={editorBinding}
       className={buttonClassName(variant, className, size)}
       {...(external ? { target: "_blank", rel: "noopener noreferrer" } : null)}
     >

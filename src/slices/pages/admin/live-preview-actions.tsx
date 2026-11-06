@@ -7,7 +7,7 @@ import type { EditorialPageKey } from "../editorial-types";
 import { getEditorialAdapter } from "../server/editorial-adapters";
 import { validEditorialRequest, validEditorialSurface } from "../server/editorial-policy";
 import { resolveMedia } from "../server/resolve";
-import { validatePageLivePreview } from "./live-preview-validation";
+import { pageLivePreviewMediaErrors, validatePageLivePreview } from "./live-preview-validation";
 
 /** Ephemeral RSC rendering only: no mutation, upload or revalidation. */
 export async function renderPageLivePreview<K extends EditorialPageKey>(
@@ -42,9 +42,9 @@ export async function renderPageLivePreview<K extends EditorialPageKey>(
         };
     if (
       Object.keys(
-        adapter.mediaErrors(
-          envelope.content,
-          envelope.ogImageMediaId,
+        pageLivePreviewMediaErrors(
+          key,
+          envelope,
           new Map(
             Object.entries(resolved.media).map(([id, media]) => [
               id,

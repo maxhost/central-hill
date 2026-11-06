@@ -1,16 +1,18 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { AdminButton, Field, MediaField, PageEditorShell, TextArea, useMediaQueue, type EditorLocale, type AdminMediaPreview } from "@slices/backoffice/contract";
+import { AdminButton, Field, MediaField, PageEditorShell, TextArea, TextInput, useMediaQueue, type EditorLocale, type AdminMediaPreview } from "@slices/backoffice/contract";
 import type { EditorialPageKey, PageContentMap, PageEditorialModel, PageLocaleEditorialModel } from "../../editorial-types";
 import { prepareTargetEnvelope, sameEditorialSnapshot } from "../../editorial-content";
-import { homeNode, pageSections, descriptorMediaIds, isEditableFieldPath } from "../home-contextual";
+import { homeNode, homeButtonFields, pageFieldLabel, descriptorMediaIds, isEditableFieldPath } from "../home-contextual";
 import { editorialAt, editorialListScope, editorialListIds, editorialTextPaths, editorialTranslationField, normalizeEditorial } from "../../editorial-identities";
 import { publishPageDraft, savePageDraft } from "../editorial-actions";
 import { NodeField, useFieldLabels } from "./schema-fields";
 import type { AboutListOperation } from "../form-model";
 import { PageNavigation } from "./page-navigation";
+import { setPageField } from "../field-update";
+import { editorViewSections, type PageEditorView } from "../editorial-views";
 
 type LocaleState<K extends EditorialPageKey> = {
   model: PageLocaleEditorialModel<K>;
@@ -32,7 +34,7 @@ function isDirty<K extends EditorialPageKey>(model: PageLocaleEditorialModel<K>)
   return !sameEditorialSnapshot(model.working, model.draft ?? model.published);
 }
 
-export function PageContextualEditor<K extends EditorialPageKey = "home">({ model }: { model: PageEditorialModel<K> }) {
+export function PageContextualEditor<K extends EditorialPageKey = "home">({ model, view = "page" }: { model: PageEditorialModel<K>; view?: PageEditorView }) {
   const descriptor = model.descriptor;
   const t = useTranslations("pages");
   const tb = useTranslations("backoffice");
@@ -46,7 +48,8 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   const [localPreviews, setLocalPreviews] = useState<Record<string, AdminMediaPreview>>({});
   const previews = useMemo(() => ({ ...model.previews, ...localPreviews }), [model.previews, localPreviews]);
   const [locale, setLocale] = useState<EditorLocale>("en");
-  const [selected, setSelected] = useState("hero");
+  const [contactPreviewOpen, setContactPreviewOpen] = useState(false);
+  const [selection, setSelected] = useState(view === "blog_article" ? "post_aside" : "hero");
   const [operation, setOperation] = useState<"save" | "publish" | null>(null);
   const queue = useMediaQueue();
   const lock = useRef(false);
@@ -64,8 +67,10 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   const unsavedPage = Object.entries(states).some(([key, value]) =>
     startedLocales.has(key as EditorLocale) && isDirty(value.model),
   ) || Object.keys(localPreviews).some(queue.isQueued);
-  const sections = pageSections(descriptor, labels.field, content);
-  const section = sections.find(s => s.id === selected || s.bindings.some(b => b.id === selected)) ?? sections[0]!;
+  const sections = editorViewSections(descriptor, labels.field, content, view);
+  const matchingSection = sections.find(s => s.id === selection || s.bindings.some(b => b.id === selection));
+  const section = matchingSection ?? sections[0]!;
+  const selected = matchingSection ? selection : section.id;
 
   const surface = descriptor.sectionPreviews?.[section.id] ?? "page";
 
@@ -99,7 +104,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     setStates(previous => {
       const own = previous[locale];
       return { ...previous, [locale]: { ...own, notice: "", model: { ...own.model, working: {
-        ...own.model.working, content: setValue(own.model.working.content, path, value) as PageContentMap[K],
+        ...own.model.working, content: setPageField(own.model.working.content, descriptor.rootNode, path, value) as PageContentMap[K],
       } } } };
     });
   }
@@ -168,13 +173,31 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     }
   }
 
-  const visible = selected === section.id ? section.bindings : section.bindings.filter(b => b.id === selected);
+  const selectedFields = descriptor.key === "home" ? homeButtonFields(selected) : [selected];
+  const visible = selected === section.id || section.selectAsGroup ? section.bindings : section.bindings.filter(b => selectedFields.includes(b.id));
   // Include blank and absent optional copy, especially SEO, in every target locale.
   const targetPaths = editorialTextPaths(content, descriptor).filter(path => isEditableFieldPath(descriptor.rootNode, path) && visible.some(b => path === b.id || path.startsWith(`${b.id}.`)));
   const english = (states.en.model.draft ?? states.en.model.published ?? states.en.model.working).content;
   const englishText = Object.fromEntries(editorialTextPaths(english, descriptor).map(path => [editorialTranslationField(english, path, descriptor), editorialAt(english, path)]));
+  function groupContactFields(fields: { id: string; node: ReactNode }[]) {
+    if (descriptor.key !== "guest" || section.id !== "dual_cta") return fields.map(field => field.node);
+    const contactIds = ["dual_cta.owner.contact.title", "dual_cta.owner.contact.intro"];
+    const contactFields = fields.filter(field => contactIds.includes(field.id));
+    return fields.map(field => {
+      if (!contactIds.includes(field.id)) return field.node;
+      if (field.id !== contactFields[0]?.id) return null;
+      return <div key={`${locale}-owner-contact`} className="space-y-3 rounded-md border border-line p-3">
+        <p className="text-xs text-ink-soft">{t("admin.contextual.guestOwnerContactNote")}</p>
+        <AdminButton aria-pressed={contactPreviewOpen} onClick={() => setContactPreviewOpen(open => !open)}>
+          {t(contactPreviewOpen ? "admin.contextual.hideContactForm" : "admin.contextual.showContactForm")}
+        </AdminButton>
+        {contactFields.map(contact => contact.node)}
+      </div>;
+    });
+  }
   const inspector = <fieldset disabled={busy} className="min-w-0 space-y-5">
     <h2 className="font-serif text-xl text-ink">{section.label}</h2>
+    {view === "blog_article" ? <p className="text-sm leading-relaxed text-ink-soft">{t("admin.blogEditors.context")}</p> : null}
     {["portfolio", "services_carousel", "faq"].includes(section.id) ? <p className="text-xs text-ink-soft">
       {t(`admin.contextual.${section.id === "portfolio" ? "portfolioNote" : section.id === "faq" ? "faqNote" : "servicesNote"}`)}{" "}
       <a className="underline underline-offset-2" href={section.id === "portfolio" ? "/admin/buildings" : section.id === "faq" ? "/admin/faq" : "/admin/services"}>
@@ -185,7 +208,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     {state.notice ? <p role={state.conflict || Object.keys(state.errors).length ? "alert" : "status"} className="text-sm text-ink">{state.notice}</p> : null}
     {state.errors._source ? <p role="alert" className="text-sm text-ink">{state.errors._source}</p> : null}
     {model.sourceInvalid ? <p role="alert">{t("admin.contextual.sourceInvalid")}</p> : null}
-    {locale === "en" ? visible.map(binding => binding.id === "og_image_media_id"
+    {locale === "en" ? groupContactFields(visible.map(binding => ({ id: binding.id, node: binding.id === "og_image_media_id"
       ? <Field key={binding.id} label={t("admin.fields.ogImage")} error={state.errors.og_image_media_id}>
           <MediaField value={og} preview={og ? previews[og] ?? null : null} onChange={(id, preview) => { rememberPreview(preview); setStates(previous => {
             const own = previous.en;
@@ -194,21 +217,23 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
         </Field>
       : <NodeField key={`${locale}-${binding.id}`} pageKey={descriptor.key} node={homeNode(descriptor.rootNode, binding.id)!}
           value={editorialAt(content, binding.id)} path={binding.id.split(".")} label={binding.label} depth={0}
-          onChange={change} onListChange={listChange} listIds={editorialAt(content, "_list_ids") as Record<string, string[]> | undefined} listPolicy={{ paths: descriptor.listPaths, scope: path => editorialListScope(content, path, descriptor) }} errors={state.errors} previews={previews} options={model.options} />)
+          onChange={change} onListChange={listChange} listIds={editorialAt(content, "_list_ids") as Record<string, string[]> | undefined} listPolicy={{ paths: descriptor.listPaths, scope: path => editorialListScope(content, path, descriptor) }} errors={state.errors} previews={previews} options={model.options} />})))
       : <>
         <p className="text-xs text-ink-soft">{t("admin.contextual.sourceOnly")}</p>
-        {targetPaths.map(path => {
+        {groupContactFields(targetPaths.map(path => {
           const field = editorialTranslationField(content, path, descriptor);
           const source = String(englishText[field] ?? "");
-          return <Field key={`${locale}-${field}`} label={labels.field(path.split(".").at(-1)!)} error={state.errors[path]}>
+          return { id: path, node: <Field key={`${locale}-${field}`} label={pageFieldLabel(path, labels.field)} error={state.errors[path]}>
             <p className="mb-2 text-xs text-ink-soft">EN: {source}</p>
-            <TextArea value={String(editorialAt(content, path) ?? "")} onChange={event => change(path.split("."), event.target.value)} />
-          </Field>;
-        })}
+            {((descriptor.key === "home" && (path.endsWith(".url") || path.endsWith(".cta_url"))) || (["guest", "services"].includes(descriptor.key) && path === "hero.cta_url"))
+              ? <TextInput type="url" value={String(editorialAt(content, path) ?? "")} onChange={event => change(path.split("."), event.target.value)} />
+              : <TextArea value={String(editorialAt(content, path) ?? "")} onChange={event => change(path.split("."), event.target.value)} />}
+          </Field> };
+        }))}
       </>}
   </fieldset>;
   return <PageEditorShell adapter={{
-    pageNavigation: <PageNavigation currentKey={descriptor.key} hasUnsavedChanges={unsavedPage} busy={busy} onLeave={() => {
+    pageNavigation: <PageNavigation currentKey={descriptor.key} view={view} hasUnsavedChanges={unsavedPage} busy={busy} onLeave={() => {
       // These previews/queued files belong to this page, never to the destination.
       // Discard only local bytes; saved media and drafts are untouched.
       for (const preview of Object.values(localPreviews)) {
@@ -218,9 +243,12 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
         }
       }
     }} />,
-    title: descriptor.title, sections, seoSectionId: "seo", selectedId: selected, onSelect: setSelected,
+    title: view === "blog_article" ? t("admin.blogEditors.articleTitle") : descriptor.title, sections, seoSectionId: view === "blog_article" ? undefined : "seo", selectedId: section.selectAsGroup ? section.id : selected, onSelect: setSelected,
     locale, onLocaleChange: selectLocale, previewUrl: `/admin/preview/${descriptor.key}?locale=${locale}&surface=${surface}`,
     previewVersion: state.previewVersion * 2 + (surface === "shared_aside" ? 1 : 0), previewPayload, dirty, busy,
+    previewDialog: descriptor.key === "guest" ? {
+      bindingId: "dual_cta.owner.contact.title", open: contactPreviewOpen && section.id === "dual_cta", onOpenChange: setContactPreviewOpen,
+    } : undefined,
     editorialState: `${locale.toUpperCase()} · ${t(dirty ? "admin.editorial.unsaved" : state.model.draft ? "admin.editorial.draft" : "admin.editorial.published")}`,
     status: <span>{t("admin.editorial.livePreview")}</span>, inspector,
     actions: <div className="flex flex-wrap gap-2">

@@ -2,6 +2,16 @@
 
 ## Focused page editor workspace
 
+The dedicated `/admin/pages/blog/article-sidebar` editor uses the same focused
+workspace as `/admin/pages/[key]`, including its hidden navigation default.
+
+`EditorSection.selectAsGroup` optionally presents one Element option for an entire
+section while keeping all bindings available to the inspector and private preview.
+Pages enables it for every Home and Owners section, editing each block's fields together.
+Other Pages retain their existing element selection. SEO keeps its dedicated toolbar.
+See `docs/specs/home-figures-group-selection.md` for L0 review scope.
+Owners rollout: `docs/specs/owners-section-selection.md`.
+
 `AdminShell` keeps authentication-derived identity and nav composition on the server,
 passing rendered slots to the private `AdminWorkspace` client layout. At `/admin/pages/[key]`,
 the desktop sidebar starts hidden; its topbar icon button opens/closes it without remounting
@@ -233,3 +243,18 @@ Real Estate and Guest. The shared shell/bridge continues to own viewport, select
 bounded ephemeral live messages; Pages owns each page/locale snapshot and explicit Save
 draft / Publish actions. Stable list policies extend NodeField without changing legacy About
 consumers. Staff preview routes alone mount live/selection bridges; public routes omit them.
+
+An adapter may supply `previewDialog` (bindingId/open/onOpenChange) to expose a
+read-only modal in its iframe. Same origin/source/instance/allowlist guards apply
+to dialog messages. The private bridge stores its visibility marker and emits
+`central-hill-preview-dialog`; opt-in dialog islands consume that marker across
+live RSC replacements. Close/backdrop/Escape are allowed UI controls; form input,
+navigation and submission remain blocked. Guest uses this for its owner contact
+copy, with Escape also handled while focus is in the inspector. See
+`docs/specs/guest-contact-dialog-preview.md`.
+
+Selection messages accept an optional boolean `focus`. Automatic ready/locale
+synchronization scrolls and highlights with `focus:false`, preserving typing in
+the inspector; explicit selector actions retain focus behavior. Omitted flags
+remain compatible with earlier senders. Source/origin/instance/binding guards
+also apply to these messages.

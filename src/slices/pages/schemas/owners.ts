@@ -73,7 +73,7 @@ const journeyStep = step.extend({
 const planHelper = z.object({
   title: tStr({ max: 120 }),
   copy: tStr({ max: 400 }),
-  cta: z.object({ label: tStr({ max: 80 }), url: hiddenUrl }).optional(),
+  cta: z.object({ label: tStr({ max: 80 }), url: hiddenUrl.optional() }).optional(),
 });
 
 /**
@@ -222,7 +222,7 @@ export const ownersSchema = z.object({
       contact_line: tStrOpt({ max: 200 }).describe(
         "Leave blank to build it from Settings (phone · email · WhatsApp).",
       ),
-      image_media_id: optionalImage(FINAL_CTA_IMG_HINT),
+      image_media_id: optionalImage(FINAL_CTA_IMG_HINT).optional(),
     })
     .optional(),
 });

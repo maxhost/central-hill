@@ -7,9 +7,18 @@ const ID = /^(legacy_\d+|[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-
 export function homeAt(root: unknown, path: string): unknown {
   return path.split(".").reduce<unknown>((node, key) => node && typeof node === "object" ? (node as Record<string, unknown>)[key] : undefined, root);
 }
-export function homeSet(root: unknown, path: string, value: unknown): void {
+export function homeSet(root: unknown, path: string, value: unknown, createMissingObjects = false): void {
   const keys = path.split(".");
-  const parent = homeAt(root, keys.slice(0, -1).join("."));
+  let parent = root;
+  for (let index = 0; index < keys.length - 1; index++) {
+    if (!parent || typeof parent !== "object") return;
+    const key = keys[index]!;
+    const record = parent as Record<string, unknown>;
+    if (record[key] === undefined && createMissingObjects && value !== undefined &&
+      !/^\d+$/.test(key) && !/^\d+$/.test(keys[index + 1]!)) record[key] = {};
+    parent = record[key];
+  }
+  if (createMissingObjects && Array.isArray(parent) && !Object.hasOwn(parent, keys.at(-1)!)) return;
   if (parent && typeof parent === "object") (parent as Record<string, unknown>)[keys.at(-1)!] = value;
 }
 

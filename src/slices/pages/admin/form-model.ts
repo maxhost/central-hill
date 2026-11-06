@@ -24,7 +24,7 @@ export type { MediaAccept };
 export type FieldNode =
   | { kind: "object"; fields: { key: string; node: FieldNode }[] }
   | { kind: "array"; element: FieldNode; min: number; max: number; fixedOrder?: boolean }
-  | { kind: "media"; accept: MediaAccept; hint?: string }
+  | { kind: "media"; accept: MediaAccept; hint?: string; optional?: true }
   | { kind: "icon"; optional: boolean }
   | {
       kind: "select";
@@ -209,7 +209,7 @@ function describeVisible(schema: z.ZodType, key: string): FieldNode {
     // `accept` (image / video …) comes from the field's `.meta()` — see `withMediaAccept`.
     const hint = (base as { description?: string }).description;
     const accept = mediaAccept(schema);
-    return hint ? { kind: "media", accept, hint } : { kind: "media", accept };
+    return { kind: "media", accept, ...(hint ? { hint } : {}), ...(optional ? { optional: true as const } : {}) };
   }
 
   if (base instanceof z.ZodEnum) return { kind: "string", multiline: false, optional, choices: [...base.options] as string[] };
