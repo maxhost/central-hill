@@ -77,11 +77,13 @@ export async function BlogPost({ locale, slug }: { locale: Locale; slug: string 
 }
 
 /** The same article layout renders published posts and the private illustrative sample. */
-export async function BlogPostRenderer({ locale, post, page: suppliedPage, preview = false }: {
+export async function BlogPostRenderer({ locale, post, page: suppliedPage, preview = false, editorBindings = false }: {
   locale: Locale;
   post: PostDetail;
   page?: BlogPage;
   preview?: boolean;
+  /** Private real-post editor only; shared Pages sample keeps its own bindings. */
+  editorBindings?: boolean;
 }) {
   setRequestLocale(locale);
   const [t, globals, page] = await Promise.all([
@@ -128,10 +130,10 @@ export async function BlogPostRenderer({ locale, post, page: suppliedPage, previ
   ];
 
   // ---- title meta line -----------------------------------------------------------------------
-  const meta: ReactNode[] = [<span key="author" className="font-semibold">{post.author.name}</span>];
+  const meta: ReactNode[] = [<span key="author" data-editor-binding={editorBindings ? "article" : undefined} className="font-semibold">{post.author.name}</span>];
   if (date) {
     meta.push(
-      <span className={META_TAG}>
+      <span data-editor-binding={editorBindings ? "article" : undefined} className={META_TAG}>
         <Icon name={icons.published_date} />
         <time dateTime={post.publishedAt ?? undefined}>{date}</time>
       </span>,
@@ -139,7 +141,7 @@ export async function BlogPostRenderer({ locale, post, page: suppliedPage, previ
   }
   if (post.readingMinutes) {
     meta.push(
-      <span className={META_TAG}>
+      <span data-editor-binding={editorBindings ? "article" : undefined} className={META_TAG}>
         <Icon name={icons.reading_time} />
         {t("readingMinutes", { minutes: post.readingMinutes })}
       </span>,
@@ -159,14 +161,14 @@ export async function BlogPostRenderer({ locale, post, page: suppliedPage, previ
           { label: post.category.name, href: blogUrl },
         ]}
         eyebrow={post.category.name}
-        title={post.title}
-        tagline={post.excerpt || undefined}
+        title={editorBindings ? <span data-editor-binding="header">{post.title}</span> : post.title}
+        tagline={post.excerpt ? editorBindings ? <span data-editor-binding="header">{post.excerpt}</span> : post.excerpt : undefined}
         meta={meta}
       />
 
       {/* 2 · cover */}
       {post.cover ? (
-        <div className={WRAP}>
+        <div data-editor-binding={editorBindings ? "header" : undefined} className={WRAP}>
           <MosaicGallery adaptive images={[<MediaImage key="cover" data={post.cover} sizes={COVER_SIZES} priority />]} />
         </div>
       ) : null}
@@ -176,7 +178,7 @@ export async function BlogPostRenderer({ locale, post, page: suppliedPage, previ
         main={
           <>
             {toc.length ? <TocList collapsible title={tocTitle} items={toc} icon={<Icon name={icons.table_of_contents} />} /> : null}
-            <article className="max-w-[68ch]">
+            <article data-editor-binding={editorBindings ? "body" : undefined} className="max-w-[68ch]">
               <BodyRenderer
                 body={post.body}
                 media={post.bodyMedia}
@@ -209,7 +211,9 @@ export async function BlogPostRenderer({ locale, post, page: suppliedPage, previ
                 className="max-[980px]:hidden"
               />
             ) : null}
-            <BlogSharedAside asideCta={asideCta} divided={toc.length > 0} preview={preview} />
+            {editorBindings ? <div data-editor-binding="cta">
+              <BlogSharedAside asideCta={asideCta} divided={toc.length > 0} />
+            </div> : <BlogSharedAside asideCta={asideCta} divided={toc.length > 0} preview={preview} />}
           </StickyAside>
         }
       />
@@ -224,7 +228,7 @@ export async function BlogPostRenderer({ locale, post, page: suppliedPage, previ
 
       {/* 5 · related */}
       {related.length ? (
-        <section className={SECTION_SHELL}>
+        <section data-editor-binding={editorBindings ? "related" : undefined} className={SECTION_SHELL}>
           <div className={WRAP}>
             <SectionHead eyebrow={t("relatedEyebrow")} headline={t("related")} flush className="mb-[34px]" />
             <div className="grid grid-cols-1 gap-[26px] min-[681px]:grid-cols-2 min-[981px]:grid-cols-3">

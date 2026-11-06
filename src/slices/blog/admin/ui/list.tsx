@@ -8,6 +8,7 @@ import {
   StateBadge,
 } from "@slices/backoffice/contract";
 import { type PostAdminListItem, listPostsAdmin } from "../queries";
+import { BLOG_EDITOR_LOCALES } from "../editorial-contract";
 
 /** Blog-posts backoffice list (S12) at `/admin/posts`. */
 
@@ -38,12 +39,17 @@ export async function PostsAdminList() {
     },
     {
       header: t("admin.post.columns.status"),
-      cell: (row) => (
-        <StateBadge
-          label={t(`admin.status.${row.status}`)}
-          tone={STATUS_TONE[row.status]}
-        />
-      ),
+      cell: (row) => row.status === "archived" || !row.localeStates ? (
+        <StateBadge label={t(`admin.status.${row.status}`)} tone={STATUS_TONE[row.status]} />
+      ) : <div className="flex max-w-md flex-wrap gap-1.5">
+        {BLOG_EDITOR_LOCALES.map(locale => {
+          const state = row.localeStates?.[locale];
+          const labels = [state?.published ? t("editorial.published") : t("editorial.unpublished"),
+            ...(state?.draft ? [t("editorial.draftSaved")] : [])];
+          return <StateBadge key={locale} label={`${locale.toUpperCase()} · ${labels.join(" · ")}`}
+            tone={state?.draft ? "draft" : state?.published ? "approved" : "neutral"} />;
+        })}
+      </div>,
     },
     {
       header: t("admin.post.columns.category"),

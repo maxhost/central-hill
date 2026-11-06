@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { UiIcon } from "@core/ui";
 import {
@@ -65,14 +66,26 @@ export function BodyEditor({
   onChange,
   previews,
   onPreview,
+  errors = {},
 }: {
   value: PostBody;
   onChange: (next: PostBody) => void;
   previews: Record<string, AdminMediaPreview>;
   onPreview: (preview: AdminMediaPreview | null) => void;
+  errors?: Record<string, string>;
 }) {
   const t = useTranslations("blog");
   const tb = useTranslations("backoffice");
+  // Keys belong to this editing session, not persisted content. Text edits never
+  // replace an input; reordering moves the same block rather than reusing its index.
+  const [blockKeys, setBlockKeys] = useState(() => value.map((_, index) => `block-${index}`));
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!Object.keys(errors).some(key => key.includes("body"))) return;
+    const invalid = root.current?.querySelector<HTMLElement>("[data-body-error] input,[data-body-error] textarea,[data-body-error] select");
+    invalid?.focus({ preventScroll: true });
+    invalid?.scrollIntoView({ block: "nearest" });
+  }, [errors]);
 
   const update = (i: number, patch: Record<string, unknown>) =>
     onChange(
@@ -80,24 +93,37 @@ export function BodyEditor({
         idx === i ? ({ ...b, ...patch } as BodyBlock) : b,
       ),
     );
-  const remove = (i: number) => onChange(value.filter((_, idx) => idx !== i));
-  const add = (type: BlockType) => onChange([...value, emptyBlock(type)]);
+  const remove = (i: number) => {
+    setBlockKeys(keys => keys.filter((_, index) => index !== i));
+    onChange(value.filter((_, idx) => idx !== i));
+  };
+  const add = (type: BlockType) => {
+    setBlockKeys(keys => [...keys, crypto.randomUUID()]);
+    onChange([...value, emptyBlock(type)]);
+  };
   const move = (i: number, dir: -1 | 1) => {
     const next = [...value];
     const target = i + dir;
     if (target < 0 || target >= next.length) return;
     [next[i], next[target]] = [next[target]!, next[i]!];
+    setBlockKeys(keys => {
+      const moved = [...keys];
+      [moved[i], moved[target]] = [moved[target]!, moved[i]!];
+      return moved;
+    });
     onChange(next);
   };
 
   return (
-    <div className="space-y-4">
+    <div ref={root} className="space-y-4">
       {value.length === 0 ? (
         <p className="text-sm text-ink-soft">{t("admin.post.body.empty")}</p>
       ) : null}
 
       {value.map((block, i) => (
-        <div key={i} className="space-y-3 rounded-md border border-line p-4">
+        <div key={blockKeys[i] ?? `block-${i}`} data-post-body-index={i}
+          data-body-error={Object.keys(errors).some(key => new RegExp(`(?:^|\\.)body\\.${i}(?:\\.|$)`).test(key)) ? "" : undefined}
+          className="space-y-3 rounded-md border border-line p-4">
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
               {t(`admin.post.body.types.${block.type}`)}
