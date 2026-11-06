@@ -393,7 +393,8 @@
       "sectionRelated": "Artigos relacionados",
       "shared": "Partilhado a partir do inglês",
       "newPost": "Novo artigo",
-      "reload": "Recarregar editor"
+      "reload": "Recarregar editor",
+      "inUse": "Este artigo é usado como artigo relacionado. Remova-o dos outros artigos e dos respetivos rascunhos guardados antes de o eliminar."
     }
   },
   "buildings": {

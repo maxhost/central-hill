@@ -393,7 +393,8 @@
       "sectionRelated": "Related articles",
       "shared": "Shared from English",
       "newPost": "New article",
-      "reload": "Reload editor"
+      "reload": "Reload editor",
+      "inUse": "This article is used as a related article. Remove it from other articles and their saved drafts before deleting it."
     }
   },
   "buildings": {

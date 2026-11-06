@@ -37,3 +37,20 @@ sin argumento conserva la conducta existente. No hay cambios al kernel de DB,
 auth ni i18n. El schema se descubre mediante el glob actual de drizzle.config.ts.
 La migración0024 se aplica sólo al entorno sintético autorizado postlocalesqa;
 producción y Neon remoto requieren solicitud independiente.
+
+### QA follow-up: referencias entre artículos
+
+Delete rechaza artículos usados en related_ids de cualquier draft/published
+de otro artículo, sin modificar snapshots ajenos. Para identidades todavía
+legacy también protege blog_post_related; cuando existen snapshots se ignoran
+sus joins viejos porque ya no son la fuente editorial. Save/Publish y Delete
+serializan la mutación del grafo mediante advisory transaction lock de Blog.
+El driver Neon HTTP admite db.batch como transacción no interactiva: primero
+adquiere el lock y el segundo statement usa snapshot READ COMMITTED fresco.
+Una sola CTE con lock no bastaría tras una espera. El CAS vuelve a comprobar
+referencias relacionadas bajo ese lock. No requiere cambiar el kernel.
+
+Tras guardar/publicar EN, targets sin draft persistido actualizan sólo su
+templateRevision y campos compartidos derivados en memoria; mantienen texto,
+cuerpo y links locales. Targets con draft persistido y snapshots publicados
+se conservan exactos. Evita conflictos espurios al continuar traducción local.

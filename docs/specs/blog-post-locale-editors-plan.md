@@ -1,8 +1,9 @@
 # Blog Posts — plan del piloto de edición por idioma
 
-2026-11-05. **Plan propuesto; implementación pendiente de solicitud expresa.**
+2026-11-05. **Piloto Blog autorizado y en implementación local.**
 Producto y hoja de ruta: [spec](entity-locale-editors-spec.md).
-Base auditada `2aa031d` en `main`; sólo cambios documentales en esta entrega.
+Base auditada `2aa031d`; savepoint documental `48ae09c` en `main`.
+Ejecución actual en `post-locales/integration`; ver registro al final.
 
 ## Resultado verificable
 
@@ -261,7 +262,7 @@ Mantener `/admin/translations` para otros tipos y managers Blog auxiliares.
 El éxito del piloto habilita preparar el spec concreto de edificios/apartamentos;
 no autoriza arrancar automáticamente la siguiente fase.
 
-## Estado de esta sesión documental
+## Registro de la fase documental previa
 
 Se añadieron únicamente este plan y el spec enlazado. No se lanzaron agentes,
 tests ni QA. No se consultó ni modificó contenido de DB ni se aplicaron
@@ -325,3 +326,36 @@ pendiente de integración. Imagen y artículo base incluyen ES publicado/PT pend
 slugs ES/PT diferentes, autor/categoría. No entorno previo modificado.
 
 Root scope: page-editor-types.ts optional disabledLocales and ui/page-editor-shell.tsx honour it; existing Pages adapters unchanged. Stable Blog workspace key prevents first-save history update from remounting initial=null; true post routes key editor by postId.
+
+QA media URLs use root-relative /postlocalesqa through an untracked public symlink
+to artifact storage; this permits real Next image optimization without enabling
+private remote IPs. S3 PUT/HEAD remains only local9072. Preserve this runtime
+artifact outside commits. No product Next config/kernel change.
+
+Contratos follow-up8758475 preserva reading_minutes=null legacy (sin metadata
+de lectura), sin sustituir por5. Backend y UI consumen el cambio antes de
+integrar. Documento editorial máximo192KiB UTF8, preview request256KiB;
+se conserva el límite del bridge, sin ampliar guardas globales.
+Verificación db:check exit0:25migraciones, warning0008preexistente.
+
+Integración inicialc819e66: typecheck/lint exit0 (7warnings preexistentes),
+46tests seleccionados exit0, incluidos11backend y3UI. C87dcd8 mejora badges
+legacy y categorías snapshot; typecheck-final y lint afectado exit0.
+Build inicial compila pero falla prerender por max_connections100 de DB
+sintética (proxy:too many clients); sólo esa DB aumenta a400, se reinician
+DB/proxy propios, SQL identidad verificada, build-final exit0 para c87dcd8.
+Production3072 session41833 corre ese build durante primera QA independiente.
+Source followups1e9dfc6/c3de364 mantienen traducciones locales sin draft tras
+guardar/publicarEN y muestran bloqueo Delete por referencias; backend guard
+pendiente de integrar, luego rebuild y confirmación dirigida QA.
+No scanner/library de borrado media implementado en este checkout: sólo
+core.media.deleteMedia y scripts históricos; no nueva UI delete ni cambio kernel.
+3071 original dejó de tener listener sin acción nuestra; restablecido mismo
+checkout/env Node22 dev sesión62782, sin migrar/guardar contenido.
+
+QA detecta Delete de post relacionado que dejaría IDs invisibles y bloquearía
+futuros Save. Corrección agrupada: rechazo explícito in_use si otro snapshot
+draft/published referencia el post, manteniendo versiones ajenas; serialización
+DB no interactiva para carrera Delete/Save. Mensajes cuatro locales y estado
+visible Published/Not published + Draft saved + Unsaved se integran antes
+del build candidato final. Revisión de diseño mecánica impeccable exit0 [].

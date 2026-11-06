@@ -1,10 +1,10 @@
 # Contenidos del CMS — edición y publicación por idioma
 
-2026-11-05. **Propuesta para revisión; sólo documentación.**
+2026-11-05. **Piloto Blog aceptado y autorizado para implementación local.**
 Base auditada: `2aa031d`, rama `main`, checkout
 `/Users/maxi/Documents/claude-workspace/central-hill`.
-Implementación, migraciones y cambios de datos no iniciados ni autorizados por
-esta propuesta. Plan del piloto: [Blog](blog-post-locale-editors-plan.md).
+Usuario autorizó implementación y pruebas en DB local sintética; las fases
+posteriores no están iniciadas. Savepoint documental `48ae09c`. Plan del piloto: [Blog](blog-post-locale-editors-plan.md).
 
 ## Objetivo y secuencia
 
@@ -128,7 +128,7 @@ compartido; este piloto edita los artículos reales.
 |---|---|---|
 | Texto | `title`, `excerpt`, `body`, `meta_title`, `meta_description` | Editables y publicados por idioma |
 | Botón propio | `cta_label`, `cta_url` | Ambos localizados; pareja completa o ambos vacíos |
-| Lectura | `reading_minutes` | Editable por idioma; la longitud puede variar al traducir |
+| Lectura | `reading_minutes` | Editable por idioma y nullable; conservar ausencia legacy, la longitud puede variar al traducir |
 | Referencias/medios | `category_id`, `author_id`, portada, OG, `related_ids` | Autoría EN, snapshot por idioma |
 | Exposición editorial | `is_featured`, fecha editorial `published_at` | Autoría EN, snapshot por idioma; sin programación automática |
 | Identidad | UUID del post y slugs existentes | Estables; no son traducciones de texto |
@@ -178,7 +178,8 @@ actual atribuida al producto.
 2. Con identidad guardada se habilita el trabajo persistente ES/PT/FR. Puede
    traducirse y publicarse ES antes que EN. No hay dependencia de EN publicado.
 3. Guardar valida tipos, límites, referencias no vacías y el documento acotado;
-   admite texto requerido incompleto y bloques en construcción. No guardar JSON
+   admite texto requerido incompleto y bloques en construcción, hasta192KiB UTF8
+   por envelope. Preview completo acotado a256KiB por el bridge existente. No guardar JSON
    arbitrario. Vacíos de medios pendientes sólo como ausencia explícita válida.
 4. La cola de medios finaliza los uploads necesarios antes de persistir. Guardar
    un idioma no sube medios pendientes que sólo pertenecen a otro idioma.
@@ -350,7 +351,8 @@ autorizada la implementación, se verifica guardar/reabrir, publicar un idioma,
 aislar los demás, preview, compatibilidad, enlaces y SEO en entorno sintético
 aislado. Las revisiones puramente estéticas siguen L0 y las valida el usuario.
 
-Esta entrega sólo añade spec y plan. No modifica código, DB, medios, procesos,
-credenciales ni el logo no rastreado; no ejecuta tests/QA, push ni despliegue.
+La entrega documental inicial añadió sólo spec y plan; después se autorizó
+el piloto y la DB sintética. El plan registra su implementación y verificaciones.
+No hay push/despliegue ni escritura Neon remoto; se conserva el logo no rastreado.
 Localhost3071 conserva su entorno actual conectado a Neon remoto: no es una DB
 de pruebas. No usarlo para guardar/publicar fixtures.
