@@ -1,5 +1,5 @@
 import "server-only";
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { loadAlternateSlugs, loadTranslationRows, type TranslationRow } from "@core/i18n";
 import type { Locale } from "@core/db/columns";
@@ -11,6 +11,10 @@ import { postBody } from "../body";
 export class LegacyPostError extends Error { constructor() { super("Existing article content could not be read safely. No values were overwritten."); this.name = "LegacyPostError"; } }
 export type PostLocaleRow = typeof blog_post_locale_content.$inferSelect;
 export type PostIdentity = typeof blog_post.$inferSelect;
+/** Blog-only graph lock. Acquire in a separate batch statement so the following
+ * READ COMMITTED statement observes writes committed while the lock was waiting. */
+export function postGraphLockQuery() { return db.execute(sql`select pg_advisory_xact_lock(7157, 1)`); }
+
 const textFields = ["title", "excerpt", "cta_label", "meta_title", "meta_description"] as const;
 export function legacyBlogEnvelope(identity: PostIdentity, rows: TranslationRow[], relatedIds: string[], locale: Locale, pending = false, strict = true): BlogPostEnvelopeV1 {
   const source = new Map(rows.filter(row => row.locale === "en").map(row => [row.field, row.value]));
@@ -72,7 +76,10 @@ export async function bootstrapPostLocales(identity: PostIdentity, actor: string
   const existing = await db.select({ locale: blog_post_locale_content.locale }).from(blog_post_locale_content).where(eq(blog_post_locale_content.post_id, identity.id));
   if (existing.length === 4) return;
   const rows = await legacyPostLocaleRows(identity);
-  await db.insert(blog_post_locale_content).values(rows.map(row => ({ post_id: row.post_id, locale: row.locale, published: row.published, draft: row.draft, revision: 0, published_at: row.published_at, draft_saved_at: row.draft_saved_at, updated_by: actor }))).onConflictDoNothing();
+  await db.batch([
+    postGraphLockQuery(),
+    db.insert(blog_post_locale_content).values(rows.map(row => ({ post_id: row.post_id, locale: row.locale, published: row.published, draft: row.draft, revision: 0, published_at: row.published_at, draft_saved_at: row.draft_saved_at, updated_by: actor }))).onConflictDoNothing(),
+  ]);
 }
 export async function readPostIdentity(id: string): Promise<PostIdentity | null> {
   const [identity] = await db.select().from(blog_post).where(eq(blog_post.id, id)).limit(1);

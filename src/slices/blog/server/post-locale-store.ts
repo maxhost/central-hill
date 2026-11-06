@@ -6,7 +6,7 @@ import { loadMedia } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import { BLOG_EDITOR_LOCALES, type BlogPostEditorialResult, type SaveBlogPostDraftInput, type PublishBlogPostDraftInput, type BlogPostEnvelopeV1 } from "../editorial-types";
 import { author, blog_category, blog_post } from "../schema";
-import { LegacyPostError, readPostIdentity, readPostLocaleRows, postSlugMap, bootstrapPostLocales } from "./post-locale-bootstrap";
+import { LegacyPostError, readPostIdentity, readPostLocaleRows, postSlugMap, bootstrapPostLocales, postGraphLockQuery } from "./post-locale-bootstrap";
 import { emptyBlogEnvelope, postLocaleModel } from "./post-locale-model";
 import { checkBlogEnvelope, saveBlogRequest, publishBlogRequest, issuesByField, sharedBlogValuesMatch, blogMediaIds } from "./post-locale-validation";
 
@@ -42,9 +42,10 @@ async function createIdentity(input: SaveBlogPostDraftInput): Promise<void> {
   insert into blog_post_locale_content(post_id,locale,revision)
   select created.id,locales.locale,0 from created cross join locales on conflict do nothing`);
 }
-/** Parent first, then EN template, then selected row: fixed lock order, archive wins. */
+/** Graph lock first, then parent, EN template and selected row. The second batch
+ * statement gets a fresh READ COMMITTED snapshot after any lock wait. */
 export async function commitPostLocale(input: { postId: string; locale: Locale; revision: number; templateRevision?: number | null; payload?: BlogPostEnvelopeV1; publish?: boolean; actor: string }): Promise<boolean> {
-  const result = await db.execute(sql`with parent as materialized (
+  const [, result] = await db.batch([postGraphLockQuery(), db.execute(sql`with parent as materialized (
     select id,status from blog_post where id=${input.postId}::uuid for update
   ), template as materialized (
     select revision from blog_post_locale_content where post_id=${input.postId}::uuid and locale='en'
@@ -60,8 +61,15 @@ export async function commitPostLocale(input: { postId: string; locale: Locale; 
       and exists(select 1 from template)
       ${input.templateRevision != null ? sql`and exists(select 1 from template where revision=${input.templateRevision})` : sql``}
       ${input.publish ? sql`and draft is not null` : sql``}
+      and not exists (
+        select 1 from jsonb_array_elements_text(coalesce(
+          ${input.publish ? sql`draft` : sql`${JSON.stringify(input.payload)}::jsonb`}->'content'->'related_ids', '[]'::jsonb
+        )) requested(id)
+        left join blog_post related on related.id=requested.id::uuid
+        where related.id is null
+      )
     returning id
-  ) select id from saved`);
+  ) select id from saved`)]);
   return result.rows.length === 1;
 }
 export async function savePostDraft(input: SaveBlogPostDraftInput, actor: string): Promise<BlogPostEditorialResult> {
@@ -145,4 +153,29 @@ export async function publishPostDraft(input: PublishBlogPostDraftInput, actor: 
     console.error("Blog publication failed", error instanceof Error ? error.name : "unknown");
     return { ok: false, error: "server" };
   }
+}
+
+/** Reject incoming draft/published references instead of mutating another article.
+ * Legacy joins remain authoritative only until that source article is adapted. */
+export async function deletePostIdentityIfUnused(postId: string): Promise<{ ok: true } | { ok: false; error: "in_use" | "not_found" }> {
+  const [, result] = await db.batch([
+    postGraphLockQuery(),
+    db.execute(sql`with incoming as materialized (
+      select post_id from blog_post_locale_content
+      where post_id<>${postId}::uuid and (
+        coalesce(draft->'content'->'related_ids','[]'::jsonb) ? ${postId}
+        or coalesce(published->'content'->'related_ids','[]'::jsonb) ? ${postId}
+      )
+      union all
+      select relation.post_id from blog_post_related relation
+      where relation.related_post_id=${postId}::uuid and relation.post_id<>${postId}::uuid
+        and not exists(select 1 from blog_post_locale_content source where source.post_id=relation.post_id)
+    ), deleted as (
+      delete from blog_post where id=${postId}::uuid and not exists(select 1 from incoming)
+      returning id
+    ) select exists(select 1 from deleted) as deleted, exists(select 1 from incoming) as in_use`),
+  ]);
+  const row = result.rows[0];
+  if (row?.deleted) return { ok: true };
+  return { ok: false, error: row?.in_use ? "in_use" : "not_found" };
 }

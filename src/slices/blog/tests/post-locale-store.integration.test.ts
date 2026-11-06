@@ -4,13 +4,14 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { setSlugs, loadTranslationRows } from "@core/i18n";
 import { blog_post, blog_post_locale_content } from "../schema";
-import { savePostDraft, publishPostDraft, commitPostLocale } from "../server/post-locale-store";
+import { savePostDraft, publishPostDraft, commitPostLocale, deletePostIdentityIfUnused } from "../server/post-locale-store";
 import { bootstrapPostLocales, legacyPostLocaleRows, legacyBlogEnvelope, LegacyPostError, readPostIdentity, readPostLocaleRows } from "../server/post-locale-bootstrap";
 import { emptyBlogEnvelope, postLocaleModel } from "../server/post-locale-model";
 import type { BlogPostEditorialResult, BlogPostLocaleModel, BlogPostEnvelopeV1 } from "../editorial-types";
 const CAT = "c1000000-0000-4000-8000-000000000001", AUTHOR = "c2000000-0000-4000-8000-000000000001", MEDIA = "c3000000-0000-4000-8000-000000000001";
 const POST = "c4000000-0000-4000-8000-000000000001", LEGACY = "c4000000-0000-4000-8000-000000000002", BROKEN = "c4000000-0000-4000-8000-000000000003";
 const RETRY = "c4000000-0000-4000-8000-000000000004";
+const DELETE_SOURCE = "c5000000-0000-4000-8000-000000000001", DELETE_TARGET = "c5000000-0000-4000-8000-000000000002", RACE_TARGET = "c5000000-0000-4000-8000-000000000003";
 const actor = "postlocalesqa-backend";
 let verified = false;
 function expectSuccess(result: BlogPostEditorialResult): BlogPostLocaleModel { assert.equal(result.ok, true, JSON.stringify(result)); if (!result.ok) throw Error("Unexpected failed action"); return result.model; }
@@ -25,18 +26,18 @@ before(async () => {
   assert.deepEqual(identity.rows[0], { database: "postlocalesqa", role: "postlocalesqa" });
   verified = true;
   // Dedicated IDs, never DELETE arbitrary rows or touch another fixture's namespace.
-  await db.execute(sql`delete from blog_post where id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid)`);
-  await db.execute(sql`delete from translation where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid)`);
-  await db.execute(sql`delete from slug where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid)`);
+  await db.execute(sql`delete from blog_post where id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid)`);
+  await db.execute(sql`delete from translation where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid)`);
+  await db.execute(sql`delete from slug where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid)`);
   await db.execute(sql`insert into blog_category(id,slug,color) values(${CAT}::uuid,'postlocales-backend','#888888') on conflict(id) do nothing`);
   await db.execute(sql`insert into author(id,slug,status) values(${AUTHOR}::uuid,'postlocales-backend','published') on conflict(id) do nothing`);
   await db.execute(sql`insert into media_asset(id,storage,r2_key,mime,width,height) values(${MEDIA}::uuid,'r2','backend-fixture.webp','image/webp',1200,800) on conflict(id) do nothing`);
 });
 after(async () => {
   if (!verified) return;
-  await db.execute(sql`delete from blog_post where id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid)`);
-  await db.execute(sql`delete from translation where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid)`);
-  await db.execute(sql`delete from slug where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid)`);
+  await db.execute(sql`delete from blog_post where id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid)`);
+  await db.execute(sql`delete from translation where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid)`);
+  await db.execute(sql`delete from slug where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid)`);
 });
 test("First EN save preserves unfinished draft and creates four invisible snapshots; replay is stale", async () => {
   const empty = emptyBlogEnvelope({ category_id: CAT, author_id: AUTHOR });
@@ -115,4 +116,32 @@ test("Archive wins over any saved locale snapshot and prevents direct CAS public
   assert.deepEqual(await publish(POST, saved), { ok: false, error: "archived" });
   assert.deepEqual(await save(POST, saved), { ok: false, error: "archived" });
   assert.deepEqual((await model(POST)).draft, saved.draft);
+});
+
+test("Deletion refuses every incoming snapshot and serializes with a concurrent related-article save", async () => {
+  const empty = emptyBlogEnvelope({ category_id: CAT, author_id: AUTHOR });
+  const create = (postId: string, slug: string) => savePostDraft({ postId, locale: "en", expectedRevision: 0, templateRevision: null, slug, payload: empty }, actor);
+  expectSuccess(await create(DELETE_TARGET, "backend-delete-target"));
+  const source = expectSuccess(await create(DELETE_SOURCE, "backend-delete-source"));
+  const referenced = complete(source.working, "Source with related article"); referenced.content.related_ids = [DELETE_TARGET];
+  let saved = expectSuccess(await save(DELETE_SOURCE, source, referenced));
+  assert.deepEqual(await deletePostIdentityIfUnused(DELETE_TARGET), { ok: false, error: "in_use" });
+  saved = expectSuccess(await publish(DELETE_SOURCE, saved));
+  const withoutRelation = structuredClone(saved.working); withoutRelation.content.related_ids = [];
+  saved = expectSuccess(await save(DELETE_SOURCE, saved, withoutRelation));
+  assert.deepEqual(await deletePostIdentityIfUnused(DELETE_TARGET), { ok: false, error: "in_use" }, "Published relation still blocks deletion after draft removal");
+  await db.execute(sql`insert into blog_post_related(post_id,related_post_id,position) values(${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,0)`);
+  saved = expectSuccess(await publish(DELETE_SOURCE, saved));
+  assert.deepEqual(await deletePostIdentityIfUnused(DELETE_TARGET), { ok: true }, "Stale legacy joins cannot override adapted snapshots");
+  saved = expectSuccess(await save(DELETE_SOURCE, saved, saved.working));
+  expectSuccess(await create(RACE_TARGET, "backend-race-target"));
+  const racing = structuredClone(saved.working); racing.content.related_ids = [RACE_TARGET];
+  const [committed, deleted] = await Promise.all([
+    commitPostLocale({ postId: DELETE_SOURCE, locale: "en", revision: saved.revision, payload: racing, actor }),
+    deletePostIdentityIfUnused(RACE_TARGET),
+  ]);
+  assert.equal(committed && deleted.ok, false, "Save and deletion cannot both succeed with a dangling relation");
+  const current = await model(DELETE_SOURCE);
+  if (current.draft?.content.related_ids.includes(RACE_TARGET)) assert.ok(await readPostIdentity(RACE_TARGET));
+  else assert.equal(committed, false);
 });

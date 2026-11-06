@@ -12,6 +12,7 @@ import {
 import { loadAlternateSlugs } from "@core/i18n";
 import { BLOG_POST } from "../contract";
 import { author, blog_category, blog_post } from "../schema";
+import { deletePostIdentityIfUnused } from "../server/post-locale-store";
 import { revalidateBlogList, revalidatePost } from "../server/publish";
 import {
   authorSaveInput,
@@ -183,18 +184,19 @@ export async function savePost(_raw: unknown): Promise<BlogSaveResult> {
   return { ok: false, error: "validation", fieldErrors: { _source: "Use Save draft and Publish in the post editor." } };
 }
 
-export async function deletePost(id: string): Promise<{ ok: boolean }> {
+export async function deletePost(id: string): Promise<{ ok: true } | { ok: false; error: "in_use" | "not_found" | "server" }> {
   await requireStaff();
   try {
     const slugs = await loadAlternateSlugs(BLOG_POST, id);
-    await db.delete(blog_post).where(eq(blog_post.id, id)); // cascades related rows and locale snapshots
+    const deleted = await deletePostIdentityIfUnused(id);
+    if (!deleted.ok) return deleted;
     await deleteContent(BLOG_POST, id);
     await deleteSlugs(BLOG_POST, id);
     revalidatePost(id, slugs);
     revalidatePath("/admin/posts");
     return { ok: true };
   } catch {
-    return { ok: false };
+    return { ok: false, error: "server" };
   }
 }
 
