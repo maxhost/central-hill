@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applyPostLocaleResult, changePostField, emptyPostEnvelope, postMediaIds, preparePostTarget, type PostWorkspace } from "../admin/ui/post-editor-state";
+import { adoptPostSourceDetails, applyPostLocaleResult, changePostField, emptyPostEnvelope, hasNewPostSourceDetails, postMediaIds, preparePostTarget, type PostWorkspace } from "../admin/ui/post-editor-state";
 import type { BlogPostLocaleModel } from "../editorial-types";
 
 test("preparing a target keeps its complete differently ordered body and localized links", () => {
@@ -120,4 +120,34 @@ test("editing a just-published target starts a save-ready draft from current sou
   assert.equal(afterEdit.es.model.working.content.reading_minutes, 8);
   assert.equal(afterEdit.es.model.published, oldTarget);
   assert.equal(afterEdit.en, states.en);
+});
+
+test("explicit source-details adoption recovers an incomplete saved target draft without replacing its translations or saving implicitly", () => {
+  const savedTarget = emptyPostEnvelope("old-category", "old-author");
+  savedTarget.content.title = "Mi borrador incompleto";
+  savedTarget.content.body = [{ type: "paragraph", text: "Mi traducción" }];
+  savedTarget.content.cta_url = "https://example.test/es/reservar";
+  const newSource = emptyPostEnvelope("current-category", "current-author");
+  newSource.content.cover_media_id = "uploaded-cover";
+  const states = Object.fromEntries((["en", "es", "pt", "fr"] as const).map(locale => [locale, {
+    model: { locale, revision: 3, templateRevision: null,
+      published: null, draft: locale === "en" ? newSource : savedTarget,
+      working: locale === "en" ? newSource : structuredClone(savedTarget) },
+    errors: {}, conflict: false, notice: "",
+  }])) as PostWorkspace;
+  states.es.model.working.content.title = "Cambio local todavía sin guardar";
+  assert.equal(hasNewPostSourceDetails(states, "es"), true);
+  const adopted = adoptPostSourceDetails(states, "es");
+  assert.equal(adopted.es.model.working.content.cover_media_id, "uploaded-cover");
+  assert.equal(adopted.es.model.working.content.category_id, "current-category");
+  assert.equal(adopted.es.model.working.content.title, "Cambio local todavía sin guardar");
+  assert.deepEqual(adopted.es.model.working.content.body, savedTarget.content.body);
+  assert.equal(adopted.es.model.working.content.cta_url, savedTarget.content.cta_url);
+  assert.equal(adopted.es.model.draft, savedTarget);
+  assert.equal(adopted.es.model.draft.content.cover_media_id, null);
+  assert.equal(adopted.es.model.published, null);
+  assert.equal(adopted.es.model.templateRevision, 3);
+  assert.equal(adopted.pt, states.pt);
+  assert.equal(adopted.en, states.en);
+  assert.equal(hasNewPostSourceDetails(adopted, "es"), false);
 });

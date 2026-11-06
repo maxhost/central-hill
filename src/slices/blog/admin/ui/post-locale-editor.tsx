@@ -13,7 +13,7 @@ import { deletePost } from "../actions";
 import { BodyEditor } from "./body-editor";
 import { postEditorSections } from "./post-editor-adapter";
 import {
-  applyPostLocaleResult, changePostField, emptyPostEnvelope, postEnvelopeEqual,
+  adoptPostSourceDetails, applyPostLocaleResult, changePostField, emptyPostEnvelope, hasNewPostSourceDetails, postEnvelopeEqual,
   postLocaleDirty, postMediaIds, preparePostTarget, type PostWorkspace,
 } from "./post-editor-state";
 
@@ -216,7 +216,16 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
         : <TextInput id={fieldId(key)} value={content[key] ?? ""} onChange={event => set(key, event.target.value)} disabled={busy || archived} />}
     </Field>
   );
-  const sharedNotice = locale !== "en" ? <p className="text-xs leading-relaxed text-ink-soft">{te("sourceFields")}</p> : null;
+  const canAdoptSource = hasNewPostSourceDetails(states, locale);
+  const sharedNotice = locale !== "en" ? <div className="space-y-2">
+    <p className="text-xs leading-relaxed text-ink-soft">{te("sourceFields")}</p>
+    {canAdoptSource ? <>
+      <AdminButton disabled={busy || archived || state.conflict} onClick={() => {
+        if (!busy && !archived && !state.conflict) setStates(previous => adoptPostSourceDetails(previous, locale));
+      }}>{te("adoptSource")}</AdminButton>
+      <p className="text-xs leading-relaxed text-ink-soft">{te("adoptSourceHint")}</p>
+    </> : null}
+  </div> : null;
   const inspector = selection === "article" ? <div className="space-y-5">
     {sharedNotice}
     <Field label={t("admin.post.fields.category")} htmlFor={fieldId("category_id")} error={error("category_id")} required>

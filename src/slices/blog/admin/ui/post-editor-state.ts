@@ -77,3 +77,21 @@ export function changePostField<K extends keyof BlogPostContent>(states: PostWor
     working: { ...model.working, content: { ...model.working.content, [key]: value } },
   } } };
 }
+
+export function hasNewPostSourceDetails(states: PostWorkspace, locale: Locale): boolean {
+  const source = states.en.model.draft ?? states.en.model.published;
+  return locale !== "en" && Boolean(source && !postEnvelopeEqual(
+    preparePostTarget(source, states[locale].model.working), states[locale].model.working,
+  ));
+}
+
+/** Explicit local preparation only: the saved target draft/publication stay intact. */
+export function adoptPostSourceDetails(states: PostWorkspace, locale: Locale): PostWorkspace {
+  const source = states.en.model.draft ?? states.en.model.published;
+  if (locale === "en" || !source) return states;
+  const own = states[locale];
+  return { ...states, [locale]: { ...own, notice: "", model: { ...own.model,
+    working: preparePostTarget(source, own.model.working),
+    templateRevision: states.en.model.revision,
+  } } };
+}
