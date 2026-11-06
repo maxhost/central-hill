@@ -272,8 +272,11 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
   const previewPayload = { postId, locale, envelope: state.model.working, slug: slugByLocale[locale] ?? slug,
     localMedia: Object.fromEntries(postMediaIds(state.model.working).flatMap(id => localMedia[id]?.url.startsWith("blob:") ? [[id, localMedia[id]!]] : [])),
   };
-  const editorialState = `${locale.toUpperCase()} · ${archived ? te("archived") : dirty ? te("unsaved")
-    : state.model.draft ? te("draftSaved") : state.model.published ? te("published") : te("unpublished")}`;
+  const editorialState = `${locale.toUpperCase()} · ${archived ? te("archived") : [
+    state.model.published ? te("published") : te("unpublished"),
+    ...(state.model.draft ? [te("draftSaved")] : []),
+    ...(dirty ? [te("unsaved")] : []),
+  ].join(" · ")}`;
   const titleId = `${fieldPrefix}-leave-title`;
   const descriptionId = `${fieldPrefix}-leave-description`;
   return <>
