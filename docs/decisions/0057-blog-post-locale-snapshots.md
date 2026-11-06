@@ -54,3 +54,19 @@ Tras guardar/publicar EN, targets sin draft persistido actualizan sólo su
 templateRevision y campos compartidos derivados en memoria; mantienen texto,
 cuerpo y links locales. Targets con draft persistido y snapshots publicados
 se conservan exactos. Evita conflictos espurios al continuar traducción local.
+
+### QA: completar drafts parciales y crear identidad
+
+Un draft target iniciado antes de la portada EN puede conservar referencias
+incompletas. El control explícito «Use saved English details» adopta únicamente
+los campos compartidos en memoria, preservando textos/cuerpo/enlaces y el draft
+guardado original hasta Save. En un target con draft, templateRevision no-null
+expresa esa intención y el servidor exige la revisión y referencias EN actuales
+bajo el mismo CAS/lock; null sigue editando el documento congelado.
+
+El primer Save nuevo navega realmente a /admin/posts/<id>, con controles
+bloqueados hasta reabrir el modelo guardado. Una history.replaceState retenía
+el árbol /new y su UUID/key podía regenerarse tras revalidación RSC, reiniciando
+el formulario. No se usa key inestable en la ruta New. No hay trabajo target
+antes de esa creación; Save/Publish posteriores mantienen estado local por idioma
+sin router.refresh ni navegación completa.

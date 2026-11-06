@@ -30,8 +30,12 @@ BlogLocalesQA2026!. Env/harness/logs bajo `/private/tmp/central-hill-post-locale
 No credenciales copiadas de producción. Preload local bloquea Neon remoto.
 Migration0000..0024 aplicada exclusivamente allí con psql ON_ERROR_STOP.
 Storage S3 emulado no verifica firmas; el flujo real presign/PUT/finalize y el
-optimizador Next usan archivos sintéticos locales. Symlink no rastreado
-public/postlocalesqa conserva esos archivos para review; no es código de producto.
+optimizador Next usan archivos sintéticos locales. El runtime local permite
+únicamente imágenes del endpoint127.0.0.1:9072 mediante configuración QA generada
+(start-preview.cjs / __NEXT_PRIVATE_STANDALONE_CONFIG); no cambia next.config.ts
+ni habilita IPs privadas en producto. Esto evita el inventario estático de archivos
+public al subir imágenes nuevas. El symlink no rastreado public/postlocalesqa
+conserva los assets baseline relativos para review; es un artefacto de runtime.
 
 3071 original se restableció al encontrarlo sin listener (PID58381/sesión62782),
 mismo checkout/env; login200. No se aplicó migración ni guardó contenido allí.
@@ -46,11 +50,20 @@ Fases edificios/apartamentos, servicios y guías aún no iniciadas.
   sintética; se aumentó sólo esa DB a400 y build-finalc87dcd8 pasó.
 - Candidato2f67116: typecheck-candidate/lint-candidate/build-candidate0,
  16tests afectados0 (12backend+4UI), incluyendo carrera Delete/Save real.
+- Confirmación9b875d7 (code30ce88a): typecheck-confirm/lint-confirm/build-confirm0,
+ 5state tests0 para primer cambio target después de Publish. No se repiten
+ pruebas DB ni consumidores inalterados; candidato conservado.
+- Preview final3072 PID62000/sesión12717, login y optimizador HTTP200.
 - Detector mecánico de diseño0, resultado[]; no sustituye QA de navegador.
 - QA independiente y confirmación final se registrarán en
   [QA](blog-post-locale-editors-qa.md). Spec y comandos exactos en
   [plan](blog-post-locale-editors-plan.md).
 
+Durante QA navegador se detectó que la revalidación RSC posterior al primer Save
+podía regenerar el key/UUID de New; ahora sólo esa creación navega realmente al
+ID con controles bloqueados hasta montar su modelo guardado. También se ofrece
+adopción local explícita de metadata EN para completar un target draft congelado
+sin portada, con revisión protegida al guardar y texto/cuerpo intactos.
 Durante QA se corrigieron referencias de plantilla EN en traducciones locales,
 rechazo de Delete con referencias y mensajes de estado simultáneos. La revisión
 final incluye continuar un target tras publicar su draft congelado y empezar

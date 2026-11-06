@@ -144,6 +144,14 @@ como heredadas de EN; si esta preparación cambia su documento publicado, marcar
 cambios pendientes. Un draft target ya existente se abre tal cual. Publicar EN no
 sincroniza ni reordena automáticamente otros drafts o publicaciones.
 
+Si un draft target conserva referencias compartidas antiguas o incompletas, un
+control explícito **Usar los datos guardados en inglés** prepara sólo esas
+referencias en el formulario local, conservando todo el texto/cuerpo/enlaces
+target. No guarda ni publica. Guardar después persiste la adopción con revisión
+EN comprobada atómicamente; el borrador original permanece intacto hasta ese
+guardado. Esto permite completar una traducción iniciada antes de añadir la
+portada EN, sin sincronizar destructivamente drafts por publicar EN.
+
 El cuerpo es un documento completo por idioma: mismos tipos de bloque de
 `body.ts`, con texto, pies/alt y CTA internos localizados. Puede tener distinto
 número/orden de bloques; no se alinea ni mezcla por índice con EN. Las imágenes
@@ -175,6 +183,10 @@ actual atribuida al producto.
 1. Crear abre EN. El primer Guardar borrador EN crea identidad y reserva el slug;
    no requiere cuerpo terminado, portada ni publicar. Sí un slug válido y las
    referencias mínimas de categoría/autor exigidas por la identidad actual.
+   Tras el primer guardado se navega a la ruta real del ID guardado y se mantiene
+   bloqueado el formulario durante la transición. El modelo se reabre desde DB;
+   no hay trabajo en otros idiomas todavía. Las acciones posteriores no refrescan
+   el formulario completo ni reinician otras pestañas.
 2. Con identidad guardada se habilita el trabajo persistente ES/PT/FR. Puede
    traducirse y publicarse ES antes que EN. No hay dependencia de EN publicado.
 3. Guardar valida tipos, límites, referencias no vacías y el documento acotado;

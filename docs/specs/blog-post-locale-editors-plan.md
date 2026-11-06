@@ -367,3 +367,29 @@ EN al primer cambio real del target sin draft, manteniendo preview post-Publish
 igual a público y todo texto/cuerpo/enlace propio. Sólo state/test cambiado;
 5tests de estado/typecheck/lint afectados en confirmación, sin repetir DBsuite.
 Luego rebuild final para confirmación funcional restante de QA.
+
+Confirmación final antes del cierre: executable9b875d7 (code30ce88a)
+con5state tests/typecheck/lint afectados0 y build-confirm0. Runtime3072
+PID62000/sesión12717. Para imágenes nuevas en producción local, Next enumera
+publicFolderItems al arrancar; el symlink solo no cubre uploads posteriores.
+QA runtime usa start-preview.cjs con la configuración generada de ese mismo
+build vía __NEXT_PRIVATE_STANDALONE_CONFIG, añadiendo sólo remotePatterns
+127.0.0.1:9072/postlocalesqa/** y dangerouslyAllowLocalIP=true para el storage
+sintético; R2_PUBLIC_BASE_URL se establece al endpoint local absoluto.
+Producto next.config.ts no cambió y producción no habilita IPs privadas.
+Login y optimizador real /_next/image con fixture local responden200.
+El symlink sigue sirviendo los assets baseline relativos precalculados.
+No fuente ejecutable cambió después del build; QA completa la ronda funcional.
+
+QA navegador nuevo encuentra dos bloqueantes de flujo normal: tras primerSave
+la revalidación RSC de /new podía regenerar UUID/key y reiniciar el formulario;
+los drafts target creados sin portada congelaban null e impedían publicar al
+añadir EN después. Corrección agrupada autorizada dentro del piloto: root retira
+key inestable, UI navega realmente al ID tras primerSave manteniendo busy hasta
+montar modelo guardado; operaciones posteriores no refrescan otras pestañas.
+Control local explícito Use saved English details permite adoptar sólo metadata
+EN conservando texto/cuerpo/enlaces y el draft original hasta Save. Backend usa
+templateRevision no-null como adopción explícita también para target con draft,
+con revisión y shared-match EN bajo CAS. Sin nueva migración/acción editorial.
+Root añade mensajes cuatro locales y ADR; A store/test, B UI/state/test.
+Después rebuild y confirmación sólo de estos flujos más aceptación restante.

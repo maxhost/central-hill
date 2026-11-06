@@ -6,5 +6,5 @@ export default async function NewPostPage() {
  await requireStaff();
  const [categories,authors,posts]=await Promise.all([listBlogCategoryOptions(),listAuthorOptions(),listPostOptions()]);
  const newPostId=randomUUID();
- return <PostLocaleEditor key={newPostId} initial={null} newPostId={newPostId} categories={categories} authors={authors} posts={posts} />;
+ return <PostLocaleEditor initial={null} newPostId={newPostId} categories={categories} authors={authors} posts={posts} />;
 }

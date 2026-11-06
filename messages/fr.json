@@ -394,7 +394,9 @@
       "shared": "Partagé depuis l’anglais",
       "newPost": "Nouvel article",
       "reload": "Recharger l’éditeur",
-      "inUse": "Cet article est utilisé comme article associé. Retirez-le des autres articles et de leurs brouillons enregistrés avant de le supprimer."
+      "inUse": "Cet article est utilisé comme article associé. Retirez-le des autres articles et de leurs brouillons enregistrés avant de le supprimer.",
+      "adoptSource": "Utiliser les données anglaises enregistrées",
+      "adoptSourceHint": "Actualise les images et les données partagées depuis la version anglaise enregistrée. Le texte et le corps traduits sont conservés. Enregistrez cette langue pour conserver la modification."
     }
   },
   "buildings": {

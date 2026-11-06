@@ -394,7 +394,9 @@
       "shared": "Shared from English",
       "newPost": "New article",
       "reload": "Reload editor",
-      "inUse": "This article is used as a related article. Remove it from other articles and their saved drafts before deleting it."
+      "inUse": "This article is used as a related article. Remove it from other articles and their saved drafts before deleting it.",
+      "adoptSource": "Use saved English details",
+      "adoptSourceHint": "Updates shared images and article details from the saved English version. Your translated text and body are kept. Save this language to keep the change."
     }
   },
   "buildings": {
