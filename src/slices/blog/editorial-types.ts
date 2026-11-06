@@ -13,7 +13,7 @@ export interface BlogPostContent {
   cover_media_id: string | null;
   og_image_media_id: string | null;
   published_at: string | null;
-  reading_minutes: number;
+  reading_minutes: number | null;
   is_featured: boolean;
   related_ids: string[];
   cta_label: string | null;
