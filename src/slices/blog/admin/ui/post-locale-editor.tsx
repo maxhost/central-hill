@@ -233,8 +233,8 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
         onChange={event => set("published_at", event.target.value || null)} disabled={!editableShared || busy} />
     </Field>
     <Field label={t("admin.post.fields.readingMinutes")} htmlFor={fieldId("reading_minutes")} error={error("reading_minutes")}>
-      <TextInput id={fieldId("reading_minutes")} type="number" min={1} max={120} value={content.reading_minutes}
-        onChange={event => set("reading_minutes", event.target.value === "" ? 0 : Number(event.target.value))} disabled={busy || archived} />
+      <TextInput id={fieldId("reading_minutes")} type="number" min={1} max={120} value={content.reading_minutes ?? ""}
+        onChange={event => set("reading_minutes", event.target.value === "" ? null : Number(event.target.value))} disabled={busy || archived} />
     </Field>
     <Checkbox label={t("admin.post.fields.featuredLabel")} checked={content.is_featured} onChange={event => set("is_featured", event.target.checked)} disabled={!editableShared || busy} />
   </div> : selection === "header" ? <div className="space-y-5">
