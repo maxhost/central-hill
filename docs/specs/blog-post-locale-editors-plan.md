@@ -299,7 +299,7 @@ post-locale-editor.tsx,post-editor-state.ts,post-editor-adapter.tsx,
 post-editor-preview.tsx;ui/blog-post.tsx,ui/components/body-renderer.tsx.
 Root: contratos/schema/migration0024/ADR0057; Translation paths listados; rutas
 Posts/preview/posts/[id];mensajes;backoffice/ui/media-queue.tsx y
-backoffice/ui/admin-shell.tsx si requiere modo enfocado; política Blog
+backoffice/ui/admin-workspace.tsx para modo enfocado; política Blog
 server/editorial-translation-policy.ts;docs/README/spec/modelo.
 A y B pueden añadir tests propios dentro del write set; no cambian contratos.
 El listado UI B consume PostAdminListItem.localeStates opcional definido por A:
@@ -309,3 +309,19 @@ B sólo anota renderer dentro de su ownership. Se mantiene el block set actual.
 Verificación: pnpm typecheck/lint/build/db:check; tests explícitos nuevos de A
 y consumidores afectados (fijar lista antes de ejecutar), browser funcional real
 en3072/DB sintética. QA independiente tras integrar; ninguna prueba en3071.
+
+Root scope addition: scripts/seed-blog.ts rejects legacy writes before mutation; DRY remains read-only. Migration metadata snapshot0024 also owned by root.
+
+Entorno creado y verificado: SQL current_database/current_user=postlocalesqa;
+containers central-hill-post-locales-db5648 y central-hill-post-locales-proxy4548
+red central-hill-post-locales-qa. Migrations0000..0024 aplicadas con psql
+ON_ERROR_STOP,25archivos exit0, migrations.log en
+/private/tmp/central-hill-post-locales-qa. Proxy inicial falló porque Postgres
+aún no estaba listo; reiniciado sólo ese proxy nuevo y verificación SQL exit0.
+Storage9072 session8962 (bytes/HEAD/PUT sintéticos; no comprueba firma S3).
+Env/preload/seed.sql/fixtures.json en ese artifact; credenciales sólo sintéticas.
+Preload redirige postlocalesqa.local al proxy y rechaza Neon remoto. Preview3072
+pendiente de integración. Imagen y artículo base incluyen ES publicado/PT pendiente,
+slugs ES/PT diferentes, autor/categoría. No entorno previo modificado.
+
+Root scope: page-editor-types.ts optional disabledLocales and ui/page-editor-shell.tsx honour it; existing Pages adapters unchanged. Stable Blog workspace key prevents first-save history update from remounting initial=null; true post routes key editor by postId.

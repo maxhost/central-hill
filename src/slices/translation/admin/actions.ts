@@ -1,4 +1,5 @@
 "use server";
+import { isBlogEditorialEntity } from "@slices/blog/contract";
 import { requireStaff } from "@core/auth";
 import type { Locale } from "@core/db/columns";
 import {
@@ -51,7 +52,7 @@ export async function approveField(
 ): Promise<TranslationActionResult> {
   await requireStaff();
   if (!type || !id || !field || !isTargetLocale(locale)) return { ok: false, error: "validation" };
-  if (await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
+  if (isBlogEditorialEntity(type) || await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
   await setTranslationState(type, id, field, locale, "approved");
   await revalidateEntity(type, id);
   return { ok: true };
@@ -66,7 +67,7 @@ export async function resetField(
 ): Promise<TranslationActionResult> {
   await requireStaff();
   if (!type || !id || !field || !isTargetLocale(locale)) return { ok: false, error: "validation" };
-  if (await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
+  if (isBlogEditorialEntity(type) || await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
   await setTranslationState(type, id, field, locale, "needs_review");
   await revalidateEntity(type, id);
   return { ok: true };
@@ -86,7 +87,7 @@ export async function saveField(
 ): Promise<TranslationActionResult> {
   const staff = await requireStaff();
   if (!type || !id || !field || !isTargetLocale(locale)) return { ok: false, error: "validation" };
-  if (await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
+  if (isBlogEditorialEntity(type) || await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
 
   const sourceRows = await loadTranslationRows({ type, id, locale: SOURCE_LOCALE });
   const source = sourceRows.find((r) => r.field === field);
@@ -116,7 +117,7 @@ export async function clearField(
 ): Promise<TranslationActionResult> {
   await requireStaff();
   if (!type || !id || !field || !isTargetLocale(locale)) return { ok: false, error: "validation" };
-  if (await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
+  if (isBlogEditorialEntity(type) || await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
   await deleteTranslation(type, id, field, locale);
   await revalidateEntity(type, id);
   return { ok: true };
@@ -126,7 +127,7 @@ export async function clearField(
 export async function approveEntity(type: string, id: string): Promise<TranslationActionResult> {
   await requireStaff();
   if (!type || !id) return { ok: false, error: "validation" };
-  if (await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
+  if (isBlogEditorialEntity(type) || await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
 
   const rows = await loadTranslationRows({ type, id });
   for (const r of rows) {
@@ -150,7 +151,7 @@ export async function generateEntityDrafts(
 ): Promise<TranslationActionResult> {
   const staff = await requireStaff();
   if (!type || !id) return { ok: false, error: "validation" };
-  if (await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
+  if (isBlogEditorialEntity(type) || await getPageEditorialRedirect(type, id)) return { ok: false, error: "validation" };
   await generateDrafts(type, id, { overwrite, updatedBy: staff.userId });
   await revalidateEntity(type, id);
   return { ok: true };

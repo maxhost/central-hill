@@ -84,3 +84,5 @@ export { BlogListingRenderer } from "./ui/blog-listing";
 export { BlogSharedAside } from "./ui/components/blog-shared-aside";
 /** Staff-only article context for the shared sidebar editor, with injected Pages content. */
 export { BlogArticlePreview } from "./ui/blog-article-preview";
+/** Legacy Translation cannot mutate articles managed by the locale editor. */
+export { isBlogEditorialEntity, getBlogEditorialRedirect } from "./server/editorial-translation-policy";

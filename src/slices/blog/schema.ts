@@ -1,4 +1,5 @@
-import { boolean, integer, jsonb, pgTable, primaryKey, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { boolean, check, integer, jsonb, pgTable, primaryKey, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { pkUuid, timestamps } from "@core/db/columns";
 
 /**
@@ -68,4 +69,6 @@ export const blog_post_locale_content = pgTable("blog_post_locale_content", {
   draft_saved_at: timestamp({ withTimezone: true }),
   updated_by: text(),
   ...timestamps,
-}, table => [unique("blog_post_locale_content_post_locale_unique").on(table.post_id, table.locale)]);
+}, table => [unique("blog_post_locale_content_post_locale_unique").on(table.post_id, table.locale),
+  check("blog_post_locale_content_locale_ck", sql`${table.locale} in ('en','es','pt','fr')`),
+  check("blog_post_locale_content_revision_ck", sql`${table.revision} >= 0`)]);

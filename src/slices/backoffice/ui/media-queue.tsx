@@ -55,8 +55,8 @@ export interface MediaQueueApi {
   enqueue: (id: string, file: File) => void;
   /** Drop a queued file (the editor removed or replaced the field's value). */
   dequeue: (id: string) => void;
-  /** Upload everything queued. Resolves true when all items succeeded. */
-  flush: () => Promise<boolean>;
+  /** Upload selected assets, or all queued assets when omitted. */
+  flush: (ids?: readonly string[]) => Promise<boolean>;
   /** True while anything is still queued — used to guard navigation. */
   hasPending: boolean;
   /** Is this asset's file still waiting to be uploaded? Drives the field's note. */
@@ -132,6 +132,8 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<QueueItem[]>([]);
   const [open, setOpen] = useState(false);
   const [running, setRunning] = useState(false);
+  const [activeIds, setActiveIds] = useState<readonly string[] | null>(null);
+  const activeIdsRef = useRef<readonly string[] | null>(null);
   const [preparing, dispatchPreparing] = useReducer(reservationCount, 0);
   // The upload loop is async and must always see the current queue, but a ref may not
   // be written during render — mirror the state into it from an effect instead. Safe
@@ -202,7 +204,7 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
     setRunning(true);
     let allOk = true;
     for (const item of itemsRef.current) {
-      if (item.status === "done") continue;
+      if (item.status === "done" || (activeIdsRef.current && !activeIdsRef.current.includes(item.id))) continue;
       const ok = await uploadItem(item);
       if (!ok) allOk = false;
     }
@@ -210,15 +212,18 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
     return allOk;
   }, [uploadItem]);
 
-  const flush = useCallback(async (): Promise<boolean> => {
-    const outstanding = itemsRef.current.filter((i) => i.status !== "done");
+  const flush = useCallback(async (ids?: readonly string[]): Promise<boolean> => {
+    const selected = ids ? [...new Set(ids)] : null;
+    activeIdsRef.current = selected;
+    setActiveIds(selected);
+    const outstanding = itemsRef.current.filter((i) => i.status !== "done" && (!selected || selected.includes(i.id)));
     if (outstanding.length === 0) return true;
     setOpen(true);
     const ok = await run();
     // Nothing left to do on success — drop the modal and let the save continue.
     if (ok) {
       setOpen(false);
-      setItems([]);
+      setItems((current) => selected ? current.filter(item => !selected.includes(item.id)) : []);
     }
     return ok;
   }, [run]);
@@ -250,8 +255,9 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
     [enqueue, dequeue, flush, hasPending, isQueued, track, isPreparing],
   );
 
-  const settled = !running && items.every((i) => i.status === "done" || i.status === "failed");
-  const failed = items.filter((i) => i.status === "failed");
+  const visibleItems = activeIds ? items.filter(item => activeIds.includes(item.id)) : items;
+  const settled = !running && visibleItems.every((i) => i.status === "done" || i.status === "failed");
+  const failed = visibleItems.filter((i) => i.status === "failed");
 
   return (
     <MediaQueueContext.Provider value={api}>
@@ -268,7 +274,7 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
             <p className="mt-1 text-xs text-ink-soft">{t("media.uploadingHint")}</p>
 
             <ul className="mt-4 space-y-3">
-              {items.map((i) => (
+              {visibleItems.map((i) => (
                 <li key={i.id} className="space-y-1">
                   <div className="flex items-center justify-between gap-3 text-xs">
                     <span className="truncate text-ink" title={i.name}>

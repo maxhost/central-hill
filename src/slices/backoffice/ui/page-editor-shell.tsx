@@ -127,7 +127,7 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
         <h1 className="font-serif text-3xl text-ink">{adapter.title}</h1>
         <div role="group" aria-label={t("contentLanguage")} className="flex gap-1 rounded-md border border-line bg-surface p-1">
           {LOCALES.map((locale) => (
-            <button key={locale} type="button" aria-pressed={adapter.locale === locale} onClick={() => adapter.onLocaleChange(locale)} disabled={adapter.busy}
+            <button key={locale} type="button" aria-pressed={adapter.locale === locale} onClick={() => adapter.onLocaleChange(locale)} disabled={adapter.busy || adapter.disabledLocales?.includes(locale)}
               className={`${buttonClass} ${adapter.locale === locale ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}>
               {locale.toUpperCase()}{locale === "en" ? <span className="ml-1 text-[10px] font-normal">{t("source")}</span> : null}
             </button>

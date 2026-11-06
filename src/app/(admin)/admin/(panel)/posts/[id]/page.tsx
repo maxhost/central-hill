@@ -1,31 +1,18 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { requireStaff } from "@core/auth";
-import {
-  getPostForEdit,
-  listAuthorOptions,
-  listBlogCategoryOptions,
-  listPostOptions,
-} from "@slices/blog/admin/queries";
-import { PostForm } from "@slices/blog/admin/ui/post-form";
-
-/** Edit-post route (`/admin/posts/[id]`). Gated by `(panel)`. */
-export default async function EditPostPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireStaff();
-  const { id } = await params;
-  const [bundle, categories, authors, posts] = await Promise.all([
-    getPostForEdit(id),
-    listBlogCategoryOptions(),
-    listAuthorOptions(),
-    listPostOptions(),
-  ]);
-  if (!bundle) notFound();
-  return (
-    <PostForm
-      initial={bundle.data}
-      previews={bundle.previews}
-      categories={categories}
-      authors={authors}
-      posts={posts}
-    />
-  );
+import { getPostEditorialModel } from "@slices/blog/server/post-locale-model";
+import { listAuthorOptions, listBlogCategoryOptions, listPostOptions } from "@slices/blog/admin/queries";
+import { PostLocaleEditor } from "@slices/blog/admin/ui/post-locale-editor";
+import { uuid } from "@core/validation/primitives";
+export default async function EditPostPage({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<{locale?:string}>}) {
+ await requireStaff(); const {id}=await params; if(!uuid.safeParse(id).success) notFound();
+ const t=await getTranslations("blog.editorial");
+ let initial;
+ try { initial=await getPostEditorialModel(id); }
+ catch(error) { if(error instanceof Error && error.name === "LegacyPostError") return <p role="alert">{t("legacyInvalid")}</p>; throw error; }
+ if(!initial) notFound();
+ const [categories,authors,posts]=await Promise.all([listBlogCategoryOptions(),listAuthorOptions(),listPostOptions()]);
+ const locale=(await searchParams).locale;
+ return <PostLocaleEditor key={initial.id} initial={initial} categories={categories} authors={authors} posts={posts} initialLocale={locale} />;
 }

@@ -21,6 +21,8 @@ export interface PageEditorAdapter {
   selectedId: string;
   onSelect: (id: string) => void;
   locale: EditorLocale;
+  /** Adapters may require a first saved identity before starting other locales. */
+  disabledLocales?: EditorLocale[];
   onLocaleChange: (locale: EditorLocale) => void;
   previewUrl: string;
   previewVersion: number;

@@ -41,7 +41,7 @@ import { media_asset } from "@core/media/schema";
 import { deleteMedia, finalizeUpload, presignUpload } from "@core/media/server/ingest";
 import { blogPostSaveInput, type BlogPostSaveInput } from "@slices/blog/admin/validation";
 import type { PostBody } from "@slices/blog/body";
-import { BLOG_POST } from "@slices/blog/contract";
+import { BLOG_POST, isBlogEditorialEntity } from "@slices/blog/contract";
 import { author, blog_category, blog_post, blog_post_related } from "@slices/blog/schema";
 
 const CATEGORY_SLUG = "owner-guides";
@@ -431,6 +431,9 @@ async function upsertPost(
 }
 
 async function main() {
+  if (isBlogEditorialEntity(BLOG_POST) && !process.env.DRY) {
+    throw new Error("Historical Blog seed is retired. Use the post locale editor; legacy source writes cannot update snapshots safely.");
+  }
   const refs = await lookupRefs();
 
   if (process.env.DRY) {

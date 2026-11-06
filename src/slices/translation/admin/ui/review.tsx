@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getBlogEditorialRedirect } from "@slices/blog/contract";
 import { getPageEditorialRedirect } from "@slices/pages/contract";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -40,7 +41,7 @@ export async function TranslationReview({
   id: string;
   locale?: string;
 }) {
-  const editor = await getPageEditorialRedirect(type, id);
+  const editor = getBlogEditorialRedirect(type, id, locale) ?? await getPageEditorialRedirect(type, id);
   if (editor) redirect(editor);
   const t = await getTranslations("translation");
   const entity = await getEntityTranslations(type, id);
