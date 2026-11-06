@@ -9,7 +9,9 @@ baseBlogaf3a4a1 sobre main48ae09c; deltaBlog/topbar validado29db0c5 seleccionado
 sin historia/codeProps. Ver docs/specs/blog-main-integration.md. Blog entero igual
 al candidato revisado; workspace conserva reglas legacy de Properties. Sólo
 migraciónBlog0024, no0025 ni namespacepropertyEditor/guardasProperty nuevas.
-Validar ensamblaje en DB sintética antes de fast-forward; no DBremota/migraciones,
+Ensamblaje2aabcc4 verificado: typecheck/lint/build0,26tests+10icon0,db:check0,
+lecturas browser3076 sin errores ni content writes. Fast-forward local autorizado;
+no DBremota/migraciones,
 main env remoto no se usa para pruebas. Original logo sin rastrear se preserva.
 Edificios/Departamentos QA aprobado pero pendiente revisión usuario en3073,
 property-locales/integration, /private/tmp/central-hill-property-locales-integration.

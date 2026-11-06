@@ -26,3 +26,28 @@ Entrega final será fast-forward a main sólo tras checks, instalar deps segúnl
 y preservar logo/previews. No push/deploy, migraciones ni DBremota.3071 sigue
 env remoto: no solicitar rutas/Save de prueba allí como parte de este merge.
 Edificios/Departamentos permanece en3073 para revisión manual con propertyqa.
+
+## Candidato selectivo verificado
+
+Código2aabcc4. src/slices/blog coincide exactamente con29db0c5. Comparación
+contra48ae09c: cero cambios en Buildings/Apartments/rutasProperty/seed-demo,
+sin0025 y sin namespacepropertyEditor en los4mensajes. Adaptación de workspace
+sólo para Blog/topbar. No conflictos de usuario absorbidos ni cambios en logo.
+
+Node22/pnpm10.8: typecheck0, lint0(7warnings previos),26tests de estado/codec/
+render/localevalidation/bridge0 y10icon tests0. db:check0:25migraciones, termina
+en0024, warning histórico0008. No migraciones aplicadas. Build primer intento
+falló por symlinknode_modules fuera de raíz Turbopack; se sustituyó sólo el
+symlink propio por copia real de deps idénticas y build-final.log exit0. Código
+no cambió por esa corrección de entorno; warnings metadataBase de fixture local.
+
+Verificación navegador root3076 temporal: BlogHTTP200, formulario/rich text sin
+iframe, sidebar hide/show, paginación10+4 y Volver a artículos funcionan; errors[].
+Sólo GET/interacciones sin guardar, publicar, subir ni alterar contenidoDB.
+Artifacts /private/tmp/central-hill-blog-main-qa (env sintético, logs y browser.json).
+Los previews de revisión3073/3075 y sus checkouts se conservaron. No nueva claim
+de QA independiente: producto tiene informe original y aquí root verifica selección.
+
+Main se actualizará por fast-forward desde48ae09c a este candidato + cierre
+documental, usando esta rama selectiva; no merge de blog-form/integration.
+Luego instalar deps main según lockfile, sin build/test contra su.env remoto.
