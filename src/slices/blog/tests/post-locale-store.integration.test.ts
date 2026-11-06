@@ -7,11 +7,13 @@ import { blog_post, blog_post_locale_content } from "../schema";
 import { savePostDraft, publishPostDraft, commitPostLocale, deletePostIdentityIfUnused } from "../server/post-locale-store";
 import { bootstrapPostLocales, legacyPostLocaleRows, legacyBlogEnvelope, LegacyPostError, readPostIdentity, readPostLocaleRows } from "../server/post-locale-bootstrap";
 import { emptyBlogEnvelope, postLocaleModel } from "../server/post-locale-model";
+import { prepareBlogTarget } from "../server/post-locale-validation";
 import type { BlogPostEditorialResult, BlogPostLocaleModel, BlogPostEnvelopeV1 } from "../editorial-types";
 const CAT = "c1000000-0000-4000-8000-000000000001", AUTHOR = "c2000000-0000-4000-8000-000000000001", MEDIA = "c3000000-0000-4000-8000-000000000001";
 const POST = "c4000000-0000-4000-8000-000000000001", LEGACY = "c4000000-0000-4000-8000-000000000002", BROKEN = "c4000000-0000-4000-8000-000000000003";
 const RETRY = "c4000000-0000-4000-8000-000000000004";
 const DELETE_SOURCE = "c5000000-0000-4000-8000-000000000001", DELETE_TARGET = "c5000000-0000-4000-8000-000000000002", RACE_TARGET = "c5000000-0000-4000-8000-000000000003";
+const ADOPT = "c6000000-0000-4000-8000-000000000001";
 const actor = "postlocalesqa-backend";
 let verified = false;
 function expectSuccess(result: BlogPostEditorialResult): BlogPostLocaleModel { assert.equal(result.ok, true, JSON.stringify(result)); if (!result.ok) throw Error("Unexpected failed action"); return result.model; }
@@ -26,18 +28,18 @@ before(async () => {
   assert.deepEqual(identity.rows[0], { database: "postlocalesqa", role: "postlocalesqa" });
   verified = true;
   // Dedicated IDs, never DELETE arbitrary rows or touch another fixture's namespace.
-  await db.execute(sql`delete from blog_post where id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid)`);
-  await db.execute(sql`delete from translation where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid)`);
-  await db.execute(sql`delete from slug where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid)`);
+  await db.execute(sql`delete from blog_post where id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid,${ADOPT}::uuid)`);
+  await db.execute(sql`delete from translation where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid,${ADOPT}::uuid)`);
+  await db.execute(sql`delete from slug where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid,${ADOPT}::uuid)`);
   await db.execute(sql`insert into blog_category(id,slug,color) values(${CAT}::uuid,'postlocales-backend','#888888') on conflict(id) do nothing`);
   await db.execute(sql`insert into author(id,slug,status) values(${AUTHOR}::uuid,'postlocales-backend','published') on conflict(id) do nothing`);
   await db.execute(sql`insert into media_asset(id,storage,r2_key,mime,width,height) values(${MEDIA}::uuid,'r2','backend-fixture.webp','image/webp',1200,800) on conflict(id) do nothing`);
 });
 after(async () => {
   if (!verified) return;
-  await db.execute(sql`delete from blog_post where id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid)`);
-  await db.execute(sql`delete from translation where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid)`);
-  await db.execute(sql`delete from slug where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid)`);
+  await db.execute(sql`delete from blog_post where id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid,${ADOPT}::uuid)`);
+  await db.execute(sql`delete from translation where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid,${ADOPT}::uuid)`);
+  await db.execute(sql`delete from slug where entity_id in (${POST}::uuid,${LEGACY}::uuid,${BROKEN}::uuid,${RETRY}::uuid,${DELETE_SOURCE}::uuid,${DELETE_TARGET}::uuid,${RACE_TARGET}::uuid,${ADOPT}::uuid)`);
 });
 test("First EN save preserves unfinished draft and creates four invisible snapshots; replay is stale", async () => {
   const empty = emptyBlogEnvelope({ category_id: CAT, author_id: AUTHOR });
@@ -144,4 +146,33 @@ test("Deletion refuses every incoming snapshot and serializes with a concurrent 
   const current = await model(DELETE_SOURCE);
   if (current.draft?.content.related_ids.includes(RACE_TARGET)) assert.ok(await readPostIdentity(RACE_TARGET));
   else assert.equal(committed, false);
+});
+
+test("Explicit saved-English detail adoption repairs an unfinished target draft without replacing localized content", async () => {
+  const empty = emptyBlogEnvelope({ category_id: CAT, author_id: AUTHOR });
+  let en = expectSuccess(await savePostDraft({ postId: ADOPT, locale: "en", expectedRevision: 0, templateRevision: null, payload: empty, slug: "backend-explicit-details" }, actor));
+  const esInitial = await model(ADOPT, "es");
+  const spanish = structuredClone(esInitial.working);
+  Object.assign(spanish.content, { title: "Título propio ES", excerpt: "Introducción ES", body: [{ type: "quote", text: "Texto ES" }, { type: "paragraph", text: "Cuerpo ES" }], cta_label: "Reservar ES", cta_url: "https://example.test/es", reading_minutes: 9 });
+  const es = expectSuccess(await save(ADOPT, esInitial, spanish));
+  assert.equal(es.draft?.content.cover_media_id, null);
+  const beforeIncompletePublication = await publish(ADOPT, es); assert.equal(beforeIncompletePublication.ok, false);
+  en = expectSuccess(await save(ADOPT, en, complete(en.working, "English completed")));
+  const savedTargetBeforeAdoption = await model(ADOPT, "es");
+  const adoptedLocal = prepareBlogTarget(en.working, savedTargetBeforeAdoption.working);
+  assert.deepEqual((await model(ADOPT, "es")).draft, spanish, "Preparing local adoption never persists or synchronizes an existing draft");
+  assert.deepEqual(adoptedLocal.content.body, spanish.content.body); assert.equal(adoptedLocal.content.title, spanish.content.title);
+  assert.equal(adoptedLocal.content.cta_url, spanish.content.cta_url); assert.equal(adoptedLocal.content.reading_minutes, 9);
+  const request = { postId: ADOPT, locale: "es" as const, expectedRevision: es.revision, templateRevision: en.revision, payload: adoptedLocal };
+  assert.deepEqual(await savePostDraft({ ...request, templateRevision: en.revision - 1 }, actor), { ok: false, error: "conflict" });
+  const forged = structuredClone(adoptedLocal); forged.content.is_featured = !forged.content.is_featured;
+  const rejected = await savePostDraft({ ...request, payload: forged }, actor); assert.equal(rejected.ok, false); if (!rejected.ok) assert.equal(rejected.error, "validation");
+  // A concurrent EN save also rejects the otherwise correct old template intent.
+  en = expectSuccess(await save(ADOPT, en, en.working));
+  assert.deepEqual(await savePostDraft(request, actor), { ok: false, error: "conflict" });
+  const latest = prepareBlogTarget(en.working, spanish);
+  const saved = expectSuccess(await savePostDraft({ ...request, templateRevision: en.revision, payload: latest }, actor));
+  assert.equal(saved.draft?.content.cover_media_id, MEDIA); assert.deepEqual(saved.draft?.content.body, spanish.content.body);
+  const published = expectSuccess(await publish(ADOPT, saved));
+  assert.deepEqual(published.published, latest); assert.equal(published.draft, null);
 });

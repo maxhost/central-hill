@@ -115,11 +115,18 @@ export async function savePostDraft(input: SaveBlogPostDraftInput, actor: string
       slugByLocale = await postSlugMap(identity.id);
     }
     if (!slugByLocale[input.locale] && !slugByLocale.en) return invalid({ slug: "The article has no public URL. Resolve the existing URL before saving." });
-    if (model.revision !== input.expectedRevision || (input.locale !== "en" && !model.draft && model.templateRevision !== input.templateRevision)) return { ok: false, error: "conflict" };
-    if (input.locale !== "en" && !sharedBlogValuesMatch(input.payload, model.working)) return invalid({ _source: "Shared article fields are authored in English." });
+    const source = rows.find(row => row.locale === "en");
+    // A non-null EN revision on an existing target draft is explicit local
+    // adoption of saved English details. Never replace its copy/body implicitly.
+    const adoptsSavedDetails = input.locale !== "en" && Boolean(model.draft) && input.templateRevision !== null;
+    if (model.revision !== input.expectedRevision ||
+      (input.locale !== "en" && !model.draft && model.templateRevision !== input.templateRevision) ||
+      (adoptsSavedDetails && input.templateRevision !== (source?.revision ?? 0))) return { ok: false, error: "conflict" };
+    const sharedTemplate = adoptsSavedDetails ? source?.draft ?? source?.published ?? emptyBlogEnvelope(identity) : model.working;
+    if (input.locale !== "en" && !sharedBlogValuesMatch(input.payload, sharedTemplate)) return invalid({ _source: "Shared article fields must match the selected saved English details." });
     const referenceErrors = await validatePostReferences(input.payload, input.postId);
     if (Object.keys(referenceErrors).length) return invalid(referenceErrors);
-    if (!await commitPostLocale({ postId: input.postId, locale: input.locale, revision: input.expectedRevision, templateRevision: input.locale !== "en" && !model.draft ? input.templateRevision : null, payload: input.payload, actor })) return { ok: false, error: "conflict" };
+    if (!await commitPostLocale({ postId: input.postId, locale: input.locale, revision: input.expectedRevision, templateRevision: input.locale !== "en" && (!model.draft || adoptsSavedDetails) ? input.templateRevision : null, payload: input.payload, actor })) return { ok: false, error: "conflict" };
     return { ok: true, postId: input.postId, slugByLocale, model: { ...model, revision: model.revision + 1, draft: input.payload, working: input.payload, templateRevision: null } };
   } catch (error) {
     if (error instanceof LegacyPostError) return { ok: false, error: "legacy_invalid" };
