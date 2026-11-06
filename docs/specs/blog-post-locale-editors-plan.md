@@ -268,3 +268,44 @@ tests ni QA. No se consultó ni modificó contenido de DB ni se aplicaron
 migraciones. Localhost3071 ya estaba activo y `/admin/login` respondió HTTP200
 en la comprobación de arranque de esta conversación; no se reinició el proceso.
 El logo previo no rastreado permanece ajeno a esta entrega. Sin commit/push/deploy.
+
+## Ejecución autorizada —2026-11-05
+
+Savepoint documental48ae09c, resuelto con git log -1. Usuario autoriza implementar
+el piloto y crear DB sintética postlocalesqa, Postgres5648/proxy4548/storage9072,
+preview3072 y pruebas Save/Publish sintéticas. Integración real
+/private/tmp/central-hill-post-locales-integration, rama post-locales/integration.
+Writers: /private/tmp/central-hill-post-locales-backend (post-locales/backend),
+/private/tmp/central-hill-post-locales-ui (post-locales/ui). Se crearán desde el
+commit de contratos antes de delegar. Node22.23.3/pnpm10.8.0. Sin Neon remoto,
+main integration/push/deploy; conservar3071 y logo no rastreado.
+
+Contratos definitivos: editorial-types.ts/admin/editorial-contract.ts;
+getPostEditorialModel(id): BlogPostEditorialModel|null, con previews/slugByLocale.
+SaveBlogPostDraftInput incluye postId UUID cliente estable, locale, expectedRevision,
+templateRevision,payload y slug sólo para primera creación EN. Acciones públicas
+Blog savePostLocaleDraft/publishPostLocaleDraft en admin/post-locale-actions.ts.
+renderPostLivePreview(input:BlogPostPreviewInput) en admin/post-preview-actions.ts.
+Archive secundario archivePost(postId) mismo archivo de acciones; deletePost
+existente se conserva con limpieza de snapshots en FK. No acceso extra por rol:
+Posts actual usa requireStaff() sin roles, igual que Translations.
+
+Ownership final A: admin/actions.ts,admin/queries.ts,admin/validation.ts; nuevos
+server/post-locale-store.ts,post-locale-bootstrap.ts,post-locale-validation.ts,
+post-locale-model.ts;admin/post-locale-actions.ts,admin/post-preview-actions.ts;
+server/queries.ts,server/publish.ts;tests/post-locale-*.test.ts.
+B: admin/ui/post-form.tsx,body-editor.tsx,list.tsx; nuevos
+post-locale-editor.tsx,post-editor-state.ts,post-editor-adapter.tsx,
+post-editor-preview.tsx;ui/blog-post.tsx,ui/components/body-renderer.tsx.
+Root: contratos/schema/migration0024/ADR0057; Translation paths listados; rutas
+Posts/preview/posts/[id];mensajes;backoffice/ui/media-queue.tsx y
+backoffice/ui/admin-shell.tsx si requiere modo enfocado; política Blog
+server/editorial-translation-policy.ts;docs/README/spec/modelo.
+A y B pueden añadir tests propios dentro del write set; no cambian contratos.
+El listado UI B consume PostAdminListItem.localeStates opcional definido por A:
+Partial<Record<Locale,{published:boolean,draft:boolean}>>.
+Preview de A devuelve {ok:true,content:ReactNode}|{ok:false,error:'validation'|'server'};
+B sólo anota renderer dentro de su ownership. Se mantiene el block set actual.
+Verificación: pnpm typecheck/lint/build/db:check; tests explícitos nuevos de A
+y consumidores afectados (fijar lista antes de ejecutar), browser funcional real
+en3072/DB sintética. QA independiente tras integrar; ninguna prueba en3071.

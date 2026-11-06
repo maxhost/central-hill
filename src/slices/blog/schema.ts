@@ -1,4 +1,4 @@
-import { boolean, integer, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, integer, jsonb, pgTable, primaryKey, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { pkUuid, timestamps } from "@core/db/columns";
 
 /**
@@ -55,3 +55,17 @@ export const blog_post_related = pgTable(
   },
   (t) => [primaryKey({ columns: [t.post_id, t.related_post_id] })],
 );
+
+/** ADR0057: independent editorial snapshots; legacy content stays available for bootstrap. */
+export const blog_post_locale_content = pgTable("blog_post_locale_content", {
+  id: pkUuid(),
+  post_id: uuid().notNull().references(() => blog_post.id, { onDelete: "cascade" }),
+  locale: text().$type<import("@core/db/columns").Locale>().notNull(),
+  published: jsonb().$type<import("./editorial-types").BlogPostEnvelopeV1>(),
+  draft: jsonb().$type<import("./editorial-types").BlogPostEnvelopeV1>(),
+  revision: integer().notNull().default(0),
+  published_at: timestamp({ withTimezone: true }),
+  draft_saved_at: timestamp({ withTimezone: true }),
+  updated_by: text(),
+  ...timestamps,
+}, table => [unique("blog_post_locale_content_post_locale_unique").on(table.post_id, table.locale)]);
