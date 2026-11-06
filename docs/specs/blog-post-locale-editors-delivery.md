@@ -1,6 +1,8 @@
 # Blog Posts — entrega local de edición por idioma
 
-2026-11-05. Verificación final en curso; el informe QA independiente decide el cierre.
+2026-11-05. **Implementación local completada y QA funcional independiente aprobado.**
+Código ejecutable aprobado **58ba96a**, informe independiente **060c195**.
+Los commits posteriores de cierre son documentales y no cambian el ejecutable.
 
 Savepoint documental **48ae09c**, contratos e03d2c5. Integración local en
 `post-locales/integration`, `/private/tmp/central-hill-post-locales-integration`.
@@ -54,8 +56,10 @@ Fases edificios/apartamentos, servicios y guías aún no iniciadas.
  5state tests0 para primer cambio target después de Publish. No se repiten
  pruebas DB ni consumidores inalterados; candidato conservado.
 - Preview final3072 PID62000/sesión12717, login y optimizador HTTP200.
+- Correcciones finales58ba96a: typecheck-release/lint-release/tests-release19/
+ build-release0;13backend+6UI. Runtime3072 PID69153/sesión73284, login200.
 - Detector mecánico de diseño0, resultado[]; no sustituye QA de navegador.
-- QA independiente y confirmación final se registrarán en
+- QA independiente aprobado, con recorridos/correcciones/límites en
   [QA](blog-post-locale-editors-qa.md). Spec y comandos exactos en
   [plan](blog-post-locale-editors-plan.md).
 
@@ -67,4 +71,81 @@ sin portada, con revisión protegida al guardar y texto/cuerpo intactos.
 Durante QA se corrigieron referencias de plantilla EN en traducciones locales,
 rechazo de Delete con referencias y mensajes de estado simultáneos. La revisión
 final incluye continuar un target tras publicar su draft congelado y empezar
-una nueva edición. El candidato final y resultado se añadirán al cerrar.
+una nueva edición. Todas las correcciones quedaron confirmadas en58ba96a.
+
+## Revisión y cierre
+
+Abrir http://localhost:3072/admin/posts o el artículo activo
+http://localhost:3072/admin/posts/a4000000-0000-4000-8000-000000000001.
+Entrar con la cuenta sintética indicada arriba. EN/ES/FR publicados y PTdraft
+permiten revisar el comportamiento. Primer Save nuevo estable y segundo Save,
+adopción metadata local, uploads aislados, ES publicado antes de EN, público/SEO,
+referencias/Delete, acceso anónimo y Archive confirmados por QA independiente.
+
+No defectos bloqueantes abiertos. No trabajo de implementación/QA obligatorio
+pendiente en este piloto. Mantener worktrees, DB/storage y ambos previews para
+revisión del usuario. Las fases siguientes requieren su spec/solicitud propia.
+
+## Archivos entregados
+
+Manifest real respecto al savepoint48ae09c, incluido el informe QA:
+
+```text
+docs/data-model.md
+docs/decisions/0057-blog-post-locale-snapshots.md
+docs/specs/blog-post-locale-editors-delivery.md
+docs/specs/blog-post-locale-editors-plan.md
+docs/specs/blog-post-locale-editors-qa.md
+docs/specs/entity-locale-editors-spec.md
+drizzle/0024_blog_post_locale_content.sql
+drizzle/meta/0024_snapshot.json
+drizzle/meta/_journal.json
+messages/en.json
+messages/es.json
+messages/fr.json
+messages/pt.json
+scripts/seed-blog.ts
+src/app/(admin)/admin/(panel)/posts/[id]/page.tsx
+src/app/(admin)/admin/(panel)/posts/new/page.tsx
+src/app/(admin)/admin/preview/posts/[id]/page.tsx
+src/slices/backoffice/page-editor-types.ts
+src/slices/backoffice/ui/admin-workspace.tsx
+src/slices/backoffice/ui/media-queue.tsx
+src/slices/backoffice/ui/page-editor-shell.tsx
+src/slices/blog/README.md
+src/slices/blog/admin/actions.ts
+src/slices/blog/admin/editorial-contract.ts
+src/slices/blog/admin/post-locale-actions.ts
+src/slices/blog/admin/post-preview-actions.ts
+src/slices/blog/admin/queries.ts
+src/slices/blog/admin/ui/body-editor.tsx
+src/slices/blog/admin/ui/list.tsx
+src/slices/blog/admin/ui/post-editor-adapter.tsx
+src/slices/blog/admin/ui/post-editor-preview.tsx
+src/slices/blog/admin/ui/post-editor-state.ts
+src/slices/blog/admin/ui/post-locale-editor.tsx
+src/slices/blog/contract.ts
+src/slices/blog/editorial-types.ts
+src/slices/blog/schema.ts
+src/slices/blog/server/editorial-translation-policy.ts
+src/slices/blog/server/post-locale-bootstrap.ts
+src/slices/blog/server/post-locale-model.ts
+src/slices/blog/server/post-locale-store.ts
+src/slices/blog/server/post-locale-validation.ts
+src/slices/blog/server/queries.ts
+src/slices/blog/tests/post-editor-state.test.ts
+src/slices/blog/tests/post-locale-store.integration.test.ts
+src/slices/blog/tests/post-locale-validation.test.ts
+src/slices/blog/ui/blog-post.tsx
+src/slices/translation/README.md
+src/slices/translation/admin/actions.ts
+src/slices/translation/admin/queries.ts
+src/slices/translation/admin/ui/review.tsx
+src/slices/translation/server/generate.ts
+```
+
+Artefactos no rastreados/ignorados que se conservan: public/postlocalesqa
+(symlink runtime), .env.local sintético del worktree y todo el directorio
+/private/tmp/central-hill-post-locales-qa (env/preload/storage, arneses, imágenes
+y logs, incluidas primeras aserciones fallidas). No van en el commit. En el
+checkout original permanece el PNG de logo previo no rastreado, sin modificación.

@@ -1,6 +1,6 @@
 # Blog Posts — plan del piloto de edición por idioma
 
-2026-11-05. **Piloto Blog autorizado y en implementación local.**
+2026-11-05. **Piloto Blog implementado y aprobado por QA funcional independiente.**
 Producto y hoja de ruta: [spec](entity-locale-editors-spec.md).
 Base auditada `2aa031d`; savepoint documental `48ae09c` en `main`.
 Ejecución actual en `post-locales/integration`; ver registro al final.
@@ -393,3 +393,28 @@ templateRevision no-null como adopción explícita también para target con draf
 con revisión y shared-match EN bajo CAS. Sin nueva migración/acción editorial.
 Root añade mensajes cuatro locales y ADR; A store/test, B UI/state/test.
 Después rebuild y confirmación sólo de estos flujos más aceptación restante.
+
+Candidato de confirmación58ba96a integra fixes EN-adoption y primera navegación.
+Typecheck-release/lint-release/tests-release19/build-release exit0;13backend
+(DB/puro) +6UI. No fixtures/DB fuera de postlocalesqa. Runtime3072
+PID69153/sesión73284, login200. QA confirma sólo correcciones y aceptación
+restante; los recorridos existentes ya aprobados no se repiten. No cambios
+ejecutables previstos después de este build.
+
+## Cierre local
+
+Ejecutable58ba96a aprobado independientemente; informe060c195. Confirmados
+primer/segundo Save real, datos de idiomas independientes, metadata EN explícita
+sin mutar draft hasta Save, dos uploads en cola aislados por idioma, ES público
+antes de EN, siguiente edición de draft congelado recién publicado, imágenes
+reales optimizer200, canonical/hreflang/sitemap, Delete referenciado sin mutar
+publicaciones ajenas, denegación anónima real y Archive global conservando datos.
+QA registra también baseline4locales, foco/preview/Refresh/sinwrites, reload,
+navegación y móvil. No bloqueantes abiertos ni QA pendiente.
+
+Entrega y manifest en blog-post-locale-editors-delivery.md; QA en
+blog-post-locale-editors-qa.md. Runtime3072 PID69153/sesión73284 aprobado,
+3071 original PID58381/sesión62782 restaurado y preservado. Root hace sólo
+commit documental de cierre después de la aprobación; sin recompilar ni repetir
+checks sin cambios de ejecutable. No main merge/push/deploy/Neon remoto.
+User revisa localhost3072. No se arrancan fases siguientes automáticamente.
