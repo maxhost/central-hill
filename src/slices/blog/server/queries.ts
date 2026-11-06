@@ -1,320 +1,141 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, ne } from "drizzle-orm";
 import { db } from "@core/db/client";
 import type { Locale } from "@core/db/columns";
-import {
-  type ContentRef,
-  type ContentResolver,
-  loadAlternateSlugs,
-  loadContent,
-  loadSlugs,
-  resolveSlug,
-} from "@core/i18n/content";
+import { loadAlternateSlugs, loadContent, loadSlugs, loadTranslationRows, resolveSlug } from "@core/i18n";
 import { slug as slugTable } from "@core/i18n/schema";
 import { type MediaAsset, type MediaImageData, loadMedia, mediaUrl } from "@core/media";
-import { BLOG_POST, BLOG_TAGS } from "../contract";
-import type { AuthorRef, CategoryRef, PostDetail, PostSummary } from "../contract";
-import { type PostBody, postBody } from "../body";
-import { author, blog_category, blog_post, blog_post_related } from "../schema";
+import { BLOG_POST, BLOG_TAGS, type AuthorRef, type CategoryRef, type PostDetail, type PostSummary } from "../contract";
+import type { BlogPostEnvelopeV1 } from "../editorial-types";
+import { author, blog_category, blog_post, blog_post_locale_content, blog_post_related } from "../schema";
+import { legacyBlogEnvelope } from "./post-locale-bootstrap";
+import { blogMediaIds } from "./post-locale-validation";
 
-/**
- * Public read functions for slice `blog` (conventions.md → reads go through typed,
- * cache-tagged `server/` functions; never the DB at request time). Each is wrapped
- * in `unstable_cache` keyed by locale and tagged `blog_post-list` so a publish
- * busts them (see `./publish`). Translatable fields resolve via `core/i18n`.
- */
-
-// ── Row shapes ───────────────────────────────────────────────────────────────
-interface PostRow {
-  id: string;
-  published_at: Date | null;
-  cover_media_id: string | null;
-  reading_minutes: number | null;
-  is_featured: boolean;
-  cat_id: string;
-  cat_slug: string;
-  cat_color: string | null;
-  auth_id: string;
-  auth_slug: string;
+export interface PublishedPostDocument { id: string; envelope: BlogPostEnvelopeV1 }
+/** Read only. A present locale row with published=NULL is intentionally invisible. */
+export async function readPublishedPostDocuments(locale: Locale, ids?: string[]): Promise<PublishedPostDocument[]> {
+  if (ids && !ids.length) return [];
+  const rows = await db.select({ identity: blog_post, snapshot: blog_post_locale_content })
+    .from(blog_post).leftJoin(blog_post_locale_content, and(eq(blog_post_locale_content.post_id, blog_post.id), eq(blog_post_locale_content.locale, locale)))
+    .where(and(ne(blog_post.status, "archived"), ids ? inArray(blog_post.id, ids) : undefined));
+  const legacyIds = rows.filter(row => !row.snapshot && row.identity.status === "published").map(row => row.identity.id);
+  const [translations, related] = legacyIds.length ? await Promise.all([
+    loadTranslationRows({ type: BLOG_POST }),
+    db.select().from(blog_post_related).where(inArray(blog_post_related.post_id, legacyIds)).orderBy(blog_post_related.position),
+  ]) : [[], []];
+  return rows.flatMap(({ identity, snapshot }) => {
+    if (snapshot) return snapshot.published ? [{ id: identity.id, envelope: snapshot.published }] : [];
+    if (identity.status !== "published") return [];
+    return [{ id: identity.id, envelope: legacyBlogEnvelope(identity, translations.filter(row => row.entity_id === identity.id), related.filter(row => row.post_id === identity.id).map(row => row.related_post_id), locale, false, false) }];
+  });
 }
-
-const summarySelect = {
-  id: blog_post.id,
-  published_at: blog_post.published_at,
-  cover_media_id: blog_post.cover_media_id,
-  reading_minutes: blog_post.reading_minutes,
-  is_featured: blog_post.is_featured,
-  cat_id: blog_category.id,
-  cat_slug: blog_category.slug,
-  cat_color: blog_category.color,
-  auth_id: author.id,
-  auth_slug: author.slug,
-} as const;
-
-function summaryQuery() {
-  return db
-    .select(summarySelect)
-    .from(blog_post)
-    .innerJoin(blog_category, eq(blog_post.category_id, blog_category.id))
-    .innerJoin(author, eq(blog_post.author_id, author.id));
+function imageData(asset: MediaAsset | undefined, alt: string): MediaImageData | null {
+  return asset ? { url: mediaUrl(asset.r2_key), width: asset.width ?? 1600, height: asset.height ?? 1200, alt, blurhash: asset.blurhash } : null;
 }
-
-// ── Mapping helpers ──────────────────────────────────────────────────────────
-interface SummaryCtx {
-  content: ContentResolver;
-  slugs: Map<string, string>;
-  media: Map<string, MediaAsset>;
-}
-
-const DEFAULT_W = 1600;
-const DEFAULT_H = 1200;
-
-function toImageData(asset: MediaAsset | undefined, alt: string): MediaImageData | null {
-  if (!asset) return null;
-  return {
-    url: mediaUrl(asset.r2_key),
-    width: asset.width ?? DEFAULT_W,
-    height: asset.height ?? DEFAULT_H,
-    alt,
-    blurhash: asset.blurhash,
-  };
-}
-
-async function buildCtx(rows: PostRow[], locale: Locale): Promise<SummaryCtx> {
-  const refs: ContentRef[] = [];
-  const coverIds: string[] = [];
-  const postIds: string[] = [];
-  for (const r of rows) {
-    postIds.push(r.id);
-    refs.push({ type: BLOG_POST, id: r.id });
-    refs.push({ type: "blog_category", id: r.cat_id });
-    refs.push({ type: "author", id: r.auth_id });
-    if (r.cover_media_id) {
-      refs.push({ type: "media_asset", id: r.cover_media_id });
-      coverIds.push(r.cover_media_id);
-    }
-  }
-
-  const [content, slugs, media] = await Promise.all([
-    loadContent(refs, locale),
-    loadSlugs(BLOG_POST, postIds, locale),
-    loadMedia(coverIds),
+/** References are resolved from each snapshot, never the live identity's old columns. */
+async function resolveSummaries(documents: PublishedPostDocument[], locale: Locale): Promise<PostSummary[]> {
+  if (!documents.length) return [];
+  const categoryIds = [...new Set(documents.map(row => row.envelope.content.category_id))];
+  const authorIds = [...new Set(documents.map(row => row.envelope.content.author_id))];
+  const mediaIds = documents.flatMap(row => row.envelope.content.cover_media_id ? [row.envelope.content.cover_media_id] : []);
+  const [categories, authors, content, slugs, media] = await Promise.all([
+    db.select().from(blog_category).where(inArray(blog_category.id, categoryIds)),
+    db.select().from(author).where(inArray(author.id, authorIds)),
+    loadContent([...categoryIds.map(id => ({ type: "blog_category", id })), ...authorIds.map(id => ({ type: "author", id })), ...mediaIds.map(id => ({ type: "media_asset", id }))], locale),
+    loadSlugs(BLOG_POST, documents.map(row => row.id), locale), loadMedia(mediaIds),
   ]);
-
-  return { content, slugs, media };
+  return documents.flatMap(({ id, envelope }) => {
+    const c = envelope.content;
+    const cat = categories.find(row => row.id === c.category_id);
+    const auth = authors.find(row => row.id === c.author_id);
+    const slug = slugs.get(id);
+    if (!cat || !auth || !slug) return [];
+    const category: CategoryRef = { id: cat.id, slug: cat.slug, color: cat.color ?? "#8a8178", name: content.get("blog_category", cat.id, "name") ?? cat.slug };
+    const authorRef: AuthorRef = { id: auth.id, slug: auth.slug, name: content.get("author", auth.id, "name") ?? auth.slug };
+    const bio = content.get("author", auth.id, "bio")?.trim();
+    if (bio) authorRef.bio = bio;
+    return [{ id, slug, title: c.title, excerpt: c.excerpt, category, author: authorRef,
+      cover: c.cover_media_id ? imageData(media.get(c.cover_media_id), content.get("media_asset", c.cover_media_id, "alt") ?? c.title) : null,
+      readingMinutes: c.reading_minutes, isFeatured: c.is_featured, publishedAt: c.published_at }];
+  });
 }
-
-function mapSummary(row: PostRow, ctx: SummaryCtx): PostSummary {
-  const { content, slugs, media } = ctx;
-  const title = content.get(BLOG_POST, row.id, "title") ?? "";
-
-  const category: CategoryRef = {
-    id: row.cat_id,
-    slug: row.cat_slug,
-    name: content.get("blog_category", row.cat_id, "name") ?? row.cat_slug,
-    color: row.cat_color ?? "#8a8178",
-  };
-  const authorRef: AuthorRef = {
-    id: row.auth_id,
-    slug: row.auth_slug,
-    name: content.get("author", row.auth_id, "name") ?? row.auth_slug,
-  };
-  const bio = content.get("author", row.auth_id, "bio")?.trim();
-  if (bio) authorRef.bio = bio;
-
-  const cover = row.cover_media_id
-    ? toImageData(
-        media.get(row.cover_media_id),
-        content.get("media_asset", row.cover_media_id, "alt") ?? title,
-      )
-    : null;
-
-  return {
-    id: row.id,
-    slug: slugs.get(row.id) ?? "",
-    title,
-    excerpt: content.get(BLOG_POST, row.id, "excerpt") ?? "",
-    category,
-    author: authorRef,
-    cover,
-    readingMinutes: row.reading_minutes,
-    isFeatured: row.is_featured,
-    publishedAt: row.published_at ? row.published_at.toISOString() : null,
-  };
+async function listPublishedPosts(locale: Locale): Promise<PostSummary[]> {
+  const documents = await readPublishedPostDocuments(locale);
+  documents.sort((a, b) => (b.envelope.content.published_at ?? "").localeCompare(a.envelope.content.published_at ?? ""));
+  return resolveSummaries(documents, locale);
 }
-
-// ── Public, cache-wrapped reads ──────────────────────────────────────────────
-async function _listPosts(locale: Locale): Promise<PostSummary[]> {
-  const rows = await summaryQuery()
-    .where(eq(blog_post.status, "published"))
-    .orderBy(desc(blog_post.published_at));
-  const ctx = await buildCtx(rows, locale);
-  return rows.map((r) => mapSummary(r, ctx));
-}
-
 export function listPosts(locale: Locale): Promise<PostSummary[]> {
-  return unstable_cache(() => _listPosts(locale), ["blog:listPosts", locale], {
-    tags: [BLOG_TAGS.list],
-  })();
+  return unstable_cache(() => listPublishedPosts(locale), ["blog:listPosts", locale], { tags: [BLOG_TAGS.list] })();
 }
-
-async function _listCategories(locale: Locale): Promise<CategoryRef[]> {
-  const rows = await db
-    .select({ id: blog_category.id, slug: blog_category.slug, color: blog_category.color })
-    .from(blog_category)
-    .orderBy(blog_category.position);
-  const content = await loadContent(
-    rows.map((r) => ({ type: "blog_category", id: r.id })),
-    locale,
-  );
-  return rows.map((r) => ({
-    id: r.id,
-    slug: r.slug,
-    name: content.get("blog_category", r.id, "name") ?? r.slug,
-    color: r.color ?? "#8a8178",
-  }));
-}
-
-export function listCategories(locale: Locale): Promise<CategoryRef[]> {
-  return unstable_cache(() => _listCategories(locale), ["blog:listCategories", locale], {
-    tags: [BLOG_TAGS.list],
-  })();
-}
-
-async function _getFeaturedPost(locale: Locale): Promise<PostSummary | null> {
-  const rows = await summaryQuery()
-    .where(and(eq(blog_post.status, "published"), eq(blog_post.is_featured, true)))
-    .orderBy(desc(blog_post.published_at))
-    .limit(1);
-  if (rows.length === 0) return null;
-  const ctx = await buildCtx(rows, locale);
-  return mapSummary(rows[0]!, ctx);
-}
-
 export function getFeaturedPost(locale: Locale): Promise<PostSummary | null> {
-  return unstable_cache(() => _getFeaturedPost(locale), ["blog:getFeaturedPost", locale], {
-    tags: [BLOG_TAGS.list],
-  })();
+  return unstable_cache(async () => (await listPublishedPosts(locale)).find(post => post.isFeatured) ?? null, ["blog:getFeaturedPost", locale], { tags: [BLOG_TAGS.list] })();
 }
-
-async function _getPostBySlug(locale: Locale, slugValue: string): Promise<PostDetail | null> {
-  const id = await resolveSlug(BLOG_POST, locale, slugValue);
-  if (!id) return null;
-
-  const detailRows = await db
-    .select({
-      ...summarySelect,
-      cta_label: blog_post.cta_label,
-      cta_url: blog_post.cta_url,
-      og_image_media_id: blog_post.og_image_media_id,
-    })
-    .from(blog_post)
-    .innerJoin(blog_category, eq(blog_post.category_id, blog_category.id))
-    .innerJoin(author, eq(blog_post.author_id, author.id))
-    .where(and(eq(blog_post.id, id), eq(blog_post.status, "published")))
-    .limit(1);
-
-  const detail = detailRows[0];
-  if (!detail) return null;
-
-  // Related posts (curated, ordered), published only.
-  const relRows = await db
-    .select({ related_post_id: blog_post_related.related_post_id, position: blog_post_related.position })
-    .from(blog_post_related)
-    .where(eq(blog_post_related.post_id, id))
-    .orderBy(blog_post_related.position);
-  const relatedIds = relRows.map((r) => r.related_post_id);
-
-  const relatedRows = relatedIds.length
-    ? await summaryQuery().where(
-        and(eq(blog_post.status, "published"), inArray(blog_post.id, relatedIds)),
-      )
-    : [];
-
-  // One ctx for the main post + related (cover images, slugs, base [T] fields).
-  const ctx = await buildCtx([detail, ...relatedRows], locale);
-  const summary = mapSummary(detail, ctx);
-
-  // Preserve curated order of related.
-  const relById = new Map(relatedRows.map((r) => [r.id, mapSummary(r, ctx)]));
-  const related = relatedIds.map((rid) => relById.get(rid)).filter((p): p is PostSummary => Boolean(p));
-
-  // Body (portable JSON in the translation table, field 'body').
-  let body: PostBody = [];
-  const bodyRaw = ctx.content.get(BLOG_POST, id, "body");
-  if (bodyRaw) {
-    try {
-      const parsed = postBody.safeParse(JSON.parse(bodyRaw));
-      if (parsed.success) body = parsed.data;
-    } catch {
-      body = [];
-    }
-  }
-
-  // Inline body images → resolve media + alt.
-  const bodyImageIds = body
-    .filter((b): b is Extract<PostBody[number], { type: "image" }> => b.type === "image")
-    .map((b) => b.media_id);
-  const bodyMedia: Record<string, MediaImageData> = {};
-  if (bodyImageIds.length) {
-    const [bodyMediaMap, bodyAlt] = await Promise.all([
-      loadMedia(bodyImageIds),
-      loadContent(
-        bodyImageIds.map((mid) => ({ type: "media_asset", id: mid })),
-        locale,
-      ),
+export function listCategories(locale: Locale): Promise<CategoryRef[]> {
+  return unstable_cache(async () => {
+    const rows = await db.select().from(blog_category).orderBy(blog_category.position);
+    const content = await loadContent(rows.map(row => ({ type: "blog_category", id: row.id })), locale);
+    return rows.map(row => ({ id: row.id, slug: row.slug, name: content.get("blog_category", row.id, "name") ?? row.slug, color: row.color ?? "#8a8178" }));
+  }, ["blog:listCategories", locale], { tags: [BLOG_TAGS.list] })();
+}
+/** Also used privately with an injected document; it never writes or reads draft data. */
+export async function resolvePostDocument(id: string, envelope: BlogPostEnvelopeV1, locale: Locale, slugOverride?: string): Promise<PostDetail | null> {
+  const summaries = await resolveSummaries([{ id, envelope }], locale);
+  let summary = summaries[0];
+  // Unsaved posts have no reserved slug. Resolve references using the same mapping,
+  // with a temporary read-only summary assembled below for private preview.
+  if (!summary && slugOverride !== undefined) {
+    const c = envelope.content;
+    const [cats, authors, labels] = await Promise.all([
+      db.select().from(blog_category).where(eq(blog_category.id, c.category_id)).limit(1),
+      db.select().from(author).where(eq(author.id, c.author_id)).limit(1),
+      loadContent([{ type: "blog_category", id: c.category_id }, { type: "author", id: c.author_id }], locale),
     ]);
-    for (const mid of bodyImageIds) {
-      const img = toImageData(bodyMediaMap.get(mid), bodyAlt.get("media_asset", mid, "alt") ?? "");
-      if (img) bodyMedia[mid] = img;
-    }
+    const cat = cats[0], auth = authors[0];
+    if (!cat || !auth) return null;
+    summary = { id, slug: slugOverride, title: c.title, excerpt: c.excerpt,
+      category: { id: cat.id, slug: cat.slug, color: cat.color ?? "#8a8178", name: labels.get("blog_category", cat.id, "name") ?? cat.slug },
+      author: { id: auth.id, slug: auth.slug, name: labels.get("author", auth.id, "name") ?? auth.slug, bio: labels.get("author", auth.id, "bio") },
+      cover: null, publishedAt: c.published_at, readingMinutes: c.reading_minutes, isFeatured: c.is_featured };
   }
-
-  // CTA: label is [T] (fallback to column), url is a plain column.
-  const ctaLabel = ctx.content.get(BLOG_POST, id, "cta_label") ?? detail.cta_label;
-  const cta = ctaLabel && detail.cta_url ? { label: ctaLabel, url: detail.cta_url } : null;
-
-  // OG image: explicit override, else cover.
-  let ogImage = summary.cover;
-  if (detail.og_image_media_id) {
-    const ogMap = await loadMedia([detail.og_image_media_id]);
-    ogImage =
-      toImageData(
-        ogMap.get(detail.og_image_media_id),
-        ctx.content.get("media_asset", detail.og_image_media_id, "alt") ?? summary.title,
-      ) ?? summary.cover;
+  if (!summary) return null;
+  const c = envelope.content;
+  const mediaIds = blogMediaIds(envelope);
+  const [media, alt, relatedDocs, rawAlternates] = await Promise.all([
+    loadMedia(mediaIds), loadContent(mediaIds.map(id => ({ type: "media_asset", id })), locale),
+    readPublishedPostDocuments(locale, c.related_ids), loadAlternateSlugs(BLOG_POST, id),
+  ]);
+  const bodyMedia = Object.fromEntries(mediaIds.flatMap(mid => {
+    const img = imageData(media.get(mid), alt.get("media_asset", mid, "alt") ?? "");
+    return img ? [[mid, img]] : [];
+  }));
+  if (c.cover_media_id) summary = { ...summary, cover: imageData(media.get(c.cover_media_id), alt.get("media_asset", c.cover_media_id, "alt") ?? c.title) };
+  const relatedSummaries = await resolveSummaries(relatedDocs, locale);
+  const relatedById = new Map(relatedSummaries.map(post => [post.id, post]));
+  const alternates: PostDetail["alternateSlugs"] = {};
+  for (const [language, slug] of Object.entries(rawAlternates)) {
+    if ((await readPublishedPostDocuments(language as Locale, [id])).length) alternates[language as Locale] = slug;
   }
-
-  const alternateSlugs = await loadAlternateSlugs(BLOG_POST, id);
-
-  return {
-    ...summary,
-    body,
-    bodyMedia,
-    cta,
-    metaTitle: ctx.content.get(BLOG_POST, id, "meta_title") ?? undefined,
-    metaDescription: ctx.content.get(BLOG_POST, id, "meta_description") ?? undefined,
-    ogImage,
-    related,
-    alternateSlugs,
-  };
+  return { ...summary, slug: slugOverride ?? summary.slug, body: c.body, bodyMedia,
+    cta: c.cta_label && c.cta_url ? { label: c.cta_label, url: c.cta_url } : null,
+    metaTitle: c.meta_title ?? undefined, metaDescription: c.meta_description ?? undefined,
+    ogImage: c.og_image_media_id ? imageData(media.get(c.og_image_media_id), c.title) ?? summary.cover : summary.cover,
+    related: c.related_ids.flatMap(rid => relatedById.has(rid) ? [relatedById.get(rid)!] : []), alternateSlugs: alternates };
 }
-
 export function getPostBySlug(locale: Locale, slugValue: string): Promise<PostDetail | null> {
-  return unstable_cache(
-    () => _getPostBySlug(locale, slugValue),
-    ["blog:getPostBySlug", locale, slugValue],
-    { tags: [BLOG_TAGS.list] },
-  )();
+  return unstable_cache(async () => {
+    const id = await resolveSlug(BLOG_POST, locale, slugValue);
+    if (!id) return null;
+    const [document] = await readPublishedPostDocuments(locale, [id]);
+    return document ? resolvePostDocument(id, document.envelope, locale) : null;
+  }, ["blog:getPostBySlug", locale, slugValue], { tags: [BLOG_TAGS.list] })();
 }
-
-/** For `generateStaticParams`: every published post's slug, per locale. */
 export async function listPostParams(): Promise<Array<{ locale: Locale; slug: string }>> {
-  const rows = await db
-    .select({ locale: slugTable.locale, slug: slugTable.slug })
-    .from(slugTable)
-    .innerJoin(blog_post, eq(slugTable.entity_id, blog_post.id))
-    .where(and(eq(slugTable.entity_type, BLOG_POST), eq(blog_post.status, "published")));
-  return rows.map((r) => ({ locale: r.locale, slug: r.slug }));
+  const slugs = await db.select({ entity_id: slugTable.entity_id, locale: slugTable.locale, slug: slugTable.slug }).from(slugTable).where(eq(slugTable.entity_type, BLOG_POST));
+  const output: Array<{ locale: Locale; slug: string }> = [];
+  for (const locale of ["en", "es", "pt", "fr"] as const) {
+    const visible = new Set((await readPublishedPostDocuments(locale)).map(row => row.id));
+    for (const row of slugs) if (row.locale === locale && visible.has(row.entity_id)) output.push({ locale, slug: row.slug });
+  }
+  return output;
 }

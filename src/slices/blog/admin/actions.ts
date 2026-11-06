@@ -1,24 +1,21 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
 import {
-  SlugConflictError,
   deleteContent,
   deleteSlugs,
-  setSlugs,
   setSourceContent,
 } from "@core/i18n/content-write";
+import { loadAlternateSlugs } from "@core/i18n";
 import { BLOG_POST } from "../contract";
-import { author, blog_category, blog_post, blog_post_related } from "../schema";
+import { author, blog_category, blog_post } from "../schema";
 import { revalidateBlogList, revalidatePost } from "../server/publish";
 import {
-  type BlogPostSaveInput,
   authorSaveInput,
   blogCategorySaveInput,
-  blogPostSaveInput,
 } from "./validation";
 
 /**
@@ -52,7 +49,6 @@ function fieldErrorsFrom(
   return out;
 }
 
-const sameSlugAllLocales = (slug: string) => ({ en: slug, pt: slug, es: slug, fr: slug });
 
 // ── Categories ───────────────────────────────────────────────────────────────
 export async function saveBlogCategory(raw: unknown): Promise<BlogSaveResult> {
@@ -103,6 +99,9 @@ export async function deleteBlogCategory(id: string): Promise<RefDeleteResult> {
       .where(eq(blog_post.category_id, id))
       .limit(1);
     if (inUse) return { ok: false, error: "in_use" };
+    const references = await db.execute(sql`select id from blog_post_locale_content where
+      published->'content'->>'category_id'=${id} or draft->'content'->>'category_id'=${id} limit 1`);
+    if (references.rows.length) return { ok: false, error: "in_use" };
     await db.delete(blog_category).where(eq(blog_category.id, id));
     await deleteContent(BLOG_CATEGORY, id);
     revalidateBlogList();
@@ -163,6 +162,9 @@ export async function deleteAuthor(id: string): Promise<RefDeleteResult> {
       .where(eq(blog_post.author_id, id))
       .limit(1);
     if (inUse) return { ok: false, error: "in_use" };
+    const references = await db.execute(sql`select id from blog_post_locale_content where
+      published->'content'->>'author_id'=${id} or draft->'content'->>'author_id'=${id} limit 1`);
+    if (references.rows.length) return { ok: false, error: "in_use" };
     await db.delete(author).where(eq(author.id, id));
     await deleteContent(AUTHOR, id);
     revalidateBlogList();
@@ -174,96 +176,21 @@ export async function deleteAuthor(id: string): Promise<RefDeleteResult> {
 }
 
 // ── Posts ────────────────────────────────────────────────────────────────────
-export async function savePost(raw: unknown): Promise<BlogSaveResult> {
-  const staff = await requireStaff();
-  const parsed = blogPostSaveInput.safeParse(raw);
-  if (!parsed.success) {
-    return { ok: false, error: "validation", fieldErrors: fieldErrorsFrom(parsed.error.issues) };
-  }
-  const input = parsed.data;
-
-  const publishedAt =
-    input.published_at && input.published_at.trim() ? new Date(input.published_at) : null;
-
-  const coreValues = {
-    slug: input.slug,
-    status: input.status,
-    category_id: input.category_id,
-    author_id: input.author_id,
-    cover_media_id: input.cover_media_id,
-    og_image_media_id: input.og_image_media_id,
-    published_at: publishedAt,
-    reading_minutes: input.reading_minutes,
-    is_featured: input.is_featured,
-    cta_url: input.cta_url,
-  };
-
-  try {
-    const isCreate = !input.id;
-    let id = input.id ?? "";
-
-    if (input.id) {
-      const [exists] = await db
-        .select({ id: blog_post.id })
-        .from(blog_post)
-        .where(eq(blog_post.id, input.id))
-        .limit(1);
-      if (!exists) return { ok: false, error: "not_found" };
-      await db
-        .update(blog_post)
-        .set({ ...coreValues, updated_at: new Date() })
-        .where(eq(blog_post.id, input.id));
-    } else {
-      const [ins] = await db.insert(blog_post).values(coreValues).returning({ id: blog_post.id });
-      if (!ins) return { ok: false, error: "server" };
-      id = ins.id;
-    }
-
-    try {
-      await setSlugs(BLOG_POST, id, sameSlugAllLocales(input.slug));
-    } catch (err) {
-      if (err instanceof SlugConflictError) {
-        if (isCreate) {
-          await db.delete(blog_post).where(eq(blog_post.id, id));
-          await deleteSlugs(BLOG_POST, id);
-        }
-        return { ok: false, error: "slug_conflict" };
-      }
-      throw err;
-    }
-
-    await setSourceContent(
-      BLOG_POST,
-      id,
-      {
-        title: input.title,
-        excerpt: input.excerpt,
-        body: JSON.stringify(input.body),
-        cta_label: input.cta_label,
-        meta_title: input.meta_title,
-        meta_description: input.meta_description,
-      },
-      { updatedBy: staff.userId },
-    );
-
-    await persistRelated(id, input.related_ids);
-
-    revalidatePost(id, sameSlugAllLocales(input.slug));
-    revalidatePath("/admin/posts");
-    revalidatePath(`/admin/posts/${id}`);
-    return { ok: true, id };
-  } catch {
-    return { ok: false, error: "server" };
-  }
+/** Retired live entrypoint: adapted posts must use locale draft/publication actions. */
+export async function savePost(_raw: unknown): Promise<BlogSaveResult> {
+  await requireStaff();
+  void _raw;
+  return { ok: false, error: "validation", fieldErrors: { _source: "Use Save draft and Publish in the post editor." } };
 }
 
 export async function deletePost(id: string): Promise<{ ok: boolean }> {
   await requireStaff();
   try {
-    await db.delete(blog_post).where(eq(blog_post.id, id)); // cascades blog_post_related
+    const slugs = await loadAlternateSlugs(BLOG_POST, id);
+    await db.delete(blog_post).where(eq(blog_post.id, id)); // cascades related rows and locale snapshots
     await deleteContent(BLOG_POST, id);
     await deleteSlugs(BLOG_POST, id);
-    revalidatePost(id, {});
+    revalidatePost(id, slugs);
     revalidatePath("/admin/posts");
     return { ok: true };
   } catch {
@@ -271,16 +198,3 @@ export async function deletePost(id: string): Promise<{ ok: boolean }> {
   }
 }
 
-/** Replace the curated related-post rows (dedupe, drop self, keep order, ≤3). */
-async function persistRelated(
-  postId: string,
-  relatedIds: BlogPostSaveInput["related_ids"],
-): Promise<void> {
-  await db.delete(blog_post_related).where(eq(blog_post_related.post_id, postId));
-  const clean = Array.from(new Set(relatedIds.filter((rid) => rid !== postId))).slice(0, 3);
-  if (clean.length > 0) {
-    await db
-      .insert(blog_post_related)
-      .values(clean.map((rid, i) => ({ post_id: postId, related_post_id: rid, position: i })));
-  }
-}

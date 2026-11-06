@@ -1,8 +1,11 @@
 import "server-only";
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { loadContent } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
+import type { Locale } from "@core/db/columns";
+import { getPostEditorialModel } from "../server/post-locale-model";
+import { blog_post_locale_content } from "../schema";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
 import { BLOG_POST } from "../contract";
 import { type PostBody, postBody } from "../body";
@@ -162,6 +165,7 @@ export interface PostAdminListItem {
   category: string;
   isFeatured: boolean;
   publishedAt: string | null;
+  localeStates?: Partial<Record<Locale, { published: boolean; draft: boolean }>>;
 }
 
 export async function listPostsAdmin(): Promise<PostAdminListItem[]> {
@@ -186,15 +190,24 @@ export async function listPostsAdmin(): Promise<PostAdminListItem[]> {
     SOURCE,
   );
 
-  return rows.map((r) => ({
-    id: r.id,
-    title: content.get(BLOG_POST, r.id, "title") ?? r.slug,
-    slug: r.slug,
-    status: r.status,
-    category: content.get("blog_category", r.category_id, "name") ?? "",
-    isFeatured: r.is_featured,
-    publishedAt: r.published_at ? r.published_at.toISOString() : null,
-  }));
+  const snapshots = await db.select().from(blog_post_locale_content).where(inArray(blog_post_locale_content.post_id, rows.map(row => row.id)));
+  return rows.map((r) => {
+    const own = snapshots.filter(row => row.post_id === r.id);
+    const en = own.find(row => row.locale === "en");
+    const doc = en?.draft ?? en?.published;
+    return {
+      id: r.id, title: doc?.content.title || content.get(BLOG_POST, r.id, "title") || r.slug,
+      slug: r.slug,
+      status: r.status === "archived" ? "archived" as const : own.length ? own.some(row => row.published) ? "published" as const : "draft" as const : r.status,
+      category: content.get("blog_category", doc?.content.category_id ?? r.category_id, "name") ?? "",
+      isFeatured: doc?.content.is_featured ?? r.is_featured,
+      publishedAt: doc?.content.published_at ?? r.published_at?.toISOString() ?? null,
+      localeStates: Object.fromEntries((["en", "es", "pt", "fr"] as const).map(locale => {
+        const row = own.find(row => row.locale === locale);
+        return [locale, row ? { published: r.status !== "archived" && Boolean(row.published), draft: Boolean(row.draft) } : { published: r.status === "published", draft: r.status !== "published" }];
+      })),
+    };
+  });
 }
 
 export interface PostEditData {
@@ -267,17 +280,10 @@ export async function getPostForEdit(id: string): Promise<PostEditBundle | null>
 
 /** `{ id, title }` options of every post (for the related-post selector). */
 export async function listPostOptions(): Promise<{ id: string; title: string }[]> {
-  const rows = await db
-    .select({ id: blog_post.id, slug: blog_post.slug })
-    .from(blog_post)
-    .orderBy(desc(blog_post.published_at));
-  if (rows.length === 0) return [];
-  const content = await loadContent(
-    rows.map((r) => ({ type: BLOG_POST, id: r.id })),
-    SOURCE,
-  );
-  return rows.map((r) => ({ id: r.id, title: content.get(BLOG_POST, r.id, "title") ?? r.slug }));
+  return (await listPostsAdmin()).map(row => ({ id: row.id, title: row.title }));
 }
+
+export { getPostEditorialModel };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function parseBody(raw: string | undefined): PostBody {
