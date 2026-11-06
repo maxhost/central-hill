@@ -195,7 +195,11 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
     setConfirmAction(null);
     try {
       const result = action === "archive" ? await archivePost(postId) : await deletePost(postId);
-      if (!result.ok) { setStates(previous => ({ ...previous, [locale]: { ...previous[locale], notice: te("error") } })); return; }
+      if (!result.ok) {
+        const inUse = action === "delete" && "error" in result && result.error === "in_use";
+        setStates(previous => ({ ...previous, [locale]: { ...previous[locale], notice: te(inUse ? "inUse" : "error") } }));
+        return;
+      }
       if (action === "archive") setArchived(true);
       skipLeave.current = true;
       router.push("/admin/posts");
