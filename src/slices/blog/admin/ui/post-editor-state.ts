@@ -65,7 +65,15 @@ export function applyPostLocaleResult(states: PostWorkspace, locale: Locale, mod
 
 export function changePostField<K extends keyof BlogPostContent>(states: PostWorkspace, locale: Locale, key: K, value: BlogPostContent[K]): PostWorkspace {
   const own = states[locale];
-  return { ...states, [locale]: { ...own, notice: "", model: { ...own.model,
-    working: { ...own.model.working, content: { ...own.model.working.content, [key]: value } },
+  const source = states.en.model.draft ?? states.en.model.published;
+  // Publishing an existing target draft retains its frozen references. Its next
+  // actual edit starts a new draft from the latest saved EN template, without
+  // replacing any target-authored text, body, reading time or links.
+  const model = locale !== "en" && !own.model.draft && source ? {
+    ...own.model, working: preparePostTarget(source, own.model.working),
+    templateRevision: states.en.model.revision,
+  } : own.model;
+  return { ...states, [locale]: { ...own, notice: "", model: { ...model,
+    working: { ...model.working, content: { ...model.working.content, [key]: value } },
   } } };
 }

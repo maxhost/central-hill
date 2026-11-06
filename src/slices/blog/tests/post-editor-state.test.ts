@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { applyPostLocaleResult, emptyPostEnvelope, postMediaIds, preparePostTarget, type PostWorkspace } from "../admin/ui/post-editor-state";
+import { applyPostLocaleResult, changePostField, emptyPostEnvelope, postMediaIds, preparePostTarget, type PostWorkspace } from "../admin/ui/post-editor-state";
 import type { BlogPostLocaleModel } from "../editorial-types";
 
 test("preparing a target keeps its complete differently ordered body and localized links", () => {
@@ -87,4 +87,37 @@ test("source save and publish advance unsaved targets without losing localized w
   assert.equal(afterPublish.es.model.published, previousPublic);
   assert.equal(afterPublish.pt, savedTarget);
   assert.equal(afterPublish.pt.model.templateRevision, 4);
+});
+
+test("editing a just-published target starts a save-ready draft from current source references without changing its publication", () => {
+  const oldTarget = emptyPostEnvelope("old-category", "old-author");
+  oldTarget.content.title = "Título traducido";
+  oldTarget.content.body = [{ type: "paragraph", text: "Cuerpo traducido" }];
+  oldTarget.content.cta_url = "https://example.test/es/reservar";
+  oldTarget.content.reading_minutes = 8;
+  const latestSource = emptyPostEnvelope("new-category", "new-author");
+  latestSource.content.cover_media_id = "new-cover";
+  const states = Object.fromEntries((["en", "es", "pt", "fr"] as const).map(locale => [locale, {
+    model: { locale, revision: 4, templateRevision: locale === "en" ? null : 2,
+      published: null, draft: locale === "en" ? latestSource : oldTarget,
+      working: locale === "en" ? latestSource : oldTarget },
+    errors: {}, conflict: false, notice: "",
+  }])) as PostWorkspace;
+  const whileSavedDraft = changePostField(states, "es", "title", "Edición del borrador existente");
+  assert.equal(whileSavedDraft.es.model.working.content.category_id, "old-category");
+  assert.equal(whileSavedDraft.es.model.templateRevision, 2);
+  const targetPublished = { ...states.es.model, revision: 5, draft: null, published: oldTarget, working: oldTarget };
+  const afterPublish = applyPostLocaleResult(states, "es", targetPublished, "Published");
+  assert.equal(afterPublish.es.model.working, oldTarget);
+  const afterEdit = changePostField(afterPublish, "es", "title", "Nueva edición traducida");
+  assert.equal(afterEdit.es.model.templateRevision, 4);
+  assert.equal(afterEdit.es.model.working.content.category_id, "new-category");
+  assert.equal(afterEdit.es.model.working.content.author_id, "new-author");
+  assert.equal(afterEdit.es.model.working.content.cover_media_id, "new-cover");
+  assert.equal(afterEdit.es.model.working.content.title, "Nueva edición traducida");
+  assert.deepEqual(afterEdit.es.model.working.content.body, oldTarget.content.body);
+  assert.equal(afterEdit.es.model.working.content.cta_url, oldTarget.content.cta_url);
+  assert.equal(afterEdit.es.model.working.content.reading_minutes, 8);
+  assert.equal(afterEdit.es.model.published, oldTarget);
+  assert.equal(afterEdit.en, states.en);
 });
