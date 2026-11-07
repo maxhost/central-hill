@@ -70,6 +70,12 @@ export const amenitySaveInput = amenityInput.extend({
   group: z.string().trim().max(64).nullable(),
   // [T] source value (en):
   label: tStr({ min: 1, max: 80 }),
+  // Manual target labels: omitted by older clients; blank means English fallback.
+  translations: z.object({
+    es: z.string().trim().max(80),
+    pt: z.string().trim().max(80),
+    fr: z.string().trim().max(80),
+  }).strict().optional(),
 });
 
 export type AmenitySaveInput = z.infer<typeof amenitySaveInput>;

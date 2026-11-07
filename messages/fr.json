@@ -567,7 +567,7 @@
         "emptyHint": "Créez le premier équipement, puis cochez-le sur chaque immeuble qui le propose.",
         "editTitle": "Modifier l’équipement",
         "newTitle": "Nouvel équipement",
-        "formSubtitle": "Le libellé est rédigé en anglais ; les autres langues sont traduites ensuite.",
+        "formSubtitle": "Saisissez le nom de l’équipement dans chaque langue.",
         "backToList": "Retour aux équipements",
         "defaultIcon": "Par défaut : coche",
         "confirmDeleteInUse": "Supprimer cet équipement ? Il sera retiré de {count, plural, one {# immeuble} other {# immeubles}}. Cette action est irréversible.",
@@ -587,8 +587,10 @@
           "icon": "Icône",
           "iconHint": "N’importe quelle icône Iconoir, affichée à côté du libellé sur la page de l’immeuble. Laissez vide pour une coche.",
           "group": "Groupe",
-          "groupHint": "Facultatif ; ordonne la liste et l’éditeur d’immeubles."
-        }
+          "groupHint": "Facultatif ; ordonne la liste et l’éditeur d’immeubles.",
+          "localizedLabel": "Label {locale}"
+        },
+        "translationHint": "Laissez une traduction vide pour utiliser le nom anglais."
       },
       "workspace": {
         "backToBuildings": "Immeubles",

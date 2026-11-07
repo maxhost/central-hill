@@ -567,7 +567,7 @@
         "emptyHint": "Crie a primeira comodidade e depois marque-a em cada edifício que a oferece.",
         "editTitle": "Editar comodidade",
         "newTitle": "Nova comodidade",
-        "formSubtitle": "A etiqueta é escrita em inglês; os outros idiomas são traduzidos depois.",
+        "formSubtitle": "Escreva o nome da comodidade em cada idioma.",
         "backToList": "Voltar às comodidades",
         "defaultIcon": "Predefinido: visto",
         "confirmDeleteInUse": "Eliminar esta comodidade? Será removida de {count, plural, one {# edifício} other {# edifícios}}. Esta ação não pode ser anulada.",
@@ -587,8 +587,10 @@
           "icon": "Ícone",
           "iconHint": "Qualquer ícone Iconoir, mostrado junto à etiqueta na página do edifício. Deixe vazio para um visto.",
           "group": "Grupo",
-          "groupHint": "Opcional; ordena a lista e o editor de edifícios."
-        }
+          "groupHint": "Opcional; ordena a lista e o editor de edifícios.",
+          "localizedLabel": "Label {locale}"
+        },
+        "translationHint": "Deixe uma tradução em branco para usar o nome em inglês."
       },
       "workspace": {
         "backToBuildings": "Edifícios",

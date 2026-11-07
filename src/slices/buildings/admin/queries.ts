@@ -294,6 +294,8 @@ async function resolvePreviews(
 export interface AmenityOption {
   id: string;
   label: string;
+  /** Approved localized names with English fallback; optional for older callers. */
+  labels?: import("../amenity-types").AmenityLabels;
   group: string | null;
 }
 
@@ -364,6 +366,8 @@ export interface AmenityEditData {
   icon: string;
   group: string;
   label: string;
+  /** Actual authored target values, including pending work; never fallback copies. */
+  translations?: import("../amenity-types").AmenityTranslations;
   buildings: number;
 }
 

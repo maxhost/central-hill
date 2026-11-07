@@ -567,7 +567,7 @@
         "emptyHint": "Create your first amenity, then tick it on each building that offers it.",
         "editTitle": "Edit amenity",
         "newTitle": "New amenity",
-        "formSubtitle": "The label is authored in English; other languages are translated later.",
+        "formSubtitle": "Write the amenity label in each language.",
         "backToList": "Back to amenities",
         "defaultIcon": "Default: check",
         "confirmDeleteInUse": "Delete this amenity? It will be removed from {count, plural, one {# building} other {# buildings}}. This can’t be undone.",
@@ -587,8 +587,10 @@
           "icon": "Icon",
           "iconHint": "Any Iconoir icon, shown next to the label on the building page. Leave empty for a check.",
           "group": "Group",
-          "groupHint": "Optional; orders the list and the building editor."
-        }
+          "groupHint": "Optional; orders the list and the building editor.",
+          "localizedLabel": "Label {locale}"
+        },
+        "translationHint": "Leave a translation blank to use the English label."
       },
       "workspace": {
         "backToBuildings": "Buildings",

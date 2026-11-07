@@ -1329,3 +1329,6 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 
 - [0063 — Apartment localized booking URL](0063-apartment-localized-booking-link.md):
   one full card URL per language, new-tab navigation and retirement of SEO inputs.
+
+- [0064 — Manual Amenity labels](0064-manual-amenity-labels.md): EN/ES/PT/FR
+  authoring, approved locale names and shared Building selections.

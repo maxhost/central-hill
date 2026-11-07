@@ -567,7 +567,7 @@
         "emptyHint": "Crea la primera comodidad y márcala después en cada edificio que lo ofrezca.",
         "editTitle": "Editar comodidad",
         "newTitle": "Nueva comodidad",
-        "formSubtitle": "La etiqueta se escribe en inglés; los demás idiomas se traducen después.",
+        "formSubtitle": "Escribe el nombre del amenity en cada idioma.",
         "backToList": "Volver a las comodidades",
         "defaultIcon": "Por defecto: check",
         "confirmDeleteInUse": "¿Eliminar esta comodidad? Se quitará de {count, plural, one {# edificio} other {# edificios}}. No se puede deshacer.",
@@ -587,8 +587,10 @@
           "icon": "Icono",
           "iconHint": "Cualquier icono de Iconoir, junto a la etiqueta en la página del edificio. Déjalo vacío para un check.",
           "group": "Grupo",
-          "groupHint": "Opcional; ordena la lista y el editor de edificios."
-        }
+          "groupHint": "Opcional; ordena la lista y el editor de edificios.",
+          "localizedLabel": "Label {locale}"
+        },
+        "translationHint": "Deja una traducción vacía para usar el nombre en inglés."
       },
       "workspace": {
         "backToBuildings": "Edificios",
