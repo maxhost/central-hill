@@ -1,5 +1,32 @@
 # Central Hill agent instructions
 
+## Latest Building booking correction —2026-11-06
+
+User requests only Label and Link per Building language. Implemented on
+building-booking/integration at /private/tmp/central-hill-building-booking-integration,
+executable fdb462f; independently QA-approved report573c4a4. Read
+[execution](docs/specs/building-booking-button.md) and
+[QA](docs/specs/building-booking-qa.md); ADR0062 owns optional localized
+booking_button in existing v1 JSON. No migration. Both public Building CTAs consume
+authored Label/Link; explicit empty Link hides both, without legacy/global revival.
+Old snapshots retain legacy URLs/labels until actual edit. GET/unrelated Save do
+not materialize it. Listing-card external navigation stays a shared general flag.
+Locale inheritance/ownership, explicit Publish, SEO and common media stay intact.
+
+Integrated typecheck0/lint0(7existingwarnings)/15puregroups0/build0(106pages).
+Identical writer backend passed11DBgroups(3new), e750/e410 fixtures cleaned.
+Independent production3071 browser run passed5bounded functional cases: legacy
+no-write/SEO Save; Label-only/EN Publish; PT Save/reload/Publish; later EN preserves
+custom PT and other publications; mobile/clear/fallback suppression/listing.
+Protected pre-existing data unchanged,0pageerrors. e751 synthetic Building+Apartment
+demo retained. Only authorized propertylocalesqa used; no schema/remoteDB/push/deploy.
+Root integrates locally and restores one actual-main dev3071; final PID/read-only
+check recorded in execution. No repeated functional matrix or aesthetic QA loop.
+
+Previous tab/gallery refinements captured in checkpoint e029605, not uncommitted.
+Preserve worktrees, safeenv, original logo and publicmedia symlink. No automatic
+Apartment lifecycle/Services work authorized by this task.
+
 ## Latest visual follow-up — compact Building gallery
 
 User requests a simpler Gallery in Building editor: adjacent thumbnails (4columns)

@@ -50,8 +50,9 @@ ports: root temporarily serves candidate on3071 then returns real main3071.
 ## Verification and permissions
 
 Existing authorized synthetic propertylocalesqa only: Postgres5658/proxy4558,
-storage9077. Verify SQL database+role before writes. New owned e750 fixtures only,
-clean owned test rows; do not touch d/f/e410/e640/e740/user fixtures. No migration.
+storage9077. Verify SQL database+role before writes. New e750 store-test and e751
+browser fixtures; existing e410 regression-test fixtures are also scoped-owned.
+Clean owned test rows; do not touch d/f/e640/e740/user fixtures. No migration.
 Use Node22 and safe /private/tmp/central-hill-building-status-qa/env.sh, existing
 server-only/AsyncLocalStorage test loader. No production env copies to writers.
 
@@ -75,3 +76,15 @@ photos, SEO and Apartment scope behavior remain intact.
 
 Checkpoint e029605 captures previously completed tabs/gallery refinement.
 Root contract landed before consumer worktrees. Verification/results follow.
+
+Integrated executable fdb462f: typecheck0, lint0 (7 existing warnings),
+15/15 pure groups0; identical backend32e1b81 passed11/11 DBgroups including3new
+with e750/e410 cleaned and e751 preserved. New browser seed e751...001 Building
+plus e751...002 Apartment uses existing synthetic city/media; no fixture overwrite.
+One Impeccable detector pass on changed UI returned[]; no aesthetic test loop.
+Full production build0 (106pages) after test cleanup. Independent browser review
+ran on the compiled production candidate at3071, exercising real ISR invalidation.
+All5bounded groups pass; report: building-booking-qa.md. No unrelated fixture
+changes or browser errors; e751 demo retained. Integration to local main follows
+reviewer handoff; root then restores a single actual-main dev3071 and performs
+one read-only open check. No new schema/migration, push, deployment or remote DB.
