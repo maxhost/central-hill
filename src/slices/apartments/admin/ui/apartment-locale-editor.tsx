@@ -623,7 +623,7 @@ export function ApartmentLocaleEditor({
             <div
               role="tablist"
               aria-label={te("language")}
-              className="flex flex-wrap gap-2"
+              className="flex gap-1 rounded-md border border-line bg-surface p-1"
             >
               {PROPERTY_EDITOR_LOCALES.map((value) => (
                 <button
@@ -634,9 +634,9 @@ export function ApartmentLocaleEditor({
                   aria-controls={`${fieldPrefix}-form`}
                   disabled={busy || (!persisted && value !== "en")}
                   onClick={() => selectLocale(value)}
-                  className={`min-h-11 min-w-11 cursor-pointer rounded-md border px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50 ${locale === value ? "border-ink bg-ink text-bg" : "border-line bg-surface text-ink hover:bg-bg"}`}
+                  className={`min-h-9 rounded px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === value ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}
                 >
-                  {value.toUpperCase()}
+                  {value.toUpperCase()}{value === "en" ? <span className="ml-1 text-[10px] font-normal">{tb("pageEditor.source")}</span> : null}
                 </button>
               ))}
             </div>

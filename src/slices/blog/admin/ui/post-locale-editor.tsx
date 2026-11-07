@@ -299,8 +299,8 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
                 selectLocale(next);
                 document.getElementById(`${fieldPrefix}-tab-${next}`)?.focus();
               }}
-              className={`min-h-10 min-w-11 rounded px-3 py-2 text-xs font-semibold transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === key ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}>
-              {key.toUpperCase()}
+              className={`min-h-9 rounded px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === key ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}>
+              {key.toUpperCase()}{key === "en" ? <span className="ml-1 text-[10px] font-normal">{tb("pageEditor.source")}</span> : null}
             </button>)}
           </div>
           <p className={`text-xs ${dirty ? "text-accent-deep" : "text-ink-soft"}`} role="status">{editorialState}</p>

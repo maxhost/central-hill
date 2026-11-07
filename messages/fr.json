@@ -597,7 +597,8 @@
         "amenities": "Créez ou renommez les équipements dans <link>Équipements</link>.",
         "faq": "Laissez vide pour masquer la section FAQ.",
         "map": "Pas encore affiché sur le site."
-      }
+      },
+      "addImage": "Ajouter une image"
     },
     "home": "Accueil",
     "statNeighbourhood": "Quartier",

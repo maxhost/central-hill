@@ -597,7 +597,8 @@
         "amenities": "Create or rename amenities in <link>Amenities</link>.",
         "faq": "Leave empty to hide the FAQ section.",
         "map": "Not shown on the site yet."
-      }
+      },
+      "addImage": "Add image"
     },
     "home": "Home",
     "statNeighbourhood": "Neighbourhood",

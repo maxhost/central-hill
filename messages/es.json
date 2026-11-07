@@ -597,7 +597,8 @@
         "amenities": "Crea o renombra comodidades en <link>Comodidades</link>.",
         "faq": "Déjalo vacío para ocultar la sección FAQ.",
         "map": "Todavía no se muestra en la web."
-      }
+      },
+      "addImage": "Añadir imagen"
     },
     "home": "Inicio",
     "statNeighbourhood": "Barrio",

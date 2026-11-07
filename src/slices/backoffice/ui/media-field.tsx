@@ -101,6 +101,8 @@ export function MediaField({
   preview: initialPreview,
   onChange,
   accept = "image",
+  variant = "default",
+  addLabel,
 }: {
   value: string | null;
   /** Resolved preview for an already-persisted `value` (edit screens). */
@@ -111,6 +113,9 @@ export function MediaField({
    * `animated` (images, video and Lottie) or `document` (PDF only).
    */
   accept?: MediaFieldAccept;
+  /** Compact image card or a plain add button when empty; uses the same upload queue. */
+  variant?: "default" | "gallery";
+  addLabel?: string;
 }) {
   const t = useTranslations("backoffice");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -157,35 +162,46 @@ export function MediaField({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-3">
-        <div className="size-20 shrink-0 overflow-hidden rounded-md border border-line bg-bg">
-          <Thumb preview={shown} accept={accept} />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={pick}
-            disabled={pending}
-            className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-ink disabled:opacity-60"
-          >
-            {pending ? t("media.preparing") : value ? t("media.replace") : t("media.upload")}
-          </button>
-          {value ? (
+      {variant === "gallery" && !value ? (
+        <button
+          type="button"
+          onClick={pick}
+          disabled={pending}
+          className="inline-flex min-h-11 items-center rounded-md border border-line px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-ink disabled:opacity-60"
+        >
+          {pending ? t("media.preparing") : addLabel ?? t("media.addImages")}
+        </button>
+      ) : (
+        <div className={variant === "gallery" ? "overflow-hidden rounded-md border border-line bg-bg" : "flex items-center gap-3"}>
+          <div className={variant === "gallery" ? "aspect-[4/3] w-full border-b border-line" : "size-20 shrink-0 overflow-hidden rounded-md border border-line bg-bg"}>
+            <Thumb preview={shown} accept={accept} />
+          </div>
+          <div className={variant === "gallery" ? "flex flex-wrap gap-2 p-2" : "flex flex-wrap gap-2"}>
             <button
               type="button"
-              onClick={() => {
-                if (value) queue.dequeue(value);
-                setPreview(null);
-                onChange(null, null);
-              }}
+              onClick={pick}
               disabled={pending}
-              className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink-soft transition-colors hover:border-ink disabled:opacity-60"
+              className={cn("rounded-md border border-line font-medium text-ink transition-colors hover:border-ink disabled:opacity-60", variant === "gallery" ? "px-2 py-1 text-xs" : "px-3 py-1.5 text-sm")}
             >
-              {t("media.remove")}
+              {pending ? t("media.preparing") : value ? t("media.replace") : t("media.upload")}
             </button>
-          ) : null}
+            {value ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (value) queue.dequeue(value);
+                  setPreview(null);
+                  onChange(null, null);
+                }}
+                disabled={pending}
+                className={cn("rounded-md border border-line font-medium text-ink-soft transition-colors hover:border-ink disabled:opacity-60", variant === "gallery" ? "px-2 py-1 text-xs" : "px-3 py-1.5 text-sm")}
+              >
+                {t("media.remove")}
+              </button>
+            ) : null}
+          </div>
         </div>
-      </div>
+      )}
       <input
         ref={inputRef}
         type="file"
@@ -207,7 +223,7 @@ export function MediaField({
           {previewFilename(shown)}
         </a>
       ) : null}
-      {!error && value && queue.isQueued(value) ? (
+      {variant !== "gallery" && !error && value && queue.isQueued(value) ? (
         <p className="text-xs text-ink-soft">{t("media.queuedNote")}</p>
       ) : null}
       {error ? <p className="text-xs font-medium text-red-600">{error}</p> : null}

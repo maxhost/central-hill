@@ -614,60 +614,65 @@ export function BuildingLocaleEditor({
             {t("admin.fields.galleryHint")}
           </p>
           <fieldset disabled={busy} className="space-y-4">
-            {content.gallery.map((id, index) => (
-              <div key={id} className="space-y-2">
-                <MediaField
-                  key={`${id}-${previews[id]?.url ?? ""}`}
-                  value={id}
-                  preview={previews[id] ?? null}
-                  onChange={(next, preview) => {
-                    set(
-                      "gallery",
-                      next
-                        ? content.gallery.map((item) =>
-                            item === id ? next : item,
-                          )
-                        : content.gallery.filter((item) => item !== id),
-                    );
-                    remember(preview);
-                  }}
-                />
-                <div className="flex gap-2">
-                  <AdminButton
-                    className="min-h-11"
-                    aria-label={tb("actions.moveUp")}
-                    disabled={index === 0}
-                    onClick={() => {
-                      const next = [...content.gallery];
-                      [next[index - 1], next[index]] = [
-                        next[index]!,
-                        next[index - 1]!,
-                      ];
-                      set("gallery", next);
-                    }}
-                  >
-                    ↑
-                  </AdminButton>
-                  <AdminButton
-                    className="min-h-11"
-                    aria-label={tb("actions.moveDown")}
-                    disabled={index === content.gallery.length - 1}
-                    onClick={() => {
-                      const next = [...content.gallery];
-                      [next[index + 1], next[index]] = [
-                        next[index]!,
-                        next[index + 1]!,
-                      ];
-                      set("gallery", next);
-                    }}
-                  >
-                    ↓
-                  </AdminButton>
-                </div>
-              </div>
-            ))}
+            {content.gallery.length > 0 ? (
+              <ul className="grid grid-cols-2 gap-4 md:grid-cols-4" aria-label={t("admin.sections.gallery")}>
+                {content.gallery.map((id, index) => (
+                  <li key={id} className="min-w-0 space-y-2">
+                    <MediaField
+                      key={`${id}-${previews[id]?.url ?? ""}`}
+                      variant="gallery"
+                      value={id}
+                      preview={previews[id] ?? null}
+                      onChange={(next, preview) => {
+                        set(
+                          "gallery",
+                          next
+                            ? content.gallery.map((item) => item === id ? next : item)
+                            : content.gallery.filter((item) => item !== id),
+                        );
+                        remember(preview);
+                      }}
+                    />
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs text-ink-soft">{index + 1}</span>
+                      <div className="flex gap-1">
+                        <AdminButton
+                          className="min-h-9 min-w-9 justify-center px-2"
+                          aria-label={tb("actions.moveUp")}
+                          disabled={index === 0}
+                          onClick={() => {
+                            const next = [...content.gallery];
+                            [next[index - 1], next[index]] = [next[index]!, next[index - 1]!];
+                            set("gallery", next);
+                          }}
+                        >
+                          <UiIcon name="arrow-up" size={16} />
+                        </AdminButton>
+                        <AdminButton
+                          className="min-h-9 min-w-9 justify-center px-2"
+                          aria-label={tb("actions.moveDown")}
+                          disabled={index === content.gallery.length - 1}
+                          onClick={() => {
+                            const next = [...content.gallery];
+                            [next[index + 1], next[index]] = [next[index]!, next[index + 1]!];
+                            set("gallery", next);
+                          }}
+                        >
+                          <UiIcon name="arrow-down" size={16} />
+                        </AdminButton>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {content.gallery.some((id) => queue.isQueued(id)) ? (
+              <p className="text-xs text-ink-soft">{tb("media.queuedNote")}</p>
+            ) : null}
             <MediaField
               key={`add-${content.gallery.length}`}
+              variant="gallery"
+              addLabel={t("admin.addImage")}
               value={null}
               onChange={(id, preview) => {
                 if (id) set("gallery", [...content.gallery, id]);
@@ -949,9 +954,9 @@ export function BuildingLocaleEditor({
                         ?.focus();
                     }
                   }}
-                  className={`min-h-11 min-w-11 rounded px-3 py-2 text-xs font-semibold transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === key ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}
+                  className={`min-h-9 rounded px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === key ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}
                 >
-                  {key.toUpperCase()}
+                  {key.toUpperCase()}{key === "en" ? <span className="ml-1 text-[10px] font-normal">{tb("pageEditor.source")}</span> : null}
                 </button>
               ))}
             </div>

@@ -1,5 +1,48 @@
 # Central Hill agent instructions
 
+## Latest visual follow-up — compact Building gallery
+
+User requests a simpler Gallery in Building editor: adjacent thumbnails (4columns)
+and one Add image button. Building locale editor now uses a responsive2/4-column
+list with compact image cards, Replace/Remove, position and reorder controls, plus
+one standalone Add image picker (no empty No image tile). Shared MediaField adds
+optional gallery presentation/addLabel; default appearance/queue handlers unchanged.
+Same local previews/normalization/deferred Save pipeline; no persistence/API/schema
+changes. Existing pending language-tab edits and review doc preserved. New Add image
+label in4locales. Main dev3071PID5677 stays live; aestheticL0 no tests/automaticQA/
+DBwrites, user reviews. Changes uncommitted. Preserve staged user uploads/client
+work, original logo, syntheticmedia symlink and safeenv.
+
+## Latest review / Home EN local fixture —2026-11-06
+
+User asks to REVIEW create/edit Building+Apartment coverage against public web and
+reports/en404. Read docs/specs/property-public-coverage-review.md for detailed map,
+limits and findings. Review only: no new form implementation or visualQA/tests;
+three pendingtabstyle edits preserved. Read-only browser confirms4forms200/same
+create-edit fields, listing/detail200, dynamicFAQ/gallerypresent,0pageerrors.
+Findings: main public entitydata covered; section/CTA/globalcopy not perentity;
+ALTnoteditablehere; ApartmentSEOstoredwithoutpublicApartmentroute; Apartmentarchive
+stillreadonly/noRestore (BuildingfixdidnotincludeApartment). Do not silently mark
+those pending items implemented or start them without the next user instruction.
+
+/en404 cause: syntheticDB had NOHomecontent/publication. User explicitly authorized
+newHomeENexample. Createdonly Home rows (ENdraftrev1, other3null), then PublishEN
+fromactualPageseditor. ENnowpublishedrev2/nodraft, ES/PT/FRunpublishedrev0; /en200,
+h1Central Hill—local preview,0pageerrors. No existingdataoverwrite/schema/remoteDB.
+Safe main dev3071PID5677/session63080 unchanged, no restart. Artifacts/script/payload
+/private/tmp/central-hill-property-coverage-review; seed guardedDBrole+no existingHome.
+Othermissingmarketingpages weren't seeded. Preservelogo/publicsymlink and pendingUI.
+
+## Latest visual follow-up — unified language tabs
+
+User requests Pages' exact language-tab design for Buildings, Apartments and Blog
+Post (EN + localized English source label, ES/PT/FR; same container/button sizes,
+weights and accent selection). Three locale-editor UI files modified on main after
+954f7da, uncommitted for user review. Uses existing backoffice.pageEditor.source
+translations. No behavior/persistence/Pages changes, no tests or automated QA/DB
+writes (aesthetic L0). Main dev3071PID5677/session63080 stays running; no restart.
+Preserve these pending edits, original logo and syntheticpublic symlink.
+
 ## Building status/form correction delivered —2026-11-06
 
 User reported terminal archive lock/inaccessible status actions/inconsistent form.
