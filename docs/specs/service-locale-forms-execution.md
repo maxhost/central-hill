@@ -95,7 +95,7 @@ and admin category/service routes, so rename needs no Service republish.
 Root first commits this plan, ADR0065, types/helpers, schema/migration/journal and
 category validation additions. Integration branch `service-locales/integration`,
 worktree `/private/tmp/central-hill-service-locales-integration`. Root owns messages
-in `src/messages/{en,es,pt,fr}.json` (actual location resolved before edits), docs,
+in `messages/{en,es,pt,fr}.json`, docs,
 contract.ts and all composition routes `src/app/(admin)/admin/(panel)/services/**`.
 
 Backend writer: `service-locales/backend`, worktree
@@ -141,4 +141,15 @@ groups complement one another; do not repeat an approved matrix without cause.
 ## Progress
 
 Inventory complete. No product implementation or DB changes at this plan checkpoint.
-Migration0027 approval pending; unaffected implementation/checks may proceed.
+Contracts d447c10 committed before branching both consumers. User explicitly approved
+0027 only propertylocalesqa. Root generated complete snapshot metadata, then
+verified hostname/DB/role and applied its four statements atomically. SHA256
+8c980d837972ab7f2f8e7cf3ad056b33683b21872eb6cb7c9eec44dba27e4730.
+Two new empty tables; pre-existing service/category/media/translation/slug and
+Property table hashes unchanged. No eager backfill. Artifacts
+`/private/tmp/central-hill-service-locales-qa/migration.json` and
+`pre-migration-data.json`. Typecheck0 and db:check0 (one pre-existing0008warning)
+on contract base after snapshot generation. Earlier local sandbox tsx socket
+restriction resolved by permitted escalation; initial missing next-env.d.ts in
+new worktree copied from actual main, then typecheck passed.
+Backend/UI implementation in progress in separate named worktrees.

@@ -785,8 +785,10 @@
           "icon": "Icône",
           "iconHint": "N’importe quelle icône Iconoir, affichée sur la page des services.",
           "position": "Position",
-          "positionHint": "Les numéros les plus bas apparaissent en premier."
-        }
+          "positionHint": "Les numéros les plus bas apparaissent en premier.",
+          "localizedName": "Nom {locale}"
+        },
+        "translationHint": "Laissez vide pour utiliser l’anglais."
       },
       "detail": {
         "hint": "Sections facultatives de la page publique du service. Les sections vides sont masquées.",
@@ -936,7 +938,27 @@
         "mediaAltHint": "Le texte alternatif est géré dans la médiathèque et partagé partout où la même image est utilisée."
       }
     },
-    "ctaImageAlt": "Salon lumineux et élégamment meublé avec vue sur la ville dans l’un de nos appartements à Lisbonne"
+    "ctaImageAlt": "Salon lumineux et élégamment meublé avec vue sur la ville dans l’un de nos appartements à Lisbonne",
+    "editorial": {
+      "saveDraft": "Enregistrer le brouillon",
+      "saving": "Enregistrement…",
+      "publish": "Publier",
+      "publishing": "Publication…",
+      "draft": "Brouillon",
+      "published": "Publié",
+      "unpublished": "Non publié",
+      "unsaved": "Modifications non enregistrées",
+      "usesEnglish": "Utilise l’anglais",
+      "customized": "Personnalisé",
+      "inheritHint": "Cette langue suit le contenu enregistré en anglais jusqu’à la modification de son texte, lien de réservation ou SEO.",
+      "customHint": "Cette langue dispose de son propre contenu, conservé lors des modifications ultérieures en anglais.",
+      "sharedHint": "Les images et les réglages généraux sont partagés. Choisissez la catégorie et les icônes en EN.",
+      "firstSave": "Enregistrez EN d’abord pour commencer les autres langues.",
+      "conflict": "Le contenu a changé dans une autre session. Rechargez avant d’enregistrer à nouveau.",
+      "noDraft": "Enregistrez un brouillon avant de publier.",
+      "reload": "Recharger",
+      "publishedNotice": "Cette langue est maintenant publiée."
+    }
   },
   "settings": {
     "skip": "Aller au contenu",

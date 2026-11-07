@@ -49,7 +49,17 @@ export function serviceLocalizedContent(content: ServiceContent): unknown {
     itinerary: c.detail.itinerary.map(({ media_id: _media, ...text }) => text),
   } };
 }
-export function serviceValuesEqual(a: unknown, b: unknown): boolean { return JSON.stringify(a) === JSON.stringify(b); }
+/** JSONB does not retain object key order. Array order remains meaningful. */
+export function serviceValuesEqual(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object') return false;
+  if (Array.isArray(a) || Array.isArray(b)) return Array.isArray(a) && Array.isArray(b)
+    && a.length === b.length && a.every((value, index) => serviceValuesEqual(value, b[index]));
+  const left = Object.entries(a).filter(([, value]) => value !== undefined);
+  const right = Object.entries(b).filter(([, value]) => value !== undefined);
+  return left.length === right.length && left.every(([key, value]) => Object.hasOwn(b, key)
+    && serviceValuesEqual(value, (b as Record<string, unknown>)[key]));
+}
 export function serviceLocalizedEqual(a: ServiceContent, b: ServiceContent): boolean {
   return serviceValuesEqual(serviceLocalizedContent(a), serviceLocalizedContent(b));
 }

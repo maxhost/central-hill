@@ -139,3 +139,6 @@ export {
 
 /** Injectable editorial composition, retaining the slice-owned catalogue. */
 export { ServicesListingRenderer } from "./ui/services-listing";
+
+// Service forms retain independent localized publications and live shared assets.
+export type { ServiceEditorialModel, ServiceEditorialResult, ServiceEnvelope, ServiceContent, ServiceCategoryOption, SaveServiceDraftInput, PublishServiceDraftInput } from "./editorial-types";

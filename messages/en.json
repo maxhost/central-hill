@@ -785,8 +785,10 @@
           "icon": "Icon",
           "iconHint": "Any Iconoir icon, shown on the services page.",
           "position": "Position",
-          "positionHint": "Lower numbers appear first."
-        }
+          "positionHint": "Lower numbers appear first.",
+          "localizedName": "Name {locale}"
+        },
+        "translationHint": "Leave blank to use English."
       },
       "detail": {
         "hint": "Optional sections of the public service page. Empty sections are hidden.",
@@ -936,7 +938,27 @@
         "mediaAltHint": "Alternative text is managed in the media library and shared wherever the same image is used."
       }
     },
-    "ctaImageAlt": "Bright, elegantly furnished living room with a city outlook in one of our Lisbon apartments"
+    "ctaImageAlt": "Bright, elegantly furnished living room with a city outlook in one of our Lisbon apartments",
+    "editorial": {
+      "saveDraft": "Save draft",
+      "saving": "Saving…",
+      "publish": "Publish",
+      "publishing": "Publishing…",
+      "draft": "Draft",
+      "published": "Published",
+      "unpublished": "Unpublished",
+      "unsaved": "Unsaved changes",
+      "usesEnglish": "Uses English",
+      "customized": "Customized",
+      "inheritHint": "This language follows saved English content until you edit its text, booking link or SEO.",
+      "customHint": "This language has its own content. Later English changes preserve it.",
+      "sharedHint": "Images and general settings are shared. Choose category and icons in EN.",
+      "firstSave": "Save EN first to start other languages.",
+      "conflict": "Content changed elsewhere. Reload before saving again.",
+      "noDraft": "Save a draft before publishing.",
+      "reload": "Reload",
+      "publishedNotice": "This language is now published."
+    }
   },
   "settings": {
     "skip": "Skip to content",

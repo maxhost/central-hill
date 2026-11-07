@@ -785,8 +785,10 @@
           "icon": "Icono",
           "iconHint": "Cualquier icono de Iconoir; se muestra en la página de servicios.",
           "position": "Posición",
-          "positionHint": "Los números más bajos aparecen primero."
-        }
+          "positionHint": "Los números más bajos aparecen primero.",
+          "localizedName": "Nombre {locale}"
+        },
+        "translationHint": "Déjalo vacío para usar inglés."
       },
       "detail": {
         "hint": "Secciones opcionales de la página pública del servicio. Las secciones vacías se ocultan.",
@@ -936,7 +938,27 @@
         "mediaAltHint": "El texto alternativo se gestiona en la biblioteca de medios y se comparte donde se usa la misma imagen."
       }
     },
-    "ctaImageAlt": "Salón luminoso y elegantemente amueblado con vistas a la ciudad en uno de nuestros apartamentos de Lisboa"
+    "ctaImageAlt": "Salón luminoso y elegantemente amueblado con vistas a la ciudad en uno de nuestros apartamentos de Lisboa",
+    "editorial": {
+      "saveDraft": "Guardar borrador",
+      "saving": "Guardando…",
+      "publish": "Publicar",
+      "publishing": "Publicando…",
+      "draft": "Borrador",
+      "published": "Publicado",
+      "unpublished": "Sin publicar",
+      "unsaved": "Cambios sin guardar",
+      "usesEnglish": "Usa inglés",
+      "customized": "Personalizado",
+      "inheritHint": "Este idioma sigue el contenido guardado en inglés hasta que edites su texto, enlace de reserva o SEO.",
+      "customHint": "Este idioma tiene contenido propio. Los cambios posteriores en inglés lo conservan.",
+      "sharedHint": "Las imágenes y los ajustes generales son compartidos. Elige categoría e iconos en EN.",
+      "firstSave": "Guarda EN primero para empezar los demás idiomas.",
+      "conflict": "El contenido cambió en otra sesión. Recarga antes de volver a guardar.",
+      "noDraft": "Guarda un borrador antes de publicar.",
+      "reload": "Recargar",
+      "publishedNotice": "Este idioma ya está publicado."
+    }
   },
   "settings": {
     "skip": "Saltar al contenido",

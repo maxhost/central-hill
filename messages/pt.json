@@ -785,8 +785,10 @@
           "icon": "Ícone",
           "iconHint": "Qualquer ícone Iconoir, mostrado na página de serviços.",
           "position": "Posição",
-          "positionHint": "Números menores aparecem primeiro."
-        }
+          "positionHint": "Números menores aparecem primeiro.",
+          "localizedName": "Nome {locale}"
+        },
+        "translationHint": "Deixe em branco para usar inglês."
       },
       "detail": {
         "hint": "Secções opcionais da página pública do serviço. Secções vazias ficam ocultas.",
@@ -936,7 +938,27 @@
         "mediaAltHint": "O texto alternativo é gerido na biblioteca de multimédia e partilhado onde a mesma imagem é utilizada."
       }
     },
-    "ctaImageAlt": "Sala luminosa e elegantemente mobilada com vista para a cidade num dos nossos apartamentos de Lisboa"
+    "ctaImageAlt": "Sala luminosa e elegantemente mobilada com vista para a cidade num dos nossos apartamentos de Lisboa",
+    "editorial": {
+      "saveDraft": "Guardar rascunho",
+      "saving": "A guardar…",
+      "publish": "Publicar",
+      "publishing": "A publicar…",
+      "draft": "Rascunho",
+      "published": "Publicado",
+      "unpublished": "Por publicar",
+      "unsaved": "Alterações por guardar",
+      "usesEnglish": "Usa inglês",
+      "customized": "Personalizado",
+      "inheritHint": "Este idioma segue o conteúdo guardado em inglês até editar o seu texto, ligação de reserva ou SEO.",
+      "customHint": "Este idioma tem conteúdo próprio. As alterações posteriores em inglês preservam-no.",
+      "sharedHint": "As imagens e as definições gerais são partilhadas. Escolha a categoria e os ícones em EN.",
+      "firstSave": "Guarde EN primeiro para começar os outros idiomas.",
+      "conflict": "O conteúdo mudou noutra sessão. Recarregue antes de guardar novamente.",
+      "noDraft": "Guarde um rascunho antes de publicar.",
+      "reload": "Recarregar",
+      "publishedNotice": "Este idioma está agora publicado."
+    }
   },
   "settings": {
     "skip": "Saltar para o conteúdo",
