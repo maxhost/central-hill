@@ -238,6 +238,28 @@ export function changeServiceForm(
   form: FormState,
 ): ServiceFormWorkspace {
   const shared = sharedForm(form, workspace.shared);
+  // Discarding a never-saved row also discards its pending asset slot. Historical
+  // saved slots remain available for independently authored locale arrays.
+  const forms = SERVICE_EDITOR_LOCALES.map((key) =>
+    key === locale ? form : workspace.locales[key].working,
+  );
+  const factIds = new Set(
+    forms.flatMap((current) => current.detail.facts.map((fact) => fact.id)),
+  );
+  const stepIds = new Set(
+    forms.flatMap((current) => current.detail.itinerary.map((step) => step.id)),
+  );
+  for (const id of Object.keys(shared.factIcons)) {
+    if (!Object.hasOwn(workspace.savedShared.factIcons, id) && !factIds.has(id))
+      delete shared.factIcons[id];
+  }
+  for (const id of Object.keys(shared.itineraryMedia)) {
+    if (
+      !Object.hasOwn(workspace.savedShared.itineraryMedia, id) &&
+      !stepIds.has(id)
+    )
+      delete shared.itineraryMedia[id];
+  }
   const locales = { ...workspace.locales };
   for (const key of SERVICE_EDITOR_LOCALES) {
     const old = locales[key];

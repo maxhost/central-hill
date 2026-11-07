@@ -257,3 +257,85 @@ test("saving EN retains a common image changed on a target-only itinerary slot",
   );
   assert.equal(serviceAnyFormDirty(w), false);
 });
+
+test("discarding never-saved rows removes their unused common icon and pending image slots", () => {
+  let w = createServiceWorkspace(model(), category);
+  const en = structuredClone(w.locales.en.working);
+  en.detail.facts.push({
+    id: "pending-fact",
+    icon: "car",
+    title: "New fact",
+    note: "",
+  });
+  en.detail.itinerary.push({
+    id: "pending-step",
+    time: "11",
+    title: "New step",
+    text: "Not saved",
+    media_id: image2,
+  });
+  w = changeServiceForm(w, "en", en);
+  assert.equal(w.shared.itineraryMedia["pending-step"], image2);
+  const discarded = structuredClone(w.locales.en.working);
+  discarded.detail.facts = structuredClone(w.locales.en.saved.detail.facts);
+  discarded.detail.itinerary = structuredClone(
+    w.locales.en.saved.detail.itinerary,
+  );
+  w = changeServiceForm(w, "en", discarded);
+  assert.equal(Object.hasOwn(w.shared.factIcons, "pending-fact"), false);
+  assert.equal(Object.hasOwn(w.shared.itineraryMedia, "pending-step"), false);
+  assert.equal(
+    Object.hasOwn(
+      serviceFormSharedContent(w, "en").itineraryMedia,
+      "pending-step",
+    ),
+    false,
+  );
+  assert.equal(serviceAnyFormDirty(w), false);
+});
+
+test("removing every current row reference keeps previously saved common slot history", () => {
+  let w = createServiceWorkspace(model(), category);
+  for (const locale of SERVICE_EDITOR_LOCALES) {
+    const form = structuredClone(w.locales[locale].working);
+    form.detail.facts = [];
+    form.detail.itinerary = [];
+    w = changeServiceForm(w, locale, form);
+  }
+  assert.equal(w.shared.factIcons.f1, "clock");
+  assert.equal(w.shared.itineraryMedia.s1, image1);
+  assert.equal(serviceFormSharedContent(w, "en").itineraryMedia.s2, image2);
+});
+
+test("pruning an unused pending row retains another language's unsaved shared slot", () => {
+  let w = createServiceWorkspace(model(), category);
+  const pt = structuredClone(w.locales.pt.working);
+  pt.detail.itinerary.push({
+    id: "pt-pending",
+    time: "12",
+    title: "PT local",
+    text: "Unsaved Portuguese",
+    media_id: image2,
+  });
+  w = changeServiceForm(w, "pt", pt);
+  const en = structuredClone(w.locales.en.working);
+  en.detail.itinerary.push({
+    id: "en-discard",
+    time: "13",
+    title: "EN local",
+    text: "To discard",
+    media_id: image1,
+  });
+  w = changeServiceForm(w, "en", en);
+  const discarded = structuredClone(w.locales.en.working);
+  discarded.detail.itinerary = structuredClone(
+    w.locales.en.saved.detail.itinerary,
+  );
+  w = changeServiceForm(w, "en", discarded);
+  assert.equal(Object.hasOwn(w.shared.itineraryMedia, "en-discard"), false);
+  assert.equal(w.shared.itineraryMedia["pt-pending"], image2);
+  assert.equal(
+    serviceFormSharedContent(w, "en").itineraryMedia["pt-pending"],
+    image2,
+  );
+});
