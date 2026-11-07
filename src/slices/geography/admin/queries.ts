@@ -1,9 +1,10 @@
 import "server-only";
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
-import { type ContentRef, loadContent } from "@core/i18n/content";
+import { type ContentRef, loadContent, loadTranslationRows } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
+import { rawGeographyNameTranslations } from "../server/reference-names";
 import { CITY, NEIGHBOURHOOD } from "../contract";
 import { city, neighbourhood } from "../schema";
 
@@ -99,7 +100,10 @@ export async function getCityForEdit(id: string): Promise<CityEditBundle | null>
     { type: CITY, id },
     ...nbRows.map((n) => ({ type: NEIGHBOURHOOD, id: n.id })),
   ];
-  const content = await loadContent(refs, SOURCE);
+  const [content, rawRows] = await Promise.all([
+    loadContent(refs, SOURCE),
+    Promise.all(refs.map((ref) => loadTranslationRows(ref))),
+  ]);
 
   const data: CityEditData = {
     id: row.id,
@@ -110,10 +114,12 @@ export async function getCityForEdit(id: string): Promise<CityEditBundle | null>
     hero_media_id: row.hero_media_id,
     name: content.get(CITY, id, "name") ?? "",
     intro: content.get(CITY, id, "intro") ?? null,
-    neighbourhoods: nbRows.map((n) => ({
+    translations: rawGeographyNameTranslations(rawRows[0]!),
+    neighbourhoods: nbRows.map((n, index) => ({
       id: n.id,
       slug: n.slug,
       name: content.get(NEIGHBOURHOOD, n.id, "name") ?? "",
+      translations: rawGeographyNameTranslations(rawRows[index + 1]!),
     })),
   };
 

@@ -11,6 +11,8 @@ import {
   setSlugs,
   setSourceContent,
 } from "@core/i18n/content-write";
+import { loadContent } from "@core/i18n/content";
+import { saveGeographyNames } from "../server/reference-names";
 import { CITY, NEIGHBOURHOOD } from "../contract";
 import { city, neighbourhood } from "../schema";
 import { revalidateCity } from "../server/publish";
@@ -18,9 +20,9 @@ import { type CitySaveInput, citySaveInput } from "./validation";
 
 /**
  * Backoffice write actions for slice `geography` (S12). A city is saved together with
- * its neighbourhoods. Both carry a per-locale slug (written identically across the
- * four locales for reachability, ADR 0019) and source [T] names via the `core/i18n`
- * write seam. Neighbourhoods are upserted by id so approved translations survive an
+ * its neighbourhoods. Creates and explicit shared-slug edits initialize all locale
+ * URLs (ADR 0019); name-only updates preserve prior URLs. Four authored names use
+ * the `core/i18n` write seam (ADR 0069). Neighbourhoods are upserted by id so approved translations survive an
  * edit; removed ones have their rows, translations and slugs cleaned. On success the
  * geography caches are busted via `revalidateCity` (cascades buildings/guides/pages).
  */
@@ -65,14 +67,19 @@ export async function saveCity(raw: unknown): Promise<CitySaveResult> {
   try {
     const isCreate = !input.id;
     let id = input.id ?? "";
+    let previousSlug: string | undefined;
+    let previousIntro: string | null = null;
 
     if (input.id) {
       const [exists] = await db
-        .select({ id: city.id })
+        .select({ id: city.id, slug: city.slug })
         .from(city)
         .where(eq(city.id, input.id))
         .limit(1);
       if (!exists) return { ok: false, error: "not_found" };
+      previousSlug = exists.slug;
+      const content = await loadContent([{ type: CITY, id: input.id }], "en");
+      previousIntro = content.get(CITY, input.id, "intro")?.trim() || null;
       await db
         .update(city)
         .set({ ...coreValues, updated_at: new Date() })
@@ -84,9 +91,12 @@ export async function saveCity(raw: unknown): Promise<CitySaveResult> {
     }
 
     // Slugs first (city + neighbourhoods) — a conflict on create must not orphan.
+    let neighbourhoodIds: string[];
     try {
-      await setSlugs(CITY, id, sameSlugAllLocales(input.slug));
-      await persistNeighbourhoods(id, input.neighbourhoods, staff.userId);
+      if (isCreate || previousSlug !== input.slug) {
+        await setSlugs(CITY, id, sameSlugAllLocales(input.slug));
+      }
+      neighbourhoodIds = await persistNeighbourhoods(id, input.neighbourhoods, staff.userId);
     } catch (err) {
       if (err instanceof SlugConflictError) {
         if (isCreate) await purgeCity(id);
@@ -95,12 +105,20 @@ export async function saveCity(raw: unknown): Promise<CitySaveResult> {
       throw err;
     }
 
-    await setSourceContent(CITY, id, { name: input.name, intro: input.intro }, { updatedBy: staff.userId });
+    await saveGeographyNames(CITY, id, input, staff.userId);
+    const intro = input.intro?.trim() || null;
+    if (isCreate || intro !== previousIntro) {
+      await setSourceContent(CITY, id, { intro }, {
+        updatedBy: staff.userId, preserveTargetsOnClear: true,
+      });
+    }
 
     revalidateCity(id);
     revalidatePath("/admin/cities");
     revalidatePath(`/admin/cities/${id}`);
-    return { ok: true, id };
+    revalidatePath("/admin/buildings", "layout");
+    revalidatePath("/admin/guides", "layout");
+    return { ok: true, id, neighbourhoodIds };
   } catch {
     return { ok: false, error: "server" };
   }
@@ -139,13 +157,15 @@ async function persistNeighbourhoods(
   cityId: string,
   neighbourhoods: CitySaveInput["neighbourhoods"],
   updatedBy: string,
-): Promise<void> {
+): Promise<string[]> {
   const existing = await db
-    .select({ id: neighbourhood.id })
+    .select({ id: neighbourhood.id, slug: neighbourhood.slug })
     .from(neighbourhood)
     .where(eq(neighbourhood.city_id, cityId));
   const existingIds = new Set(existing.map((r) => r.id));
   const kept = new Set<string>();
+  const ids: string[] = [];
+  const previousSlugs = new Map(existing.map((row) => [row.id, row.slug]));
 
   for (let i = 0; i < neighbourhoods.length; i++) {
     const item = neighbourhoods[i]!;
@@ -160,12 +180,15 @@ async function persistNeighbourhoods(
         .insert(neighbourhood)
         .values({ city_id: cityId, slug: item.slug, position: i })
         .returning({ id: neighbourhood.id });
-      if (!ins) continue;
+      if (!ins) throw new Error("Neighbourhood insert returned no identity");
       nbId = ins.id;
     }
     kept.add(nbId);
-    await setSlugs(NEIGHBOURHOOD, nbId, { en: item.slug, pt: item.slug, es: item.slug, fr: item.slug });
-    await setSourceContent(NEIGHBOURHOOD, nbId, { name: item.name }, { updatedBy });
+    ids.push(nbId);
+    if (previousSlugs.get(nbId) !== item.slug) {
+      await setSlugs(NEIGHBOURHOOD, nbId, sameSlugAllLocales(item.slug));
+    }
+    await saveGeographyNames(NEIGHBOURHOOD, nbId, item, updatedBy);
   }
 
   for (const exId of existingIds) {
@@ -175,4 +198,5 @@ async function persistNeighbourhoods(
       await deleteSlugs(NEIGHBOURHOOD, exId);
     }
   }
+  return ids;
 }

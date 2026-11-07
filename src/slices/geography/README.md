@@ -18,6 +18,9 @@ slice S2), not here.
 Types: `CityRef` (id, slug, name, country, intro, hero), `NeighbourhoodRef` (id, cityId, slug, name).
 Reads: `listCities(locale)`, `getCityBySlug(locale, slug)`, `listNeighbourhoods(locale, cityId?)`,
 `getNeighbourhoodBySlug(locale, slug)`, `listCityParams()`.
+Staff reads: `listLocationNameOptions()` (published cities/neighbourhoods for Buildings),
+`listGuideCityOptions()` (all city statuses for Guides). Both retain stable IDs and EN
+`name`, with approved/fallback `labels` for EN/ES/PT/FR.
 Cache tags: `GEO_TAGS.list` = `city-list`, `GEO_TAGS.city(id)` = `city:<id>`.
 
 All reads are `unstable_cache`-wrapped (keyed by locale) and tagged so a publish busts them.
@@ -59,13 +62,19 @@ Amenities; the city list + editor mount under
 - `admin/validation.ts` — `citySaveInput` (city slug/status/country/hero + [T] name/intro,
   plus a `neighbourhoods` array; each `id?`, slug, `min(1)` name).
 - `admin/queries.ts` (server-only) — `listCitiesAdmin` (every status, source names,
-  neighbourhood counts) and `getCityForEdit` (city + neighbourhoods source values + hero
-  preview). Not cache-wrapped.
-- `admin/actions.ts` (`"use server"`, `requireStaff`-gated) — `saveCity` (city + neighbourhood
-  slugs written identically across the four locales via the `core/i18n` write seam, ADR 0019;
-  source [T] names through the same seam; neighbourhoods upserted **by id** preserving
-  translations, removed ones purged; `revalidateCity`) and `deleteCity` (purges city +
-  neighbourhoods + all their translations/slugs).
+  neighbourhood counts) and `getCityForEdit` (source values + raw target names including
+  pending rows, with absent inputs blank, and hero preview). Not cache-wrapped.
+- `admin/actions.ts` (`"use server"`, `requireStaff`-gated) — `saveCity` saves city and
+  ordered neighbourhoods together. One ficha has four names per entity; manual targets
+  become approved, blank targets clear only that name for English fallback, and omitted
+  targets preserve old clients. Updates retain previous per-locale URLs unless the shared
+  slug actually changes; creates and real shared-slug edits write four identical slugs.
+  Unchanged EN intro is not written; actual intro edits preserve independent target intros,
+  including when EN is cleared (ADR0069). Neighbourhoods upsert by owned city/id and
+  success returns their IDs in input order so freshly added rows survive repeat Saves.
+  Removed rows are purged. Existing sequential persistence remains, without new atomicity
+  guarantees. Save invalidates geography tags and admin Building/Guide consumers.
+  `deleteCity` purges city + neighbourhoods + their translations/slugs.
 - `admin/ui/` — `list.tsx` (server) and `city-form.tsx` (client island; hero media picker +
   inline neighbourhood rows).
 
@@ -79,3 +88,36 @@ contract. Today guides (S6) own the city-scoped public URLs.
 `tests/geography.test.ts` — city/neighbourhood input validation + the translatable-path contract.
 `tests/geography-admin.test.ts` — the admin `citySaveInput` schema. Run:
 `npx tsx --test src/slices/geography/tests/geography.test.ts src/slices/geography/tests/geography-admin.test.ts`.
+
+`tests/geography-name-locales.test.ts` covers raw target extraction and payload guards.
+`tests/geography-name-locales.integration.test.ts` exercises guarded synthetic DB actions,
+approval/fallback/public labels, custom/missing slug preservation, intro row preservation,
+foreign neighbourhood ownership, creation and repeated-save identities. Test-only Node
+loaders stub auth/cache outside requests; independent Next browser QA verifies actual
+staff authorization and invalidation. No schema change or city intro translation inputs.
+
+### Geography name-input backend verification — 2026-11-07
+
+Writer branch `geography-name-locales/backend`, base `b4f2d37`. Safe environment
+sourced from `/private/tmp/central-hill-building-status-qa/env.sh`; DB tests first
+assert URL host `propertylocalesqa.local` and SQL database/role `propertylocalesqa`.
+Only new `e820` city/neighbourhood fixtures (and their returned fresh child IDs)
+were written, then removed in the `after` hook. Existing `e821` browser fixtures
+and all prior content were untouched. No schema, migration, media write or server.
+
+Checks: `pnpm typecheck` exit 0; explicit ESLint over the seven assigned TypeScript
+files exit 0; `git diff --check` exit 0. The following actual test command exited 0
+with 26 passes (4 new pure, 7 new DB, 15 existing Geography groups):
+
+```sh
+source /private/tmp/central-hill-building-status-qa/env.sh
+export NODE_OPTIONS="$NODE_OPTIONS --require /private/tmp/central-hill-property-forms-qa/node-runtime.cjs"
+pnpm exec tsx --import /private/tmp/central-hill-geography-name-locales-qa/backend/test-runtime.mjs --test src/slices/geography/tests/geography-name-locales.test.ts src/slices/geography/tests/geography-name-locales.integration.test.ts src/slices/geography/tests/geography.test.ts src/slices/geography/tests/geography-admin.test.ts
+```
+
+Evidence: `/private/tmp/central-hill-geography-name-locales-qa/backend/` contains
+`tests-final.log`, `typecheck-final.log`, `lint-final.log` and the external test-only
+loader. An initial 9/10 run exposed a test helper misuse of `loadAllSlugs(type)`
+(the API returns every entity); filtering by owned entity corrected the assertion.
+It required no product change and its cleanup completed. Integrated build, actual
+Next cache/authorization and browser persistence remain the orchestrator/QA steps.
