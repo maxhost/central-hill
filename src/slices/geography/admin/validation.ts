@@ -7,11 +7,16 @@
 import { z } from "zod";
 import { contentStatus, position, slug, tStr } from "@core/validation/primitives";
 
+const nameTranslations = z.strictObject({
+  es: z.string().trim().max(120), pt: z.string().trim().max(120), fr: z.string().trim().max(120),
+});
+
 /** A neighbourhood row as the editor posts it; `id` present ⇒ update, absent ⇒ insert. */
 export const neighbourhoodForm = z.object({
   id: z.uuid().optional(),
   slug,
-  name: tStr({ min: 1, max: 120 }),
+  name: tStr({ min: 1, max: 120 }).trim().min(1),
+  translations: nameTranslations.optional(),
 });
 
 export const citySaveInput = z.object({
@@ -22,7 +27,8 @@ export const citySaveInput = z.object({
   country: z.string().length(2),
   hero_media_id: z.uuid().nullable(),
   // [T] source values (en):
-  name: tStr({ min: 1, max: 120 }),
+  name: tStr({ min: 1, max: 120 }).trim().min(1),
+  translations: nameTranslations.optional(),
   intro: tStr({ max: 800 }).nullable(),
   // Relation:
   neighbourhoods: z.array(neighbourhoodForm),

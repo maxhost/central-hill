@@ -438,10 +438,7 @@ export async function listBuildingOptions(): Promise<
   }));
 }
 
-export interface LocationOptions {
-  cities: { id: string; name: string }[];
-  neighbourhoods: { id: string; name: string; cityId: string }[];
-}
+export type LocationOptions = import("@slices/geography/contract").GeographyLocationOptions;
 
 /** City + neighbourhood options (source names) for the location selects. */
 export async function listLocationOptions(): Promise<LocationOptions> {

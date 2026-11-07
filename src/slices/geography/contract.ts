@@ -62,3 +62,5 @@ export { geographyAdminScreens } from "./admin/screens";
 
 /** Staff-gated all-status options for the Guides CMS. */
 export { listGuideCityOptions } from "./server/guide-city-options";
+
+export type { GeographyNameOption, GeographyNameTranslations, GeographyLocationOptions } from "./reference-name-types";

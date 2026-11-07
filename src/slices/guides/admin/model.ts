@@ -4,7 +4,7 @@ import type { GuideSectionPresentation } from "../presentation";
 
 export type GuideStatus = "draft" | "published" | "archived";
 export type GuideLocale = "en" | "pt" | "es" | "fr";
-export interface GuideCityOption { id: string; name: string; slug: string; status: GuideStatus }
+export interface GuideCityOption { id: string; name: string; slug: string; status: GuideStatus; labels?: Partial<Record<GuideLocale, string>> }
 export interface GuidePageColumns {
   city_id: string; template: GuideTemplate; status: GuideStatus; position: number;
   hero_media_id: string | null; og_image_media_id: string | null;

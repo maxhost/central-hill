@@ -26,7 +26,7 @@ import { type CitySaveInput, citySaveInput } from "./validation";
  */
 
 export type CitySaveResult =
-  | { ok: true; id: string }
+  | { ok: true; id: string; neighbourhoodIds?: string[] }
   | { ok: false; error: "validation"; fieldErrors: Record<string, string> }
   | { ok: false; error: "slug_conflict" }
   | { ok: false; error: "not_found" }

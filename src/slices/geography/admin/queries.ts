@@ -62,6 +62,7 @@ export interface NeighbourhoodEdit {
   id: string;
   slug: string;
   name: string;
+  translations?: import("../reference-name-types").GeographyNameTranslations;
 }
 
 export interface CityEditData {
@@ -73,6 +74,7 @@ export interface CityEditData {
   hero_media_id: string | null;
   name: string;
   intro: string | null;
+  translations?: import("../reference-name-types").GeographyNameTranslations;
   neighbourhoods: NeighbourhoodEdit[];
 }
 
