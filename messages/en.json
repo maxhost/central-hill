@@ -694,7 +694,7 @@
       "emptyHint": "Create a category first, then add your services.",
       "editTitle": "Edit service",
       "newTitle": "New service",
-      "formSubtitle": "Text is authored in English; other languages are translated later.",
+      "formSubtitle": "Edit content in each language. Save drafts and publish each language separately.",
       "backToList": "Back to services",
       "columns": {
         "name": "Name",
@@ -768,7 +768,7 @@
         "emptyHint": "Create your first category to group services.",
         "editTitle": "Edit category",
         "newTitle": "New category",
-        "formSubtitle": "The name is authored in English; other languages are translated later.",
+        "formSubtitle": "Set category names in EN, ES, PT and FR. Empty translations use English.",
         "backToList": "Back to categories",
         "inUse": "This category still has services and can’t be deleted.",
         "columns": {
@@ -916,7 +916,7 @@
         "priceMode": "Price display",
         "euros": "Starting price (€)",
         "eurosHint": "Enter euros, for example 35.50.",
-        "source": "Content is authored in English. Other languages use the translation review workflow.",
+        "source": "Start in English. Customize each language in its tab.",
         "published": "View published page",
         "unsaved": "You have unsaved changes. Leave this page?",
         "integrity": "Saved content needs repair. Saving is disabled to preserve the original.",

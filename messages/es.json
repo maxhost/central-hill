@@ -694,7 +694,7 @@
       "emptyHint": "Crea primero una categoría y luego añade los servicios.",
       "editTitle": "Editar servicio",
       "newTitle": "Nuevo servicio",
-      "formSubtitle": "El texto se redacta en inglés; los demás idiomas se traducen después.",
+      "formSubtitle": "Edita el contenido en cada idioma. Guarda borradores y publica cada idioma por separado.",
       "backToList": "Volver a los servicios",
       "columns": {
         "name": "Nombre",
@@ -768,7 +768,7 @@
         "emptyHint": "Crea tu primera categoría para agrupar servicios.",
         "editTitle": "Editar categoría",
         "newTitle": "Nueva categoría",
-        "formSubtitle": "El nombre se redacta en inglés; los demás idiomas se traducen después.",
+        "formSubtitle": "Define los nombres de categoría en EN, ES, PT y FR. Las traducciones vacías usan inglés.",
         "backToList": "Volver a las categorías",
         "inUse": "Esta categoría todavía tiene servicios y no se puede eliminar.",
         "columns": {
@@ -916,7 +916,7 @@
         "priceMode": "Presentación del precio",
         "euros": "Precio desde (€)",
         "eurosHint": "Introduce euros, por ejemplo 35,50.",
-        "source": "El contenido se redacta en inglés. Los demás idiomas usan la revisión de traducciones.",
+        "source": "Empieza en inglés. Personaliza cada idioma en su tab.",
         "published": "Ver página publicada",
         "unsaved": "Tienes cambios sin guardar. ¿Quieres salir?",
         "integrity": "El contenido guardado necesita reparación. Se ha bloqueado el guardado para preservar el original.",

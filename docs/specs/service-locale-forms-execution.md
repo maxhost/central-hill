@@ -174,3 +174,35 @@ compatibility guards: route renders the existing integrity message read-only for
 ServiceLegacyError, keeping missing/invalid identities404; store validates merged
 shared maps for old callers too (same schema already validates new full-map calls).
 Affected checks follow, then full build and independent QA of final candidate.
+
+First production build30380bd passed119pages (local2workers; existing metadataBase
+warnings only). Sole candidate3071 PID26655/session14417, login200. Old main
+PID84793/parent84787 had already disappeared on runtime audit; root did not stop
+those absent processes. Storage9077 was also no longer listening, restored using
+its existing property-forms-qa/storage.cjs and preserved files, PID30456/session39214;
+actual fixture image GET200. DB5658/proxy4558 unchanged. No remote credentials used.
+
+Independent first browser group passed on30380bd: legacy no-write, category four
+inputs/raw pending, explicit locale drafts/publications, source inheritance/custom
+ownership. QA confirmed one blocking media-discard bug on own e781...003: add a
+new itinerary step/image, Discard section, edit Name, Save => orphan never-saved
+map entry referenced dequeued image, validation_shared and no DB write. Evidence
+independent/discard-result.json. UIfixd3f64a8 integratedaa6ca10 prunes only never-saved
+keys absent from ALL locale arrays; persisted history and other-locale pending
+references retained. Final typecheck0/lint0(7oldwarnings)/11affectedstatecases0.
+No queue behavior changes. Source QA reviewed fix, no source blocker. Group2
+initial navigation harness waited for full load after missing storage fetches;
+90s timeout, no group2 mutation. QA switches to DOM readiness/actual controls.
+Root rebuild/restart explicitly coordinated after QA declared safe; remaining
+browser2–4 plus targeted discard confirmation only, no repeat of approvedgroup1.
+Second full build aa6ca10 passed119pages. Corrected candidate3071 PID32483/session54301.
+Targeted discard confirmation passed:0→4locale rows, ENdraft saved, no errors,
+only two saved legacy step map keys remain. Browsergroup2 passed shared upload
+failure/retry, root+nested media/icon/reorder, PT-only media SaveEN and independent
+PTtextSave/Publish/navigation/modules. Group3 passed four public category names,
+selector sameID, rename/blank fallback without Service republish and mobile tabs.
+Harness fixes only: persisted preview URL checked after reload (session blob valid),
+public uppercase styling asserted via textContent. Original hashes retained.
+Root corrected three remaining old English-only/review-workflow copy keys in all
+four message files (12values, samekeys/placeholders). QA source-approved copy delta,
+no behavior rerun. Group4 pending; final copy-only build after browser is safe.

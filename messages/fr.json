@@ -694,7 +694,7 @@
       "emptyHint": "Créez d’abord une catégorie, puis ajoutez vos services.",
       "editTitle": "Modifier le service",
       "newTitle": "Nouveau service",
-      "formSubtitle": "Le texte est rédigé en anglais ; les autres langues sont traduites ensuite.",
+      "formSubtitle": "Modifiez le contenu dans chaque langue. Enregistrez les brouillons et publiez chaque langue séparément.",
       "backToList": "Retour aux services",
       "columns": {
         "name": "Nom",
@@ -768,7 +768,7 @@
         "emptyHint": "Créez votre première catégorie pour regrouper les services.",
         "editTitle": "Modifier la catégorie",
         "newTitle": "Nouvelle catégorie",
-        "formSubtitle": "Le nom est rédigé en anglais ; les autres langues sont traduites ensuite.",
+        "formSubtitle": "Définissez les noms de catégorie en EN, ES, PT et FR. Les traductions vides utilisent l’anglais.",
         "backToList": "Retour aux catégories",
         "inUse": "Cette catégorie contient encore des services et ne peut pas être supprimée.",
         "columns": {
@@ -916,7 +916,7 @@
         "priceMode": "Affichage du prix",
         "euros": "Prix à partir de (€)",
         "eurosHint": "Saisissez des euros, par exemple 35,50.",
-        "source": "Le contenu est rédigé en anglais. Les autres langues passent par la révision des traductions.",
+        "source": "Commencez en anglais. Personnalisez chaque langue dans son onglet.",
         "published": "Voir la page publiée",
         "unsaved": "Des modifications ne sont pas enregistrées. Voulez-vous quitter ?",
         "integrity": "Le contenu enregistré doit être réparé. L’enregistrement est bloqué pour préserver l’original.",

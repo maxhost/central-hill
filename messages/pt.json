@@ -694,7 +694,7 @@
       "emptyHint": "Crie primeiro uma categoria e depois adicione os serviços.",
       "editTitle": "Editar serviço",
       "newTitle": "Novo serviço",
-      "formSubtitle": "O texto é redigido em inglês; os outros idiomas são traduzidos depois.",
+      "formSubtitle": "Edite o conteúdo em cada idioma. Guarde rascunhos e publique cada idioma separadamente.",
       "backToList": "Voltar aos serviços",
       "columns": {
         "name": "Nome",
@@ -768,7 +768,7 @@
         "emptyHint": "Crie a sua primeira categoria para agrupar serviços.",
         "editTitle": "Editar categoria",
         "newTitle": "Nova categoria",
-        "formSubtitle": "O nome é redigido em inglês; os outros idiomas são traduzidos depois.",
+        "formSubtitle": "Defina os nomes da categoria em EN, ES, PT e FR. As traduções vazias usam inglês.",
         "backToList": "Voltar às categorias",
         "inUse": "Esta categoria ainda tem serviços e não pode ser eliminada.",
         "columns": {
@@ -916,7 +916,7 @@
         "priceMode": "Apresentação do preço",
         "euros": "Preço desde (€)",
         "eurosHint": "Introduza euros, por exemplo 35,50.",
-        "source": "O conteúdo é escrito em inglês. Os outros idiomas usam a revisão de traduções.",
+        "source": "Comece em inglês. Personalize cada idioma no seu separador.",
         "published": "Ver página publicada",
         "unsaved": "Tem alterações por guardar. Deseja sair?",
         "integrity": "O conteúdo guardado precisa de reparação. A gravação está bloqueada para preservar o original.",
