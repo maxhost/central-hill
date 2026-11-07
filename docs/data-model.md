@@ -376,6 +376,16 @@ default; Home/Guest/About start blank.
 ## Entity catalog (by slice)
 
 ### Slice `geography` — taxonomy used across the catalog
+
+ADR0069 adds EN/ES/PT/FR name inputs to the city and inline neighbourhood form.
+One Save approves explicit manual target names; blank targets fall back to EN,
+omitted targets preserve older clients. Raw pending values load without fallback
+copies. Identity/media/physical fields stay shared. Name-only Save preserves all
+existing slug rows and intro rows; real shared-slug edits retain current behavior.
+New neighbourhood IDs are returned to the client to survive consecutive Saves.
+Public readers and Building/Guide selectors resolve names by active locale; no
+new schema or Building/Guide republish. Intro translations remain outside this UI.
+
 - **city**: `id, slug, position, status, country='PT', hero_media_id`. **[T]** `name`, `intro`.
 - **neighbourhood**: `id, city_id→city, slug, position`. **[T]** `name`.
   - *Public contract:* `CityRef`, `NeighbourhoodRef`, list/get by slug. (Neighbourhood descriptive

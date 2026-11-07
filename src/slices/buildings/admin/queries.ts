@@ -8,7 +8,7 @@ import {
 } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
-import { listCities, listNeighbourhoods } from "@slices/geography/contract";
+import { listCities, listLocationNameOptions } from "@slices/geography/contract";
 import { AMENITY, BUILDING, BUILDING_FAQ } from "../contract";
 import {
   AMENITY_LABEL_LOCALES,
@@ -440,18 +440,7 @@ export async function listBuildingOptions(): Promise<
 
 export type LocationOptions = import("@slices/geography/contract").GeographyLocationOptions;
 
-/** City + neighbourhood options (source names) for the location selects. */
+/** Published location IDs with approved labels for each editor language. */
 export async function listLocationOptions(): Promise<LocationOptions> {
-  const [cities, neighbourhoods] = await Promise.all([
-    listCities(SOURCE),
-    listNeighbourhoods(SOURCE),
-  ]);
-  return {
-    cities: cities.map((c) => ({ id: c.id, name: c.name })),
-    neighbourhoods: neighbourhoods.map((n) => ({
-      id: n.id,
-      name: n.name,
-      cityId: n.cityId,
-    })),
-  };
+  return listLocationNameOptions();
 }

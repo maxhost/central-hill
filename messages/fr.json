@@ -2312,7 +2312,7 @@
       "emptyHint": "Créez votre première ville pour cadrer immeubles et guides.",
       "newTitle": "Nouvelle ville",
       "editTitle": "Modifier la ville",
-      "formSubtitle": "Les noms et l’introduction sont rédigés en anglais ; les autres langues sont traduites ensuite.",
+      "formSubtitle": "Définissez les noms de la ville et des quartiers en EN, ES, PT et FR. Les slugs ne sont pas traduits ici.",
       "backToList": "Retour aux villes",
       "columns": {
         "name": "Nom",
@@ -2350,7 +2350,12 @@
       },
       "noNeighbourhoods": "Aucun quartier pour le moment.",
       "addNeighbourhood": "Ajouter un quartier",
-      "neighbourhoodLabel": "Quartier {n}"
+      "neighbourhoodLabel": "Quartier {n}",
+      "nameLocales": {
+        "name": "Nom {locale}",
+        "neighbourhoodName": "Nom du quartier {locale}",
+        "fallbackHint": "Laissez une traduction vide pour utiliser l’anglais."
+      }
     }
   },
   "translation": {

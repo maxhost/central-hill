@@ -2312,7 +2312,7 @@
       "emptyHint": "Create your first city to scope buildings and guides.",
       "newTitle": "New city",
       "editTitle": "Edit city",
-      "formSubtitle": "Names and intro are authored in English; other languages are translated later.",
+      "formSubtitle": "Set city and neighbourhood names in EN, ES, PT and FR. Slugs are not translated here.",
       "backToList": "Back to cities",
       "columns": {
         "name": "Name",
@@ -2350,7 +2350,12 @@
       },
       "noNeighbourhoods": "No neighbourhoods yet.",
       "addNeighbourhood": "Add neighbourhood",
-      "neighbourhoodLabel": "Neighbourhood {n}"
+      "neighbourhoodLabel": "Neighbourhood {n}",
+      "nameLocales": {
+        "name": "Name {locale}",
+        "neighbourhoodName": "Neighbourhood name {locale}",
+        "fallbackHint": "Leave a translation empty to use English."
+      }
     }
   },
   "translation": {

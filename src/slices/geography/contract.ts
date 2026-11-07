@@ -64,3 +64,6 @@ export { geographyAdminScreens } from "./admin/screens";
 export { listGuideCityOptions } from "./server/guide-city-options";
 
 export type { GeographyNameOption, GeographyNameTranslations, GeographyLocationOptions } from "./reference-name-types";
+
+/** Staff-gated published location options with approved names in all locales. */
+export { listLocationNameOptions } from "./server/location-name-options";

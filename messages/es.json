@@ -2312,7 +2312,7 @@
       "emptyHint": "Crea tu primera ciudad para acotar edificios y guías.",
       "newTitle": "Nueva ciudad",
       "editTitle": "Editar ciudad",
-      "formSubtitle": "Los nombres y la introducción se redactan en inglés; los demás idiomas se traducen después.",
+      "formSubtitle": "Define los nombres de ciudad y barrios en EN, ES, PT y FR. Aquí no se traducen los slugs.",
       "backToList": "Volver a las ciudades",
       "columns": {
         "name": "Nombre",
@@ -2350,7 +2350,12 @@
       },
       "noNeighbourhoods": "Aún no hay barrios.",
       "addNeighbourhood": "Añadir barrio",
-      "neighbourhoodLabel": "Barrio {n}"
+      "neighbourhoodLabel": "Barrio {n}",
+      "nameLocales": {
+        "name": "Nombre {locale}",
+        "neighbourhoodName": "Nombre del barrio {locale}",
+        "fallbackHint": "Deja una traducción vacía para usar inglés."
+      }
     }
   },
   "translation": {
