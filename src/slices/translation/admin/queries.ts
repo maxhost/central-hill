@@ -1,4 +1,5 @@
 import "server-only";
+import { isTestimonialEditorialEntity } from "@slices/testimonials/contract";
 import { isGuideEditorialEntity } from "@slices/guides/contract";
 import { isPropertyEditorialEntity } from "@slices/buildings/contract";
 import { isBlogEditorialEntity } from "@slices/blog/contract";
@@ -64,6 +65,7 @@ export async function getTranslationInbox(
         !isGuideEditorialEntity(row.entity_type) &&
         !isPropertyEditorialEntity(row.entity_type) &&
         !isBlogEditorialEntity(row.entity_type) &&
+        !isTestimonialEditorialEntity(row.entity_type) &&
         (row.entity_type !== "page_content" || !blocked.has(row.entity_id)),
     ),
     hashSource,

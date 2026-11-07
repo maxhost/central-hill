@@ -1,3 +1,4 @@
+import { isTestimonialEditorialEntity } from "@slices/testimonials/contract";
 import { isGuideEditorialEntity } from "@slices/guides/contract";
 import { isPropertyEditorialEntity } from "@slices/buildings/contract";
 import "server-only";
@@ -47,6 +48,7 @@ export async function generateDrafts(
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
+    isTestimonialEditorialEntity(type) ||
     (await getPageEditorialRedirect(type, id))
   )
     throw new Error(

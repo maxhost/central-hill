@@ -1,3 +1,4 @@
+import { getTestimonialEditorialRedirect } from "@slices/testimonials/contract";
 import { getGuideEditorialRedirect } from "@slices/guides/contract";
 import Link from "next/link";
 import { getPropertyEditorialRedirect } from "@slices/buildings/contract";
@@ -47,6 +48,7 @@ export async function TranslationReview({
     (await getGuideEditorialRedirect(type, id, locale)) ??
     (await getPropertyEditorialRedirect(type, id, locale)) ??
     getBlogEditorialRedirect(type, id, locale) ??
+    getTestimonialEditorialRedirect(type, id) ??
     (await getPageEditorialRedirect(type, id));
   if (editor) redirect(editor);
   const t = await getTranslations("translation");

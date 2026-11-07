@@ -2227,7 +2227,7 @@
       "emptyHint": "Crea tu primer testimonio para destacarlo en el sitio.",
       "newTitle": "Nuevo testimonio",
       "editTitle": "Editar testimonio",
-      "formSubtitle": "Las citas se redactan en inglés; los demás idiomas se traducen después.",
+      "formSubtitle": "Escribe la cita en cada idioma. Las traducciones vacías usan inglés.",
       "backToList": "Volver a los testimonios",
       "columns": {
         "author": "Autor",
@@ -2261,6 +2261,10 @@
         "propertyLocation": "Ubicación del inmueble",
         "propertyLocationHint": "Opcional, p. ej. \"Príncipe Real, Lisboa\".",
         "quote": "Cita"
+      },
+      "quoteLocales": {
+        "label": "Cita {locale}",
+        "fallbackHint": "Deja vacío para usar la cita en inglés."
       }
     }
   },

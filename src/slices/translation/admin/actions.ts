@@ -1,4 +1,5 @@
 "use server";
+import { isTestimonialEditorialEntity } from "@slices/testimonials/contract";
 import { isGuideEditorialEntity } from "@slices/guides/contract";
 import { isPropertyEditorialEntity } from "@slices/buildings/contract";
 import { isBlogEditorialEntity } from "@slices/blog/contract";
@@ -65,6 +66,7 @@ export async function approveField(
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
+    isTestimonialEditorialEntity(type) ||
     (await getPageEditorialRedirect(type, id))
   )
     return { ok: false, error: "validation" };
@@ -87,6 +89,7 @@ export async function resetField(
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
+    isTestimonialEditorialEntity(type) ||
     (await getPageEditorialRedirect(type, id))
   )
     return { ok: false, error: "validation" };
@@ -114,6 +117,7 @@ export async function saveField(
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
+    isTestimonialEditorialEntity(type) ||
     (await getPageEditorialRedirect(type, id))
   )
     return { ok: false, error: "validation" };
@@ -162,6 +166,7 @@ export async function clearField(
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
+    isTestimonialEditorialEntity(type) ||
     (await getPageEditorialRedirect(type, id))
   )
     return { ok: false, error: "validation" };
@@ -181,6 +186,7 @@ export async function approveEntity(
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
+    isTestimonialEditorialEntity(type) ||
     (await getPageEditorialRedirect(type, id))
   )
     return { ok: false, error: "validation" };
@@ -211,6 +217,7 @@ export async function generateEntityDrafts(
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
+    isTestimonialEditorialEntity(type) ||
     (await getPageEditorialRedirect(type, id))
   )
     return { ok: false, error: "validation" };

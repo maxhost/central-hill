@@ -784,3 +784,14 @@ revision-guarded atomic update; clearing draft never deletes its row/revision.
 Public read-only fallback uses the existing legacy pipeline until staff bootstrap;
 bootstrap preserves existing four-locale public output and unpublished legacy translations.
 Other page_content and Translation rows keep their existing semantics.
+
+### Testimonial manual quote inputs (ADR0070)
+
+Testimonial Quote EN/ES/PT/FR reuses translation rows with one ficha/Save, no new
+columns. Raw target inputs include pending values, missing blank; manual saves
+approve nonblank targets and clear only explicit blank target quote for ENfallback.
+Absent target payload preserves legacy clients. Audience, author/country/location,
+rating/status/position stay shared. Cached locale/audience readers stay intact;
+Save invalidates testimonial-list without marketing-page republishing. Generic
+Translation routes/actions/generation retire testimonial with redirects and data
+preservation. See testimonial-quote-locales execution/QA.

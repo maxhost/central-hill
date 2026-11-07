@@ -122,3 +122,8 @@ authored for **en/pt/es/fr** (messages consolidated in root `messages/<locale>.j
 approved, the entity matrix + rollup, inbox attention-first ordering, title
 derivation) + the kernel `hashSource` and identity provider. Run:
 `npx tsx --test src/slices/translation/tests/translation.test.ts`.
+
+ADR0070 excludes `testimonial`: its existing ficha now owns all four manual quote
+inputs, approved targets and blank→English fallback. Generic actions/generation
+reject before writes; review links redirect to `/admin/testimonials/[id]`. No old
+rows are deleted by this retirement; unrelated entity types remain available.

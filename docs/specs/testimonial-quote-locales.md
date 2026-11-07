@@ -35,7 +35,7 @@ Root prepares contracts before consumers: quote-locale-types.ts, validation.ts,
 EditData optional field, contract exports, editorial-translation-policy.ts, ADR0070/
 index/spec. Root owns messages4, Translation admin/actions.ts, queries.ts,
 ui/review.tsx, server/generate.ts, Translation README, testimonial README, data-model,
-roadmap/AGENTS; new tests/quote-locales.test.ts, fixture/runtime/integration.
+roadmap/AGENTS; new tests/quote-locales.test.ts, Translation tests/testimonial-quote-guards.test.ts, fixture/runtime/integration.
 Integration: /private/tmp/central-hill-testimonial-quote-locales-integration,
 branch testimonial-quote-locales/integration.
 

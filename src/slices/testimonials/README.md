@@ -63,3 +63,20 @@ only the read model + admin.
 `tests/testimonials.test.ts` — input validation + the translatable-path contract.
 `tests/testimonials-admin.test.ts` — the admin `testimonialSaveInput` schema. Run:
 `npx tsx --test src/slices/testimonials/tests/testimonials.test.ts src/slices/testimonials/tests/testimonials-admin.test.ts`.
+
+## Manual quote inputs (ADR0070)
+
+The existing ficha now authors Quote EN/ES/PT/FR in four textareas with one Save,
+no tabs. Only quote is translated; neutral fields remain shared. `translations?`
+contains es/pt/fr: omitted preserves legacy clients; nonblank saves manually
+approved, blank clears only that locale's quote for English fallback. English is
+trimmed/required, all quotes max1000. Edit reads raw pending/authored values,
+missing targets blank. Later English edits preserve target values. Existing
+locale/audience public reads and testimonial-list revalidation remain authoritative;
+no marketing-page JSON/publication edits. No schema/migration/kernel change.
+
+Generic Translation inbox/actions/generation exclude testimonial and old review
+links redirect to its ficha. Existing rows remain. Contract owns that policy.
+Tests: existing14 + quote-locales.test.ts + quote-locales.integration.test.ts;
+Translation owns its own testimonial-quote-guards.test.ts. Execution/QA under
+`docs/specs/testimonial-quote-locales*.md` record real checks and scope.
