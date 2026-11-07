@@ -88,3 +88,15 @@ All5bounded groups pass; report: building-booking-qa.md. No unrelated fixture
 changes or browser errors; e751 demo retained. Integration to local main follows
 reviewer handoff; root then restores a single actual-main dev3071 and performs
 one read-only open check. No new schema/migration, push, deployment or remote DB.
+
+## Local main runtime completed
+
+Independent approval report573c4a4. Local main ff e029605→12ee8e5 after approval;
+compiled candidate31388/31382 stopped. Actual main dev3071 PID35045/session3504,
+cwd verified /Users/maxi/Documents/claude-workspace/central-hill; same safeenv,
+propertylocalesqa and storage9077/public symlink. One read-only main-open.mjs check
+passed: editor200, exactly2Booking fields, ENemptylink/PTcustomvalues preserved,
+0pageerrors. Artifact /private/tmp/central-hill-building-booking-qa/main-open.json.
+No duplicated functional matrix, source changes or new DB writes after QA.
+Main preserves original untracked logo and synthetic publicmedia symlink. All
+worktrees retained. No push/deployment/remoteDB; user can review editor3071.

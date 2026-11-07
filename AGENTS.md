@@ -20,8 +20,10 @@ no-write/SEO Save; Label-only/EN Publish; PT Save/reload/Publish; later EN prese
 custom PT and other publications; mobile/clear/fallback suppression/listing.
 Protected pre-existing data unchanged,0pageerrors. e751 synthetic Building+Apartment
 demo retained. Only authorized propertylocalesqa used; no schema/remoteDB/push/deploy.
-Root integrates locally and restores one actual-main dev3071; final PID/read-only
-check recorded in execution. No repeated functional matrix or aesthetic QA loop.
+Delivered via local main ff to12ee8e5; one actual-main dev3071 PID35045/session3504,
+cwd verified. Read-only final check200: two Booking fields, ENcleared/PTpreserved,
+0pageerrors. Evidence main-open.json under QA artifacts; final runtime in execution.
+No repeated functional matrix or aesthetic QA loop.
 
 Previous tab/gallery refinements captured in checkpoint e029605, not uncommitted.
 Preserve worktrees, safeenv, original logo and publicmedia symlink. No automatic
