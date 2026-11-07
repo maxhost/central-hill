@@ -1,5 +1,20 @@
 # Slice `pages` (S9)
 
+## FAQ selection per page language —2026-11-07 (ADR0068)
+
+Home, Owners, Real Estate, Guest and About choose their FAQ group separately in
+EN/ES/PT/FR. The reference remains faq_group_key in each locale JSON, not [T] text.
+Declared localeReferencePaths are editable reference controls in every language;
+shared-envelope guards still protect media/list/layout. Target preparation keeps
+its own saved key, blank or absence and never adopts English's FAQ key. Existing
+legacy/public/draft choices remain; no GET writes/backfill or schema change.
+Save draft/Publish remain explicit per locale. Blank means no FAQ for that locale,
+with no English fallback; public/private renderers already consume its envelope.
+Admins can author separate language-specific groups in FAQ and select them here.
+The group editor and legacy FAQ translation rows/workflow are preserved.
+
+
+
 The `/admin/pages` list and visual editor page navigator share `admin/page-order.ts`: Home,
 Owners, Buildings, Real Estate, Guest Landing Page, Guest Guides, Guest Services,
 About Us, Blog. This presentation order is independent of schema/DB enum order.

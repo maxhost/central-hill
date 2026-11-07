@@ -57,7 +57,7 @@ Root: spec/ADR0068/index/AGENTS/roadmap/README Pages+FAQ/data-model; metadata ti
 src/slices/pages/editorial-adapter-types.ts, descriptor en adapters/home.ts y
 {owners,real-estate,guest,about}-content.ts y descriptorHome dentro editorial-content.ts
 (sólo adición inicial antes de writers); comentario schemas/_shared.ts, mensajes4;
-fixtures/entorno/runtime/integración. No nueva API kernel ni tabla.
+fixtures/entorno/runtime/integración y tests/home-contextual.test.ts (expectativa obsoleta de Avantio, ya ausente en schema base). No nueva API kernel ni tabla.
 
 Integración page-faq-locales/integration en /private/tmp/central-hill-page-faq-locales-integration.
 Root estabiliza metadata antes de abrir consumidores. Dos writers aislados, sin
@@ -115,3 +115,12 @@ deploy, DBremota, lifecycleProperties ni otros auxiliares.
 ## Progreso
 
 Inventario/spec antes de implementar. Contratos metadata root siguen.
+
+Rootcontratos1ca52e7 antes de consumidores. UI736c174 integrada53a8b43 (5líneas,
+no nuevo estado/helper). Rootmensaje4locales y nota sourceOnly ajustados. Prueba
+Homeoutline antigua esperaba Avantio, ausente del schema incluso en base; root
+corrige sólo expectativa y conserva evidencia inicial17/18 +focused12/12UI.
+Deps integración propias instaladas offline caché517reused; main intacto. Seed
+nuevoAbout e811 +4grupos/ítems y3publicaciones/1PTnull guardado tras verificarDB/rol,
+42hashespreseed; Home/sourceotraspáginas/gruposprevios protegidos. Sólo fallo del
+script inicial por extensión CJS antes de DB, corregido a seed.mts sin writes.

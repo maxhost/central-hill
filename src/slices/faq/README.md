@@ -1,5 +1,13 @@
 # Slice `faq` (S8)
 
+ADR0068: Pages with FAQ now select a group independently per page language through
+faq_group_key in their locale snapshots. A blank reference hides FAQ for that
+language; it does not inherit EN. This does not translate the group key itself or
+change FAQ item authoring/status/locale resolution. Separate groups with content
+for each language can be chosen on the matching Page tabs. Existing translations
+and selections are retained; no migration or generic Translation retirement here.
+
+
 Grouped **marketing-page FAQs**, shared by the Owners / Guests / Real-Estate pages. This
 slice has **no public routes of its own** — it is a read model that S9 pages embed by group
 key. Distinct from `building_faq` (per-building, owned by `buildings`). See

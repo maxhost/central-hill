@@ -601,6 +601,13 @@ can be composed locally before any parent Save. Publication is explicit per loca
   property_location?, position, status`. **[T]** `quote`.
 
 ### Slice `faq` (grouped, shared — marketing-page FAQs)
+
+ADR0068: Home/Owners/RealEstate/Guest/About store independent faq_group_key choices
+inside each existing page locale envelope. No EN inheritance for absent/blank
+references; existing selections remain. Descriptor localeReferencePaths separates
+these references from [T] prose and shared media/layout, without new schema. FAQ
+item content/status/translation rows and group identities remain unchanged.
+
 - **faq_group**: `id, key (owners|real_estate|guest|...), position`.
 - **faq_item**: `id, group_id, position, status`. **[T]** `question, answer`.
   - Distinct from `building_faq` (which is per-building, owned by `buildings`).

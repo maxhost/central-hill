@@ -33,7 +33,7 @@ test("Home media accepts video hero, mixed guests and image-only posters/OG",()=
 test("Home contextual outline keeps public section order and every schema control reachable",async()=>{
  const { homeSections, homeEditorBindingIds }=await import("../admin/home-contextual");
  const sections=homeSections(describe(homeSchema),key=>key);
- assert.deepEqual(sections.map(s=>s.id),["hero","avantio","stats","guests_pitch","portfolio","services_carousel","faq","dual_cta","seo"]);
+ assert.deepEqual(sections.map(s=>s.id),["hero","stats","guests_pitch","portfolio","services_carousel","faq","dual_cta","seo"]);
  for(const section of sections)for(const binding of section.bindings)assert.ok(homeEditorBindingIds.includes(binding.id),binding.id);
  assert.ok(sections.find(s=>s.id==="faq")?.bindings.some(b=>b.id==="faq_group_key"));
 });

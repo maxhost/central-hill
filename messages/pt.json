@@ -1926,7 +1926,7 @@
         "saveReview": "Guardar para revisão",
         "approve": "Aprovar tradução",
         "savedPreview": "A pré-visualização mostra o conteúdo guardado.",
-        "sourceOnly": "Estrutura e meios partilhados. Edite em inglês.",
+        "sourceOnly": "Edite os campos disponíveis para este idioma. As imagens, os ícones e as listas são geridos em inglês.",
         "fallback": "Conteúdo de recurso em inglês",
         "needs_review": "Aguarda revisão",
         "approved": "Aprovado",
@@ -1940,7 +1940,8 @@
         "faqNote": "As perguntas são geridas em FAQ.",
         "guestOwnerContactNote": "Estes campos editam o título e a introdução do formulário de contacto do painel de proprietários. Abra-o na pré-visualização para ver as alterações enquanto escreve.",
         "showContactForm": "Mostrar formulário de contacto",
-        "hideContactForm": "Ocultar formulário de contacto"
+        "hideContactForm": "Ocultar formulário de contacto",
+        "faqLocaleNote": "Escolha um grupo de FAQ para este idioma. Deixe vazio para ocultar as FAQ aqui. Os outros idiomas mantêm a sua própria seleção."
       },
       "editorial": {
         "saveDraft": "Guardar rascunho",

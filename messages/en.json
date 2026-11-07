@@ -1926,7 +1926,7 @@
         "saveReview": "Save for review",
         "approve": "Approve translation",
         "savedPreview": "Preview shows saved content.",
-        "sourceOnly": "Structure and media are shared. Edit these in English.",
+        "sourceOnly": "Edit the available fields for this language. Images, icons and lists are managed in English.",
         "fallback": "English fallback",
         "needs_review": "Needs review",
         "approved": "Approved",
@@ -1940,7 +1940,8 @@
         "faqNote": "Questions are managed in FAQ.",
         "guestOwnerContactNote": "These fields edit the title and introduction inside the owner panel’s contact form. Open it in the preview to see your changes as you type.",
         "showContactForm": "Show contact form",
-        "hideContactForm": "Hide contact form"
+        "hideContactForm": "Hide contact form",
+        "faqLocaleNote": "Choose a FAQ group for this language. Leave it empty to hide FAQ in this language. Other languages keep their own selection."
       },
       "editorial": {
         "saveDraft": "Save draft",

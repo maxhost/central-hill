@@ -1926,7 +1926,7 @@
         "saveReview": "Enregistrer pour révision",
         "approve": "Approuver la traduction",
         "savedPreview": "L’aperçu affiche le contenu enregistré.",
-        "sourceOnly": "Structure et médias partagés. Modifiez-les en anglais.",
+        "sourceOnly": "Modifiez les champs disponibles pour cette langue. Les images, les icônes et les listes sont gérées en anglais.",
         "fallback": "Contenu de secours en anglais",
         "needs_review": "À réviser",
         "approved": "Approuvé",
@@ -1940,7 +1940,8 @@
         "faqNote": "Les questions sont gérées dans FAQ.",
         "guestOwnerContactNote": "Ces champs modifient le titre et l’introduction du formulaire de contact du panneau propriétaires. Ouvrez-le dans l’aperçu pour voir les modifications pendant la saisie.",
         "showContactForm": "Afficher le formulaire de contact",
-        "hideContactForm": "Masquer le formulaire de contact"
+        "hideContactForm": "Masquer le formulaire de contact",
+        "faqLocaleNote": "Choisissez un groupe de FAQ pour cette langue. Laissez vide pour masquer les FAQ ici. Les autres langues conservent leur propre sélection."
       },
       "editorial": {
         "saveDraft": "Enregistrer le brouillon",
