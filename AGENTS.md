@@ -1,5 +1,39 @@
 # Central Hill agent instructions
 
+## Latest Guides locale forms delivered — 2026-11-06
+
+User authorized individual Guides as next step toward retiring Translations.
+Delivered complete FORM aggregate with EN/ES/PT/FR tabs, same approved Services/
+Building toolbar placement and public link in new tab. Sections AND places can
+be composed before firstSave. SavedEN feeds untouched locales until actual own
+localized edit; draft/Publish explicit per locale, other pending tabs preserved.
+Root/section/place photos + physical/settings maps shared by stable UUID, including
+target-only pending nodes; saved history retained, never-saved orphans pruned.
+Conditional modules, SEO/slugs, public city gating, TOC/gallery/recommendations and
+legacy approved/pending data preserved. Archive/Restore retains publications/drafts.
+Old Guide translation links redirect to its locale form; generic inbox/actions/
+generation exclude guide_page/section/place. Global Translations remains active;
+auxiliaries and other legacy inbox retirement remain future work, not authorized
+by this delivery. Read [execution](docs/specs/guide-locale-forms-execution.md),
+[QA](docs/specs/guide-locale-forms-qa.md), ADR0066 and updated entity-locale roadmap.
+
+Two isolated writers integrated into executable2ad160d; independent QA0323617
+approved4bounded browsergroups + cross-tab unsaved/publicpopup confirmation.
+Root106testgroups0 (67Guides+25consumers+14model/DB), typecheck0, lint0/7oldwarnings,
+dbcheck0/old0008warning, build0/125pages using2workers. No product correction or
+visual QA loop. Migration0028 explicitly approved ONLY propertylocalesqa DB+role,
+two empty additive tables/no backfill.42protected browser hashes same;40oldbusiness
+hashes identical from beforemigration throughstore+browser. e790 cleaned; newe791/
+540d6549-0a31-427a-9093-2e0e8a0931bd demos +4ownmedia retained, IDs inQAartifacts.
+
+Localmain ff97fa285→f5cdb12 completed, final documentation resolves via gitlog-1.
+Sole actual-main dev3071 **PID8218/parent8212/session41807**, cwd verifiedmain;
+read-only main-open200 Existing/New:4tabs/toolbar, ENfirst, localSection+Place
+beforeSave,0pageerrors. Safe syntheticDB5658/proxy4558/storage9077PID30456 unchanged.
+QA candidate99043 stopped; all worktrees/files/artifacts/ignoredenvs/originallogo/
+publicmedia symlink preserved. Evidence/logs /private/tmp/central-hill-guide-locales-qa/.
+No push/deploy/remote writes. No automatic auxiliary/Apartment lifecycle work next.
+
 ## Latest Building/Services header consistency — 2026-11-06
 
 User accepted Services against Building e751 and authorized local main commit.

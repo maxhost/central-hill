@@ -214,3 +214,16 @@ locator banner/toast) confirmados dirigidamente. e791 + guía nueva540d6549-0a31
 427a-9093-2e0e8a0931bd/children y cuatro assets propios retenidos; identidades en
 independent/owned-ids.json. README/contratos/ADR/data-model/roadmap actualizados.
 La retirada global de Translations y auxiliares siguen pendientes/no iniciados.
+
+## Entrega local
+
+Main fast-forward97fa285→f5cdb12 completado tras QA0323617 (producto2ad160d).
+Candidato99043 detenido y reemplazado por único actual-main dev3071 PID8218,
+parent8212/session41807, cwd verificado en el workspace solicitado. Entorno
+sintético DB5658/proxy4558 y storage9077PID30456 intactos. main-dev.log conserva
+arranque. main-open.mjs confirmó200 en edición/New, cuatro tabs y toolbar,
+ENinicial y añadirSection+Place en memoria antes de Save,0pageerrors; ninguna
+mutación de contenido en esta apertura final. No repetir matriz funcional.
+Main conserva sólo los dos untracked iniciales (logo y symlink de media); ningún
+archivo ajeno absorbido/descartado. Worktrees y fixtures preservados. Sin push,
+deploy ni escrituras remotas. Cierre documental posterior mediante gitlog-1.

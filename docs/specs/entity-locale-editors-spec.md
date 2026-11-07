@@ -5,6 +5,7 @@
 El usuario autorizó Guías individuales como primer paso para retirar
 `/admin/translations`. Implementación agregada por idioma completada y aprobada en QA
 independiente; ver [ejecución/inventario](guide-locale-forms-execution.md) y ADR0066.
+Entrega integrada en main local; QA0323617 aprueba el producto2ad160d.
 La sección global sigue activa para los auxiliares pendientes. Este estado
 supersede las notas históricas inferiores; no autoriza iniciar esos auxiliares.
 
