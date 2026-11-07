@@ -22,8 +22,10 @@ with local CIRCLE_NODE_TOTAL=3 selecting2workers. No tracked config change.
 Independent production3071 QA3/3passed: legacy/no-write/noSEO, ENdraft/reload/Publish,
 PTcustom persists after EN, mobile/clear/newtab attrs/metadata and old fixtures intact;
 0pageerrors. Only new e761 synthetic Building+Apartment browser fixtures touched.
-Root integrates local main after report commit, restores one actual-main dev3071
-and records final PID/read-only check in execution. Preserve all worktrees/safeenv,
+Report797b5ef approved; local main ff55ff629→291c90a. Actual-main dev3071 now
+PID58039/session64126, cwd verified. Read-only main-open check passes both e761
+and user-provided d400/d500 editor200: oneURL, noSEO, ENclear/PTpreserved,0errors.
+Evidence/runtime in execution. Preserve all worktrees/safeenv,
 original logo/publicmedia symlink. No schema/remote DB/GitHub/push/deployment.
 No automatic Apartment archive/restore or Services follow-up in this request.
 

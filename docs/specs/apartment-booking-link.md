@@ -117,3 +117,15 @@ custom PT/other publications preserved after EN changes, mobile/clear/newtab att
 metadata/physical preservation and pre-existing data hashes unchanged.0pageerrors.
 Report apartment-booking-qa.md; browser e761 retained. Root local main integration
 and final single-dev3071 read-only opening check follow; no source changes after QA.
+
+## Actual main runtime completed
+
+Independent approval report797b5ef. Local main ff55ff629→291c90a after approval;
+compiled candidate54484/54478 stopped. Actual main dev3071 PID58039/session64126,
+cwd verified /Users/maxi/Documents/claude-workspace/central-hill; same safeenv,
+propertylocalesqa/storage9077/public media symlink. Root read-only main-open.mjs
+passes: e761editor200, ENempty/PTcustom URL retained, exactly1URL/noSEO; actual
+user d400/d500 editor200 with exactly1URL/noSEO;0pageerrors. Artifact
+/private/tmp/central-hill-apartment-booking-qa/main-open.json. No repeated functional
+matrix, source changes or content writes after QA. Logo and syntheticpublic symlink
+remain unstaged; all worktrees retained. No remoteDB/GitHub/push/deployment.
