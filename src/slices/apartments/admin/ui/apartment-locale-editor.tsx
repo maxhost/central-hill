@@ -14,7 +14,6 @@ import {
   AdminButton,
   Field,
   MediaField,
-  TextArea,
   FieldGrid,
   TextInput,
   useMediaQueue,
@@ -36,6 +35,7 @@ import { deleteApartment } from "../actions";
 import {
   apartmentSharedContent,
   apartmentLocalizedContent,
+  resolveApartmentBooking,
   semanticEqual,
 } from "../../server/editorial-validation";
 import {
@@ -134,6 +134,7 @@ export function ApartmentLocaleEditor({
   const actionDialog = useRef<HTMLDialogElement>(null);
   const state = states[locale];
   const content = state.model.working.content;
+  const bookingLink = resolveApartmentBooking(state.model.working);
   const busy = operation !== null || queue.isPreparing || navigating;
   const sharedDirty = !semanticEqual(
     apartmentSharedContent(state.model.working),
@@ -405,15 +406,8 @@ export function ApartmentLocaleEditor({
     state.errors[`payload.content.${key}`];
   const fieldId = (key: string) => `${fieldPrefix}-${locale}-${key}`;
   const input = (
-    key:
-      | "name"
-      | "badge"
-      | "avantio_id"
-      | "default_booking_url"
-      | "booking_url"
-      | "meta_title",
+    key: "name" | "badge",
     label: string,
-    shared = false,
     hint?: string,
   ) => (
     <Field
@@ -429,7 +423,7 @@ export function ApartmentLocaleEditor({
         onChange={(event) =>
           set(key, event.target.value || (key === "name" ? "" : null))
         }
-        disabled={busy || archived || (shared && !editableShared)}
+        disabled={busy || archived}
       />
     </Field>
   );
@@ -448,11 +442,28 @@ export function ApartmentLocaleEditor({
         {input(
           "badge",
           t("admin.fields.badge"),
-          false,
           t("admin.fields.badgeHint"),
         )}
       </FieldGrid>
-      {input("booking_url", te("bookingUrl"), false, te("bookingHint"))}
+      <Field
+        label={t("admin.fields.bookingLink")}
+        htmlFor={fieldId("booking_link")}
+        error={error("booking_link")}
+        hint={t("admin.fields.bookingLinkHint")}
+      >
+        <TextInput
+          className="min-h-11"
+          id={fieldId("booking_link")}
+          type="url"
+          value={bookingLink ?? ""}
+          maxLength={2048}
+          onChange={(event) => {
+            if (event.target.value !== (bookingLink ?? ""))
+              set("booking_link", event.target.value || null);
+          }}
+          disabled={busy || archived}
+        />
+      </Field>
     </section>
   );
   const commonFields = (
@@ -515,57 +526,6 @@ export function ApartmentLocaleEditor({
             }
             onChange={(id, preview) => {
               set("cover_media_id", id);
-              remember(preview);
-            }}
-          />
-        </fieldset>
-      </Field>
-      <FieldGrid>
-        {input("avantio_id", t("admin.fields.avantioId"), true)}
-        {input("default_booking_url", te("bookingBase"), true)}
-      </FieldGrid>
-    </section>
-  );
-  const seoFields = (
-    <section
-      className="space-y-5 border-t border-line pt-7"
-      aria-labelledby={`${fieldPrefix}-seo`}
-    >
-      <h2 id={`${fieldPrefix}-seo`} className="font-serif text-2xl">
-        {te("seoHeading")}
-      </h2>
-      {input("meta_title", te("metaTitle"))}
-      <Field
-        label={te("metaDescription")}
-        htmlFor={fieldId("meta_description")}
-        error={error("meta_description")}
-      >
-        <TextArea
-          id={fieldId("meta_description")}
-          value={content.meta_description ?? ""}
-          disabled={busy || archived}
-          rows={3}
-          onChange={(event) =>
-            set("meta_description", event.target.value || null)
-          }
-        />
-      </Field>
-      <Field
-        label={te("ogImage")}
-        error={error("og_image_media_id")}
-        hint={te("sharedSaveHint")}
-      >
-        <fieldset disabled={busy || archived}>
-          <MediaField
-            key={`og-${locale}-${content.og_image_media_id}-${content.og_image_media_id ? previews[content.og_image_media_id]?.url : ""}`}
-            value={content.og_image_media_id}
-            preview={
-              content.og_image_media_id
-                ? (previews[content.og_image_media_id] ?? null)
-                : null
-            }
-            onChange={(id, preview) => {
-              set("og_image_media_id", id);
               remember(preview);
             }}
           />
@@ -691,7 +651,6 @@ export function ApartmentLocaleEditor({
         >
           {textFields}
           {commonFields}
-          {seoFields}
         </form>
         {persisted ? (
           <div className="flex flex-wrap justify-end gap-2 border-t border-line pt-5">
