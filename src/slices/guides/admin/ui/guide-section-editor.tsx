@@ -25,11 +25,9 @@ export function GuideSectionEditor({
   placeState,
   onChange,
   onPreview,
-  onSave,
   onDelete,
   onMove,
   onAddPlace,
-  onSavePlace,
   onDeletePlace,
   onMovePlace,
 }: {
@@ -50,14 +48,13 @@ export function GuideSectionEditor({
   };
   onChange: (section: GuideSectionEdit) => void;
   onPreview: (preview: AdminMediaPreview | null) => void;
-  onSave: () => void;
   onDelete: () => void;
   onMove: (offset: number) => void;
   onAddPlace: () => void;
-  onSavePlace: (id: string) => void;
   onDeletePlace: (id: string) => void;
   onMovePlace: (id: string, offset: number) => void;
 }) {
+  const editorial = useTranslations("guides.editorial");
   const t = useTranslations("guides.admin"),
     presentation = parseGuidePresentation(section.presentation);
   const update = <K extends keyof GuideSectionEdit>(
@@ -70,11 +67,16 @@ export function GuideSectionEditor({
   return (
     <details
       id={`entity-${section.id}`}
-      open={dirty || hasPendingChildren || Object.keys(errors).length > 0}
+      open={
+        !persisted ||
+        dirty ||
+        hasPendingChildren ||
+        Object.keys(errors).length > 0
+      }
       className="rounded-lg border border-line bg-surface p-4 sm:p-5"
     >
       <summary className="cursor-pointer py-1 text-sm font-semibold text-ink">
-        <span>{section.title || t("addSection")}</span>
+        <span>{section.title || editorial("newSection")}</span>
         <span className="ml-3 text-xs font-normal text-ink-soft">
           {t("sectionSummary", { places: section.places.length, photos })}
         </span>
@@ -89,7 +91,6 @@ export function GuideSectionEditor({
           value={section.title}
           errors={errors}
           maxLength={200}
-          required
           onChange={(v) => update("title", v)}
         />
         <Checkbox
@@ -103,6 +104,7 @@ export function GuideSectionEditor({
           }
         />
         <p className="text-xs text-ink-soft">{t("moduleInherited")}</p>
+        <p className="text-xs text-ink-soft">{editorial("sharedHint")}</p>
         <div className="space-y-4">
           <h3 className="text-sm font-semibold">{t("modules")}</h3>
           {GUIDE_MODULE_KEYS.map((key) => (
@@ -183,7 +185,7 @@ export function GuideSectionEditor({
                     <>
                       <div className="flex flex-wrap justify-between gap-2">
                         <h4 className="text-sm font-medium">{t("places")}</h4>
-                        <AdminButton disabled={!persisted} onClick={onAddPlace}>
+                        <AdminButton onClick={onAddPlace}>
                           {t("addPlace")}
                         </AdminButton>
                       </div>
@@ -211,7 +213,6 @@ export function GuideSectionEditor({
                               ),
                             )
                           }
-                          onSave={() => onSavePlace(place.id)}
                           onDelete={() => onDeletePlace(place.id)}
                           onMove={(offset) => onMovePlace(place.id, offset)}
                         />
@@ -224,9 +225,6 @@ export function GuideSectionEditor({
           ))}
         </div>
         <div className="flex flex-wrap gap-2 border-t border-line pt-4">
-          <AdminButton variant="primary" disabled={!dirty} onClick={onSave}>
-            {t("saveSection")}
-          </AdminButton>
           <AdminButton disabled={!canOrder || first} onClick={() => onMove(-1)}>
             {t("moveUp")}
           </AdminButton>
@@ -236,14 +234,6 @@ export function GuideSectionEditor({
           <AdminButton variant="danger" onClick={onDelete}>
             {t("deleteSection")}
           </AdminButton>
-          {persisted ? (
-            <a
-              className="self-center text-sm text-accent-deep underline underline-offset-4"
-              href={`/admin/translations/guide_section/${section.id}`}
-            >
-              {t("translations")}
-            </a>
-          ) : null}
         </div>
       </fieldset>
     </details>

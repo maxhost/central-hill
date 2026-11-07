@@ -165,7 +165,7 @@ export async function GuidesAdminList({
                         <a
                           href={row.publishedUrl}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                           className="text-accent-deep underline underline-offset-4"
                         >
                           {t("published")}

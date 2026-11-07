@@ -80,7 +80,6 @@ export function GuidePlaceEditor({
   last,
   onChange,
   onPreview,
-  onSave,
   onDelete,
   onMove,
 }: {
@@ -95,7 +94,6 @@ export function GuidePlaceEditor({
   last: boolean;
   onChange: (next: GuidePlaceEdit) => void;
   onPreview: (preview: AdminMediaPreview | null) => void;
-  onSave: () => void;
   onDelete: () => void;
   onMove: (offset: number) => void;
 }) {
@@ -124,7 +122,6 @@ export function GuidePlaceEditor({
       errors={errors}
       maxLength={maxLength}
       multiline={multiline}
-      required={name === "name"}
       type={name.endsWith("_url") ? "url" : "text"}
       onChange={(v) => update(name, name === "name" ? v : v || null)}
     />
@@ -132,7 +129,7 @@ export function GuidePlaceEditor({
   return (
     <details
       id={`entity-${place.id}`}
-      open={dirty || Object.keys(errors).length > 0}
+      open={!persisted || dirty || Object.keys(errors).length > 0}
       className="border-t border-line py-4"
     >
       <summary className="cursor-pointer py-2 text-sm font-semibold text-ink">
@@ -201,9 +198,6 @@ export function GuidePlaceEditor({
           />
         </Field>
         <div className="flex flex-wrap items-center gap-2">
-          <AdminButton variant="primary" disabled={!dirty} onClick={onSave}>
-            {t("savePlace")}
-          </AdminButton>
           <AdminButton
             disabled={!canOrder || first}
             onClick={() => onMove(-1)}
@@ -221,14 +215,6 @@ export function GuidePlaceEditor({
           <AdminButton variant="danger" onClick={onDelete}>
             {t("deletePlace")}
           </AdminButton>
-          {persisted ? (
-            <a
-              className="text-sm text-accent-deep underline underline-offset-4"
-              href={`/admin/translations/guide_place/${place.id}`}
-            >
-              {t("translations")}
-            </a>
-          ) : null}
         </div>
       </fieldset>
     </details>
