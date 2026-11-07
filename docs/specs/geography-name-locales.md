@@ -112,3 +112,9 @@ instaladas offline desde caché existente (517reused), mainnode_modules intacto.
 Seed e821 nuevaCity+2barrios+Building+Guide/section con slugsPTcustom, introENausente/
 PTapproved/ESpending y nombrespending/custom. Medio d300 sólo lectura. Preflight
 host/DB/rol y42hashes previos en /private/tmp/central-hill-geography-name-locales-qa/.
+
+UI0e6abf integradoa01cc5c; Rootwire90072f3; backendb4289b8 integradoa69f5f6.
+UI24pure0 (9nuevos+15previos), backend26casos0 (4puros+7DB+15previos), e820limpios.
+Revisiónroot mantiene lectura LocationOptions para cualquierstaff como el caller
+BuildingNew existente (requireStaff sin estrechar roles); Guide conserva sus roles
+anteriores. Cambios sólo nombres/seguridad de intro/slugs y adopciónIDs prometidos.

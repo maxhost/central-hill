@@ -8,7 +8,7 @@ import { loadGeographyNameOptions } from "./reference-names";
 
 /** Published locations for Building selectors, freshly resolved for all locales. */
 export async function listLocationNameOptions(): Promise<GeographyLocationOptions> {
-  await requireStaff(["admin", "editor"]);
+  await requireStaff();
   const [cities, neighbourhoods] = await Promise.all([
     db
       .select({ id: city.id, slug: city.slug })
