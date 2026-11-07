@@ -177,6 +177,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   const visible = selected === section.id || section.selectAsGroup ? section.bindings : section.bindings.filter(b => selectedFields.includes(b.id));
   // Include blank and absent optional copy, especially SEO, in every target locale.
   const targetPaths = editorialTextPaths(content, descriptor).filter(path => isEditableFieldPath(descriptor.rootNode, path) && visible.some(b => path === b.id || path.startsWith(`${b.id}.`)));
+  const referencePaths = (descriptor.localeReferencePaths ?? []).filter(path => isEditableFieldPath(descriptor.rootNode, path) && visible.some(b => path === b.id || path.startsWith(`${b.id}.`)));
   const english = (states.en.model.draft ?? states.en.model.published ?? states.en.model.working).content;
   const englishText = Object.fromEntries(editorialTextPaths(english, descriptor).map(path => [editorialTranslationField(english, path, descriptor), editorialAt(english, path)]));
   function groupContactFields(fields: { id: string; node: ReactNode }[]) {
@@ -204,6 +205,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
         {tb(`nav.${section.id === "portfolio" ? "buildings" : section.id === "faq" ? "faq" : "services"}`)}
       </a>
     </p> : null}
+    {referencePaths.includes("faq_group_key") ? <p className="text-xs text-ink-soft">{t("admin.contextual.faqLocaleNote")}</p> : null}
     {section.external ? <p className="text-sm text-ink-soft">{t(descriptor.key === "home" ? "admin.contextual.external" : "admin.contextual.externalPage")}</p> : null}
     {state.notice ? <p role={state.conflict || Object.keys(state.errors).length ? "alert" : "status"} className="text-sm text-ink">{state.notice}</p> : null}
     {state.errors._source ? <p role="alert" className="text-sm text-ink">{state.errors._source}</p> : null}
@@ -220,6 +222,9 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
           onChange={change} onListChange={listChange} listIds={editorialAt(content, "_list_ids") as Record<string, string[]> | undefined} listPolicy={{ paths: descriptor.listPaths, scope: path => editorialListScope(content, path, descriptor) }} errors={state.errors} previews={previews} options={model.options} />})))
       : <>
         <p className="text-xs text-ink-soft">{t("admin.contextual.sourceOnly")}</p>
+        {referencePaths.map(path => <NodeField key={`${locale}-${path}`} pageKey={descriptor.key} node={homeNode(descriptor.rootNode, path)!}
+          value={editorialAt(content, path)} path={path.split(".")} label={visible.find(binding => binding.id === path)?.label ?? pageFieldLabel(path, labels.field)} depth={0}
+          onChange={change} errors={state.errors} previews={previews} options={model.options} />)}
         {groupContactFields(targetPaths.map(path => {
           const field = editorialTranslationField(content, path, descriptor);
           const source = String(englishText[field] ?? "");
