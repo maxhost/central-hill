@@ -189,3 +189,28 @@ todos exit0. db:check exit0,29migraciones consistentes; warning0008preexistente.
 Backend completó14grupos (4puros+10DB) con cleanup e790, typecheck/lint0;
 se repite dirigido firstSave tras endurecer registro raíz bajo el mismo graphlock.
 La comprobación integrada final y QA independiente siguen pendientes.
+
+Backendfbcd845 integrado4ab93ca; candidato ensamblado2ad160d. Verificación root
+integrada: typecheck0; lint0/7warnings antiguos;67grupos Guías +25regresiones de
+Translations/Services +14modelo/DB (4puros+10DB) todos0; cleanup e790 completado.
+Logs tests-guides-pure.log/tests-consumers.log/tests-model-db.log bajo directorio
+QA. db:check0/29migraciones con warning0008existente. Primer build interrumpido
+voluntariamente130 antes de prerender para serializarlo con los fixtures DB;
+build final0/125páginas tras cleanup, CIRCLE_NODE_TOTAL=3/2workers. Sin cambio de
+config; warning metadataBase de entorno sintético registrado en build-final.log.
+
+QA independiente inicia sobre2ad160d en producción local3071. Root detuvo sólo
+main44149/44143 tras verificar cwd; candidato PID99043/session95213 único listener,
+cwd integración, Login200. Storage9077PID30456/syntheticDB/proxy preservados.
+QA protege42tablas de negocio, excluye auth y sólo fixtures e790/e791/nuevos IDs
+propios registrados. No main ff todavía: requiere aprobación funcional de QA.
+
+QA independiente aprobó2ad160d: cuatro grupos browser + confirmación dirigida de
+navegación de otro idioma y enlace público en nueva pestaña.0pageerrors,42hashes
+protegidos iguales. Root comparó además40tablas previas contra pre-migration-data:
+idénticas durante0028/storetests/seed/browser (final-protected-comparison.json).
+No corrección de producto; dos ajustes de harness (endpoint sitemapindex→section,
+locator banner/toast) confirmados dirigidamente. e791 + guía nueva540d6549-0a31-
+427a-9093-2e0e8a0931bd/children y cuatro assets propios retenidos; identidades en
+independent/owned-ids.json. README/contratos/ADR/data-model/roadmap actualizados.
+La retirada global de Translations y auxiliares siguen pendientes/no iniciados.
