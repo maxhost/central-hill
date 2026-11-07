@@ -238,3 +238,10 @@ full independent browser QA in progress, no main fast-forward yet at this entry.
   Newstableidentity/parentgate and mobilefocus/guards passed. Oldd*/f*hashes match.
   Root now fast-forwards actualmain and transfers the same testedbuild after
   stopping candidatePID84271; no product changes, only narrow runtime confirmation.
+
+- Mainff0e72983→f4f98dc completado trasQA. App única3071PID90276/session14090
+  desdecheckoutprincipal, mismo build aprobadofed9fb8. Main.envsynthetic-safe,
+  antiguoenvybuildpreservados. Root5GETchecks(main-smoke.json)0excepciones:
+  ambosformularios4tabs/noiframe/HTTP200, imagendirecta+optimizad200, Blogadmin200.
+  Lsof confirmaCWDprincipal y3072/3073/3075sinlisteners. Sólodocumentaciónfinal
+  despuésdelcandidatoprobado; nootraspruebasmatricesinnecesarias ni DBremota/push.

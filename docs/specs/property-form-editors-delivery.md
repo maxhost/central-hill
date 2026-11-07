@@ -68,5 +68,8 @@ Next local de runtime permite imágenes9077 sin cambiar kernel/config de product
 Un symlink local sin rastrear `public/propertylocalesqa` sirve imágenes relativas
 SSG anteriores desde el storage sintético. Preservar ese artefacto y el logo original.
 
-Ningún push/deploy/GitHub ni escritura remota. Integración local y PID/hash final
-quedan registrados en property-forms-main-integration.md al cerrar la revisión.
+Main actualizado por fast-forward0e72983→f4f98dc. App3071 PID90276/session14090
+desde el checkout principal real, con el build aprobadofed9fb8. Root confirmó
+ambos formularios, Blog e imágenes locales/optimizadas con5checks GET sin errores.
+Ningún push/deploy/GitHub ni escritura remota. Estado de entorno y límites en
+property-forms-main-integration.md. Usuario revisa ahora; no tarea siguiente iniciada.

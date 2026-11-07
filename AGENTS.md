@@ -21,7 +21,7 @@ property-locales/integration, /private/tmp/central-hill-property-locales-integra
 propuestos en blog-form/integration deben alinearse a formularios antes de comenzar.
 
 
-## Active Property forms main integration — 2026-11-06
+## Property forms delivered on local main — 2026-11-06
 
 User now authorizes applying0026, stopping old Central Hill app previews and running
 one local main server to test forms. Main base0e72983; prepare on
@@ -37,7 +37,14 @@ synthetic env; remote Neon must not be used. DB/proxy and storage remain necessa
 No push/deploy/remote DB writes. Preserve untracked original logo and env backup.
 Executablefed9fb8:104tests/typecheck/lint/dbcheck/fullbuild pass; independent
 functional browser QA approved10groups with3uploads and unchanged oldfixturehashes.
-See property-forms-main-integration.md for final actual-main server PID/hash.
+Mainff0e72983→f4f98dc complete after QA; same approved buildfed9fb8. Actual
+main app3071 PID90276/session14090, synthetic propertylocalesqa (NOT remote Neon).
+Root5GET runtime checks pass, no further matrix; preserve this new3071 process.
+Read docs/specs/property-forms-main-integration.md for full delivery/environment.
+Original ignored env backup.env.before-property-forms-20261106.local and old.next
+archive preserved; public/propertylocalesqa synthetic symlink intentionally
+untracked beside original logo. No pending implementation; follow user review,
+do not start Services/Guides automatically.
 
 ## Latest local Backoffice work — 2026-11-05
 

@@ -56,9 +56,27 @@ Final server must start after this link exists so Next indexes those public file
   mobile/focus/guard and oldfixturehashes pass. Screenshots reviewed one round.
   Source-only approval from earlier checkpoint is not reused as functional approval.
 
-Artifacts/config/logs:/private/tmp/central-hill-property-forms-qa. Candidate server
-PID84271/session30594, storage9077PID77709/session32815. After QA: stop only this
-owned app server, fast-forward actual main, use its same tested build and safe env,
-restart3071 from actual main path, confirm login/editor/images and old ports absent.
-No extra broad suite after unchanged artifact transfer. Preserve all worktrees/data
-and original untracked logo. Record final main hash and app PID below.
+## Main integration and final runtime completed
+
+Main fast-forward0e72983→f4f98dc completed without conflicts after independent QA.
+Source executable remainsfed9fb8; later changes are documentation only. The same
+approved build was transferred after stopping owned candidatePID84271, then started
+from actual checkout `/Users/maxi/Documents/claude-workspace/central-hill`.
+Current app **3071 PID90276/session14090**, cwd independently checked by lsof.
+Only Central Hill application3071 listens;3072/3073/3075 are closed. Storage9077
+PID77709/session32815, preserved9073PID11058 and DB/proxy remain infrastructure.
+Other projects were not stopped. Original main.next preserved in artifacts before
+transfer; original ignored env preserved privately in the principal checkout.
+
+Root narrow read-only confirmation after transfer: both editorsHTTP200,4tabs each,
+no iframe; initial SSG image direct+Nextoptimized both200 with image/jpeg; Blog
+admin listing200; browserexceptions[]. Artifact `main-smoke.json` records5checks.
+This confirms runtime transfer and local fixture serving, not a second independent
+QA claim or repeated save/upload matrix. No product changes after approved code.
+
+Artifacts/config/logs:/private/tmp/central-hill-property-forms-qa. No additional
+migration needed in this environment; keep main's safe synthetic env and preload
+launcher when restarting. Untracked original logo and intentional local synthetic
+public/propertylocalesqa symlink remain unstaged. All worktrees and DB data retained.
+No push, deployment, GitHub mutation or remote Neon write. User can review forms at
+http://localhost:3071/admin/buildings using the synthetic account in delivery.
