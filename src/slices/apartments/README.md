@@ -189,6 +189,12 @@ the three existing Apartments suites passes43cases. The updated integration suit
 uses only task-owned e42/e52 synthetic identities and verifies stable creation,
 explicit language publication, English inheritance/custom PT, live shared Save,
 stale common CAS, counters, legacy/pending ownership, read-only fallback and
-archive guards. Its execution is pending explicit migration0026 approval and the
-root's isolated environment; no DB mutation was performed by this implementer.
-Integrated build and independent browser/persistence QA remain root responsibilities.
+archive guards. After the user authorized migration0026 in propertylocalesqa,
+`pnpm exec tsx --import /private/tmp/central-hill-property-forms-qa/test-runtime.mjs
+--test src/slices/apartments/tests/property-locale-store.integration.test.ts` passed
+all4grouped cases against the actual Neon HTTP driver and SQL-verified local
+DB/rolepropertylocalesqa. The first run exposed JSONB/operator precedence in the
+inherited Publish guard; explicit parentheses fixed it, and the full scoped suite
+then passed. Only e42/e52 fixtures were created/cleaned; existing d*/f* fixtures
+remained read-only. Typecheck and targeted ESLint passed after the correction.
+Integrated build and independent browser QA remain root responsibilities.

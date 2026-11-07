@@ -220,7 +220,7 @@ export async function commitApartmentLocale(input: {
           input.publish
             ? sql`and target.draft is not null and (
           coalesce(target.draft->>'localeMode','custom')<>'inherit' or
-          (target.draft->'content' - ${keyArray}) is not distinct from (select content - ${keyArray} from source)
+          ((target.draft->'content') - ${keyArray}) is not distinct from (select content - ${keyArray} from source)
         )`
             : input.payload?.localeMode === "inherit" && input.locale !== "en"
               ? sql`and ${JSON.stringify(localized)}::jsonb is not distinct from (select content - ${keyArray} from source)`
