@@ -41,6 +41,7 @@ export const apartmentEnvelopeSchema = z
         avantio_id: nullableText(200),
         default_booking_url: bookingUrl,
         booking_url: bookingUrl,
+        booking_link: bookingUrl.optional(),
       })
       .strict(),
   })

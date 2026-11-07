@@ -1213,7 +1213,9 @@
         "metaTitle": "Méta-titre",
         "metaDescription": "Méta-description",
         "coverHint": "Photo de la carte, 4:3, au moins 1200×900 px. Laissez vide pour le visuel par défaut.",
-        "avantioUrlHint": "Laissez vide pour utiliser le lien de réservation de l’immeuble."
+        "avantioUrlHint": "Laissez vide pour utiliser le lien de réservation de l’immeuble.",
+        "bookingLink": "URL de réservation",
+        "bookingLinkHint": "URL complète pour cette langue. S’ouvre dans un nouvel onglet. Laissez vide pour utiliser la section de réservation de l’immeuble."
       },
       "errors": {
         "coverRequired": "Une image de couverture est requise.",

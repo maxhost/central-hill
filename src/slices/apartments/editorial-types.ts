@@ -6,6 +6,8 @@ export interface ApartmentEditorialContent {
   size_m2: number | null; floor: number | null;
   cover_media_id: string | null; og_image_media_id: string | null; gallery: string[];
   avantio_id: string | null; default_booking_url: string | null; booking_url: string | null;
+  /** Full localized card destination; absence preserves legacy resolution, null clears it. */
+  booking_link?: string | null;
 }
 export type ApartmentEnvelope = PropertyEnvelope<ApartmentEditorialContent>;
 export type ApartmentEditorialModel = PropertyEditorialModel<ApartmentEditorialContent> & { parentId: string };

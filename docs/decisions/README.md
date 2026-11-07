@@ -1326,3 +1326,6 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 - [0062 — Localized Building booking button](0062-building-localized-booking-button.md):
   per-language Label and Link; legacy destinations preserved until edited, explicit
   empty links suppress Building-specific booking buttons.
+
+- [0063 — Apartment localized booking URL](0063-apartment-localized-booking-link.md):
+  one full card URL per language, new-tab navigation and retirement of SEO inputs.

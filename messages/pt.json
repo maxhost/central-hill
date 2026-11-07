@@ -1213,7 +1213,9 @@
         "metaTitle": "Meta título",
         "metaDescription": "Meta descrição",
         "coverHint": "Foto do cartão, 4:3, mínimo 1200×900 px. Deixe vazio para usar o marcador.",
-        "avantioUrlHint": "Deixe vazio para usar o link de reserva do edifício."
+        "avantioUrlHint": "Deixe vazio para usar o link de reserva do edifício.",
+        "bookingLink": "URL de reserva",
+        "bookingLinkHint": "URL completo para este idioma. Abre num novo separador. Deixe em branco para usar a secção de reservas do edifício."
       },
       "errors": {
         "coverRequired": "É obrigatória uma imagem de capa.",

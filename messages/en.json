@@ -1213,7 +1213,9 @@
         "metaTitle": "Meta title",
         "metaDescription": "Meta description",
         "coverHint": "Card photo, 4:3, at least 1200×900 px. Leave blank for the placeholder.",
-        "avantioUrlHint": "Leave blank to use the building’s booking link."
+        "avantioUrlHint": "Leave blank to use the building’s booking link.",
+        "bookingLink": "Booking URL",
+        "bookingLinkHint": "Full URL for this language. Opens in a new tab. Leave blank to use the building booking section."
       },
       "errors": {
         "coverRequired": "A cover image is required.",

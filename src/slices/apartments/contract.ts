@@ -26,6 +26,7 @@ export const APARTMENT_TAGS = {
 /** Avantio booking-engine handles for a unit's "Check availability" CTA. */
 export interface ApartmentBooking {
   id: string | null;
+  /** Selected language's published full URL; public UnitCard opens it in a new tab. */
   url: string | null;
 }
 
