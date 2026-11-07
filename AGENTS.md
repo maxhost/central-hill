@@ -1,6 +1,6 @@
 # Central Hill agent instructions
 
-## Active Building status/form correction —2026-11-06
+## Building status/form correction —2026-11-06
 
 User reports terminal archive lock, inaccessible status changes and inconsistent
 form columns/sizes. Read docs/specs/building-status-form-correction.md. Base52cf4bd,
@@ -13,6 +13,10 @@ Aesthetic layout user-validated L0, no automated visual QA. Single3071main dev
 currentlyPID90520/session55366; preserve safe synthetic env/storage9077/logo/media.
 Local main delivery after functional checks; no remote/push/deploy. Latest request
 supersedes earlier archived read-only rule and historical Blog-only merge boundary.
+Executable5077515 approved: typecheck/lint/build0,27focused tests0, independent
+functionalQA5groups approved (no aesthetic QA; user reviews appearance). Follow
+docs/specs/building-status-form-correction.md for the final actualmain startup.
+
 
 ## Blog-only main integration completed —2026-11-06
 

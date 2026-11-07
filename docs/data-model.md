@@ -413,7 +413,11 @@ Legacy rows below remain read-only bootstrap/compatibility data; absent snapshot
 may resolve legacy content, but an existing unpublished snapshot never does.
 Bootstrap captures all four current public outputs and preserves pending target
 copy at the first explicit mutation, never on GET or preview. The global identity
-still controls archive and operational ordering. Public locale counters derive
+still controls archive and operational ordering. Building archive is reversible
+visibility: its documents stay editable, Save preserves archive, Restore shows only
+prior publications without consuming drafts, and explicit Publish activates the
+identity atomically with that locale's publication. Other locale drafts remain
+independent. First archive captures legacy output before hiding it. Public locale counters derive
 from same-language published apartment identities. Building deletion refuses any
 child apartment identity; amenity deletion also checks frozen snapshot references.
 

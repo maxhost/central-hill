@@ -49,7 +49,8 @@ QA69a344cf/46559ec8. Preserve env, logo, DB, all worktrees. No push/deploy/remot
 Integration /private/tmp/central-hill-building-status-integration,
 branchbuilding-status/integration. Contract commit before writers. Root owns this
 spec/AGENTS/ADR0061 note, Buildingeditorial-types.ts, messages4locales, docs closure,
-main integration/runtime. Dependencies real copy for build; writer links for checks.
+main integration/runtime, docs/data-model.md and docs/specs/property-forms-main-integration.md.
+Dependencies real copy for build; writer links for checks.
 
 A backend: /private/tmp/central-hill-building-status-backend,
 branchbuilding-status/backend. Own Buildingsserver/editorial-store.ts,
@@ -88,3 +89,37 @@ unsaved other-locale preservation through header refresh, desktop/mobile button
 reachability. Existing snapshots/caches/counts and four-locale publication intact.
 No fresh broad matrix. User requests fixes in current main localhost: deliver via
 local main ff after required functional QA, preserve single3071 safe env and all data.
+
+## Progress / evidence
+
+Contracts4ccd877; backend7c2708e→49d7eae, UI6ecdc14→5077515 integrated. Writer
+backend12/12DB(type/lint/diff0) and UI scopedlint0(type initially pending missing
+backend export) handed off. Integrated5077515 typecheck0, lint0(7existingwarnings),
+27/27focused tests0, pnpm build0(101pages after fixture cleanup). No schema changes.
+Focused command, with safeenv + AsyncLocalStorage/server-only/staticPNG loaders:
+
+pnpm exec tsx --import /private/tmp/central-hill-property-forms-qa/test-runtime.mjs --test
+src/slices/buildings/tests/building-status.integration.test.ts
+src/slices/buildings/tests/property-locale-store.integration.test.ts
+src/slices/buildings/tests/property-locale-state.test.ts
+src/slices/buildings/tests/property-form-model.test.ts
+src/slices/apartments/tests/property-locale-store.integration.test.ts
+
+Main90520/90514 stopped by root to keep one app; candidateDev3071 session13609,
+source5077515. Browser fixturee740...001 created only for functionalQA; no oldfixture
+writes. Independent QA source review found noadditional blockers,5normal browser
+functional groups prepared/running, no aesthetic automatic checks/screenshots.
+Artifacts/logs:/private/tmp/central-hill-building-status-qa. Final user visual review
+remains onmain3071 after local ff. No remoteDB/GitHub/push/deploy.
+
+## Functional QA approved / local delivery
+
+Independent QA approved5077515 in5bounded functional groups: Archive legacy4pubs
+and unsaved PT; archivedSave/reload/stillhidden; Restore keeps drafts/revisions and
+local EN/PT; PublishPTarchived activates with other snapshots/locals preserved;
+mobile Archive/Restore. No product blocker/0pageerrors. Two initial harness waits
+were ambiguous after successful mutations, corrected by continuation over the same
+state without replay/reset; final confirmation exit0. See building-status-form-qa.md.
+No screenshots/geometry/aesthetic automatic QA; visual refinement stays user-reviewed.
+Root now fast-forwards localmain and restarts its single3071dev, same safe synthetic
+env, no migration or remote/write/deploy. Final PID/hash recorded after startup.
