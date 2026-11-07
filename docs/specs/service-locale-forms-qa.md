@@ -3,7 +3,7 @@
 2026-11-06. Independent QA against the assembled integration worktree
 `/private/tmp/central-hill-service-locales-integration`, branch
 `service-locales/integration`. Initial executable `30380bd`; corrected executable
-`aa6ca10`; final metadata/copy source `54e8073`. **Approved executable `54e8073`.** This report covers source review and the four bounded browser groups in
+`aa6ca10`; metadata/copy source `54e8073`; final compatibility source `a541f4e`. **Independent functional/source approval: `a541f4e`.** This report covers source review and the four bounded browser groups in
 [execution](service-locale-forms-execution.md). No product edits by QA, nested
 agents, main integration, push, deployment or remote writes.
 
@@ -140,9 +140,30 @@ no old media or identity was replaced. The extra created Service is
 ES/PT/FR unpublished. Synthetic e781 demos and all evidence remain for local review.
 `browser-errors.json` and final metadata confirmation both contain zero pageerrors.
 
-No unresolved blocking finding remains for `54e8073`. Approval includes source
+No unresolved functional/source blocking finding remains for `a541f4e`. Approval includes source
 review of the twelve copy-only changes in `ed09dea`; functional lineage is
 30380bd/group1, aa6ca10/groups2–4 and discard confirmation, 54e8073/metadata
 confirmation. Visual appearance remains the user's localhost review; these checks
 verify behavior and persistence, not an aesthetic quality claim. Root owns final
 local-main integration and the final actual-main read-only opening check.
+
+
+## Final legacy-clear compatibility addendum — a541f4e
+
+After browser approval, root's compatibility audit found that lazy legacy
+projection could revive obsolete plain-column `duration_label` or `cta_label`
+when their authored translation rows were absent. The original public reader and
+old editor read these fields only from translations, so absent rows must stay
+null. `a541f4e` changes precisely those two projection fallbacks to null, preserving
+the raw columns and all authored source/target translation values.
+
+Independently source-reviewed the two-line implementation and the new pure
+regression: EN/PT absent translation rows remain null despite nonempty stale
+columns; valid EN translations still fill untouched PT; raw identity values remain
+unchanged. Backend reports nine model groups0, typecheck0 and affected lint0,
+without DB writes. Accepted this bounded compatibility correction without repeating
+the browser matrix: the reviewed fixtures have authored values, and adapted
+snapshot/publication paths are unchanged. Final approval lineage adds
+`a541f4e`/source plus the targeted pure regression to the browser lineage above.
+Root retains the required final build gate and records its actual result in the
+execution document before local-main integration.
