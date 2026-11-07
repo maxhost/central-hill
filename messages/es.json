@@ -2407,6 +2407,13 @@
     "metaTitle": "Título SEO",
     "metaDescription": "Descripción SEO",
     "ogImage": "Imagen SEO (compartida)",
-    "language": "Idioma"
+    "language": "Idioma",
+    "restore": "Restaurar",
+    "restoring": "Restaurando…",
+    "archiving": "Archivando…",
+    "archivedHint": "Los edificios archivados se pueden editar. Guardar cambios no los hace públicos.",
+    "restoreHint": "Restaurar vuelve a mostrar los idiomas publicados anteriormente. Los borradores siguen privados.",
+    "restored": "Edificio restaurado.",
+    "archiveSuccess": "Edificio archivado. Puedes seguir editándolo."
   }
 }

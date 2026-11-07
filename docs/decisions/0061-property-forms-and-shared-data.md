@@ -25,3 +25,9 @@ explicit Publish. Publish EN cannot change PTtext/SEO; shared Save can change
 photos/specifications everywhere. No new public apartment route. Migration0026 is
 additive and will only be applied to an explicitly authorized synthetic DB.
 Implementation ownership/contracts/verification: property-form-editors-execution.md.
+
+Later user correction: Building archive is reversible visibility only. Archived
+Buildings remain editable; Save retains archive, Restore uses previous publication
+without consuming drafts, and explicit Publish activates identity with the selected
+locale. Archive/Restore are prominent in the form toolbar. See
+building-status-form-correction.md for implementation ownership/acceptance.

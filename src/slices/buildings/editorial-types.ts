@@ -37,3 +37,8 @@ export const BUILDING_SHARED_KEYS = [
   "booking_enabled",
 ] as const satisfies readonly (keyof BuildingEditorialContent)[];
 export type BuildingSharedContent = Pick<BuildingEditorialContent, (typeof BUILDING_SHARED_KEYS)[number]>;
+
+/** Reversible global visibility, independent of localized draft/publication. */
+export type BuildingStatusResult =
+  | { ok: true; status: "draft" | "published" | "archived"; refreshWarning?: boolean }
+  | { ok: false; error?: "not_found" | "legacy_invalid" | "server" };

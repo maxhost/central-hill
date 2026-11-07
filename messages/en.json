@@ -2407,6 +2407,13 @@
     "metaTitle": "SEO title",
     "metaDescription": "SEO description",
     "ogImage": "SEO image (shared)",
-    "language": "Language"
+    "language": "Language",
+    "restore": "Restore",
+    "restoring": "Restoring…",
+    "archiving": "Archiving…",
+    "archivedHint": "Archived buildings stay editable. Saving changes does not make them public.",
+    "restoreHint": "Restore makes previously published languages visible again. Drafts stay private.",
+    "restored": "Building restored.",
+    "archiveSuccess": "Building archived. You can keep editing it."
   }
 }
