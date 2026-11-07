@@ -11,7 +11,10 @@ import { type ApartmentCounts, apartmentListWhere } from "./derive";
 import { readApartmentLocaleRows } from "../server/editorial-bootstrap";
 import { getApartmentEditorialModel } from "../server/editorial-store";
 import { readApartmentSharedState } from "../server/shared-content";
-import { overlayApartmentShared } from "../server/editorial-validation";
+import {
+  overlayApartmentShared,
+  resolveApartmentBooking,
+} from "../server/editorial-validation";
 import type { Locale } from "@core/db/columns";
 
 /**
@@ -122,9 +125,7 @@ export async function listApartmentsAdmin(
       bedsCount: saved?.content.beds_count ?? r.beds_count,
       sizeM2: saved ? saved.content.size_m2 : r.size_m2,
       hasAvantioUrl: Boolean(
-        saved?.content.booking_url?.trim() ||
-        saved?.content.default_booking_url?.trim() ||
-        (!saved && r.avantio_url?.trim()),
+        saved ? resolveApartmentBooking(saved) : r.avantio_url?.trim(),
       ),
       cover: (() => {
         const id = saved ? saved.content.cover_media_id : r.cover_media_id;

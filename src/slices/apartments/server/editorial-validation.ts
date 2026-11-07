@@ -176,6 +176,9 @@ export function apartmentMediaIds(envelope: ApartmentEnvelope): string[] {
 export function resolveApartmentBooking(
   envelope: ApartmentEnvelope,
 ): string | null {
+  // Explicit null/blank clears the unit destination; only absence uses legacy fields.
+  if (envelope.content.booking_link !== undefined)
+    return envelope.content.booking_link?.trim() || null;
   return (
     envelope.content.booking_url?.trim() ||
     envelope.content.default_booking_url?.trim() ||
@@ -203,6 +206,7 @@ export function emptyApartmentEnvelope(): ApartmentEnvelope {
       avantio_id: null,
       default_booking_url: null,
       booking_url: null,
+      booking_link: null,
     },
   };
 }

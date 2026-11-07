@@ -52,9 +52,9 @@ test("incomplete draft remains valid; publication, URLs, strict metadata and pay
     ["name", "max_guests"],
   );
   const value = { ...envelope(), localeMode: "inherit" as const };
-  value.content.booking_url = "javascript:alert(1)";
+  value.content.booking_link = "javascript:alert(1)";
   assert.equal(checkApartmentEnvelope(value).envelope, undefined);
-  value.content.booking_url = "https://example.test/es";
+  value.content.booking_link = "https://example.test/es";
   assert.deepEqual(checkApartmentEnvelope(value, true).errors, {});
   assert.equal(
     checkApartmentEnvelope({ ...value, localeMode: "invalid" }).envelope,
@@ -82,7 +82,7 @@ test("common values overlay every retained physical/image field while custom tex
     badge: "Terraza",
     description: "Descripción",
     meta_title: "SEO español",
-    booking_url: "https://example.test/es",
+    booking_link: "https://example.test/es",
   });
   const prepared = prepareApartmentTarget(en, es);
   assert.equal(prepared.content.name, "Español");
@@ -97,8 +97,9 @@ test("common values overlay every retained physical/image field while custom tex
   assert.equal(sharedApartmentValuesMatch(prepared, en), true);
   assert.equal(es.content.cover_media_id, null);
 });
-test("booking prefers own language override, then the unique default, then the parent booking band", () => {
+test("legacy booking prefers own language override, then the unique default, then the parent booking band", () => {
   const value = envelope();
+  delete value.content.booking_link;
   assert.equal(resolveApartmentBooking(value), null);
   value.content.default_booking_url = "https://example.test/base";
   assert.equal(
@@ -178,7 +179,7 @@ test("EN save updates inherited forms and preserves unsaved customized targets a
   states = changePropertyField(
     states,
     "pt",
-    "booking_url",
+    "booking_link",
     "https://example.test/pt",
   );
   const pt = states.pt,
@@ -195,7 +196,7 @@ test("EN save updates inherited forms and preserves unsaved customized targets a
   assert.equal(propertyLocaleDirty(next.es.model, next.es.baseline), false);
   assert.equal(next.pt.model.working.content.name, "Português local");
   assert.equal(
-    next.pt.model.working.content.booking_url,
+    next.pt.model.working.content.booking_link,
     "https://example.test/pt",
   );
   assert.equal(next.pt.model.working.content.max_guests, 6);

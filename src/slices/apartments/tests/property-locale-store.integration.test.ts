@@ -186,7 +186,7 @@ test("inherited work follows saved EN, own PT stays independent and every public
   Object.assign(own.content, {
     name: "Português",
     meta_title: "PT SEO",
-    booking_url: "https://example.test/pt",
+    booking_link: "https://example.test/pt",
   });
   pt = success(await save(UNIT, pt, own));
   pt = success(await publish(UNIT, pt));
@@ -209,7 +209,7 @@ test("inherited work follows saved EN, own PT stays independent and every public
   assert.equal((await model(UNIT, "pt")).working.content.name, "Português");
   assert.equal((await model(UNIT, "pt")).working.content.meta_title, "PT SEO");
   assert.equal(
-    (await model(UNIT, "pt")).working.content.booking_url,
+    (await model(UNIT, "pt")).working.content.booking_link,
     "https://example.test/pt",
   );
   assert.deepEqual(await publish(UNIT, await model(UNIT, "fr")), {

@@ -198,3 +198,25 @@ inherited Publish guard; explicit parentheses fixed it, and the full scoped suit
 then passed. Only e42/e52 fixtures were created/cleaned; existing d*/f* fixtures
 remained read-only. Typecheck and targeted ESLint passed after the correction.
 Integrated build and independent browser QA remain root responsibilities.
+
+## One localized Apartment booking URL — ADR0063 (2026-11-06)
+
+The form authors one full HTTP(S) booking URL per language, stored as optional
+`booking_link` in the existing version1 locale document. It follows text ownership:
+untouched languages inherit saved English work until the first real local edit;
+custom languages retain their own link, with explicit Save draft/Publish. New
+documents initialize `booking_link:null`. The public read model uses that URL for
+the existing UnitCard external-link mode; an absent unit URL keeps the Building
+booking-section fallback. No standalone Apartment public route is added.
+
+The optional field's absence preserves legacy `booking_url`/`default_booking_url`
+resolution. Reading or unrelated Save does not materialize it. A real input edit
+sets the selected-language field; explicit null clears the unit destination without
+reviving hidden legacy defaults. Validation accepts complete HTTP(S) URLs up to2048
+characters. Public queries and the source-English admin “Own booking link” indicator
+use the same resolver; the indicator keeps its existing saved-draft-first semantics.
+
+This correction removes SEO/OG and technical Avantio/default-URL controls from the
+form. Existing SEO, OG and legacy Avantio values remain retained in documents and
+shared data; no schema migration, deletion or bulk conversion occurs. This
+supersedes the earlier note that SEO/OG controls were exposed by ADR0061.
