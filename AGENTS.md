@@ -1,5 +1,33 @@
 # Central Hill agent instructions
 
+## Latest Amenity manual labels —2026-11-06
+
+User requests Label EN/ES/PT/FR in Amenities and localized names in Building
+language tabs with shared selections; follow-up explicitly asks same names in
+public web. Executablecdab195 in amenity-locales/integration at
+/private/tmp/central-hill-amenity-locales-integration, independently approved3/3
+production-browser groups. Read [execution](docs/specs/amenity-label-locales.md),
+[QA](docs/specs/amenity-label-locales-qa.md), ADR0064. Existing translation rows and
+core write seams reused; one taxonomy Save applies all labels, manual targets
+approved, blank target removed for English fallback. Old clients omitting targets
+preserve them. Form loads raw authored/pending targets without fallback copies;
+selectors/public use approved locale names. No new review UI/migration/kernel API.
+Building keeps shared amenity_ids; switching tabs changes checkbox labels only.
+Taxonomy rename invalidates public/admin caches without republishing Building or
+changing its text/SEO/snapshot/revision. Existing sequential write behavior retained.
+
+Integrated typecheck0/lint0(7oldwarnings)/16puregroups0/build0(114pages, local
+CIRCLE_NODE_TOTAL=3 selects2workers without config change); backend3/3DBgroups0,
+e770 tests cleaned. Independent browser3/3passes: four inputs/raw pending/manual
+Save+fallback; ENselectedsharedacross4tabs/Save/reload and4publicnames; renameEN/
+clearES updatespublicwithoutBuildingrepublish, selection/text/SEO intact, mobile.
+Protected old data hashes unchanged,0pageerrors. Initial harness composite-key hash
+fixed before browser/mutations; no product correction. Only new e771 demo touched.
+Root integrates local main after reviewer report and restores sole dev3071; final
+PID/read-only user d600+demo check recorded in execution. Preserve worktrees,
+original logo/publicmedia symlink/safeenv. No schema/remoteDB/push/deployment.
+No automatic Services/Apartment lifecycle work in this request.
+
 ## Latest Apartment booking/SEO correction —2026-11-06
 
 User requests ONE full booking URL per Apartment language, new-tab unit-card link,

@@ -440,6 +440,11 @@ child apartment identity; amenity deletion also checks frozen snapshot reference
   (questions are about the building: check-in, elevator, pets, parking…).
 - **amenity** (taxonomy): `id, slug, icon, group?`. **[T]** `label`. (Seed: WiFi, AC, kitchen, washer,
   TV, elevator, self-check-in, heating, workspace, coffee, hairdryer, city view, …)
+  - **ADR0064 (no migration):** taxonomy create/edit authors EN/ES/PT/FR labels in
+    one Save through existing i18n seams. EN is required; manual targets are approved,
+    blank targets removed for EN fallback. Admin loads raw pending targets for editing;
+    selectors/public reads use approved locale names. Building amenity IDs remain shared,
+    and label changes invalidate public reads without republishing Building snapshots.
   - *Public contract:* `BuildingSummary` (card), `BuildingDetail`, `listBuildings(filter)`,
     `getBuildingBySlug`. Filterable: `city_id`, `neighbourhood_id`, `is_new`, `is_featured`, and
     (via apartments) bedrooms/max_guests. Tags: `building:<id>`, `building-list`.

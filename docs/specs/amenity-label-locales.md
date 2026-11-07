@@ -84,3 +84,28 @@ four-locale copy/fallback and cache review. Record commands/exits/hash/limits.
 ## Progress
 
 Root contracts land before consumers. Results and final runtime follow.
+
+Integrated executablecdab195 (backendabf3d5e, UI2832ca7). Roottypecheck0,
+lint0(7existingwarnings),16/16puregroups0, diffcheck0; identical backend3/3DBgroups
+passed after fallback/snapshot-fixture correction, e770 fixtures cleaned. New e771
+Amenity/Building browserfixtures guardednew-only, no old data overwritten. Mechanical
+UI detector once returned[]. Independent source review no blockers; fullbuild and
+3normal production-browser groups pending. Local2worker build only, no config edits.
+Root also owns docs/data-model.md to record manual approved taxonomy labels and
+shared ID semantics, documentation-only change after executable verification.
+
+Fullbuild0/114pages with local2workers. Actual-main58039/58033 stopped; compiled
+production candidate3071 PID77622/session19724, login200, same safeenv/synthetic
+DB/storage. Independent3group browser review running against e771 only. Public
+translated names/no-Building-republish explicitly requested in user follow-up and
+included in DB/browser acceptance. No executable changes after cdab195.
+
+Independent functional approval executablecdab195:3/3browser groups0. Four labels
+persist/reload; pending stays private until manual Save; blank fallback; EN selection
+shared in4tabs before/afterSave/reload and4localized public names without Publish;
+rename EN/clear ES updates public without touching Building snapshots/revisions/
+text/SEO/shared selection. Mobile controls work,0pageerrors, olddatahashes unchanged.
+Initial hash harness assumed id on composite building_amenity; corrected before
+browser or writes, then full functional run0. Report amenity-label-locales-qa.md.
+Only e771 demo retained; no source changes after executable verification. Root
+local main integration and final single-dev3071 read-only opening check follow.
