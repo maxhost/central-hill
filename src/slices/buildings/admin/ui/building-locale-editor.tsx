@@ -29,6 +29,7 @@ import type {
   BuildingEditorialContent,
   BuildingEditorialModel,
 } from "../../editorial-types";
+import { getBuildingBookingButton } from "../../booking-button";
 import type { LocationOptions, AmenityOption } from "../queries";
 import {
   archiveBuilding,
@@ -135,6 +136,7 @@ export function BuildingLocaleEditor({
   const actionDialog = useRef<HTMLDialogElement>(null);
   const state = states[locale];
   const content = state.model.working.content;
+  const bookingButton = getBuildingBookingButton(content, locale);
   const [openingEdit, setOpeningEdit] = useState(false);
   const busy =
     operation !== null || queue.isPreparing || navigating || openingEdit;
@@ -442,9 +444,6 @@ export function BuildingLocaleEditor({
     key:
       | "name"
       | "teaser"
-      | "booking_url"
-      | "default_booking_url"
-      | "avantio_id"
       | "street_address"
       | "meta_title"
       | "meta_description",
@@ -599,6 +598,17 @@ export function BuildingLocaleEditor({
             onChange={(e) => set("is_featured", e.target.checked)}
             disabled={busy}
           />
+          <div className="space-y-2">
+            <Checkbox
+              label={t("admin.fields.bookingCardLink")}
+              checked={content.booking_enabled}
+              onChange={(event) => set("booking_enabled", event.target.checked)}
+              disabled={busy}
+            />
+            <p className="text-xs text-ink-soft">
+              {t("admin.fields.bookingCardLinkHint")}
+            </p>
+          </div>
           {numberField("latitude", t("admin.fields.latitude"))}
           {numberField("longitude", t("admin.fields.longitude"))}
         </>
@@ -800,18 +810,43 @@ export function BuildingLocaleEditor({
         </>
       ) : selection === "booking" ? (
         <>
-          {input("avantio_id", t("admin.fields.avantioId"))}
-          {input("default_booking_url", te("bookingBase"))}
-          {input("booking_url", te("bookingUrl"))}
-          <p className="text-xs text-ink-soft">{te("bookingHint")}</p>
-          <Checkbox
-            label={t("admin.fields.bookingEnabled")}
-            checked={content.booking_enabled}
-            onChange={(event) => set("booking_enabled", event.target.checked)}
-            disabled={busy}
-          />
+          <Field
+            label={t("admin.fields.bookingButtonLabel")}
+            htmlFor={fieldId("booking_button.label")}
+            error={error("booking_button.label")}
+          >
+            <TextInput
+              className="min-h-11"
+              id={fieldId("booking_button.label")}
+              value={bookingButton.label}
+              maxLength={80}
+              onChange={(event) => {
+                if (event.target.value !== bookingButton.label)
+                  set("booking_button", { ...bookingButton, label: event.target.value });
+              }}
+              disabled={busy}
+            />
+          </Field>
+          <Field
+            label={t("admin.fields.bookingButtonLink")}
+            htmlFor={fieldId("booking_button.link")}
+            error={error("booking_button.link")}
+          >
+            <TextInput
+              className="min-h-11"
+              id={fieldId("booking_button.link")}
+              type="url"
+              value={bookingButton.link ?? ""}
+              maxLength={2048}
+              onChange={(event) => {
+                if (event.target.value !== (bookingButton.link ?? ""))
+                  set("booking_button", { ...bookingButton, link: event.target.value || null });
+              }}
+              disabled={busy}
+            />
+          </Field>
           <p className="text-xs text-ink-soft">
-            {t("admin.fields.bookingEnabledHint")}
+            {t("admin.fields.bookingButtonHint")}
           </p>
         </>
       ) : (

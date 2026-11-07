@@ -321,6 +321,11 @@ export async function BuildingDetailRenderer({
   };
 
   const locationLine = `${detail.neighbourhood ? `${detail.neighbourhood.name} · ` : ""}${detail.city.name}`;
+  const hasAuthoredBooking = detail.booking.label !== undefined;
+  const bookingUrl = hasAuthoredBooking ? detail.booking.url : detail.avantio.url;
+  const headerBookingUrl = hasAuthoredBooking
+    ? bookingUrl
+    : bookingUrl || avantioBookingUrl(locale);
 
   return (
     <Fragment>
@@ -447,16 +452,14 @@ export async function BuildingDetailRenderer({
                 <h2 className="max-w-[720px] font-serif text-[clamp(30px,4vw,50px)] font-medium leading-[1.08] tracking-[-0.015em] text-ink">
                   {AL.title}
                 </h2>
-                <ButtonLink
-                  href={
-                    preview
-                      ? "#"
-                      : detail.avantio.url || avantioBookingUrl(locale)
-                  }
-                  className="shrink-0 mr-[60px] mt-[5px]"
-                >
-                  {tSettings("ctaBook")}
-                </ButtonLink>
+                {headerBookingUrl ? (
+                  <ButtonLink
+                    href={preview ? "#" : headerBookingUrl}
+                    className="shrink-0 mr-[60px] mt-[5px]"
+                  >
+                    {detail.booking.label ?? tSettings("ctaBook")}
+                  </ButtonLink>
+                ) : null}
               </div>
               <p className="mt-4 max-w-[62ch] text-[18px] text-ink-soft">
                 {AL.intro}
@@ -571,11 +574,11 @@ export async function BuildingDetailRenderer({
           eyebrow={L.bookEyebrow}
           title={L.bookTitle}
           body={L.bookIntro}
-          {...(detail.avantio.url
+          {...(bookingUrl
             ? {
                 cta: {
-                  href: preview ? "#" : detail.avantio.url,
-                  label: L.bookCta,
+                  href: preview ? "#" : bookingUrl,
+                  label: detail.booking.label ?? L.bookCta,
                   external: true,
                 },
                 note: L.bookNote,
