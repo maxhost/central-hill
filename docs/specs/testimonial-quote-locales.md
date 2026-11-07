@@ -117,3 +117,23 @@ Pages suite. Finalproof/report records42hashes and fixture neutral/ownerquote/sl
 exact. No product corrections or repeated harness matrix needed in these groups.
 No Home/Owners coverage invented; current Home omits section, Owners page absent;
 owner filtering proved through real reader tests in allfourlocales.
+
+
+## Local delivery
+
+Independent QA approved executable1cb2ec8, report1953030; no source correction or
+harness retry. Root47docs lines closed current Home/Owners limits and roadmap in
+495b9a9. Main ff a321f2d→495b9a9 after tracked-clean check; original untracked logo
+and publicmedia symlink preserved. QA74283/74277 stopped after cwd verification.
+Sole actual-main dev3071 PID75173/parent75167/session15758 uses existing safeenv,
+DB5658/proxy4558/storage9077PID30456 unchanged. All worktrees/files/old caches and
+ignored envs retained; no remote action/push/deploy/schema/migration/media writes.
+
+Read-only main-open exit0: New/Edit exactly4Quote fields/noTabs/raw SQLvalues,
+oldreview redirects to sameficha, public GuestsEN/PT visible localized Quotes,
+author/country intact and owner suppression,0pageerrors. No saves/publication,
+cache intervention/restart loop or repeated QA matrix at final opening. Main
+main-open.json/log and main-restart.log in root artifact directory. Root compared
+42protected-after hashes exactly to beforeseed. Finaldoccommit is git log -1.
+No further implementation authorized automatically; remaining roadmap unchanged
+except Testimonial Quote and its generic legacy path now completed.

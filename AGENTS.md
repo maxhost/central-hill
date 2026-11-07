@@ -1,5 +1,43 @@
 # Central Hill agent instructions
 
+## Latest Testimonial Quote inputs —2026-11-07
+
+User requests Quote EN/ES/PT/FR in same ficha, blank uses EN, public follows page
+locale. Delivered four textareas/no tabs/one existing Save; only Quote translated.
+Author/country/property_location/audience/rating/status/position remain shared.
+Edit loads raw pending/authored targets with missing blanks, manual nonblank Save
+approves targets, blank clears only that locale Quote. Later EN keeps own targets;
+old clients omitting targets preserve raw rows exactly. EN trimmed/required/max1000,
+targets trimmed/max1000. Existing locale/audience/public cache readers unchanged;
+Save invalidates testimonial-list without marketing Page JSON/pub/SEO changes.
+Generic testimonial Translation inbox/actions/generation retired; old reviews
+redirect to its ficha. No legacy deletion/backfill/GET writes or migration.
+
+Read [execution](docs/specs/testimonial-quote-locales.md),
+[QA](docs/specs/testimonial-quote-locales-qa.md), ADR0070 and updated roadmap.
+Two isolated writers integrated executable1cb2ec8; independent QA1953030 approved
+3bounded production-browser groups,0pageerrors, no product fixes/harness retries.
+Root33cases0 (27pure+6DB), typecheck0/lint0(7oldwarnings), build0/144routes/2workers
+after e830 cleanup. 42protected business hashes equal preseed; fixture neutralrow/
+ownerquotes/slugs exact. Guests4 public quote/fallback/audience suppression verified;
+Home currently intentionally omits testimonials and synthetic Owners page absent,
+so no invented public coverage/new Page fixture. Owner reader/filter tested4locales.
+Only new e831guest+owner and draftb58049c1-f090-42f2-aa18-6b98adb777ac retained,
+no media writes or fixedPage changes. Existing synthetic DB authorization reused.
+
+Main ff a321f2d→495b9a9 done. Sole actual-main dev3071 **PID75173/parent75167/
+session15758**, cwd verified workspace, safe propertylocalesqa DB5658/proxy4558/
+storage9077PID30456 retained. QA74283 stopped. Main read-only opening passed New/
+Edit4Quotes/rawvalues, oldreviewredirect, GuestsEN/PT visible localized quotes and
+owner suppression,0pageerrors. Evidence main-open.json and logs under
+/private/tmp/central-hill-testimonial-quote-locales-qa/. No cache intervention,
+repeated matrix or source changes after QA. Finaldoccommit via gitlog-1.
+Preserve all worktrees/artifacts/files/ignored envs/logo/publicmedia symlink and
+prior cache archives. No schema/remote writes/push/deploy. Global Translations
+remains: Settings/navigation/ALT, city.intro policy and remaining legacy-path
+retirement pending; do not start further work automatically.
+
+
 ## Latest City/neighbourhood name inputs —2026-11-07
 
 User requests EN/ES/PT/FR inputs in the existing City ficha and every inline
