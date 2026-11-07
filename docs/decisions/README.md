@@ -1322,3 +1322,7 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 - [0061 — Property forms and shared data](0061-property-forms-and-shared-data.md):
   language-owned text/SEO with English inheritance until editing; live common
   photos and physical facts on Save, independent of per-language publication.
+
+- [0062 — Localized Building booking button](0062-building-localized-booking-button.md):
+  per-language Label and Link; legacy destinations preserved until edited, explicit
+  empty links suppress Building-specific booking buttons.

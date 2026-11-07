@@ -549,8 +549,8 @@
         "descriptionIntroHint": "Un párrafo por línea.",
         "descriptionNeighbourhoodHint": "Un párrafo por línea. Déjalo en blanco para ocultar “El Barrio”.",
         "teaserHint": "Se muestra en la tarjeta de /buildings y como descripción SEO por defecto.",
-        "bookingButtonLabel": "Label",
-        "bookingButtonLink": "Link",
+        "bookingButtonLabel": "Texto del botón",
+        "bookingButtonLink": "Enlace",
         "bookingButtonHint": "Deja el enlace vacío para ocultar los botones de reserva del edificio.",
         "bookingCardLink": "La tarjeta del listado abre el enlace de reserva",
         "bookingCardLinkHint": "Al activarlo, la tarjeta del edificio abre el enlace de reserva de su idioma en lugar de la página del edificio."
