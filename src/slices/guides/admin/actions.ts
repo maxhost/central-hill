@@ -11,6 +11,7 @@ import { listGuideCityOptions } from "@slices/geography/contract";
 import { GUIDE_PAGE, GUIDE_SECTION, GUIDE_PLACE } from "../contract";
 import { guide_page, guide_section, guide_place } from "../schema";
 import { revalidateGuides } from "../server/publish";
+import { isGuideAdapted } from "../server/editorial-translation-policy";
 import { getGuideForEdit } from "./queries";
 import { guidePageMutation, guideSectionMutation, guidePlaceMutation, pageColumns, pageSource, placeColumns, guideSectionErrors, guidePlaceErrors, guideTreeErrors, guideFieldErrors, isExactGuideOrder } from "./validation";
 import { guideMediaReferences, guideMediaErrors, guideTreeMediaReferences, guideTreeMediaErrors } from "./media-validation";
@@ -38,6 +39,7 @@ export async function saveGuidePage(raw: unknown): Promise<GuideActionResult> {
   if (!parsed.success) return invalid(guideFieldErrors(parsed.error.issues));
   const input = parsed.data;
   try {
+    if (await isGuideAdapted(input.id)) return fail("ownership");
     const bundle = await getGuideForEdit(input.id);
     if (!bundle && !input.create) return fail("not_found");
     if (bundle?.integrity === "invalid") return fail("invalid_stored_content");
@@ -76,6 +78,7 @@ export async function saveGuideSection(pageId: string, raw: unknown): Promise<Gu
   if (!uuid(pageId)) return invalid({ pageId: "Invalid guide ID." });
   const input = parsed.data;
   try {
+    if (await isGuideAdapted(pageId)) return fail("ownership");
     const bundle = await getGuideForEdit(pageId);
     if (!bundle) return fail("not_found");
     if (bundle.integrity === "invalid") return fail("invalid_stored_content");
@@ -103,6 +106,7 @@ export async function saveGuidePlace(pageId: string, sectionId: string, raw: unk
   if (!uuid(pageId) || !uuid(sectionId)) return invalid({ sectionId: "Invalid parent ID." });
   const input = parsed.data;
   try {
+    if (await isGuideAdapted(pageId)) return fail("ownership");
     const bundle = await getGuideForEdit(pageId);
     if (!bundle) return fail("not_found");
     if (bundle.integrity === "invalid") return fail("invalid_stored_content");
@@ -131,6 +135,7 @@ async function reorder(pageId: string, sectionId: string | null, orderedIds: str
   await requireStaff(["admin", "editor"]);
   if (!uuid(pageId) || sectionId !== null && !uuid(sectionId) || !z.array(z.uuid()).safeParse(orderedIds).success) return invalid({ order: "Invalid ordered IDs." });
   try {
+    if (await isGuideAdapted(pageId)) return fail("ownership");
     const bundle = await getGuideForEdit(pageId);
     if (!bundle) return fail("not_found");
     if (bundle.integrity === "invalid") return fail("invalid_stored_content");
@@ -149,6 +154,7 @@ export async function deleteGuidePlace(pageId: string, sectionId: string, id: st
   await requireStaff(["admin", "editor"]);
   if (![pageId, sectionId, id].every(uuid)) return invalid({ id: "Invalid ID." });
   try {
+    if (await isGuideAdapted(pageId)) return fail("ownership");
     const bundle = await getGuideForEdit(pageId);
     if (!bundle) return fail("not_found");
     if (bundle.integrity === "invalid") return fail("invalid_stored_content");
@@ -164,6 +170,7 @@ export async function deleteGuideSection(pageId: string, id: string): Promise<Gu
   await requireStaff(["admin", "editor"]);
   if (![pageId, id].every(uuid)) return invalid({ id: "Invalid ID." });
   try {
+    if (await isGuideAdapted(pageId)) return fail("ownership");
     const bundle = await getGuideForEdit(pageId);
     if (!bundle) return fail("not_found");
     if (bundle.integrity === "invalid") return fail("invalid_stored_content");

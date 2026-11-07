@@ -10,8 +10,18 @@ import {
   loadSlugs,
   resolveSlug,
 } from "@core/i18n/content";
-import { type MediaAsset, type MediaImageData, loadMedia, mediaUrl } from "@core/media";
-import { CITY, GEO_TAGS, getCityBySlug, listCities } from "@slices/geography/contract";
+import {
+  type MediaAsset,
+  type MediaImageData,
+  loadMedia,
+  mediaUrl,
+} from "@core/media";
+import {
+  CITY,
+  GEO_TAGS,
+  getCityBySlug,
+  listCities,
+} from "@slices/geography/contract";
 import {
   GUIDE_PAGE,
   GUIDE_PLACE,
@@ -30,9 +40,18 @@ import {
   type GuideSection,
   type GuideTemplate,
 } from "../contract";
-import { normalizedRecommendationScope, recommendationScopeKey, type GuideRecommendationScope } from "./recommendation-scope";
+import { loadGuidePublications } from "./locale-public";
+import { guideRecommendationType } from "../locale-content";
+import {
+  normalizedRecommendationScope,
+  recommendationScopeKey,
+  type GuideRecommendationScope,
+} from "./recommendation-scope";
 import { guide_page, guide_place, guide_section } from "../schema";
-import { applyGuideSectionPresentation, isGuideModuleVisible } from "../presentation";
+import {
+  applyGuideSectionPresentation,
+  isGuideModuleVisible,
+} from "../presentation";
 import { safeGuideHttpUrl } from "../ui/format";
 
 /**
@@ -89,7 +108,13 @@ async function _listGuideCityGroups(locale: Locale): Promise<GuideCityGroup[]> {
   const cityById = new Map(cities.map((c) => [c.id, c]));
 
   // Drop guides whose city is unpublished/absent.
-  const visible = rows.filter((r) => cityById.has(r.city_id));
+  const publications = await loadGuidePublications(
+    rows.map((r) => r.id),
+    locale,
+  );
+  const visible = rows.filter(
+    (r) => cityById.has(r.city_id) && publications.get(r.id) !== null,
+  );
   if (visible.length === 0) return [];
 
   const refs: ContentRef[] = [];
@@ -111,14 +136,22 @@ async function _listGuideCityGroups(locale: Locale): Promise<GuideCityGroup[]> {
 
   const summaries = visible.map((r): GuidePageSummary => {
     const city = cityById.get(r.city_id)!;
-    const cityRef: GuideCityRef = { id: city.id, slug: city.slug, name: city.name };
-    const title = content.get(GUIDE_PAGE, r.id, "title") ?? "";
+    const cityRef: GuideCityRef = {
+      id: city.id,
+      slug: city.slug,
+      name: city.name,
+    };
+    const publication = publications.get(r.id)?.envelope.content;
+    const title =
+      publication?.title ?? content.get(GUIDE_PAGE, r.id, "title") ?? "";
     return {
       id: r.id,
       slug: slugs.get(r.id) ?? "",
       template: r.template,
       title,
-      intro: content.get(GUIDE_PAGE, r.id, "intro") ?? null,
+      intro: publication
+        ? publication.intro
+        : (content.get(GUIDE_PAGE, r.id, "intro") ?? null),
       hero: r.hero_media_id
         ? toImageData(
             media.get(r.hero_media_id),
@@ -136,7 +169,10 @@ async function _listGuideCityGroups(locale: Locale): Promise<GuideCityGroup[]> {
   for (const city of cities) {
     const guides = summaries.filter((s) => s.city.id === city.id);
     if (guides.length === 0) continue;
-    groups.push({ city: { id: city.id, slug: city.slug, name: city.name }, guides });
+    groups.push({
+      city: { id: city.id, slug: city.slug, name: city.name },
+      guides,
+    });
   }
   return groups;
 }
@@ -144,7 +180,7 @@ async function _listGuideCityGroups(locale: Locale): Promise<GuideCityGroup[]> {
 export function listGuideCityGroups(locale: Locale): Promise<GuideCityGroup[]> {
   return unstable_cache(
     () => _listGuideCityGroups(locale),
-    ["guides:listGuideCityGroups", locale],
+    ["guides:v2:listGuideCityGroups", locale],
     { tags: [GUIDE_TAGS.list, GEO_TAGS.list] },
   )();
 }
@@ -176,7 +212,7 @@ async function _getGuidePage(
   if (!page || page.city_id !== city.id) return null;
 
   // Sections (ordered) + their places (ordered).
-  const sectionRows = await db
+  let sectionRows = await db
     .select({
       id: guide_section.id,
       layout: guide_section.layout,
@@ -189,7 +225,7 @@ async function _getGuidePage(
     .orderBy(asc(guide_section.position), asc(guide_section.id));
 
   const sectionIds = sectionRows.map((s) => s.id);
-  const placeRows = sectionIds.length
+  let placeRows = sectionIds.length
     ? await db
         .select({
           id: guide_place.id,
@@ -209,6 +245,35 @@ async function _getGuidePage(
         .where(inArray(guide_place.guide_section_id, sectionIds))
         .orderBy(asc(guide_place.position), asc(guide_place.id))
     : [];
+
+  const publication = (await loadGuidePublications([id], locale)).get(id);
+  if (publication === null) return null;
+  if (publication) {
+    const tree = publication.envelope.content;
+    sectionRows = tree.sections.map((s) => ({
+      id: s.id,
+      layout: s.layout,
+      header_media_id: s.header_media_id,
+      cta_url: s.cta_url,
+      presentation: s.presentation,
+    }));
+    placeRows = tree.sections.flatMap((s) =>
+      s.places.map((p) => ({
+        id: p.id,
+        guide_section_id: s.id,
+        category: p.category,
+        address: p.address,
+        phone: p.phone,
+        price_tier: p.price_tier,
+        opening_hours: p.opening_hours,
+        latitude: p.latitude,
+        longitude: p.longitude,
+        website_url: p.website_url,
+        booking_url: p.booking_url,
+        media_id: p.media_id,
+      })),
+    );
+  }
 
   // One batched [T] + media load for the whole tree.
   const refs: ContentRef[] = [{ type: GUIDE_PAGE, id }];
@@ -237,23 +302,50 @@ async function _getGuidePage(
     loadAlternateSlugs(CITY, page.city_id),
   ]);
 
+  // Publications are independent, even when their text originally inherited EN.
+  const alternatePublications = await Promise.all(
+    LOCALES.map(
+      async (l) => [l, (await loadGuidePublications([id], l)).get(id)] as const,
+    ),
+  );
+  const publicationByLocale = new Map(alternatePublications);
+  const localized = (
+    type: string,
+    entityId: string,
+    field: string,
+  ): string | null | undefined => {
+    if (!publication) return content.get(type, entityId, field);
+    const tree = publication.envelope.content;
+    const node =
+      type === GUIDE_PAGE
+        ? tree
+        : type === GUIDE_SECTION
+          ? tree.sections.find((s) => s.id === entityId)
+          : tree.sections
+              .flatMap((s) => s.places)
+              .find((p) => p.id === entityId);
+    return node
+      ? (node as unknown as Record<string, string | null>)[field]
+      : null;
+  };
   // hreflang alternates: only locales where both the city and page slug exist.
   const alternates: GuidePageDetail["alternates"] = {};
   for (const l of LOCALES) {
     const cSlug = cityAlts[l];
     const pSlug = pageAlts[l];
-    if (cSlug && pSlug) alternates[l] = { city: cSlug, slug: pSlug };
+    if (cSlug && pSlug && publicationByLocale.get(l) !== null)
+      alternates[l] = { city: cSlug, slug: pSlug };
   }
 
-  const title = content.get(GUIDE_PAGE, id, "title") ?? "";
+  const title = localized(GUIDE_PAGE, id, "title") ?? "";
 
   const placesBySection = new Map<string, GuidePlace[]>();
   for (const p of placeRows) {
-    const name = content.get(GUIDE_PLACE, p.id, "name") ?? "";
+    const name = localized(GUIDE_PLACE, p.id, "name") ?? "";
     const place: GuidePlace = {
       id: p.id,
       name,
-      description: content.get(GUIDE_PLACE, p.id, "description") ?? null,
+      description: localized(GUIDE_PLACE, p.id, "description") ?? null,
       category: p.category,
       address: p.address,
       phone: p.phone,
@@ -280,30 +372,37 @@ async function _getGuidePage(
   // Filter here so every public consumer (including gallery, TOC and counts) sees the same tree.
   // Admin reads use their own unfiltered query and retain hidden content.
   const sections: GuideSection[] = sectionRows.flatMap((s) => {
-    const ctaLabel = content.get(GUIDE_SECTION, s.id, "cta_label") ?? undefined;
-    const sTitle = content.get(GUIDE_SECTION, s.id, "title") ?? "";
+    const ctaLabel = localized(GUIDE_SECTION, s.id, "cta_label") ?? undefined;
+    const sTitle = localized(GUIDE_SECTION, s.id, "title") ?? "";
     const ctaUrl = safeGuideHttpUrl(s.cta_url);
-    const section = applyGuideSectionPresentation({
-      id: s.id,
-      layout: s.layout as GuideLayout,
-      title: sTitle,
-      body: content.get(GUIDE_SECTION, s.id, "body") ?? null,
-      localTip: content.get(GUIDE_SECTION, s.id, "local_tip") ?? null,
-      headerImage: s.header_media_id
-        ? toImageData(
-            media.get(s.header_media_id),
-            content.get("media_asset", s.header_media_id, "alt") ?? sTitle,
-            TILE_W,
-            TILE_H,
-          )
-        : null,
-      cta: ctaLabel && ctaUrl ? { label: ctaLabel, url: ctaUrl } : null,
-      places: placesBySection.get(s.id) ?? [],
-    }, s.presentation);
+    const section = applyGuideSectionPresentation(
+      {
+        id: s.id,
+        layout: s.layout as GuideLayout,
+        title: sTitle,
+        body: localized(GUIDE_SECTION, s.id, "body") ?? null,
+        localTip: localized(GUIDE_SECTION, s.id, "local_tip") ?? null,
+        headerImage: s.header_media_id
+          ? toImageData(
+              media.get(s.header_media_id),
+              content.get("media_asset", s.header_media_id, "alt") ?? sTitle,
+              TILE_W,
+              TILE_H,
+            )
+          : null,
+        cta: ctaLabel && ctaUrl ? { label: ctaLabel, url: ctaUrl } : null,
+        places: placesBySection.get(s.id) ?? [],
+      },
+      s.presentation,
+    );
     return section ? [section] : [];
   });
 
-  const cityRef: GuideCityRef = { id: city.id, slug: city.slug, name: city.name };
+  const cityRef: GuideCityRef = {
+    id: city.id,
+    slug: city.slug,
+    name: city.name,
+  };
   const hero = page.hero_media_id
     ? toImageData(
         media.get(page.hero_media_id),
@@ -328,12 +427,12 @@ async function _getGuidePage(
     slug: (await loadSlugs(GUIDE_PAGE, [id], locale)).get(id) ?? pageSlug,
     template: page.template as GuideTemplate,
     title,
-    intro: content.get(GUIDE_PAGE, id, "intro") ?? null,
+    intro: localized(GUIDE_PAGE, id, "intro") ?? null,
     hero,
     city: cityRef,
     sections,
-    metaTitle: content.get(GUIDE_PAGE, id, "meta_title") ?? undefined,
-    metaDescription: content.get(GUIDE_PAGE, id, "meta_description") ?? undefined,
+    metaTitle: localized(GUIDE_PAGE, id, "meta_title") ?? undefined,
+    metaDescription: localized(GUIDE_PAGE, id, "meta_description") ?? undefined,
     ogImage,
     alternates,
   };
@@ -346,7 +445,7 @@ export function getGuidePage(
 ): Promise<GuidePageDetail | null> {
   return unstable_cache(
     () => _getGuidePage(locale, citySlug, pageSlug),
-    ["guides:getGuidePage", locale, citySlug, pageSlug],
+    ["guides:v2:getGuidePage", locale, citySlug, pageSlug],
     { tags: [GUIDE_TAGS.list, GEO_TAGS.list] },
   )();
 }
@@ -365,9 +464,13 @@ export function getGuidePage(
  * 4. Output follows `RECOMMENDATION_TYPES` order (Restaurant, Viewpoint, Beach); a type with
  *    no candidate is skipped (so the result may be shorter than `limit`, or empty).
  */
-async function _listTopRecommendations(locale: Locale, limit: number, cityIds?: readonly string[]): Promise<GuideRecommendation[]> {
+async function _listTopRecommendations(
+  locale: Locale,
+  limit: number,
+  cityIds?: readonly string[],
+): Promise<GuideRecommendation[]> {
   if (limit <= 0 || cityIds?.length === 0) return [];
-  const rows = await db
+  const legacyRows = await db
     .select({
       id: guide_place.id,
       category: guide_place.category,
@@ -378,7 +481,10 @@ async function _listTopRecommendations(locale: Locale, limit: number, cityIds?: 
       city_id: guide_page.city_id,
     })
     .from(guide_place)
-    .innerJoin(guide_section, eq(guide_place.guide_section_id, guide_section.id))
+    .innerJoin(
+      guide_section,
+      eq(guide_place.guide_section_id, guide_section.id),
+    )
     .innerJoin(guide_page, eq(guide_section.guide_page_id, guide_page.id))
     .where(
       and(
@@ -386,20 +492,79 @@ async function _listTopRecommendations(locale: Locale, limit: number, cityIds?: 
         cityIds ? inArray(guide_page.city_id, [...cityIds]) : undefined,
         isNotNull(guide_place.media_id),
         isNotNull(guide_place.address),
-        inArray(sql<string>`lower(trim(${guide_place.category}))`, [...RECOMMENDATION_TYPES]),
+        inArray(sql<string>`lower(trim(${guide_place.category}))`, [
+          ...RECOMMENDATION_TYPES,
+        ]),
       ),
     )
-    .orderBy(asc(guide_page.position), asc(guide_page.id), asc(guide_section.position), asc(guide_section.id), asc(guide_place.position), asc(guide_place.id));
-  if (rows.length === 0) return [];
-
+    .orderBy(
+      asc(guide_page.position),
+      asc(guide_page.id),
+      asc(guide_section.position),
+      asc(guide_section.id),
+      asc(guide_place.position),
+      asc(guide_place.id),
+    );
+  const publishedGuides = await db
+    .select({
+      id: guide_page.id,
+      city_id: guide_page.city_id,
+      position: guide_page.position,
+    })
+    .from(guide_page)
+    .where(eq(guide_page.status, "published"))
+    .orderBy(asc(guide_page.position), asc(guide_page.id));
+  const publications = await loadGuidePublications(
+    publishedGuides.map((g) => g.id),
+    locale,
+  );
+  const rows = legacyRows.filter((r) => !publications.has(r.page_id));
   const cities = await listCities(locale);
   const cityById = new Map(cities.map((c) => [c.id, c]));
 
+  const localizedPlaces = new Map<
+    string,
+    { name: string; description: string | null; category: string | null }
+  >();
+  for (const guide of publishedGuides) {
+    const publication = publications.get(guide.id);
+    if (!publication || (cityIds && !cityIds.includes(guide.city_id))) continue;
+    for (const section of publication.envelope.content.sections)
+      for (const place of section.places) {
+        const type =
+          publication.shared.places[place.id]?.recommendation_type ?? null;
+        if (!type || !place.media_id || !place.address) continue;
+        rows.push({
+          id: place.id,
+          category: type,
+          address: place.address,
+          media_id: place.media_id,
+          page_id: guide.id,
+          presentation: section.presentation,
+          city_id: guide.city_id,
+        });
+        localizedPlaces.set(place.id, {
+          name: place.name,
+          description: place.description,
+          category: place.category,
+        });
+      }
+  }
+  const guideOrder = new Map(publishedGuides.map((g, i) => [g.id, i]));
+  rows.sort(
+    (a, b) =>
+      (guideOrder.get(a.page_id) ?? 0) - (guideOrder.get(b.page_id) ?? 0),
+  );
   // Candidates per type in reading order (several per type, in case an asset is missing).
   const byType = new Map<GuideRecommendationType, typeof rows>();
   for (const r of rows) {
-    if (!cityById.has(r.city_id) || !r.address?.trim() || !isGuideModuleVisible(r.presentation, "places")) continue;
-    const type = r.category!.trim().toLowerCase() as GuideRecommendationType;
+    if (
+      !cityById.has(r.city_id) ||
+      !r.address?.trim() ||
+      !isGuideModuleVisible(r.presentation, "places")
+    )
+      continue;
+    const type = guideRecommendationType(r.category)!;
     const list = byType.get(type) ?? [];
     list.push(r);
     byType.set(type, list);
@@ -410,7 +575,10 @@ async function _listTopRecommendations(locale: Locale, limit: number, cityIds?: 
   const refs: ContentRef[] = [];
   const pageIds = [...new Set(candidates.map((r) => r.page_id))];
   for (const r of candidates) {
-    refs.push({ type: GUIDE_PLACE, id: r.id }, { type: "media_asset", id: r.media_id! });
+    refs.push(
+      { type: GUIDE_PLACE, id: r.id },
+      { type: "media_asset", id: r.media_id! },
+    );
   }
   const [content, media, slugs] = await Promise.all([
     loadContent(refs, locale),
@@ -423,7 +591,10 @@ async function _listTopRecommendations(locale: Locale, limit: number, cityIds?: 
     if (out.length >= limit) break;
     for (const r of byType.get(type) ?? []) {
       const guideSlug = slugs.get(r.page_id);
-      const name = content.get(GUIDE_PLACE, r.id, "name") ?? "";
+      const own = localizedPlaces.get(r.id);
+      const name = own
+        ? own.name
+        : (content.get(GUIDE_PLACE, r.id, "name") ?? "");
       const image = toImageData(
         media.get(r.media_id!),
         content.get("media_asset", r.media_id!, "alt") ?? name,
@@ -435,8 +606,10 @@ async function _listTopRecommendations(locale: Locale, limit: number, cityIds?: 
         id: r.id,
         type,
         name,
-        description: content.get(GUIDE_PLACE, r.id, "description") ?? null,
-        category: r.category!.trim(),
+        description: own
+          ? own.description
+          : (content.get(GUIDE_PLACE, r.id, "description") ?? null),
+        category: own?.category?.trim() ?? r.category!.trim(),
         address: r.address!.trim(),
         image,
         guide: { citySlug: cityById.get(r.city_id)!.slug, slug: guideSlug },
@@ -447,10 +620,24 @@ async function _listTopRecommendations(locale: Locale, limit: number, cityIds?: 
   return out;
 }
 
-export function listTopRecommendations(locale: Locale, limit = 3, scope?: GuideRecommendationScope): Promise<GuideRecommendation[]> {
+export function listTopRecommendations(
+  locale: Locale,
+  limit = 3,
+  scope?: GuideRecommendationScope,
+): Promise<GuideRecommendation[]> {
   return unstable_cache(
-    () => _listTopRecommendations(locale, limit, normalizedRecommendationScope(scope)),
-    ["guides:listTopRecommendations", locale, String(limit), recommendationScopeKey(scope)],
+    () =>
+      _listTopRecommendations(
+        locale,
+        limit,
+        normalizedRecommendationScope(scope),
+      ),
+    [
+      "guides:v2:listTopRecommendations",
+      locale,
+      String(limit),
+      recommendationScopeKey(scope),
+    ],
     { tags: [GUIDE_TAGS.list, GEO_TAGS.list] },
   )();
 }
@@ -468,7 +655,8 @@ export async function listGuideParams(): Promise<
     const groups = await listGuideCityGroups(locale);
     for (const g of groups) {
       for (const guide of g.guides) {
-        if (guide.slug) out.push({ locale, city: g.city.slug, slug: guide.slug });
+        if (guide.slug)
+          out.push({ locale, city: g.city.slug, slug: guide.slug });
       }
     }
   }

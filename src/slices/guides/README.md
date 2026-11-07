@@ -195,3 +195,35 @@ is recorded separately; isolated fixtures must never be confused with production
 `GuidesListingRenderer` accepts optional injected Pages content and private preview
 annotations; the public listing uses the same renderer and retains slice catalogue queries.
 Editorial draft/publish lives in Pages, while individual entity workflows remain here.
+
+### Guide locale forms (ADR0066)
+
+The existing guide form now edits one complete tree per language. EN supplies the
+working content of untouched ES/PT/FR; the first actual localized text/tree edit
+makes that language independent. Save draft and Publish act on the selected
+language only. GET projects legacy translations without writing. The first save
+or archive bootstraps published baselines and private pending translations into
+`guide_locale_content`, preserving legacy rows, translations and URLs.
+
+Common city/template/position, images, section layout/module visibility and place
+physical facts are stored in `guide_shared_content`. Stable section/place UUIDs
+join this document to each localized tree. Historical map entries and the first
+registered place parent remain intact when a localized tree removes or moves a
+node. Save atomically checks the selected language, inherited English template,
+common revision and node ownership under the same graph lock; it registers new
+neutral nodes without deleting historical identities. Complete common maps can
+include nodes present only in another language's unsaved form.
+
+Public readers use only each language's publication plus the latest common data.
+Unpublished languages do not fall back to English publications. Detail sections,
+counts, mosaic, recommendations, listings, static params and alternates therefore
+share the same published tree and visibility. The EN-derived common recommendation
+classification remains stable when a place's displayed category is translated.
+Legacy granular mutations refuse adapted roots, and legacy translation links
+resolve child ownership back to the whole-guide editor.
+
+Backend checks: `tests/guide-locale-model.test.ts` and
+`tests/guide-locales.integration.test.ts`. The latter guards synthetic DB hostname,
+DB and role before any writes, uses only its e790 fixtures, and cleans them in the
+after hook. It requires the local server-only/static asset loader, AsyncLocalStorage
+preload and a test-only staff loader when run outside a Next request.
