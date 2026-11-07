@@ -1,13 +1,14 @@
 # Contenidos del CMS — edición y publicación por idioma
 
-## Estado vigente — 2026-11-06, después de Guías
+## Estado vigente — 2026-11-07, después de autores/categorías Blog
 
-El usuario autorizó Guías individuales como primer paso para retirar
-`/admin/translations`. Implementación agregada por idioma completada y aprobada en QA
-independiente; ver [ejecución/inventario](guide-locale-forms-execution.md) y ADR0066.
-Entrega integrada en main local; QA0323617 aprueba el producto2ad160d.
-La sección global sigue activa para los auxiliares pendientes. Este estado
-supersede las notas históricas inferiores; no autoriza iniciar esos auxiliares.
+Guías y autores/categorías Blog completados y aprobados en QA independiente.
+Autores tienen nombre/bio EN/ES/PT/FR; categorías, cuatro nombres en la misma ficha,
+sin tabs y con un Guardar. Textos vacíos usan EN, referencias/selecciones y posts
+se conservan; el lector usa el idioma del post. Ver [ejecución](blog-reference-locales.md),
+ADR0067 y [Guías](guide-locale-forms-execution.md). La sección global sigue activa
+para auxiliares pendientes. Ciudades y barrios quedan explícitamente para después;
+esta entrega no autoriza iniciar otros auxiliares. Prevalece sobre notas históricas.
 
 | Bloque | Estado actual |
 |---|---|
@@ -17,18 +18,17 @@ supersede las notas históricas inferiores; no autoriza iniciar esos auxiliares.
 | Amenities | Cuatro labels manuales + nombres públicos/selector localizados, entregados (ADR0064) |
 | Fase3: Servicios y categorías | Entregada en main local; formulario/módulos/SEO, cuatro idiomas y datos comunes (ADR0065); ver service-locale-forms-execution.md y QA |
 | Fase4: Guías individuales | Implementación completa y QA aprobada: guía/secciones/lugares por idioma, draft/Publish explícitos, imágenes comunes por UUID, composición antes del primer Save (ADR0066) |
-| Fase5: auxiliares y retirada de Translations | Pendiente según inventario siguiente |
+| Autores/categorías Blog | Inputs EN/ES/PT/FR en una ficha, públicos y selector localizados, vías antiguas de Translations retiradas (ADR0067) |
+| Fase5: restantes auxiliares y retirada de Translations | Pendiente según inventario siguiente |
 
 ### Dependencias pendientes para retirar la sección global
 
-1. **Auxiliares con formularios aún EN**: autores (`name`, `bio`), categorías Blog
-   (`name`), ciudades (`name`, `intro`), barrios (`name`), FAQ generales
-   (`question`, `answer`), testimonios (`quote`), textos globales de Settings
-   (`company_settings`) y etiquetas de navegación (`nav_item`). Resolver autoría
-   en sus formularios, con el patrón adecuado a cada entidad. Nombres propios
-   pueden ser compartidos si se define explícitamente; no requieren duplicarse
-   sólo por existir en translation. Las FAQ de Building ya pertenecen a su editor;
-   este pendiente corresponde a `faq_item` general.
+1. **Auxiliares pendientes**: ciudades y barrios (definición diferida por el
+   usuario; puede conservarse el nombre local compartido, mientras `intro` es
+   texto traducible), FAQ generales (`question`, `answer`), testimonios (`quote`),
+   textos globales de Settings (`company_settings`) y etiquetas de navegación
+   (`nav_item`). Resolver su autoría en cada ficha con el patrón adecuado. Las
+   FAQ de Building ya pertenecen a su editor; aquí corresponde `faq_item` general.
 2. **Metadatos de imágenes**: cubrir `media_asset.alt` mediante una superficie
    propia si se conserva su edición manual. Actualmente el lector soporta ALT
    localizado y su fallback, pero no hay editor de metadatos que sustituya la
@@ -42,14 +42,14 @@ supersede las notas históricas inferiores; no autoriza iniciar esos auxiliares.
    Conservar kernel i18n y tabla translation: taxonomías y otros lectores la siguen
    usando. Quitar una sección de interfaz no implica borrar sus datos.
 
-### Evidencia y límite de esta revisión
+### Evidencia histórica de la revisión inicial
 
 Código: translation/admin/{queries,actions}.ts, server/generate.ts y ui/review.tsx;
 form/action/query de guides, blog, geography, faq, testimonials y settings.
-Se realizó sólo lectura agregada de la DB/rol verificados propertylocalesqa local,
-con safeenv existente: doce entity_type tienen filas legacy. Ocho siguen dentro
+Antes de Guías y estos inputs se realizó sólo lectura agregada de DB/rol propertylocalesqa local,
+con safeenv existente: doce entity_type tienen filas legacy. Ocho seguían dentro
 del filtro genérico: amenity, author, blog_category, city, faq_item, neighbourhood,
-service y service_category. Blog/Building/Apartment/BuildingFAQ ya se excluyen.
+service y service_category. Blog/Building/Apartment/BuildingFAQ ya se excluían; ahora también Guías, autores y categorías Blog.
 Las filas de Services/taxonomías no prueban falta de editor: su cobertura está
 entregada, pero aún falta retirar la vía antigua. Los lectores por idioma propios
 son los autoritativos donde ya se adaptó contenido.

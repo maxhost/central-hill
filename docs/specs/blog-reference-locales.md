@@ -120,3 +120,23 @@ pasaron y limpiaron e800. UI13pure/typecheck/lint0. Root49regresiones puras0.
 Revisión detectó ENname sólo espacios aceptado por schema antiguo; root2864c61
 trim+min1 antes de writes, regresión pura agregada al test integrado tras handoff.
 No cambios de DB/esquema ni datos existentes. Compilación y QA siguen pendientes.
+
+Candidato integrado c155184: root typecheck0, lint0/7warnings previos,59tests0
+(54puros+5DB; incluye regresión whitespaceEN y default/opt-in kernel clears), e800
+limpiados antes de build. Build0/136páginas con2workers, config intacta; warning
+metadataBase de entorno sintético preexistente. Todos los logs en directorioQA.
+Root comparó42hashes previos al seed/store con baseline independiente: idénticos.
+
+QA arranca3grupos sobre producción3071PID31418/session66340, único listener desde
+integración. Root detuvo sólo main8218/8212 tras verificar cwd. Login200, storage/
+DB/proxy preservados. Main ff y runtime definitivo pendientes de QA.
+
+QA independiente completó3grupos sobre c155184: inputs/Save/reload/rawpending;
+selector+public4locales+related/JSONLD/privatepreview; ENrename/clears/ENbioclear/
+fallback/legacyroutes/auth/mobile.0pageerrors,42hashes protegidos idénticos a antes
+seed/store, todos los posts/pubs/drafts/revs y neutralrefs intactos. No defecto ni
+corrección de producto en QA. Único ajuste de harness: JournalCard existente no
+muestra authorbyline, se comprueba allí categoría y en detalle/preview el autor.
+Nuevos e801 y autor32f7330c-3e42-477e-a053-84bea16ad0d5/categoría8e4e5605-dce4-
+4360-8cb6-9569bb94303d retenidos, sin assets nuevos. Rootcomparación final en
+final-protected-comparison.json; IDs exactos independent/owned-ids.json.
