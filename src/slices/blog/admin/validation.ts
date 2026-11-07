@@ -39,7 +39,7 @@ export const blogCategorySaveInput = z.object({
     .or(z.string().min(1).max(32)),
   position,
   // [T] source value (en):
-  name: tStr({ min: 1, max: 80 }),
+  name: tStr({ min: 1, max: 80 }).trim().min(1),
   translations: categoryTranslations.optional(),
 });
 export type BlogCategorySaveInput = z.infer<typeof blogCategorySaveInput>;
@@ -50,7 +50,7 @@ export const authorSaveInput = z.object({
   status: contentStatus,
   avatar_media_id: z.uuid().nullable(),
   // [T] source values (en):
-  name: tStr({ min: 1, max: 120 }),
+  name: tStr({ min: 1, max: 120 }).trim().min(1),
   bio: tStr({ max: 1000 }).nullable(),
   translations: authorTranslations.optional(),
 });
