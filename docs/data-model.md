@@ -553,6 +553,20 @@ apply neutral flags after locale resolution. Existing title/CTA fields remain au
   - (`booking_type='external'` → `cta_url` to the existing centralhill.pt/partner page; `'enquiry'`
     → routes to the guest contact path. No price *variants* — single `price_from`.)
 
+ADR0065 / migration0027 adds **service_locale_content** (service_id+locale unique,
+version1 draft/published JSON, monotonic revision, text actor and timestamps) and
+**service_shared_content** (one version1 shared JSON/revision/actor per service).
+Existing translation/slug rows remain intact; read-only legacy projection and lazy
+bootstrap preserve approved public and pending private values. Adapted Service text,
+SEO and booking label/URL publish explicitly per language. Targets follow saved EN
+until their first localized edit, then remain independently owned. Shared Save
+updates common media, category, price/rating/booking type and presentation live
+across published locales without publishing their text. Facts/itinerary have optional
+stable ids; nested icons/media are shared maps keyed by id, preserving custom row
+text/order. Reordering never joins assets by current array index. Categories retain
+one shared id and translatable `name`; one manual taxonomy Save approves ES/PT/FR,
+blank target falls back to EN, omitted translations preserve older clients.
+
 ### Slice `guides` — "What to Do" city guides (hierarchical content tree)
 - **guide_page**: `id, city_id→city, template, slug, status, position, hero_media_id, og_image_media_id?`.
   `template` ∈ `landing | eat | beaches | events | secrets | families | groups | travellers | custom`.

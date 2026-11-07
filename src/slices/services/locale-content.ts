@@ -25,6 +25,11 @@ export function serviceSharedContent(content: ServiceContent, previous?: Service
     itineraryMedia: { ...previous?.itineraryMedia, ...Object.fromEntries(c.detail.itinerary.map(s => [s.id!, s.media_id ?? null])) },
   };
 }
+function withoutKey<T extends object, K extends keyof T>(value: T, key: K): Omit<T, K> {
+  const result = { ...value };
+  Reflect.deleteProperty(result, key);
+  return result;
+}
 export function overlayServiceShared(envelope: ServiceEnvelope, shared: ServiceSharedContent): ServiceEnvelope {
   const c = identifyServiceContent(envelope.content);
   const root = Object.fromEntries(SERVICE_SHARED_KEYS.map(key => [key, structuredClone(shared[key])]));
@@ -33,7 +38,7 @@ export function overlayServiceShared(envelope: ServiceEnvelope, shared: ServiceS
       facts: c.detail.facts.map(f => ({ ...f, icon: shared.factIcons[f.id!] ?? f.icon })),
       itinerary: c.detail.itinerary.map(s => {
         if (!Object.hasOwn(shared.itineraryMedia, s.id!)) return s;
-        const { media_id: _old, ...text } = s;
+        const text = withoutKey(s, "media_id");
         const id = shared.itineraryMedia[s.id!];
         return { ...text, ...(id ? { media_id: id } : {}) };
       }),
@@ -45,8 +50,8 @@ export function serviceLocalizedContent(content: ServiceContent): unknown {
   const local = { ...c } as Partial<ServiceContent>;
   for (const key of SERVICE_SHARED_KEYS) delete local[key];
   return { ...local, detail: { ...c.detail,
-    facts: c.detail.facts.map(({ icon: _icon, ...text }) => text),
-    itinerary: c.detail.itinerary.map(({ media_id: _media, ...text }) => text),
+    facts: c.detail.facts.map(fact => withoutKey(fact, "icon")),
+    itinerary: c.detail.itinerary.map(step => withoutKey(step, "media_id")),
   } };
 }
 /** JSONB does not retain object key order. Array order remains meaningful. */

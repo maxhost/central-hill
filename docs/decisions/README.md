@@ -1332,3 +1332,7 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 
 - [0064 — Manual Amenity labels](0064-manual-amenity-labels.md): EN/ES/PT/FR
   authoring, approved locale names and shared Building selections.
+
+- [0065 — Service locale forms](0065-service-locale-forms.md): independent locale
+  drafts/publications, live shared media/category/icons, stable nested identities
+  and manual category names in EN/ES/PT/FR.

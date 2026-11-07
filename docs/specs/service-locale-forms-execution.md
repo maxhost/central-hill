@@ -78,6 +78,11 @@ serviceId, locale, expectedRevision, templateRevision, expectedSharedRevision,
 payload and creation slug. Result returns refreshed full model; clients preserve
 unsaved other-language edits while rebasing shared state. Publish takes selected
 revision only, consumes saved draft only. Dirty selected work must be saved first.
+Service visibility controls preserve the old status selector capabilities: explicit
+Archive/Restore act across languages without consuming drafts/publications. An
+archived Service stays editable; Save preserves archive, Restore uses existing
+publications (or draft status), selected Publish reactivates that identity. This
+compatibility correction concerns Services only, no Apartment follow-up.
 Server uses existing db.batch/graph lock and CAS, including shared+locale atomicity;
 stale locale/template/shared writes fail without partial mutation. Validate category,
 image availability/MIME and effective conditional/booking constraints. Enforce size
@@ -140,7 +145,7 @@ groups complement one another; do not repeat an approved matrix without cause.
 
 ## Progress
 
-Inventory complete. No product implementation or DB changes at this plan checkpoint.
+Inventory complete. Inventory completed before implementation.
 Contracts d447c10 committed before branching both consumers. User explicitly approved
 0027 only propertylocalesqa. Root generated complete snapshot metadata, then
 verified hostname/DB/role and applied its four statements atomically. SHA256
