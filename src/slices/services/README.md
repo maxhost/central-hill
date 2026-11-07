@@ -178,3 +178,37 @@ translatable-path contract. `tests/services-admin.test.ts` — the admin save sc
 `ServicesListingRenderer` accepts optional injected Pages content and private preview
 annotations; the public listing uses the same renderer and retains slice catalogue queries.
 Editorial draft/publish lives in Pages, while individual entity workflows remain here.
+
+
+## Service language forms (ADR0065 / migration0027)
+
+The existing create/edit form has EN/ES/PT/FR workspaces, explicit per-language
+Save draft and Publish, English inheritance until the first actual localized edit,
+and protected local unsaved work. Locale snapshots live in service_locale_content;
+live common data lives in service_shared_content. A read-only GET projects legacy
+content without backfilling. First mutation preserves historical publications,
+raw pending translations, localized slugs and retired copy overrides. New identities
+are unpublished until a language is explicitly published. Public listing/detail,
+metadata, Home consumers and static params use actual published locale snapshots.
+
+Cover/gallery/OG and nested itinerary photos are common. Category and icons are
+chosen in English; all tabs use one selected identity. Facts/itinerary carry stable
+optional JSON ids, preserving legacy ordinal slots once and new UUIDs thereafter;
+shared nested maps join by id, never by current localized array position. Common
+Save updates public assets and neutral values without rewriting target text or SEO.
+Label/URL booking copy, duration, pricing display strings and full Service SEO stay
+localized. All conditional modules and existing enquiry/external/none behavior stay.
+
+Service categories use the existing `name` translation field: four manual inputs,
+English required, blank targets fall back to English, old clients omitting target
+fields preserve them. One Save approves manual target labels through existing core
+seams; selectors/public cards read approved names per locale. Rename invalidates
+service caches without Service republishing. Legacy direct Save rejects identities
+already using locale rows. Staff-only locale actions enforce reference validation,
+EN-only choices, revision CAS and graph-locked atomic locale/common writes.
+Archive is reversible visibility: Save retains archive, Restore preserves drafts,
+and explicit selected-language Publish reactivates the service.
+
+Meaningful coverage: tests/service-locale-model.test.ts and
+service-locales.integration.test.ts (synthetic propertylocalesqa e780 fixtures only).
+Execution/permissions/results: docs/specs/service-locale-forms-execution.md.

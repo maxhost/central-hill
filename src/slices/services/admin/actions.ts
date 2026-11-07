@@ -21,7 +21,8 @@ import {
 } from "@core/i18n/content-write";
 import { SERVICE, SERVICE_CATEGORY } from "../contract";
 import { isEmptyDetail } from "../detail";
-import { service, service_category, service_media } from "../schema";
+import { service, service_category, service_media, service_locale_content } from "../schema";
+import { saveServiceCategoryNames } from "../server/category-names";
 import { revalidateServices } from "../server/publish";
 import {
   type ServiceSaveInput,
@@ -113,16 +114,12 @@ export async function saveServiceCategory(
       id = ins.id;
     }
 
-    await setSourceContent(
-      SERVICE_CATEGORY,
-      id,
-      { name: input.name },
-      { updatedBy: staff.userId },
-    );
+    await saveServiceCategoryNames(id, input, staff.userId);
 
     revalidateServices();
     revalidatePath("/admin/service-categories");
     revalidatePath(`/admin/service-categories/${id}`);
+    revalidatePath("/admin/services", "layout");
     return { ok: true, id };
   } catch {
     return { ok: false, error: "server" };
@@ -190,6 +187,8 @@ export async function saveService(raw: unknown): Promise<ServiceSaveResult> {
       : [];
     if (input.id && !existing) return { ok: false, error: "not_found" };
     if (existing) {
+      const [adapted] = await db.select({ id:service_locale_content.id }).from(service_locale_content).where(eq(service_locale_content.service_id,existing.id)).limit(1);
+      if (adapted) return { ok:false,error:"validation",fieldErrors:{ _source:"Use the language draft and publication controls for this service." } };
       const source = await loadContent(
         [{ type: SERVICE, id: existing.id }],
         "en",

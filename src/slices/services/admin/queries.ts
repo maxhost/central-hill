@@ -1,7 +1,7 @@
 import "server-only";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@core/db/client";
-import { type ContentRef, loadContent } from "@core/i18n/content";
+import { type ContentRef, loadContent, loadTranslationRows } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
 import {
@@ -19,7 +19,8 @@ import {
   type ServicePresentation,
 } from "../presentation";
 import { resolveServiceCopy, type ServiceCopy } from "../copy";
-import { service, service_category, service_media } from "../schema";
+import { service, service_category, service_media, service_locale_content } from "../schema";
+import { SERVICE_EDITOR_LOCALES, SERVICE_TARGET_LOCALES, type ServiceCategoryTranslations, type ServiceCategoryOption } from "../editorial-types";
 
 /**
  * Backoffice reads for slice `services` (S12). Not cache-wrapped (admin is dynamic)
@@ -67,6 +68,7 @@ export async function listServiceCategoriesAdmin(): Promise<
 }
 
 export interface ServiceCategoryEditData {
+  translations?: ServiceCategoryTranslations;
   id: string;
   slug: string;
   icon: string;
@@ -84,33 +86,25 @@ export async function getServiceCategoryForEdit(
     .where(eq(service_category.id, id))
     .limit(1);
   if (!row) return null;
-  const content = await loadContent([{ type: SERVICE_CATEGORY, id }], SOURCE);
+  const [content, authored] = await Promise.all([loadContent([{ type: SERVICE_CATEGORY, id }], SOURCE),loadTranslationRows({ type:SERVICE_CATEGORY,id })]);
   return {
     id: row.id,
     slug: row.slug,
     icon: row.icon ?? "",
     position: row.position,
     name: content.get(SERVICE_CATEGORY, id, "name") ?? "",
+    translations: Object.fromEntries(SERVICE_TARGET_LOCALES.map(locale => [locale,authored.find(row => row.locale === locale && row.field === "name")?.value ?? ""])) as ServiceCategoryTranslations,
   };
 }
 
-/** Lean `{ id, name }` category options (source names) for the service selector. */
-export async function listServiceCategoryOptions(): Promise<
-  { id: string; name: string }[]
-> {
-  const rows = await db
-    .select({ id: service_category.id, slug: service_category.slug })
-    .from(service_category)
-    .orderBy(asc(service_category.position));
-  if (rows.length === 0) return [];
-  const content = await loadContent(
-    rows.map((r) => ({ type: SERVICE_CATEGORY, id: r.id })),
-    SOURCE,
-  );
-  return rows.map((r) => ({
-    id: r.id,
-    name: content.get(SERVICE_CATEGORY, r.id, "name") ?? r.slug,
-  }));
+/** Category identity is shared; labels resolve independently in the selected tab. */
+export async function listServiceCategoryOptions(): Promise<ServiceCategoryOption[]> {
+  const rows = await db.select({ id:service_category.id,slug:service_category.slug }).from(service_category).orderBy(asc(service_category.position));
+  if (!rows.length) return [];
+  const refs = rows.map(row => ({ type:SERVICE_CATEGORY,id:row.id }));
+  const resolvers = await Promise.all(SERVICE_EDITOR_LOCALES.map(locale => loadContent(refs,locale)));
+  return rows.map(row => ({ id:row.id,name:resolvers[0]!.get(SERVICE_CATEGORY,row.id,"name")?.trim() || row.slug,
+    names:Object.fromEntries(SERVICE_EDITOR_LOCALES.map((locale,i) => [locale,resolvers[i]!.get(SERVICE_CATEGORY,row.id,"name")?.trim() || resolvers[0]!.get(SERVICE_CATEGORY,row.id,"name")?.trim() || row.slug])) as NonNullable<ServiceCategoryOption["names"]> }));
 }
 
 // ── Services ─────────────────────────────────────────────────────────────────
@@ -141,11 +135,11 @@ export async function listServicesAdmin(): Promise<ServiceAdminListItem[]> {
     { type: SERVICE, id: r.id },
     { type: SERVICE_CATEGORY, id: r.category_id },
   ]);
-  const content = await loadContent(refs, SOURCE);
+  const [content, snapshots] = await Promise.all([loadContent(refs, SOURCE),db.select().from(service_locale_content).where(eq(service_locale_content.locale,"en"))]);
 
   return rows.map((r) => ({
     id: r.id,
-    name: content.get(SERVICE, r.id, "name") ?? r.slug,
+    name: (() => { const own=snapshots.find(row => row.service_id===r.id); return (own?.draft ?? own?.published)?.content.name || content.get(SERVICE,r.id,"name") || r.slug; })(),
     slug: r.slug,
     status: r.status,
     category: content.get(SERVICE_CATEGORY, r.category_id, "name") ?? "",

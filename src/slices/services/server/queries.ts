@@ -1,6 +1,6 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
 import type { Locale } from "@core/db/columns";
 import {
@@ -35,6 +35,8 @@ import {
 } from "../presentation";
 import { resolveServiceCopy } from "../copy";
 import { service, service_category, service_media } from "../schema";
+import type { ServiceEnvelope } from "../editorial-types";
+import { loadServicePublications, servicePublicAlternates } from "./locale-public";
 
 /**
  * Public read functions for slice `services` (conventions.md → reads go through
@@ -80,6 +82,7 @@ interface SummaryCtx {
   content: ContentResolver;
   slugs: Map<string, string>;
   media: Map<string, MediaAsset>;
+  publications: Map<string, ServiceEnvelope | null>;
 }
 
 const DEFAULT_W = 1600;
@@ -116,13 +119,23 @@ async function buildCtx(
     }
   }
 
-  const [content, slugs, media] = await Promise.all([
+  const [legacyContent, slugs, media, publications, sourceContent] = await Promise.all([
     loadContent(refs, locale),
     loadSlugs(SERVICE, serviceIds, locale),
     loadMedia(coverIds),
+    loadServicePublications(serviceIds,locale),
+    locale === "en" ? Promise.resolve(null) : loadContent(refs,"en"),
   ]);
-
-  return { content, slugs, media };
+  const content: ContentResolver = { get(type,id,field) {
+    const published = publications.get(id);
+    if (type === SERVICE_CATEGORY && field === "name") return legacyContent.get(type,id,field)?.trim() || sourceContent?.get(type,id,field)?.trim();
+    if (type !== SERVICE || !published) return legacyContent.get(type,id,field);
+    if (field === "detail") return JSON.stringify(published.content.detail);
+    if (field.startsWith("copy:")) return published.content.copy?.[field.slice(5) as keyof NonNullable<typeof published.content.copy>];
+    const value = published.content[field as keyof typeof published.content];
+    return typeof value === "string" ? value : undefined;
+  } };
+  return { content, slugs, media, publications };
 }
 
 function mapSummary(row: ServiceRow, ctx: SummaryCtx): ServiceSummary {
@@ -175,15 +188,13 @@ async function _listServiceCategories(
     })
     .from(service_category)
     .orderBy(asc(service_category.position));
-  const content = await loadContent(
-    rows.map((r) => ({ type: SERVICE_CATEGORY, id: r.id })),
-    locale,
-  );
+  const refs = rows.map((r) => ({ type: SERVICE_CATEGORY, id: r.id }));
+  const [content,source] = await Promise.all([loadContent(refs,locale),locale === "en" ? Promise.resolve(null) : loadContent(refs,"en")]);
   return rows.map((r) => ({
     id: r.id,
     slug: r.slug,
     icon: r.icon,
-    name: content.get(SERVICE_CATEGORY, r.id, "name") ?? r.slug,
+    name: content.get(SERVICE_CATEGORY, r.id, "name")?.trim() || source?.get(SERVICE_CATEGORY,r.id,"name")?.trim() || r.slug,
   }));
 }
 
@@ -210,7 +221,7 @@ async function _listServices(
   const rows = await summaryQuery().where(where).orderBy(asc(service.position));
   if (rows.length === 0) return [];
   const ctx = await buildCtx(rows, locale);
-  return rows.map((r) => mapSummary(r, ctx));
+  return rows.filter(row => ctx.publications.get(row.id) !== null).map((r) => mapSummary(r, ctx));
 }
 
 export function listServices(
@@ -219,7 +230,7 @@ export function listServices(
 ): Promise<ServiceSummary[]> {
   return unstable_cache(
     () => _listServices(locale, categorySlug),
-    ["services:listServices:v2", locale, categorySlug ?? "all"],
+    ["services:listServices:v3", locale, categorySlug ?? "all"],
     { tags: [SERVICE_TAGS.list] },
   )();
 }
@@ -259,6 +270,8 @@ async function _getServiceBySlug(
     .filter((mid) => mid !== detailRow.cover_media_id);
 
   const ctx = await buildCtx([detailRow], locale);
+  if (ctx.publications.get(id) === null) return null;
+  const publication = ctx.publications.get(id);
   const summary = mapSummary(detailRow, ctx);
 
   // Gallery images + alt text.
@@ -282,9 +295,10 @@ async function _getServiceBySlug(
 
   // CTA: label is [T] (fallback to a generic action handled in the UI), url is a column.
   const ctaLabel = ctx.content.get(SERVICE, id, "cta_label") ?? undefined;
+  const ctaUrl = publication ? publication.content.cta_url : extra.cta_url;
   const cta =
-    summary.bookingType !== "none" && extra.cta_url && ctaLabel
-      ? { label: ctaLabel, url: extra.cta_url }
+    summary.bookingType !== "none" && ctaUrl && ctaLabel
+      ? { label: ctaLabel, url: ctaUrl }
       : null;
 
   // OG image: explicit override, else cover.
@@ -299,7 +313,7 @@ async function _getServiceBySlug(
       ) ?? summary.cover;
   }
 
-  const alternateSlugs = await loadAlternateSlugs(SERVICE, id);
+  const alternateSlugs = await servicePublicAlternates(id, await loadAlternateSlugs(SERVICE, id));
 
   // Rich sections: one [T] JSON field. A target-locale copy that fails the schema falls
   // back to the source copy rather than rendering a half-broken page.
@@ -326,7 +340,7 @@ async function _getServiceBySlug(
     locale === "en"
       ? ctx.content
       : await loadContent([{ type: SERVICE, id }], "en");
-  const copy = resolveServiceCopy(
+  const copy = publication ? publication.content.copy ?? {} : resolveServiceCopy(
     (field) => ctx.content.get(SERVICE, id, field),
     (field) => sourceCopy.get(SERVICE, id, field),
   );
@@ -381,7 +395,7 @@ export function getServiceBySlug(
   // old shape is never served to the new renderer.
   return unstable_cache(
     () => _getServiceBySlug(locale, slugValue),
-    ["services:getServiceBySlug:v3", locale, slugValue],
+    ["services:getServiceBySlug:v4", locale, slugValue],
     { tags: [SERVICE_TAGS.list] },
   )();
 }
@@ -395,7 +409,10 @@ export async function listServiceParams(): Promise<
     .from(slugTable)
     .innerJoin(service, eq(slugTable.entity_id, service.id))
     .where(
-      and(eq(slugTable.entity_type, SERVICE), eq(service.status, "published")),
+      and(eq(slugTable.entity_type, SERVICE), eq(service.status, "published"),
+        sql`(not exists(select 1 from service_locale_content lc where lc.service_id=${service.id})
+        or exists(select 1 from service_locale_content lc where lc.service_id=${service.id}
+          and lc.locale=${slugTable.locale} and lc.published is not null))`),
     );
   return rows.map((r) => ({ locale: r.locale, slug: r.slug }));
 }
