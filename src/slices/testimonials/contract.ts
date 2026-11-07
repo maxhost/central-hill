@@ -37,3 +37,8 @@ export { listTestimonials } from "./server/queries";
  * under `app/(admin)/admin/(panel)/testimonials/…`. Pure data — safe to import anywhere.
  */
 export { testimonialsAdminScreens } from "./admin/screens";
+
+/** Manual four-input quote authoring contract (ADR0070). */
+export { TESTIMONIAL_QUOTE_LOCALES, TESTIMONIAL_QUOTE_TARGET_LOCALES } from "./quote-locale-types";
+export type { TestimonialQuoteTranslations } from "./quote-locale-types";
+export { isTestimonialEditorialEntity, getTestimonialEditorialRedirect } from "./server/editorial-translation-policy";

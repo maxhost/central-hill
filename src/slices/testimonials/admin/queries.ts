@@ -56,6 +56,7 @@ export interface TestimonialEditData {
   position: number;
   status: Status;
   quote: string;
+  translations?: import("../quote-locale-types").TestimonialQuoteTranslations;
 }
 
 /** Full editable record for one testimonial (source-locale quote), or null. */

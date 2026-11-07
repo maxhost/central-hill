@@ -17,7 +17,12 @@ export const testimonialSaveInput = z.object({
   position,
   status: contentStatus,
   // [T] source value (en):
-  quote: tStr({ min: 1, max: 1000 }),
+  quote: tStr({ min: 1, max: 1000 }).trim().min(1),
+  translations: z.object({
+    es: z.string().trim().max(1000),
+    pt: z.string().trim().max(1000),
+    fr: z.string().trim().max(1000),
+  }).strict().optional(),
 });
 
 export type TestimonialSaveInput = z.infer<typeof testimonialSaveInput>;
