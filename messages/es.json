@@ -588,7 +588,7 @@
           "iconHint": "Cualquier icono de Iconoir, junto a la etiqueta en la página del edificio. Déjalo vacío para un check.",
           "group": "Grupo",
           "groupHint": "Opcional; ordena la lista y el editor de edificios.",
-          "localizedLabel": "Label {locale}"
+          "localizedLabel": "Etiqueta {locale}"
         },
         "translationHint": "Deja una traducción vacía para usar el nombre en inglés."
       },

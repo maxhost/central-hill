@@ -588,7 +588,7 @@
           "iconHint": "N’importe quelle icône Iconoir, affichée à côté du libellé sur la page de l’immeuble. Laissez vide pour une coche.",
           "group": "Groupe",
           "groupHint": "Facultatif ; ordonne la liste et l’éditeur d’immeubles.",
-          "localizedLabel": "Label {locale}"
+          "localizedLabel": "Libellé {locale}"
         },
         "translationHint": "Laissez une traduction vide pour utiliser le nom anglais."
       },
