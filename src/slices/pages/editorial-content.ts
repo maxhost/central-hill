@@ -22,7 +22,7 @@ import {
 } from "./editorial-identities";
 import type { EditorialPageKey, PageEnvelope } from "./editorial-types";
 
-/** Preserve translated leaves by stable row identity while adopting the EN structure. */
+/** Preserve localized copy/references while adopting the shared EN structure. */
 export function prepareTargetEnvelope<K extends EditorialPageKey = "home">(
   template: PageEnvelope<K>,
   target: PageEnvelope<K> | null,
@@ -48,6 +48,10 @@ export function prepareTargetEnvelope<K extends EditorialPageKey = "home">(
     // A target may have authored a text-only optional group while EN kept it absent.
     if (value !== undefined) homeSet(next.content, path, value, true);
   }
+  // References belong to the target even before its first localized text edit.
+  // Preserve absence instead of copying EN or materializing a false dirty blank.
+  for (const path of descriptor.localeReferencePaths ?? [])
+    homeSet(next.content, path, target ? homeAt(target.content, path) : undefined, true);
   // Preserve absent legacy URLs and their localized fallback. Introducing a blank
   // would create false unsaved changes; inheriting EN would change the destination.
   if (descriptor.key === "home" && target && homeAt(target.content, "dual_cta.guest.cta_url") === undefined)
@@ -64,7 +68,7 @@ export function prepareTargetEnvelope<K extends EditorialPageKey = "home">(
   return next;
 }
 
-/** Shared fields include list order/IDs, references, icons and the OG reference. */
+/** Shared fields retain layout/media; declared locale references are excluded. */
 export function sharedEnvelope<K extends EditorialPageKey = "home">(
   envelope: PageEnvelope<K>,
   descriptor: PageEditorialDescriptor = homeDescriptor,
@@ -72,6 +76,8 @@ export function sharedEnvelope<K extends EditorialPageKey = "home">(
   const copy = structuredClone(envelope);
   copy.content.seo ??= { meta_title: "", meta_description: "" };
   for (const path of editorialTextPaths(copy.content, descriptor))
+    homeSet(copy.content, path, undefined);
+  for (const path of descriptor.localeReferencePaths ?? [])
     homeSet(copy.content, path, undefined);
   // Optional text containers have no shared semantics.
   delete copy.content.seo;
