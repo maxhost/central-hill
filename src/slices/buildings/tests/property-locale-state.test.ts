@@ -92,6 +92,8 @@ test("Customized targets own FAQ structure and retired prose while sharing commo
     { id: ids[0]!, question: "First EN", answer: "EN" },
   ];
   const own = emptyBuildingEnvelope(ids[0]);
+  // This case intentionally exercises a pre-ADR0062 localized URL override.
+  delete own.content.booking_button;
   own.content.faq = [{ id: ids[0]!, question: "Uno ES", answer: "ES" }];
   Object.assign(own.content, {
     name: "Edificio",
@@ -182,6 +184,7 @@ test("Object ordering does not create false edits; ordered galleries and FAQ rem
 });
 test("Scoped media IDs dedupe only current envelope and booking fallback is entirely snapshot-local", () => {
   const doc: BuildingEnvelope = emptyBuildingEnvelope(ids[0]);
+  delete doc.content.booking_button;
   Object.assign(doc.content, {
     cover_media_id: ids[0],
     og_image_media_id: ids[0],

@@ -73,7 +73,10 @@ export const buildingEnvelopeSchema = z
         default_booking_url: url,
         booking_url: url,
         booking_enabled: z.boolean(),
-        booking_button: z.object({ label: z.string().max(80), link: url }).strict().optional(),
+        booking_button: z
+          .object({ label: z.string().max(80), link: url })
+          .strict()
+          .optional(),
       })
       .strict(),
   })

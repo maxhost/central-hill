@@ -165,7 +165,7 @@ test("ES publishes before EN, public scope does not read children and EN publica
     ...complete(es.working, "Español"),
     localeMode: "custom" as const,
   };
-  payload.content.booking_url = "https://example.test/es";
+  payload.content.booking_button = { label: "Reservar", link: "https://example.test/es" };
   const esSaved = success(await save(NEW, es, payload));
   const published = success(await publish(NEW, esSaved));
   assert.equal(published.draft, null);

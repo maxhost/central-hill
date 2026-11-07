@@ -104,7 +104,11 @@ export async function resolveBuildingDocument(
     cover,
     isNew: c.is_new,
     isFeatured: c.is_featured,
-    booking: { enabled: c.booking_enabled, url },
+    booking: {
+      enabled: c.booking_enabled,
+      url,
+      ...(c.booking_button ? { label: c.booking_button.label } : {}),
+    },
     stats,
     descriptionIntro: c.description_intro,
     descriptionNeighbourhood: c.description_neighbourhood,

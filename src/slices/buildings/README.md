@@ -463,3 +463,33 @@ real authorized synthetic DB via Neon HTTP; owned e640/e410 fixtures cleaned.
 Log:/private/tmp/central-hill-building-status-backend-db.log. Integrated build and
 independent functional browser QA remain orchestrator responsibilities; no visual
 L0 QA is claimed here.
+
+## Localized Building booking button — ADR0062 (2026-11-06)
+
+Building Booking authoring uses a localized `booking_button: {label, link}` in the
+existing version1 locale document. Its selected-language Save/Publish and
+inherit/custom ownership follow text and SEO; common photo/physical saves do not
+replace it. New documents initialize `Book Now` with a null link. The link accepts
+HTTP(S), up to2048 characters; labels accept up to80 characters and are required
+on Publish when a link is set. A draft may keep an unfinished label.
+
+Older documents may omit the optional object. Reads project their old effective
+`booking_url`/`default_booking_url` and keep the existing public button defaults;
+opening or unrelated Save does not migrate them. A real edit creates the localized
+pair, preserving the displayed destination. Clearing its link explicitly disables
+the Building-specific buttons without falling back to a legacy/shared URL. Legacy
+technical values stay internally preserved. No schema migration or public locale
+fallback is introduced.
+
+`BuildingSummary.booking.label` is optional: present only for an authored pair,
+so the public renderer can distinguish it from the legacy CTA defaults. Both
+Building-owned detail buttons consume that pair. `booking.url`, mirrored
+`avantio.url` and the parent scope all resolve the same effective destination.
+The separate shared listing-card external-navigation flag remains supported.
+Global navigation and Apartment-owned labels remain outside this correction.
+
+Focused backend verification:4new pure booking groups +11existing pure groups
+pass15/15;3new persistence groups +8existing Property store groups pass11/11.
+The DB suites verified database/role propertylocalesqa, wrote only their own
+e750/e410 fixtures and cleaned them. Typecheck and scoped ESLint pass. Integrated
+build/public browser verification and independent QA belong to the orchestrator.
