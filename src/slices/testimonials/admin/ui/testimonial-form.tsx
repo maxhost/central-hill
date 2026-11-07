@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -17,11 +17,15 @@ import {
 } from "@slices/backoffice/contract";
 import { deleteTestimonial, saveTestimonial } from "../actions";
 import type { TestimonialEditData } from "../queries";
+import {
+  TESTIMONIAL_QUOTE_LOCALES,
+  type TestimonialQuoteTranslations,
+} from "../../quote-locale-types";
 
 /**
  * Testimonial create/edit form (S12) — one client island for
  * `/admin/testimonials/new` and `/admin/testimonials/[id]`. Posts through
- * `saveTestimonial`; the [T] `quote` is authored in English (source locale).
+ * `saveTestimonial`; four quote inputs share one Save and testimonial identity.
  */
 
 type Status = "draft" | "published" | "archived";
@@ -36,6 +40,7 @@ interface FormState {
   position: string;
   status: Status;
   quote: string;
+  translations: TestimonialQuoteTranslations;
 }
 
 const STATUSES: Status[] = ["draft", "published", "archived"];
@@ -52,6 +57,11 @@ function initialState(data: TestimonialEditData | null): FormState {
     position: String(data?.position ?? 0),
     status: data?.status ?? "draft",
     quote: data?.quote ?? "",
+    translations: {
+      es: data?.translations?.es ?? "",
+      pt: data?.translations?.pt ?? "",
+      fr: data?.translations?.fr ?? "",
+    },
   };
 }
 
@@ -71,6 +81,11 @@ function buildPayload(s: FormState, id: string | undefined) {
     position: intOr(s.position, 0),
     status: s.status,
     quote: s.quote.trim(),
+    translations: {
+      es: s.translations.es.trim(),
+      pt: s.translations.pt.trim(),
+      fr: s.translations.fr.trim(),
+    },
   };
 }
 
@@ -83,6 +98,8 @@ export function TestimonialForm({
   const tb = useTranslations("backoffice");
   const router = useRouter();
   const [pending, start] = useTransition();
+  const quoteFieldPrefix = useId();
+  const actionLock = useRef(false);
   const [state, setState] = useState<FormState>(() => initialState(initial));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(null);
@@ -92,35 +109,50 @@ export function TestimonialForm({
   const err = (key: string) => errors[key];
 
   function onSubmit() {
+    if (pending || actionLock.current) return;
+    actionLock.current = true;
     setBanner(null);
     setErrors({});
     start(async () => {
-      const result = await saveTestimonial(buildPayload(state, initial?.id));
-      if (result.ok) {
-        if (!initial) {
-          router.push(`/admin/testimonials/${result.id}`);
+      try {
+        const result = await saveTestimonial(buildPayload(state, initial?.id));
+        if (result.ok) {
+          if (!initial) {
+            router.push(`/admin/testimonials/${result.id}`);
+            return;
+          }
+          setBanner(tb("actions.saved"));
+          router.refresh();
           return;
         }
-        setBanner(tb("actions.saved"));
-        router.refresh();
-        return;
-      }
-      if (result.error === "validation") {
-        setErrors(result.fieldErrors);
+        if (result.error === "validation") {
+          setErrors(result.fieldErrors);
+          setBanner(tb("actions.saveError"));
+        } else {
+          setBanner(tb("actions.saveError"));
+        }
+      } catch {
         setBanner(tb("actions.saveError"));
-      } else {
-        setBanner(tb("actions.saveError"));
+      } finally {
+        actionLock.current = false;
       }
     });
   }
 
   function onDelete() {
-    if (!initial) return;
+    if (!initial || pending || actionLock.current) return;
     if (!window.confirm(tb("actions.confirmDelete"))) return;
+    actionLock.current = true;
     start(async () => {
-      const result = await deleteTestimonial(initial.id);
-      if (result.ok) router.push("/admin/testimonials");
-      else setBanner(tb("actions.saveError"));
+      try {
+        const result = await deleteTestimonial(initial.id);
+        if (result.ok) router.push("/admin/testimonials");
+        else setBanner(tb("actions.saveError"));
+      } catch {
+        setBanner(tb("actions.saveError"));
+      } finally {
+        actionLock.current = false;
+      }
     });
   }
 
@@ -153,6 +185,7 @@ export function TestimonialForm({
         <FieldGrid>
           <Field label={t("admin.fields.audience")}>
             <Select
+              disabled={pending}
               value={state.audience}
               onChange={(e) => set("audience", e.target.value as Audience)}
             >
@@ -165,6 +198,7 @@ export function TestimonialForm({
           </Field>
           <Field label={t("admin.fields.rating")}>
             <Select
+              disabled={pending}
               value={state.rating}
               onChange={(e) => set("rating", e.target.value)}
             >
@@ -177,6 +211,7 @@ export function TestimonialForm({
           </Field>
           <Field label={t("admin.fields.status")}>
             <Select
+              disabled={pending}
               value={state.status}
               onChange={(e) => set("status", e.target.value as Status)}
             >
@@ -192,6 +227,7 @@ export function TestimonialForm({
             hint={t("admin.fields.positionHint")}
           >
             <TextInput
+              disabled={pending}
               type="number"
               value={state.position}
               onChange={(e) => set("position", e.target.value)}
@@ -208,6 +244,7 @@ export function TestimonialForm({
             error={err("author_name")}
           >
             <TextInput
+              disabled={pending}
               value={state.author_name}
               onChange={(e) => set("author_name", e.target.value)}
             />
@@ -218,6 +255,7 @@ export function TestimonialForm({
             error={err("author_country")}
           >
             <TextInput
+              disabled={pending}
               value={state.author_country}
               onChange={(e) => set("author_country", e.target.value)}
             />
@@ -228,6 +266,7 @@ export function TestimonialForm({
             error={err("property_location")}
           >
             <TextInput
+              disabled={pending}
               value={state.property_location}
               onChange={(e) => set("property_location", e.target.value)}
             />
@@ -236,13 +275,50 @@ export function TestimonialForm({
       </AdminCard>
 
       <AdminCard title={t("admin.sections.quote")}>
-        <Field label={t("admin.fields.quote")} required error={err("quote")}>
-          <TextArea
-            rows={5}
-            value={state.quote}
-            onChange={(e) => set("quote", e.target.value)}
-          />
-        </Field>
+        <fieldset disabled={pending} className="min-w-0 space-y-4">
+          {TESTIMONIAL_QUOTE_LOCALES.map((locale) => {
+            const field = locale === "en" ? "quote" : `translations.${locale}`;
+            const id = `${quoteFieldPrefix}-quote-${locale}`;
+            return (
+              <Field
+                key={locale}
+                label={t("admin.quoteLocales.label", {
+                  locale: locale.toUpperCase(),
+                })}
+                htmlFor={id}
+                required={locale === "en"}
+                hint={
+                  locale === "en"
+                    ? undefined
+                    : t("admin.quoteLocales.fallbackHint")
+                }
+                error={err(field)}
+              >
+                <TextArea
+                  id={id}
+                  rows={5}
+                  maxLength={1000}
+                  required={locale === "en"}
+                  aria-invalid={Boolean(err(field))}
+                  value={
+                    locale === "en" ? state.quote : state.translations[locale]
+                  }
+                  onChange={(event) =>
+                    locale === "en"
+                      ? set("quote", event.target.value)
+                      : setState((previous) => ({
+                          ...previous,
+                          translations: {
+                            ...previous.translations,
+                            [locale]: event.target.value,
+                          },
+                        }))
+                  }
+                />
+              </Field>
+            );
+          })}
+        </fieldset>
       </AdminCard>
 
       <FormActions>
