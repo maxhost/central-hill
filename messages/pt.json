@@ -548,7 +548,12 @@
         "galleryHint": "Mosaico por baixo do hero. Horizontal 4:3, mínimo 1600×1200 px. A primeira foto é a peça grande.",
         "descriptionIntroHint": "Um parágrafo por linha.",
         "descriptionNeighbourhoodHint": "Um parágrafo por linha. Deixe em branco para ocultar “O Bairro”.",
-        "teaserHint": "Aparece no cartão de /buildings e como descrição SEO por omissão."
+        "teaserHint": "Aparece no cartão de /buildings e como descrição SEO por omissão.",
+        "bookingButtonLabel": "Label",
+        "bookingButtonLink": "Link",
+        "bookingButtonHint": "Deixe o link em branco para ocultar os botões de reserva do edifício.",
+        "bookingCardLink": "O cartão da listagem abre o link de reserva",
+        "bookingCardLinkHint": "Quando ativo, o cartão do edifício abre o link de reserva do respetivo idioma em vez da página do edifício."
       },
       "errors": {
         "coverRequired": "É obrigatória uma imagem de capa.",

@@ -76,7 +76,12 @@ export interface BuildingSummary {
    * Building-level external booking: when `enabled` and a `url` is set, the listing
    * card links out to that URL (new tab) instead of the internal detail page.
    */
-  booking: { enabled: boolean; url: string | null };
+  booking: {
+    enabled: boolean;
+    url: string | null;
+    /** Authored localized button text; absence preserves legacy CTA defaults. */
+    label?: string;
+  };
   stats: BuildingStats;
 }
 

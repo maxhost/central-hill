@@ -548,7 +548,12 @@
         "galleryHint": "Mosaic under the hero. Landscape 4:3, at least 1600×1200 px. The first photo is the large tile.",
         "descriptionIntroHint": "One paragraph per line.",
         "descriptionNeighbourhoodHint": "One paragraph per line. Leave blank to hide “The Neighbourhood”.",
-        "teaserHint": "Shown on the /buildings card and as the SEO description fallback."
+        "teaserHint": "Shown on the /buildings card and as the SEO description fallback.",
+        "bookingButtonLabel": "Label",
+        "bookingButtonLink": "Link",
+        "bookingButtonHint": "Leave the link blank to hide the building booking buttons.",
+        "bookingCardLink": "Listing card opens the booking link",
+        "bookingCardLinkHint": "When enabled, the building listing card opens the booking link for its language instead of the building page."
       },
       "errors": {
         "coverRequired": "A cover image is required.",

@@ -6,6 +6,7 @@ import {
   type BuildingSharedContent,
 } from "../../editorial-types";
 import type { PropertyLocaleModel } from "@slices/backoffice/contract";
+export { effectiveBuildingBooking } from "../../booking-button";
 
 export const BUILDING_EDITOR_BINDING_IDS = [
   "identity",
@@ -45,6 +46,7 @@ export function emptyBuildingEnvelope(cityId = ""): BuildingEnvelope {
       default_booking_url: null,
       booking_url: null,
       booking_enabled: false,
+      booking_button: { label: "Book Now", link: null },
     },
   };
 }
@@ -105,13 +107,6 @@ export function buildingValuesEqual(a: unknown, b: unknown): boolean {
         Object.hasOwn(second, key) &&
         buildingValuesEqual(first[key], second[key]),
     )
-  );
-}
-export function effectiveBuildingBooking(
-  content: BuildingEditorialContent,
-): string | null {
-  return (
-    content.booking_url?.trim() || content.default_booking_url?.trim() || null
   );
 }
 export function buildingEnvelopeEqual(

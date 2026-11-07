@@ -548,7 +548,12 @@
         "galleryHint": "Mosaïque sous le hero. Paysage 4:3, au moins 1600×1200 px. La première photo occupe la grande case.",
         "descriptionIntroHint": "Un paragraphe par ligne.",
         "descriptionNeighbourhoodHint": "Un paragraphe par ligne. Laissez vide pour masquer « Le Quartier ».",
-        "teaserHint": "Affiché sur la carte de /buildings et comme description SEO par défaut."
+        "teaserHint": "Affiché sur la carte de /buildings et comme description SEO par défaut.",
+        "bookingButtonLabel": "Label",
+        "bookingButtonLink": "Link",
+        "bookingButtonHint": "Laissez le lien vide pour masquer les boutons de réservation de l’immeuble.",
+        "bookingCardLink": "La carte ouvre le lien de réservation",
+        "bookingCardLinkHint": "Lorsque cette option est activée, la carte ouvre le lien de réservation de sa langue au lieu de la page de l’immeuble."
       },
       "errors": {
         "coverRequired": "Une image de couverture est requise.",

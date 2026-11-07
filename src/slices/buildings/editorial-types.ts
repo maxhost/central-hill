@@ -2,6 +2,8 @@ import type { Locale } from "@core/db/columns";
 import type { PropertyEditorialModel, PropertyEnvelope } from "@slices/backoffice/contract";
 export const PROPERTY_GRAPH_LOCK = 7158;
 export interface BuildingEditorialFaq { id: string; question: string; answer: string }
+/** Localized button. Absence retains legacy URL resolution; null link explicitly hides it. */
+export interface BuildingBookingButton { label: string; link: string | null }
 export interface BuildingEditorialContent {
   name: string; headline: string; teaser: string; description_intro: string;
   description_neighbourhood: string | null; meta_title: string | null; meta_description: string | null;
@@ -11,6 +13,7 @@ export interface BuildingEditorialContent {
   cover_media_id: string | null; og_image_media_id: string | null;
   gallery: string[]; amenity_ids: string[]; faq: BuildingEditorialFaq[];
   avantio_id: string | null; default_booking_url: string | null; booking_url: string | null; booking_enabled: boolean;
+  booking_button?: BuildingBookingButton;
 }
 export type BuildingEnvelope = PropertyEnvelope<BuildingEditorialContent>;
 export type BuildingEditorialModel = PropertyEditorialModel<BuildingEditorialContent>;

@@ -73,6 +73,7 @@ export const buildingEnvelopeSchema = z
         default_booking_url: url,
         booking_url: url,
         booking_enabled: z.boolean(),
+        booking_button: z.object({ label: z.string().max(80), link: url }).strict().optional(),
       })
       .strict(),
   })
@@ -118,6 +119,8 @@ export function checkBuildingEnvelope(
   const errors: Record<string, string> = {};
   const c = result.data.content;
   if (publish) {
+    if (c.booking_button?.link?.trim() && !c.booking_button.label.trim())
+      errors["booking_button.label"] = "Button label is required when a link is set.";
     if (!c.name.trim()) errors.name = "Name is required.";
     if (!c.teaser.trim()) errors.teaser = "Teaser is required.";
     if (!c.street_address?.trim())
