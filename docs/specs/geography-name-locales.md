@@ -118,3 +118,17 @@ UI24pure0 (9nuevos+15previos), backend26casos0 (4puros+7DB+15previos), e820limpi
 Revisiónroot mantiene lectura LocationOptions para cualquierstaff como el caller
 BuildingNew existente (requireStaff sin estrechar roles); Guide conserva sus roles
 anteriores. Cambios sólo nombres/seguridad de intro/slugs y adopciónIDs prometidos.
+
+Integración e11dfcf: typecheck0, lint0 (7warnings previos), 36casos0:
+15Geographyprevios+9payload/IDs+4namespuros+7DB+1Guidecityoptions. e820limpios.
+Comando real: safeenv + NODE_OPTIONS node-runtime.cjs + pnpm exec tsx --import
+/private/tmp/central-hill-geography-name-locales-qa/backend/test-runtime.mjs --test
+src/slices/geography/tests/{geography,geography-admin,geography-name-payload,
+geography-name-locales,geography-name-locales.integration}.test.ts y
+src/slices/guides/tests/city-options.test.ts (lista explícita, no pnpm test placeholder).
+Loader externo sólo sustituye auth/nextcache para acciones fuera de request;
+QA browser conserva auth/cache reales. Sin cambios de kernel/schema/migración.
+Build0 con CIRCLE_NODE_TOTAL=3/2workers/144rutas después de cleanupDB. Logs en
+artifactdir raíz. Maindev49382/49376 detenido tras verificar cwd; candidato
+production3071PID69672/session39094 único listener, login200, QA independiente
+habilitada. Root no muta contenido durante sus tres grupos acotados.
