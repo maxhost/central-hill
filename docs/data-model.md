@@ -514,6 +514,14 @@ Blog-owned noninteractive batches serialize graph mutations and recheck them.
   Tips/blue, Portugal Regulations/red, Lisbon/gold, Portugal/grey.) **One category per post; no tags.**
 - **author**: `id, slug, status, avatar_media_id?`. **[T]** `name`, `bio?`. (Default byline:
   "Central Hill Apartments"; structure supports individual authors later.)
+- **ADR0067 (no migration):** author name/bio and category name are authored in
+  EN/ES/PT/FR inputs in one form. One Save approves nonblank manual targets; blank
+  target clears only its field/locale for EN fallback. Raw pending inputs remain
+  private until Save; omitted translations preserve old clients. Identity, avatar,
+  status, slug/color/order and post reference IDs stay shared. Clearing EN bio uses
+  the explicit core preserveTargetsOnClear option to keep independent target bios.
+  Public/preview and post selector labels follow post locale; renaming references
+  invalidates Blog readers without republishing or modifying post snapshots.
 - **blog_post**: `id, slug, status, category_id→blog_category, author_id→author, cover_media_id,
   og_image_media_id?, published_at, reading_minutes, is_featured, cta_label?, cta_url?`.
   - **[T]**: `title`, `excerpt`, `body` (portable JSON — see block set), `meta_title`, `meta_description`.

@@ -107,3 +107,10 @@ local y apertura final sólo lectura. No repetir matriz aprobada sin cambio/defe
 ## Progreso
 
 Inventario/spec completados antes de implementar. Contratos root siguen.
+
+Contratos root851b137 antes de consumidores; deps integración propias instaladas
+con lockfile congelado desde caché local existente (517reused/0download), sin
+modificar node_modules de main. Mensajes4locales agregados por root. Browserfixtures
+nuevas e801 category1/author2/post3/related4 con4pubs rev7 y raw EN/ESpending/PTown/
+FRblank; referencia foto d300 sólo lectura, position9999. GuardDB+role/hostname y
+42hashes previos a seed en /private/tmp/central-hill-blog-reference-locales-qa/.

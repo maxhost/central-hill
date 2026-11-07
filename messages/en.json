@@ -218,7 +218,7 @@
         "emptyHint": "Create your first category to group posts.",
         "editTitle": "Edit category",
         "newTitle": "New category",
-        "formSubtitle": "The name is authored in English; other languages are translated later.",
+        "formSubtitle": "Set category names in each language. Empty translations use English.",
         "backToList": "Back to categories",
         "inUse": "This category still has posts and can’t be deleted.",
         "columns": {
@@ -246,7 +246,7 @@
         "emptyHint": "Create an author to attribute posts.",
         "editTitle": "Edit author",
         "newTitle": "New author",
-        "formSubtitle": "Name and bio are authored in English; other languages are translated later.",
+        "formSubtitle": "Set the author name and bio in each language. Empty translations use English.",
         "backToList": "Back to authors",
         "inUse": "This author still has posts and can’t be deleted.",
         "columns": {
@@ -361,6 +361,11 @@
             "ctaUrl": "URL"
           }
         }
+      },
+      "referenceLocales": {
+        "name": "Name {locale}",
+        "bio": "Bio {locale}",
+        "fallbackHint": "Leave a translation empty to use English."
       }
     },
     "home": "Home",

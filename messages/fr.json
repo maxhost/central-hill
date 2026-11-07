@@ -218,7 +218,7 @@
         "emptyHint": "Créez votre première catégorie pour regrouper les articles.",
         "editTitle": "Modifier la catégorie",
         "newTitle": "Nouvelle catégorie",
-        "formSubtitle": "Le nom est rédigé en anglais ; les autres langues sont traduites ensuite.",
+        "formSubtitle": "Définissez le nom de la catégorie dans chaque langue. Les traductions vides utilisent l’anglais.",
         "backToList": "Retour aux catégories",
         "inUse": "Cette catégorie contient encore des articles et ne peut pas être supprimée.",
         "columns": {
@@ -246,7 +246,7 @@
         "emptyHint": "Créez un auteur pour attribuer les articles.",
         "editTitle": "Modifier l’auteur",
         "newTitle": "Nouvel auteur",
-        "formSubtitle": "Le nom et la bio sont rédigés en anglais ; les autres langues sont traduites ensuite.",
+        "formSubtitle": "Définissez le nom et la biographie de l’auteur dans chaque langue. Les traductions vides utilisent l’anglais.",
         "backToList": "Retour aux auteurs",
         "inUse": "Cet auteur a encore des articles et ne peut pas être supprimé.",
         "columns": {
@@ -361,6 +361,11 @@
             "ctaUrl": "URL"
           }
         }
+      },
+      "referenceLocales": {
+        "name": "Nom {locale}",
+        "bio": "Biographie {locale}",
+        "fallbackHint": "Laissez une traduction vide pour utiliser l’anglais."
       }
     },
     "home": "Accueil",
