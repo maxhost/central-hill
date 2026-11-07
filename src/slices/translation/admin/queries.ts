@@ -1,4 +1,5 @@
 import "server-only";
+import { isGuideEditorialEntity } from "@slices/guides/contract";
 import { isPropertyEditorialEntity } from "@slices/buildings/contract";
 import { isBlogEditorialEntity } from "@slices/blog/contract";
 import { getPageEditorialRedirect } from "@slices/pages/contract";
@@ -41,9 +42,32 @@ export async function getTranslationInbox(
   const rows = await loadTranslationRows(
     filters.entityType ? { type: filters.entityType } : {},
   );
-  const identities = [...new Set(rows.filter(row => row.entity_type === "page_content").map(row => row.entity_id))];
-  const blocked = new Set((await Promise.all(identities.map(async id => await getPageEditorialRedirect("page_content", id) ? id : null))).filter((id): id is string => id !== null));
-  const all = buildInbox(rows.filter(row => !isPropertyEditorialEntity(row.entity_type) && !isBlogEditorialEntity(row.entity_type) && (row.entity_type !== "page_content" || !blocked.has(row.entity_id))), hashSource);
+  const identities = [
+    ...new Set(
+      rows
+        .filter((row) => row.entity_type === "page_content")
+        .map((row) => row.entity_id),
+    ),
+  ];
+  const blocked = new Set(
+    (
+      await Promise.all(
+        identities.map(async (id) =>
+          (await getPageEditorialRedirect("page_content", id)) ? id : null,
+        ),
+      )
+    ).filter((id): id is string => id !== null),
+  );
+  const all = buildInbox(
+    rows.filter(
+      (row) =>
+        !isGuideEditorialEntity(row.entity_type) &&
+        !isPropertyEditorialEntity(row.entity_type) &&
+        !isBlogEditorialEntity(row.entity_type) &&
+        (row.entity_type !== "page_content" || !blocked.has(row.entity_id)),
+    ),
+    hashSource,
+  );
 
   // Counts + the entity-type chips reflect the full set (before the view filter),
   // so switching views never changes the totals shown on the chips.
@@ -52,7 +76,8 @@ export async function getTranslationInbox(
 
   let items = all;
   if (filters.view === "attention") items = all.filter((i) => i.needsAttention);
-  else if (filters.view === "done") items = all.filter((i) => !i.needsAttention);
+  else if (filters.view === "done")
+    items = all.filter((i) => !i.needsAttention);
 
   return { items, counts, entityTypes };
 }

@@ -6,11 +6,13 @@ import { newGuide } from "@slices/guides/contract";
 export default async function NewGuidePage() {
   await requireStaff(["admin", "editor"]);
   const cities = await listGuideCityOptions();
+  const draft = newGuide(randomUUID(), cities[0]?.id);
   return (
     <GuideEditor
+      key={`new-${draft.id}`}
       initial={null}
       cities={cities}
-      draft={newGuide(randomUUID(), cities[0]?.id)}
+      draft={draft}
     />
   );
 }

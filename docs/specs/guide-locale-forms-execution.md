@@ -168,5 +168,16 @@ hash/commands/exits. Tras QA, ff main local y apertura final sólo lectura; no p
 
 ## Progreso
 
-Inventario/plan completados antes de implementar. Contratos y migración preparados
-a continuación; aprobación de aplicar0028 aún pendiente. No writes DB aquí.
+Inventario/plan completados antes de implementar. Base contratos470c23b creada
+antes de abrir los dos worktrees consumidores. UI/backend trabajan en sus archivos
+asignados; root integra composición, mensajes y retiro de las vías legacy de Guías.
+
+Usuario autorizó explícitamente «Sí, aplicar 0028 sólo a propertylocalesqa».
+Aplicada únicamente allí tras verificar DB y rol propertylocalesqa. Dos tablas
+nuevas vacías; hashes de40tablas de negocio preexistentes sin cambios. SHA256SQL
+b8a3f79039985b878f91db49c9cbc98d51ce105e617c5b288939888d1611e923.
+Evidencia: /private/tmp/central-hill-guide-locales-qa/migration.json y
+pre-migration-data.json. No backfill ni escrituras remotas. Fixtures browser e791
+nuevas: legacy publicada EN/PT + ES pending, dos secciones/dos lugares/fotos
+existentes sólo referenciadas; position9999. Script seed.cjs registra identidades.
+Backend dispone e790 para tests propios con limpieza; no tocar datos anteriores.

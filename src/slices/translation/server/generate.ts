@@ -1,3 +1,4 @@
+import { isGuideEditorialEntity } from "@slices/guides/contract";
 import { isPropertyEditorialEntity } from "@slices/buildings/contract";
 import "server-only";
 import { isBlogEditorialEntity } from "@slices/blog/contract";
@@ -42,19 +43,37 @@ export async function generateDrafts(
   id: string,
   opts: GenerateOptions = {},
 ): Promise<GenerateSummary> {
-  if (isPropertyEditorialEntity(type) || isBlogEditorialEntity(type) || await getPageEditorialRedirect(type, id)) throw new Error("Use the page editor to save and publish this page by language.");
+  if (
+    isGuideEditorialEntity(type) ||
+    isPropertyEditorialEntity(type) ||
+    isBlogEditorialEntity(type) ||
+    (await getPageEditorialRedirect(type, id))
+  )
+    throw new Error(
+      "Use the page editor to save and publish this page by language.",
+    );
   const provider = getTranslateProvider();
-  const targets = (opts.locales ?? TARGET_LOCALES).filter((l) => l !== SOURCE_LOCALE);
-  const summary: GenerateSummary = { provider: provider.name, written: {}, total: 0 };
+  const targets = (opts.locales ?? TARGET_LOCALES).filter(
+    (l) => l !== SOURCE_LOCALE,
+  );
+  const summary: GenerateSummary = {
+    provider: provider.name,
+    written: {},
+    total: 0,
+  };
 
   const rows = await loadTranslationRows({ type, id });
   const source = new Map<string, string>();
-  for (const r of rows) if (r.locale === SOURCE_LOCALE && r.value.trim()) source.set(r.field, r.value);
+  for (const r of rows)
+    if (r.locale === SOURCE_LOCALE && r.value.trim())
+      source.set(r.field, r.value);
   if (source.size === 0) return summary;
 
   for (const locale of targets) {
     // Existing target rows for this locale → decide which fields need a draft.
-    const existing = new Map(rows.filter((r) => r.locale === locale).map((r) => [r.field, r]));
+    const existing = new Map(
+      rows.filter((r) => r.locale === locale).map((r) => [r.field, r]),
+    );
     const units: TranslateUnit[] = [];
     for (const [field, value] of source) {
       const current = existing.get(field);
@@ -75,11 +94,18 @@ export async function generateDrafts(
     for (const r of results) {
       const sourceValue = sourceByField.get(r.field);
       if (sourceValue === undefined) continue; // provider returned an unknown field
-      const saved = await setTargetTranslation(type, id, r.field, locale, r.value, {
-        sourceValue,
-        state: "needs_review",
-        updatedBy: opts.updatedBy,
-      });
+      const saved = await setTargetTranslation(
+        type,
+        id,
+        r.field,
+        locale,
+        r.value,
+        {
+          sourceValue,
+          state: "needs_review",
+          updatedBy: opts.updatedBy,
+        },
+      );
       if (saved) written += 1;
     }
     if (written > 0) {

@@ -1336,3 +1336,5 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 - [0065 — Service locale forms](0065-service-locale-forms.md): independent locale
   drafts/publications, live shared media/category/icons, stable nested identities
   and manual category names in EN/ES/PT/FR.
+
+- [0066 — Guide locale forms](0066-guide-locale-forms.md): whole-guide locale drafts/publications, local section/place composition before Save, shared nested media by UUID.

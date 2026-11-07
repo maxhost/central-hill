@@ -31,7 +31,11 @@ export type GuideTemplate =
   | "custom";
 
 /** Section presentation variant. */
-export type GuideLayout = "standard" | "with_cta" | "with_media" | "featured_places";
+export type GuideLayout =
+  | "standard"
+  | "with_cta"
+  | "with_media"
+  | "featured_places";
 
 /** €/€€/€€€ price band for a place. */
 export type GuidePriceTier = "budget" | "mid" | "premium";
@@ -96,7 +100,9 @@ export interface GuidePageDetail extends GuidePageSummary {
    * locales where **both** the city slug and the guide-page slug exist are
    * included, so a full URL can always be built without cross-locale guessing.
    */
-  alternates: Partial<Record<"en" | "pt" | "es" | "fr", { city: string; slug: string }>>;
+  alternates: Partial<
+    Record<"en" | "pt" | "es" | "fr", { city: string; slug: string }>
+  >;
 }
 
 /** A city and its published guide pages — the shape the index renders. */
@@ -109,7 +115,11 @@ export interface GuideCityGroup {
  * Place types the guides index features under "Top Recommendations", **in display order**.
  * Matched case-insensitively against `guide_place.category` (free text).
  */
-export const RECOMMENDATION_TYPES = ["restaurant", "viewpoint", "beach"] as const;
+export const RECOMMENDATION_TYPES = [
+  "restaurant",
+  "viewpoint",
+  "beach",
+] as const;
 export type GuideRecommendationType = (typeof RECOMMENDATION_TYPES)[number];
 
 /**
@@ -151,7 +161,12 @@ export type { GuideRecommendationScope } from "./server/recommendation-scope";
 /** Staff CMS registration and server invalidation; no UI imports before integration. */
 export { guidesAdminScreens } from "./admin/screens";
 export { revalidateGuides } from "./server/publish";
-export { applyGuideSectionPresentation, isGuideModuleVisible, isGuideSectionVisible, parseGuidePresentation } from "./presentation";
+export {
+  applyGuideSectionPresentation,
+  isGuideModuleVisible,
+  isGuideSectionVisible,
+  parseGuidePresentation,
+} from "./presentation";
 export type { GuideSectionPresentation, GuideModuleKey } from "./presentation";
 export { isGuideTranslationEntity } from "./presentation";
 
@@ -165,4 +180,19 @@ export { newGuide } from "./admin/ui/editor-model";
 export { GuidesListingRenderer } from "./ui/guides-listing";
 export { GuideSharedAside } from "./ui/components/guide-shared-aside";
 
-export type { GuideEnvelope, GuideContent, GuideSharedContent, GuideEditorialModel, GuideEditorialResult, SaveGuideDraftInput, PublishGuideDraftInput } from "./editorial-types";
+export type {
+  GuideEnvelope,
+  GuideContent,
+  GuideSharedContent,
+  GuideEditorialModel,
+  GuideEditorialResult,
+  SaveGuideDraftInput,
+  PublishGuideDraftInput,
+} from "./editorial-types";
+
+/** Guides owns whole-tree localized editor and retired translation routing. */
+export { getGuideEditorialModel } from "./server/locale-model";
+export {
+  isGuideEditorialEntity,
+  getGuideEditorialRedirect,
+} from "./server/editorial-translation-policy";

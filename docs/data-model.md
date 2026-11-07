@@ -578,6 +578,16 @@ blank target falls back to EN, omitted translations preserve older clients.
   media_id?`. **[T]** `name, description`.
   - *Public contract:* `getCityGuides(citySlug)`, `getGuidePage(slug)`.
 
+ADR0066 / migration0028 adds Guides-owned guide_locale_content and
+guide_shared_content. The locale envelope holds the complete guide/sections/places
+tree, localized copy/SEO/links and ownership until first edit. Shared JSON holds
+root physical data and UUID-keyed section/place media and neutral metadata;
+recommendation classification remains neutral while the visible category may be
+translated. Aggregate Save commits draft+shared+new neutral child identities under
+a graph lock with revision CAS. Retain legacy child rows/translations and removed
+node histories; no GET backfill and no eager migration of content. New guide trees
+can be composed locally before any parent Save. Publication is explicit per locale.
+
 ### Slice `testimonials` (shared by Home/Owners/Guests)
 - **testimonial**: `id, audience (owner|guest), rating (1-5), author_name, author_country,
   property_location?, position, status`. **[T]** `quote`.

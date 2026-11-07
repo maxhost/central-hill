@@ -1,5 +1,11 @@
 # Slice `translation` / `translation-pipeline` (S14)
 
+Adapted Guides (ADR0066): guide_page, guide_section and guide_place use the guide's
+whole-tree manual locale editor. Inbox excludes all three types; old links resolve
+their guide through the Guides contract and redirect to its selected language.
+All six legacy mutations and direct generation reject Guides before writes. No
+translation rows are deleted; global Translations and other entity workflows remain.
+
 Adapted Pages (ADR0040): Home, Owners, Buildings listing, Real Estate, Guest, Services, About, Guides and Blog. Pages owns complete draft/published JSON by locale. These pages
 are excluded from this generic review inbox, and direct review routes redirect to their
 contextual editors. Save/clear/approve/reset/generate entrypoints reject these registered pages via the

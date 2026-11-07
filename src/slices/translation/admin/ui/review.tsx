@@ -1,3 +1,4 @@
+import { getGuideEditorialRedirect } from "@slices/guides/contract";
 import Link from "next/link";
 import { getPropertyEditorialRedirect } from "@slices/buildings/contract";
 import { getBlogEditorialRedirect } from "@slices/blog/contract";
@@ -42,7 +43,11 @@ export async function TranslationReview({
   id: string;
   locale?: string;
 }) {
-  const editor = await getPropertyEditorialRedirect(type,id,locale) ?? getBlogEditorialRedirect(type, id, locale) ?? await getPageEditorialRedirect(type, id);
+  const editor =
+    (await getGuideEditorialRedirect(type, id, locale)) ??
+    (await getPropertyEditorialRedirect(type, id, locale)) ??
+    getBlogEditorialRedirect(type, id, locale) ??
+    (await getPageEditorialRedirect(type, id));
   if (editor) redirect(editor);
   const t = await getTranslations("translation");
   const entity = await getEntityTranslations(type, id);
