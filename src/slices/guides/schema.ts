@@ -1,4 +1,5 @@
-import { doublePrecision, integer, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { check, doublePrecision, integer, jsonb, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { pkUuid, timestamps } from "@core/db/columns";
 
 /**
@@ -57,3 +58,26 @@ export const guide_place = pgTable("guide_place", {
   media_id: uuid(), // → media_asset.id (core/media)
   ...timestamps,
 });
+
+// ADR0066: a guide and its children publish together per locale; assets remain common.
+export const guide_locale_content = pgTable("guide_locale_content", {
+  id: pkUuid(), guide_id: uuid().notNull().references(() => guide_page.id, { onDelete: "cascade" }),
+  locale: text().$type<import("@core/db/columns").Locale>().notNull(),
+  published: jsonb().$type<import("./editorial-types").GuideEnvelope>(),
+  draft: jsonb().$type<import("./editorial-types").GuideEnvelope>(),
+  revision: integer().notNull().default(0),
+  published_at: timestamp({ withTimezone: true }), draft_saved_at: timestamp({ withTimezone: true }),
+  updated_by: text(), ...timestamps,
+}, table => [
+  unique("guide_locale_content_entity_locale_unique").on(table.guide_id, table.locale),
+  check("guide_locale_content_locale_ck", sql`${table.locale} in ('en','es','pt','fr')`),
+  check("guide_locale_content_revision_ck", sql`${table.revision} >= 0`),
+]);
+export const guide_shared_content = pgTable("guide_shared_content", {
+  id: pkUuid(), guide_id: uuid().notNull().references(() => guide_page.id, { onDelete: "cascade" }),
+  data: jsonb().$type<{ schemaVersion: 1; content: import("./editorial-types").GuideSharedContent }>().notNull(),
+  revision: integer().notNull().default(0), updated_by: text(), ...timestamps,
+}, table => [
+  unique("guide_shared_content_entity_unique").on(table.guide_id),
+  check("guide_shared_content_revision_ck", sql`${table.revision} >= 0`),
+]);

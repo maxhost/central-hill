@@ -164,3 +164,5 @@ export { newGuide } from "./admin/ui/editor-model";
 /** Injectable editorial composition, retaining the slice-owned catalogue. */
 export { GuidesListingRenderer } from "./ui/guides-listing";
 export { GuideSharedAside } from "./ui/components/guide-shared-aside";
+
+export type { GuideEnvelope, GuideContent, GuideSharedContent, GuideEditorialModel, GuideEditorialResult, SaveGuideDraftInput, PublishGuideDraftInput } from "./editorial-types";
