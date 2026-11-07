@@ -5,6 +5,8 @@ import { loadContent, loadTranslationRows } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
 import type { Locale } from "@core/db/columns";
 import { getPostEditorialModel } from "../server/post-locale-model";
+import { rawAuthorTranslations, rawBlogCategoryTranslations, loadBlogReferenceOptions } from "../server/reference-locales";
+import type { BlogReferenceOption } from "../reference-locale-types";
 import { blog_post_locale_content } from "../schema";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
 import { BLOG_POST } from "../contract";
@@ -65,27 +67,23 @@ export interface BlogCategoryEditData {
 export async function getBlogCategoryForEdit(id: string): Promise<BlogCategoryEditData | null> {
   const [row] = await db.select().from(blog_category).where(eq(blog_category.id, id)).limit(1);
   if (!row) return null;
-  const content = await loadContent([{ type: "blog_category", id }], SOURCE);
+  const translations = await loadTranslationRows({ type: "blog_category", id });
   return {
     id: row.id,
     slug: row.slug,
     color: row.color ?? "#8a8178",
     position: row.position,
-    name: content.get("blog_category", id, "name") ?? "",
+    name: translations.find(row => row.locale === SOURCE && row.field === "name")?.value ?? "",
+    translations: rawBlogCategoryTranslations(translations),
   };
 }
 
-export async function listBlogCategoryOptions(): Promise<{ id: string; name: string }[]> {
+export async function listBlogCategoryOptions(): Promise<BlogReferenceOption[]> {
   const rows = await db
     .select({ id: blog_category.id, slug: blog_category.slug })
     .from(blog_category)
     .orderBy(asc(blog_category.position));
-  if (rows.length === 0) return [];
-  const content = await loadContent(
-    rows.map((r) => ({ type: "blog_category", id: r.id })),
-    SOURCE,
-  );
-  return rows.map((r) => ({ id: r.id, name: content.get("blog_category", r.id, "name") ?? r.slug }));
+  return loadBlogReferenceOptions("blog_category", rows);
 }
 
 // ── Authors ──────────────────────────────────────────────────────────────────
@@ -132,30 +130,26 @@ export interface AuthorEditBundle {
 export async function getAuthorForEdit(id: string): Promise<AuthorEditBundle | null> {
   const [row] = await db.select().from(author).where(eq(author.id, id)).limit(1);
   if (!row) return null;
-  const content = await loadContent([{ type: "author", id }], SOURCE);
+  const translations = await loadTranslationRows({ type: "author", id });
   const data: AuthorEditData = {
     id: row.id,
     slug: row.slug,
     status: row.status,
     avatar_media_id: row.avatar_media_id,
-    name: content.get("author", id, "name") ?? "",
-    bio: content.get("author", id, "bio") ?? null,
+    name: translations.find(row => row.locale === SOURCE && row.field === "name")?.value ?? "",
+    bio: translations.find(row => row.locale === SOURCE && row.field === "bio")?.value ?? null,
+    translations: rawAuthorTranslations(translations),
   };
   const previews = await resolvePreviews([row.avatar_media_id]);
   return { data, previews };
 }
 
-export async function listAuthorOptions(): Promise<{ id: string; name: string }[]> {
+export async function listAuthorOptions(): Promise<BlogReferenceOption[]> {
   const rows = await db
     .select({ id: author.id, slug: author.slug })
     .from(author)
     .orderBy(asc(author.slug));
-  if (rows.length === 0) return [];
-  const content = await loadContent(
-    rows.map((r) => ({ type: "author", id: r.id })),
-    SOURCE,
-  );
-  return rows.map((r) => ({ id: r.id, name: content.get("author", r.id, "name") ?? r.slug }));
+  return loadBlogReferenceOptions("author", rows);
 }
 
 // ── Posts ────────────────────────────────────────────────────────────────────

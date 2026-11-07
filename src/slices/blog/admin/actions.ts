@@ -7,8 +7,8 @@ import { db } from "@core/db/client";
 import {
   deleteContent,
   deleteSlugs,
-  setSourceContent,
 } from "@core/i18n/content-write";
+import { saveAuthorLabels, saveBlogCategoryLabels } from "../server/reference-locales";
 import { loadAlternateSlugs } from "@core/i18n";
 import { BLOG_POST } from "../contract";
 import { author, blog_category, blog_post } from "../schema";
@@ -81,7 +81,8 @@ export async function saveBlogCategory(raw: unknown): Promise<BlogSaveResult> {
       if (!ins) return { ok: false, error: "server" };
       id = ins.id;
     }
-    await setSourceContent(BLOG_CATEGORY, id, { name: input.name }, { updatedBy: staff.userId });
+    await saveBlogCategoryLabels(id, input, staff.userId);
+    revalidatePath("/admin/posts", "layout");
     revalidateBlogList();
     revalidatePath("/admin/blog-categories");
     revalidatePath(`/admin/blog-categories/${id}`);
@@ -144,7 +145,8 @@ export async function saveAuthor(raw: unknown): Promise<BlogSaveResult> {
       if (!ins) return { ok: false, error: "server" };
       id = ins.id;
     }
-    await setSourceContent(AUTHOR, id, { name: input.name, bio: input.bio }, { updatedBy: staff.userId });
+    await saveAuthorLabels(id, input, staff.userId);
+    revalidatePath("/admin/posts", "layout");
     revalidateBlogList();
     revalidatePath("/admin/authors");
     revalidatePath(`/admin/authors/${id}`);

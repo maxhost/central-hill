@@ -1,5 +1,24 @@
 # Slice `blog` (S4)
 
+## Author/category locale inputs —2026-11-06
+
+ADR0067 moves author name/bio and category name into visible EN/ES/PT/FR inputs
+in each existing one-Save form. Identity, slug, avatar/status and category
+color/position remain shared. Edit reads load raw authored targets, including
+pending work; Save manually approves nonblank targets and clears only blank
+locale fields for EN fallback. Older clients omitting translations preserve them.
+Author Save opts into source-only empty-field clearing so EN bio removal cannot
+erase independently authored target bios. No migration or new atomicity claim.
+
+Post selector labels and public listing/detail/featured/related/preview resolve
+the active post locale while keeping reference IDs and post snapshots/revisions
+unchanged. Reference Save invalidates Blog tags and admin Post routes; no post
+republish is needed. Old Translation author/category review routes redirect to
+their forms, and generic inbox/actions/generation no longer author those types.
+Global Translations remains for other auxiliary content.
+
+See [execution](../../../docs/specs/blog-reference-locales.md) and ADR0067.
+
 ## Individual posts: form and continuous rich text (ADR0059)
 
 The locale workflow remains complete draft/published snapshots (ADR0057), but the
@@ -39,7 +58,7 @@ while published=NULL stays unpublished. Staff bootstrap preserves current public
 versions and pending target text as drafts. Original translations/slugs remain.
 New identity slug reservation never publishes; existing locale slugs are immutable
 in this pilot. Old savePost/Translation actions/generator cannot publish articles.
-Categories/authors retain their existing editors and translation workflow.
+Categories/authors use the manual locale inputs described above (ADR0067).
 
 Save/Publish use CAS and parent archive guards. Blog graph mutations acquire an
 advisory transaction lock in a Neon HTTP noninteractive batch, then check references
