@@ -1,6 +1,13 @@
 # Contenidos del CMS — edición y publicación por idioma
 
-## Estado vigente — 2026-11-07, nombres de ciudades y barrios
+## Estado vigente — 2026-11-07, Quote de Testimonios
+
+Testimonios incorpora Quote EN/ES/PT/FR en la misma ficha, sin tabs y con un
+Guardar. Vacíos usan EN y los textos propios sobreviven a EN posterior; autor,
+país, ubicación, rating, público, estado y posición siguen compartidos. Lectores
+públicos usan locale/audience y Save invalida caché sin editar Pages. La vía genérica
+de Testimonios se retira con redirecciones, sin borrar filas históricas. Ver
+[ejecución](testimonial-quote-locales.md), [QA](testimonial-quote-locales-qa.md), ADR0070.
 
 Ciudades y barrios incorporan cuatro inputs de nombre EN/ES/PT/FR en su ficha,
 sin tabs y con un único Guardar. Selectores de Buildings/Guides y lectores públicos
@@ -33,13 +40,14 @@ entrega actual; no autoriza iniciar otros auxiliares. Prevalece sobre notas hist
 | Autores/categorías Blog | Inputs EN/ES/PT/FR en una ficha, públicos y selector localizados, vías antiguas de Translations retiradas (ADR0067) |
 | FAQ por página/idioma | Selector independiente EN/ES/PT/FR, vacío sin FAQ y sin fallback EN; se conservan grupos y traducciones legacy (ADR0068) |
 | Ciudades/barrios: nombres | Cuatro inputs en una ficha; nombres públicos y selectores localizados, fallback EN, slugs e intro histórica preservados (ADR0069) |
+| Testimonios | Quote EN/ES/PT/FR en una ficha, fallback EN, públicos localizados y vía antigua retirada (ADR0070) |
 | Fase5: restantes auxiliares y retirada de Translations | Pendiente según inventario siguiente |
 
 ### Dependencias pendientes para retirar la sección global
 
 1. **Auxiliares pendientes**: los nombres de ciudades/barrios están cubiertos;
    queda decidir la autoría o política de `city.intro`, texto traducible histórico
-   fuera del cambio de nombres. También testimonios (`quote`),
+   fuera del cambio de nombres. Testimonios (`quote`) ya está cubierto. Quedan
    textos globales de Settings (`company_settings`) y etiquetas de navegación
    (`nav_item`). Resolver su autoría en cada ficha con el patrón adecuado. Las
    FAQ de Building ya pertenecen a su editor. FAQ general admite ahora grupos

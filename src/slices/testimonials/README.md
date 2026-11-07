@@ -1,6 +1,8 @@
 # Slice `testimonials` (S7)
 
-Audience-tagged customer testimonials, **shared by the Home / Owners / Guests pages**.
+Audience-tagged customer testimonials, **embedded by Owners / Guests pages**.
+The current Home pricing funnel intentionally omits testimonials; historical Home
+composition remains documented in prior specs.
 This slice has **no public routes of its own** — it is a read model that S9 pages embed
 through the contract. See `docs/vertical-slices.md` → S7, `docs/data-model.md` → Slice
 testimonials.

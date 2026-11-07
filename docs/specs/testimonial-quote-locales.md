@@ -11,8 +11,9 @@ Testimonial schema already has only quote in translation; neutral author name/
 country/property_location/audience/rating/position/status unchanged. Existing CRUD
 Save writes EN quote through setSourceContent; public listTestimonials(locale,
 audience?) already approved-target/ENfallback, position/published/audience filters,
-cache testimonial-list. Home mixes audiences, Guests filters guest, Owners filters
-owner via same TestimonialsRow. Pages JSON/SEO/draft/publication never changes.
+cache testimonial-list. Historical Home mixed audiences, but current Home pricing funnel intentionally
+omits testimonials (home-page.tsx line40). Guests filters guest, Owners filters
+owner via same TestimonialsRow; current synthetic Owners page is absent. Pages JSON/SEO/draft/publication never changes.
 No images in testimonial; public cards render author country flag, unchanged.
 
 EN quote remains quote:string trimmed/min1/max1000. Add optional translations:
@@ -59,7 +60,7 @@ writer; persistence/browser tested integrated. No aesthetic tests/screenshots/lo
 Independent QA after assembly owns ONLY docs/specs/testimonial-quote-locales-qa.md
 and artifacts /private/tmp/central-hill-testimonial-quote-locales-qa/independent.
 Three normal bounded groups:1New/Edit raw pending/blank/privacy and Save/reload;
-2four public guest locales +HomeEN mixed audience, IDs/rating/author unchanged and
+2four public guest locales and owner suppression, IDs/rating/author unchanged and
 Page JSON/SEO/pub/rev immutable;3ENrename/clearES fallback while PT/FR custom,
 mobile/old review redirect/inbox exclusion/auth. Store tests cover owner filtering,
 omitted targets and guards, no broad Pages suite or repeated full matrices.
@@ -77,8 +78,9 @@ Root snapshots42business hashes before seed (auth tables excluded). New browser
 e831guest+owner testimonial fixtures only, pending/custom quote rows; new creation
 UUID recorded. Old Pages/Home/d/f/e78/e79/e80/e81/e82 protected; no fixed-page
 snapshot/delete/restore, no source Pages writes for tests. Public current Guests4
-andHomeEN reused read-only; no Owner4 page fixture invented if absent. Existing
-owner filter proved by store tests and mixed HomeEN public. If no current Guests
+reused read-only; no Owner4 page fixture invented if absent. Existing owner filter
+proved by store tests in all four locales. Home currently omits testimonials; do
+not add a section for tests or claim public mixed Home coverage. If no current Guests
 locale publication, report and use existing reader rather than overwrite content.
 
 Checks actual: pnpm typecheck/lint, tsx explicit tests testimonial existing14+
@@ -88,3 +90,30 @@ no broad known-stale Pages matrix. Browser real auth/Next actions/revalidation;
 external test-only loader for Node auth/nextcache outside request if needed.
 After independent approval main ff (check new user changes), sole actual-main
 safeenv dev3071 and read-only opening, final docs/commit. No further task automatic.
+
+
+## Progress
+
+Contracts/spec d14b19c before writers. Root5ebee66, UI935950f integrated33ad047,
+backend27574c7 integrated1cb2ec8. UI scopedlint0; backend20cases0 (14old+6DB),
+typecheck0 after root copies generated ignored next-env.d.ts to isolated writers.
+Integration typecheck0/lint0(7oldwarnings), 33tests0 (27pure+6DB), e830cleanupdone.
+Rootseed e831guest+owner after hostname/DB/role verifies and42hash snapshot; no
+existingdata modified. Offline deps from cache, no package/lockchange. Build in
+progress2workers after DB cleanup; maindev70494 lives until candidate ready.
+
+Source audit corrected historical README expectation before browser: current
+Home explicitly omits testimonials. Public browser covers Guests4, owner filtering
+covered by store tests; current Owners source absent. No Home/Owners sections or
+fixed-page fixtures created to invent coverage. No productchange for this finding.
+
+Build exit0/144routes/2workers, no source correction. Root verified main cwd and
+stopped70494/70488; production QA3071PID74283/session22386 solelistener, login200.
+Independent browser3groups passed:4quotes/noTabs/rawpending-private/Save+reload,
+new draft b58049c1-f090-42f2-aa18-6b98adb777ac (fourquotes+shareddefaults), Guests4
+quotes and owner suppression, ENrename+clearES currentENfallback/PTFRown preserved,
+mobile/oldreviewredirect/inbox exclusion+other types/auth. No aesthetic QA or broad
+Pages suite. Finalproof/report records42hashes and fixture neutral/ownerquote/slugs
+exact. No product corrections or repeated harness matrix needed in these groups.
+No Home/Owners coverage invented; current Home omits section, Owners page absent;
+owner filtering proved through real reader tests in allfourlocales.
