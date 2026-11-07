@@ -435,7 +435,7 @@ export function ApartmentLocaleEditor({
         {te("localizedHeading", { locale: locale.toUpperCase() })}
       </h2>
       <p className="text-sm text-ink-soft">
-        {te(ownership === "usesEnglish" ? "inheritHint" : "customHint")}
+        {ownership === "usesEnglish" ? te("inheritHint") : t("admin.customLocaleHint")}
       </p>
       <FieldGrid>
         {input("name", t("admin.fields.name"))}
