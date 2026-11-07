@@ -1,13 +1,16 @@
 import type { Locale } from "@core/db/columns";
+import { iconKey } from "@core/validation/icon-key";
 import {
   SERVICE_EDITOR_LOCALES,
   type ServiceEditorialModel,
   type ServiceEnvelope,
+  type ServiceSharedContent,
 } from "../editorial-types";
 import {
   emptyServiceEnvelope,
   identifyServiceContent,
   serviceLocalizedContent,
+  serviceSharedContent,
 } from "../locale-content";
 import { buildPayload, initialState, type FormState } from "./form-model";
 import { serviceDetailContent } from "../detail";
@@ -368,4 +371,26 @@ export function servicePublicationNeedsSave(
       serviceLocalizedContent(model.draft.content),
     ),
   );
+}
+
+/** Save all common nested references, including slots absent from the selected locale. */
+export function serviceFormSharedContent(
+  workspace: ServiceFormWorkspace,
+  locale: Locale,
+): ServiceSharedContent {
+  return {
+    ...serviceSharedContent(serviceFormEnvelope(workspace, locale).content),
+    factIcons: Object.fromEntries(
+      Object.entries(workspace.shared.factIcons).map(([id, icon]) => [
+        id,
+        iconKey.parse(icon),
+      ]),
+    ),
+    itineraryMedia: Object.fromEntries(
+      Object.entries(workspace.shared.itineraryMedia).map(([id, media]) => [
+        id,
+        media || null,
+      ]),
+    ),
+  };
 }

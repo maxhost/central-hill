@@ -15,6 +15,7 @@ import {
   serviceAnyFormDirty,
   serviceLocaleFormDirty,
   serviceFormEnvelope,
+  serviceFormSharedContent,
   serviceFormEqual,
 } from "../admin/locale-form-state";
 import { detailToDraft, draftToDetail, moveAt } from "../admin/detail-draft";
@@ -215,4 +216,44 @@ test("new saved EN requires re-saving an older inherited draft before Publish wi
     servicePublicationNeedsSave(createServiceWorkspace(m, category), "pt"),
     false,
   );
+});
+
+test("saving EN retains a common image changed on a target-only itinerary slot", () => {
+  const m = model();
+  m.locales.pt.working.localeMode = "custom";
+  m.locales.pt.working.content.detail.itinerary.push({
+    id: "pt-only",
+    time: "11",
+    title: "Passeio português",
+    text: "Texto próprio",
+    media_id: image1,
+  });
+  m.shared.content.itineraryMedia["pt-only"] = image1;
+  let w = createServiceWorkspace(m, category);
+  const pt = structuredClone(w.locales.pt.working);
+  pt.detail.itinerary.find((step) => step.id === "pt-only")!.media_id = image2;
+  w = changeServiceForm(w, "pt", pt);
+  assert.equal(
+    serviceFormEnvelope(w, "en").content.detail.itinerary.some(
+      (step) => step.id === "pt-only",
+    ),
+    false,
+  );
+  const shared = serviceFormSharedContent(w, "en");
+  assert.equal(shared.itineraryMedia["pt-only"], image2);
+  const saved = structuredClone(m);
+  saved.shared.revision += 1;
+  saved.shared.content = shared;
+  w = applyServiceModel(w, "en", saved);
+  assert.equal(
+    w.locales.pt.working.detail.itinerary.find((step) => step.id === "pt-only")!
+      .media_id,
+    image2,
+  );
+  assert.equal(
+    w.locales.pt.working.detail.itinerary.find((step) => step.id === "pt-only")!
+      .text,
+    "Texto próprio",
+  );
+  assert.equal(serviceAnyFormDirty(w), false);
 });

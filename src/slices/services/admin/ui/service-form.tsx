@@ -50,6 +50,7 @@ import {
   serviceAnyFormDirty,
   serviceLocaleFormDirty,
   serviceFormEnvelope,
+  serviceFormSharedContent,
   serviceLocalTextDirty,
   servicePublicationNeedsSave,
 } from "../locale-form-state";
@@ -344,6 +345,7 @@ export function ServiceForm({
                 : 0,
             expectedSharedRevision: workspace.model?.shared.revision ?? 0,
             payload,
+            shared: serviceFormSharedContent(workspace, locale),
             ...(!persisted ? { slug: workspace.slug } : {}),
           }),
           "save",
