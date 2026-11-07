@@ -86,3 +86,5 @@ export { BlogSharedAside } from "./ui/components/blog-shared-aside";
 export { BlogArticlePreview } from "./ui/blog-article-preview";
 /** Legacy Translation cannot mutate articles managed by the locale editor. */
 export { isBlogEditorialEntity, getBlogEditorialRedirect } from "./server/editorial-translation-policy";
+
+export type { BlogReferenceOption, BlogCategoryTranslations, AuthorTranslations } from "./reference-locale-types";

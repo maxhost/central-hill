@@ -59,6 +59,7 @@ export interface BlogCategoryEditData {
   color: string;
   position: number;
   name: string;
+  translations?: import("../reference-locale-types").BlogCategoryTranslations;
 }
 
 export async function getBlogCategoryForEdit(id: string): Promise<BlogCategoryEditData | null> {
@@ -120,6 +121,7 @@ export interface AuthorEditData {
   avatar_media_id: string | null;
   name: string;
   bio: string | null;
+  translations?: import("../reference-locale-types").AuthorTranslations;
 }
 
 export interface AuthorEditBundle {

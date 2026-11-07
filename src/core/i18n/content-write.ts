@@ -46,13 +46,14 @@ export type SourceFields = Record<string, string | null | undefined>;
  * with an empty/null value are **cleared** — their rows are removed for *all*
  * locales (the field no longer exists). Source rows carry no `source_hash`;
  * staleness is detected later by S14 hashing the live source against each target
- * row's stored `source_hash`.
+ * row's stored `source_hash`. ADR0067: preserveTargetsOnClear explicitly limits
+ * empty-field removal to EN; the historical default still clears all locales.
  */
 export async function setSourceContent(
   type: string,
   id: string,
   fields: SourceFields,
-  opts?: { updatedBy?: string },
+  opts?: { updatedBy?: string; preserveTargetsOnClear?: boolean },
 ): Promise<void> {
   const upserts: {
     entity_type: string;
@@ -112,6 +113,7 @@ export async function setSourceContent(
           eq(translation.entity_type, type),
           eq(translation.entity_id, id),
           inArray(translation.field, clears),
+          opts?.preserveTargetsOnClear ? eq(translation.locale, SOURCE_LOCALE) : undefined,
         ),
       );
   }

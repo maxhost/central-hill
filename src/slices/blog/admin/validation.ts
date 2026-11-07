@@ -7,16 +7,40 @@
  * single [T] field; `related_ids` are the (≤3) curated related posts.
  */
 import { z } from "zod";
-import { contentStatus, slug, position, tStr } from "@core/validation/primitives";
+import {
+  contentStatus,
+  slug,
+  position,
+  tStr,
+} from "@core/validation/primitives";
 import { postBody } from "../body";
+
+const categoryTranslations = z.strictObject({
+  es: z.string().trim().max(80),
+  pt: z.string().trim().max(80),
+  fr: z.string().trim().max(80),
+});
+const authorTarget = z.strictObject({
+  name: z.string().trim().max(120),
+  bio: z.string().trim().max(1000).nullable(),
+});
+const authorTranslations = z.strictObject({
+  es: authorTarget,
+  pt: authorTarget,
+  fr: authorTarget,
+});
 
 export const blogCategorySaveInput = z.object({
   id: z.uuid().optional(),
   slug,
-  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "hex color").or(z.string().min(1).max(32)),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "hex color")
+    .or(z.string().min(1).max(32)),
   position,
   // [T] source value (en):
   name: tStr({ min: 1, max: 80 }),
+  translations: categoryTranslations.optional(),
 });
 export type BlogCategorySaveInput = z.infer<typeof blogCategorySaveInput>;
 
@@ -28,6 +52,7 @@ export const authorSaveInput = z.object({
   // [T] source values (en):
   name: tStr({ min: 1, max: 120 }),
   bio: tStr({ max: 1000 }).nullable(),
+  translations: authorTranslations.optional(),
 });
 export type AuthorSaveInput = z.infer<typeof authorSaveInput>;
 
@@ -42,7 +67,10 @@ export const blogPostSaveInput = z.object({
   published_at: z
     .string()
     .nullable()
-    .refine((v) => v === null || v.trim() === "" || !Number.isNaN(Date.parse(v)), "invalid date"),
+    .refine(
+      (v) => v === null || v.trim() === "" || !Number.isNaN(Date.parse(v)),
+      "invalid date",
+    ),
   reading_minutes: z.number().int().positive().max(120),
   is_featured: z.boolean(),
   cta_label: tStr({ max: 80 }).nullable(),
