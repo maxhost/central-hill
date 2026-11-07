@@ -20,6 +20,7 @@ import { mediaId, url } from "@core/validation/primitives";
 const line = (max: number) => z.string().trim().min(1).max(max);
 
 export const itineraryStep = z.object({
+  id: z.string().min(1).max(100).optional(),
   time: line(40),
   title: line(120),
   text: line(600),
@@ -88,6 +89,7 @@ export const DEFAULT_FACT_ICON = "clock";
 const LEGACY_FACT_ICONS: Record<string, string> = { pin: "map-pin" };
 
 export const keyFact = z.object({
+  id: z.string().min(1).max(100).optional(),
   icon: z.preprocess((v) => (typeof v === "string" && LEGACY_FACT_ICONS[v]) || v, iconKey),
   title: line(80),
   note: line(160).optional(),

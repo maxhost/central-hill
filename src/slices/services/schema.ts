@@ -1,4 +1,5 @@
-import { integer, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { check, integer, jsonb, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { pkUuid, timestamps } from "@core/db/columns";
 import type { ServicePresentation } from "./presentation";
 
@@ -55,3 +56,26 @@ export const service_media = pgTable("service_media", {
   position: integer().notNull().default(0),
   ...timestamps,
 });
+
+// ADR0065: lazy locale snapshots and live common data. No eager legacy backfill.
+export const service_locale_content = pgTable("service_locale_content", {
+  id: pkUuid(), service_id: uuid().notNull().references(() => service.id, { onDelete: "cascade" }),
+  locale: text().$type<import("@core/db/columns").Locale>().notNull(),
+  published: jsonb().$type<import("./editorial-types").ServiceEnvelope>(),
+  draft: jsonb().$type<import("./editorial-types").ServiceEnvelope>(),
+  revision: integer().notNull().default(0),
+  published_at: timestamp({ withTimezone: true }), draft_saved_at: timestamp({ withTimezone: true }),
+  updated_by: text(), ...timestamps,
+}, table => [
+  unique("service_locale_content_entity_locale_unique").on(table.service_id, table.locale),
+  check("service_locale_content_locale_ck", sql`${table.locale} in ('en','es','pt','fr')`),
+  check("service_locale_content_revision_ck", sql`${table.revision} >= 0`),
+]);
+export const service_shared_content = pgTable("service_shared_content", {
+  id: pkUuid(), service_id: uuid().notNull().references(() => service.id, { onDelete: "cascade" }),
+  data: jsonb().$type<{ schemaVersion: 1; content: import("./editorial-types").ServiceSharedContent }>().notNull(),
+  revision: integer().notNull().default(0), updated_by: text(), ...timestamps,
+}, table => [
+  unique("service_shared_content_entity_unique").on(table.service_id),
+  check("service_shared_content_revision_ck", sql`${table.revision} >= 0`),
+]);

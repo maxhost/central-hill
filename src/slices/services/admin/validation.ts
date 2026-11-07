@@ -36,6 +36,7 @@ export const serviceCategorySaveInput = z.object({
   position,
   // [T] source value (en):
   name: tStr({ min: 1, max: 80 }),
+  translations: z.object({ es: tStr({ max: 80 }), pt: tStr({ max: 80 }), fr: tStr({ max: 80 }) }).optional(),
 });
 export type ServiceCategorySaveInput = z.infer<typeof serviceCategorySaveInput>;
 
