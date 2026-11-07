@@ -917,7 +917,7 @@
         "euros": "Starting price (€)",
         "eurosHint": "Enter euros, for example 35.50.",
         "source": "Start in English. Customize each language in its tab.",
-        "published": "View published page",
+        "published": "View on site",
         "unsaved": "You have unsaved changes. Leave this page?",
         "integrity": "Saved content needs repair. Saving is disabled to preserve the original.",
         "actor": "This staff ID is incompatible with content attribution. No changes were saved. Contact your administrator.",

@@ -4,16 +4,16 @@ import { useEffect, useId, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { ZodError } from "zod";
 import { isIconName } from "@core/ui/icons/names";
+import { UiIcon } from "@core/ui";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { Locale } from "@core/db/columns";
 import {
   AdminButton,
   AdminCard,
-  AdminPageHeader,
   IconField,
   FieldGrid,
-  FormActions,
+  StateBadge,
   type AdminMediaPreview,
   MediaField,
   MediaGalleryField,
@@ -138,12 +138,6 @@ export function ServiceForm({
     );
   const err = (key: string) => errors[key];
   const canLeave = () => !anyDirty || window.confirm(tp("unsaved"));
-  const goBack = () => {
-    if (!busy && canLeave()) {
-      bypass.current = true;
-      router.push("/admin/services");
-    }
-  };
 
   useEffect(() => {
     currentUrl.current = window.location.href;
@@ -467,31 +461,98 @@ export function ServiceForm({
   };
   return (
     <div ref={root} className="space-y-6">
-      <AdminPageHeader
-        title={
-          persisted ? state.name || t("admin.editTitle") : t("admin.newTitle")
-        }
-        description={t("admin.formSubtitle")}
-        actions={
-          <Link
-            href="/admin/services"
-            className="text-sm text-ink-soft hover:text-ink"
-          >
-            ← {t("admin.backToList")}
-          </Link>
-        }
-      />
-
-      {banner ? (
-        <p
-          role="status"
-          className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink"
+      <div className="space-y-4 border-b border-line pb-5">
+        <Link
+          href="/admin/services"
+          className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-ink"
         >
-          {banner}
-        </p>
-      ) : null}
+          <UiIcon name="nav-arrow-left" size={16} />
+          {t("admin.backToList")}
+        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
+            <h1 className="font-serif text-2xl leading-tight text-ink">
+              {persisted
+                ? state.name || t("admin.editTitle")
+                : t("admin.newTitle")}
+            </h1>
+            <StateBadge
+              label={t(`admin.status.${workspace.model?.status ?? "draft"}`)}
+              tone={
+                workspace.model?.status === "published"
+                  ? "approved"
+                  : workspace.model?.status === "archived"
+                    ? "neutral"
+                    : "draft"
+              }
+            />
+          </div>
+          {workspace.model?.status === "published" && model?.published ? (
+            <Link
+              href={`/${locale}/services/${workspace.model.slugByLocale[locale] ?? workspace.model.slugByLocale.en ?? ""}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-ink-soft hover:text-accent-deep"
+            >
+              {tp("published")} ↗
+            </Link>
+          ) : null}
+        </div>
+        <p className="text-sm text-ink-soft">{t("admin.formSubtitle")}</p>
+      </div>
 
-      <div className="space-y-3 border-b border-line bg-bg py-3">
+      <header className="sticky top-0 z-20 w-full min-w-0 max-w-3xl space-y-3 border-b border-line bg-bg py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-2">
+            {persisted ? (
+              <AdminButton
+                className="min-h-11"
+                onClick={onVisibility}
+                disabled={busy}
+              >
+                {tv(
+                  workspace.model?.status === "archived"
+                    ? "restore"
+                    : "archive",
+                )}
+              </AdminButton>
+            ) : null}
+            {persisted ? (
+              <AdminButton
+                className="min-h-11"
+                variant="danger"
+                onClick={onDelete}
+                disabled={pending || uploading}
+              >
+                {tb("actions.delete")}
+              </AdminButton>
+            ) : null}
+          </div>
+          <div className="ml-auto flex flex-wrap gap-2">
+            <AdminButton
+              className="min-h-11"
+              onClick={onSubmit}
+              disabled={busy || own.conflict}
+            >
+              {te(operation === "save" ? "saving" : "saveDraft")}
+            </AdminButton>
+            <AdminButton
+              className="min-h-11"
+              variant="primary"
+              onClick={onPublish}
+              disabled={
+                busy ||
+                own.conflict ||
+                !persisted ||
+                !model?.draft ||
+                dirty ||
+                publicationNeedsSave
+              }
+            >
+              {te(operation === "publish" ? "publishing" : "publish")}
+            </AdminButton>
+          </div>
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div
             role="tablist"
@@ -555,6 +616,7 @@ export function ServiceForm({
             role="status"
             className={`text-xs ${dirty ? "text-accent-deep" : "text-ink-soft"}`}
           >
+            {locale.toUpperCase()} ·{" "}
             {te(
               dirty || publicationNeedsSave
                 ? "unsaved"
@@ -566,6 +628,21 @@ export function ServiceForm({
             )}
           </p>
         </div>
+      </header>
+      <div className="max-w-3xl space-y-3">
+        {banner ? (
+          <p
+            role="status"
+            className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink"
+          >
+            {banner}
+          </p>
+        ) : null}
+        {preparing ? (
+          <p role="status" className="text-xs text-ink-soft">
+            {tb("media.waitForMedia")}
+          </p>
+        ) : null}
         <p className="text-sm text-ink-soft">{te("sharedHint")}</p>
         {!persisted ? (
           <p className="text-sm text-ink-soft">{te("firstSave")}</p>
@@ -606,18 +683,10 @@ export function ServiceForm({
           </div>
         ) : null}
       </div>
-      {workspace.model?.status === "published" && model?.published ? (
-        <Link
-          href={`/${locale}/services/${workspace.model?.slugByLocale[locale] ?? workspace.model?.slugByLocale.en ?? ""}`}
-          className="inline-block text-sm underline underline-offset-4"
-        >
-          {tp("published")}
-        </Link>
-      ) : null}
       {Object.keys(errors).length ? (
         <div
           role="alert"
-          className="space-y-2 rounded-md border border-line p-4"
+          className="max-w-3xl space-y-2 rounded-md border border-line p-4"
         >
           <p className="text-sm font-semibold">{tp("saveError")}</p>
           <ul className="space-y-2">
@@ -640,50 +709,42 @@ export function ServiceForm({
         id={`${fieldPrefix}-panel-${locale}`}
         aria-labelledby={`${fieldPrefix}-tab-${locale}`}
         disabled={pending || uploading || own.conflict}
-        className="space-y-6"
+        className="w-full min-w-0 max-w-3xl space-y-6"
       >
-        <AdminCard title={t("admin.sections.status")}>
-          <FieldGrid>
-            <Field label={t("admin.fields.status")}>
-              <p className="min-h-11 py-3 text-sm text-ink">
-                {t(`admin.status.${workspace.model?.status ?? "draft"}`)}
-              </p>
-            </Field>
-            <Field
-              label={t("admin.fields.position")}
-              hint={t("admin.fields.positionHint")}
-            >
-              <TextInput
-                type="number"
-                data-service-path="position"
-                value={state.position}
-                onChange={(e) => set("position", e.target.value)}
-              />
-            </Field>
-          </FieldGrid>
-        </AdminCard>
-
         <AdminCard title={t("admin.sections.identity")}>
           <div className="space-y-4">
-            <Field
-              label={t("admin.fields.category")}
-              required
-              error={err("category_id")}
-            >
-              <Select
-                data-service-path="category_id"
-                disabled={!editableIcons}
-                value={state.category_id}
-                onChange={(e) => set("category_id", e.target.value)}
+            <FieldGrid>
+              <Field
+                label={t("admin.fields.category")}
+                required
+                error={err("category_id")}
               >
-                <option value="">{t("admin.fields.choose")}</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.names?.[locale] ?? c.name}
-                  </option>
-                ))}
-              </Select>
-            </Field>
+                <Select
+                  data-service-path="category_id"
+                  disabled={!editableIcons}
+                  value={state.category_id}
+                  onChange={(e) => set("category_id", e.target.value)}
+                >
+                  <option value="">{t("admin.fields.choose")}</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.names?.[locale] ?? c.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field
+                label={t("admin.fields.position")}
+                hint={t("admin.fields.positionHint")}
+              >
+                <TextInput
+                  type="number"
+                  data-service-path="position"
+                  value={state.position}
+                  onChange={(e) => set("position", e.target.value)}
+                />
+              </Field>
+            </FieldGrid>
             <Field label={t("admin.fields.name")} required error={err("name")}>
               <TextInput
                 data-service-path="name"
@@ -1047,55 +1108,6 @@ export function ServiceForm({
           errors={errors}
         />
       </fieldset>
-      <FormActions>
-        {persisted ? (
-          <AdminButton onClick={onVisibility} disabled={busy}>
-            {tv(workspace.model?.status === "archived" ? "restore" : "archive")}
-          </AdminButton>
-        ) : null}
-        {persisted ? (
-          <AdminButton
-            variant="danger"
-            onClick={onDelete}
-            disabled={pending || uploading}
-          >
-            {tb("actions.delete")}
-          </AdminButton>
-        ) : null}
-        <AdminButton
-          variant="ghost"
-          onClick={goBack}
-          disabled={pending || uploading}
-        >
-          {tb("actions.cancel")}
-        </AdminButton>
-        {preparing ? (
-          <p role="status" className="text-xs text-ink-soft">
-            {tb("media.waitForMedia")}
-          </p>
-        ) : null}
-        <AdminButton
-          variant="primary"
-          onClick={onSubmit}
-          disabled={busy || own.conflict}
-        >
-          {te(operation === "save" ? "saving" : "saveDraft")}
-        </AdminButton>
-        <AdminButton
-          variant="primary"
-          onClick={onPublish}
-          disabled={
-            busy ||
-            own.conflict ||
-            !persisted ||
-            !model?.draft ||
-            dirty ||
-            publicationNeedsSave
-          }
-        >
-          {te(operation === "publish" ? "publishing" : "publish")}
-        </AdminButton>
-      </FormActions>
     </div>
   );
 }

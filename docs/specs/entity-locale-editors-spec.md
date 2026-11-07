@@ -1,5 +1,75 @@
 # Contenidos del CMS — edición y publicación por idioma
 
+## Estado vigente — 2026-11-06, después de Servicios
+
+El usuario acepta Servicios y sus ajustes de coherencia visual con Buildings y
+pide consolidarlos en main local. La consulta siguiente es qué falta para retirar
+`/admin/translations`; esta revisión NO autoriza implementar lo pendiente ni
+quitar la sección todavía. Este estado supersede las notas históricas inferiores.
+
+| Bloque | Estado actual |
+|---|---|
+| Pages (nueve adaptadores) | Entregados, con drafts/publicación por idioma |
+| Fase1: artículos Blog | Entregada en main local; formulario/rich text y tabs |
+| Fase2: Buildings/Apartments | Entregada en main local, formularios y reservas localizadas; prevalecen ADR0061–0063 sobre políticas históricas de snapshots/booking |
+| Amenities | Cuatro labels manuales + nombres públicos/selector localizados, entregados (ADR0064) |
+| Fase3: Servicios y categorías | Entregada en main local; formulario/módulos/SEO, cuatro idiomas y datos comunes (ADR0065); ver service-locale-forms-execution.md y QA |
+| Fase4: Guías individuales | Pendiente conversión por idioma de guía completa + secciones/lugares; su CMS EN existe, Pages→Guides ya está cubierto |
+| Fase5: auxiliares y retirada de Translations | Pendiente según inventario siguiente |
+
+### Dependencias pendientes para retirar la sección global
+
+1. **Guías individuales**: contenido, SEO, copy, enlaces y árbol completo por
+   idioma; definir estructura/medios compartidos, identidades estables e
+   independencia de borradores/publicaciones. Los actuales guardados de hijos
+   escriben fuente EN/live; no basta añadir tabs visuales.
+2. **Auxiliares con formularios aún EN**: autores (`name`, `bio`), categorías Blog
+   (`name`), ciudades (`name`, `intro`), barrios (`name`), FAQ generales
+   (`question`, `answer`), testimonios (`quote`), textos globales de Settings
+   (`company_settings`) y etiquetas de navegación (`nav_item`). Resolver autoría
+   en sus formularios, con el patrón adecuado a cada entidad. Nombres propios
+   pueden ser compartidos si se define explícitamente; no requieren duplicarse
+   sólo por existir en translation. Las FAQ de Building ya pertenecen a su editor;
+   este pendiente corresponde a `faq_item` general.
+3. **Metadatos de imágenes**: cubrir `media_asset.alt` mediante una superficie
+   propia si se conserva su edición manual. Actualmente el lector soporta ALT
+   localizado y su fallback, pero no hay editor de metadatos que sustituya la
+   matriz global. Esto no pide construir una biblioteca de medios completa ahora.
+4. **Cierre del flujo antiguo**: Services/Amenities/Service categories ya tienen
+   formularios localizados pero siguen admitidos en el inbox/rutas/acciones de
+   Translation. El filtro/guardas actuales sólo reconocen Pages, Blog y Properties.
+   Retirar esa segunda vía de edición, preservar los registros originales y
+   llevar enlaces antiguos al editor correspondiente. Completar la cobertura de
+   todos los tipos antes de retirar menú/rutas/acciones de la sección global.
+   Conservar kernel i18n y tabla translation: taxonomías y otros lectores la siguen
+   usando. Quitar una sección de interfaz no implica borrar sus datos.
+
+### Evidencia y límite de esta revisión
+
+Código: translation/admin/{queries,actions}.ts, server/generate.ts y ui/review.tsx;
+form/action/query de guides, blog, geography, faq, testimonials y settings.
+Se realizó sólo lectura agregada de la DB/rol verificados propertylocalesqa local,
+con safeenv existente: doce entity_type tienen filas legacy. Ocho siguen dentro
+del filtro genérico: amenity, author, blog_category, city, faq_item, neighbourhood,
+service y service_category. Blog/Building/Apartment/BuildingFAQ ya se excluyen.
+Las filas de Services/taxonomías no prueban falta de editor: su cobertura está
+entregada, pero aún falta retirar la vía antigua. Los lectores por idioma propios
+son los autoritativos donde ya se adaptó contenido.
+
+Esta DB sintética no tiene filas actuales de Guides, Testimonials, nav_item,
+company_settings o media_asset ALT; sus formularios/lectores y entidades existen
+por código y también requieren una decisión de cobertura antes del cierre. No
+se inventaría aquí el contenido de producción ni se hicieron escrituras DB.
+Evidencia local de tipos/campos, sin valores de contenido ni secretos:
+`/private/tmp/central-hill-translations-closeout-review.json`.
+
+La traducción automática sigue fuera del plan manual y no bloquea esta retirada.
+La corrección pendiente de archivado/Restore de Apartments es un seguimiento de
+ciclo de vida separado, no una fase pendiente de traducción. No iniciarlo aquí.
+
+## Registro histórico (conservado como referencia)
+
+
 Actualización antes del clear2026-11-06: Blog/Buildings/Apartments y Amenities
 ya están integrados en main local con los formularios y datos comunes corregidos.
 La próxima petición es Services individuales + categorías con4labels. Ver

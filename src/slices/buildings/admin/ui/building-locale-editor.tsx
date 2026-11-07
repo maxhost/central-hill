@@ -897,25 +897,37 @@ export function BuildingLocaleEditor({
                 </h1>
               </div>
             ) : (
-              <AdminButton
-                className="min-h-11"
-                disabled={busy}
-                onClick={() =>
-                  archived
-                    ? void lifecycle("restore")
-                    : setConfirmAction("archive")
-                }
-              >
-                {te(
-                  operation === "archive"
-                    ? "archiving"
-                    : operation === "restore"
-                      ? "restoring"
-                      : archived
-                        ? "restore"
-                        : "archive",
-                )}
-              </AdminButton>
+              <div className="flex flex-wrap gap-2">
+                <AdminButton
+                  className="min-h-11"
+                  disabled={busy}
+                  onClick={() =>
+                    archived
+                      ? void lifecycle("restore")
+                      : setConfirmAction("archive")
+                  }
+                >
+                  {te(
+                    operation === "archive"
+                      ? "archiving"
+                      : operation === "restore"
+                        ? "restoring"
+                        : archived
+                          ? "restore"
+                          : "archive",
+                  )}
+                </AdminButton>
+                {persisted ? (
+                  <AdminButton
+                    className="min-h-11"
+                    variant="danger"
+                    disabled={busy}
+                    onClick={() => setConfirmAction("delete")}
+                  >
+                    {tb("actions.delete")}
+                  </AdminButton>
+                ) : null}
+              </div>
             )}
             <div className="ml-auto flex flex-wrap gap-2">
               <AdminButton
@@ -1136,18 +1148,6 @@ export function BuildingLocaleEditor({
             {input("meta_description", t("admin.fields.metaDescription"), true)}
           </section>
         </div>
-        {persisted ? (
-          <div className="mt-10 flex flex-wrap justify-end gap-3 border-t border-line pt-6">
-            <AdminButton
-              className="min-h-11"
-              variant="danger"
-              disabled={busy}
-              onClick={() => setConfirmAction("delete")}
-            >
-              {tb("actions.delete")}
-            </AdminButton>
-          </div>
-        ) : null}
       </div>
       <dialog
         ref={leaveDialog}

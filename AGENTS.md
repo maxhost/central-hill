@@ -1,5 +1,33 @@
 # Central Hill agent instructions
 
+## Latest Building/Services header consistency — 2026-11-06
+
+User accepted Services against Building e751 and authorized local main commit.
+Completed visual follow-up: Service title/status badge + View on site at top right
+(new tab, noopener noreferrer), catalogue back control, same sticky action row
+above language tabs as Building (Archive/Delete left, Save draft/Publish
+right; only Publish accented), matching max-w-3xl editor width. Removed duplicate
+Status card/label; Position retained beside Category in Identity. Existing handlers,
+locale/media/persistence and action disabled conditions preserved. View on site
+wording aligned in4locales. AestheticL0: no tests, automated QA, DBwrites, restart,
+push/deploy; user manual review approved. Existing main3071 PID44149/session88324
+kept live without restart. Local documentary/UI commit resolves through gitlog-1.
+Follow-up: Building Delete moved from the bottom beside Archive/Restore in its
+upper toolbar, preserving confirmation/busy state/reference guard. Services Cancel
+removed; catalogue back navigation and unsaved-work protection retained.
+Original logo/publicmedia symlink, synthetic env and all worktrees/files retained.
+User asks remaining plan specifically to retire /admin/translations. Roadmap top
+in docs/specs/entity-locale-editors-spec.md updated from source + read-only local
+DB/role aggregate: phase4Guides + auxiliary editors (Blog authors/categories,
+geography, generalFAQ, testimonials, globals/nav and mediaALT) remain; Services,
+Amenities and Service categories need legacy inbox/route/action retirement, not
+new language forms. Keep translation storage/kernel and old data. This is an audit
+and plan update only; no next implementation or global Translations removal is
+authorized by this question. Automatic translation and Apartment lifecycle remain
+separate/deferred. No production DB inventory or remote writes.
+
+
+
 ## Latest Services locale forms delivered — 2026-11-06
 
 User authorized implementation from checkpointb1b75d7 and delivery on localmain.
