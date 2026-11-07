@@ -19,6 +19,7 @@ import type {
   BuildingEnvelope,
   BuildingEditorialModel,
   BuildingLocaleScope,
+  BuildingStatusResult,
 } from "../editorial-types";
 import { amenity } from "../schema";
 import {
@@ -241,7 +242,7 @@ export async function commitBuildingLocale(input: {
   sharedChanged?: boolean;
   expectedSharedRevision?: number;
 }): Promise<boolean> {
-  const shared = input.shared;
+  const shared = input.publish ? undefined : input.shared;
   const proposed = input.payload;
   const candidate = input.publish
     ? sql`target.draft`
@@ -259,7 +260,7 @@ export async function commitBuildingLocale(input: {
     template as materialized(select revision,coalesce(draft,published)as document from building_locale_content where building_id=${input.id}::uuid and locale='en' for update),
     current_shared as materialized(select data,revision from building_shared_content where building_id=${input.id}::uuid for update),
     eligible as materialized(select target.id,${candidate} as document from building_locale_content target where target.building_id=${input.id}::uuid and target.locale=${input.locale} and target.revision=${input.revision}
-      and exists(select 1 from parent where status<>'archived')
+      and exists(select 1 from parent)
       ${input.publish ? sql`and target.draft is not null` : sql``}
       ${input.sharedChanged ? sql`and coalesce((select revision from current_shared),0)=${input.expectedSharedRevision ?? 0}` : sql``}
       and (${input.locale}='en' or coalesce(${candidate}->>'localeMode','custom')<>'inherit' or ((${candidate}->'content') - ${excluded})=(((select document from template)->'content') - ${excluded}))
@@ -271,6 +272,7 @@ export async function commitBuildingLocale(input: {
     effective_shared as materialized(select data->'content'as content from shared_saved union all select data->'content' from current_shared where not exists(select 1 from shared_saved)),
     normalized as materialized(select eligible.id,jsonb_set(eligible.document,'{content}',(eligible.document->'content') || coalesce((select content from effective_shared),'{}'::jsonb))as document from eligible),
     saved as(update building_locale_content target set published=${input.publish ? sql`normalized.document` : sql`target.published`},draft=${input.publish ? sql`null` : sql`normalized.document`},revision=target.revision+1,updated_at=now(),updated_by=${input.actor},draft_saved_at=${input.publish ? sql`null` : sql`now()`},published_at=${input.publish ? sql`now()` : sql`target.published_at`} from normalized where target.id=normalized.id returning target.id),
+    publication_activated as(update building set status='published',updated_at=now() where id=${input.id}::uuid and exists(select 1 from saved) and ${Boolean(input.publish)} returning id),
     identity_saved as(update building set position=(c->>'position')::integer,is_new=(c->>'is_new')::boolean,is_featured=(c->>'is_featured')::boolean,city_id=coalesce(nullif(c->>'city_id',''),'00000000-0000-0000-0000-000000000000')::uuid,neighbourhood_id=(c->>'neighbourhood_id')::uuid,street_address=c->>'street_address',latitude=(c->>'latitude')::double precision,longitude=(c->>'longitude')::double precision,cover_media_id=(c->>'cover_media_id')::uuid,og_image_media_id=(c->>'og_image_media_id')::uuid,avantio_id=c->>'avantio_id',avantio_url=c->>'default_booking_url',booking_enabled=(c->>'booking_enabled')::boolean,updated_at=now() from(select content as c from effective_shared)common where building.id=${input.id}::uuid and exists(select 1 from saved) and ${Boolean(shared)} returning building.id),
     gallery_deleted as(delete from building_media where building_id=${input.id}::uuid and exists(select 1 from identity_saved) returning id),
     gallery_saved as(insert into building_media(building_id,media_id,position)select ${input.id}::uuid,entry.id::uuid,(entry.position-1)::integer from effective_shared cross join lateral jsonb_array_elements_text(content->'gallery')with ordinality entry(id,position)where exists(select 1 from identity_saved) and (select count(*)from gallery_deleted)>=0),
@@ -301,7 +303,6 @@ export async function saveBuildingDraft(
       identity = await readBuildingIdentity(input.id);
       if (!identity) return { ok: false, error: "server" };
     }
-    if (identity.status === "archived") return { ok: false, error: "archived" };
     await bootstrapBuildingLocales(identity, actor);
     const rows = await readBuildingLocaleRows(identity);
     const model = buildingLocaleModel(
@@ -423,7 +424,6 @@ export async function publishBuildingDraft(
   try {
     const identity = await readBuildingIdentity(input.id);
     if (!identity) return { ok: false, error: "not_found" };
-    if (identity.status === "archived") return { ok: false, error: "archived" };
     await bootstrapBuildingLocales(identity, actor);
     const rows = await readBuildingLocaleRows(identity);
     const model = buildingLocaleModel(
@@ -508,4 +508,52 @@ export async function deleteBuildingIdentityIfUnused(
   return row?.deleted
     ? { ok: true }
     : { ok: false, error: row?.in_use ? "in_use" : "not_found" };
+}
+
+/** Archive only controls visibility; capture legacy publications before hiding. */
+export async function archiveBuildingIdentity(
+  id: string,
+  actor: string,
+): Promise<BuildingStatusResult> {
+  return changeBuildingVisibility(id, actor, true);
+}
+/** Restore previously published locales, never drafts or missing-language output. */
+export async function restoreBuildingIdentity(
+  id: string,
+  actor: string,
+): Promise<BuildingStatusResult> {
+  return changeBuildingVisibility(id, actor, false);
+}
+async function changeBuildingVisibility(
+  id: string,
+  actor: string,
+  archived: boolean,
+): Promise<BuildingStatusResult> {
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+  )
+    return { ok: false, error: "not_found" };
+  try {
+    const identity = await readBuildingIdentity(id);
+    if (!identity) return { ok: false, error: "not_found" };
+    await bootstrapBuildingLocales(identity, actor);
+    const [, result] = await db.batch([
+      propertyGraphLockQuery(),
+      db.execute(
+        sql`update building set status=${archived ? sql`'archived'` : sql`case when exists(select 1 from building_locale_content where building_id=${id}::uuid and published is not null) then 'published' else 'draft' end`},updated_at=now() where id=${id}::uuid returning status`,
+      ),
+    ]);
+    const status = result.rows[0]?.status;
+    if (status !== "draft" && status !== "published" && status !== "archived")
+      return { ok: false, error: "not_found" };
+    return { ok: true, status };
+  } catch (error) {
+    if (error instanceof PropertyLegacyError)
+      return { ok: false, error: "legacy_invalid" };
+    console.error(
+      "Building visibility change failed",
+      error instanceof Error ? error.name : "unknown",
+    );
+    return { ok: false, error: "server" };
+  }
 }

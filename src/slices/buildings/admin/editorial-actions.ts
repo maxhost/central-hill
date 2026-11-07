@@ -4,25 +4,25 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
-import { sql } from "drizzle-orm";
 import { requireStaff } from "@core/auth";
-import { db } from "@core/db/client";
 import { loadMedia, mediaUrl } from "@core/media";
 import type {
   SavePropertyDraftInput,
   PublishPropertyDraftInput,
   PropertyEditorialResult,
 } from "@slices/backoffice/contract";
-import type { BuildingEditorialContent } from "../editorial-types";
+import type {
+  BuildingEditorialContent,
+  BuildingStatusResult,
+} from "../editorial-types";
 import {
   saveBuildingDraft,
   publishBuildingDraft,
   validateBuildingReferences,
+  archiveBuildingIdentity,
+  restoreBuildingIdentity,
 } from "../server/editorial-store";
-import {
-  propertyGraphLockQuery,
-  buildingSlugMap,
-} from "../server/editorial-bootstrap";
+import { buildingSlugMap } from "../server/editorial-bootstrap";
 import { checkBuildingEnvelope } from "../server/editorial-validation";
 import { resolveBuildingDocument } from "../server/queries";
 import { revalidateBuilding } from "../server/publish";
@@ -52,7 +52,7 @@ export async function publishBuildingLocaleDraft(
   try {
     revalidateBuilding(result.id, result.slugByLocale);
     revalidatePath("/admin/buildings");
-    revalidatePath(`/admin/buildings/${result.id}`);
+    revalidatePath(`/admin/buildings/${result.id}`, "layout");
     return result;
   } catch {
     return { ...result, refreshWarning: true };
@@ -60,28 +60,32 @@ export async function publishBuildingLocaleDraft(
 }
 export async function archiveBuilding(
   id: string,
-): Promise<{ ok: boolean; refreshWarning?: boolean }> {
-  await requireStaff();
-  if (!z.uuid().safeParse(id).success) return { ok: false };
+): Promise<BuildingStatusResult> {
+  const staff = await requireStaff();
+  if (!z.uuid().safeParse(id).success) return { ok: false, error: "not_found" };
+  const result = await archiveBuildingIdentity(id, staff.userId);
+  return refreshBuildingVisibility(id, result);
+}
+export async function restoreBuilding(
+  id: string,
+): Promise<BuildingStatusResult> {
+  const staff = await requireStaff();
+  if (!z.uuid().safeParse(id).success) return { ok: false, error: "not_found" };
+  const result = await restoreBuildingIdentity(id, staff.userId);
+  return refreshBuildingVisibility(id, result);
+}
+async function refreshBuildingVisibility(
+  id: string,
+  result: BuildingStatusResult,
+): Promise<BuildingStatusResult> {
+  if (!result.ok) return result;
   try {
-    const slugs = await buildingSlugMap(id);
-    const [, result] = await db.batch([
-      propertyGraphLockQuery(),
-      db.execute(
-        sql`update building set status='archived',updated_at=now()where id=${id}::uuid returning id`,
-      ),
-    ]);
-    if (!result.rows.length) return { ok: false };
-    try {
-      revalidateBuilding(id, slugs);
-      revalidatePath("/admin/buildings");
-      revalidatePath(`/admin/buildings/${id}`);
-      return { ok: true };
-    } catch {
-      return { ok: true, refreshWarning: true };
-    }
+    revalidateBuilding(id, await buildingSlugMap(id));
+    revalidatePath("/admin/buildings");
+    revalidatePath(`/admin/buildings/${id}`, "layout");
+    return result;
   } catch {
-    return { ok: false };
+    return { ...result, refreshWarning: true };
   }
 }
 const previewRequest = z

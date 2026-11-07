@@ -435,3 +435,31 @@ The first run exposed PostgreSQL JSONB operator precedence: content extraction
 must be parenthesized before removing shared keys. Both source and candidate
 projections are corrected; safe temporary diagnostic logging was removed.
 Typecheck and scoped store lint passed. Integrated/browser QA remain separate.
+
+## Reversible archive correction (2026-11-06)
+
+Building archive now controls global visibility without locking the editor.
+`saveBuildingDraft` accepts archived identities and leaves them archived, including
+shared data changes. A valid `publishBuildingDraft` activates the global identity
+in the same graph-lock statement as the selected locale publication; other locale
+rows and drafts remain unchanged. Missing-language publication is still explicit.
+
+Staff-gated `archiveBuilding` / `restoreBuilding` actions use typed
+`BuildingStatusResult`, invalidate public caches and the admin workspace layout.
+Owned store helpers bootstrap untouched legacy snapshots before changing visibility.
+Restore activates previously published content (or returns a never-published item
+to draft), preserving all locale documents/revisions and private edits. It does not
+consume drafts or create a missing-language publication. No schema change.
+
+`tests/building-status.integration.test.ts` adds four normal persistence groups:
+archive/edit/restore while drafts stay private; archived explicit publication and
+other-locale preservation; never-published archive/restore and failed validation;
+first legacy archive/bootstrap with pending translation preserved. It uses only
+owned e640 fixture identities after verifying SQL database/role propertylocalesqa.
+
+Backend writer verification: typecheck0, scoped ESLint0 and diffcheck0. The four
+new status groups plus eight existing Property store groups pass12/12 against the
+real authorized synthetic DB via Neon HTTP; owned e640/e410 fixtures cleaned.
+Log:/private/tmp/central-hill-building-status-backend-db.log. Integrated build and
+independent functional browser QA remain orchestrator responsibilities; no visual
+L0 QA is claimed here.
