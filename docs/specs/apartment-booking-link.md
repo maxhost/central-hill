@@ -35,6 +35,7 @@ schema, contract.ts documentation, messages4locales, AGENTS, integration/runtime
 Backend writer apartment-booking/backend at
 /private/tmp/central-hill-apartment-booking-backend. Writable:
 src/slices/apartments/server/editorial-validation.ts after root contract;
+admin/queries.ts (existing EN list link indicator must use the same resolver);
 tests/apartment-booking.test.ts; tests/apartment-booking.integration.test.ts;
 tests/property-locale-editor.test.ts; tests/property-locale-store.integration.test.ts
 only if adapting constructor-based legacy expectations is necessary; README.md.
@@ -78,3 +79,8 @@ needed without migrations. Review boundaries/i18n/ISR explicitly.
 ## Progress
 
 Root contract lands before writer branches; results and final runtime follow.
+
+UI follow-up: localized Apartment ownership hint must omit retired SEO; root adds
+apartments.admin.customLocaleHint4locales, UIwriter changes its single consumer.
+Shared Building hint stays intact. Necessary admin EN-list link indicator also uses
+updated resolver (backend owner scope expansion above).

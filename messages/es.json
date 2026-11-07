@@ -1236,7 +1236,8 @@
         "usesBuilding": "— usa la del edificio"
       },
       "noPhoto": "Sin foto",
-      "noPublishedWarning": "La sección <em>Apartments in this Building</em> no se muestra hasta que publiques al menos uno."
+      "noPublishedWarning": "La sección <em>Apartments in this Building</em> no se muestra hasta que publiques al menos uno.",
+      "customLocaleHint": "Los textos y el enlace de reserva se guardan por separado para este idioma."
     }
   },
   "pages": {

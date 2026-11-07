@@ -1236,7 +1236,8 @@
         "usesBuilding": "— uses building’s"
       },
       "noPhoto": "No photo",
-      "noPublishedWarning": "The <em>Apartments in this Building</em> section stays hidden until you publish at least one."
+      "noPublishedWarning": "The <em>Apartments in this Building</em> section stays hidden until you publish at least one.",
+      "customLocaleHint": "Text and booking link are saved independently for this language."
     }
   },
   "pages": {

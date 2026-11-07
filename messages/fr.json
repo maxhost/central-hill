@@ -1236,7 +1236,8 @@
         "usesBuilding": "— utilise celui de l’immeuble"
       },
       "noPhoto": "Pas de photo",
-      "noPublishedWarning": "La section <em>Apartments in this Building</em> reste masquée tant qu’aucun appartement n’est publié."
+      "noPublishedWarning": "La section <em>Apartments in this Building</em> reste masquée tant qu’aucun appartement n’est publié.",
+      "customLocaleHint": "Les textes et le lien de réservation sont enregistrés séparément pour cette langue."
     }
   },
   "pages": {
