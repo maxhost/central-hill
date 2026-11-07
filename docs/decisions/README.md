@@ -1340,3 +1340,5 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 - [0066 — Guide locale forms](0066-guide-locale-forms.md): whole-guide locale drafts/publications, local section/place composition before Save, shared nested media by UUID.
 
 - [0067 — Manual Blog reference inputs](0067-blog-reference-locale-inputs.md): author/category texts per language in one form and explicit source-only clears preserving target fields.
+
+- [0068 — Page locale FAQ selection](0068-page-locale-faq-selection.md): independent group references per page language without EN inheritance, preserving existing snapshots.

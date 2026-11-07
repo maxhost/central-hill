@@ -20,6 +20,7 @@ export const guestDescriptor: PageEditorialDescriptor = {
   publicPath: "/guests",
   rootNode: describe(guestSchema),
   textPatterns: translatablePaths(guestSchema),
+  localeReferencePaths: ["faq_group_key"],
   listPaths: [...GUEST_LIST_PATHS],
   maxLocalMedia: 16,
   externalSections: ["portfolio", "services_teaser", "activities_teaser", "testimonials", "faq"],

@@ -9,6 +9,7 @@ const homeDescriptor: PageEditorialDescriptor = {
   publicPath: "",
   rootNode: describe(homeSchema),
   textPatterns: translatablePaths(homeSchema),
+  localeReferencePaths: ["faq_group_key"],
   listPaths: [...HOME_LIST_PATHS],
   mediaSlots: [],
   maxLocalMedia: 6,

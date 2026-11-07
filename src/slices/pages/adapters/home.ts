@@ -35,6 +35,7 @@ export const homeAdapter: PageEditorialAdapter<"home"> = {
     publicPath: "",
     rootNode: describe(homeSchema),
     textPatterns: translatablePaths(homeSchema),
+    localeReferencePaths: ["faq_group_key"],
     listPaths: [...HOME_LIST_PATHS],
     maxLocalMedia: 6,
     externalSections: ["portfolio", "services_carousel", "faq"],

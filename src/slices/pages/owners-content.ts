@@ -26,6 +26,7 @@ export const ownersDescriptor: PageEditorialDescriptor = {
   publicPath: "/owners",
   rootNode: describe(ownersSchema),
   textPatterns: translatablePaths(ownersSchema),
+  localeReferencePaths: ["faq_group_key"],
   listPaths: [...OWNERS_LIST_PATHS],
   maxLocalMedia: 10,
   externalSections: ["testimonials", "faq"],

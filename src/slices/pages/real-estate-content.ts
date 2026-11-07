@@ -32,6 +32,7 @@ export const realEstateDescriptor: PageEditorialDescriptor = {
   publicPath: "/real-estate",
   rootNode: describe(realEstateSchema),
   textPatterns: translatablePaths(realEstateSchema),
+  localeReferencePaths: ["faq_group_key"],
   listPaths: [...REAL_ESTATE_LIST_PATHS],
   maxLocalMedia: 21,
   externalSections: ["faq"],

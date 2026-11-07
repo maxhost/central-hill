@@ -79,6 +79,7 @@ export const aboutDescriptor: PageEditorialDescriptor = {
   publicPath: "/about",
   rootNode: describe(aboutSchema),
   textPatterns: translatablePaths(aboutSchema),
+  localeReferencePaths: ["faq_group_key"],
   listPaths: [...ABOUT_LIST_PATHS],
   maxLocalMedia: 41,
   externalSections: [],

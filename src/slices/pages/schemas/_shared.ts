@@ -64,7 +64,8 @@ export const titledItem = z.object({
  * (or absent) means "no FAQ on this page". The page editor renders this as a **dropdown** fed
  * by `faq.listFaqGroups` (the `faq_group_key` field name drives the form-model's select
  * heuristic, mirroring how `*_media_id` drives the media picker); the page renders the chosen
- * group through the shared `FaqSection`. Not a [T] field — the key is language-neutral, so the
+ * group through the shared `FaqSection`. ADR0068: selection belongs to each page locale,
+ * while the group key itself stays a language-neutral identity. Not a [T] field, so the
  * translation pipeline skips it.
  */
 export const faqGroupKey = z
