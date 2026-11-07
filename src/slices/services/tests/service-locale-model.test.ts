@@ -221,3 +221,62 @@ test("JSONB key ordering does not acquire target ownership or report false share
   const roundTrip = reversed(en) as typeof en;
   assert.equal(serviceLocalizedEqual(en.content, roundTrip.content), true);
 });
+
+test("Cleared legacy translated duration and CTA labels never revive stale plain columns", () => {
+  const identity: ServiceIdentity = {
+    id: category,
+    slug: "legacy-cleared-text",
+    status: "published",
+    position: 0,
+    category_id: category,
+    cover_media_id: null,
+    og_image_media_id: null,
+    price_from: null,
+    rating_tenths: null,
+    presentation: null,
+    booking_type: "none",
+    duration_label: "Stale duration column",
+    cta_label: "Stale CTA column",
+    cta_url: null,
+    created_at: new Date(0),
+    updated_at: new Date(0),
+  };
+  for (const locale of ["en", "pt"] as const) {
+    const projected = legacyServiceEnvelope(identity, [], [], locale);
+    assert.equal(projected.content.duration_label, null);
+    assert.equal(projected.content.cta_label, null);
+  }
+  const projected = legacyServiceEnvelope(
+    identity,
+    [
+      {
+        entity_type: "service",
+        entity_id: category,
+        field: "duration_label",
+        locale: "en",
+        value: "Two hours",
+        state: "draft",
+        source_hash: null,
+        updated_by: null,
+        updated_at: new Date(0),
+      },
+      {
+        entity_type: "service",
+        entity_id: category,
+        field: "cta_label",
+        locale: "en",
+        value: "Book translated action",
+        state: "draft",
+        source_hash: null,
+        updated_by: null,
+        updated_at: new Date(0),
+      },
+    ],
+    [],
+    "pt",
+  );
+  assert.equal(projected.content.duration_label, "Two hours");
+  assert.equal(projected.content.cta_label, "Book translated action");
+  assert.equal(identity.duration_label, "Stale duration column");
+  assert.equal(identity.cta_label, "Stale CTA column");
+});
