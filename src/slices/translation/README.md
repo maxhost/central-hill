@@ -16,9 +16,12 @@ Adapted Blog Posts (ADR0057): `blog_post` is excluded from this inbox. Direct
 review links redirect to `/admin/posts/[id]?locale=...`; all six legacy mutations
 and direct generation reject articles before touching their translation data.
 The Blog contract owns this identity policy. Articles use manual complete
-draft/published snapshots per language in Blog, preserving legacy rows. Authors,
-categories and other unadapted entities keep this workflow. The historical
-page-content notes below apply only where their legacy workflow is still active.
+draft/published snapshots per language in Blog, preserving legacy rows.
+ADR0067 also excludes `author` and `blog_category`: their single forms own manual
+EN/ES/PT/FR inputs, one Save and English fallback. Old review links redirect to
+`/admin/authors/[id]` and `/admin/blog-categories/[id]`; generic actions/generation
+reject both types. All legacy translation rows remain. Other unadapted entities
+keep this workflow. Historical page-content notes apply only where still active.
 
 Adapted Properties (ADR0058): `building`, `apartment` and `building_faq` are
 excluded from the generic inbox. Direct review redirects to the building or

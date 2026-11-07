@@ -58,7 +58,7 @@ Integración blog-reference-locales/integration en
 Root owns: este spec y QA handoff; ADR0067/index, AGENTS, roadmap/data-model;
 src/core/i18n/content-write.ts (sólo flag descrito); src/slices/blog/reference-locale-types.ts;
 admin/validation.ts y adiciones iniciales a query interfaces; contract exports;
-server/editorial-translation-policy.ts; messages4locales; fixtures/runtime/integración.
+server/editorial-translation-policy.ts; Translation README; messages4locales; fixtures/runtime/integración.
 
 Backend worktree /private/tmp/central-hill-blog-reference-locales-backend rama
 blog-reference-locales/backend. Own blog/admin/actions.ts (sólo dos Save calls/cache),
@@ -114,3 +114,9 @@ modificar node_modules de main. Mensajes4locales agregados por root. Browserfixt
 nuevas e801 category1/author2/post3/related4 con4pubs rev7 y raw EN/ESpending/PTown/
 FRblank; referencia foto d300 sólo lectura, position9999. GuardDB+role/hostname y
 42hashes previos a seed en /private/tmp/central-hill-blog-reference-locales-qa/.
+
+UI dfe7b2e integrado60a2476; backend415bbed integradof2ccea0. Backend5pure+5DB
+pasaron y limpiaron e800. UI13pure/typecheck/lint0. Root49regresiones puras0.
+Revisión detectó ENname sólo espacios aceptado por schema antiguo; root2864c61
+trim+min1 antes de writes, regresión pura agregada al test integrado tras handoff.
+No cambios de DB/esquema ni datos existentes. Compilación y QA siguen pendientes.

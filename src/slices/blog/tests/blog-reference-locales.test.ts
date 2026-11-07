@@ -56,6 +56,22 @@ test("manual locale inputs trim text, accept empty fallback fields and nullable 
 
 test("limits and complete target shape report the localized field, retaining EN requirements", () => {
   assert.equal(
+    blogCategorySaveInput.safeParse({ ...category, name: "   " }).success,
+    false,
+  );
+  assert.equal(
+    authorSaveInput.safeParse({ ...author, name: " \t " }).success,
+    false,
+  );
+  assert.equal(
+    blogCategorySaveInput.parse({ ...category, name: "  Category EN  " }).name,
+    "Category EN",
+  );
+  assert.equal(
+    authorSaveInput.parse({ ...author, name: "  Author EN  " }).name,
+    "Author EN",
+  );
+  assert.equal(
     blogCategorySaveInput.safeParse({ ...category, name: "" }).success,
     false,
   );
