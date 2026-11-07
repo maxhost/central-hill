@@ -422,3 +422,16 @@ source freshness, explicit publication and legacy bootstrap. It has **not** run 
 this writer handoff: applying0026 and writing new fixtures remain pending explicit
 DB authorization. Integrated build, real Save/reload/media/browser tests and independent
 QA belong to the orchestrator's assembled candidate; no writer QA approval claim.
+
+After explicit migration0026/data authorization, the corrected Building store suite
+passed all8cases against SQL-verified propertylocalesqa, including the old common
+draft Publish guard. Command: `pnpm exec tsx --import
+/private/tmp/central-hill-property-forms-qa/test-runtime.mjs --test
+src/slices/buildings/tests/property-locale-store.integration.test.ts` with the
+synthetic env/preload and AsyncLocalStorage runtime shim. Only owned e410* fixture
+identities were written and cleaned; existing d*/f* data stayed untouched.
+Evidence: `/private/tmp/central-hill-property-forms-qa/buildings-db-fix.log`.
+The first run exposed PostgreSQL JSONB operator precedence: content extraction
+must be parenthesized before removing shared keys. Both source and candidate
+projections are corrected; safe temporary diagnostic logging was removed.
+Typecheck and scoped store lint passed. Integrated/browser QA remain separate.

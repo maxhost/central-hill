@@ -262,7 +262,7 @@ export async function commitBuildingLocale(input: {
       and exists(select 1 from parent where status<>'archived')
       ${input.publish ? sql`and target.draft is not null` : sql``}
       ${input.sharedChanged ? sql`and coalesce((select revision from current_shared),0)=${input.expectedSharedRevision ?? 0}` : sql``}
-      and (${input.locale}='en' or coalesce(${candidate}->>'localeMode','custom')<>'inherit' or (${candidate}->'content' - ${excluded})=((select document from template)->'content' - ${excluded}))
+      and (${input.locale}='en' or coalesce(${candidate}->>'localeMode','custom')<>'inherit' or ((${candidate}->'content') - ${excluded})=(((select document from template)->'content') - ${excluded}))
       and not exists(select 1 from jsonb_array_elements_text(coalesce(${commonCandidate}->'amenity_ids','[]'::jsonb))requested(id) left join amenity a on a.id=requested.id::uuid where a.id is null)
     ),
     shared_saved as (insert into building_shared_content(building_id,data,revision,updated_by)
