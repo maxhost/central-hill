@@ -1,9 +1,10 @@
 import "server-only";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@core/db/client";
-import { loadContent } from "@core/i18n/content";
+import { loadContent, loadTranslationRows } from "@core/i18n/content";
 import { TESTIMONIAL, type TestimonialAudience } from "../contract";
 import { testimonial } from "../schema";
+import { rawTestimonialQuoteTranslations } from "../server/quote-locales";
 
 /**
  * Backoffice reads for slice `testimonials` (S12). Unlike the public read these are
@@ -59,11 +60,14 @@ export interface TestimonialEditData {
   translations?: import("../quote-locale-types").TestimonialQuoteTranslations;
 }
 
-/** Full editable record for one testimonial (source-locale quote), or null. */
+/** Full record with EN quote and raw authored/pending targets, or null. */
 export async function getTestimonialForEdit(id: string): Promise<TestimonialEditData | null> {
   const [row] = await db.select().from(testimonial).where(eq(testimonial.id, id)).limit(1);
   if (!row) return null;
-  const content = await loadContent([{ type: TESTIMONIAL, id }], SOURCE);
+  const [content, rows] = await Promise.all([
+    loadContent([{ type: TESTIMONIAL, id }], SOURCE),
+    loadTranslationRows({ type: TESTIMONIAL, id }),
+  ]);
   return {
     id: row.id,
     audience: row.audience,
@@ -74,5 +78,6 @@ export async function getTestimonialForEdit(id: string): Promise<TestimonialEdit
     position: row.position,
     status: row.status,
     quote: content.get(TESTIMONIAL, id, "quote") ?? "",
+    translations: rawTestimonialQuoteTranslations(rows),
   };
 }

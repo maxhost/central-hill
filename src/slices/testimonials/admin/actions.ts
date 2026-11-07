@@ -4,16 +4,18 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
-import { deleteContent, setSourceContent } from "@core/i18n/content-write";
+import { deleteContent } from "@core/i18n/content-write";
 import { TESTIMONIAL } from "../contract";
 import { testimonial } from "../schema";
 import { revalidateTestimonials } from "../server/publish";
+import { saveTestimonialQuotes } from "../server/quote-locales";
 import { testimonialSaveInput } from "./validation";
 
 /**
  * Backoffice write actions for slice `testimonials` (S12). Each re-gates with
  * `requireStaff()` and re-validates with `testimonialSaveInput`. The source [T]
- * `quote` goes through the `core/i18n` write seam (ADR 0019); the scalar columns
+ * `quote` and its manual targets use the `core/i18n` write seam (ADR 0070);
+ * the scalar columns
  * are written directly. On success the ISR cache is busted via
  * `revalidateTestimonials` (which cascades every S9 page that embeds a row).
  */
@@ -77,7 +79,7 @@ export async function saveTestimonial(raw: unknown): Promise<TestimonialSaveResu
       id = ins.id;
     }
 
-    await setSourceContent(TESTIMONIAL, id, { quote: input.quote }, { updatedBy: staff.userId });
+    await saveTestimonialQuotes(id, input, staff.userId);
 
     revalidateTestimonials();
     revalidatePath("/admin/testimonials");
