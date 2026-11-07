@@ -140,3 +140,15 @@ muestra authorbyline, se comprueba allí categoría y en detalle/preview el auto
 Nuevos e801 y autor32f7330c-3e42-477e-a053-84bea16ad0d5/categoría8e4e5605-dce4-
 4360-8cb6-9569bb94303d retenidos, sin assets nuevos. Rootcomparación final en
 final-protected-comparison.json; IDs exactos independent/owned-ids.json.
+
+## Entrega local —2026-11-07
+
+QA42b9ca7 aprobó c155184 sin correcciones de producto. Main ff6445c99→05c696b,
+QA31418 detenido, único actual-main dev3071 PID35581/parent35575/session36923 con
+cwd workspace verificado; syntheticDB5658/proxy4558/storage9077PID30456 preservados.
+main-open.mjs sólo lectura confirmó200 cuatro fichas (New/Edit), cuatro nombres/
+biografías autor y cuatro nombres categoría sin tabs, Post4tabs con IDs idénticos,
+0pageerrors. No writes de contenido ni nueva matriz en apertura final. main-dev.log
+conserva arranque. Sólo logo y symlink originales siguen untracked; todos los
+worktrees/archivos/envs/artifacts preservados. Sin push/deploy/remoto. Cierre
+documental posterior mediante gitlog-1. Próximos auxiliares requieren nueva petición.

@@ -2,7 +2,8 @@
 
 ## Estado vigente — 2026-11-07, después de autores/categorías Blog
 
-Guías y autores/categorías Blog completados y aprobados en QA independiente.
+Guías y autores/categorías Blog completados, aprobados en QA e integrados en main local.
+Autores/categorías: producto c155184, QA42b9ca7, integración05c696b.
 Autores tienen nombre/bio EN/ES/PT/FR; categorías, cuatro nombres en la misma ficha,
 sin tabs y con un Guardar. Textos vacíos usan EN, referencias/selecciones y posts
 se conservan; el lector usa el idioma del post. Ver [ejecución](blog-reference-locales.md),

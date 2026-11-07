@@ -1,5 +1,41 @@
 # Central Hill agent instructions
 
+## Latest Blog author/category locale inputs — 2026-11-07
+
+User requests four inputs per language in the SAME ficha, no tabs: author name
+and bio EN/ES/PT/FR, category name EN/ES/PT/FR. Delivered with one existing Save,
+raw pending targets in inputs, nonblank manual targets approved and blanks using
+EN fallback per field. Omitted target payload preserves old clients. Author/
+category identities/shared slug/avatar/status/color/position stay intact. Post
+selectors show active-language labels with same IDs; public detail/list/category/
+related/JSONLD/privatepreview follow post locale. Renames/clears update public
+without republishing posts or changing their snapshots/revisions. EN bio clear
+preserves own target bios; explicit core preserveTargetsOnClear opt-in (ADR0067)
+leaves default old clear-all behavior unchanged. ENnames reject whitespace-only.
+Generic Translation inbox/actions/generator exclude author/blog_category; old
+links redirect to their fichas, no rows deleted. Global Translations remains.
+
+Read [execution](docs/specs/blog-reference-locales.md),
+[QA](docs/specs/blog-reference-locales-qa.md), ADR0067 and entity-locale roadmap.
+Two isolated writers integrated executablec155184; independent report42b9ca7
+approved3bounded browser groups,0pageerrors,42protected business hashes identical
+from beforeseed throughstore+browser. Posts/pubs/revs/IDs/neutralrefs intact.
+Root59tests0 (54pure+5DB), typecheck0/lint0(7oldwarnings), build0/136pages/2workers.
+No schema/migration, remote writes or aestheticQAloop. Only harness expectation
+adjusted (JournalCard has no authorbyline); no product fix in QA. e800tests cleaned;
+e801 + newauthor32f7330c-3e42-477e-a053-84bea16ad0d5/category8e4e5605-dce4-4360-
+8cb6-9569bb94303d retained, no media writes. Rootlegacy ENtrim correction beforeQA
+covered by pure assertions. Cities/barrios explicitly deferred by user; do not
+start those, FAQ/testimonials or other auxiliaries automatically.
+
+Localmain ff6445c99→05c696b done; final doc commit resolves via gitlog-1. Sole
+actual-main dev3071 **PID35581/parent35575/session36923**, cwd verifiedworkspace;
+main-open read-only200 Author/Category/New forms +Post:4names/4bios author,
+4categorynames/noTabs, Post4tabs/sharedIDs,0errors. Safe synthetic propertylocalesqa
+DB5658/proxy4558/storage9077PID30456 unchanged. QA31418 stopped. Keep all worktrees,
+files/artifacts/ignoredenvs/originallogo/publicmedia symlink. Logs/evidence in
+/private/tmp/central-hill-blog-reference-locales-qa/. No push/deploy/remote writes.
+
 ## Latest Guides locale forms delivered — 2026-11-06
 
 User authorized individual Guides as next step toward retiring Translations.
