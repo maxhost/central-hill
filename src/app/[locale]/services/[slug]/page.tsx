@@ -29,14 +29,13 @@ export async function generateMetadata({
   const svc = await getServiceBySlug(locale, slug);
   if (!svc) return {};
 
-  // hreflang: each locale's own slug (falls back to this one if a translation's slug is
-  // missing) + x-default on the source-locale path.
-  const languages: Partial<Record<Locale | "x-default", string>> = {
-    "x-default": `/services/${svc.alternateSlugs[routing.defaultLocale] ?? slug}`,
-  };
-  for (const l of routing.locales) {
-    languages[l] = `/${l}/services/${svc.alternateSlugs[l] ?? slug}`;
+  // The slice supplies legacy alternates or only explicitly published locales.
+  const languages: Partial<Record<Locale | "x-default", string>> = {};
+  for (const [language, localizedSlug] of Object.entries(svc.alternateSlugs)) {
+    languages[language as Locale] = `/${language}/services/${localizedSlug}`;
   }
+  const sourceSlug = svc.alternateSlugs[routing.defaultLocale];
+  if (sourceSlug) languages["x-default"] = `/services/${sourceSlug}`;
 
   const ogImage = svc.ogImage ?? svc.cover;
 

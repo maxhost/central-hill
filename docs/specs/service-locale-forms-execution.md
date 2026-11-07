@@ -206,3 +206,13 @@ public uppercase styling asserted via textContent. Original hashes retained.
 Root corrected three remaining old English-only/review-workflow copy keys in all
 four message files (12values, samekeys/placeholders). QA source-approved copy delta,
 no behavior rerun. Group4 pending; final copy-only build after browser is safe.
+
+Independentgroup4 found a second blocking integration defect: the public detail
+route still expanded filtered alternateSlugs back to all routing locales. Actual
+new UI identity55f55335-0a39-4f0d-9a5d-29281649116a had EN-only publication but
+advertised ES/PT/FR hreflang. Root expands own composition write set to
+`src/app/[locale]/services/[slug]/page.tsx`, emitting only slice-supplied alternates
+and x-default only when EN exists, matching the existing Blog route. Untouched
+legacy Services still supply their original alternate maps. No kernel change.
+QA continues unaffectedgroup4 stale/access/visibility checks before root final
+build; targeted new EN-only hreflang/target404 confirmation follows the restart.
