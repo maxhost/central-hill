@@ -493,3 +493,29 @@ pass15/15;3new persistence groups +8existing Property store groups pass11/11.
 The DB suites verified database/role propertylocalesqa, wrote only their own
 e750/e410 fixtures and cleaned them. Typecheck and scoped ESLint pass. Integrated
 build/public browser verification and independent QA belong to the orchestrator.
+
+## Manual Amenity labels — ADR0064 (2026-11-06)
+
+The Amenity form authors EN/ES/PT/FR labels in one taxonomy Save, through the
+existing source/target i18n write seams. English remains required; manual target
+labels are approved immediately. A blank provided target removes only that label
+and resolves to English. Older requests omitting the translations record preserve
+all target rows. English changes never replace authored target text automatically.
+Writes retain the existing sequential behavior; no atomic multi-language
+transaction, automatic translation or new publication workflow is introduced.
+
+`getAmenityForEdit` returns actual target values in every state, including pending
+work, with blank inputs for absent targets. `listAmenitiesAdmin` returns resolved
+approved `labels` for all four languages, falling back to English then slug;
+its existing `label` stays English for compatibility. Empty historic approved
+labels also fall back. Building tabs change the label of each checkbox while
+retaining one shared `amenity_ids` selection. Existing slug/icon/group and usage/
+deletion rules stay unchanged.
+
+Taxonomy Save invalidates public Building/Apartment/list/Home caches and Building
+admin layouts. Published Building amenities resolve their current approved label
+without republishing Building text or SEO. No migration or kernel change.
+`tests/amenity-locales.integration.test.ts` uses owned e770 fixtures after checking
+SQL database/role propertylocalesqa; it covers raw pending editing vs approved
+selection, four-language writes, English-only compatibility, target clearing and
+public label resolution with unchanged published Building snapshots.

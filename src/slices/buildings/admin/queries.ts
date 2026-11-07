@@ -1,11 +1,21 @@
 import "server-only";
 import { asc, count, eq } from "drizzle-orm";
 import { db } from "@core/db/client";
-import { type ContentRef, loadContent } from "@core/i18n/content";
+import {
+  type ContentRef,
+  loadContent,
+  loadTranslationRows,
+} from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
 import { listCities, listNeighbourhoods } from "@slices/geography/contract";
 import { AMENITY, BUILDING, BUILDING_FAQ } from "../contract";
+import {
+  AMENITY_LABEL_LOCALES,
+  AMENITY_TARGET_LOCALES,
+  type AmenityLabels,
+  type AmenityTranslations,
+} from "../amenity-types";
 import {
   readBuildingIdentity,
   readBuildingLocaleRows,
@@ -299,22 +309,27 @@ export interface AmenityOption {
   group: string | null;
 }
 
-/** The full amenity taxonomy (source labels) for the multi-select. */
+/** Full taxonomy with approved names for each Building editor language. */
 export async function listAmenitiesAdmin(): Promise<AmenityOption[]> {
   const rows = await db
     .select({ id: amenity.id, slug: amenity.slug, group: amenity.group })
     .from(amenity)
     .orderBy(asc(amenity.group), asc(amenity.slug));
   if (rows.length === 0) return [];
-  const content = await loadContent(
-    rows.map((a) => ({ type: AMENITY, id: a.id })),
-    SOURCE,
+  const refs = rows.map((a) => ({ type: AMENITY, id: a.id }));
+  const contents = await Promise.all(
+    AMENITY_LABEL_LOCALES.map((locale) => loadContent(refs, locale)),
   );
-  return rows.map((a) => ({
-    id: a.id,
-    label: content.get(AMENITY, a.id, "label") ?? a.slug,
-    group: a.group,
-  }));
+  return rows.map((a) => {
+    const label = contents[0]!.get(AMENITY, a.id, "label")?.trim() || a.slug;
+    const labels = Object.fromEntries(
+      AMENITY_LABEL_LOCALES.map((locale, index) => [
+        locale,
+        contents[index]!.get(AMENITY, a.id, "label")?.trim() || label,
+      ]),
+    ) as AmenityLabels;
+    return { id: a.id, label: labels.en, labels, group: a.group };
+  });
 }
 
 // ── Amenity taxonomy editor (`/admin/amenities`) ──────────────────────────────
@@ -371,7 +386,7 @@ export interface AmenityEditData {
   buildings: number;
 }
 
-/** Full editable record for one amenity (source label), or null. */
+/** Raw authored labels, including pending target work; absent targets stay blank. */
 export async function getAmenityForEdit(
   id: string,
 ): Promise<AmenityEditData | null> {
@@ -381,8 +396,8 @@ export async function getAmenityForEdit(
     .where(eq(amenity.id, id))
     .limit(1);
   if (!row) return null;
-  const [content, [usage]] = await Promise.all([
-    loadContent([{ type: AMENITY, id }], SOURCE),
+  const [translations, [usage]] = await Promise.all([
+    loadTranslationRows({ type: AMENITY, id }),
     db
       .select({ n: count() })
       .from(building_amenity)
@@ -393,7 +408,18 @@ export async function getAmenityForEdit(
     slug: row.slug,
     icon: row.icon ?? "",
     group: row.group ?? "",
-    label: content.get(AMENITY, id, "label") ?? "",
+    label:
+      translations.find(
+        (value) => value.field === "label" && value.locale === SOURCE,
+      )?.value ?? "",
+    translations: Object.fromEntries(
+      AMENITY_TARGET_LOCALES.map((locale) => [
+        locale,
+        translations.find(
+          (value) => value.field === "label" && value.locale === locale,
+        )?.value ?? "",
+      ]),
+    ) as AmenityTranslations,
     buildings: usage?.n ?? 0,
   };
 }
