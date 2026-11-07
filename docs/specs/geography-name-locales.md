@@ -132,3 +132,18 @@ Build0 con CIRCLE_NODE_TOTAL=3/2workers/144rutas después de cleanupDB. Logs en
 artifactdir raíz. Maindev49382/49376 detenido tras verificar cwd; candidato
 production3071PID69672/session39094 único listener, login200, QA independiente
 habilitada. Root no muta contenido durante sus tres grupos acotados.
+
+Resultados browser: 3/3grupos ok, 0pageerrors. FormNew/Edit/rawpending y nombres
+manuales Save/reload; nuevo agregado69c3994c-1abc-4b8d-bdc8-a2e873b2dccd con NB
+18fa8a22-162c-4219-bd95-5a26432d8e1f y65146c11-93ce-489e-985b-a2ad6e5b2b34:
+add/remove/reorder y segundoSave sin recargar conserva IDs y targets. Fourtabs de
+Building/Guide sólo cambian labels, IDs iguales. Públicos4idiomas, NB en cards y
+ciudad+NB en detalle, Guidefilter/detalle y SEO intactos; URLPTcustom200. ENrename+
+clearES producen fallbackEN sólo en campos vaciados; PT/FR propios siguen propios.
+Móvil funcional y acceso anónimo protegido. Slugs/intro/Building+Guide+section/
+publicaciones/revisiones/SEO/selecciones exactos; 42hashes previos iguales (root
+comparó archivos con preseed). BuildingFilter no está montado en listing antes de
+esta tarea (B6); no inventar un filtro/citylabel nuevo como parte de nombres.
+Sólo el harness de respuesta Next-action se ajustó después de router.refresh;
+continuación desde reload/DB del Save hecho, sin repetir la mutación ni producto.
+Aprobación/documento independiente se registra en QA; siguiente paso mainff local.

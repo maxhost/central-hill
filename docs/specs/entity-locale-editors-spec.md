@@ -1,6 +1,14 @@
 # Contenidos del CMS — edición y publicación por idioma
 
-## Estado vigente — 2026-11-07, después de selección FAQ por idioma
+## Estado vigente — 2026-11-07, nombres de ciudades y barrios
+
+Ciudades y barrios incorporan cuatro inputs de nombre EN/ES/PT/FR en su ficha,
+sin tabs y con un único Guardar. Selectores de Buildings/Guides y lectores públicos
+usan el nombre del idioma con fallback EN; la identidad seleccionada es común.
+Sólo se localiza `name`: slugs y traducciones históricas de `intro` se conservan.
+Ver [ejecución](geography-name-locales.md), [QA](geography-name-locales-qa.md) y ADR0069.
+La vía genérica Geography no se retira todavía: falta resolver la cobertura de
+`city.intro` antes de cerrar esa segunda vía sin perder su autoría histórica.
 
 Guías y autores/categorías Blog completados, aprobados en QA e integrados en main local.
 Selección FAQ e9f0cab aprobada QA f2b9d73 e integrada main45bd1cf.
@@ -11,8 +19,8 @@ Autores tienen nombre/bio EN/ES/PT/FR; categorías, cuatro nombres en la misma f
 sin tabs y con un Guardar. Textos vacíos usan EN, referencias/selecciones y posts
 se conservan; el lector usa el idioma del post. Ver [ejecución](blog-reference-locales.md),
 ADR0067 y [Guías](guide-locale-forms-execution.md). La sección global sigue activa
-para auxiliares pendientes. Ciudades y barrios quedan explícitamente para después;
-esta entrega no autoriza iniciar otros auxiliares. Prevalece sobre notas históricas.
+para auxiliares pendientes. Los nombres de ciudades/barrios se incorporan en la
+entrega actual; no autoriza iniciar otros auxiliares. Prevalece sobre notas históricas.
 
 | Bloque | Estado actual |
 |---|---|
@@ -24,13 +32,14 @@ esta entrega no autoriza iniciar otros auxiliares. Prevalece sobre notas histór
 | Fase4: Guías individuales | Implementación completa y QA aprobada: guía/secciones/lugares por idioma, draft/Publish explícitos, imágenes comunes por UUID, composición antes del primer Save (ADR0066) |
 | Autores/categorías Blog | Inputs EN/ES/PT/FR en una ficha, públicos y selector localizados, vías antiguas de Translations retiradas (ADR0067) |
 | FAQ por página/idioma | Selector independiente EN/ES/PT/FR, vacío sin FAQ y sin fallback EN; se conservan grupos y traducciones legacy (ADR0068) |
+| Ciudades/barrios: nombres | Cuatro inputs en una ficha; nombres públicos y selectores localizados, fallback EN, slugs e intro histórica preservados (ADR0069) |
 | Fase5: restantes auxiliares y retirada de Translations | Pendiente según inventario siguiente |
 
 ### Dependencias pendientes para retirar la sección global
 
-1. **Auxiliares pendientes**: ciudades y barrios (definición diferida por el
-   usuario; puede conservarse el nombre local compartido, mientras `intro` es
-   texto traducible), testimonios (`quote`),
+1. **Auxiliares pendientes**: los nombres de ciudades/barrios están cubiertos;
+   queda decidir la autoría o política de `city.intro`, texto traducible histórico
+   fuera del cambio de nombres. También testimonios (`quote`),
    textos globales de Settings (`company_settings`) y etiquetas de navegación
    (`nav_item`). Resolver su autoría en cada ficha con el patrón adecuado. Las
    FAQ de Building ya pertenecen a su editor. FAQ general admite ahora grupos
