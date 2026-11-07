@@ -47,6 +47,7 @@ export async function ApartmentsAdminList({
   buildingStatus?: "draft" | "published" | "archived";
 } = {}) {
   const t = await getTranslations("apartments");
+  const te = await getTranslations("propertyEditor");
   const rows = await listApartmentsAdmin({ buildingId });
 
   const specs = (row: ApartmentAdminListItem) =>
@@ -54,14 +55,19 @@ export async function ApartmentsAdminList({
       t("admin.specs.bedrooms", { count: row.bedrooms }),
       t("admin.specs.beds", { count: row.bedsCount }),
       t("admin.specs.guests", { count: row.maxGuests }),
-      ...(row.sizeM2 != null ? [t("admin.specs.size", { size: row.sizeM2 })] : []),
+      ...(row.sizeM2 != null
+        ? [t("admin.specs.size", { size: row.sizeM2 })]
+        : []),
     ].join(" · ");
 
   const nameColumn: Column<ApartmentAdminListItem> = {
     header: t("admin.columns.name"),
     cell: (row) => (
       <div className="flex flex-wrap items-center gap-2">
-        <Link href={editHref(row)} className="font-medium text-ink hover:text-accent-deep">
+        <Link
+          href={editHref(row)}
+          className="font-medium text-ink hover:text-accent-deep"
+        >
           {row.name}
         </Link>
         {row.badge ? <StateBadge label={row.badge} tone="accent" /> : null}
@@ -71,7 +77,25 @@ export async function ApartmentsAdminList({
   const statusColumn: Column<ApartmentAdminListItem> = {
     header: t("admin.columns.status"),
     cell: (row) => (
-      <StateBadge label={t(`admin.status.${row.status}`)} tone={STATUS_TONE[row.status]} />
+      <div className="space-y-2">
+        <StateBadge
+          label={t(`admin.status.${row.status}`)}
+          tone={STATUS_TONE[row.status]}
+        />
+        <div className="flex flex-wrap gap-1">
+          {Object.entries(row.localeStates).map(([locale, state]) => (
+            <StateBadge
+              key={locale}
+              label={`${locale.toUpperCase()} · ${state.published ? te("published") : te("unpublished")}${state.draft ? ` · ${te("draftSaved")}` : ""}`}
+              tone={
+                state.published && row.status !== "archived"
+                  ? "approved"
+                  : "draft"
+              }
+            />
+          ))}
+        </div>
+      </div>
     ),
   };
 
@@ -99,7 +123,11 @@ export async function ApartmentsAdminList({
               <img
                 src={row.cover?.url ?? PLACEHOLDER}
                 alt={row.cover ? "" : t("admin.noPhoto")}
-                className={row.cover ? "h-full w-full object-cover" : "h-full w-full object-contain p-2"}
+                className={
+                  row.cover
+                    ? "h-full w-full object-cover"
+                    : "h-full w-full object-contain p-2"
+                }
               />
             </div>
           ),
@@ -109,7 +137,11 @@ export async function ApartmentsAdminList({
         statusColumn,
         {
           header: t("admin.columns.specs"),
-          cell: (row) => <span className="whitespace-nowrap text-ink-soft">{specs(row)}</span>,
+          cell: (row) => (
+            <span className="whitespace-nowrap text-ink-soft">
+              {specs(row)}
+            </span>
+          ),
           className: "hidden md:table-cell",
         },
         {
@@ -120,7 +152,9 @@ export async function ApartmentsAdminList({
                 ✓<span className="sr-only">{t("admin.avantio.own")}</span>
               </span>
             ) : (
-              <span className="text-ink-soft">{t("admin.avantio.usesBuilding")}</span>
+              <span className="text-ink-soft">
+                {t("admin.avantio.usesBuilding")}
+              </span>
             ),
           className: "hidden lg:table-cell",
         },
@@ -146,7 +180,11 @@ export async function ApartmentsAdminList({
 
   const newButton = (
     <Link
-      href={buildingId ? `/admin/buildings/${buildingId}/apartments/new` : "/admin/buildings"}
+      href={
+        buildingId
+          ? `/admin/buildings/${buildingId}/apartments/new`
+          : "/admin/buildings"
+      }
       className="rounded-md border border-accent bg-accent px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-deep"
     >
       + {t("admin.newApartment")}
@@ -165,7 +203,9 @@ export async function ApartmentsAdminList({
           columns={columns}
           rows={rows}
           getRowKey={(row) => row.id}
-          empty={<EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />}
+          empty={
+            <EmptyState title={t("admin.empty")} hint={t("admin.emptyHint")} />
+          }
         />
       </div>
     );
@@ -174,17 +214,22 @@ export async function ApartmentsAdminList({
   // The public "Apartments in this Building" grid renders published units only, so a
   // published building with none (or no apartments at all) shows no such section.
   const noneVisible =
-    buildingStatus === "published" && !rows.some((row) => row.status === "published");
+    buildingStatus === "published" &&
+    !rows.some((row) => row.status === "published");
 
   return (
     <div className="space-y-6">
-      {rows.length > 0 ? <div className="flex justify-end">{newButton}</div> : null}
+      {rows.length > 0 ? (
+        <div className="flex justify-end">{newButton}</div>
+      ) : null}
       {noneVisible ? (
         <p
           role="status"
           className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
         >
-          {t.rich("admin.noPublishedWarning", { em: (chunks) => <em>{chunks}</em> })}
+          {t.rich("admin.noPublishedWarning", {
+            em: (chunks) => <em>{chunks}</em>,
+          })}
         </p>
       ) : null}
       <DataTable

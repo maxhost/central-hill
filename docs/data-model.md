@@ -46,7 +46,8 @@ commit generated HTML to git).
 
 ## Translation model (cross-cutting, owned by `core/i18n`)
 
-Adapted Pages (ADR0040) and individual Blog Posts (ADR0057) are explicit
+Adapted Pages (ADR0040), individual Blog Posts (ADR0057), and Buildings /
+Apartments with their building FAQs (ADR0058) are explicit
 exceptions to the legacy field-level publication policy below. Their owning
 slices store complete localized draft/published snapshots. Translation rows are
 retained for compatibility/bootstrap and cannot be edited through Translations
@@ -381,6 +382,41 @@ default; Home/Guest/About start blank.
     prose is authored per building, not centralized — see `building.description_neighbourhood`.)
 
 ### Slice `buildings` — core catalog entity
+
+**ADR0058 / migration0025:** `building_locale_content` owns complete version1
+JSONB `published?` and `draft?` envelopes, unique `(building_id,locale)`, with
+EN/ES/PT/FR checks, monotonic nonnegative revision, publication/draft timestamps
+and nullable textual staff actor. Its FK cascades only to the owning building.
+ADR0061 supersedes the original frozen-common policy: snapshots own localized
+name, teaser, SEO, independently structured FAQ with stable IDs and booking
+override. Optional `localeMode: inherit|custom` records language ownership; English
+fills untouched working documents until their first localized edit. Existing own
+translations/edited snapshots remain custom conservatively. Published text remains
+fixed until that language is explicitly published. Retired prose stays hidden.
+
+**ADR0061 / proposed migration0026:** `building_shared_content` is unique by
+`building_id`, FK to its own identity with CASCADE, version1 `data` JSONB containing
+only `BuildingSharedContent`, monotonic nonnegative `revision`, nullable actor and
+timestamps. It owns location, ordering/flags, media/gallery/amenities and neutral
+booking configuration. Saving common changes in any language updates public common
+values for every already published locale atomically with the selected locale draft.
+It never publishes a new language or changes another language's text/SEO/revision.
+Localized Save without common changes ignores stale common copies in the request.
+Common CAS is independent of locale CAS, serialized under the property graph lock.
+No row on GET: derive common from EN publication, then the first published locale,
+then EN draft/legacy identity for new unpublished entities. Old EN draft common edits
+remain private working changes until Save. Neutral legacy columns/relations are
+mirrors for operational readers. Save common invalidates public caches; text-only
+Save remains private. Migration application is restricted to approved local QA.
+
+Legacy rows below remain read-only bootstrap/compatibility data; absent snapshots
+may resolve legacy content, but an existing unpublished snapshot never does.
+Bootstrap captures all four current public outputs and preserves pending target
+copy at the first explicit mutation, never on GET or preview. The global identity
+still controls archive and operational ordering. Public locale counters derive
+from same-language published apartment identities. Building deletion refuses any
+child apartment identity; amenity deletion also checks frozen snapshot references.
+
 - **building**: `id, slug, status, position, is_new (badge), is_featured, city_id→city,
   neighbourhood_id→neighbourhood, street_address, latitude?, longitude?, cover_media_id,
   og_image_media_id?, avantio_id?, avantio_url?`.
@@ -399,6 +435,26 @@ default; Home/Guest/About start blank.
     (via apartments) bedrooms/max_guests. Tags: `building:<id>`, `building-list`.
 
 ### Slice `apartments` — bookable unit (links to Avantio)
+
+**ADR0058 / migration0025:** `apartment_locale_content` uses the same envelope,
+revision, actor and timestamp rules, unique `(apartment_id,locale)` with its own
+cascading FK. ADR0061 gives it the same explicit inherited/customized text
+ownership and per-language publication as Buildings, including localized SEO and
+booking override. The parent building is immutable. Published children appear
+only when the same building locale is published and the parent is active.
+Operational move arrows apply globally, independent of locale drafts.
+
+**ADR0061 / proposed migration0026:** `apartment_shared_content` follows the same
+owned common table shape, unique by `apartment_id`. It contains capacity, bedrooms,
+bathrooms, beds, size, floor, cover/OG/gallery and neutral booking configuration.
+Common Save immediately updates every visible locale and recomputes identity-based
+legacy counters under the graph lock. Public counters remain locale-specific but
+use current shared physical facts; one identity is counted once. Publication,
+archive and deletion retain their existing counter/revalidation rules. An own
+booking override falls back to the current common default, then the parent's
+`#book` band. There is no public unit route. The editor is a traditional form;
+old private renderer seams are retained for compatibility, not mounted in it.
+
 - **apartment**: `id, slug, status, position, building_id→building, badge? (e.g. "Penthouse"),
   bedrooms, bathrooms, max_guests, beds_count, size_m2?, floor?, cover_media_id, og_image_media_id?,
   avantio_id, avantio_url`. **[T]**: `name`, `description`, `meta_title`, `meta_description`.

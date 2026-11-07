@@ -1,30 +1,39 @@
 import "server-only";
-import { and, eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { db } from "@core/db/client";
-// Buildings owns the stat columns; we hand it the aggregate computed over OUR table
-// (golden rule 2 — buildings can't read the apartment table). This closes the
-// recompute escalation noted in `server/publish.ts`.
-import { setBuildingStats } from "@slices/buildings/contract";
-import { apartment } from "../schema";
-
-/**
- * Recompute a building's denormalized apartment stats from the **published** units
- * and persist them through the buildings contract. Called by the apartments admin
- * after any change to the published set (save / delete / building reassignment).
- */
-export async function recomputeBuildingStats(buildingId: string): Promise<void> {
-  const [agg] = await db
-    .select({
-      apartments: sql<number>`count(*)::int`,
-      capacity: sql<number>`coalesce(sum(${apartment.max_guests}), 0)::int`,
-      beds: sql<number>`coalesce(sum(${apartment.beds_count}), 0)::int`,
-    })
-    .from(apartment)
-    .where(and(eq(apartment.building_id, buildingId), eq(apartment.status, "published")));
-
-  await setBuildingStats(buildingId, {
-    apartments: agg?.apartments ?? 0,
-    capacity: agg?.capacity ?? 0,
-    beds: agg?.beds ?? 0,
-  });
+import { buildingStatsUpdateSql } from "@slices/buildings/contract";
+import { propertyGraphLockQuery } from "./editorial-bootstrap";
+/** Unique identity aggregate. EN is the stable capacity representative when
+ * available, otherwise the first published locale. Missing locale rows retain
+ * legacy read compatibility; four explicit null publications never fall back. */
+export function apartmentAnyPublishedStatsSql(buildingId: string) {
+  return sql`select count(*)::int as apartments,coalesce(sum(units.capacity),0)::int as capacity,coalesce(sum(units.beds),0)::int as beds
+    from (
+      select identity.id,
+        coalesce((common.data->'content'->>'max_guests')::int,(snapshot.published->'content'->>'max_guests')::int,identity.max_guests) as capacity,
+        coalesce((common.data->'content'->>'beds_count')::int,(snapshot.published->'content'->>'beds_count')::int,identity.beds_count) as beds
+      from apartment identity left join apartment_shared_content common on common.apartment_id=identity.id left join lateral (
+        select published from apartment_locale_content where apartment_id=identity.id and published is not null
+        order by case locale when 'en' then 0 when 'es' then 1 when 'pt' then 2 else 3 end limit 1
+      ) snapshot on true
+      where identity.building_id=${buildingId}::uuid and identity.status<>'archived' and (
+        snapshot.published is not null or (identity.status='published' and
+          (select count(*) from apartment_locale_content where apartment_id=identity.id)<4)
+      )
+    ) units`;
+}
+/** Both owned SQL fragments execute in the fresh statement after the graph lock.
+ * A slower earlier lifecycle caller cannot overwrite newer capacity totals. */
+export async function recomputeBuildingStats(
+  buildingId: string,
+): Promise<void> {
+  await db.batch([
+    propertyGraphLockQuery(),
+    db.execute(
+      buildingStatsUpdateSql(
+        buildingId,
+        apartmentAnyPublishedStatsSql(buildingId),
+      ),
+    ),
+  ]);
 }

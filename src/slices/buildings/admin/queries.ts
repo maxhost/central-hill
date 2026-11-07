@@ -6,7 +6,18 @@ import { loadMedia, mediaUrl } from "@core/media";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
 import { listCities, listNeighbourhoods } from "@slices/geography/contract";
 import { AMENITY, BUILDING, BUILDING_FAQ } from "../contract";
-import { amenity, building, building_amenity, building_faq, building_media } from "../schema";
+import {
+  readBuildingIdentity,
+  readBuildingLocaleRows,
+  buildingSlugMap,
+} from "../server/editorial-bootstrap";
+import {
+  amenity,
+  building,
+  building_amenity,
+  building_faq,
+  building_media,
+} from "../schema";
 
 /**
  * Backoffice reads for slice `buildings` (S12). Unlike the public reads these are
@@ -15,6 +26,7 @@ import { amenity, building, building_amenity, building_faq, building_media } fro
  * dynamic (auth), no ISR.
  */
 
+import { readBuildingSharedState } from "../server/shared-content";
 const SOURCE = "en" as const;
 
 type BuildingStatus = "draft" | "published" | "archived";
@@ -29,6 +41,7 @@ export interface BuildingAdminListItem {
   isNew: boolean;
   isFeatured: boolean;
   apartments: number;
+  localeStates: Record<string, { published: boolean; draft: boolean }>;
 }
 
 /** All buildings for the inbox list (every status), in display order. */
@@ -56,17 +69,42 @@ export async function listBuildingsAdmin(): Promise<BuildingAdminListItem[]> {
   ]);
   const cityName = new Map(cities.map((c) => [c.id, c.name]));
 
-  return rows.map((r) => ({
-    id: r.id,
-    name: content.get(BUILDING, r.id, "name") ?? r.slug,
-    slug: r.slug,
-    status: r.status,
-    city: cityName.get(r.city_id) ?? "",
-    position: r.position,
-    isNew: r.is_new,
-    isFeatured: r.is_featured,
-    apartments: r.apartments_count,
-  }));
+  return Promise.all(
+    rows.map(async (r) => {
+      const identity = await readBuildingIdentity(r.id);
+      const locales = identity
+        ? await readBuildingLocaleRows(identity, false)
+        : [];
+      const en = locales.find((row) => row.locale === "en");
+      const latest = en?.draft ?? en?.published;
+      const shared = identity
+        ? (await readBuildingSharedState(identity, locales)).content
+        : {};
+      return {
+        id: r.id,
+        name:
+          latest?.content.name || content.get(BUILDING, r.id, "name") || r.slug,
+        slug: r.slug,
+        status:
+          r.status === "archived"
+            ? ("archived" as const)
+            : locales.some((row) => row.published)
+              ? ("published" as const)
+              : ("draft" as const),
+        city: cityName.get(shared.city_id ?? r.city_id) ?? "",
+        position: shared.position ?? r.position,
+        isNew: shared.is_new ?? r.is_new,
+        isFeatured: shared.is_featured ?? r.is_featured,
+        apartments: r.apartments_count,
+        localeStates: Object.fromEntries(
+          locales.map((row) => [
+            row.locale,
+            { published: Boolean(row.published), draft: Boolean(row.draft) },
+          ]),
+        ),
+      };
+    }),
+  );
 }
 
 export interface BuildingEditData {
@@ -105,8 +143,14 @@ export interface BuildingEditBundle {
 }
 
 /** Full editable record for one building (source-locale values), or null. */
-export async function getBuildingForEdit(id: string): Promise<BuildingEditBundle | null> {
-  const [row] = await db.select().from(building).where(eq(building.id, id)).limit(1);
+export async function getBuildingForEdit(
+  id: string,
+): Promise<BuildingEditBundle | null> {
+  const [row] = await db
+    .select()
+    .from(building)
+    .where(eq(building.id, id))
+    .limit(1);
   if (!row) return null;
 
   const [galleryRows, amenityRows, faqRows] = await Promise.all([
@@ -127,7 +171,10 @@ export async function getBuildingForEdit(id: string): Promise<BuildingEditBundle
   ]);
 
   const faqIds = faqRows.map((f) => f.id);
-  const refs: ContentRef[] = [{ type: BUILDING, id }, ...faqIds.map((fid) => ({ type: BUILDING_FAQ, id: fid }))];
+  const refs: ContentRef[] = [
+    { type: BUILDING, id },
+    ...faqIds.map((fid) => ({ type: BUILDING_FAQ, id: fid })),
+  ];
   const content = await loadContent(refs, SOURCE);
 
   const data: BuildingEditData = {
@@ -151,7 +198,8 @@ export async function getBuildingForEdit(id: string): Promise<BuildingEditBundle
     headline: content.get(BUILDING, id, "headline") ?? "",
     teaser: content.get(BUILDING, id, "teaser") ?? "",
     description_intro: content.get(BUILDING, id, "description_intro") ?? "",
-    description_neighbourhood: content.get(BUILDING, id, "description_neighbourhood") ?? "",
+    description_neighbourhood:
+      content.get(BUILDING, id, "description_neighbourhood") ?? "",
     meta_title: content.get(BUILDING, id, "meta_title") ?? "",
     meta_description: content.get(BUILDING, id, "meta_description") ?? "",
     gallery: galleryRows.map((g) => g.media_id),
@@ -186,30 +234,59 @@ export interface BuildingWorkspace {
  * status and public URL. The apartment count is composed by the route from the
  * apartments slice — this slice never reads apartments.
  */
-export async function getBuildingWorkspace(id: string): Promise<BuildingWorkspace | null> {
+export async function getBuildingWorkspace(
+  id: string,
+): Promise<BuildingWorkspace | null> {
   const [row] = await db
     .select({ id: building.id, slug: building.slug, status: building.status })
     .from(building)
     .where(eq(building.id, id))
     .limit(1);
   if (!row) return null;
-  const content = await loadContent([{ type: BUILDING, id }], SOURCE);
+  const [content, identity, slugs] = await Promise.all([
+    loadContent([{ type: BUILDING, id }], SOURCE),
+    readBuildingIdentity(id),
+    buildingSlugMap(id),
+  ]);
+  const rows = identity ? await readBuildingLocaleRows(identity, false) : [];
+  const en = rows.find((r) => r.locale === "en");
+  const published =
+    rows.find((r) => r.locale === "en" && r.published) ??
+    rows.find((r) => r.published);
   return {
     id: row.id,
-    name: content.get(BUILDING, id, "name") || row.slug,
-    status: row.status,
-    publicPath: `/${SOURCE}/buildings/${row.slug}`,
+    name:
+      (en?.draft ?? en?.published)?.content.name ||
+      content.get(BUILDING, id, "name") ||
+      row.slug,
+    status:
+      row.status === "archived"
+        ? "archived"
+        : published
+          ? "published"
+          : "draft",
+    publicPath: published
+      ? `/${published.locale}/buildings/${slugs[published.locale] ?? row.slug}`
+      : "",
   };
 }
 
 /** Build admin previews for a set of media ids (drops blanks / missing). */
-async function resolvePreviews(ids: (string | null)[]): Promise<Record<string, AdminMediaPreview>> {
+async function resolvePreviews(
+  ids: (string | null)[],
+): Promise<Record<string, AdminMediaPreview>> {
   const clean = Array.from(new Set(ids.filter((x): x is string => !!x)));
   if (clean.length === 0) return {};
   const assets = await loadMedia(clean);
   const out: Record<string, AdminMediaPreview> = {};
   for (const [mid, a] of assets) {
-    out[mid] = { id: mid, url: mediaUrl(a.r2_key), width: a.width, height: a.height, mime: a.mime };
+    out[mid] = {
+      id: mid,
+      url: mediaUrl(a.r2_key),
+      width: a.width,
+      height: a.height,
+      mime: a.mime,
+    };
   }
   return out;
 }
@@ -250,7 +327,9 @@ export interface AmenityAdminListItem {
 }
 
 /** The amenity taxonomy (source labels) for the list screen, grouped then by slug. */
-export async function listAmenitiesForAdminTable(): Promise<AmenityAdminListItem[]> {
+export async function listAmenitiesForAdminTable(): Promise<
+  AmenityAdminListItem[]
+> {
   const rows = await db
     .select({
       id: amenity.id,
@@ -289,8 +368,14 @@ export interface AmenityEditData {
 }
 
 /** Full editable record for one amenity (source label), or null. */
-export async function getAmenityForEdit(id: string): Promise<AmenityEditData | null> {
-  const [row] = await db.select().from(amenity).where(eq(amenity.id, id)).limit(1);
+export async function getAmenityForEdit(
+  id: string,
+): Promise<AmenityEditData | null> {
+  const [row] = await db
+    .select()
+    .from(amenity)
+    .where(eq(amenity.id, id))
+    .limit(1);
   if (!row) return null;
   const [content, [usage]] = await Promise.all([
     loadContent([{ type: AMENITY, id }], SOURCE),
@@ -314,17 +399,13 @@ export async function getAmenityForEdit(id: string): Promise<AmenityEditData | n
  * for the apartments admin building selector (exported on the buildings contract so
  * S3 doesn't read the building table directly).
  */
-export async function listBuildingOptions(): Promise<{ id: string; name: string }[]> {
-  const rows = await db
-    .select({ id: building.id, slug: building.slug })
-    .from(building)
-    .orderBy(asc(building.position));
-  if (rows.length === 0) return [];
-  const content = await loadContent(
-    rows.map((r) => ({ type: BUILDING, id: r.id })),
-    SOURCE,
-  );
-  return rows.map((r) => ({ id: r.id, name: content.get(BUILDING, r.id, "name") ?? r.slug }));
+export async function listBuildingOptions(): Promise<
+  { id: string; name: string }[]
+> {
+  return (await listBuildingsAdmin()).map((row) => ({
+    id: row.id,
+    name: row.name,
+  }));
 }
 
 export interface LocationOptions {
@@ -340,6 +421,10 @@ export async function listLocationOptions(): Promise<LocationOptions> {
   ]);
   return {
     cities: cities.map((c) => ({ id: c.id, name: c.name })),
-    neighbourhoods: neighbourhoods.map((n) => ({ id: n.id, name: n.name, cityId: n.cityId })),
+    neighbourhoods: neighbourhoods.map((n) => ({
+      id: n.id,
+      name: n.name,
+      cityId: n.cityId,
+    })),
   };
 }

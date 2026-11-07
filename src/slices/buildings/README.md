@@ -345,3 +345,80 @@ Pages-owned `BuildingsPage` and private `preview` flag inject the editorial snap
 the same listing composition. The grid still reads published catalogue rows via this slice;
 Pages never imports the grid internals or stores catalogue data in editorial JSON. Public
 `BuildingsListing` callers omit injection/instrumentation. No entity editor change.
+
+
+## Property locale milestone (ADR0058)
+
+Building identity/slugs remain stable. `building_locale_content` holds complete,
+independent EN/ES/PT/FR draft/publication envelopes with persistent CAS revisions.
+GETs only read: absent locale rows resolve legacy read-only, while an explicit
+null publication never falls back. First staff write bootstraps all four public
+legacy versions and pending target work, retaining legacy FAQ rows/translations.
+`PropertyLegacyError` blocks unsafe legacy replacement.
+
+`BuildingLocaleEditor` uses the common PageEditorShell, one full local state per
+language, stable FAQ UUIDs, selected-document media flush and same-origin ephemeral
+preview. New identities open the real Edit route after first Save; later mutations
+update only local selected-language state. Only EN authors shared metadata/FAQ
+structure. Targets can explicitly adopt saved EN details without replacing their
+copy or FAQ answers by ID. Retired prose remains in snapshots without new inputs.
+
+Public readers consume each locale's published snapshot, frozen media/references
+and its own booking override/base. The parent scope never reads children; public
+stats use Apartments' locale aggregate through its contract. Building detail and
+private previews share `BuildingDetailRenderer`; Apartment previews inject one
+selected real UnitCard. Preview suppresses JSON-LD and booking navigation.
+
+All identity lifecycle/CAS operations use shared advisory lock 7158/1, then a fresh
+READ COMMITTED batch statement. Building deletion rejects every Apartment identity
+through its owner's SQL guard. Archive globally hides publications/children.
+Amenity deletion protects references in saved snapshots. `saveBuilding` is retired;
+amenity taxonomy actions remain supported. `buildingStatsUpdateSql` accepts an
+Apartments-owned aggregate (apartments/capacity/beds) for atomic denormalized stats.
+
+Focused tests: `property-locale-state.test.ts` (6 pure groups),
+`property-locale-store.integration.test.ts` (6 backend groups). The latter verifies
+DB+role `propertylocalesqa` before writing only dedicated b* fixtures; it requires
+the isolated environment/server-only test loader. Integrated browser QA and global
+checks are performed by the orchestrator after both slice commits are assembled.
+
+## Property form correction — ADR0061 (2026-11-06)
+
+This supersedes the visual-editor and frozen-common rules above. The active
+BuildingLocaleEditor is a traditional form with EN/ES/PT/FR tabs, explicit selected
+language Save draft/Publish, guarded Back, and independent localized FAQ/SEO/booking
+overrides. It has no canvas, inspector or embedded preview. Retired prose remains
+preserved in documents. A real localized edit immediately customizes that language;
+no-op, photo and physical edits do not. English refreshes untouched working text,
+including inherited saved drafts, without changing any existing publication.
+
+`localeMode` distinguishes inherited from customized version1 envelopes. Old edited
+snapshots remain customized; revision0 legacy baselines inspect actual approved or
+pending translation evidence, including FAQ, rather than comparing text equality.
+Publish of an inherited draft checks current English localized content semantically;
+an English Publish with unchanged text is harmless, while changed text requires a
+new target Save. JSONB object key order never creates a false unsaved indicator.
+
+`building_shared_content` (migration0026, Buildings-owned) holds the unique photo,
+gallery, location, amenity, order/flag and base-booking values with a persistent
+revision. Saving common changes from any language updates public common data in
+all already-published languages immediately. Text/SEO remain private until that
+language Publish. Public queries overlay authoritative shared data over historical
+locale documents; a null publication never falls back. No shared row is created by
+GET. The compatibility fallback uses English publication (then first publication),
+while preserving an old English common draft as private pending work.
+
+The Save statement uses the existing graph lock and fresh locale/common CAS before
+all writes, mirrors neutral legacy columns/relations, and normalizes a text-only
+Save with current common values instead of restoring stale photos. The response
+returns current shared revision and persisted media previews. Common Saves invalidate
+Building/Apartment/list/Home caches; text-only Saves do not invalidate public data.
+Parent deletion/archive rules and child ownership remain unchanged.
+
+Focused verification for this correction:7state cases and4pure model/legacy/fallback
+cases pass; typecheck and targeted ESLint pass. The store suite is updated to own
+`e410*` identities and covers shared Save/CAS, text-only stale payloads, inherited
+source freshness, explicit publication and legacy bootstrap. It has **not** run in
+this writer handoff: applying0026 and writing new fixtures remain pending explicit
+DB authorization. Integrated build, real Save/reload/media/browser tests and independent
+QA belong to the orchestrator's assembled candidate; no writer QA approval claim.

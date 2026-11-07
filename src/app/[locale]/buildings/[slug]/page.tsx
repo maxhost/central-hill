@@ -28,21 +28,20 @@ export async function generateMetadata({
   const detail = await getBuildingBySlug(locale, slug);
   if (!detail) return {};
 
-  // hreflang: each locale's own slug (falls back to this one if a translation's
-  // slug is missing) + x-default on the source path.
-  const languages: Partial<Record<Locale | "x-default", string>> = {
-    "x-default": `/buildings/${slug}`,
-  };
-  for (const l of routing.locales) {
-    languages[l] = `/${l}/buildings/${detail.alternateSlugs[l] ?? slug}`;
+  // Only actual published locale slugs may be advertised as alternates.
+  const languages: Partial<Record<Locale | "x-default", string>> = {};
+  for (const [language, value] of Object.entries(detail.alternateSlugs)) {
+    languages[language as Locale] = `/${language}/buildings/${value}`;
   }
+  const defaultLocale = detail.alternateSlugs.en ? "en" : Object.keys(detail.alternateSlugs)[0] as Locale | undefined;
+  if (defaultLocale) languages["x-default"] = `/${defaultLocale}/buildings/${detail.alternateSlugs[defaultLocale]}`;
 
   const ogImage = detail.ogImage ?? detail.cover;
 
   return buildMetadata({
     title: detail.metaTitle ?? `${detail.name} — Central Hill`,
     description: detail.metaDescription ?? detail.teaser,
-    canonicalPath: `/${locale}/buildings/${slug}`,
+    canonicalPath: `/${locale}/buildings/${detail.slug}`,
     languages,
     images: ogImage
       ? [{ url: ogImage.url, width: ogImage.width, height: ogImage.height, alt: ogImage.alt }]

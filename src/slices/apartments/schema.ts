@@ -1,4 +1,5 @@
-import { integer, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { check, integer, jsonb, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { pkUuid, timestamps } from "@core/db/columns";
 
 /**
@@ -34,3 +35,27 @@ export const apartment_media = pgTable("apartment_media", {
   position: integer().notNull().default(0),
   ...timestamps,
 });
+
+/** ADR0058: localized editorial snapshots, legacy identity retained. */
+export const apartment_locale_content = pgTable("apartment_locale_content", {
+  id: pkUuid(),
+  apartment_id: uuid().notNull().references(() => apartment.id, { onDelete: "cascade" }),
+  locale: text().$type<import("@core/db/columns").Locale>().notNull(),
+  published: jsonb().$type<import("./editorial-types").ApartmentEnvelope>(),
+  draft: jsonb().$type<import("./editorial-types").ApartmentEnvelope>(),
+  revision: integer().notNull().default(0),
+  published_at: timestamp({withTimezone:true}), draft_saved_at: timestamp({withTimezone:true}),
+  updated_by: text(), ...timestamps,
+}, t => [unique("apartment_locale_content_entity_locale_unique").on(t.apartment_id,t.locale),
+  check("apartment_locale_content_locale_ck",sql`${t.locale} in ('en','es','pt','fr')`),
+  check("apartment_locale_content_revision_ck",sql`${t.revision} >= 0`)]);
+
+/** ADR0061: live common data, independent of localized draft/publication. */
+export const apartment_shared_content = pgTable("apartment_shared_content", {
+  id: pkUuid(),
+  apartment_id: uuid().notNull().references(() => apartment.id, { onDelete: "cascade" }),
+  data: jsonb().$type<{ schemaVersion: 1; content: import("./editorial-types").ApartmentSharedContent }>().notNull(),
+  revision: integer().notNull().default(0),
+  updated_by: text(), ...timestamps,
+}, t => [unique("apartment_shared_content_entity_unique").on(t.apartment_id),
+  check("apartment_shared_content_revision_ck",sql`${t.revision} >= 0`)]);

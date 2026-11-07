@@ -35,6 +35,7 @@ export async function BuildingsAdminList({
 }) {
   const t = await getTranslations("buildings");
   const rows = await listBuildingsAdmin();
+  const te = await getTranslations("propertyEditor");
 
   const columns: Column<BuildingAdminListItem>[] = [
     {
@@ -51,10 +52,25 @@ export async function BuildingsAdminList({
     {
       header: t("admin.columns.status"),
       cell: (row) => (
-        <StateBadge
-          label={t(`admin.status.${row.status}`)}
-          tone={STATUS_TONE[row.status]}
-        />
+        <div className="space-y-2">
+          <StateBadge
+            label={t(`admin.status.${row.status}`)}
+            tone={STATUS_TONE[row.status]}
+          />
+          <div className="flex flex-wrap gap-1">
+            {Object.entries(row.localeStates).map(([locale, state]) => (
+              <Link
+                key={locale}
+                href={`/admin/buildings/${row.id}?locale=${locale}`}
+              >
+                <StateBadge
+                  label={`${locale.toUpperCase()} · ${state.published ? te("published") : te("unpublished")}${state.draft ? ` · ${te("draftSaved")}` : ""}`}
+                  tone={state.published ? "approved" : "draft"}
+                />
+              </Link>
+            ))}
+          </div>
+        </div>
       ),
     },
     {
@@ -65,7 +81,10 @@ export async function BuildingsAdminList({
     {
       header: t("admin.columns.apartments"),
       cell: (row) => {
-        const counts = apartmentCounts.get(row.id) ?? { total: 0, published: 0 };
+        const counts = apartmentCounts.get(row.id) ?? {
+          total: 0,
+          published: 0,
+        };
         return (
           <Link
             href={`/admin/buildings/${row.id}/apartments`}

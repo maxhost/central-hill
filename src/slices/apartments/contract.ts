@@ -71,3 +71,9 @@ export { listByBuilding, getApartmentBySlug } from "./server/queries";
  * import anywhere.
  */
 export { apartmentsAdminScreens } from "./admin/screens";
+
+export type { ApartmentEditorialContent, ApartmentEnvelope, ApartmentEditorialModel } from "./editorial-types";
+export { getPublishedApartmentStats, apartmentIdentityGuardSql, getApartmentEditorParentId } from "./server/editorial-store";
+
+export { APARTMENT_SHARED_KEYS } from "./editorial-types";
+export type { ApartmentSharedContent } from "./editorial-types";

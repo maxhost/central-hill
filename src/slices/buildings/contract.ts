@@ -119,7 +119,7 @@ export {
  * (golden rule 2), so the apartments admin computes the aggregate over its own
  * table and calls this to persist the denormalized columns on apartment publish.
  */
-export { setBuildingStats } from "./server/stats";
+export { setBuildingStats, buildingStatsUpdateSql } from "./server/stats";
 
 /**
  * Admin selector source (S12): `{ id, name }` for every building, any status. The
@@ -138,3 +138,14 @@ export { buildingsAdminScreens } from "./admin/screens";
 /** Optional editorial injection for staff previews; catalogue stays Buildings-owned/read-only. */
 export { BuildingsListingRenderer } from "./ui/buildings-listing";
 export type { BuildingsListingRendererProps } from "./ui/buildings-listing";
+
+export { PROPERTY_GRAPH_LOCK } from "./editorial-types";
+export type { BuildingEditorialContent, BuildingEnvelope, BuildingEditorialModel, BuildingLocaleScope } from "./editorial-types";
+// ADR0058 interfaces implemented by the Buildings writer before integration.
+export { getBuildingLocaleScope, buildingIdentityExistsSql, getBuildingDraftPreview } from "./server/editorial-store";
+export { BuildingDetailRenderer } from "./ui/building-detail";
+
+export { isPropertyEditorialEntity, getPropertyEditorialRedirect } from "./server/editorial-translation-policy";
+
+export { BUILDING_SHARED_KEYS } from "./editorial-types";
+export type { BuildingSharedContent } from "./editorial-types";

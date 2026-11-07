@@ -1,4 +1,5 @@
 import "server-only";
+import { isPropertyEditorialEntity } from "@slices/buildings/contract";
 import { isBlogEditorialEntity } from "@slices/blog/contract";
 import { getPageEditorialRedirect } from "@slices/pages/contract";
 import { hashSource, loadTranslationRows } from "@core/i18n";
@@ -42,7 +43,7 @@ export async function getTranslationInbox(
   );
   const identities = [...new Set(rows.filter(row => row.entity_type === "page_content").map(row => row.entity_id))];
   const blocked = new Set((await Promise.all(identities.map(async id => await getPageEditorialRedirect("page_content", id) ? id : null))).filter((id): id is string => id !== null));
-  const all = buildInbox(rows.filter(row => !isBlogEditorialEntity(row.entity_type) && (row.entity_type !== "page_content" || !blocked.has(row.entity_id))), hashSource);
+  const all = buildInbox(rows.filter(row => !isPropertyEditorialEntity(row.entity_type) && !isBlogEditorialEntity(row.entity_type) && (row.entity_type !== "page_content" || !blocked.has(row.entity_id))), hashSource);
 
   // Counts + the entity-type chips reflect the full set (before the view filter),
   // so switching views never changes the totals shown on the chips.

@@ -103,3 +103,8 @@ export { PageEditorPreviewBridge } from "./ui/page-editor-preview-bridge";
 
 /** Staff-preview-only client surface; server renderer supplied by owning page adapter. */
 export { PageEditorLivePreview } from "./ui/page-editor-live-preview";
+
+export { PROPERTY_EDITOR_LOCALES } from "./property-editor-types";
+export type { PropertyEnvelope, PropertyLocaleModel, PropertySharedState, PropertyEditorialModel, SavePropertyDraftInput, PublishPropertyDraftInput, PropertyEditorialResult, PropertyPreviewInput } from "./property-editor-types";
+
+export { PropertyLivePreview } from "./ui/property-live-preview";

@@ -1313,5 +1313,12 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
   as its `sm` button.
 - The backoffice (`/admin`) is out of scope and keeps its own buttons.
 
-- [0059 — Blog form and continuous rich text](0059-blog-form-rich-text.md).
-- [0060 — Client-safe sidebar icon](0060-client-safe-sidebar-icon.md).
+- [0059 — Blog form and continuous rich text](0059-blog-form-rich-text.md): separate
+  title/body/metadata authoring, safe additive inline formatting, no DB migration.
+
+- [0060 — Client-safe sidebar icon](0060-client-safe-sidebar-icon.md): add layout-left
+  to the generated UiIcon subset; avoid server-only imports in the mixed Backoffice contract.
+
+- [0061 — Property forms and shared data](0061-property-forms-and-shared-data.md):
+  language-owned text/SEO with English inheritance until editing; live common
+  photos and physical facts on Save, independent of per-language publication.

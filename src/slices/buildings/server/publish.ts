@@ -1,6 +1,7 @@
 import "server-only";
 import type { Locale } from "@core/db/columns";
 import { cacheTags, revalidatePath, updateTag } from "@core/revalidate";
+import { APARTMENT_TAGS } from "@slices/apartments/contract";
 import { BUILDING_TAGS } from "../contract";
 
 /**
@@ -16,8 +17,12 @@ const LOCALES: Locale[] = ["en", "pt", "es", "fr"];
 /** Bust the listing + featured reads + the localized buildings index paths. */
 export function revalidateBuildingList(): void {
   updateTag(BUILDING_TAGS.list);
+  updateTag(APARTMENT_TAGS.list);
   updateTag(cacheTags.sitemap);
-  for (const locale of LOCALES) revalidatePath(`/${locale}/buildings`);
+  for (const locale of LOCALES) {
+    revalidatePath(`/${locale}/buildings`);
+    revalidatePath(`/${locale}`);
+  }
 }
 
 /**

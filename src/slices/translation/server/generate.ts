@@ -1,3 +1,4 @@
+import { isPropertyEditorialEntity } from "@slices/buildings/contract";
 import "server-only";
 import { isBlogEditorialEntity } from "@slices/blog/contract";
 import { getPageEditorialRedirect } from "@slices/pages/contract";
@@ -41,7 +42,7 @@ export async function generateDrafts(
   id: string,
   opts: GenerateOptions = {},
 ): Promise<GenerateSummary> {
-  if (isBlogEditorialEntity(type) || await getPageEditorialRedirect(type, id)) throw new Error("Use the page editor to save and publish this page by language.");
+  if (isPropertyEditorialEntity(type) || isBlogEditorialEntity(type) || await getPageEditorialRedirect(type, id)) throw new Error("Use the page editor to save and publish this page by language.");
   const provider = getTranslateProvider();
   const targets = (opts.locales ?? TARGET_LOCALES).filter((l) => l !== SOURCE_LOCALE);
   const summary: GenerateSummary = { provider: provider.name, written: {}, total: 0 };

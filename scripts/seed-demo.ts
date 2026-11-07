@@ -177,7 +177,9 @@ async function seedApartmentsFor(
   }
 }
 
+const PROPERTY_LOCALE_EDITORS_ACTIVE = true;
 async function main() {
+  if (PROPERTY_LOCALE_EDITORS_ACTIVE) throw new Error("Historical demo seed is retired for adapted property locale editors. Use isolated fixtures and explicit locale publication.");
   if (process.env.DRY) {
     for (const p of [homeData(), ownersData(), guestData(), realEstateData(), aboutData()]) void p;
     homeSchema.parse(homeData());

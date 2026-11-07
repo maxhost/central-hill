@@ -14,6 +14,14 @@ draft/published snapshots per language in Blog, preserving legacy rows. Authors,
 categories and other unadapted entities keep this workflow. The historical
 page-content notes below apply only where their legacy workflow is still active.
 
+Adapted Properties (ADR0058): `building`, `apartment` and `building_faq` are
+excluded from the generic inbox. Direct review redirects to the building or
+nested apartment editor in the requested locale; FAQ links resolve their owning
+building. All six legacy mutations and direct generation reject these types
+before writes via the Buildings contract policy. Complete locale snapshots own
+the manual workflow; old translation rows remain preserved. Amenities and
+geography retain the generic workflow.
+
 About follow-up (ADR0037): page-content target writes compare and lock the source
 value in the same SQL statement. If source has changed/disappeared, the write is
 rejected; generation counts only successful writes. Per-cell editing retains its

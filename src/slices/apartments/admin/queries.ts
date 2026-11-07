@@ -1,5 +1,5 @@
 import "server-only";
-import { asc, count, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { type ContentRef, loadContent } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
@@ -7,7 +7,12 @@ import type { AdminMediaPreview } from "@slices/backoffice/contract";
 import { listBuildingOptions } from "@slices/buildings/contract";
 import { APARTMENT } from "../contract";
 import { apartment, apartment_media } from "../schema";
-import { type ApartmentCounts, apartmentListWhere, tallyApartmentCounts } from "./derive";
+import { type ApartmentCounts, apartmentListWhere } from "./derive";
+import { readApartmentLocaleRows } from "../server/editorial-bootstrap";
+import { getApartmentEditorialModel } from "../server/editorial-store";
+import { readApartmentSharedState } from "../server/shared-content";
+import { overlayApartmentShared } from "../server/editorial-validation";
+import type { Locale } from "@core/db/columns";
 
 /**
  * Backoffice reads for slice `apartments` (S12). Not cache-wrapped, all statuses,
@@ -37,6 +42,7 @@ export interface ApartmentAdminListItem {
   hasAvantioUrl: boolean;
   /** Cover thumbnail, null when unset (the list draws the placeholder). */
   cover: AdminMediaPreview | null;
+  localeStates: Record<Locale, { published: boolean; draft: boolean }>;
 }
 
 /**
@@ -49,49 +55,89 @@ export async function listApartmentsAdmin(
   filter: { buildingId?: string } = {},
 ): Promise<ApartmentAdminListItem[]> {
   const rows = await db
-    .select({
-      id: apartment.id,
-      slug: apartment.slug,
-      status: apartment.status,
-      building_id: apartment.building_id,
-      bedrooms: apartment.bedrooms,
-      max_guests: apartment.max_guests,
-      beds_count: apartment.beds_count,
-      size_m2: apartment.size_m2,
-      cover_media_id: apartment.cover_media_id,
-      avantio_url: apartment.avantio_url,
-      position: apartment.position,
-    })
+    .select()
     .from(apartment)
     .where(apartmentListWhere(filter.buildingId))
-    .orderBy(asc(apartment.building_id), asc(apartment.position), asc(apartment.id));
+    .orderBy(
+      asc(apartment.building_id),
+      asc(apartment.position),
+      asc(apartment.id),
+    );
 
+  const editorial = await Promise.all(
+    rows.map((row) => readApartmentLocaleRows(row, false)),
+  );
+  const common = await Promise.all(
+    rows.map((row, index) => readApartmentSharedState(row, editorial[index]!)),
+  );
+  const savedDocuments = rows.map((row, index) => {
+    const en = editorial[index]!.find((value) => value.locale === "en");
+    const saved = en?.draft ?? en?.published;
+    return saved
+      ? overlayApartmentShared(
+          saved,
+          common[index]!.working ?? common[index]!.content,
+        )
+      : null;
+  });
   const [content, buildings, previews] = await Promise.all([
     loadContent(
       rows.map((r) => ({ type: APARTMENT, id: r.id })),
       SOURCE,
     ),
     listBuildingOptions(),
-    resolvePreviews(rows.map((r) => r.cover_media_id)),
+    resolvePreviews(
+      rows.flatMap((r, index) => {
+        const saved = savedDocuments[index];
+        return [saved ? saved.content.cover_media_id : r.cover_media_id];
+      }),
+    ),
   ]);
   const buildingName = new Map(buildings.map((b) => [b.id, b.name]));
 
-  return rows.map((r) => ({
-    id: r.id,
-    name: content.get(APARTMENT, r.id, "name") ?? r.slug,
-    slug: r.slug,
-    status: r.status,
-    buildingId: r.building_id,
-    building: buildingName.get(r.building_id) ?? "",
-    bedrooms: r.bedrooms,
-    maxGuests: r.max_guests,
-    position: r.position,
-    badge: content.get(APARTMENT, r.id, "badge") ?? "",
-    bedsCount: r.beds_count,
-    sizeM2: r.size_m2,
-    hasAvantioUrl: !!r.avantio_url?.trim(),
-    cover: (r.cover_media_id && previews[r.cover_media_id]) || null,
-  }));
+  return rows.map((r, index) => {
+    const localeRows = editorial[index]!;
+    const saved = savedDocuments[index];
+    const published =
+      r.status !== "archived" && localeRows.some((row) => row.published);
+    return {
+      id: r.id,
+      name:
+        saved?.content.name || content.get(APARTMENT, r.id, "name") || r.slug,
+      slug: r.slug,
+      status:
+        r.status === "archived"
+          ? "archived"
+          : published
+            ? "published"
+            : "draft",
+      buildingId: r.building_id,
+      building: buildingName.get(r.building_id) ?? "",
+      bedrooms: saved?.content.bedrooms ?? r.bedrooms,
+      maxGuests: saved?.content.max_guests ?? r.max_guests,
+      position: r.position,
+      badge: saved
+        ? (saved.content.badge ?? "")
+        : (content.get(APARTMENT, r.id, "badge") ?? ""),
+      bedsCount: saved?.content.beds_count ?? r.beds_count,
+      sizeM2: saved ? saved.content.size_m2 : r.size_m2,
+      hasAvantioUrl: Boolean(
+        saved?.content.booking_url?.trim() ||
+        saved?.content.default_booking_url?.trim() ||
+        (!saved && r.avantio_url?.trim()),
+      ),
+      cover: (() => {
+        const id = saved ? saved.content.cover_media_id : r.cover_media_id;
+        return id ? (previews[id] ?? null) : null;
+      })(),
+      localeStates: Object.fromEntries(
+        localeRows.map((row) => [
+          row.locale,
+          { published: Boolean(row.published), draft: Boolean(row.draft) },
+        ]),
+      ) as ApartmentAdminListItem["localeStates"],
+    };
+  });
 }
 
 export type { ApartmentCounts } from "./derive";
@@ -101,12 +147,24 @@ export type { ApartmentCounts } from "./derive";
  * in `total`. Feeds the buildings list column and the workspace's Apartments tab;
  * buildings without apartments are absent from the map.
  */
-export async function countApartmentsByBuilding(): Promise<Map<string, ApartmentCounts>> {
-  const rows = await db
-    .select({ building_id: apartment.building_id, status: apartment.status, n: count() })
-    .from(apartment)
-    .groupBy(apartment.building_id, apartment.status);
-  return tallyApartmentCounts(rows);
+export async function countApartmentsByBuilding(): Promise<
+  Map<string, ApartmentCounts>
+> {
+  const rows = await db.select().from(apartment);
+  const counts = new Map<string, ApartmentCounts>();
+  for (const row of rows) {
+    const count = counts.get(row.building_id) ?? { total: 0, published: 0 };
+    count.total += 1;
+    if (
+      row.status !== "archived" &&
+      (await readApartmentLocaleRows(row, false)).some(
+        (state) => state.published,
+      )
+    )
+      count.published += 1;
+    counts.set(row.building_id, count);
+  }
+  return counts;
 }
 
 export interface ApartmentEditData {
@@ -138,8 +196,14 @@ export interface ApartmentEditBundle {
   previews: Record<string, AdminMediaPreview>;
 }
 
-export async function getApartmentForEdit(id: string): Promise<ApartmentEditBundle | null> {
-  const [row] = await db.select().from(apartment).where(eq(apartment.id, id)).limit(1);
+export async function getApartmentForEdit(
+  id: string,
+): Promise<ApartmentEditBundle | null> {
+  const [row] = await db
+    .select()
+    .from(apartment)
+    .where(eq(apartment.id, id))
+    .limit(1);
   if (!row) return null;
 
   const galleryRows = await db
@@ -175,17 +239,31 @@ export async function getApartmentForEdit(id: string): Promise<ApartmentEditBund
     gallery: galleryRows.map((g) => g.media_id),
   };
 
-  const previews = await resolvePreviews([row.cover_media_id, row.og_image_media_id, ...data.gallery]);
+  const previews = await resolvePreviews([
+    row.cover_media_id,
+    row.og_image_media_id,
+    ...data.gallery,
+  ]);
   return { data, previews };
 }
 
-async function resolvePreviews(ids: (string | null)[]): Promise<Record<string, AdminMediaPreview>> {
+async function resolvePreviews(
+  ids: (string | null)[],
+): Promise<Record<string, AdminMediaPreview>> {
   const clean = Array.from(new Set(ids.filter((x): x is string => !!x)));
   if (clean.length === 0) return {};
   const assets = await loadMedia(clean);
   const out: Record<string, AdminMediaPreview> = {};
   for (const [mid, a] of assets) {
-    out[mid] = { id: mid, url: mediaUrl(a.r2_key), width: a.width, height: a.height, mime: a.mime };
+    out[mid] = {
+      id: mid,
+      url: mediaUrl(a.r2_key),
+      width: a.width,
+      height: a.height,
+      mime: a.mime,
+    };
   }
   return out;
 }
+
+export { getApartmentEditorialModel };

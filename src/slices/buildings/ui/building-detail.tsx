@@ -20,8 +20,17 @@ import {
   type UnitCardSpec,
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
-import { type ApartmentSummary, listByBuilding } from "@slices/apartments/contract";
-import { SITE_ICON_DEFAULTS, type SiteIcons, avantioBookingUrl, getGlobals } from "@slices/settings/contract";
+import {
+  type ApartmentSummary,
+  listByBuilding,
+} from "@slices/apartments/contract";
+import {
+  SITE_ICON_DEFAULTS,
+  type SiteIcons,
+  avantioBookingUrl,
+  getGlobals,
+} from "@slices/settings/contract";
+import type { BuildingDetail as BuildingDetailData } from "../contract";
 import { getBuildingBySlug } from "../server/queries";
 
 /**
@@ -129,7 +138,9 @@ const GALLERY_SIZES = "(max-width: 680px) 50vw, 291px";
 /** Amenity glyph: the amenity's own `icon` (an Iconoir name, `core/ui` `<Icon>`, ADR 0034);
  *  an amenity without one keeps the generic `check-circle`. `AmenityGrid` sizes (22px) and
  *  tints (`accent-deep`) it. */
-const amenityIcon = (icon: string | null) => <Icon name={icon ?? "check-circle"} />;
+const amenityIcon = (icon: string | null) => (
+  <Icon name={icon ?? "check-circle"} />
+);
 
 /** Apartment-card spec-row glyphs (bedrooms, beds, guests, size): positional, always the
  *  same four, so they are site icons (`spec_*`, Settings → "Site icons", ADR 0034 amendment 2)
@@ -177,11 +188,24 @@ function apartmentSpecs(
   icons: ReturnType<typeof specIcons>,
 ): UnitCardSpec[] {
   const specs: UnitCardSpec[] = [
-    { icon: icons.bedrooms, value: a.bedrooms, label: labels.bedrooms(a.bedrooms) },
+    {
+      icon: icons.bedrooms,
+      value: a.bedrooms,
+      label: labels.bedrooms(a.bedrooms),
+    },
     { icon: icons.beds, value: a.bedsCount, label: labels.beds(a.bedsCount) },
-    { icon: icons.guests, value: a.maxGuests, label: labels.guests(a.maxGuests) },
+    {
+      icon: icons.guests,
+      value: a.maxGuests,
+      label: labels.guests(a.maxGuests),
+    },
   ];
-  if (a.sizeM2) specs.push({ icon: icons.size, value: a.sizeM2, label: labels.size(a.sizeM2) });
+  if (a.sizeM2)
+    specs.push({
+      icon: icons.size,
+      value: a.sizeM2,
+      label: labels.size(a.sizeM2),
+    });
   return specs;
 }
 
@@ -193,10 +217,22 @@ function apartmentSpecs(
  *  lazy — an escalated deviation (see the slice README → gallery). The plain-`<img>` branch keeps it. */
 function galleryImage(g: MediaImageData, i: number) {
   if (g.url && g.width > 0 && g.height > 0) {
-    return <MediaImage data={g} sizes={i === 0 ? GALLERY_LEAD_SIZES : GALLERY_SIZES} />;
+    return (
+      <MediaImage
+        data={g}
+        sizes={i === 0 ? GALLERY_LEAD_SIZES : GALLERY_SIZES}
+      />
+    );
   }
-  // eslint-disable-next-line @next/next/no-img-element -- dimensionless asset, not optimisable
-  return <img src={g.url || PLACEHOLDER_BUILDING} alt={g.alt} loading={i === 0 ? "eager" : "lazy"} decoding="async" />;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- dimensionless asset, not optimisable
+    <img
+      src={g.url || PLACEHOLDER_BUILDING}
+      alt={g.alt}
+      loading={i === 0 ? "eager" : "lazy"}
+      decoding="async"
+    />
+  );
 }
 
 /** A unit's cover for `UnitCard`: the R2 asset (lazy, responsive `sizes`) or the placeholder
@@ -206,22 +242,53 @@ function apartmentCover(a: ApartmentSummary) {
     return <MediaImage data={a.cover} sizes={CARD_SIZES} />;
   }
   // Asset without usable dimensions → served unoptimised (as `mediaImgTag` did); none → placeholder.
-  // eslint-disable-next-line @next/next/no-img-element -- placeholder SVG / dimensionless asset, not optimisable
-  return <img src={a.cover?.url || PLACEHOLDER_APARTMENT} alt={a.cover?.alt || a.name} loading="lazy" decoding="async" />;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- placeholder SVG / dimensionless asset, not optimisable
+    <img
+      src={a.cover?.url || PLACEHOLDER_APARTMENT}
+      alt={a.cover?.alt || a.name}
+      loading="lazy"
+      decoding="async"
+    />
+  );
 }
 
-export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: string }) {
+export async function BuildingDetail({
+  locale,
+  slug,
+}: {
+  locale: Locale;
+  slug: string;
+}) {
   setRequestLocale(locale);
 
   const detail = await getBuildingBySlug(locale, slug);
   if (!detail) notFound();
 
+  return BuildingDetailRenderer({ locale, detail });
+}
+export async function BuildingDetailRenderer({
+  locale,
+  detail,
+  apartments: injectedApartments,
+  preview = false,
+  editorBindings = false,
+  previewApartmentId,
+}: {
+  locale: Locale;
+  detail: BuildingDetailData;
+  apartments?: ApartmentSummary[];
+  preview?: boolean;
+  editorBindings?: boolean;
+  previewApartmentId?: string;
+}) {
+  setRequestLocale(locale);
   const [apartments, t, ta, globals, tSettings] = await Promise.all([
-    listByBuilding(locale, detail.id),
-    getTranslations("buildings"),
-    getTranslations("apartments"),
+    injectedApartments ?? listByBuilding(locale, detail.id),
+    getTranslations({ locale, namespace: "buildings" }),
+    getTranslations({ locale, namespace: "apartments" }),
     getGlobals(locale),
-    getTranslations("settings"),
+    getTranslations({ locale, namespace: "settings" }),
   ]);
   const SPEC_ICONS = specIcons(globals?.icons ?? SITE_ICON_DEFAULTS);
 
@@ -263,55 +330,71 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
        * the street address reuses `subtitle`/`subtitleClassName`. Background is the real R2
        * cover (`MediaImage`), falling back to the Warm-Editorial placeholder SVG.
        */}
-      <Hero
-        background={
-          detail.cover ? (
-            <MediaImage
-              data={detail.cover}
-              className="absolute inset-0 -z-10 h-full w-full object-cover"
-              sizes="100vw"
-              priority
-            />
-          ) : (
-            // eslint-disable-next-line @next/next/no-img-element -- placeholder SVG, not an R2 asset
-            <img
-              src={PLACEHOLDER_BUILDING}
-              alt={detail.name}
-              className="absolute inset-0 -z-10 h-full w-full object-cover"
-            />
-          )
-        }
-        compact
-        overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.42)_0%,rgba(18,16,13,0.30)_45%,rgba(18,16,13,0.85)_100%)]"
-        breadcrumb={
-          <nav aria-label="Breadcrumb" className="mb-1.5 text-[13px] tracking-[0.02em] text-feature-accent">
-            <Link href={`/${locale}`} className="opacity-85 transition-opacity duration-200 hover:opacity-100 hover:underline">
-              {L.home}
-            </Link>
-            <span className="mx-2 opacity-55">/</span>
-            <Link
-              href={`/${locale}/buildings`}
-              className="opacity-85 transition-opacity duration-200 hover:opacity-100 hover:underline"
+      <div
+        className="contents"
+        data-editor-binding={editorBindings ? "hero" : undefined}
+      >
+        <Hero
+          background={
+            detail.cover ? (
+              <MediaImage
+                data={detail.cover}
+                className="absolute inset-0 -z-10 h-full w-full object-cover"
+                sizes="100vw"
+                priority
+              />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element -- placeholder SVG, not an R2 asset
+              <img
+                src={PLACEHOLDER_BUILDING}
+                alt={detail.name}
+                className="absolute inset-0 -z-10 h-full w-full object-cover"
+              />
+            )
+          }
+          compact
+          overlayClassName="bg-[linear-gradient(180deg,rgba(18,16,13,0.42)_0%,rgba(18,16,13,0.30)_45%,rgba(18,16,13,0.85)_100%)]"
+          breadcrumb={
+            <nav
+              aria-label="Breadcrumb"
+              className="mb-1.5 text-[13px] tracking-[0.02em] text-feature-accent"
             >
-              {L.breadcrumb}
-            </Link>
-            <span className="mx-2 opacity-55">/</span>
-            <span className="opacity-70">{detail.name}</span>
-          </nav>
-        }
-        eyebrowBadge={
-          detail.isNew ? (
-            <span className="mr-3 inline-block bg-accent px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.13em] text-white">
-              <Icon name="star" size="1em" className="inline-block align-[-0.125em] [&_path]:fill-current" /> {L.new}
-            </span>
-          ) : null
-        }
-        eyebrow={locationLine}
-        headline={detail.name}
-        headlineClassName="max-w-[15ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
-        subtitle={detail.streetAddress ?? undefined}
-        subtitleClassName="mt-1.5 max-w-none text-base"
-      />
+              <Link
+                href={`/${locale}`}
+                className="opacity-85 transition-opacity duration-200 hover:opacity-100 hover:underline"
+              >
+                {L.home}
+              </Link>
+              <span className="mx-2 opacity-55">/</span>
+              <Link
+                href={`/${locale}/buildings`}
+                className="opacity-85 transition-opacity duration-200 hover:opacity-100 hover:underline"
+              >
+                {L.breadcrumb}
+              </Link>
+              <span className="mx-2 opacity-55">/</span>
+              <span className="opacity-70">{detail.name}</span>
+            </nav>
+          }
+          eyebrowBadge={
+            detail.isNew ? (
+              <span className="mr-3 inline-block bg-accent px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.13em] text-white">
+                <Icon
+                  name="star"
+                  size="1em"
+                  className="inline-block align-[-0.125em] [&_path]:fill-current"
+                />{" "}
+                {L.new}
+              </span>
+            ) : null
+          }
+          eyebrow={locationLine}
+          headline={detail.name}
+          headlineClassName="max-w-[15ch] text-[clamp(2.5rem,5.4vw,4.25rem)]"
+          subtitle={detail.streetAddress ?? undefined}
+          subtitleClassName="mt-1.5 max-w-none text-base"
+        />
+      </div>
       {/*
        * Real JSX — the spec strip (apartments/capacity/beds/neighbourhood), `core/ui`'s new
        * `SpecStrip` (see that component's docstring for why it's not `StatBand`), rendered
@@ -323,15 +406,24 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
        * `.mk`, no wrapper), omitted when the building has no gallery photos.
        */}
       <Container>
-        {detail.gallery.length > 0 ? <MosaicGallery images={detail.gallery.map(galleryImage)} /> : null}
-        <SpecStrip
-          items={[
-            { value: detail.stats.apartments, label: L.statApartments },
-            { value: detail.stats.capacity, label: L.statCapacity },
-            { value: detail.stats.beds, label: L.statBeds },
-            { value: detail.neighbourhood?.name ?? detail.city.name, label: L.statNeighbourhood },
-          ]}
-        />
+        <div data-editor-binding={editorBindings ? "gallery" : undefined}>
+          {detail.gallery.length > 0 ? (
+            <MosaicGallery images={detail.gallery.map(galleryImage)} />
+          ) : null}
+        </div>
+        <div data-editor-binding={editorBindings ? "identity" : undefined}>
+          <SpecStrip
+            items={[
+              { value: detail.stats.apartments, label: L.statApartments },
+              { value: detail.stats.capacity, label: L.statCapacity },
+              { value: detail.stats.beds, label: L.statBeds },
+              {
+                value: detail.neighbourhood?.name ?? detail.city.name,
+                label: L.statNeighbourhood,
+              },
+            ]}
+          />
+        </div>
       </Container>
       {/*
        * Real JSX — "Apartments in this Building": `core/ui`'s new `UnitCard`/`UnitCardGrid`
@@ -355,25 +447,44 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
                 <h2 className="max-w-[720px] font-serif text-[clamp(30px,4vw,50px)] font-medium leading-[1.08] tracking-[-0.015em] text-ink">
                   {AL.title}
                 </h2>
-                <ButtonLink href={avantioBookingUrl("en")} className="shrink-0 mr-[60px] mt-[5px]">
+                <ButtonLink
+                  href={
+                    preview
+                      ? "#"
+                      : detail.avantio.url || avantioBookingUrl(locale)
+                  }
+                  className="shrink-0 mr-[60px] mt-[5px]"
+                >
                   {tSettings("ctaBook")}
                 </ButtonLink>
               </div>
-              <p className="mt-4 max-w-[62ch] text-[18px] text-ink-soft">{AL.intro}</p>
+              <p className="mt-4 max-w-[62ch] text-[18px] text-ink-soft">
+                {AL.intro}
+              </p>
             </div>
             <UnitCardGrid>
-              {apartments.map((a) => (
-                <UnitCard
-                  key={a.id}
-                  href={a.avantio.url ?? "#book"}
-                  external={Boolean(a.avantio.url)}
-                  image={apartmentCover(a)}
-                  name={a.name}
-                  badge={a.badge}
-                  specs={apartmentSpecs(a, AL, SPEC_ICONS)}
-                  ctaLabel={AL.checkAvailability}
-                />
-              ))}
+              {apartments.map((a) => {
+                const card = (
+                  <UnitCard
+                    href={preview ? "#" : (a.avantio.url ?? "#book")}
+                    external={Boolean(a.avantio.url)}
+                    image={apartmentCover(a)}
+                    name={a.name}
+                    badge={a.badge}
+                    specs={apartmentSpecs(a, AL, SPEC_ICONS)}
+                    ctaLabel={AL.checkAvailability}
+                  />
+                );
+                return editorBindings && a.id === previewApartmentId ? (
+                  <div key={a.id} data-editor-binding="booking">
+                    <div data-editor-binding="details">
+                      <div data-editor-binding="card">{card}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <Fragment key={a.id}>{card}</Fragment>
+                );
+              })}
             </UnitCardGrid>
             <div className="mt-[30px] text-center text-[12.5px] tracking-[0.04em] text-ink-soft">
               {AL.poweredBy}
@@ -391,10 +502,18 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
        * Omitted entirely when the building has no amenities.
        */}
       {detail.amenities.length > 0 ? (
-        <section className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]">
+        <section
+          data-editor-binding={editorBindings ? "amenities" : undefined}
+          className="scroll-mt-[84px] py-[clamp(72px,10vw,150px)]"
+        >
           <div className="mx-auto max-w-[1240px] px-[28px]">
             <SectionHead headline={L.amenities} />
-            <AmenityGrid items={detail.amenities.map((am) => ({ icon: amenityIcon(am.icon), label: am.label }))} />
+            <AmenityGrid
+              items={detail.amenities.map((am) => ({
+                icon: amenityIcon(am.icon),
+                label: am.label,
+              }))}
+            />
           </div>
         </section>
       ) : null}
@@ -406,11 +525,29 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
        * and its `.faq` rules. Static (native `<details>`, zero JS). Omitted when there is no FAQ.
        */}
       {detail.faq.length > 0 ? (
-        <section className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)]">
-          <JsonLd data={faqPageLd(detail.faq.map((f) => ({ question: f.question, answer: f.answer })))} />
+        <section
+          data-editor-binding={editorBindings ? "faq" : undefined}
+          className="scroll-mt-[84px] bg-[color-mix(in_srgb,var(--color-line)_38%,var(--color-bg))] py-[clamp(72px,10vw,150px)]"
+        >
+          {!preview ? (
+            <JsonLd
+              data={faqPageLd(
+                detail.faq.map((f) => ({
+                  question: f.question,
+                  answer: f.answer,
+                })),
+              )}
+            />
+          ) : null}
           <div className="mx-auto max-w-[1240px] px-[28px]">
             <SectionHead align="center" headline={L.faq} />
-            <FaqAccordion items={detail.faq.map((f) => ({ id: f.id, question: f.question, answer: f.answer }))} />
+            <FaqAccordion
+              items={detail.faq.map((f) => ({
+                id: f.id,
+                question: f.question,
+                answer: f.answer,
+              }))}
+            />
           </div>
         </section>
       ) : null}
@@ -425,13 +562,24 @@ export async function BuildingDetail({ locale, slug }: { locale: Locale; slug: s
        * band renders without CTA and note (the note talks about Avantio). Static, like the
        * original (its `.reveal` was neutralised).
        */}
-      <div id="book" className="scroll-mt-[84px]">
+      <div
+        data-editor-binding={editorBindings ? "booking" : undefined}
+        id="book"
+        className="scroll-mt-[84px]"
+      >
         <ActionBand
           eyebrow={L.bookEyebrow}
           title={L.bookTitle}
           body={L.bookIntro}
           {...(detail.avantio.url
-            ? { cta: { href: detail.avantio.url, label: L.bookCta, external: true }, note: L.bookNote }
+            ? {
+                cta: {
+                  href: preview ? "#" : detail.avantio.url,
+                  label: L.bookCta,
+                  external: true,
+                },
+                note: L.bookNote,
+              }
             : null)}
         />
       </div>

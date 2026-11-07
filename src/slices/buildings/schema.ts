@@ -1,5 +1,10 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
+  jsonb,
+  timestamp,
+  unique,
   doublePrecision,
   integer,
   pgTable,
@@ -80,3 +85,27 @@ export const building_faq = pgTable("building_faq", {
   position: integer().notNull().default(0),
   ...timestamps,
 });
+
+/** ADR0058: localized editorial snapshots, legacy identity retained. */
+export const building_locale_content = pgTable("building_locale_content", {
+  id: pkUuid(),
+  building_id: uuid().notNull().references(() => building.id, { onDelete: "cascade" }),
+  locale: text().$type<import("@core/db/columns").Locale>().notNull(),
+  published: jsonb().$type<import("./editorial-types").BuildingEnvelope>(),
+  draft: jsonb().$type<import("./editorial-types").BuildingEnvelope>(),
+  revision: integer().notNull().default(0),
+  published_at: timestamp({withTimezone:true}), draft_saved_at: timestamp({withTimezone:true}),
+  updated_by: text(), ...timestamps,
+}, t => [unique("building_locale_content_entity_locale_unique").on(t.building_id,t.locale),
+  check("building_locale_content_locale_ck",sql`${t.locale} in ('en','es','pt','fr')`),
+  check("building_locale_content_revision_ck",sql`${t.revision} >= 0`)]);
+
+/** ADR0061: live common data, independent of localized draft/publication. */
+export const building_shared_content = pgTable("building_shared_content", {
+  id: pkUuid(),
+  building_id: uuid().notNull().references(() => building.id, { onDelete: "cascade" }),
+  data: jsonb().$type<{ schemaVersion: 1; content: import("./editorial-types").BuildingSharedContent }>().notNull(),
+  revision: integer().notNull().default(0),
+  updated_by: text(), ...timestamps,
+}, t => [unique("building_shared_content_entity_unique").on(t.building_id),
+  check("building_shared_content_revision_ck",sql`${t.revision} >= 0`)]);

@@ -21,6 +21,22 @@ property-locales/integration, /private/tmp/central-hill-property-locales-integra
 propuestos en blog-form/integration deben alinearse a formularios antes de comenzar.
 
 
+## Active Property forms main integration — 2026-11-06
+
+User now authorizes applying0026, stopping old Central Hill app previews and running
+one local main server to test forms. Main base0e72983; prepare on
+property-forms/main-integration in/private/tmp/central-hill-property-forms-main-integration.
+Source property-forms/integration d896720, executable8cbd0e0/sourceQA8c6521b.
+Migration0026 applied only to synthetic propertylocalesqa (db/role verified),
+new e* fixtures only. See docs/specs/property-form-editors-execution.md/delivery.md.
+Tabs/form ownership: EN fills untouched languages until their first own text/SEO/
+booking edit; per-language Publish explicit. Common photos/physical data live onSave.
+User latest request supersedes preserving old app listeners3071/3072/3073/3075:
+they are stopped; worktrees/data retained. Final app3071 from actual main with safe
+synthetic env; remote Neon must not be used. DB/proxy and storage remain necessary.
+No push/deploy/remote DB writes. Preserve untracked original logo and env backup.
+Complete required persistence/browser/fullbuild QA before main fast-forward.
+
 ## Latest local Backoffice work — 2026-11-05
 
 Before continuing after a context clear, read [session handoff](docs/specs/handoff-visual-refinements-2026-10-31.md).

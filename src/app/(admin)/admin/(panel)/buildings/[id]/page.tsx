@@ -1,32 +1,12 @@
-import { notFound } from "next/navigation";
-import { requireStaff } from "@core/auth";
-import {
-  getBuildingForEdit,
-  listAmenitiesAdmin,
-  listLocationOptions,
-} from "@slices/buildings/admin/queries";
-import { BuildingForm } from "@slices/buildings/admin/ui/building-form";
-
-/**
- * Edit-building route (`/admin/buildings/[id]`), the "Building" tab of the workspace.
- * Gated by `(panel)`; the header and tabs come from the sibling `layout.tsx`.
- */
-export default async function EditBuildingPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireStaff();
-  const { id } = await params;
-  const [bundle, amenities, locations] = await Promise.all([
-    getBuildingForEdit(id),
-    listAmenitiesAdmin(),
-    listLocationOptions(),
-  ]);
-  if (!bundle) notFound();
-  return (
-    <BuildingForm
-      variant="workspace"
-      initial={bundle.data}
-      previews={bundle.previews}
-      amenities={amenities}
-      locations={locations}
-    />
-  );
+import {notFound} from "next/navigation";
+import {requireStaff} from "@core/auth";
+import {uuid} from "@core/validation/primitives";
+import {getTranslations} from "next-intl/server";
+import {getBuildingEditorialModel} from "@slices/buildings/server/editorial-store";
+import {listAmenitiesAdmin,listLocationOptions} from "@slices/buildings/admin/queries";
+import {BuildingLocaleEditor} from "@slices/buildings/admin/ui/building-locale-editor";
+export default async function EditBuildingPage({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<{locale?:string}>}){
+ await requireStaff();const {id}=await params;if(!uuid.safeParse(id).success)notFound();let initial;
+ try{initial=await getBuildingEditorialModel(id);}catch(error){if(error instanceof Error&&error.name==="PropertyLegacyError"){const t=await getTranslations("propertyEditor");return <p role="alert">{t("legacyInvalid")}</p>;}throw error;}
+ if(!initial)notFound();const [amenities,locations]=await Promise.all([listAmenitiesAdmin(),listLocationOptions()]);return <BuildingLocaleEditor key={initial.id} initial={initial} initialLocale={(await searchParams).locale} amenities={amenities} locations={locations}/>;
 }

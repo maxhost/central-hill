@@ -148,3 +148,47 @@ contract. `tests/apartments-admin.test.ts` — the `apartmentSaveInput` admin sc
 per-building counts, position on create, `planApartmentMove` (same-building neighbour, both ends,
 renumbering) and the D6 guard. Run:
 `npx tsx --test src/slices/apartments/tests/apartments.test.ts src/slices/apartments/tests/apartments-admin.test.ts src/slices/apartments/tests/apartments-admin-derive.test.ts`.
+
+## Locale forms and shared data — ADR0061 (2026-11-06)
+
+`ApartmentLocaleEditor` is now a traditional form with EN/ES/PT/FR tabs, guarded
+Back navigation and selected-language Save draft / Publish. It has no visual
+canvas or embedded preview. The first EN Save keeps the supplied UUID and opens
+the nested Edit route. Parent identity and global order remain unchanged.
+
+Localized name/badge, retained prose, textual SEO and booking URL belong to each
+language. An untouched target follows the latest saved English text in its
+workspace (`localeMode: inherit`); the first actual localized edit pins it as
+`custom`, immediately in local state and persistently on Save. No-op or physical/
+image edits do not pin. Existing owned translations/pending text and old edited
+snapshots are conservatively custom. English never republishes another language;
+an inherited saved draft whose English text changed must be saved again before
+Publish. Source checks compare semantic localized JSON under the graph lock,
+so an English Publish that only advances revision does not falsely conflict.
+
+`apartment_shared_content` owns one common document: capacity/specifications,
+cover/OG/gallery, Avantio ID and default booking URL. Its content overlays every
+published locale on reads; a Save from any language updates it live, without
+publishing that language's textual draft. Shared CAS and the selected locale CAS
+commit atomically, and neutral legacy columns/gallery are mirrored in that same
+statement. A text-only Save ignores stale common values in its payload, preserving
+newer global changes. Public capacity and unique-identity building totals use
+common values. Shared saves revalidate the parent and apartment caches.
+
+Reads never initialize or publish documents. Without a common row, public common
+values derive from EN publication (then the first publication), while old pending
+EN common changes remain private workspace values until Save. Four explicit null
+publications never revive legacy output. Parent locale visibility still gates
+public units; no standalone apartment public route was added. Retired prose,
+bathrooms/floor and gallery controls remain hidden and their values are retained;
+textual SEO plus the shared OG image are exposed by this correction.
+
+Focused verification in the implementer worktree: Node22/pnpm typecheck and scoped
+ESLint pass; `node --import tsx --test` over `property-locale-editor.test.ts` and
+the three existing Apartments suites passes43cases. The updated integration suite
+uses only task-owned e42/e52 synthetic identities and verifies stable creation,
+explicit language publication, English inheritance/custom PT, live shared Save,
+stale common CAS, counters, legacy/pending ownership, read-only fallback and
+archive guards. Its execution is pending explicit migration0026 approval and the
+root's isolated environment; no DB mutation was performed by this implementer.
+Integrated build and independent browser/persistence QA remain root responsibilities.

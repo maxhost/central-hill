@@ -176,6 +176,20 @@
       "when": 1793900000000,
       "tag": "0024_blog_post_locale_content",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1794000000000,
+      "tag": "0025_property_locale_content",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1794000000001,
+      "tag": "0026_property_shared_content",
+      "breakpoints": true
     }
   ]
 }
