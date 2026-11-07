@@ -1,5 +1,42 @@
 # Central Hill agent instructions
 
+## Latest Services locale forms delivered — 2026-11-06
+
+User authorized implementation from checkpointb1b75d7 and delivery on localmain.
+Completed executablea541f4e; independent QA reportb331653 + addendumc4cd07f.
+Read [execution/inventory](docs/specs/service-locale-forms-execution.md),
+[QA](docs/specs/service-locale-forms-qa.md), ADR0065. Keep Service FORM/modules:
+EN/ES/PT/FR, savedEN inheritance until actual localized edit, independent drafts
+and explicit Publish; text/SEO/booking label+URL remain owned. Shared images,
+category/icons/neutral settings live onSave; category/icons chosenEN, enforced
+server. Facts/itinerary stable ids join common icons/media byid, including target-only
+rows; never-saved orphan slots pruned, saved histories preserved. Four manual
+category name inputs reuse core translations; raw pending loads, approved Save,
+blanktargetENfallback, shared categoryID + localized selector/public names.
+SEO/publications/slugs/booking/retireddata retained. Archive/Restore preserve existing
+Service visibility capabilities and drafts. No Apartment lifecycle follow-up.
+
+Migration0027 explicitly approved by user and applied ONLY verified synthetic
+propertylocalesqa DB+role (two empty additive tables, no eager backfill). Existing
+hashes unchanged. Integratedtypecheck0/lint0(7oldwarnings)/90puregroups0; affected
+11state+9modelcases0; backend10DBgroups0/e780cleaned; finalbuild0/120pages.
+Independent4boundedbrowsergroups passed + targeted corrections;0pageerrors and
+protected old business hashes unchanged. Media-discard and unpublished hreflang
+bugs corrected/confirmed; final cleared-label legacy correction source-approved.
+No aesthetic loop or remote writes. e781/newUUID demo +4new own assets retained.
+
+Localmainffb1b75d7→c4cd07f after QA/build, final documentation via gitlog-1.
+Sole actual-main dev3071 **PID44149/parent44143/session88324**, cwd verifiedmain;
+main-open read-only200 Service/New/Category:4tabs,4names,sharedID,SEO,0errors.
+Safe synthetic DB5658/proxy4558, storage9077 restored existingfiles **PID30456 /
+session39214**; keep them running. Logs/evidence `/private/tmp/central-hill-service-locales-qa/`.
+Old checkpoint84793/84787 and oldstorage had disappeared before runtime swap;
+root stopped only own compiled candidates. Preserve worktrees, allfiles/artifacts,
+original untracked logo + publicmedia symlink and ignored safeenvs. No push/deploy.
+No pending authorized task; ContactremoteDB, Guides/Translations removal and other
+Apartment/Service follow-ups stay deferred until explicitly requested.
+
+
 ## Checkpoint before clear — Services next (2026-11-06)
 
 User now asks to clear, then convert individual Services create/edit while keeping

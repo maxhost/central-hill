@@ -216,3 +216,38 @@ and x-default only when EN exists, matching the existing Blog route. Untouched
 legacy Services still supply their original alternate maps. No kernel change.
 QA continues unaffectedgroup4 stale/access/visibility checks before root final
 build; targeted new EN-only hreflang/target404 confirmation follows the restart.
+
+## Final local delivery — complete
+
+Final executable `a541f4e`, independent report `b331653` + approved compatibility
+addendum `c4cd07f`. Four bounded browser groups passed, protected business hashes
+identical, zero page errors. Resolved media-discard and unpublished hreflang findings
+were confirmed with targeted browser checks only; no repeated approved matrix.
+Final compatibility correction keeps absent translated CTA/duration labels null
+instead of reviving unused legacy columns; nine model cases pass and QA source
+approved the exact two-line change. Columns and existing data remain untouched.
+
+Final `build-delivery.log` exit0/120pages (two local workers, no tracked config
+change). Prior integrated typecheck0/lint0(7existingwarnings)/90purecases0; affected
+follow-ups11statecases0 and9modelcases0, affected lint0/typecheck0. Backend final
+10DBgroups0, own e780 fixtures cleaned. db:check0 on unchanged final0027 SQL/snapshot;
+only pre-existing0008 warning. Exact commands, logs and migration identity/hash
+are preserved under `/private/tmp/central-hill-service-locales-qa/`.
+
+Local main fast-forward `b1b75d7`→`c4cd07f` after approval/build. No resolution or
+product correction during merge. Final actual-main dev3071 PID44149, parent44143,
+session88324, cwd verified `/Users/maxi/Documents/claude-workspace/central-hill`.
+Safe existing propertylocalesqa DB5658/proxy4558/storage9077; storagePID30456 /
+session39214 remains necessary. Main log `main-dev.log`, read-only opening evidence
+`main-open.json`: existing Service200/four tabs/shared category/SEO present;
+Category200/four name inputs; New Service200/four tabs/EN starts selected;
+zero pageerrors. No content Save/Publish/upload during this opening check.
+Only this Central Hill frontend listens3071. Earlier compiled candidate stopped;
+no unrelated app stopped. No source/content changes after approved checks.
+
+Original logo PNG, public synthetic-media symlink, ignored environments, all
+worktrees/artifacts/fixtures and files retained. Main's only untracked files remain
+those original logo/symlink. Own e781/new UI demo and four uploaded synthetic assets
+retained for review, listed in independent/owned-ids.json. No push/deploy/GitHub or
+remote writes. Documentary closure commit resolves through `git log -1`.
+No required implementation or QA remains; next work follows the user's request.
