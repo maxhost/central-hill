@@ -67,3 +67,11 @@ revisar Properties en http://localhost:3073/admin/buildings, misma cuenta sinté
 propertyqa@example.test/PropertyLocalesQA2026!. Esa revisión NO está mergeada.
 Sin push/deploy, migraciones ni DBremota; se conserva3071proceso y su.env previo.
 Próxima acción: seguir revisión del usuario, no iniciarServices/Guías automáticamente.
+
+## Later Property forms request —2026-11-06
+
+User subsequently corrects Properties to forms, then authorizes0026 and explicitly
+requests one localhost from actualmain. The Blog-only boundary above describes
+its original delivery; subsequent Property integration is tracked separately in
+[property main integration](property-forms-main-integration.md). Blog source stays
+unchanged; main0e72983 is its recorded base, and old apps are now stopped by request.

@@ -394,7 +394,7 @@ fills untouched working documents until their first localized edit. Existing own
 translations/edited snapshots remain custom conservatively. Published text remains
 fixed until that language is explicitly published. Retired prose stays hidden.
 
-**ADR0061 / proposed migration0026:** `building_shared_content` is unique by
+**ADR0061 / migration0026:** `building_shared_content` is unique by
 `building_id`, FK to its own identity with CASCADE, version1 `data` JSONB containing
 only `BuildingSharedContent`, monotonic nonnegative `revision`, nullable actor and
 timestamps. It owns location, ordering/flags, media/gallery/amenities and neutral
@@ -444,7 +444,7 @@ booking override. The parent building is immutable. Published children appear
 only when the same building locale is published and the parent is active.
 Operational move arrows apply globally, independent of locale drafts.
 
-**ADR0061 / proposed migration0026:** `apartment_shared_content` follows the same
+**ADR0061 / migration0026:** `apartment_shared_content` follows the same
 owned common table shape, unique by `apartment_id`. It contains capacity, bedrooms,
 bathrooms, beds, size, floor, cover/OG/gallery and neutral booking configuration.
 Common Save immediately updates every visible locale and recomputes identity-based

@@ -1,98 +1,112 @@
-# Property forms — revisión independiente local
+# Property forms — QA independiente local
 
-2026-11-06. Candidato inicial **d3d160d**; corrección de fuente confirmada en **8cbd0e0**, rama `property-forms/integration`,
-checkout `/private/tmp/central-hill-property-forms-integration`.
-
-**Revisión de fuente completada; aprobación funcional pendiente.** No se ha
-aplicado0026 ni ejecutado guardado/publicación, uploads, navegador o build completo
-para esta corrección. La autorización DB sigue pendiente en este corte. Este
-informe no reutiliza la aprobación del editor visual anterior ni la de Blog.
+2026-11-06. **Aprobado en el alcance funcional local acordado.** Candidato
+**fed9fb8**, rama `property-forms/main-integration`, checkout
+`/private/tmp/central-hill-property-forms-main-integration`, sobre main0e72983.
+No quedan hallazgos de producto bloqueantes en esta ronda normal acotada.
+El merge y arranque posterior desde el checkout real de main pertenecen al cierre
+del orquestador; esta aprobación corresponde al candidato integrado probado.
 
 [Alcance y ejecución](property-form-editors-execution.md),
 [ADR0061](../decisions/0061-property-forms-and-shared-data.md).
 
-## Procedimiento y límites
+## Entorno y procedimiento
 
-Inspección independiente acotada del candidato integrado: modelos/estado, bootstrap
-legacy, Save/Publish y CTEs bajo graph lock, esquema y contratos, lecturas públicas,
-contadores, validación, invalidación y ambos formularios. Se revisaron los casos
-puros añadidos y los logs reales del orquestador; no se repitieron las mismas suites
-sin cambios ni se ejecutó una matriz nueva.
+Revisión independiente de fuente y una ronda funcional agrupada en Chromium
+headless contra producción local **http://localhost:3071**. El usuario autorizó
+posteriormente aplicar0026 y las escrituras sintéticas: la revisión provisional
+anterior en8c6521b no había ejecutado persistencia ni otorgado aprobación funcional.
 
-El orquestador registra en d3d160d: typecheck exit0, lint exit0 con7warnings previos,
-92/92 casos puros de11archivos exit0 y compilación de producción **sólo compile**
-exit0 (`pnpm exec next build --experimental-build-mode compile`). Logs en
-`/private/tmp/central-hill-property-forms-qa/{typecheck,lint,tests-pure,build-compile}.log`.
-La compilación parcial no cuenta como `pnpm build` completo ni como prueba de
-prerender/publicación. QA examinó esos logs; son ejecuciones del orquestador.
+DB y rol comprobados por QA mediante SQL antes de cada script: ambos
+**propertylocalesqa**, proxy4558, storage9077 con CORS3071. Env sintético en
+`/private/tmp/central-hill-property-forms-qa/env-3071.sh`; el preload redirige el
+host de QA al proxy local y rechaza Neon remoto. El orquestador aplicó únicamente
+0026 y creó los fixtures nuevos antes de esta ronda. Storage HTTP sintético
+permite PUT/GET/HEAD; no valida firmas S3.
 
-No se realizaron escrituras DB en esta revisión ni se lanzó el nuevo preview.
-El entorno preparado es DB/rol sintético `propertylocalesqa`, proxy4558, nuevo
-preview3077/storage9077. La identidad SQL y las huellas de fixtures d*/f* anteriores
-fueron registradas por root antes de cualquier mutación. No se tocaron los previews
-3071/3073/3075, main, Neon remoto, GitHub ni despliegues.
+QA usó sesión editor sintética, acciones reales del manifest y respuestas reales
+Next-Action, sin sustituir datos, consultas, acciones ni contenido publicado.
+Las esperas usan respuesta/estado visible o carga efectiva de imagen, sin pausas
+fijas para declarar éxito. Los tres scripts comprobaron las operaciones en una
+secuencia continua, sin resetear ni repetir baselines ya mutados.
 
-## Resultado de la revisión de fuente
+Artefactos, scripts, resultados y capturas:
+`/private/tmp/central-hill-property-forms-qa/independent`.
 
-| Grupo | Observación en el candidato integrado |
+Comandos de QA ejecutados desde el candidato, todos **exit0**:
+
+```sh
+source /private/tmp/central-hill-property-forms-qa/env-3071.sh
+node /private/tmp/central-hill-property-forms-qa/independent/baseline.mjs
+node /private/tmp/central-hill-property-forms-qa/independent/media-apartments.mjs
+node /private/tmp/central-hill-property-forms-qa/independent/new-mobile.mjs
+```
+
+Se modificaron sólo e400...001 Building, e500...001 Apartment, e700...001 FAQ y
+media nueva de estos fixtures, más dos nuevas identidades propias creadas desde
+los formularios: Building69a344cf-8a61-44e3-a35a-aa2d9869f70b y
+Apartment46559ec8-b82f-49fb-be9b-cc532936feab. Identidades completas y slug en
+`created-identities.json`. Los fixtures previos d*/f* mantuvieron exactamente sus
+huellas y recuentos de identidad, snapshots Properties y snapshots/artículos Blog.
+No se escribió Neon remoto ni se hizo push/deploy en esta revisión.
+
+## Resultado funcional —10grupos aprobados
+
+| Grupo | Evidencia observada |
 | --- | --- |
-| Formularios | Ambos editores montan controles tradicionales, tabs EN/ES/PT/FR, volver y Save/Publish; no PageEditorShell, PropertyLivePreview ni iframe. Se conservan campos legacy ocultos y se expone SEO textual Apartment. |
-| Propiedad del idioma | Primera edición localizada real fija custom inmediatamente. No-op y cambios comunes conservan inherit. EN actualiza sólo working heredado; texto/SEO/booking custom, incluso sin guardar, se conserva. Publicaciones no se reemplazan desde el estado local. |
-| Legacy | Los lectores distinguen contenido real aprobado/pendiente y snapshots editados antes de inferir ownership. GET no inicializa tablas. La base common pública prioriza EN publicado y conserva common ENdraft anterior como working privado. |
-| Common y CAS | Tablas propias con unique/FK/revisión; Save combina draft locale y common en statement fresco tras graph lock. Si sharedChanged=false, la proyección común vigente prevalece sobre el payload viejo. Se espejan columnas y relaciones neutrales. |
-| Público y contadores | Se exige publicación del idioma; Apartment también exige publicación/estado del padre. Las lecturas superponen common actual. Agregados cuentan identidades una vez y usan capacidad común, conservando orden operacional global. |
-| Media e invalidación | Flush limitado a IDs referenciados por la entidad; previews persistidos preceden blobs. Common Save invalida superficies públicas y texto Save conserva alcance privado. No nueva ruta pública Apartment. |
-| Límites de propiedad | Cambios confinados a los dos slices, contratos Backoffice/workspace, mensajes y documentación/schema definidos. Imports cruzados revisados por contracts; no nuevo cambio kernel/Blog. |
+| Legacy/GET/formulario | Cuatro detalles públicos iniciales resuelven EN anterior. GET público y ambos editores conservan sus tablas locale/shared vacías. PT pendiente Building/FAQ/Apartment se conserva. Controles tradicionales y SEO Apartment visibles, sin iframe ni selector Element. |
+| EN y propiedad Building | Save EN propaga working a ES/FR sin contenido propio, mientras conserva nombre, SEO y reserva PT modificados pero aún sin guardar. El público EN continúa anterior hasta Publish. Save/Publish PT conserva EN publicado anterior. |
+| Publicación Building | EN Publish no modifica la fila PT. ES y FR se guardan/publican explícitamente. Cuatro detalles reales muestran los nombres correctos; SEO y enlaces propios PT/FR se comprueban en HTML público. |
+| Fotos/datos Building | Dos selecciones en cola no hacen PUT. Save PT sube exactamente portada+OG, normaliza previews fuera de blob y actualiza ambas imágenes y dirección en los cuatro idiomas publicados. El nombre/SEO PT nuevos siguen privados en draft; Save/reload los conserva. |
+| Texto/SEO/reserva Apartment | PT pendiente y modificaciones locales sobreviven EN Save; ES hereda EN. Cuatro publicaciones independientes conservan nombres/SEO/booking propios, incluidos hrefs PT/FR reales en UnitCard. No nueva ruta pública Apartment. |
+| Datos físicos Apartment | Save PT comparte portada nueva,9huéspedes,5camas,3dormitorios y88m². Cuatro páginas y sus strips muestran1/9/5; las columnas legacy también1/9/5. Texto/SEO PT nuevo continúa privado y persiste tras reload. Tercer upload real y preview normalizado comprobados. |
+| Building nuevo | Primer y segundo Save navegan/conservan una identidad Edit y un único slug. Cambiar sólo dirección desde ES mantiene inherit. Primera edición textual/SEO PT fija custom y un EN Save posterior no la pisa; ES sigue EN. Publicar PT mantiene EN/ES sin publicación y EN404. |
+| Apartment nuevo/padre | Primer/segundo Save usan un único UUID/ruta. Publicar child EN no revela el padre EN sin publicar. Child PT aparece tras su publicación con padre PT existente; Publish padre EN revela su child EN preparado. PT permanece independiente. |
+| Móvil y guardas | Ambos formularios a390×844 guardan y recargan sin overflow. Escritura continua mantiene foco. Una edición PT oculta al pasar a EN dispara Back; Escape/Cancel conserva ese texto y permite volver a PT. Capturas desktop/móvil revisadas en una pasada acotada. |
+| Preservación y media pública | Huellas d*/f* idénticas antes/después. Portada Apartment compartida carga realmente en público optimizado (complete y naturalWidth>0). Los tres registros de pageerror son listas vacías. |
 
-Estas son observaciones de código, no resultados de Save/reload ni browser.
+Evidencia principal: `baseline-results.json`, `media-apartments-results.json`,
+`new-mobile-results.json`, `shared-final.json`, `created-identities.json` y los
+logs homónimos. Capturas: `building-desktop.png`, `apartment-desktop.png`,
+`building-mobile.png`, `apartment-mobile.png`, `public-shared-pt.png`.
+Las capturas completas pueden situar el header sticky en la posición del scroll
+al capturarlas; los recorridos comprobaron los controles visibles y operativos.
 
-## Hallazgo y corrección de fuente
+## Fuente, correcciones y verificación integrada
 
-**P2 — Publish directo de un borrador antiguo puede saltarse el Save común.**
-Reproducción lógica contra d3d160d, sin mutar DB: entidad con EN publicado,
-ENdraft anterior que cambia fotos/datos físicos y ninguna fila shared. El getter
-proporciona common publicado más `shared.working` privado. Los formularios bloquean
-Publish por common dirty, pero las acciones directas podían alcanzar los stores.
+Revisión acotada de modelos/estado, bootstrap legacy, Save/Publish y CTEs bajo
+lock, esquema/contratos, lectura pública, contadores, validación, invalidación y
+formularios. Primera edición real fija custom; no-op y common no personalizan.
+Shared Save y locale draft comparten CAS/statement fresco, y el payload común
+viejo de un text-only Save no restaura valores anteriores. GET no inicializa.
+Imports cruzados revisados por contracts; no nuevo cambio kernel ni Blog.
 
-Building valida una copia overlay con common público, pero llama a
-commitBuildingLocale sin baseline shared. Si no existe fila común, normalized
-conserva el common original de target.draft; al publicar EN cambia el fallback
-público y expone el cambio pendiente sin Save. Apartment sí superpone baseline
-público, pero elimina el draft y con él la única copia common pendiente. Ambos
-incumplen conservar esos cambios hasta Save explícito. Evidencia:
-`buildings/server/editorial-store.ts` Publish y CTE normalized;
-`apartments/server/editorial-store.ts` Publish/saved y ambos shared-content.ts.
+La revisión inicial d3d160d encontró **P2: Publish directo de common pendiente de
+un ENdraft antiguo**. Building podía exponerlo mediante fallback al publicar;
+Apartment podía consumir su única copia. Correcciones fbd871d/8cbd0e0 rechazan
+Publish mientras existe shared.working y piden Save primero. QA confirmó la
+corrección en fuente; las regresiones DB preparadas se ejecutaron después en la
+suite integrada real del orquestador. El guard del formulario ya impedía ese caso.
 
-Corrección solicitada a root: rechazar Publish cuando `shared.working` existe,
-con ayuda para guardar primero, preservando el draft. Root aceptó el hallazgo y
-asignó corrección mínima a ambos propietarios, más regresiones DB preparadas.
-Correcciones integradas y revisadas independientemente: Apartment **fbd871d** y
-Building **8cbd0e0**. Ambos stores rechazan `shared.working` antes de consumir el
-draft y devuelven ayuda para guardar primero. Los diffs incorporan regresiones
-DB con identidad e* que comprueban el rechazo y la conservación del draft; no se
-han ejecutado sin autorización. La corrección está confirmada en fuente, pendiente
-de confirmación funcional con la DB autorizada. No se encontraron otros bloqueos
-de código en esta revisión acotada.
+La primera ejecución DB del orquestador también encontró precedencia JSONB
+incorrecta en las proyecciones localizadas; se corrigió en99c2d80/fed9fb8 antes
+de esta ronda browser. No se contabilizan esos intentos fallidos como verificación
+aprobada. Candidato fed9fb8: **104/104 casos reales**, typecheck, lint y db:check
+exit0; full `pnpm build` exit0. Los7warnings lint y aviso metadataBase de build
+son previos/de configuración local. Logs `main-tests.log`, `main-typecheck.log`,
+`main-lint.log`, `main-db-check.log`, `main-build-final.log` bajo el directorio QA.
+Son ejecuciones del orquestador, revisadas por QA; no suites duplicadas por el revisor.
+El build previo compile-only no se confunde con este build completo posterior.
 
-Observación no bloqueante: en Apartment, un draft inherit que queda obsoleto tras
-EN Save mantiene el texto “Draft saved” y deshabilita Publish. Una indicación de
-que es necesario guardar otra vez ese idioma haría más claro el siguiente paso.
-No implica pérdida de texto ni habilita una publicación incorrecta.
+El código probado es el delta Properties seleccionado sobre main y conserva
+Blog/topbar ya integrados. La equivalencia ejecutable con la rama de implementación
+2bb313d fue comprobada por root; el candidato para este informe y browser es fed9fb8.
 
-## Verificación funcional restante tras autorización DB
+Observación no bloqueante conservada: en Apartment un draft inherit obsoleto tras
+EN Save puede seguir diciendo Draft saved con Publish deshabilitado. Una ayuda
+para guardar otra vez sería más clara; no habilita publicación obsoleta ni pierde
+texto, y no se amplió esta entrega a una ronda de polishing.
 
-Ronda normal agrupada sobre nuevos e* fixtures y nuevas identidades propias:
-
-- Baseline legacy/GET sin bootstrap y pendientes PT conservados; cuatro idiomas.
-- Nuevo Building y Apartment: primer/segundo Save con identidad/ruta estables,
-  herencia EN y pin PT, texto/SEO/booking independiente y publicación explícita.
-- Fotos y datos físicos guardados desde otra tab actualizan todo idioma público,
-  conservando texto/SEO draft privado; dos uploads y previews normalizados.
-- Counter público/legacy coherente, padre/idioma gating, revisiones/common CAS,
-  Save/reload, navegación con cambios locales y móvil en ambos formularios.
-- Regresión concreta del Publish de common pending anterior y confirmación de
-  que fixtures d*/f* anteriores mantienen sus huellas.
-- Suites de integración reales y `pnpm build` completo sobre el esquema autorizado.
-
-No aprobación funcional ni integración en main hasta confirmar la corrección y
-completar esos checks requeridos con el entorno autorizado. No se solicita una matriz más amplia.
+No faltan checks funcionales requeridos dentro de la ronda acordada. La posterior
+confirmación del arranque desde main real y del recurso estático de imágenes SSG
+queda a cargo del orquestador como cierre local, sin nueva escritura de contenido.

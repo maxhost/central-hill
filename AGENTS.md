@@ -35,7 +35,9 @@ User latest request supersedes preserving old app listeners3071/3072/3073/3075:
 they are stopped; worktrees/data retained. Final app3071 from actual main with safe
 synthetic env; remote Neon must not be used. DB/proxy and storage remain necessary.
 No push/deploy/remote DB writes. Preserve untracked original logo and env backup.
-Complete required persistence/browser/fullbuild QA before main fast-forward.
+Executablefed9fb8:104tests/typecheck/lint/dbcheck/fullbuild pass; independent
+functional browser QA approved10groups with3uploads and unchanged oldfixturehashes.
+See property-forms-main-integration.md for final actual-main server PID/hash.
 
 ## Latest local Backoffice work — 2026-11-05
 

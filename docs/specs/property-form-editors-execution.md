@@ -219,3 +219,22 @@ compatibilidad oldsnapshots/legacy/PTpending/GETsinwrites. Sin matriz ampliada.
   pure cases; guard DB regressions await authorized schema. Independent source
   report8c6521b confirms both corrections, no additional code blocker; functional
   QA explicitly pending. No DB approval answer received at this checkpoint.
+
+## User-approved runtime/main follow-up
+
+User now says 'aplicala y mata todos los ocalhost de este env y relanza uno solo
+ del main local para poder probar el cambio en el editor'. This explicitly
+supersedes earlier no-main/old-preview preservation boundaries for local delivery.
+0026 applied only to propertylocalesqa; new e* fixtures seeded. Old d/f remain.
+See property-forms-main-integration.md for exact process/env/application boundary.
+First real DB run:3/12pass,9failed; most downstream after two SQL precedence bugs.
+Fixed by source72f0957/ede4284, now2bb313d; main candidatefed9fb8. Owner8/8+4/4
+and integrated104/104pass. Main candidate typecheck/lint/dbcheck/fullbuild all0;
+full independent browser QA in progress, no main fast-forward yet at this entry.
+
+- Final independent browser QA approved executablefed9fb8:10groups/3scripts0,
+  no browser exceptions; screenshots desktop/mobile/public reviewed one round.
+  Four locales, actualmedia3uploads/commonSave/privatePTtext/SEO, physicalstats,
+  Newstableidentity/parentgate and mobilefocus/guards passed. Oldd*/f*hashes match.
+  Root now fast-forwards actualmain and transfers the same testedbuild after
+  stopping candidatePID84271; no product changes, only narrow runtime confirmation.
