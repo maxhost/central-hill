@@ -697,7 +697,7 @@ export function BuildingLocaleEditor({
             amenities.map((option) => (
               <div key={option.id}>
                 <Checkbox
-                  label={option.label}
+                  label={option.labels?.[locale] ?? option.label}
                   checked={content.amenity_ids.includes(option.id)}
                   onChange={() =>
                     set(

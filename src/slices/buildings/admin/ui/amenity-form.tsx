@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -16,13 +16,17 @@ import {
 } from "@slices/backoffice/contract";
 import { deleteAmenity, saveAmenity } from "../actions";
 import type { AmenityEditData } from "../queries";
+import {
+  AMENITY_LABEL_LOCALES,
+  AMENITY_TARGET_LOCALES,
+  type AmenityTranslations,
+} from "../../amenity-types";
 import { type AmenityFormValues, amenityPayload } from "./amenity-payload";
 
 /**
  * Amenity create/edit form at `/admin/amenities/new` and `/admin/amenities/[id]`
- * (mirrors the service-category form). Posts through `saveAmenity`; the [T] `label` is
- * authored in English. A blank icon is allowed: the building page then draws
- * `check-circle`.
+ * Posts four manual labels through `saveAmenity`; blank target labels use English.
+ * A blank icon is allowed: the building page then draws `check-circle`.
  */
 
 type FormState = AmenityFormValues;
@@ -33,6 +37,9 @@ function initialState(data: AmenityEditData | null): FormState {
     icon: data?.icon ?? "",
     group: data?.group ?? "",
     label: data?.label ?? "",
+    translations: Object.fromEntries(
+      AMENITY_TARGET_LOCALES.map((locale) => [locale, data?.translations?.[locale] ?? ""]),
+    ) as AmenityTranslations,
   };
 }
 
@@ -40,6 +47,7 @@ export function AmenityForm({ initial }: { initial: AmenityEditData | null }) {
   const t = useTranslations("buildings");
   const tb = useTranslations("backoffice");
   const router = useRouter();
+  const fieldPrefix = useId();
   const [pending, start] = useTransition();
   const [state, setState] = useState<FormState>(() => initialState(initial));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -119,16 +127,33 @@ export function AmenityForm({ initial }: { initial: AmenityEditData | null }) {
 
       <AdminCard title={t("admin.amenity.sections.details")}>
         <div className="space-y-4">
-          <Field
-            label={t("admin.amenity.fields.label")}
-            required
-            error={err("label")}
-          >
-            <TextInput
-              value={state.label}
-              onChange={(e) => set("label", e.target.value)}
-            />
-          </Field>
+          {AMENITY_LABEL_LOCALES.map((locale) => {
+            const field = locale === "en" ? "label" : `translations.${locale}`;
+            const id = `${fieldPrefix}-label-${locale}`;
+            return (
+              <Field
+                key={locale}
+                label={t("admin.amenity.fields.localizedLabel", { locale: locale.toUpperCase() })}
+                htmlFor={id}
+                required={locale === "en"}
+                error={err(field)}
+                hint={locale === "en" ? undefined : t("admin.amenity.translationHint")}
+              >
+                <TextInput
+                  className="min-h-11"
+                  id={id}
+                  value={locale === "en" ? state.label : state.translations[locale]}
+                  maxLength={80}
+                  required={locale === "en"}
+                  disabled={pending}
+                  onChange={(event) => {
+                    if (locale === "en") set("label", event.target.value);
+                    else set("translations", { ...state.translations, [locale]: event.target.value });
+                  }}
+                />
+              </Field>
+            );
+          })}
           <FieldGrid>
             <Field
               label={t("admin.amenity.fields.slug")}
