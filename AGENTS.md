@@ -1,22 +1,24 @@
 # Central Hill agent instructions
 
-## Building status/form correction —2026-11-06
+## Building status/form correction delivered —2026-11-06
 
-User reports terminal archive lock, inaccessible status changes and inconsistent
-form columns/sizes. Read docs/specs/building-status-form-correction.md. Base52cf4bd,
-new building-status/integration at/private/tmp/central-hill-building-status-integration.
-Archive reversible; archived Building editable; Save keeps archive, Restore reuses
-old pubs without consuming draft, Publish selected locale reactivates. Prominent
-Archive/Restore, one-column uniform form. No migration/new DB permission needed;
-functional QA on own e64/e74 synthetic fixtures only, no d/f/user QA fixture writes.
-Aesthetic layout user-validated L0, no automated visual QA. Single3071main dev
-currentlyPID90520/session55366; preserve safe synthetic env/storage9077/logo/media.
-Local main delivery after functional checks; no remote/push/deploy. Latest request
-supersedes earlier archived read-only rule and historical Blog-only merge boundary.
-Executable5077515 approved: typecheck/lint/build0,27focused tests0, independent
-functionalQA5groups approved (no aesthetic QA; user reviews appearance). Follow
-docs/specs/building-status-form-correction.md for the final actualmain startup.
-
+User reported terminal archive lock/inaccessible status actions/inconsistent form.
+Delivered52cf4bd→2d99dba by localmainff, executable5077515. Read
+[spec](docs/specs/building-status-form-correction.md) and
+[QA](docs/specs/building-status-form-qa.md). Archive is reversible visibility;
+archivedBuilding editable; Save keeps archive, Restore oldpubs without consuming
+drafts, Publish selected locale reactivates. Archive/Restore prominent in toolbar;
+one-column uniform-width form/44pxcontrols/128pxtextareas, no duplicate inner h1.
+Typecheck/lint/build0;27focusedtests0; independentfunctionalQA5groups approved.
+No aesthetic QA/screenshots/geometry: user validates appearance onlocalhost.
+Actualmain3071dev **PID5677/session63080**, safe propertylocalesqa DB5658/proxy4558,
+storage9077/public symlink retained. Rootread-onlyGET confirmsHTTP200, Saveenabled,
+Archive/Restore present,0pageerrors (main-open.json). Preserve this new singleapp;
+old90520andcandidate2550stopped. No schema/migration, no remote/push/deploy.
+Only newown e640tests(cleaned) ande740browserfixture used; d/f/user QA69a/465
+unchanged. Original logo/media symlink stayuntracked. No task next automatically;
+follow user visual review. Latest correction supersedes old archivedreadonly rule
+and historical Blog-only merge boundary below.
 
 ## Blog-only main integration completed —2026-11-06
 

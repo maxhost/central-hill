@@ -91,3 +91,12 @@ Aesthetic L0: no automatic tests/QA or DB writes, user validates localhost.
 To expose source edits immediately, production90276 stopped and main3071 restarted
 in devPID90520/session55366, same safe env/storage/public symlink. Ready log in
 main-dev.log; previous approved production artifact retained. Changes uncommitted.
+
+## Building status and form correction supersedes archive lock
+
+Later user feedback led to [Building correction](building-status-form-correction.md),
+executable5077515, integratedmain52cf4bd→2d99dba after functionalQA. Archived
+Buildings editable, Save stayshidden, Restore retains drafts/oldpubs, Publish
+reactivates; Archive/Restore sticky. Form now onecolumn/consistentwidth and control
+heights/no duplicate title; no automatic aestheticQA, user reviews. Current main
+singledev3071PID5677/session63080 (replaces90520). No migration/remotes/deploy.

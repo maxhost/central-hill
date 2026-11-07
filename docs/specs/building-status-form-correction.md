@@ -123,3 +123,14 @@ state without replay/reset; final confirmation exit0. See building-status-form-q
 No screenshots/geometry/aesthetic automatic QA; visual refinement stays user-reviewed.
 Root now fast-forwards localmain and restarts its single3071dev, same safe synthetic
 env, no migration or remote/write/deploy. Final PID/hash recorded after startup.
+
+## Actual main runtime completed
+
+Mainff52cf4bd→2d99dba after independent functional approval. Candidate2550/2544
+stopped; actualmain3071devPID5677/session63080, cwd verified principal checkout.
+Only this app listener remains; safeenv/storage/public symlink unchanged. Root
+single read-only main-open.mjs confirmseditorHTTP200, Saveenabled, Archive/Restore
+present and0pageerrors; main-open.json. No duplicated broad suite or aestheticQA.
+Code remains the tested5077515; closure changes documentation only. Original logo
+and syntheticpublic symlink remain unstaged, no other tracked dirt. User reviews
+visual layout on3071; no automatic Services/Apartment-lifecycle work initiated.
