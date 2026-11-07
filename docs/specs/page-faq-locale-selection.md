@@ -146,3 +146,17 @@ Ninguna corrección de producto durante QA. Harness ajustado: summaryFAQ tiene
 span+ (locator), y espera preview-ready antes de seleccionar inspector para
 sincronizar hidratación; se retomó sóloFRreload/Publish, EN/ES/PTno repetidos.
 ES/FRclearconfirmación status200 sólo lectura. DemoAbout/e811 retenida, sin uploads.
+
+## Entrega main local
+
+QA f2b9d73 aprobó e9f0cab. Main ff fc609a8→45bd1cf completado. QA46574 detenido;
+primer main49284 mostró catálogo FAQ viejo (2grupos previos al seed) aunque SQL
+snapshot correcto. Evidencia main-options-mismatch.json; root detuvo ese dev y
+archivó .next completo SIN borrar archivos en main-next-before-faq bajo QA.
+Nuevo único actual-main dev3071 PID49382/parent49376/session31847, cwdworkspace
+verificado; main-dev-final.log. main-open.mjs sólo lectura:200 About/Home, cuatro
+selectores habilitados y valores exactos de draft/pub por idioma,0pageerrors.
+No cambios de contenido ni código tras QA; sólo caché local renovada y preservada.
+DB5658/proxy4558/storage9077PID30456 intactos,42hashes previos sin cambios. Sólo
+logo/symlink originales untracked. Todosworktrees/envs/archivos/artifacts retenidos;
+sin push/deploy/remoto. Cierre documental posterior via gitlog-1.

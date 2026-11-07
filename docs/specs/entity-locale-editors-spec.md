@@ -3,6 +3,7 @@
 ## Estado vigente — 2026-11-07, después de selección FAQ por idioma
 
 Guías y autores/categorías Blog completados, aprobados en QA e integrados en main local.
+Selección FAQ e9f0cab aprobada QA f2b9d73 e integrada main45bd1cf.
 ADR0068 añade selección FAQ independiente por idioma en Home/Owners/RealEstate/Guest/About;
 se eligen grupos propios por idioma, sin tomar EN ni añadir tabs al editor de grupos.
 Autores/categorías: producto c155184, QA42b9ca7, integración05c696b.

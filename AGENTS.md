@@ -1,5 +1,48 @@
 # Central Hill agent instructions
 
+## Latest per-language Page FAQ selection —2026-11-07
+
+User requests FAQ selection in EACHlanguage, explicitly no EN inheritance.
+Home/Owners/RealEstate/Guest/About now expose same native selector in EN/ES/PT/FR.
+Each existing snapshot owns faq_group_key; missing/blank means noFAQ for that
+language, never ENfallback. Existing saved/legacy choices retained, no eagerclear/
+backfill/GETwrites. Descriptor localeReferencePaths separates references from [T]
+texts and shared media/layout. Target prepare retains own key/blank/absence, and
+shared guard permits only declared references while media/list/OG/CAS stay intact.
+SaveDraft/Publish remain explicit per locale; other pending choices/drafts/pubs
+survive ENchanges. Existing public/preview read selected envelope. FAQ editor and
+its source/legacy translations unchanged: admins can author separate groups per
+language and choose them here. GenericFAQTranslation retirement is later technical
+work, not performed; globalTranslations remains. No newFAQsections on otherPages.
+
+Read [execution](docs/specs/page-faq-locale-selection.md),
+[QA](docs/specs/page-faq-locale-selection-qa.md), ADR0068 and updatedroadmap.
+Two isolated writers integrated executablee9f0cab; QA f2b9d73 approved3bounded
+browsergroups +read-only clearedES/FR200.0pageerrors,42business hashes identical
+from beforeseed throughstore+browser; Aboutsource and FAQ groups/items/translations
+immutable. Focused57pure+5DB=62pass, TS0/lint0(7oldwarnings), build0/136pages/2workers.
+Broad206batch195pass/11fail: SAME11stale layout/copy/hidden-node expectations
+reproduced in untouchedmainfc609a8 (150baseline138pass12fail incloldAvantiooutline).
+Only obsoleteHomeAvantioexpectation aligned, no related productchange. Do notclaim
+wholebroad suite green or silently start unrelatedrepairs. No productcorrection
+inQA; harness summary+span and preview-ready/hydration timing adjusted targetedly.
+
+No schema/migration/remote writes. TestnewOwners/e810 guardedabsent then cleaned;
+newAbout/e811+4FAQgroups retained, no media writes. Home/oldPages/FAQ protected;
+never snapshot/delete/restore existing fixedPagekeys for tests. Source inventory
+beforetask blog/buildings/guest/guides +Home4localeunits, Owns/About wereabsent.
+Main ff fc609a8→45bd1cf complete. Sole actual-main dev3071 **PID49382/parent49376/
+session31847**, cwd verifiedworkspace; main-openreadonly200 About/Home4enabled
+selectors andSQLsnapshotvaluesmatch,0errors. Mainfirststart49284 had old FAQcatalog
+cache predatingSQLseed (only2groups); stopped and archived ENTIRE .next intact to
+/private/tmp/central-hill-page-faq-locales-qa/main-next-before-faq, no files deleted.
+Freshdev fixeslocalcache; no contentwrites/productchanges or repeatedmatrix.
+QA46574 stopped. DB5658/proxy4558/storage9077PID30456 unchanged. Preserve all
+worktrees/files/ignoredenvs/originallogo/publicmedia symlink and newcachearchive.
+Logs/evidence /private/tmp/central-hill-page-faq-locales-qa/. Finaldoccommit via
+ gitlog-1. No push/deploy. Cities/barrios/testimonials/otherauxiliaries remain
+unstarted; follow next userrequest.
+
 ## Latest Blog author/category locale inputs — 2026-11-07
 
 User requests four inputs per language in the SAME ficha, no tabs: author name
