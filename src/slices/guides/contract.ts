@@ -113,7 +113,7 @@ export interface GuideCityGroup {
 
 /**
  * Place types the guides index features under "Top Recommendations", **in display order**.
- * Matched case-insensitively against `guide_place.category` (free text).
+ * Matched against EN-authored free text; adapted guides retain a neutral classifier.
  */
 export const RECOMMENDATION_TYPES = [
   "restaurant",
@@ -133,7 +133,7 @@ export interface GuideRecommendation {
   /** Place name ([T], locale-resolved with `en` fallback). */
   name: string;
   description: string | null;
-  /** Raw `category` text as authored (e.g. "Restaurant"); not translated. */
+  /** Displayed category text; localized in adapted guide publications. */
   category: string;
   address: string;
   image: MediaImageData;

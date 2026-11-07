@@ -181,3 +181,11 @@ pre-migration-data.json. No backfill ni escrituras remotas. Fixtures browser e79
 nuevas: legacy publicada EN/PT + ES pending, dos secciones/dos lugares/fotos
 existentes sólo referenciadas; position9999. Script seed.cjs registra identidades.
 Backend dispone e790 para tests propios con limpieza; no tocar datos anteriores.
+
+Root wiring1f326bf integra rutas New/Edit, mensajes4locales y exclusión/redirect/
+writeguards de guide_page/section/place en Translations. UI b90eb6c integrada como
+a546862. Regresiones iniciales root:67grupos Guías +25Translations/Services,
+todos exit0. db:check exit0,29migraciones consistentes; warning0008preexistente.
+Backend completó14grupos (4puros+10DB) con cleanup e790, typecheck/lint0;
+se repite dirigido firstSave tras endurecer registro raíz bajo el mismo graphlock.
+La comprobación integrada final y QA independiente siguen pendientes.
