@@ -23,7 +23,7 @@ export interface ServiceEditorialModel {
 }
 export interface SaveServiceDraftInput {
   serviceId: string; locale: Locale; expectedRevision: number; templateRevision: number | null;
-  expectedSharedRevision: number; payload: ServiceEnvelope; slug?: string;
+  expectedSharedRevision: number; payload: ServiceEnvelope; shared?: ServiceSharedContent; slug?: string;
 }
 export interface PublishServiceDraftInput { serviceId: string; locale: Locale; expectedRevision: number }
 export type ServiceEditorialResult =

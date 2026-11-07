@@ -75,7 +75,11 @@ Envelope v1 contains localeMode and full Service content (without identity/statu
 Shared content overlays root fields and nested id maps. Model exposes four locale
 models, shared revision/content, slug map, previews, status. Save request includes
 serviceId, locale, expectedRevision, templateRevision, expectedSharedRevision,
-payload and creation slug. Result returns refreshed full model; clients preserve
+payload, complete shared map document (optional for old callers), and creation slug.
+Complete maps are necessary when saving EN after editing a target-only legacy
+step image: selected arrays alone cannot carry that other-locale shared key.
+Validate root/selected-row consistency, all icons and changed media references,
+including EN-only policy for the entire icon map. Result returns refreshed full model; clients preserve
 unsaved other-language edits while rebasing shared state. Publish takes selected
 revision only, consumes saved draft only. Dirty selected work must be saved first.
 Service visibility controls preserve the old status selector capabilities: explicit
@@ -140,7 +144,10 @@ Independent QA: four bounded functional groups (desktop/mobile, no aesthetic loo
    names in four locales, one selected id, rename without Service republish.
 4. Validation/stale revision/permissions, public listing/detail/metadata/static
    locale exclusion, existing fixture hashes unchanged, no pageerrors.
-Only new e781 demo rows/media may be changed by browser QA. Store tests and browser
+Only new e781 demo rows plus explicitly recorded new UUIDs created through the
+Service create form/media uploader may be changed by browser QA. Never repurpose
+an existing identity. Protect hashes exclude only those recorded new owned ids.
+Store tests and browser
 groups complement one another; do not repeat an approved matrix without cause.
 
 ## Progress
