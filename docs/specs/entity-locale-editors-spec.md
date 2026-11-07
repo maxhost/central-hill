@@ -1,8 +1,10 @@
 # Contenidos del CMS — edición y publicación por idioma
 
-## Estado vigente — 2026-11-07, después de autores/categorías Blog
+## Estado vigente — 2026-11-07, después de selección FAQ por idioma
 
 Guías y autores/categorías Blog completados, aprobados en QA e integrados en main local.
+ADR0068 añade selección FAQ independiente por idioma en Home/Owners/RealEstate/Guest/About;
+se eligen grupos propios por idioma, sin tomar EN ni añadir tabs al editor de grupos.
 Autores/categorías: producto c155184, QA42b9ca7, integración05c696b.
 Autores tienen nombre/bio EN/ES/PT/FR; categorías, cuatro nombres en la misma ficha,
 sin tabs y con un Guardar. Textos vacíos usan EN, referencias/selecciones y posts
@@ -20,16 +22,18 @@ esta entrega no autoriza iniciar otros auxiliares. Prevalece sobre notas histór
 | Fase3: Servicios y categorías | Entregada en main local; formulario/módulos/SEO, cuatro idiomas y datos comunes (ADR0065); ver service-locale-forms-execution.md y QA |
 | Fase4: Guías individuales | Implementación completa y QA aprobada: guía/secciones/lugares por idioma, draft/Publish explícitos, imágenes comunes por UUID, composición antes del primer Save (ADR0066) |
 | Autores/categorías Blog | Inputs EN/ES/PT/FR en una ficha, públicos y selector localizados, vías antiguas de Translations retiradas (ADR0067) |
+| FAQ por página/idioma | Selector independiente EN/ES/PT/FR, vacío sin FAQ y sin fallback EN; se conservan grupos y traducciones legacy (ADR0068) |
 | Fase5: restantes auxiliares y retirada de Translations | Pendiente según inventario siguiente |
 
 ### Dependencias pendientes para retirar la sección global
 
 1. **Auxiliares pendientes**: ciudades y barrios (definición diferida por el
    usuario; puede conservarse el nombre local compartido, mientras `intro` es
-   texto traducible), FAQ generales (`question`, `answer`), testimonios (`quote`),
+   texto traducible), testimonios (`quote`),
    textos globales de Settings (`company_settings`) y etiquetas de navegación
    (`nav_item`). Resolver su autoría en cada ficha con el patrón adecuado. Las
-   FAQ de Building ya pertenecen a su editor; aquí corresponde `faq_item` general.
+   FAQ de Building ya pertenecen a su editor. FAQ general admite ahora grupos
+   separados elegidos por idioma; no requiere un nuevo editor con tabs para ese flujo.
 2. **Metadatos de imágenes**: cubrir `media_asset.alt` mediante una superficie
    propia si se conserva su edición manual. Actualmente el lector soporta ALT
    localizado y su fallback, pero no hay editor de metadatos que sustituya la
@@ -38,7 +42,9 @@ esta entrega no autoriza iniciar otros auxiliares. Prevalece sobre notas histór
    formularios localizados pero siguen admitidos en el inbox/rutas/acciones de
    Translation. El filtro/guardas actuales reconocen Pages, Blog, Properties y ahora Guías.
    Retirar esa segunda vía de edición, preservar los registros originales y
-   llevar enlaces antiguos al editor correspondiente. Completar la cobertura de
+   llevar enlaces antiguos al editor correspondiente. Revisar también el cierre
+   de `faq_item` legacy conservando textos anteriores al flujo de grupos separados;
+   esta entrega cambia selección, no retira esos datos ni su vía genérica. Completar la cobertura de
    todos los tipos antes de retirar menú/rutas/acciones de la sección global.
    Conservar kernel i18n y tabla translation: taxonomías y otros lectores la siguen
    usando. Quitar una sección de interfaz no implica borrar sus datos.

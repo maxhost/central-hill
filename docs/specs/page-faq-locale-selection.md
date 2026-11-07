@@ -124,3 +124,25 @@ Deps integración propias instaladas offline caché517reused; main intacto. Seed
 nuevoAbout e811 +4grupos/ítems y3publicaciones/1PTnull guardado tras verificarDB/rol,
 42hashespreseed; Home/sourceotraspáginas/gruposprevios protegidos. Sólo fallo del
 script inicial por extensión CJS antes de DB, corregido a seed.mts sin writes.
+
+Backend8db3b5a integradoe9f0cab (producto ensamblado),12/12writer y los12 nuevos
+integrados pasaron, Owners/e810 limpiado. RootTS0/lint0(7warnings previos). Batch
+amplio206:195pass/11fail; se reprodujeron esos11 en mainfc609a8 intacto (batch150,
+138pass/12fail incluyendoAvantioobsoleto ya corregido). Son expectativas anteriores
+sobre layout/copy/tipos ocultos de Pages/Guides/Services, no regresiónFAQ. No ampliar
+scope para repararlas. Focused57pure0 +5DB integrados0 =62afectados0; logsfocused,
+integrated, baseline preservados. Build sólo después de cleanup, QA pendiente.
+
+Build0/136páginas con2workers, sólo warning metadataBase sintético conocido.
+Producción QA3071PID46574/session68476 desde integración; root detuvo únicamente
+main35581/35575 tras verificarcwd. Login200, storage9077PID30456 intacto.42hashes
+baseline QA iguales a antes de seed/store. QA3grupos en curso; no main ff aún.
+
+QA completó3grupos sobre e9f0cab: cuatro selecciones/Save/reload/Publish/public+
+JSONLD; otrosdrafts/pendingchoices intactos anteEN; clear/privatepreview/mobile/
+Home readonly/auth sin fallbackEN.0pageerrors,42hashes originales iguales desde
+antes seed/store/browser; Aboutsource y FAQ grupos/ítems/traduccionesinmutables.
+Ninguna corrección de producto durante QA. Harness ajustado: summaryFAQ tiene
+span+ (locator), y espera preview-ready antes de seleccionar inspector para
+sincronizar hidratación; se retomó sóloFRreload/Publish, EN/ES/PTno repetidos.
+ES/FRclearconfirmación status200 sólo lectura. DemoAbout/e811 retenida, sin uploads.
