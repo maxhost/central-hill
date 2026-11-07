@@ -1,5 +1,22 @@
 # Local visual refinements — resume after context clear
 
+## Current checkpoint before clear —2026-11-06
+
+Read [Services form/languages handoff](handoff-service-locale-forms-2026-11-06.md)
+first, then AGENTS.md and current git status/log. User's NEXT requested work is
+individual Service forms with EN/ES/PT/FR inheritance/custom ownership and shared
+images/category/icons, plus4language Service category names like Amenities.
+No implementation before this clear; executable spec/plan still to prepare after
+resume. Preserve Services form/conditional modules, no live-editor conversion.
+
+Current actual-main3071 PID84793/parent84787/session56260 stays alive. It now uses
+synthetic propertylocalesqa DB5658/proxy4558/storage9077. Historical remote-env and
+PID/no-pending-work statements below are superseded by this new handoff. Never
+print/copy credentials. New checkpoint documentation only; resolve hash git log -1.
+No new code/tests/DB writes/migration/push/deploy. Preserve logo/publicmedia symlink,
+all worktrees/fixtures/envs; contact DB update still deferred. Amenities/Building/
+Apartment language-form corrections are delivered on main as recorded in AGENTS.
+
 ## Checkpoint before user-requested clear —2026-11-05
 
 User asks to clear and start other work. Capture all this conversation's Pages/

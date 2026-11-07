@@ -1,5 +1,14 @@
 # Contenidos del CMS — edición y publicación por idioma
 
+Actualización antes del clear2026-11-06: Blog/Buildings/Apartments y Amenities
+ya están integrados en main local con los formularios y datos comunes corregidos.
+La próxima petición es Services individuales + categorías con4labels. Ver
+[handoff vigente](handoff-service-locale-forms-2026-11-06.md), que prima sobre las
+notas históricas inferiores (editor visual, medios congelados y remoto3071).
+Services todavía no se convirtió: falta inventario/spec/plan ejecutable al retomar.
+Este checkpoint no inicia implementación ni cambia DB. Main3071 usa ahora
+propertylocalesqa sintético; conservar proceso/env y verificar antes de mutar.
+
 Actualización2026-11-06: Blog y topbar integrados en main local con autorización
 explícita del usuario, **sin** incluir Edificios/Departamentos. Ese otro editor
 está QA-aprobado en su rama y3073, pendiente de revisión manual del usuario.

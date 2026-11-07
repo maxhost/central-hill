@@ -1,5 +1,27 @@
 # Central Hill agent instructions
 
+## Checkpoint before clear — Services next (2026-11-06)
+
+User now asks to clear, then convert individual Services create/edit while keeping
+its FORM and adding EN/ES/PT/FR tabs with the established EN-inherit-until-localized-
+edit behavior. Shared images/category/icons; icons/category selected in EN and
+used across languages. Service categories get four Label/name inputs like Amenities;
+selector/public names follow locale with one shared selected category identity.
+Read [current handoff](docs/specs/handoff-service-locale-forms-2026-11-06.md) FIRST.
+It supersedes old runtime/next-task notes below and in the historical visual handoff.
+No implementation started: this is the requested documentary checkpoint before
+clear, no tests/DB writes/migration/push/deploy. Resolve checkpoint via git log -1.
+After return, inventory nested Service text/media/icons and write the executable
+spec/plan, then follow user's resume instruction; no live-editor conversion.
+Preserve existing form modules, explicit locale drafts/publication, SEO (Services
+has public detail), booking behavior and legacy data. Contact DB task remains deferred.
+
+Keep actual-main3071 alive: PID84793/parent84787/session56260, verified cwd main,
+restart log in amenity-locales-qa/main-restart.log. Current main uses synthetic
+propertylocalesqa DB5658/proxy4558/storage9077, NOT remote Neon as old handoffs say.
+Preserve logo/publicmedia symlink, all worktrees/artifacts/fixtures and ignored envs.
+No automatic Guides/Translations removal or Apartment lifecycle work after clear.
+
 ## Latest Amenity manual labels —2026-11-06
 
 User requests Label EN/ES/PT/FR in Amenities and localized names in Building
