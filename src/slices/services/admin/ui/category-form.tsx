@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -16,6 +16,11 @@ import {
 } from "@slices/backoffice/contract";
 import { deleteServiceCategory, saveServiceCategory } from "../actions";
 import type { ServiceCategoryEditData } from "../queries";
+import {
+  SERVICE_EDITOR_LOCALES,
+  SERVICE_TARGET_LOCALES,
+  type ServiceCategoryTranslations,
+} from "../../editorial-types";
 
 /**
  * Service-category create/edit form (S12). Posts through `saveServiceCategory`; the
@@ -27,6 +32,7 @@ interface FormState {
   icon: string;
   position: string;
   name: string;
+  translations: ServiceCategoryTranslations;
 }
 
 function initialState(data: ServiceCategoryEditData | null): FormState {
@@ -35,6 +41,12 @@ function initialState(data: ServiceCategoryEditData | null): FormState {
     icon: data?.icon ?? "",
     position: String(data?.position ?? 0),
     name: data?.name ?? "",
+    translations: Object.fromEntries(
+      SERVICE_TARGET_LOCALES.map((locale) => [
+        locale,
+        data?.translations?.[locale] ?? "",
+      ]),
+    ) as ServiceCategoryTranslations,
   };
 }
 
@@ -49,6 +61,12 @@ function buildPayload(s: FormState, id: string | undefined) {
     icon: s.icon.trim(),
     position: intOr(s.position, 0),
     name: s.name.trim(),
+    translations: Object.fromEntries(
+      SERVICE_TARGET_LOCALES.map((locale) => [
+        locale,
+        s.translations[locale].trim(),
+      ]),
+    ) as ServiceCategoryTranslations,
   };
 }
 
@@ -60,6 +78,7 @@ export function ServiceCategoryForm({
   const t = useTranslations("services");
   const tb = useTranslations("backoffice");
   const router = useRouter();
+  const fieldPrefix = useId();
   const [pending, start] = useTransition();
   const [state, setState] = useState<FormState>(() => initialState(initial));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -136,50 +155,82 @@ export function ServiceCategoryForm({
         </p>
       ) : null}
 
-      <AdminCard title={t("admin.cat.sections.details")}>
-        <div className="space-y-4">
-          <Field
-            label={t("admin.cat.fields.name")}
-            required
-            error={err("name")}
-          >
-            <TextInput
-              value={state.name}
-              onChange={(e) => set("name", e.target.value)}
-            />
-          </Field>
-          <FieldGrid>
-            <Field
-              label={t("admin.cat.fields.slug")}
-              required
-              error={err("slug")}
-            >
-              <TextInput
-                value={state.slug}
-                onChange={(e) => set("slug", e.target.value)}
-              />
-            </Field>
-            <Field
-              label={t("admin.cat.fields.icon")}
-              required
-              hint={t("admin.cat.fields.iconHint")}
-              error={err("icon")}
-            >
-              <IconField value={state.icon} onChange={(icon) => set("icon", icon)} />
-            </Field>
-            <Field
-              label={t("admin.cat.fields.position")}
-              hint={t("admin.cat.fields.positionHint")}
-            >
-              <TextInput
-                type="number"
-                value={state.position}
-                onChange={(e) => set("position", e.target.value)}
-              />
-            </Field>
-          </FieldGrid>
-        </div>
-      </AdminCard>
+      <fieldset disabled={pending}>
+        <AdminCard title={t("admin.cat.sections.details")}>
+          <div className="space-y-4">
+            {SERVICE_EDITOR_LOCALES.map((locale) => {
+              const field = locale === "en" ? "name" : `translations.${locale}`;
+              const id = `${fieldPrefix}-name-${locale}`;
+              return (
+                <Field
+                  key={locale}
+                  label={t("admin.cat.fields.localizedName", {
+                    locale: locale.toUpperCase(),
+                  })}
+                  htmlFor={id}
+                  required={locale === "en"}
+                  error={err(field)}
+                  hint={
+                    locale === "en" ? undefined : t("admin.cat.translationHint")
+                  }
+                >
+                  <TextInput
+                    id={id}
+                    className="min-h-11"
+                    maxLength={80}
+                    required={locale === "en"}
+                    disabled={pending}
+                    value={
+                      locale === "en" ? state.name : state.translations[locale]
+                    }
+                    onChange={(event) =>
+                      locale === "en"
+                        ? set("name", event.target.value)
+                        : set("translations", {
+                            ...state.translations,
+                            [locale]: event.target.value,
+                          })
+                    }
+                  />
+                </Field>
+              );
+            })}
+            <FieldGrid>
+              <Field
+                label={t("admin.cat.fields.slug")}
+                required
+                error={err("slug")}
+              >
+                <TextInput
+                  value={state.slug}
+                  onChange={(e) => set("slug", e.target.value)}
+                />
+              </Field>
+              <Field
+                label={t("admin.cat.fields.icon")}
+                required
+                hint={t("admin.cat.fields.iconHint")}
+                error={err("icon")}
+              >
+                <IconField
+                  value={state.icon}
+                  onChange={(icon) => set("icon", icon)}
+                />
+              </Field>
+              <Field
+                label={t("admin.cat.fields.position")}
+                hint={t("admin.cat.fields.positionHint")}
+              >
+                <TextInput
+                  type="number"
+                  value={state.position}
+                  onChange={(e) => set("position", e.target.value)}
+                />
+              </Field>
+            </FieldGrid>
+          </div>
+        </AdminCard>
+      </fieldset>
 
       <FormActions>
         {initial ? (

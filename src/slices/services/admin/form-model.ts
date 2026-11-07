@@ -7,6 +7,7 @@ import {
 } from "../presentation";
 import { type DetailDraft, detailToDraft, draftToDetail } from "./detail-draft";
 import type { ServiceEditData } from "./queries";
+import type { ServiceContent } from "../editorial-types";
 
 /** Exact decimal parsing: no floating-point multiplication, truncation or exponent notation. */
 export function eurosToCents(raw: string): number | null {
@@ -144,7 +145,10 @@ export interface FormState {
 }
 
 export function initialState(
-  data: ServiceEditData | null,
+  data:
+    | ServiceEditData
+    | (ServiceContent & { slug?: string; status?: Status })
+    | null,
   defaultCategoryId: string,
 ): FormState {
   return {

@@ -12,6 +12,7 @@ import type { ServiceDetailContent } from "../detail";
  */
 
 export interface DraftItinerary {
+  id?: string;
   time: string;
   title: string;
   text: string;
@@ -19,6 +20,7 @@ export interface DraftItinerary {
   media_id: string;
 }
 export interface DraftFact {
+  id?: string;
   /** Iconoir name (strict `iconKey`). */
   icon: string;
   title: string;
@@ -83,11 +85,19 @@ export interface DetailDraft {
 export function detailToDraft(d: ServiceDetailContent): DetailDraft {
   return {
     badges: [...d.badges],
-    facts: d.facts.map((f) => ({ icon: f.icon, title: f.title, note: f.note ?? "" })),
+    facts: d.facts.map((f) => ({
+      ...(f.id ? { id: f.id } : {}),
+      icon: f.icon,
+      title: f.title,
+      note: f.note ?? "",
+    })),
     about_title: d.about_title ?? "",
     included_title: d.included_title ?? "",
     price_note: d.price_note ?? "",
-    booking_rows: d.booking_rows.map((r) => ({ label: r.label, value: r.value })),
+    booking_rows: d.booking_rows.map((r) => ({
+      label: r.label,
+      value: r.value,
+    })),
     good_to_know: {
       included: [...d.good_to_know.included],
       cancellation: [...d.good_to_know.cancellation],
@@ -95,6 +105,7 @@ export function detailToDraft(d: ServiceDetailContent): DetailDraft {
     },
     highlights: [...d.highlights],
     itinerary: d.itinerary.map((s) => ({
+      ...(s.id ? { id: s.id } : {}),
       time: s.time,
       title: s.title,
       text: s.text,
@@ -107,7 +118,10 @@ export function detailToDraft(d: ServiceDetailContent): DetailDraft {
     pricing: d.pricing
       ? {
           columns: [...d.pricing.columns],
-          rows: d.pricing.rows.map((r) => ({ label: r.label, cells: [...r.cells] })),
+          rows: d.pricing.rows.map((r) => ({
+            label: r.label,
+            cells: [...r.cells],
+          })),
           footnote: d.pricing.footnote ?? "",
         }
       : null,
@@ -129,11 +143,19 @@ function opt<K extends string>(key: K, s: string): Partial<Record<K, string>> {
 export function draftToDetail(d: DetailDraft) {
   return {
     badges: d.badges.map(tr),
-    facts: d.facts.map((f) => ({ icon: f.icon, title: tr(f.title), ...opt("note", f.note) })),
+    facts: d.facts.map((f) => ({
+      ...(f.id ? { id: f.id } : {}),
+      icon: f.icon,
+      title: tr(f.title),
+      ...opt("note", f.note),
+    })),
     ...opt("about_title", d.about_title),
     ...opt("included_title", d.included_title),
     ...opt("price_note", d.price_note),
-    booking_rows: d.booking_rows.map((r) => ({ label: tr(r.label), value: tr(r.value) })),
+    booking_rows: d.booking_rows.map((r) => ({
+      label: tr(r.label),
+      value: tr(r.value),
+    })),
     good_to_know: {
       included: d.good_to_know.included.map(tr),
       cancellation: d.good_to_know.cancellation.map(tr),
@@ -141,6 +163,7 @@ export function draftToDetail(d: DetailDraft) {
     },
     highlights: d.highlights.map(tr),
     itinerary: d.itinerary.map((s) => ({
+      ...(s.id ? { id: s.id } : {}),
       time: tr(s.time),
       title: tr(s.title),
       text: tr(s.text),
@@ -149,17 +172,28 @@ export function draftToDetail(d: DetailDraft) {
     option_groups: d.option_groups.map((g) => ({
       title: tr(g.title),
       items: g.items.map((it) =>
-        tr(it.desc) ? { name: tr(it.name), desc: tr(it.desc) } : { name: tr(it.name) },
+        tr(it.desc)
+          ? { name: tr(it.name), desc: tr(it.desc) }
+          : { name: tr(it.name) },
       ),
     })),
     pricing: d.pricing
       ? {
           columns: d.pricing.columns.map(tr),
-          rows: d.pricing.rows.map((r) => ({ label: tr(r.label), cells: r.cells.map(tr) })),
-          ...(tr(d.pricing.footnote) ? { footnote: tr(d.pricing.footnote) } : {}),
+          rows: d.pricing.rows.map((r) => ({
+            label: tr(r.label),
+            cells: r.cells.map(tr),
+          })),
+          ...(tr(d.pricing.footnote)
+            ? { footnote: tr(d.pricing.footnote) }
+            : {}),
         }
       : null,
-    extras: d.extras.map((e) => ({ label: tr(e.label), price: tr(e.price), desc: tr(e.desc) })),
+    extras: d.extras.map((e) => ({
+      label: tr(e.label),
+      price: tr(e.price),
+      desc: tr(e.desc),
+    })),
     partners: d.partners.map((p) => ({
       name: tr(p.name),
       desc: tr(p.desc),
@@ -196,7 +230,10 @@ export function moveAt<T>(arr: readonly T[], i: number, dir: -1 | 1): T[] {
  */
 export function moveNotesToPractical(d: DetailDraft): DetailDraft {
   const notes = d.notes.filter((n) => tr(n) !== "");
-  const room = Math.max(0, DETAIL_LIMITS.gtk_practical - d.good_to_know.practical.length);
+  const room = Math.max(
+    0,
+    DETAIL_LIMITS.gtk_practical - d.good_to_know.practical.length,
+  );
   return {
     ...d,
     good_to_know: {
@@ -228,7 +265,11 @@ export function removePricingColumn(p: DraftPricing, i: number): DraftPricing {
   };
 }
 
-export function movePricingColumn(p: DraftPricing, i: number, dir: -1 | 1): DraftPricing {
+export function movePricingColumn(
+  p: DraftPricing,
+  i: number,
+  dir: -1 | 1,
+): DraftPricing {
   return {
     ...p,
     columns: moveAt(p.columns, i, dir),
@@ -237,7 +278,10 @@ export function movePricingColumn(p: DraftPricing, i: number, dir: -1 | 1): Draf
 }
 
 export function addPricingRow(p: DraftPricing): DraftPricing {
-  return { ...p, rows: [...p.rows, { label: "", cells: p.columns.map(() => "") }] };
+  return {
+    ...p,
+    rows: [...p.rows, { label: "", cells: p.columns.map(() => "") }],
+  };
 }
 
 /** The schema's per-section limits, mirrored so the editor can disable "add" at the cap. */

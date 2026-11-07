@@ -74,6 +74,7 @@ export function DetailEditor({
   errors,
   previews,
   mode = "sections",
+  editableIcons = true,
   presentation,
   onSectionChoice,
   onDiscard,
@@ -81,6 +82,7 @@ export function DetailEditor({
   onCopyChange,
 }: {
   mode?: "general" | "sections" | "booking";
+  editableIcons?: boolean;
   presentation: ServicePresentation | null;
   onSectionChoice: (
     key: ServiceSectionKey,
@@ -138,11 +140,12 @@ export function DetailEditor({
             <ItemList
               items={value.facts}
               onChange={(next) => set("facts", next)}
-              max={L.facts}
+              max={editableIcons ? L.facts : 0}
               heading={(i) => d("items.fact", { n: i + 1 })}
               addLabel={d("add.fact")}
               emptyLabel={d("empty")}
               blank={(): DraftFact => ({
+                id: crypto.randomUUID(),
                 icon: DEFAULT_FACT_ICON,
                 title: "",
                 note: "",
@@ -157,10 +160,12 @@ export function DetailEditor({
                       error={err("facts", i, "icon")}
                       fieldPath={["detail", "facts", i, "icon"].join(".")}
                     >
-                      <IconField
-                        value={fact.icon}
-                        onChange={(icon) => update({ ...fact, icon })}
-                      />
+                      <fieldset disabled={!editableIcons}>
+                        <IconField
+                          value={fact.icon}
+                          onChange={(icon) => update({ ...fact, icon })}
+                        />
+                      </fieldset>
                     </Field>
                     <Field
                       label={d("fields.title")}
@@ -364,6 +369,7 @@ export function DetailEditor({
             addLabel={d("add.step")}
             emptyLabel={d("empty")}
             blank={(): DraftItinerary => ({
+              id: crypto.randomUUID(),
               time: "",
               title: "",
               text: "",
@@ -1171,7 +1177,17 @@ function ItemList<T>({
         <p className="text-sm text-ink-soft">{emptyLabel}</p>
       ) : null}
       {items.map((item, i) => (
-        <ServiceItemScope key={i} name={heading(i)}>
+        <ServiceItemScope
+          key={
+            typeof item === "object" &&
+            item !== null &&
+            "id" in item &&
+            typeof item.id === "string"
+              ? item.id
+              : i
+          }
+          name={heading(i)}
+        >
           <div className="space-y-3 rounded-md border border-line p-3">
             <div className="flex items-center justify-between gap-3">
               <span className="text-xs text-ink-soft">{heading(i)}</span>

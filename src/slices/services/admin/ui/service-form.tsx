@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { ZodError } from "zod";
 import { isIconName } from "@core/ui/icons/names";
 import { useRouter } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
+import type { Locale } from "@core/db/columns";
 import {
   AdminButton,
   AdminCard,
@@ -20,21 +22,37 @@ import {
   TextInput,
   useMediaQueue,
 } from "@slices/backoffice/contract";
-
-import { deleteService, saveService } from "../actions";
+import { deleteService } from "../actions";
 import {
-  initialState,
-  buildPayload,
+  saveServiceLocaleDraft,
+  publishServiceLocaleDraft,
+  setServiceVisibility,
+} from "../locale-actions";
+import {
   discardSection,
   guardMessageKey,
-  STATUSES,
   BOOKING_TYPES,
   type FormState,
-  type Status,
   type BookingType,
   setSectionChoice,
 } from "../form-model";
-import type { ServiceEditData } from "../queries";
+import {
+  SERVICE_EDITOR_LOCALES,
+  type ServiceEditorialModel,
+  type ServiceCategoryOption,
+  type ServiceEditorialResult,
+} from "../../editorial-types";
+import {
+  createServiceWorkspace,
+  changeServiceForm,
+  applyServiceModel,
+  applyServiceVisibilityModel,
+  serviceAnyFormDirty,
+  serviceLocaleFormDirty,
+  serviceFormEnvelope,
+  serviceLocalTextDirty,
+  servicePublicationNeedsSave,
+} from "../locale-form-state";
 import { DetailEditor } from "./detail-editor";
 import { ServiceField as Field } from "./service-section-controls";
 import { ServiceCopyEditor } from "./service-copy-editor";
@@ -44,64 +62,149 @@ import {
   type ServiceSectionKey,
   type ServicePriceDisplay,
 } from "../../presentation";
-import { serviceSaveInput, servicePresentationErrors } from "../validation";
 
-/**
- * Service create/edit form (S12) — one client island for `/admin/services/new` and
- * `/admin/services/[id]`. Posts through `saveService`; the category selector is fed
- * from this slice's admin queries. Source [T] text is authored in English; the
- * booking CTA fields are gated by `booking_type`.
- */
-
+/** Existing conditional Service form, with independent localized work and common assets. */
 export function ServiceForm({
   initial,
-  previews,
+  newServiceId,
+  previews: initialPreviews = {},
   categories,
 }: {
-  initial: ServiceEditData | null;
-  previews: Record<string, AdminMediaPreview>;
-  categories: { id: string; name: string }[];
+  initial: ServiceEditorialModel | null;
+  newServiceId?: string;
+  previews?: Record<string, AdminMediaPreview>;
+  categories: ServiceCategoryOption[];
 }) {
   const t = useTranslations("services");
   const tb = useTranslations("backoffice");
   const tp = useTranslations("services.admin.presentation");
-  const locale = useLocale();
+  const te = useTranslations("services.editorial");
+  const tv = useTranslations("propertyEditor");
   const router = useRouter();
+  const fieldPrefix = useId();
+  const [serviceId] = useState(initial?.id ?? newServiceId ?? "");
+  const [workspace, setWorkspace] = useState(() =>
+    createServiceWorkspace(initial, categories[0]?.id ?? ""),
+  );
+  const [locale, setLocale] = useState<Locale>("en");
   const [pending, start] = useTransition();
-  const queue = useMediaQueue();
-  // A pick still being reserved isn't in the form's value yet — Save waits for it.
-  const preparing = queue.isPreparing;
-  const [state, setState] = useState<FormState>(() =>
-    initialState(initial, categories[0]?.id ?? ""),
-  );
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [saved, setSaved] = useState(() =>
-    initialState(initial, categories[0]?.id ?? ""),
-  );
   const [uploading, setUploading] = useState(false);
+  const [operation, setOperation] = useState<"save" | "publish" | null>(null);
+  const queue = useMediaQueue();
+  const preparing = queue.isPreparing;
+  const busy = pending || uploading || preparing;
+  const persisted = Boolean(workspace.model);
+  const own = workspace.locales[locale];
+  const state = own.working;
+  const saved = own.saved;
+  const errors = own.errors;
+  const banner = own.notice;
+  const model = workspace.model?.locales[locale];
+  const previews = { ...initialPreviews, ...workspace.model?.previews };
+  const dirty = serviceLocaleFormDirty(workspace, locale);
+  const publicationNeedsSave = servicePublicationNeedsSave(workspace, locale);
+  const anyDirty =
+    serviceAnyFormDirty(workspace) || queue.hasPending || preparing;
   const root = useRef<HTMLDivElement>(null);
   const bypass = useRef(false);
-  const dirty =
-    JSON.stringify(state) !== JSON.stringify(saved) ||
-    queue.hasPending ||
-    preparing;
-  const corrupt =
-    initial?.integrity.detail === "invalid" ||
-    initial?.integrity.presentation === "invalid";
+  const lock = useRef(false);
+  const currentUrl = useRef("");
+  const editableIcons = locale === "en";
+  const setErrors = (next: Record<string, string>) =>
+    setWorkspace((previous) => ({
+      ...previous,
+      locales: {
+        ...previous.locales,
+        [locale]: { ...previous.locales[locale], errors: next },
+      },
+    }));
+  const setBanner = (next: string | null) =>
+    setWorkspace((previous) => ({
+      ...previous,
+      locales: {
+        ...previous.locales,
+        [locale]: { ...previous.locales[locale], notice: next ?? "" },
+      },
+    }));
+  const setState = (next: FormState) =>
+    setWorkspace((previous) => changeServiceForm(previous, locale, next));
+  const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
+    setWorkspace((previous) =>
+      changeServiceForm(previous, locale, {
+        ...previous.locales[locale].working,
+        [key]: value,
+      }),
+    );
+  const err = (key: string) => errors[key];
+  const canLeave = () => !anyDirty || window.confirm(tp("unsaved"));
+  const goBack = () => {
+    if (!busy && canLeave()) {
+      bypass.current = true;
+      router.push("/admin/services");
+    }
+  };
+
+  useEffect(() => {
+    currentUrl.current = window.location.href;
+  }, []);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
-      if (dirty && !bypass.current) {
+      if ((anyDirty || busy) && !bypass.current) {
         event.preventDefault();
         event.returnValue = "";
       }
     };
+    const intercept = (event: MouseEvent) => {
+      if (
+        bypass.current ||
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      )
+        return;
+      const link =
+        event.target instanceof Element
+          ? event.target.closest<HTMLAnchorElement>("a[href]")
+          : null;
+      if (!link || link.target === "_blank" || link.hasAttribute("download"))
+        return;
+      const href = new URL(link.href, window.location.href);
+      if (
+        href.href === window.location.href ||
+        (href.pathname === window.location.pathname &&
+          href.search === window.location.search &&
+          href.hash)
+      )
+        return;
+      if (!anyDirty && !busy) return;
+      if (busy || !window.confirm(tp("unsaved"))) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      } else bypass.current = true;
+    };
+    const back = () => {
+      if (bypass.current || (!anyDirty && !busy)) return;
+      const target = window.location.href;
+      if (target === currentUrl.current) return;
+      window.history.pushState(window.history.state, "", currentUrl.current);
+      if (!busy && window.confirm(tp("unsaved"))) {
+        bypass.current = true;
+        window.location.assign(target);
+      }
+    };
     window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
-  const canLeave = () => !dirty || window.confirm(tp("unsaved"));
-  const goBack = () => {
-    if (canLeave()) router.push("/admin/services");
-  };
+    document.addEventListener("click", intercept, true);
+    window.addEventListener("popstate", back);
+    return () => {
+      window.removeEventListener("beforeunload", warn);
+      document.removeEventListener("click", intercept, true);
+      window.removeEventListener("popstate", back);
+    };
+  }, [anyDirty, busy, tp]);
+
   function focusError(path: string, message: string) {
     requestAnimationFrame(() => {
       const section = path.startsWith("detail.")
@@ -145,130 +248,204 @@ export function ServiceForm({
     });
   }
   function reportErrors(next: Record<string, string>) {
-    const localized = Object.fromEntries(
-      Object.entries(next).map(([path, message]) => [
-        path,
-        guardMessageKey(path, message)
-          ? tp(guardMessageKey(path, message)!)
-          : message,
-      ]),
+    setErrors(
+      Object.fromEntries(
+        Object.entries(next).map(([path, message]) => [
+          path,
+          guardMessageKey(path, message)
+            ? tp(guardMessageKey(path, message)!)
+            : message,
+        ]),
+      ),
     );
-    setErrors(localized);
     setBanner(tp("saveError"));
   }
-  const [banner, setBanner] = useState<string | null>(null);
-
-  const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
-    setState((prev) => ({ ...prev, [key]: value }));
-  const err = (key: string) => errors[key];
-
   useEffect(() => {
     const first = Object.entries(errors)[0];
-    if (first) focusError(...first);
-  }, [errors]);
-
-  function onSubmit() {
-    if (preparing || pending || uploading || corrupt) return;
-    setBanner(null);
-    let payload: ReturnType<typeof buildPayload>;
-    try {
-      payload = buildPayload(state, initial?.id);
-    } catch {
-      reportErrors({ price_from: tp("invalidEuros") });
-      return;
-    }
-    const parsed = serviceSaveInput.safeParse(payload);
-    if (!parsed.success) {
-      reportErrors(
-        Object.fromEntries(
-          parsed.error.issues.map((issue) => [
-            issue.path.join("."),
-            issue.message,
-          ]),
+    if (first && !busy) focusError(...first);
+  }, [errors, busy]);
+  function receive(result: ServiceEditorialResult, action: "save" | "publish") {
+    if (result.ok) {
+      setWorkspace((previous) =>
+        applyServiceModel(
+          previous,
+          locale,
+          result.model,
+          action === "publish" ? te("publishedNotice") : tb("actions.saved"),
         ),
       );
+      if (!persisted) {
+        const path = `/admin/services/${result.model.id}`;
+        window.history.replaceState(window.history.state, "", path);
+        currentUrl.current = window.location.href;
+      }
+    } else if (result.error === "validation") reportErrors(result.fieldErrors);
+    else if (result.error === "slug_conflict")
+      reportErrors({ slug: t("admin.errors.slugConflict") });
+    else if (result.error === "conflict")
+      setWorkspace((previous) => ({
+        ...previous,
+        locales: {
+          ...previous.locales,
+          [locale]: {
+            ...previous.locales[locale],
+            conflict: true,
+            notice: te("conflict"),
+          },
+        },
+      }));
+    else
+      setBanner(
+        result.error === "legacy_invalid"
+          ? tp("integrity")
+          : result.error === "no_draft"
+            ? te("noDraft")
+            : tp("saveError"),
+      );
+  }
+  function onSubmit() {
+    if (busy || lock.current || own.conflict) return;
+    setBanner(null);
+    let payload: ReturnType<typeof serviceFormEnvelope>;
+    try {
+      payload = serviceFormEnvelope(workspace, locale);
+    } catch (error) {
+      if (error instanceof ZodError)
+        reportErrors(
+          Object.fromEntries(
+            error.issues.map((issue) => [
+              `detail.${issue.path.join(".")}`,
+              issue.message,
+            ]),
+          ),
+        );
+      else reportErrors({ price_from: tp("invalidEuros") });
       return;
     }
-    const preflight = servicePresentationErrors(
-      parsed.data,
-      state.presentation,
-    );
-    if (Object.keys(preflight).length) {
-      reportErrors(preflight);
-      return;
-    }
+    lock.current = true;
     setErrors({});
     setUploading(true);
-    void (async () => {
+    setOperation("save");
+    start(async () => {
       try {
         if (!(await queue.flush())) {
           setBanner(tp("saveError"));
-          setUploading(false);
           return;
         }
-        start(async () => {
-          try {
-            const result = await saveService(payload);
-            if (result.ok) {
-              setSaved(structuredClone(state));
-              setBanner(tb("actions.saved"));
-              if (!initial) {
-                bypass.current = true;
-                router.push(`/admin/services/${result.id}`);
-              } else router.refresh();
-            } else if (result.error === "validation")
-              reportErrors(result.fieldErrors);
-            else if (result.error === "slug_conflict")
-              reportErrors({ slug: t("admin.errors.slugConflict") });
-            else
-              setBanner(
-                result.error === "invalid_stored_content"
-                  ? tp("integrity")
-                  : result.error === "unsupported_actor_id"
-                    ? tp("actor")
-                    : tp("saveError"),
-              );
-          } catch {
-            setBanner(tp("saveError"));
-          } finally {
-            setUploading(false);
-          }
-        });
+        receive(
+          await saveServiceLocaleDraft({
+            serviceId,
+            locale,
+            expectedRevision: model?.revision ?? 0,
+            templateRevision: model
+              ? model.templateRevision
+              : locale === "en"
+                ? null
+                : 0,
+            expectedSharedRevision: workspace.model?.shared.revision ?? 0,
+            payload,
+            ...(!persisted ? { slug: workspace.slug } : {}),
+          }),
+          "save",
+        );
       } catch {
         setBanner(tp("saveError"));
+      } finally {
+        lock.current = false;
         setUploading(false);
+        setOperation(null);
       }
-    })();
+    });
   }
 
-  function onDelete() {
-    if (!initial) return;
-    if (!window.confirm(tb("actions.confirmDelete"))) return;
+  function onPublish() {
+    if (
+      busy ||
+      lock.current ||
+      dirty ||
+      publicationNeedsSave ||
+      !model?.draft ||
+      own.conflict
+    )
+      return;
+    lock.current = true;
+    setOperation("publish");
     start(async () => {
-      const result = await deleteService(initial.id);
+      try {
+        receive(
+          await publishServiceLocaleDraft({
+            serviceId,
+            locale,
+            expectedRevision: model.revision,
+          }),
+          "publish",
+        );
+      } catch {
+        setBanner(tp("saveError"));
+      } finally {
+        lock.current = false;
+        setOperation(null);
+      }
+    });
+  }
+  function onDelete() {
+    if (!persisted || busy || !window.confirm(tb("actions.confirmDelete")))
+      return;
+    start(async () => {
+      const result = await deleteService(serviceId);
       if (result.ok) {
         bypass.current = true;
         router.push("/admin/services");
       } else setBanner(tb("actions.saveError"));
     });
   }
-
+  function onVisibility() {
+    if (!persisted || busy || lock.current) return;
+    const archived = workspace.model?.status !== "archived";
+    if (archived && !window.confirm(tv("archiveConfirm"))) return;
+    lock.current = true;
+    start(async () => {
+      try {
+        const result = await setServiceVisibility({ serviceId, archived });
+        if (result.ok)
+          setWorkspace((previous) =>
+            applyServiceVisibilityModel(previous, result.model),
+          );
+        else if (result.error === "validation")
+          reportErrors(result.fieldErrors);
+        else setBanner(tp("saveError"));
+      } catch {
+        setBanner(tp("saveError"));
+      } finally {
+        lock.current = false;
+      }
+    });
+  }
+  function selectLocale(next: Locale) {
+    if (!busy && (persisted || next === "en")) setLocale(next);
+  }
   const detailProps = {
     value: state.detail,
     onChange: (detail: FormState["detail"]) => set("detail", detail),
     errors,
     previews,
+    editableIcons,
     presentation: state.presentation,
     onSectionChoice: (key: ServiceSectionKey, choice: boolean | undefined) =>
       set("presentation", setSectionChoice(state.presentation, key, choice)),
     onDiscard: (key: ServiceSectionKey) => {
       const next = discardSection(state, saved, key);
-      const retained = new Set([
-        next.cover_media_id,
-        next.og_image_media_id,
-        ...next.gallery,
-        ...next.detail.itinerary.map((step) => step.media_id),
-      ]);
+      const retained = new Set(
+        SERVICE_EDITOR_LOCALES.flatMap((key) => {
+          const form = key === locale ? next : workspace.locales[key].working;
+          return [
+            form.cover_media_id,
+            form.og_image_media_id,
+            ...form.gallery,
+            ...form.detail.itinerary.map((step) => step.media_id),
+          ];
+        }),
+      );
       for (const step of state.detail.itinerary)
         if (step.media_id && !retained.has(step.media_id))
           queue.dequeue(step.media_id);
@@ -290,15 +467,12 @@ export function ServiceForm({
     <div ref={root} className="space-y-6">
       <AdminPageHeader
         title={
-          initial ? state.name || t("admin.editTitle") : t("admin.newTitle")
+          persisted ? state.name || t("admin.editTitle") : t("admin.newTitle")
         }
         description={t("admin.formSubtitle")}
         actions={
           <Link
             href="/admin/services"
-            onClick={(event) => {
-              if (!canLeave()) event.preventDefault();
-            }}
             className="text-sm text-ink-soft hover:text-ink"
           >
             ← {t("admin.backToList")}
@@ -315,21 +489,124 @@ export function ServiceForm({
         </p>
       ) : null}
 
-      {corrupt ? (
-        <p
-          role="alert"
-          className="rounded-md border border-line px-4 py-3 text-sm text-red-700"
-        >
-          {tp("integrity")}
-        </p>
-      ) : null}
-      <p className="text-sm text-ink-soft">{tp("source")}</p>
-      {initial?.status === "published" ? (
+      <div className="space-y-3 border-b border-line bg-bg py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div
+            role="tablist"
+            aria-label={tb("pageEditor.contentLanguage")}
+            className="flex gap-1 rounded-md border border-line bg-surface p-1"
+          >
+            {SERVICE_EDITOR_LOCALES.map((key) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                id={`${fieldPrefix}-tab-${key}`}
+                aria-controls={`${fieldPrefix}-panel-${key}`}
+                aria-selected={locale === key}
+                tabIndex={locale === key ? 0 : -1}
+                disabled={busy || (!persisted && key !== "en")}
+                onClick={() => selectLocale(key)}
+                onKeyDown={(event) => {
+                  if (
+                    busy ||
+                    !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
+                      event.key,
+                    )
+                  )
+                    return;
+                  event.preventDefault();
+                  const available = persisted
+                    ? SERVICE_EDITOR_LOCALES
+                    : (["en"] as const);
+                  const index = available.findIndex((item) => item === key);
+                  const next =
+                    event.key === "Home"
+                      ? available[0]
+                      : event.key === "End"
+                        ? available[available.length - 1]
+                        : available[
+                            (index +
+                              (event.key === "ArrowRight" ? 1 : -1) +
+                              available.length) %
+                              available.length
+                          ];
+                  if (next) {
+                    selectLocale(next);
+                    document
+                      .getElementById(`${fieldPrefix}-tab-${next}`)
+                      ?.focus();
+                  }
+                }}
+                className={`min-h-9 rounded px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === key ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}
+              >
+                {key.toUpperCase()}
+                {key === "en" ? (
+                  <span className="ml-1 text-[10px] font-normal">
+                    {tb("pageEditor.source")}
+                  </span>
+                ) : null}
+              </button>
+            ))}
+          </div>
+          <p
+            role="status"
+            className={`text-xs ${dirty ? "text-accent-deep" : "text-ink-soft"}`}
+          >
+            {te(
+              dirty || publicationNeedsSave
+                ? "unsaved"
+                : model?.draft
+                  ? "draft"
+                  : model?.published
+                    ? "published"
+                    : "unpublished",
+            )}
+          </p>
+        </div>
+        <p className="text-sm text-ink-soft">{te("sharedHint")}</p>
+        {!persisted ? (
+          <p className="text-sm text-ink-soft">{te("firstSave")}</p>
+        ) : null}
+        {locale !== "en" ? (
+          <p className="text-sm text-ink-soft">
+            <strong>
+              {te(
+                own.mode === "custom" || serviceLocalTextDirty(own)
+                  ? "customized"
+                  : "usesEnglish",
+              )}
+            </strong>{" "}
+            ·{" "}
+            {te(
+              own.mode === "custom" || serviceLocalTextDirty(own)
+                ? "customHint"
+                : "inheritHint",
+            )}
+          </p>
+        ) : null}
+        {own.conflict ? (
+          <div className="space-y-2">
+            <p role="alert" className="text-sm text-ink">
+              {te("conflict")}
+            </p>
+            <AdminButton
+              onClick={() => {
+                if (canLeave()) {
+                  bypass.current = true;
+                  window.location.reload();
+                }
+              }}
+              disabled={busy}
+            >
+              {te("reload")}
+            </AdminButton>
+          </div>
+        ) : null}
+      </div>
+      {workspace.model?.status === "published" && model?.published ? (
         <Link
-          href={`/${locale}/services/${initial.slug}`}
-          onClick={(event) => {
-            if (!canLeave()) event.preventDefault();
-          }}
+          href={`/${locale}/services/${workspace.model?.slugByLocale[locale] ?? workspace.model?.slugByLocale.en ?? ""}`}
           className="inline-block text-sm underline underline-offset-4"
         >
           {tp("published")}
@@ -357,23 +634,18 @@ export function ServiceForm({
         </div>
       ) : null}
       <fieldset
-        disabled={pending || uploading || corrupt}
+        role="tabpanel"
+        id={`${fieldPrefix}-panel-${locale}`}
+        aria-labelledby={`${fieldPrefix}-tab-${locale}`}
+        disabled={pending || uploading || own.conflict}
         className="space-y-6"
       >
         <AdminCard title={t("admin.sections.status")}>
           <FieldGrid>
             <Field label={t("admin.fields.status")}>
-              <Select
-                data-service-path="status"
-                value={state.status}
-                onChange={(e) => set("status", e.target.value as Status)}
-              >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {t(`admin.status.${s}`)}
-                  </option>
-                ))}
-              </Select>
+              <p className="min-h-11 py-3 text-sm text-ink">
+                {t(`admin.status.${workspace.model?.status ?? "draft"}`)}
+              </p>
             </Field>
             <Field
               label={t("admin.fields.position")}
@@ -398,13 +670,14 @@ export function ServiceForm({
             >
               <Select
                 data-service-path="category_id"
+                disabled={!editableIcons}
                 value={state.category_id}
                 onChange={(e) => set("category_id", e.target.value)}
               >
                 <option value="">{t("admin.fields.choose")}</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}
+                    {c.names?.[locale] ?? c.name}
                   </option>
                 ))}
               </Select>
@@ -424,6 +697,7 @@ export function ServiceForm({
             >
               <TextInput
                 data-service-path="slug"
+                disabled={persisted || locale !== "en"}
                 value={state.slug}
                 onChange={(e) => set("slug", e.target.value)}
               />
@@ -486,7 +760,9 @@ export function ServiceForm({
         <AdminCard title={t("admin.sections.media")}>
           <div className="space-y-5">
             <p className="text-sm text-ink-soft">{tp("mediaAltHint")}</p>
-            <p className="text-sm text-ink-soft">{t("admin.fields.mosaicHint")}</p>
+            <p className="text-sm text-ink-soft">
+              {t("admin.fields.mosaicHint")}
+            </p>
             <ol className="grid gap-2 rounded-md border border-line bg-bg p-4 text-sm text-ink-soft sm:grid-cols-2">
               <li>{t("admin.fields.mosaicPosition1")}</li>
               <li>{t("admin.fields.mosaicPosition2")}</li>
@@ -500,6 +776,7 @@ export function ServiceForm({
               fieldPath="cover_media_id"
             >
               <MediaField
+                key={`cover-${workspace.model?.shared.revision ?? 0}`}
                 value={state.cover_media_id || null}
                 preview={previews[state.cover_media_id] ?? null}
                 onChange={(id) => set("cover_media_id", id ?? "")}
@@ -516,6 +793,7 @@ export function ServiceForm({
               }
             >
               <MediaGalleryField
+                key={`gallery-${workspace.model?.shared.revision ?? 0}`}
                 value={state.gallery}
                 previews={previews}
                 onChange={(ids) => set("gallery", ids)}
@@ -666,6 +944,7 @@ export function ServiceForm({
               fieldPath="og_image_media_id"
             >
               <MediaField
+                key={`og-${workspace.model?.shared.revision ?? 0}`}
                 value={state.og_image_media_id || null}
                 preview={previews[state.og_image_media_id] ?? null}
                 onChange={(id) => set("og_image_media_id", id ?? "")}
@@ -696,66 +975,68 @@ export function ServiceForm({
         </AdminCard>
 
         <AdminCard title={tp("icons")}>
-          <details>
-            <summary className="cursor-pointer text-sm font-semibold">
-              {tp("icons")}
-            </summary>
-            <div className="mt-4 space-y-4">
-              {SERVICE_ICON_SLOTS.map((slot) => (
-                <div key={slot} className="space-y-2">
-                  <Field
-                    label={iconLabels[slot]}
-                    error={err(`presentation.icons.${slot}`)}
-                  >
-                    <IconField
-                      value={state.presentation?.icons?.[slot] ?? ""}
-                      emptyLabel={tp("globalIcon")}
-                      allowEmpty
-                      onChange={(value) => {
-                        const icons = { ...state.presentation?.icons };
-                        if (isIconName(value)) icons[slot] = value;
-                        else delete icons[slot];
-                        const next = {
-                          ...state.presentation,
-                          version: 1 as const,
-                          icons,
-                        };
-                        if (!Object.keys(icons).length)
-                          delete (next as FormState["presentation"])!.icons;
-                        set(
-                          "presentation",
-                          Object.keys(next).length === 1 ? null : next,
-                        );
-                      }}
-                    />
-                  </Field>
-                  {state.presentation?.icons?.[slot] ? (
-                    <AdminButton
-                      onClick={() => {
-                        const icons = { ...state.presentation?.icons };
-                        delete icons[slot];
-                        const next = {
-                          ...state.presentation,
-                          version: 1 as const,
-                          icons,
-                        };
-                        if (!Object.keys(icons).length)
-                          delete (
-                            next as NonNullable<FormState["presentation"]>
-                          ).icons;
-                        set(
-                          "presentation",
-                          Object.keys(next).length === 1 ? null : next,
-                        );
-                      }}
+          <fieldset disabled={!editableIcons}>
+            <details>
+              <summary className="cursor-pointer text-sm font-semibold">
+                {tp("icons")}
+              </summary>
+              <div className="mt-4 space-y-4">
+                {SERVICE_ICON_SLOTS.map((slot) => (
+                  <div key={slot} className="space-y-2">
+                    <Field
+                      label={iconLabels[slot]}
+                      error={err(`presentation.icons.${slot}`)}
                     >
-                      {tp("globalIcon")}
-                    </AdminButton>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </details>
+                      <IconField
+                        value={state.presentation?.icons?.[slot] ?? ""}
+                        emptyLabel={tp("globalIcon")}
+                        allowEmpty
+                        onChange={(value) => {
+                          const icons = { ...state.presentation?.icons };
+                          if (isIconName(value)) icons[slot] = value;
+                          else delete icons[slot];
+                          const next = {
+                            ...state.presentation,
+                            version: 1 as const,
+                            icons,
+                          };
+                          if (!Object.keys(icons).length)
+                            delete (next as FormState["presentation"])!.icons;
+                          set(
+                            "presentation",
+                            Object.keys(next).length === 1 ? null : next,
+                          );
+                        }}
+                      />
+                    </Field>
+                    {state.presentation?.icons?.[slot] ? (
+                      <AdminButton
+                        onClick={() => {
+                          const icons = { ...state.presentation?.icons };
+                          delete icons[slot];
+                          const next = {
+                            ...state.presentation,
+                            version: 1 as const,
+                            icons,
+                          };
+                          if (!Object.keys(icons).length)
+                            delete (
+                              next as NonNullable<FormState["presentation"]>
+                            ).icons;
+                          set(
+                            "presentation",
+                            Object.keys(next).length === 1 ? null : next,
+                          );
+                        }}
+                      >
+                        {tp("globalIcon")}
+                      </AdminButton>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </details>
+          </fieldset>
         </AdminCard>
         <ServiceCopyEditor
           data-service-path="copy"
@@ -765,7 +1046,12 @@ export function ServiceForm({
         />
       </fieldset>
       <FormActions>
-        {initial ? (
+        {persisted ? (
+          <AdminButton onClick={onVisibility} disabled={busy}>
+            {tv(workspace.model?.status === "archived" ? "restore" : "archive")}
+          </AdminButton>
+        ) : null}
+        {persisted ? (
           <AdminButton
             variant="danger"
             onClick={onDelete}
@@ -789,9 +1075,23 @@ export function ServiceForm({
         <AdminButton
           variant="primary"
           onClick={onSubmit}
-          disabled={pending || uploading || preparing || corrupt}
+          disabled={busy || own.conflict}
         >
-          {pending || uploading ? tb("actions.saving") : tb("actions.save")}
+          {te(operation === "save" ? "saving" : "saveDraft")}
+        </AdminButton>
+        <AdminButton
+          variant="primary"
+          onClick={onPublish}
+          disabled={
+            busy ||
+            own.conflict ||
+            !persisted ||
+            !model?.draft ||
+            dirty ||
+            publicationNeedsSave
+          }
+        >
+          {te(operation === "publish" ? "publishing" : "publish")}
         </AdminButton>
       </FormActions>
     </div>
