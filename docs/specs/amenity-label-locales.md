@@ -109,3 +109,17 @@ Initial hash harness assumed id on composite building_amenity; corrected before
 browser or writes, then full functional run0. Report amenity-label-locales-qa.md.
 Only e771 demo retained; no source changes after executable verification. Root
 local main integration and final single-dev3071 read-only opening check follow.
+
+## Actual main runtime completed
+
+Independent report07fca86 approved. Local main ff5c66aee→3cea4e8 after approval;
+compiled candidate77622/77616 stopped. Actual main dev3071 PID82624/session64768,
+cwd verified /Users/maxi/Documents/claude-workspace/central-hill; same safeenv,
+propertylocalesqa/storage9077/public symlink. Root main-open.mjs read-only check
+passes own Amenity+Building and user d600200: four labels, final raw values retained,
+same IDchecked in4language tabs with localized/fallback names,0pageerrors. Artifact
+/private/tmp/central-hill-amenity-locales-qa/main-open.json. Initial root locator for
+required EN did not match; corrected harness to QA-proven accessible label, then
+passed. No product/source changes or content writes after QA; no repeated matrix.
+Original logo/publicmedia symlink remain unstaged, all worktrees retained. No push,
+deployment, new schema or remoteDB actions. User may review actual main3071.

@@ -23,8 +23,11 @@ Save+fallback; ENselectedsharedacross4tabs/Save/reload and4publicnames; renameEN
 clearES updatespublicwithoutBuildingrepublish, selection/text/SEO intact, mobile.
 Protected old data hashes unchanged,0pageerrors. Initial harness composite-key hash
 fixed before browser/mutations; no product correction. Only new e771 demo touched.
-Root integrates local main after reviewer report and restores sole dev3071; final
-PID/read-only user d600+demo check recorded in execution. Preserve worktrees,
+Report07fca86 approved; local main ff5c66aee→3cea4e8. Sole actual-main dev3071
+PID82624/session64768, cwd verified. Read-only main-open check passes e771Amenity/
+Building and user d600200: four labels and same selectedID across4localizedtabs,
+0pageerrors. Root locator for required EN corrected before final pass; no source
+changes/contentwrites afterQA. Runtime/evidence in execution. Preserve worktrees,
 original logo/publicmedia symlink/safeenv. No schema/remoteDB/push/deployment.
 No automatic Services/Apartment lifecycle work in this request.
 
