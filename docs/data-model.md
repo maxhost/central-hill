@@ -394,6 +394,12 @@ fills untouched working documents until their first localized edit. Existing own
 translations/edited snapshots remain custom conservatively. Published text remains
 fixed until that language is explicitly published. Retired prose stays hidden.
 
+**ADR0062 (no migration):** optional localized `booking_button: {label,link}`
+supersedes technical booking controls in the Building form. Absence preserves old
+URL resolution and public labels; an authored null link suppresses Building CTAs.
+Both Building buttons consume the published pair. Existing neutral legacy booking
+values remain stored internally; the listing external-navigation flag stays shared.
+
 **ADR0061 / migration0026:** `building_shared_content` is unique by
 `building_id`, FK to its own identity with CASCADE, version1 `data` JSONB containing
 only `BuildingSharedContent`, monotonic nonnegative `revision`, nullable actor and
@@ -447,6 +453,14 @@ ownership and per-language publication as Buildings, including localized SEO and
 booking override. The parent building is immutable. Published children appear
 only when the same building locale is published and the parent is active.
 Operational move arrows apply globally, independent of locale drafts.
+
+**ADR0063 (no migration):** optional localized `booking_link: string|null` is
+the single full URL authored for the Apartment card, opened in a new tab. Absent
+field preserves legacy override/default resolution; explicit null clears that unit
+URL and retains the existing in-page Building booking-section fallback. New units
+initialize null. SEO/OG and technical booking inputs are retired from the form;
+old values remain stored internally. No Apartment detail route is introduced.
+Language ownership and explicit publication remain unchanged.
 
 **ADR0061 / migration0026:** `apartment_shared_content` follows the same
 owned common table shape, unique by `apartment_id`. It contains capacity, bedrooms,

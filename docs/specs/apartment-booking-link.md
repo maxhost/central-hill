@@ -84,3 +84,36 @@ UI follow-up: localized Apartment ownership hint must omit retired SEO; root add
 apartments.admin.customLocaleHint4locales, UIwriter changes its single consumer.
 Shared Building hint stays intact. Necessary admin EN-list link indicator also uses
 updated resolver (backend owner scope expansion above).
+
+Integrated executable37a8fe1 (backendb607c00, UIf9a8569+81db362).
+Root typecheck0, lint0(7existingwarnings),13/13puregroups0, diffcheck0.
+Identical backend8/8DBgroups passed (new3+existing4, then targeted new Admin1);
+SQL database/role verified; all e760/e420/e520 tests cleaned before full build.
+Browser e761 Building+Apartment seed is new-only and preserves existing fixtures.
+Necessary adminlist consumer uses the same resolver. One mechanical UI detector
+pass returned[]; no aesthetic QA loop. Source review found no new foreign imports,
+kernel/schema changes or ISR seam changes. Full build/browser review pending.
+
+Build resource follow-up: initial7worker build compiled/typespassed but encountered
+60s prerender timeouts while system loadavg was54/91 (VM/Xcode active). Root stopped
+only ownNextbuild50890 (exit130) and reran pnpm build with local
+CIRCLE_NODE_TOTAL=3. Installed Next config-shared.js uses that value to choose2
+workers; no tracked config/product code changed. Logs build-initial.log/build.log
+under QA artifacts. No tests repeated; final build result follows.
+
+Final full build0 with2workers/110pages. Same executable37a8fe1, no tracked config
+changes. Actual main35045/35039 stopped; compiled candidate3071 PID54484/session33694,
+login200, same verified synthetic DB/storage. Independent3group functional browser
+review authorized only e761 fixture; no extra appport or broad matrix. Final reviewer
+handoff and actual-main runtime check follow.
+
+Root documentation scope includes docs/data-model.md: record ADR0063 localized
+link/retired SEO authoring and adjacent existing ADR0062 Building button semantics.
+No schema or source implementation changes from this documentation alignment.
+
+Independent functional QA approved executable37a8fe1 in3/3normal production-browser
+groups (exit0): legacy/no GET-write/noSEO/oneURL, actual Save/reload/Publish EN/PT,
+custom PT/other publications preserved after EN changes, mobile/clear/newtab attrs,
+metadata/physical preservation and pre-existing data hashes unchanged.0pageerrors.
+Report apartment-booking-qa.md; browser e761 retained. Root local main integration
+and final single-dev3071 read-only opening check follow; no source changes after QA.

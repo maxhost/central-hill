@@ -1,5 +1,32 @@
 # Central Hill agent instructions
 
+## Latest Apartment booking/SEO correction —2026-11-06
+
+User requests ONE full booking URL per Apartment language, new-tab unit-card link,
+and removal of SEO authoring because no public Apartment detail exists. Executable
+37a8fe1 in apartment-booking/integration at
+/private/tmp/central-hill-apartment-booking-integration, independently approved in
+3bounded production-browser groups. Read [execution](docs/specs/apartment-booking-link.md)
+and [QA](docs/specs/apartment-booking-qa.md), ADR0063. Optional localized booking_link
+extends existing v1 JSON; no migration. Absent field retains legacy override/base;
+real edit writes selected-language link; explicit null clears unit URL without old
+base revival, retaining existing in-page #book fallback. UnitCard already supplies
+_blank/noopener noreferrer for configured URLs. Hidden legacy/SEO/OG values retained
+internally; no SEO/technical booking controls. Admin EN-list indicator shares resolver.
+Language ownership/inheritance/explicit Publish and common physical/photo data intact.
+
+Integrated typecheck0/lint0(7existingwarnings)/13puregroups0. Identical backend
+passed8DBgroups(4new+4regression), e760/e420/e520 cleaned. Initial7worker build
+interrupted130 after resource-related prerender timeouts; final pnpm build0/110pages
+with local CIRCLE_NODE_TOTAL=3 selecting2workers. No tracked config change.
+Independent production3071 QA3/3passed: legacy/no-write/noSEO, ENdraft/reload/Publish,
+PTcustom persists after EN, mobile/clear/newtab attrs/metadata and old fixtures intact;
+0pageerrors. Only new e761 synthetic Building+Apartment browser fixtures touched.
+Root integrates local main after report commit, restores one actual-main dev3071
+and records final PID/read-only check in execution. Preserve all worktrees/safeenv,
+original logo/publicmedia symlink. No schema/remote DB/GitHub/push/deployment.
+No automatic Apartment archive/restore or Services follow-up in this request.
+
 ## Latest Building booking correction —2026-11-06
 
 User requests only Label and Link per Building language. Implemented on
