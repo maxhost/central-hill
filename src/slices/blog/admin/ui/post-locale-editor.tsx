@@ -17,7 +17,7 @@ import {
   postLocaleDirty, postMediaIds, preparePostTarget, type PostWorkspace,
 } from "./post-editor-state";
 
-type Option = { id: string; name: string };
+type Option = import("../../reference-locale-types").BlogReferenceOption;
 type Operation = "save" | "publish" | "archive" | "delete" | null;
 
 export function PostLocaleEditor({ initial, newPostId, initialLocale, categories, authors, posts }: {
@@ -369,14 +369,14 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
             <div data-post-field="category_id" tabIndex={-1} className="scroll-mt-40 focus:outline-none">
               <Field label={t("admin.post.fields.category")} htmlFor={fieldId("category_id")} error={error("category_id")} required>
                 <Select id={fieldId("category_id")} value={content.category_id} onChange={event => set("category_id", event.target.value)} disabled={!editableShared || busy} aria-invalid={Boolean(error("category_id"))}>
-                  <option value="">{t("admin.post.fields.choose")}</option>{categories.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
+                  <option value="">{t("admin.post.fields.choose")}</option>{categories.map(option => <option key={option.id} value={option.id}>{option.labels?.[locale] ?? option.name}</option>)}
                 </Select>
               </Field>
             </div>
             <div data-post-field="author_id" tabIndex={-1} className="scroll-mt-40 focus:outline-none">
               <Field label={t("admin.post.fields.author")} htmlFor={fieldId("author_id")} error={error("author_id")} required>
                 <Select id={fieldId("author_id")} value={content.author_id} onChange={event => set("author_id", event.target.value)} disabled={!editableShared || busy} aria-invalid={Boolean(error("author_id"))}>
-                  <option value="">{t("admin.post.fields.choose")}</option>{authors.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
+                  <option value="">{t("admin.post.fields.choose")}</option>{authors.map(option => <option key={option.id} value={option.id}>{option.labels?.[locale] ?? option.name}</option>)}
                 </Select>
               </Field>
             </div>

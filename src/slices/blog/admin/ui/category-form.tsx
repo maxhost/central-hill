@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -16,37 +16,15 @@ import {
 import { deleteBlogCategory, saveBlogCategory } from "../actions";
 import type { BlogCategoryEditData } from "../queries";
 
-/** Blog-category create/edit form (S12). The [T] `name` is authored in English. */
+import { BLOG_REFERENCE_LOCALES } from "../../reference-locale-types";
+import {
+  categoryFormValues,
+  categoryLocalePayload,
+  type CategoryFormValues,
+} from "./reference-locale-payload";
 
-interface FormState {
-  slug: string;
-  color: string;
-  position: string;
-  name: string;
-}
-
-function initialState(data: BlogCategoryEditData | null): FormState {
-  return {
-    slug: data?.slug ?? "",
-    color: data?.color ?? "#8a8178",
-    position: String(data?.position ?? 0),
-    name: data?.name ?? "",
-  };
-}
-
-function buildPayload(s: FormState, id: string | undefined) {
-  const intOr = (v: string, fallback: number) => {
-    const n = Number.parseInt(v, 10);
-    return Number.isFinite(n) ? n : fallback;
-  };
-  return {
-    id,
-    slug: s.slug.trim(),
-    color: s.color.trim(),
-    position: intOr(s.position, 0),
-    name: s.name.trim(),
-  };
-}
+/** One shared category identity with a manually authored name per Blog locale. */
+type FormState = CategoryFormValues;
 
 export function BlogCategoryForm({
   initial,
@@ -57,7 +35,10 @@ export function BlogCategoryForm({
   const tb = useTranslations("backoffice");
   const router = useRouter();
   const [pending, start] = useTransition();
-  const [state, setState] = useState<FormState>(() => initialState(initial));
+  const fieldPrefix = useId();
+  const [state, setState] = useState<FormState>(() =>
+    categoryFormValues(initial),
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(null);
 
@@ -66,10 +47,13 @@ export function BlogCategoryForm({
   const err = (key: string) => errors[key];
 
   function onSubmit() {
+    if (pending) return;
     setBanner(null);
     setErrors({});
     start(async () => {
-      const result = await saveBlogCategory(buildPayload(state, initial?.id));
+      const result = await saveBlogCategory(
+        categoryLocalePayload(state, initial?.id),
+      );
       if (result.ok) {
         if (!initial) {
           router.push(`/admin/blog-categories/${result.id}`);
@@ -89,7 +73,7 @@ export function BlogCategoryForm({
   }
 
   function onDelete() {
-    if (!initial) return;
+    if (!initial || pending) return;
     if (!window.confirm(tb("actions.confirmDelete"))) return;
     start(async () => {
       const result = await deleteBlogCategory(initial.id);
@@ -131,50 +115,88 @@ export function BlogCategoryForm({
       ) : null}
 
       <AdminCard title={t("admin.cat.sections.details")}>
-        <div className="space-y-4">
-          <Field
-            label={t("admin.cat.fields.name")}
-            required
-            error={err("name")}
-          >
-            <TextInput
-              value={state.name}
-              onChange={(e) => set("name", e.target.value)}
-            />
-          </Field>
+        <fieldset disabled={pending} className="min-w-0 space-y-4">
+          {BLOG_REFERENCE_LOCALES.map((locale) => {
+            const field = locale === "en" ? "name" : `translations.${locale}`;
+            return (
+              <Field
+                key={locale}
+                label={t("admin.referenceLocales.name", {
+                  locale: locale.toUpperCase(),
+                })}
+                htmlFor={`${fieldPrefix}-name-${locale}`}
+                required={locale === "en"}
+                error={err(field)}
+                hint={
+                  locale === "en"
+                    ? undefined
+                    : t("admin.referenceLocales.fallbackHint")
+                }
+              >
+                <TextInput
+                  id={`${fieldPrefix}-name-${locale}`}
+                  maxLength={80}
+                  value={
+                    locale === "en" ? state.name : state.translations[locale]
+                  }
+                  aria-invalid={Boolean(err(field))}
+                  onChange={(event) =>
+                    locale === "en"
+                      ? set("name", event.target.value)
+                      : setState((previous) => ({
+                          ...previous,
+                          translations: {
+                            ...previous.translations,
+                            [locale]: event.target.value,
+                          },
+                        }))
+                  }
+                />
+              </Field>
+            );
+          })}
           <FieldGrid>
             <Field
               label={t("admin.cat.fields.slug")}
+              htmlFor={`${fieldPrefix}-slug`}
               required
               error={err("slug")}
             >
               <TextInput
+                id={`${fieldPrefix}-slug`}
+                aria-invalid={Boolean(err("slug"))}
                 value={state.slug}
                 onChange={(e) => set("slug", e.target.value)}
               />
             </Field>
             <Field
               label={t("admin.cat.fields.color")}
+              htmlFor={`${fieldPrefix}-color`}
               hint={t("admin.cat.fields.colorHint")}
               error={err("color")}
             >
               <TextInput
+                id={`${fieldPrefix}-color`}
+                aria-invalid={Boolean(err("color"))}
                 value={state.color}
                 onChange={(e) => set("color", e.target.value)}
               />
             </Field>
             <Field
               label={t("admin.cat.fields.position")}
+              htmlFor={`${fieldPrefix}-position`}
               hint={t("admin.cat.fields.positionHint")}
             >
               <TextInput
+                id={`${fieldPrefix}-position`}
+                aria-invalid={Boolean(err("position"))}
                 type="number"
                 value={state.position}
                 onChange={(e) => set("position", e.target.value)}
               />
             </Field>
           </FieldGrid>
-        </div>
+        </fieldset>
       </AdminCard>
 
       <FormActions>

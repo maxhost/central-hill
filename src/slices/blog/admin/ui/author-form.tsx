@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -21,40 +21,17 @@ import {
 import { deleteAuthor, saveAuthor } from "../actions";
 import type { AuthorEditData } from "../queries";
 
-/** Author create/edit form (S12). The [T] `name`/`bio` are authored in English. */
+import { BLOG_REFERENCE_LOCALES } from "../../reference-locale-types";
+import {
+  authorFormValues,
+  authorLocalePayload,
+  type AuthorFormValues,
+} from "./reference-locale-payload";
 
-type Status = "draft" | "published" | "archived";
+/** Single author identity with manual name/bio fields for every Blog locale. */
+type FormState = AuthorFormValues;
+type Status = FormState["status"];
 const STATUSES: Status[] = ["draft", "published", "archived"];
-
-interface FormState {
-  slug: string;
-  status: Status;
-  avatar_media_id: string;
-  name: string;
-  bio: string;
-}
-
-function initialState(data: AuthorEditData | null): FormState {
-  return {
-    slug: data?.slug ?? "",
-    status: data?.status ?? "draft",
-    avatar_media_id: data?.avatar_media_id ?? "",
-    name: data?.name ?? "",
-    bio: data?.bio ?? "",
-  };
-}
-
-function buildPayload(s: FormState, id: string | undefined) {
-  const orNull = (v: string) => (v.trim() === "" ? null : v.trim());
-  return {
-    id,
-    slug: s.slug.trim(),
-    status: s.status,
-    avatar_media_id: s.avatar_media_id || null,
-    name: s.name.trim(),
-    bio: orNull(s.bio),
-  };
-}
 
 export function AuthorForm({
   initial,
@@ -67,10 +44,15 @@ export function AuthorForm({
   const tb = useTranslations("backoffice");
   const router = useRouter();
   const [pending, start] = useTransition();
+  const [flushing, setFlushing] = useState(false);
+  const fieldPrefix = useId();
   const queue = useMediaQueue();
   // A pick still being reserved isn't in the form's value yet — Save waits for it.
   const preparing = queue.isPreparing;
-  const [state, setState] = useState<FormState>(() => initialState(initial));
+  const busy = pending || preparing || flushing;
+  const [state, setState] = useState<FormState>(() =>
+    authorFormValues(initial),
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [banner, setBanner] = useState<string | null>(null);
 
@@ -79,16 +61,23 @@ export function AuthorForm({
   const err = (key: string) => errors[key];
 
   function onSubmit() {
-    if (preparing) return;
+    if (busy) return;
     setBanner(null);
     setErrors({});
     void (async () => {
       // Uploads run OUTSIDE the transition on purpose: `startTransition` marks every
       // update in its scope as low priority, so the queue's progress modal would not
       // paint until the transition it lives in had already finished (ADR 0030).
-      if (!(await queue.flush())) return;
+      setFlushing(true);
+      try {
+        if (!(await queue.flush())) return;
+      } finally {
+        setFlushing(false);
+      }
       start(async () => {
-        const result = await saveAuthor(buildPayload(state, initial?.id));
+        const result = await saveAuthor(
+          authorLocalePayload(state, initial?.id),
+        );
         if (result.ok) {
           if (!initial) {
             router.push(`/admin/authors/${result.id}`);
@@ -109,7 +98,7 @@ export function AuthorForm({
   }
 
   function onDelete() {
-    if (!initial) return;
+    if (!initial || busy) return;
     if (!window.confirm(tb("actions.confirmDelete"))) return;
     start(async () => {
       const result = await deleteAuthor(initial.id);
@@ -151,71 +140,132 @@ export function AuthorForm({
       ) : null}
 
       <AdminCard title={t("admin.author.sections.details")}>
-        <div className="space-y-4">
-          <Field
-            label={t("admin.author.fields.name")}
-            required
-            error={err("name")}
-          >
-            <TextInput
-              value={state.name}
-              onChange={(e) => set("name", e.target.value)}
-            />
-          </Field>
+        <fieldset disabled={busy} className="min-w-0 space-y-5">
+          {BLOG_REFERENCE_LOCALES.map((locale) => {
+            const nameField =
+              locale === "en" ? "name" : `translations.${locale}.name`;
+            const bioField =
+              locale === "en" ? "bio" : `translations.${locale}.bio`;
+            const values = locale === "en" ? state : state.translations[locale];
+            const change = (field: "name" | "bio", value: string) => {
+              if (locale === "en") set(field, value);
+              else
+                setState((previous) => ({
+                  ...previous,
+                  translations: {
+                    ...previous.translations,
+                    [locale]: {
+                      ...previous.translations[locale],
+                      [field]: value,
+                    },
+                  },
+                }));
+            };
+            return (
+              <div key={locale} className="space-y-4">
+                <Field
+                  label={t("admin.referenceLocales.name", {
+                    locale: locale.toUpperCase(),
+                  })}
+                  htmlFor={`${fieldPrefix}-name-${locale}`}
+                  required={locale === "en"}
+                  error={err(nameField)}
+                  hint={
+                    locale === "en"
+                      ? undefined
+                      : t("admin.referenceLocales.fallbackHint")
+                  }
+                >
+                  <TextInput
+                    id={`${fieldPrefix}-name-${locale}`}
+                    maxLength={120}
+                    value={values.name}
+                    aria-invalid={Boolean(err(nameField))}
+                    onChange={(event) => change("name", event.target.value)}
+                  />
+                </Field>
+                <Field
+                  label={t("admin.referenceLocales.bio", {
+                    locale: locale.toUpperCase(),
+                  })}
+                  htmlFor={`${fieldPrefix}-bio-${locale}`}
+                  error={err(bioField)}
+                  hint={
+                    locale === "en"
+                      ? undefined
+                      : t("admin.referenceLocales.fallbackHint")
+                  }
+                >
+                  <TextArea
+                    id={`${fieldPrefix}-bio-${locale}`}
+                    rows={4}
+                    maxLength={1000}
+                    value={values.bio}
+                    aria-invalid={Boolean(err(bioField))}
+                    onChange={(event) => change("bio", event.target.value)}
+                  />
+                </Field>
+              </div>
+            );
+          })}
           <FieldGrid>
             <Field
               label={t("admin.author.fields.slug")}
+              htmlFor={`${fieldPrefix}-slug`}
               required
               error={err("slug")}
             >
               <TextInput
+                id={`${fieldPrefix}-slug`}
                 value={state.slug}
-                onChange={(e) => set("slug", e.target.value)}
+                aria-invalid={Boolean(err("slug"))}
+                onChange={(event) => set("slug", event.target.value)}
               />
             </Field>
-            <Field label={t("admin.author.fields.status")}>
+            <Field
+              label={t("admin.author.fields.status")}
+              htmlFor={`${fieldPrefix}-status`}
+            >
               <Select
+                id={`${fieldPrefix}-status`}
                 value={state.status}
-                onChange={(e) => set("status", e.target.value as Status)}
+                onChange={(event) =>
+                  set("status", event.target.value as Status)
+                }
               >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {t(`admin.status.${s}`)}
+                {STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {t(`admin.status.${status}`)}
                   </option>
                 ))}
               </Select>
             </Field>
           </FieldGrid>
-          <Field label={t("admin.author.fields.bio")} error={err("bio")}>
-            <TextArea
-              rows={4}
-              value={state.bio}
-              onChange={(e) => set("bio", e.target.value)}
-            />
-          </Field>
-        </div>
+        </fieldset>
       </AdminCard>
 
       <AdminCard title={t("admin.author.sections.avatar")}>
-        <Field label={t("admin.author.fields.avatar")}>
-          <MediaField
-            value={state.avatar_media_id || null}
-            preview={previews[state.avatar_media_id] ?? null}
-            onChange={(id) => set("avatar_media_id", id ?? "")}
-          />
-        </Field>
+        <fieldset disabled={busy} className="min-w-0">
+          <Field label={t("admin.author.fields.avatar")}>
+            <MediaField
+              value={state.avatar_media_id || null}
+              preview={previews[state.avatar_media_id] ?? null}
+              onChange={(id) => set("avatar_media_id", id ?? "")}
+            />
+          </Field>
+        </fieldset>
       </AdminCard>
 
       <FormActions>
         {initial ? (
-          <AdminButton variant="danger" onClick={onDelete} disabled={pending}>
+          <AdminButton variant="danger" onClick={onDelete} disabled={busy}>
             {tb("actions.delete")}
           </AdminButton>
         ) : null}
         <AdminButton
           variant="ghost"
           onClick={() => router.push("/admin/authors")}
-          disabled={pending}
+          disabled={busy}
         >
           {tb("actions.cancel")}
         </AdminButton>
@@ -224,7 +274,7 @@ export function AuthorForm({
             {tb("media.waitForMedia")}
           </p>
         ) : null}
-        <AdminButton variant="primary" onClick={onSubmit} disabled={pending || preparing}>
+        <AdminButton variant="primary" onClick={onSubmit} disabled={busy}>
           {pending ? tb("actions.saving") : tb("actions.save")}
         </AdminButton>
       </FormActions>
