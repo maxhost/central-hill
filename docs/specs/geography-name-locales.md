@@ -136,7 +136,7 @@ habilitada. Root no muta contenido durante sus tres grupos acotados.
 Resultados browser: 3/3grupos ok, 0pageerrors. FormNew/Edit/rawpending y nombres
 manuales Save/reload; nuevo agregado69c3994c-1abc-4b8d-bdc8-a2e873b2dccd con NB
 18fa8a22-162c-4219-bd95-5a26432d8e1f y65146c11-93ce-489e-985b-a2ad6e5b2b34:
-add/remove/reorder y segundoSave sin recargar conserva IDs y targets. Fourtabs de
+add/remove/reorder y segundoSave sin recargar conserva IDs y targets. Los cuatro tabs de
 Building/Guide sólo cambian labels, IDs iguales. Públicos4idiomas, NB en cards y
 ciudad+NB en detalle, Guidefilter/detalle y SEO intactos; URLPTcustom200. ENrename+
 clearES producen fallbackEN sólo en campos vaciados; PT/FR propios siguen propios.
@@ -147,3 +147,27 @@ esta tarea (B6); no inventar un filtro/citylabel nuevo como parte de nombres.
 Sólo el harness de respuesta Next-action se ajustó después de router.refresh;
 continuación desde reload/DB del Save hecho, sin repetir la mutación ni producto.
 Aprobación/documento independiente se registra en QA; siguiente paso mainff local.
+
+
+## Entrega local
+
+QA independiente aprobada, commit74cc9db, fuente e11dfcf sin correcciones de
+producto. Root cerró roadmap/spec en4391123; main ff983ca51→4391123. QAproduction
+69672/69666 detenido después de verificar cwd. Único actual-main dev3071 ahora
+PID70494/parent70488/session75835, cwdworkspace y entorno sintético existentes.
+DB5658/proxy4558/storage9077PID30456 conservados; todos los worktrees/archivos/
+logo/symlink/envs/artifacts y caches anteriores permanecen.
+
+Apertura main sólo lectura exit0: CityNew/Edit cuatroinputs y rawtargets, Building
++Guide cuatrotabs con IDs iguales/labels según SQL, EN/PT Building y Guide públicos
+200 (incluida URLPTcustom), nombres visibles correctos y 0pageerrors. main-open.json
+conserva resultados. El harness inicial usó innerText case-sensitive contra Hero
+con CSSuppercase; primero se consideró timing, luego DOM/textContent y estilos
+confirmaron la causa. Corrección sólo en harness: esperar nodo visible y normalizar
+case; continuación sólo de cuatro públicos, sin repetir matriz ni saves. Logs y
+fallos del harness conservados, ningún cache/producto/contenido se cambió, no se
+necesitó otro reinicio ni archivo de .next en esta tarea.
+
+No schema/migración/push/deploy/escrituras remotas. Inputs sólo name, no intro target
+ni slug localization; cierre global Translations y otros auxiliares no iniciados.
+Final commit documental en main se resuelve con git log -1.

@@ -1,5 +1,45 @@
 # Central Hill agent instructions
 
+## Latest City/neighbourhood name inputs —2026-11-07
+
+User requests EN/ES/PT/FR inputs in the existing City ficha and every inline
+neighbourhood, like Amenities, only names and no slug localization. Delivered
+with one Save/no tabs: raw authored/pending targets, manual nonblank names approved,
+blank targets use EN fallback per field. Later EN changes keep own target names.
+Building/Guide tabs change labels with the same selected IDs; public readers and
+Guide city filters follow locale without republishing consumers. One shared slug,
+image, country/status/position/identity retained. Name-only Saves skip ALL slug
+writes (including legacy custom PT URLs) and unchanged intro writes. Actual EN
+intro edits reuse source-only clear protection; no target intro controls added.
+New inline neighbourhood IDs are adopted after Save, so a second Save retains
+identities even after add/remove/reorder. Existing sequential writes retained.
+
+Read [execution](docs/specs/geography-name-locales.md),
+[QA](docs/specs/geography-name-locales-qa.md), ADR0069 and entity-locale roadmap.
+Two isolated writers integrated executable e11dfcf; QA74cc9db approved 3 bounded
+production-browser groups, 0pageerrors. Root36cases passed (29pure/7DB), typecheck0,
+lint0 (7oldwarnings), build0/144routes/2workers after e820 cleanup. All42 protected
+business hashes equal preseed; exact fixture slug/intro/Building+Guide+section/
+translations/locale+shared/SEO/reference snapshots unchanged. No product correction
+in QA; only response-body harness capture adjusted after refresh, continued from
+already-completed Save. e821 and new69c3994c City aggregate retained; d300media
+read-only, no uploads. No schema/migration or remote writes.
+
+Main ff983ca51→4391123 complete. Sole actual-main dev3071 **PID70494/parent70488/
+session75835**, cwd verified workspace; safe propertylocalesqa DB5658/proxy4558/
+storage9077PID30456 unchanged. QA69672 stopped. Main-opening read-only passed City
+New/Edit, Building+Guide fourtabs/sameIDs and EN/PT public URLs, 0pageerrors;
+evidence main-open.json under /private/tmp/central-hill-geography-name-locales-qa/.
+Final harness initially compared case-sensitive innerText against the Hero's CSS
+uppercase. DOM/textContent and visible nodes were correct; normalized-case check
+passed. No cache defect, .next archive/restart or product/content fix was needed.
+Preserve all files/worktrees/artifacts/ignored envs/logo/publicmedia symlink and
+previous cache archives. Final documentary commit resolves with gitlog-1.
+No push/deploy. Generic Geography Translations remains because city.intro policy
+is outside this names-only change. Testimonials/Settings/navigation/ALT and legacy
+path retirement remain pending; do not start further work automatically.
+
+
 ## Latest per-language Page FAQ selection —2026-11-07
 
 User requests FAQ selection in EACHlanguage, explicitly no EN inheritance.
