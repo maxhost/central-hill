@@ -165,3 +165,12 @@ on contract base after snapshot generation. Earlier local sandbox tsx socket
 restriction resolved by permitted escalation; initial missing next-env.d.ts in
 new worktree copied from actual main, then typecheck passed.
 Backend/UI implementation in progress in separate named worktrees.
+
+Root integrated UI796da06/2394634 and backend513fd37 as7ea8dee. Integrated
+Node22 typecheck0/lint0(7existingwarnings)/90puretests0. Backend final10DBgroups0
+with exact root helper/types (old9rerun plus complete-map group); own e780fixtures
+cleaned. Logs in service-locales-qa/backend. Root final integration owns two small
+compatibility guards: route renders the existing integrity message read-only for
+ServiceLegacyError, keeping missing/invalid identities404; store validates merged
+shared maps for old callers too (same schema already validates new full-map calls).
+Affected checks follow, then full build and independent QA of final candidate.

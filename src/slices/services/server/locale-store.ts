@@ -32,6 +32,7 @@ import {
   saveServiceRequestSchema,
   publishServiceRequestSchema,
   serviceFieldErrors,
+  serviceSharedSchema,
 } from "./locale-validation";
 import {
   ServiceLegacyError,
@@ -335,6 +336,9 @@ export async function saveServiceDraft(
     const shared =
       input.shared ??
       serviceSharedContent(input.payload.content, model.shared.content);
+    // Old callers omit shared; validate the merged retained maps as well.
+    if (!serviceSharedSchema.safeParse(shared).success)
+      return invalid({ _shared: "Shared service data is invalid or too large." });
     const sharedErrors = sharedPayloadErrors(input.payload, shared);
     // A full workspace common document may contain assets for rows belonging to
     // another language. Retain those keys, including currently inactive rows.
