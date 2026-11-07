@@ -629,7 +629,7 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
                       <option value="">{t("noCity")}</option>
                       {cities.map((city) => (
                         <option key={city.id} value={city.id}>
-                          {city.name} (
+                          {city.labels?.[locale] ?? city.name} (
                           {t(
                             city.status === "published"
                               ? "publishedStatus"

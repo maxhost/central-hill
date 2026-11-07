@@ -555,7 +555,7 @@ export function BuildingLocaleEditor({
               <option value="">{t("admin.fields.choose")}</option>
               {locations.cities.map((city) => (
                 <option key={city.id} value={city.id}>
-                  {city.name}
+                  {city.labels?.[locale] ?? city.name}
                 </option>
               ))}
             </Select>
@@ -579,7 +579,7 @@ export function BuildingLocaleEditor({
                 .filter((n) => n.cityId === content.city_id)
                 .map((n) => (
                   <option key={n.id} value={n.id}>
-                    {n.name}
+                    {n.labels?.[locale] ?? n.name}
                   </option>
                 ))}
             </Select>
