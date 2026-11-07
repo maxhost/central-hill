@@ -23,6 +23,14 @@ propuestos en blog-form/integration deben alinearse a formularios antes de comen
 
 ## Property forms delivered on local main — 2026-11-06
 
+Latest visual follow-up: user asks for one catalogue back control in Buildings:
+style the top workspace link like the lower button, remove the lower duplicate
+for existing Buildings, keep New's only back button. Two Buildings UI files modified
+locally; no tests/automatic QA/DB writes (L0, user reviews). 3071 now runs main in
+**dev**, PID90520/session55366, safe synthetic env unchanged; production90276 stopped.
+Keep this single app listener and original logo/synthetic public symlink. No new commit.
+
+
 User now authorizes applying0026, stopping old Central Hill app previews and running
 one local main server to test forms. Main base0e72983; prepare on
 property-forms/main-integration in/private/tmp/central-hill-property-forms-main-integration.

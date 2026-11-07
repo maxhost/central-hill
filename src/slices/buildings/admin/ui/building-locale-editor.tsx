@@ -813,13 +813,15 @@ export function BuildingLocaleEditor({
       >
         <header className="sticky top-0 z-20 space-y-3 border-b border-line bg-bg py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <AdminButton
-              onClick={() => leave("/admin/buildings")}
-              disabled={busy}
-            >
-              <UiIcon name="nav-arrow-left" size={16} />
-              {te("back")}
-            </AdminButton>
+            {!initial ? (
+              <AdminButton
+                onClick={() => leave("/admin/buildings")}
+                disabled={busy}
+              >
+                <UiIcon name="nav-arrow-left" size={16} />
+                {te("back")}
+              </AdminButton>
+            ) : null}
             <h1
               className="min-w-0 flex-1 truncate font-serif text-2xl"
               title={content.name || te("newEntity")}

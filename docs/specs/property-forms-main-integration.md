@@ -80,3 +80,14 @@ launcher when restarting. Untracked original logo and intentional local syntheti
 public/propertylocalesqa symlink remain unstaged. All worktrees and DB data retained.
 No push, deployment, GitHub mutation or remote Neon write. User can review forms at
 http://localhost:3071/admin/buildings using the synthetic account in delivery.
+
+## Back control visual follow-up
+
+User asks to remove the duplicate catalogue back control: top workspace link now
+uses the lower neutral button's design/label/icon; existing Building forms omit
+their lower duplicate. Standalone New keeps its sole back control. Existing link
+capture continues handling unsaved navigation. Only two Buildings UI files change.
+Aesthetic L0: no automatic tests/QA or DB writes, user validates localhost.
+To expose source edits immediately, production90276 stopped and main3071 restarted
+in devPID90520/session55366, same safe env/storage/public symlink. Ready log in
+main-dev.log; previous approved production artifact retained. Changes uncommitted.

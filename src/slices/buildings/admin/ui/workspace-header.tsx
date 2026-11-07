@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { UiIcon } from "@core/ui";
 import { StateBadge } from "@slices/backoffice/contract";
 import type { BuildingWorkspace } from "../queries";
 import { BuildingWorkspaceTabs } from "./workspace-tabs";
 
 /**
  * Header of the building workspace (`/admin/buildings/[id]` layout — spec
- * building-detail-admin-editor, S1): "← Buildings", the building name, its status,
+ * building-detail-admin-editor, S1): catalogue back button, building name, status,
  * "View on site ↗" when published, and the Building / Apartments (N) tabs. The
  * apartment count comes in as a prop: the route composes it from the apartments
  * slice, so `buildings` never reads apartments.
@@ -25,12 +26,19 @@ export async function BuildingWorkspaceHeader({
   workspace: BuildingWorkspace;
   apartmentsCount: number;
 }) {
-  const t = await getTranslations("buildings");
+  const [t, te] = await Promise.all([
+    getTranslations("buildings"),
+    getTranslations("propertyEditor"),
+  ]);
 
   return (
     <div className="space-y-4 border-b border-line">
-      <Link href="/admin/buildings" className="text-sm text-ink-soft hover:text-ink">
-        ← {t("admin.workspace.backToBuildings")}
+      <Link
+        href="/admin/buildings"
+        className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-ink"
+      >
+        <UiIcon name="nav-arrow-left" size={16} />
+        {te("back")}
       </Link>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
