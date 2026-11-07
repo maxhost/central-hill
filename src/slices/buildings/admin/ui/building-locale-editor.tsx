@@ -32,6 +32,7 @@ import type {
 import type { LocationOptions, AmenityOption } from "../queries";
 import {
   archiveBuilding,
+  restoreBuilding,
   publishBuildingLocaleDraft,
   saveBuildingLocaleDraft,
 } from "../editorial-actions";
@@ -49,7 +50,7 @@ import {
   type BuildingWorkspace,
 } from "./property-editor-state";
 
-type Operation = "save" | "publish" | "archive" | "delete" | null;
+type Operation = "save" | "publish" | "archive" | "restore" | "delete" | null;
 
 export function BuildingLocaleEditor({
   initial,
@@ -164,7 +165,6 @@ export function BuildingLocaleEditor({
     () => ({ ...localMedia, ...savedPreviews }),
     [savedPreviews, localMedia],
   );
-  const editableShared = !archived;
   const currentUrl = useRef("");
 
   useEffect(() => {
@@ -237,7 +237,7 @@ export function BuildingLocaleEditor({
     key: K,
     value: BuildingEditorialContent[K],
   ) {
-    if (busy || archived) return;
+    if (busy) return;
     setStates((previous) => changeBuildingField(previous, locale, key, value));
   }
   function selectLocale(next: EditorLocale) {
@@ -294,7 +294,7 @@ export function BuildingLocaleEditor({
     }
   }
   async function mutate(action: "save" | "publish") {
-    if (lock.current || busy || archived || !entityId || state.conflict) return;
+    if (lock.current || busy || !entityId || state.conflict) return;
     if (action === "publish" && (!state.model.draft || dirty || !persisted))
       return;
     lock.current = true;
@@ -347,6 +347,10 @@ export function BuildingLocaleEditor({
       if (result.previews)
         setSavedPreviews((previous) => ({ ...previous, ...result.previews }));
       setSlugByLocale(result.slugByLocale);
+      if (action === "publish") {
+        setArchived(false);
+        startNavigation(() => router.refresh());
+      }
       if (!persisted) {
         setOpeningEdit(true);
         setPersisted(true);
@@ -375,7 +379,7 @@ export function BuildingLocaleEditor({
     skipLeave.current = true;
     router.push(href);
   }
-  async function lifecycle(action: "archive" | "delete") {
+  async function lifecycle(action: "archive" | "restore" | "delete") {
     if (lock.current || busy) return;
     lock.current = true;
     setOperation(action);
@@ -384,7 +388,9 @@ export function BuildingLocaleEditor({
       const result =
         action === "archive"
           ? await archiveBuilding(entityId)
-          : await deleteBuilding(entityId);
+          : action === "restore"
+            ? await restoreBuilding(entityId)
+            : await deleteBuilding(entityId);
       if (!result.ok) {
         const inUse =
           action === "delete" && "error" in result && result.error === "in_use";
@@ -397,9 +403,25 @@ export function BuildingLocaleEditor({
         }));
         return;
       }
-      if (action === "archive") setArchived(true);
-      skipLeave.current = true;
-      router.push("/admin/buildings");
+      if (action === "delete") {
+        skipLeave.current = true;
+        router.push("/admin/buildings");
+        return;
+      }
+      setArchived(action === "archive");
+      setStates((previous) => ({
+        ...previous,
+        [locale]: {
+          ...previous[locale],
+          notice:
+            "refreshWarning" in result && result.refreshWarning
+              ? te("savedRefreshWarning")
+              : te(action === "archive" ? "archiveSuccess" : "restored"),
+        },
+      }));
+      // Refresh only the server workspace header; this editor's identity and
+      // per-language local state remain mounted, including unsaved other tabs.
+      startNavigation(() => router.refresh());
     } catch {
       setStates((previous) => ({
         ...previous,
@@ -428,22 +450,23 @@ export function BuildingLocaleEditor({
       | "meta_description",
     label: string,
     multiline = false,
-    shared = false,
   ) => (
     <Field key={key} label={label} htmlFor={fieldId(key)} error={error(key)}>
       {multiline ? (
         <TextArea
+          className="min-h-32"
           id={fieldId(key)}
           value={content[key] ?? ""}
           onChange={(event) => set(key, event.target.value)}
-          disabled={busy || archived || (shared && !editableShared)}
+          disabled={busy}
         />
       ) : (
         <TextInput
+          className="min-h-11"
           id={fieldId(key)}
           value={content[key] ?? ""}
           onChange={(event) => set(key, event.target.value)}
-          disabled={busy || archived || (shared && !editableShared)}
+          disabled={busy}
         />
       )}
     </Field>
@@ -453,7 +476,7 @@ export function BuildingLocaleEditor({
     label: string,
   ) => (
     <Field label={label} error={error(key)}>
-      <fieldset disabled={!editableShared || busy}>
+      <fieldset disabled={busy}>
         <MediaField
           key={`${key}-${content[key] ?? "empty"}-${content[key] ? (previews[content[key]!]?.url ?? "") : ""}`}
           value={content[key]}
@@ -472,6 +495,7 @@ export function BuildingLocaleEditor({
   ) => (
     <Field key={key} label={label} htmlFor={fieldId(key)} error={error(key)}>
       <TextInput
+        className="min-h-11"
         id={fieldId(key)}
         type="number"
         value={content[key] ?? ""}
@@ -485,7 +509,7 @@ export function BuildingLocaleEditor({
                 : Number(event.target.value),
           )
         }
-        disabled={!editableShared || busy}
+        disabled={busy}
       />
     </Field>
   );
@@ -507,6 +531,7 @@ export function BuildingLocaleEditor({
             hint={persisted ? te("immutableSlug") : t("admin.fields.slugHint")}
           >
             <TextInput
+              className="min-h-11"
               id={fieldId("slug")}
               value={persisted ? (slugByLocale[locale] ?? slug) : slug}
               onChange={(event) => setSlug(event.target.value)}
@@ -519,13 +544,14 @@ export function BuildingLocaleEditor({
             error={error("city_id")}
           >
             <Select
+              className="min-h-11"
               id={fieldId("city_id")}
               value={content.city_id}
               onChange={(event) => {
                 set("city_id", event.target.value);
                 set("neighbourhood_id", null);
               }}
-              disabled={!editableShared || busy}
+              disabled={busy}
             >
               <option value="">{t("admin.fields.choose")}</option>
               {locations.cities.map((city) => (
@@ -541,12 +567,13 @@ export function BuildingLocaleEditor({
             error={error("neighbourhood_id")}
           >
             <Select
+              className="min-h-11"
               id={fieldId("neighbourhood_id")}
               value={content.neighbourhood_id ?? ""}
               onChange={(event) =>
                 set("neighbourhood_id", event.target.value || null)
               }
-              disabled={!editableShared || busy}
+              disabled={busy}
             >
               <option value="">{t("admin.fields.none")}</option>
               {locations.neighbourhoods
@@ -558,24 +585,19 @@ export function BuildingLocaleEditor({
                 ))}
             </Select>
           </Field>
-          {input(
-            "street_address",
-            t("admin.fields.streetAddress"),
-            false,
-            true,
-          )}
+          {input("street_address", t("admin.fields.streetAddress"))}
           {numberField("position", t("admin.fields.position"))}
           <Checkbox
             label={t("admin.fields.isNew")}
             checked={content.is_new}
             onChange={(e) => set("is_new", e.target.checked)}
-            disabled={!editableShared || busy}
+            disabled={busy}
           />
           <Checkbox
             label={t("admin.fields.isFeatured")}
             checked={content.is_featured}
             onChange={(e) => set("is_featured", e.target.checked)}
-            disabled={!editableShared || busy}
+            disabled={busy}
           />
           {numberField("latitude", t("admin.fields.latitude"))}
           {numberField("longitude", t("admin.fields.longitude"))}
@@ -591,7 +613,7 @@ export function BuildingLocaleEditor({
           <p className="text-xs text-ink-soft">
             {t("admin.fields.galleryHint")}
           </p>
-          <fieldset disabled={!editableShared || busy} className="space-y-4">
+          <fieldset disabled={busy} className="space-y-4">
             {content.gallery.map((id, index) => (
               <div key={id} className="space-y-2">
                 <MediaField
@@ -612,6 +634,7 @@ export function BuildingLocaleEditor({
                 />
                 <div className="flex gap-2">
                   <AdminButton
+                    className="min-h-11"
                     aria-label={tb("actions.moveUp")}
                     disabled={index === 0}
                     onClick={() => {
@@ -626,6 +649,7 @@ export function BuildingLocaleEditor({
                     ↑
                   </AdminButton>
                   <AdminButton
+                    className="min-h-11"
                     aria-label={tb("actions.moveDown")}
                     disabled={index === content.gallery.length - 1}
                     onClick={() => {
@@ -668,7 +692,7 @@ export function BuildingLocaleEditor({
                         : [...content.amenity_ids, option.id],
                     )
                   }
-                  disabled={!editableShared || busy}
+                  disabled={busy}
                 />
               </div>
             ))
@@ -687,9 +711,10 @@ export function BuildingLocaleEditor({
                 error={error(`faq.${index}`)}
               >
                 <TextInput
+                  className="min-h-11"
                   id={fieldId(`faq-${item.id}-question`)}
                   value={item.question}
-                  disabled={busy || archived}
+                  disabled={busy}
                   onChange={(event) =>
                     set(
                       "faq",
@@ -707,9 +732,10 @@ export function BuildingLocaleEditor({
                 htmlFor={fieldId(`faq-${item.id}-answer`)}
               >
                 <TextArea
+                  className="min-h-32"
                   id={fieldId(`faq-${item.id}-answer`)}
                   value={item.answer}
-                  disabled={busy || archived}
+                  disabled={busy}
                   onChange={(event) =>
                     set(
                       "faq",
@@ -722,62 +748,62 @@ export function BuildingLocaleEditor({
                   }
                 />
               </Field>
-              {!archived ? (
-                <div className="flex gap-2">
-                  <AdminButton
-                    aria-label={tb("actions.moveUp")}
-                    disabled={busy || index === 0}
-                    onClick={() => moveFaq(index, -1)}
-                  >
-                    ↑
-                  </AdminButton>
-                  <AdminButton
-                    aria-label={tb("actions.moveDown")}
-                    disabled={busy || index === content.faq.length - 1}
-                    onClick={() => moveFaq(index, 1)}
-                  >
-                    ↓
-                  </AdminButton>
-                  <AdminButton
-                    disabled={busy}
-                    onClick={() =>
-                      set(
-                        "faq",
-                        content.faq.filter((f) => f.id !== item.id),
-                      )
-                    }
-                  >
-                    {tb("actions.remove")}
-                  </AdminButton>
-                </div>
-              ) : null}
+              <div className="flex gap-2">
+                <AdminButton
+                  className="min-h-11"
+                  aria-label={tb("actions.moveUp")}
+                  disabled={busy || index === 0}
+                  onClick={() => moveFaq(index, -1)}
+                >
+                  ↑
+                </AdminButton>
+                <AdminButton
+                  className="min-h-11"
+                  aria-label={tb("actions.moveDown")}
+                  disabled={busy || index === content.faq.length - 1}
+                  onClick={() => moveFaq(index, 1)}
+                >
+                  ↓
+                </AdminButton>
+                <AdminButton
+                  className="min-h-11"
+                  disabled={busy}
+                  onClick={() =>
+                    set(
+                      "faq",
+                      content.faq.filter((f) => f.id !== item.id),
+                    )
+                  }
+                >
+                  {tb("actions.remove")}
+                </AdminButton>
+              </div>
             </div>
           ))}
-          {!archived ? (
-            <AdminButton
-              disabled={busy}
-              onClick={() =>
-                set("faq", [
-                  ...content.faq,
-                  { id: crypto.randomUUID(), question: "", answer: "" },
-                ])
-              }
-            >
-              {t("admin.addFaq")}
-            </AdminButton>
-          ) : null}
+          <AdminButton
+            className="min-h-11"
+            disabled={busy}
+            onClick={() =>
+              set("faq", [
+                ...content.faq,
+                { id: crypto.randomUUID(), question: "", answer: "" },
+              ])
+            }
+          >
+            {t("admin.addFaq")}
+          </AdminButton>
         </>
       ) : selection === "booking" ? (
         <>
-          {input("avantio_id", t("admin.fields.avantioId"), false, true)}
-          {input("default_booking_url", te("bookingBase"), false, true)}
+          {input("avantio_id", t("admin.fields.avantioId"))}
+          {input("default_booking_url", te("bookingBase"))}
           {input("booking_url", te("bookingUrl"))}
           <p className="text-xs text-ink-soft">{te("bookingHint")}</p>
           <Checkbox
             label={t("admin.fields.bookingEnabled")}
             checked={content.booking_enabled}
             onChange={(event) => set("booking_enabled", event.target.checked)}
-            disabled={!editableShared || busy}
+            disabled={busy}
           />
           <p className="text-xs text-ink-soft">
             {t("admin.fields.bookingEnabledHint")}
@@ -793,54 +819,78 @@ export function BuildingLocaleEditor({
     </div>
   );
 
-  const editorialState = `${locale.toUpperCase()} · ${
+  const editorialState = `${locale.toUpperCase()} · ${[
     archived
       ? te("archived")
-      : [
-          state.model.published ? te("published") : te("unpublished"),
-          ...(state.model.draft ? [te("draftSaved")] : []),
-          ...(dirty ? [te("unsaved")] : []),
-        ].join(" · ")
-  }`;
+      : state.model.published
+        ? te("published")
+        : te("unpublished"),
+    ...(state.model.draft ? [te("draftSaved")] : []),
+    ...(dirty ? [te("unsaved")] : []),
+  ].join(" · ")}`;
   const titleId = `${fieldPrefix}-leave-title`;
   const descriptionId = `${fieldPrefix}-leave-description`;
   return (
     <>
       <div
-        className="min-w-0 selection:bg-accent/20 selection:text-ink"
+        className="w-full min-w-0 max-w-3xl selection:bg-accent/20 selection:text-ink"
         data-building-editor="form"
         aria-busy={busy}
       >
         <header className="sticky top-0 z-20 space-y-3 border-b border-line bg-bg py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             {!initial ? (
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <AdminButton
+                  className="min-h-11"
+                  onClick={() => leave("/admin/buildings")}
+                  disabled={busy}
+                >
+                  <UiIcon name="nav-arrow-left" size={16} />
+                  {te("back")}
+                </AdminButton>
+                <h1
+                  className="min-w-0 flex-1 truncate font-serif text-2xl"
+                  title={content.name || te("newEntity")}
+                >
+                  {content.name || te("newEntity")}
+                </h1>
+              </div>
+            ) : (
               <AdminButton
-                onClick={() => leave("/admin/buildings")}
+                className="min-h-11"
                 disabled={busy}
+                onClick={() =>
+                  archived
+                    ? void lifecycle("restore")
+                    : setConfirmAction("archive")
+                }
               >
-                <UiIcon name="nav-arrow-left" size={16} />
-                {te("back")}
+                {te(
+                  operation === "archive"
+                    ? "archiving"
+                    : operation === "restore"
+                      ? "restoring"
+                      : archived
+                        ? "restore"
+                        : "archive",
+                )}
               </AdminButton>
-            ) : null}
-            <h1
-              className="min-w-0 flex-1 truncate font-serif text-2xl"
-              title={content.name || te("newEntity")}
-            >
-              {content.name || te("newEntity")}
-            </h1>
-            <div className="flex flex-wrap gap-2">
+            )}
+            <div className="ml-auto flex flex-wrap gap-2">
               <AdminButton
+                className="min-h-11"
                 onClick={() => void mutate("save")}
-                disabled={busy || archived || state.conflict || !entityId}
+                disabled={busy || state.conflict || !entityId}
               >
                 {te(operation === "save" ? "saving" : "saveDraft")}
               </AdminButton>
               <AdminButton
+                className="min-h-11"
                 variant="primary"
                 onClick={() => void mutate("publish")}
                 disabled={
                   busy ||
-                  archived ||
                   state.conflict ||
                   !persisted ||
                   !state.model.draft ||
@@ -899,7 +949,7 @@ export function BuildingLocaleEditor({
                         ?.focus();
                     }
                   }}
-                  className={`min-h-10 min-w-11 rounded px-3 py-2 text-xs font-semibold transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === key ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}
+                  className={`min-h-11 min-w-11 rounded px-3 py-2 text-xs font-semibold transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === key ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}
                 >
                   {key.toUpperCase()}
                 </button>
@@ -920,6 +970,12 @@ export function BuildingLocaleEditor({
           aria-live="polite"
           className="space-y-2 py-5 text-sm text-ink-soft focus:outline-none"
         >
+          {archived ? (
+            <>
+              <p>{te("archivedHint")}</p>
+              <p>{te("restoreHint")}</p>
+            </>
+          ) : null}
           <p>{persisted ? te("manual") : te("firstSave")}</p>
           {locale !== "en" ? (
             <p>
@@ -948,6 +1004,7 @@ export function BuildingLocaleEditor({
           ))}
           {state.conflict ? (
             <AdminButton
+              className="min-h-11"
               disabled={busy}
               onClick={() => {
                 if (anyDirty) setLeaveTarget("__reload__");
@@ -979,7 +1036,7 @@ export function BuildingLocaleEditor({
             <h2 id={fieldId("content-heading")} className="font-serif text-2xl">
               {te("localizedHeading", { locale: locale.toUpperCase() })}
             </h2>
-            <div className="grid min-w-0 gap-5 md:grid-cols-2">
+            <div className="min-w-0 space-y-5">
               {input("name", t("admin.fields.name"))}
               {input("teaser", t("admin.fields.teaser"), true)}
             </div>
@@ -994,10 +1051,8 @@ export function BuildingLocaleEditor({
             <p className="text-sm leading-relaxed text-ink-soft">
               {te("sharedSaveHint")}
             </p>
-            <div className="grid min-w-0 gap-5 md:grid-cols-2">
-              {renderSection("identity")}
-            </div>
-            <div className="grid min-w-0 items-start gap-8 md:grid-cols-2">
+            <div className="min-w-0 space-y-5">{renderSection("identity")}</div>
+            <div className="min-w-0 space-y-5">
               <div className="space-y-5">
                 {imageField("cover_media_id", t("admin.fields.cover"))}
                 {imageField("og_image_media_id", t("admin.fields.ogImage"))}
@@ -1043,15 +1098,8 @@ export function BuildingLocaleEditor({
         </div>
         {persisted ? (
           <div className="mt-10 flex flex-wrap justify-end gap-3 border-t border-line pt-6">
-            {!archived ? (
-              <AdminButton
-                disabled={busy}
-                onClick={() => setConfirmAction("archive")}
-              >
-                {te("archive")}
-              </AdminButton>
-            ) : null}
             <AdminButton
+              className="min-h-11"
               variant="danger"
               disabled={busy}
               onClick={() => setConfirmAction("delete")}
@@ -1079,10 +1127,15 @@ export function BuildingLocaleEditor({
           {te("leaveBody")}
         </p>
         <div className="mt-6 flex justify-end gap-3">
-          <AdminButton autoFocus onClick={() => setLeaveTarget(null)}>
+          <AdminButton
+            className="min-h-11"
+            autoFocus
+            onClick={() => setLeaveTarget(null)}
+          >
             {te("cancel")}
           </AdminButton>
           <AdminButton
+            className="min-h-11"
             variant="primary"
             onClick={() => {
               if (!leaveTarget) return;
@@ -1116,10 +1169,15 @@ export function BuildingLocaleEditor({
           {te(confirmAction === "delete" ? "deleteConfirm" : "archiveConfirm")}
         </h2>
         <div className="mt-6 flex justify-end gap-3">
-          <AdminButton autoFocus onClick={() => setConfirmAction(null)}>
+          <AdminButton
+            className="min-h-11"
+            autoFocus
+            onClick={() => setConfirmAction(null)}
+          >
             {te("cancel")}
           </AdminButton>
           <AdminButton
+            className="min-h-11"
             variant="danger"
             disabled={busy}
             onClick={() => {
