@@ -126,9 +126,11 @@ body:has([data-hero], .mk .hero) [data-site-header]:not(.scrolled):not(:has([dat
   align-items: center;
 }
 /* Mouse focus after a click must not keep a submenu open after leaving both regions.
- * Keyboard focus-visible retains the original focus-within navigation behavior.
+ * During keyboard focus transfer, :focus-within stays set while :focus-visible
+ * briefly matches no link. Keep that interval open so the next link can receive focus.
  */
-[data-site-header] [data-subnav]:not(:hover):not(:has(:focus-visible)) [data-subnav-panel] {
+[data-site-header] [data-subnav]:not(:hover):not(:focus-within) [data-subnav-panel],
+[data-site-header] [data-subnav]:not(:hover):has(:focus:not(:focus-visible)) [data-subnav-panel] {
   visibility: hidden;
   opacity: 0;
   pointer-events: none;

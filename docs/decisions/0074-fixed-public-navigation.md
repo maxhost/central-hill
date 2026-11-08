@@ -14,3 +14,12 @@ rows preserved. Book Label/URL and floating Earn Label remain Settings fields.
 Do not remove global Translations yet: Settings stats/hours, media ALT and city.intro
 policy/legacy closeout remain. This request authorizes closing navigation only;
 no silent replacement of those editors or deletion of their legacy content.
+
+Independent QA found a pre-existing desktop keyboard focus-transfer bug: the
+shared header hide rule used absence of :focus-visible, which also holds briefly
+between two links while their parent remains :focus-within. Root owns the narrow
+src/app/globals.css correction: hide immediately when parent lacks focus-within,
+or an actual focused descendant has mouse (non-focus-visible) focus. This preserves
+mouse-leave/click closing while allowing Tab/Shift+Tab inside the submenu. No JS,
+core component, styling redesign or data change. All other QA cases passed on
+fa6b0f6; only targeted keyboard/mouse confirmation repeats after build.
