@@ -334,3 +334,42 @@ test("validation resolves indexed/UUID nested paths to stable entity fields", ()
     [pageId]: { title: "Guide title", _shared: "Shared" },
   });
 });
+
+
+test("nested image descriptions are localized draft content and remain independent of shared IDs", () => {
+  const photo = "e7910000-0000-4000-8000-000000000011";
+  const secondPhoto = "e7910000-0000-4000-8000-000000000012";
+  const content = tree();
+  content.hero_media_id = photo;
+  content.sections[0]!.header_media_id = photo;
+  content.sections[0]!.places[0]!.media_id = secondPhoto;
+  content.media_alts = { [photo]: "English rooftops", [secondPhoto]: "English cafe" };
+  let w = createGuideWorkspace(model(content), draft());
+  assert.equal(guideLocaleFormDirty(w, "es"), false);
+  w = changeGuideContent(w, "es", { ...w.locales.es.working,
+    media_alts: { [photo]: "Tejados de Lisboa", [secondPhoto]: "Café en español" },
+  });
+  assert.equal(guideFormEnvelope(w, "es").localeMode, "custom");
+  assert.equal(guideLocaleFormDirty(w, "es"), true);
+  assert.equal(Object.hasOwn(guideFormSharedContent(w), "media_alts"), false);
+  assert.equal(w.locales.en.working.media_alts?.[photo], "English rooftops");
+  w = changeGuideContent(w, "en", { ...w.locales.en.working,
+    hero_media_id: secondPhoto,
+  });
+  assert.equal(w.locales.es.working.hero_media_id, secondPhoto);
+  assert.equal(w.locales.es.working.media_alts?.[secondPhoto], "Café en español");
+  const next = structuredClone(content);
+  next.media_alts![photo] = "Updated English rooftops";
+  const incoming = model(next);
+  incoming.locales.en.revision++;
+  w = applyGuideModel(w, "en", incoming);
+  assert.equal(w.locales.es.working.media_alts?.[photo], "Tejados de Lisboa");
+  assert.equal(w.locales.fr.working.media_alts?.[photo], "Updated English rooftops");
+  assert.equal(guideFormEnvelope(w, "es").content.media_alts?.[secondPhoto], "Café en español");
+});
+
+test("legacy Guide working snapshots retain absent ALT maps and stay clean", () => {
+  const w = createGuideWorkspace(model(tree()), draft());
+  assert.equal(Object.hasOwn(guideFormEnvelope(w, "en").content, "media_alts"), false);
+  assert.equal(guideLocaleFormDirty(w, "en"), false);
+});

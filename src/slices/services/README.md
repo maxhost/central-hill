@@ -1,5 +1,12 @@
 # Slice `services` (S5)
 
+Image descriptions are edited beside the cover, gallery, social image and nested
+itinerary pickers in each locale tab. `ServiceContent.media_alts` is optional,
+localized JSON keyed by media UUID; it follows the existing inherit/custom and
+Save draft/Publish lifecycle. Image IDs remain shared. Readers use only the chosen
+locale's published descriptions, then the existing asset/name fallback when blank;
+legacy asset translations are never edited by these controls (ADR0076).
+
 Service booking cards omit the Ask on WhatsApp button. Its legacy whatsappCta
 override is hidden/preserved in BO; the primary request/booking action remains.
 

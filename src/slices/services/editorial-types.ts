@@ -1,10 +1,11 @@
+import type { MediaAlts } from '@core/media/alt';
 import type { Locale } from '@core/db/columns';
 import type { AdminMediaPreview } from '@slices/backoffice/contract';
 import type { ServiceSaveInput } from './admin/validation';
 
 export const SERVICE_EDITOR_LOCALES = ['en', 'es', 'pt', 'fr'] as const;
 export const SERVICE_TARGET_LOCALES = ['es', 'pt', 'fr'] as const;
-export type ServiceContent = Omit<ServiceSaveInput, 'id' | 'slug' | 'status' | 'cover_media_id'> & { cover_media_id: string | null };
+export type ServiceContent = Omit<ServiceSaveInput, 'id' | 'slug' | 'status' | 'cover_media_id'> & { cover_media_id: string | null; media_alts?: MediaAlts };
 export interface ServiceEnvelope { schemaVersion: 1; localeMode: 'inherit' | 'custom'; content: ServiceContent }
 export const SERVICE_SHARED_KEYS = ['position', 'category_id', 'cover_media_id', 'og_image_media_id', 'price_from', 'rating_tenths', 'booking_type', 'presentation', 'gallery'] as const;
 export type ServiceSharedContent = Pick<ServiceContent, typeof SERVICE_SHARED_KEYS[number]> & {

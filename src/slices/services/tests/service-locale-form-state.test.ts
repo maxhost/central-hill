@@ -339,3 +339,46 @@ test("pruning an unused pending row retains another language's unsaved shared sl
     image2,
   );
 });
+
+
+test("image ALT is localized draft content and survives shared photo changes and EN refresh", () => {
+  const source = envelope();
+  source.content.cover_media_id = image1;
+  source.content.gallery = [image1, image2];
+  source.content.media_alts = { [image1]: "English cover", [image2]: "Second photo" };
+  let w = createServiceWorkspace(model(source), category);
+  assert.deepEqual(serviceFormEnvelope(w, "es").content.media_alts, source.content.media_alts);
+  assert.equal(serviceLocaleFormDirty(w, "es"), false);
+  w = changeServiceForm(w, "es", {
+    ...w.locales.es.working,
+    media_alts: { ...w.locales.es.working.media_alts, [image1]: "Fachada en español" },
+  });
+  assert.equal(serviceFormEnvelope(w, "es").localeMode, "custom");
+  assert.equal(serviceLocaleFormDirty(w, "es"), true);
+  assert.equal(w.locales.en.working.media_alts?.[image1], "English cover");
+  assert.equal(w.locales.pt.working.media_alts?.[image1], "English cover");
+  assert.equal(Object.hasOwn(serviceFormSharedContent(w, "es"), "media_alts"), false);
+  w = changeServiceForm(w, "en", {
+    ...w.locales.en.working,
+    cover_media_id: image2,
+    gallery: [image2, image1],
+  });
+  assert.equal(w.locales.es.working.cover_media_id, image2);
+  assert.deepEqual(w.locales.es.working.gallery, [image2, image1]);
+  assert.equal(w.locales.es.working.media_alts?.[image1], "Fachada en español");
+  assert.equal(w.locales.es.working.media_alts?.[image2], "Second photo");
+  const newer = structuredClone(source);
+  newer.content.media_alts![image1] = "New English description";
+  const incoming = model(newer);
+  incoming.locales.en.revision++;
+  w = applyServiceModel(w, "en", incoming);
+  assert.equal(w.locales.es.working.media_alts?.[image1], "Fachada en español");
+  assert.equal(w.locales.fr.working.media_alts?.[image1], "New English description");
+  assert.equal(serviceFormEnvelope(w, "es").content.media_alts?.[image1], "Fachada en español");
+});
+
+test("legacy Services omit ALT maps until an actual description is authored", () => {
+  const w = createServiceWorkspace(model(envelope()), category);
+  assert.equal(Object.hasOwn(serviceFormEnvelope(w, "en").content, "media_alts"), false);
+  assert.equal(serviceLocaleFormDirty(w, "en"), false);
+});

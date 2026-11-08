@@ -1,3 +1,4 @@
+import type { MediaAlts } from "@core/media/alt";
 import { EMPTY_DETAIL } from "../detail";
 import type { ServiceCopy } from "../copy";
 import {
@@ -140,6 +141,7 @@ export interface FormState {
   /** Rich detail sections, as an editable draft (serialised by `draftToDetail`). */
   detail: DetailDraft;
   gallery: string[];
+  media_alts?: MediaAlts;
   presentation: ServicePresentation | null;
   copy: ServiceCopy;
 }
@@ -172,6 +174,7 @@ export function initialState(
     meta_description: data?.meta_description ?? "",
     detail: detailToDraft(data?.detail ?? EMPTY_DETAIL),
     gallery: [...(data?.gallery ?? [])],
+    ...(data && "media_alts" in data && data.media_alts !== undefined ? { media_alts: structuredClone(data.media_alts) } : {}),
     presentation: data?.presentation
       ? structuredClone(data.presentation)
       : null,
@@ -220,6 +223,7 @@ export function buildPayload(s: FormState, id: string | undefined) {
     meta_description: orNull(s.meta_description),
     detail: draftToDetail(s.detail),
     gallery: s.gallery,
+    ...(s.media_alts !== undefined ? { media_alts: s.media_alts } : {}),
     presentation: s.presentation,
     copy: s.copy,
   };

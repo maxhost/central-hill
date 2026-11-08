@@ -13,6 +13,7 @@ import {
   FieldGrid,
   AdminButton,
   MediaField,
+  MediaAltProvider,
   MediaQueueProvider,
   useMediaQueue,
   useToast,
@@ -384,6 +385,7 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
     />
   );
   return (
+    <MediaAltProvider locale={locale} value={page.media_alts} onChange={value => updatePage("media_alts", value)} disabled={disabled}>
     <div className="space-y-6">
       <div className="space-y-4 border-b border-line pb-5">
         <Link
@@ -875,5 +877,6 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
         </Link>
       </p>
     </div>
+    </MediaAltProvider>
   );
 }

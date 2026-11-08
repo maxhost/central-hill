@@ -1,4 +1,5 @@
 import "server-only";
+import { resolveMediaAlt } from "@core/media/alt";
 import { unstable_cache } from "next/cache";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
@@ -152,7 +153,7 @@ function mapSummary(row: ServiceRow, ctx: SummaryCtx): ServiceSummary {
   const cover = row.cover_media_id
     ? toImageData(
         media.get(row.cover_media_id),
-        content.get("media_asset", row.cover_media_id, "alt") ?? name,
+        resolveMediaAlt(ctx.publications.get(row.id)?.content.media_alts, row.cover_media_id, content.get("media_asset", row.cover_media_id, "alt") ?? name),
       )
     : null;
 
@@ -230,7 +231,7 @@ export function listServices(
 ): Promise<ServiceSummary[]> {
   return unstable_cache(
     () => _listServices(locale, categorySlug),
-    ["services:listServices:v3", locale, categorySlug ?? "all"],
+    ["services:listServices:v4", locale, categorySlug ?? "all"],
     { tags: [SERVICE_TAGS.list] },
   )();
 }
@@ -287,7 +288,7 @@ async function _getServiceBySlug(
     for (const mid of galleryIds) {
       const img = toImageData(
         galleryMedia.get(mid),
-        galleryAlt.get("media_asset", mid, "alt") ?? summary.name,
+        resolveMediaAlt(publication?.content.media_alts, mid, galleryAlt.get("media_asset", mid, "alt") ?? summary.name),
       );
       if (img) gallery.push(img);
     }
@@ -308,8 +309,7 @@ async function _getServiceBySlug(
     ogImage =
       toImageData(
         ogMap.get(extra.og_image_media_id),
-        ctx.content.get("media_asset", extra.og_image_media_id, "alt") ??
-          summary.name,
+        resolveMediaAlt(publication?.content.media_alts, extra.og_image_media_id, ctx.content.get("media_asset", extra.og_image_media_id, "alt") ?? summary.name),
       ) ?? summary.cover;
   }
 
@@ -363,7 +363,7 @@ async function _getServiceBySlug(
     for (const mid of stepIds) {
       const img = toImageData(
         stepMedia.get(mid),
-        stepAlt.get("media_asset", mid, "alt") ?? "",
+        resolveMediaAlt(publication?.content.media_alts, mid, stepAlt.get("media_asset", mid, "alt") ?? ""),
       );
       if (img) stepImages[mid] = img;
     }
@@ -395,7 +395,7 @@ export function getServiceBySlug(
   // old shape is never served to the new renderer.
   return unstable_cache(
     () => _getServiceBySlug(locale, slugValue),
-    ["services:getServiceBySlug:v4", locale, slugValue],
+    ["services:getServiceBySlug:v5", locale, slugValue],
     { tags: [SERVICE_TAGS.list] },
   )();
 }

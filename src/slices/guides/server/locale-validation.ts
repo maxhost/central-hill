@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { mediaAltsSchema } from "@core/media/alt";
 import { position, slug } from "@core/validation/primitives";
 import { guideTemplate, guideLayout } from "../validation";
 import {
@@ -39,6 +40,7 @@ export const guideEnvelopeSchema = z.strictObject({
     hero_media_id: nullableId,
     og_image_media_id: nullableId,
     sections: z.array(section).max(64),
+    media_alts: mediaAltsSchema.optional(),
   }),
 });
 const sectionShared = z.strictObject({

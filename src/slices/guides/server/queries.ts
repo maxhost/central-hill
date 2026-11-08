@@ -1,4 +1,5 @@
 import "server-only";
+import { resolveMediaAlt } from "@core/media/alt";
 import { unstable_cache } from "next/cache";
 import { and, asc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
@@ -155,7 +156,7 @@ async function _listGuideCityGroups(locale: Locale): Promise<GuideCityGroup[]> {
       hero: r.hero_media_id
         ? toImageData(
             media.get(r.hero_media_id),
-            content.get("media_asset", r.hero_media_id, "alt") ?? title,
+            resolveMediaAlt(publication?.media_alts, r.hero_media_id, content.get("media_asset", r.hero_media_id, "alt") ?? title),
             HERO_W,
             HERO_H,
           )
@@ -180,7 +181,7 @@ async function _listGuideCityGroups(locale: Locale): Promise<GuideCityGroup[]> {
 export function listGuideCityGroups(locale: Locale): Promise<GuideCityGroup[]> {
   return unstable_cache(
     () => _listGuideCityGroups(locale),
-    ["guides:v2:listGuideCityGroups", locale],
+    ["guides:v3:listGuideCityGroups", locale],
     { tags: [GUIDE_TAGS.list, GEO_TAGS.list] },
   )();
 }
@@ -358,7 +359,7 @@ async function _getGuidePage(
       image: p.media_id
         ? toImageData(
             media.get(p.media_id),
-            content.get("media_asset", p.media_id, "alt") ?? name,
+            resolveMediaAlt(publication?.envelope.content.media_alts, p.media_id, content.get("media_asset", p.media_id, "alt") ?? name),
             TILE_W,
             TILE_H,
           )
@@ -385,7 +386,7 @@ async function _getGuidePage(
         headerImage: s.header_media_id
           ? toImageData(
               media.get(s.header_media_id),
-              content.get("media_asset", s.header_media_id, "alt") ?? sTitle,
+              resolveMediaAlt(publication?.envelope.content.media_alts, s.header_media_id, content.get("media_asset", s.header_media_id, "alt") ?? sTitle),
               TILE_W,
               TILE_H,
             )
@@ -406,7 +407,7 @@ async function _getGuidePage(
   const hero = page.hero_media_id
     ? toImageData(
         media.get(page.hero_media_id),
-        content.get("media_asset", page.hero_media_id, "alt") ?? title,
+        resolveMediaAlt(publication?.envelope.content.media_alts, page.hero_media_id, content.get("media_asset", page.hero_media_id, "alt") ?? title),
         HERO_W,
         HERO_H,
       )
@@ -416,7 +417,7 @@ async function _getGuidePage(
     ogImage =
       toImageData(
         media.get(page.og_image_media_id),
-        content.get("media_asset", page.og_image_media_id, "alt") ?? title,
+        resolveMediaAlt(publication?.envelope.content.media_alts, page.og_image_media_id, content.get("media_asset", page.og_image_media_id, "alt") ?? title),
         HERO_W,
         HERO_H,
       ) ?? hero;
@@ -445,7 +446,7 @@ export function getGuidePage(
 ): Promise<GuidePageDetail | null> {
   return unstable_cache(
     () => _getGuidePage(locale, citySlug, pageSlug),
-    ["guides:v2:getGuidePage", locale, citySlug, pageSlug],
+    ["guides:v3:getGuidePage", locale, citySlug, pageSlug],
     { tags: [GUIDE_TAGS.list, GEO_TAGS.list] },
   )();
 }
@@ -597,7 +598,7 @@ async function _listTopRecommendations(
         : (content.get(GUIDE_PLACE, r.id, "name") ?? "");
       const image = toImageData(
         media.get(r.media_id!),
-        content.get("media_asset", r.media_id!, "alt") ?? name,
+        resolveMediaAlt(publications.get(r.page_id)?.envelope.content.media_alts, r.media_id, content.get("media_asset", r.media_id!, "alt") ?? name),
         TILE_W,
         TILE_H,
       );
@@ -633,7 +634,7 @@ export function listTopRecommendations(
         normalizedRecommendationScope(scope),
       ),
     [
-      "guides:v2:listTopRecommendations",
+      "guides:v3:listTopRecommendations",
       locale,
       String(limit),
       recommendationScopeKey(scope),

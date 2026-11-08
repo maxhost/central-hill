@@ -105,3 +105,22 @@ test("localized equality ignores neutral media and JSONB object order but preser
   other.content.sections[0]!.title = "Spanish";
   assert.equal(guideLocalizedEqual(en.content, other.content), false);
 });
+
+
+test("Guide ALT map is validated localized content without changing shared contracts", () => {
+  const e = envelope();
+  e.content.media_alts = { [section]: "Localized section photo" };
+  const checked = checkGuideEnvelope(e, guide);
+  assert.deepEqual(checked.errors, {});
+  assert.deepEqual(checked.envelope?.content.media_alts, e.content.media_alts);
+  const shared = guideSharedContent(e.content);
+  assert.equal(Object.hasOwn(shared, "media_alts"), false);
+  const own = structuredClone(e);
+  own.content.media_alts![section] = "Photo en français";
+  assert.equal(guideLocalizedEqual(e.content, own.content), false);
+  assert.equal(overlayGuideShared(own, shared).content.media_alts?.[section], "Photo en français");
+  e.content.media_alts = { invalid: "Wrong identity" };
+  assert.ok(Object.keys(checkGuideEnvelope(e, guide).errors).length);
+  e.content.media_alts = { [section]: "a".repeat(501) };
+  assert.ok(Object.keys(checkGuideEnvelope(e, guide).errors).length);
+});

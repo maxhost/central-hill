@@ -1,3 +1,4 @@
+import type { MediaAlts } from '@core/media/alt';
 import type { Locale } from '@core/db/columns';
 import type { AdminMediaPreview } from '@slices/backoffice/contract';
 import type { GuidePageEdit, GuidePlaceEdit, GuideCityOption, GuideStatus } from './admin/model';
@@ -5,7 +6,7 @@ import type { GuideLayout, GuideRecommendationType } from './contract';
 import type { GuideSectionPresentation } from './presentation';
 
 export const GUIDE_EDITOR_LOCALES = ['en', 'es', 'pt', 'fr'] as const;
-export type GuideContent = Omit<GuidePageEdit, 'id' | 'slug' | 'slugs' | 'status'>;
+export type GuideContent = Omit<GuidePageEdit, 'id' | 'slug' | 'slugs' | 'status'> & { media_alts?: MediaAlts };
 export interface GuideEnvelope { schemaVersion: 1; localeMode: 'inherit' | 'custom'; content: GuideContent }
 export const GUIDE_SHARED_ROOT_KEYS = ['city_id', 'template', 'position', 'hero_media_id', 'og_image_media_id'] as const;
 export const GUIDE_SHARED_PLACE_KEYS = ['media_id', 'address', 'phone', 'price_tier', 'latitude', 'longitude'] as const;

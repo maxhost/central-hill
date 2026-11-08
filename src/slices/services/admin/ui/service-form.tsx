@@ -16,6 +16,7 @@ import {
   StateBadge,
   type AdminMediaPreview,
   MediaField,
+  MediaAltProvider,
   MediaGalleryField,
   Select,
   TextArea,
@@ -460,6 +461,7 @@ export function ServiceForm({
     know_practical: t("detail.knowPractical"),
   };
   return (
+    <MediaAltProvider locale={locale} value={state.media_alts} onChange={value => set("media_alts", value)} disabled={busy}>
     <div ref={root} className="space-y-6">
       <div className="space-y-4 border-b border-line pb-5">
         <Link
@@ -1109,5 +1111,6 @@ export function ServiceForm({
         />
       </fieldset>
     </div>
+    </MediaAltProvider>
   );
 }

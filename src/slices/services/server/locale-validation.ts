@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { mediaAltsSchema } from "@core/media/alt";
 import {
   serviceSaveInput,
   servicePresentationErrors,
@@ -25,6 +26,7 @@ export const serviceDraftContentSchema = serviceSaveInput
     body: z.string().trim().max(6000),
     cover_media_id: z.uuid().nullable(),
     cta_url: url,
+    media_alts: mediaAltsSchema.optional(),
   });
 export const serviceSharedSchema = serviceDraftContentSchema
   .pick({

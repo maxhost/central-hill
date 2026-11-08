@@ -280,3 +280,22 @@ test("Cleared legacy translated duration and CTA labels never revive stale plain
   assert.equal(identity.duration_label, "Stale duration column");
   assert.equal(identity.cta_label, "Stale CTA column");
 });
+
+
+test("ALT maps pass locale validation as localized data and cannot enter common state", () => {
+  const e = envelope();
+  e.content.media_alts = { [mediaA]: "Own nested image description" };
+  const checked = checkServiceEnvelope(e);
+  assert.deepEqual(checked.errors, {});
+  assert.equal(checked.envelope?.content.media_alts?.[mediaA], "Own nested image description");
+  assert.equal(Object.hasOwn(serviceSharedContent(e.content), "media_alts"), false);
+  const own = structuredClone(e);
+  own.content.media_alts![mediaA] = "Descripción propia";
+  assert.equal(serviceLocalizedEqual(e.content, own.content), false);
+  assert.equal(overlayServiceShared(own, serviceSharedContent(e.content)).content.media_alts?.[mediaA], "Descripción propia");
+  assert.equal(serviceSharedSchema.safeParse({ ...serviceSharedContent(e.content), media_alts: e.content.media_alts }).success, false);
+  e.content.media_alts = { invalid: "No UUID" };
+  assert.ok(Object.keys(checkServiceEnvelope(e).errors).length);
+  e.content.media_alts = { [mediaA]: "a".repeat(501) };
+  assert.ok(Object.keys(checkServiceEnvelope(e).errors).length);
+});

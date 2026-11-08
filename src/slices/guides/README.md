@@ -1,5 +1,12 @@
 # Slice `guides` (S6)
 
+Image descriptions are edited beside hero/social, section and place pickers in
+each language tab. Optional `GuideContent.media_alts` stores localized descriptions
+by media UUID in the existing draft/publication JSON. Image identities remain
+shared; ALT follows the existing inherit/custom and explicit per-language Publish
+lifecycle. Detail, index and recommendations resolve the selected publication's
+ALT first, then the existing asset/title/name fallback for blanks (ADR0076).
+
 The **"What to Do"** city guides — a public **index + guide-page detail** built on a
 `guide_page → guide_section → guide_place` tree, scoped to a city. Fully extensible:
 add cities, pages, sections and places at will (content brief 4.2; Lisbon first, Porto
