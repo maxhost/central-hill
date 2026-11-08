@@ -43,7 +43,8 @@ EDITABLE_SITE_ICON_KEYS in site-icons.ts, isSettingsEditorialEntity predicate in
 manual-locale-fields.ts/contract; optionalDTOoffice_hours_translations; adminvalidation
 activekeys +retiredkeys z.unknown().optional() so stalehiddeninvalidJSON/statsdon't
 blockSave. Root later owns messages4, Translation admin/{actions,queries}.ts/
-server/generate.ts/admin/ui/review.tsx +tests/settings-website-guards.test.ts updates,
+server/generate.ts/admin/ui/review.tsx +tests/settings-website-guards.test.ts and
+fixed-navigation-guards.test.ts updates (other-copy assertion moves to unretiredFAQ),
 Pages ui/about-office.ts/ui/about-page.ts +newtests/office-hours-labels.test.ts,
 Settings tests/settings-admin.test.ts +newtests/hours-labels.test.ts, READMEs/
 masterplan/data-model/AGENTS/execution/ADR. No other shared/core changes.

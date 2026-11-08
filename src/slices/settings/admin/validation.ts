@@ -1,10 +1,6 @@
-/**
- * Admin **save** schemas for slice `settings` (S12) — the company-globals singleton
- * and the navigation builder. Mirrors the public `companySettingsInput`/`navItemInput`
- * in the editor's post shape: optional fields are `nullable` (the client posts `null`
- * for empty controls), and [T] labels (stat labels, office-hours label, nav labels)
- * carry `min(1)` where required. `avantio_widget_config` arrives as a parsed object.
- */
+/** Active Settings save schema. Retired stats/Avantio/listing values are accepted only
+ * for stale-client compatibility and ignored by the action; no hidden field blocks Save.
+ * Website, button and hours translations use manual Settings controls. */
 import { z } from "zod";
 import { navigationCtasByLocaleSchema } from "../navigation-cta-types";
 import { iconKey } from "@core/validation/icon-key";
@@ -52,7 +48,7 @@ export const companySettingsSaveInput = z.object({
   avantio_widget_config: z.unknown().optional(),
   show_building_location: z.unknown().optional(),
   show_building_count: z.unknown().optional(),
-  /** Every site icon, as a strict Iconoir name (ADR 0034 amendment 2). */
+  /** Active site icons only; retired how-it-works keys are stripped and preserved in storage. */
   site_icons: z.object(
     Object.fromEntries(EDITABLE_SITE_ICON_KEYS.map((k) => [k, iconKey])) as Record<EditableSiteIconKey, typeof iconKey>,
   ),

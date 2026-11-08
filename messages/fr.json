@@ -1065,7 +1065,7 @@
       },
       "globals": {
         "title": "Paramètres de l’entreprise",
-        "subtitle": "Contact, statistiques, bureau et configuration Avantio du site.",
+        "subtitle": "Coordonnées, boutons de navigation, bureau et icônes par défaut du site.",
         "sections": {
           "contact": "Contact",
           "social": "Réseaux sociaux",
@@ -1115,7 +1115,7 @@
           "apartments": "Appartements"
         },
         "icons": {
-          "intro": "Icônes ayant un rôle fixe sur le site. Choisissez n’importe quelle icône Iconoir ; les pages publiques se mettent à jour à l’enregistrement.",
+          "intro": "Icônes de l’interface et icônes par défaut du contenu. Les icônes choisies dans chaque contenu conservent leur propre sélection.",
           "default": "Par défaut : {name}",
           "groups": {
             "general": "Général",
@@ -1162,6 +1162,10 @@
             "guide_travellers": "Voyageurs",
             "guide_custom": "Personnalisé"
           }
+        },
+        "hoursLabels": {
+          "label": "Libellé des horaires {locale}",
+          "hint": "Laissez vide pour utiliser le libellé EN, ou le texte par défaut de la langue si EN est vide."
         },
         "navigationCtas": {
           "title": "Boutons de navigation",

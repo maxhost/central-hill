@@ -1065,7 +1065,7 @@
       },
       "globals": {
         "title": "Company settings",
-        "subtitle": "Site-wide contact, stats, office and Avantio configuration.",
+        "subtitle": "Site-wide contact, navigation buttons, office and default icons.",
         "sections": {
           "contact": "Contact",
           "social": "Social",
@@ -1115,7 +1115,7 @@
           "apartments": "Apartments"
         },
         "icons": {
-          "intro": "Icons with a fixed role on the site. Pick any Iconoir icon; the public pages update on save.",
+          "intro": "Shared interface icons and default content icons. Icons selected in individual content keep their own setting.",
           "default": "Default: {name}",
           "groups": {
             "general": "General",
@@ -1162,6 +1162,10 @@
             "guide_travellers": "Travellers",
             "guide_custom": "Custom"
           }
+        },
+        "hoursLabels": {
+          "label": "Hours label {locale}",
+          "hint": "Leave blank to use Hours label EN, or the language default when EN is blank."
         },
         "navigationCtas": {
           "title": "Navigation buttons",

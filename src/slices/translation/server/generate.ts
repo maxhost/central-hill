@@ -1,4 +1,4 @@
-import { isFixedNavigationEntity, isSettingsManualLocaleField } from "@slices/settings/contract";
+import { isFixedNavigationEntity, isSettingsEditorialEntity, isSettingsManualLocaleField } from "@slices/settings/contract";
 import { isTestimonialEditorialEntity } from "@slices/testimonials/contract";
 import { isGuideEditorialEntity } from "@slices/guides/contract";
 import { isPropertyEditorialEntity } from "@slices/buildings/contract";
@@ -45,6 +45,7 @@ export async function generateDrafts(
   id: string,
   opts: GenerateOptions = {},
 ): Promise<GenerateSummary> {
+  if (isSettingsEditorialEntity(type)) throw new Error("Company settings are edited in Settings.");
   if (isFixedNavigationEntity(type)) throw new Error("Navigation is fixed in code and cannot be translated here.");
   if (
     isGuideEditorialEntity(type) ||

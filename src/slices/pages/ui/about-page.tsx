@@ -359,7 +359,7 @@ export async function AboutPage({ locale, preview = false, page: injectedPage }:
             <ContactSplit
               className="mt-[48px]"
               infoTitle={c.contact.office_title}
-              rows={officeSplitRows(officeRows(globals, officeLabels))}
+              rows={officeSplitRows(officeRows(globals, officeLabels, locale))}
               formTitle={c.contact.form.headline}
               formIntro={c.contact.form.subheadline || undefined}
             >

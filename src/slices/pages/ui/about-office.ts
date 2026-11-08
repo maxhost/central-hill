@@ -1,4 +1,5 @@
-import type { SiteGlobals } from "@slices/settings/contract";
+import type { Locale } from "@core/db/columns";
+import { OFFICE_HOURS_DEFAULT_LABELS, OFFICE_HOURS_DEFAULT_VALUES, type SiteGlobals } from "@slices/settings/contract";
 import { orMessage } from "./or-message";
 
 /**
@@ -7,7 +8,7 @@ import { orMessage } from "./or-message";
  * is set).
  *
  * - Labels: `contact.office_labels.<key>` → the i18n `pages.about.office.<key>` (`orMessage`).
- *   "Office Hours" keeps its Settings label (`officeHoursLabel`, else "Office Hours").
+ *   "Office Hours" keeps its Settings label (`officeHoursLabel`, else the locale default).
  * - Values: Settings (`getGlobals`). Address / bookings phone / email / hours fall back to the
  *   mock's literals only when the settings row is missing; the check-in phone and the website
  *   have no fallback — blank (or no row) hides their row.
@@ -30,7 +31,6 @@ const OFFICE_FALLBACK = {
   address: "Rua da Bempostinha 21A, 1150-065 Lisboa, Portugal",
   phone: "+351 910 075 725",
   email: "info@centralhill.pt",
-  hours: "Monday – Friday · 09:30 – 18:00",
 };
 
 export const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, "")}`;
@@ -56,7 +56,7 @@ type OfficeGlobals = Pick<
 >;
 
 /** The office panel rows, in page order; check-in and website only when set in Settings. */
-export function officeRows(globals: OfficeGlobals | null, labels: OfficeLabels): OfficeRow[] {
+export function officeRows(globals: OfficeGlobals | null, labels: OfficeLabels, locale: Locale = "en"): OfficeRow[] {
   const phone = globals?.phone || OFFICE_FALLBACK.phone;
   const email = globals?.email || OFFICE_FALLBACK.email;
   const checkin = globals?.checkinPhone?.trim() || "";
@@ -69,8 +69,8 @@ export function officeRows(globals: OfficeGlobals | null, labels: OfficeLabels):
     website ? { key: "website", label: labels.website, text: websiteText(website), href: website } : null,
     {
       key: "hours",
-      label: globals?.officeHoursLabel || "Office Hours",
-      text: globals?.officeHours || OFFICE_FALLBACK.hours,
+      label: globals?.officeHoursLabel || OFFICE_HOURS_DEFAULT_LABELS[locale],
+      text: globals?.officeHours || OFFICE_HOURS_DEFAULT_VALUES[locale],
     },
   ];
   return rows.filter((r): r is OfficeRow => r !== null);

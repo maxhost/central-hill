@@ -51,12 +51,12 @@ test("accepts complete, valid globals", () => {
   assert.equal(companySettingsSaveInput.safeParse(validGlobals()).success, true);
 });
 
-test("stat value may be empty but label is required", () => {
+test("retired global stats do not block an active Settings Save", () => {
   assert.equal(
     companySettingsSaveInput.safeParse(
       validGlobals({ stats: { ...validGlobals().stats, buildings: stat("", "") } }),
     ).success,
-    false,
+    true,
   );
 });
 

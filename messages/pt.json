@@ -1065,7 +1065,7 @@
       },
       "globals": {
         "title": "Definições da empresa",
-        "subtitle": "Contactos, estatísticas, escritório e configuração Avantio do site.",
+        "subtitle": "Contacto, botões de navegação, escritório e ícones predefinidos do site.",
         "sections": {
           "contact": "Contacto",
           "social": "Redes sociais",
@@ -1115,7 +1115,7 @@
           "apartments": "Apartamentos"
         },
         "icons": {
-          "intro": "Ícones com uma função fixa no site. Escolha qualquer ícone Iconoir; as páginas públicas atualizam ao guardar.",
+          "intro": "Ícones da interface e ícones predefinidos do conteúdo. Os ícones escolhidos em cada conteúdo mantêm a sua própria seleção.",
           "default": "Predefinido: {name}",
           "groups": {
             "general": "Geral",
@@ -1162,6 +1162,10 @@
             "guide_travellers": "Viajantes",
             "guide_custom": "Personalizado"
           }
+        },
+        "hoursLabels": {
+          "label": "Etiqueta do horário {locale}",
+          "hint": "Deixe vazio para usar a etiqueta EN, ou o texto predefinido do idioma se EN estiver vazio."
         },
         "navigationCtas": {
           "title": "Botões de navegação",
