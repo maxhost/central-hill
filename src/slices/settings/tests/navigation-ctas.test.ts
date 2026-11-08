@@ -24,7 +24,7 @@ test("target blanks fall back per field, with trimmed values and required Englis
 });
 test("destinations permit HTTPS or safe internal paths and reject unsafe or overlong values", () => {
   for (const value of ["https://booking.example.invalid/es?q=1#dates", "/owners", "/es/owners#start", "/"]) assert.equal(isNavigationCtaUrl(value), true, value);
-  for (const value of ["javascript:alert(1)", "data:text/html,test", "http://booking.example.invalid", "//evil.example.invalid", "/\\evil.example.invalid", "\\evil", "/\nevil", "relative", "#dates", "https://example.invalid/" + "a".repeat(301)]) assert.equal(isNavigationCtaUrl(value), false, value);
+  for (const value of ["javascript:alert(1)", "data:text/html,test", "http://booking.example.invalid", "https:booking.example.invalid", "https:/booking.example.invalid", "//evil.example.invalid", "/\\evil.example.invalid", "\\evil", "/\nevil", "relative", "#dates", "https://example.invalid/" + "a".repeat(301)]) assert.equal(isNavigationCtaUrl(value), false, value);
 });
 test("internal booking paths use current locale while authored absolute or localized paths stay exact", () => {
   for (const locale of ["en", "es", "pt", "fr"]) {

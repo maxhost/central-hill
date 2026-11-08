@@ -133,3 +133,8 @@ field actions, bulk approval and generation. Settings' four Website URL inputs o
 it. Other company_settings labels retain the existing workflow. No rows deleted;
 legacy EN Website translation rows are preserved while inline website_url is the
 canonical English URL used by the public resolver.
+
+Settings manual-field guards now also cover navigation_ctas (Book Label/URL and
+floating Earn Label), alongside website_url. Both are masked from inbox/review,
+rejected by single actions and skipped by bulk approval/generation; other Settings
+copy and nav_item labels retain their current workflow. Rows are preserved (ADR0073).

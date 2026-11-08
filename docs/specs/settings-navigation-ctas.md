@@ -97,3 +97,17 @@ fieldguard test oldgeneric write blocked/bulk+generation skip newfield, otherfie
 unchanged. Build with safeenv CIRCLE_NODE_TOTAL=3 (2workers) only after DBcleanup.
 No migration/dbcheck needed. Independent productionbrowser3groups, finalmainGET
 only. Log results/source/runtime/delivery here; no automatic nextnavtask.
+
+## Progress
+
+Contracts114c337; root guards/labels d986dda. UI800d691 integrateddf35d3e and
+backend5e79748 integrated776bab9. Backend typecheck/scopedlint0,7realDBgroups0
+with ownrowcleanup; UI scopedlint0, initialTSonlymissingbackendhelper resolved by
+integration. Root integrated typecheck0/lint0(7oldwarnings),69tests0 (46pure+23DB),
+serialsingletonfiles: includes Owners/Website regressions and expanded manualfield
+Translation guards. Root then tightened absolute URL syntax to explicit https://,
+rejecting browser-relative https: forms;5focusedpure cases/scopedlint0 on final
+rule, no API/type shape change. Fullbuild will check finalTS again. Alltests pass
+without source corrections beyond that proactive syntax constraint before QA.
+Exact rootcommands/logs under /private/tmp/central-hill-settings-navigation-ctas-qa.
+No schema/migration. Main42358 still live while build prepares productioncandidate.

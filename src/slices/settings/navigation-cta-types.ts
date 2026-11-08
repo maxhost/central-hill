@@ -11,7 +11,7 @@ export type NavigationCtasByLocale = Record<(typeof NAVIGATION_CTA_LOCALES)[numb
 export function isNavigationCtaUrl(value: string): boolean {
   if (!value || value.length > 300 || /[\\\x00-\x20\x7f]/.test(value)) return false;
   if (value.startsWith("/")) return !value.startsWith("//");
-  try { return new URL(value).protocol === "https:"; } catch { return false; }
+  try { return /^https:\/\//i.test(value) && new URL(value).protocol === "https:"; } catch { return false; }
 }
 const label = z.string().trim().min(1).max(80);
 const url = z.string().trim().max(300).refine(isNavigationCtaUrl);

@@ -815,3 +815,11 @@ Targets may exist with empty EN; legacy EN translation rows preserved but ignore
 Public only accepts approved HTTPS targets; new input keeps HTTPS/max300 validation.
 About consumes the resolved URL from getGlobals(locale), keeping page labels/SEO/
 pubs unchanged. The generic translation workflow excludes this field only.
+
+### Settings navigation button locales (ADR0073)
+
+No new column/table. translation(company_settings,id,navigation_ctas,locale) stores
+JSON {book:{label,url},earn:{label}}. EN is nonempty source JSON; approved manual
+targets permit blank individual fields for dynamic EN fallback. Existing absence
+uses localized message defaults. Old payload omission preserves rows, Earn link
+remains fixed /owners. Generic Translation cannot edit these managed rows.

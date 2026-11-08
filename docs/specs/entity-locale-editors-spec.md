@@ -1,6 +1,13 @@
 # Contenidos del CMS — edición y publicación por idioma
 
-## Estado vigente — 2026-11-07, Website de Settings
+## Estado vigente — 2026-11-07, botones de navegación de Settings
+
+Settings incorpora Book Now con Label/URL y Earn With Us sólo Label EN/ES/PT/FR.
+Earn conserva su botón flotante y enlace a Owners. Se mantiene el texto traducido
+actual al abrir la ficha; vacíos de destino usan EN, valores propios se conservan.
+Ver [ejecución](settings-navigation-ctas.md), [QA](settings-navigation-ctas-qa.md),
+ADR0073. Esto no cubre la autoría de nav_item ni los submenús Owners/About que
+aún tienen textos fijos en inglés.
 
 Settings incorpora Website EN/ES/PT/FR en Contact, con un único Guardar. About
 consume la URL correspondiente; vacíos usan EN y las URLs propias sobreviven a
@@ -47,6 +54,7 @@ entrega actual; no autoriza iniciar otros auxiliares. Prevalece sobre notas hist
 | FAQ por página/idioma | Selector independiente EN/ES/PT/FR, vacío sin FAQ y sin fallback EN; se conservan grupos y traducciones legacy (ADR0068) |
 | Ciudades/barrios: nombres | Cuatro inputs en una ficha; nombres públicos y selectores localizados, fallback EN, slugs e intro histórica preservados (ADR0069) |
 | Testimonios | Quote EN/ES/PT/FR en una ficha, fallback EN, públicos localizados y vía antigua retirada (ADR0070) |
+| Settings: botones de navegación | Book Label/URL y Earn sólo Label por idioma, destinos propios/fallback EN, Earn /owners fijo (ADR0073) |
 | Settings: Website | Cuatro URLs en Contact y About localizado con fallback EN; retirada genérica sólo de ese campo (ADR0072) |
 | Fase5: restantes auxiliares y retirada de Translations | Pendiente según inventario siguiente |
 
@@ -56,7 +64,7 @@ entrega actual; no autoriza iniciar otros auxiliares. Prevalece sobre notas hist
    queda decidir la autoría o política de `city.intro`, texto traducible histórico
    fuera del cambio de nombres. Testimonios (`quote`) ya está cubierto. Quedan
    textos globales de Settings (`company_settings`: estadísticas/horarios; Website
-   ya tiene inputs propios) y etiquetas de navegación
+   y los dos CTA ya tienen inputs propios) y etiquetas de navegación
    (`nav_item`). Resolver su autoría en cada ficha con el patrón adecuado. Las
    FAQ de Building ya pertenecen a su editor. FAQ general admite ahora grupos
    separados elegidos por idioma; no requiere un nuevo editor con tabs para ese flujo.

@@ -332,3 +332,18 @@ target or canonical inline EN, ignoring legacy EN translation rows. Cache shapev
 and existing global/layout invalidation refresh About's office link/text without
 republishing or modifying page content/SEO. No canonical domain or booking changes.
 Generic Translation excludes only this Website field; stats/hours remain available.
+
+## Navigation buttons by locale —2026-11-07
+
+Settings edits Book Now Label/URL and floating Earn With Us Label EN/ES/PT/FR.
+Earn keeps its current /owners destination and placement; no Earn URL control.
+Existing localized defaults prefill the form; configured target blanks follow EN
+per field, own values survive EN edits. Old payload omission preserves all CTArows.
+One navigation_ctas JSON translation field per locale, no migration/backfill.
+Public approved valid target fields override EN; absent config retains prior
+localized messages/fixed booking destination. Globals cachev5 and layout invalidation
+refresh header/phone drawer/floating label without Page publishing. Book keeps new
+tab/noopener; safe internal paths use current locale. ADR0073 and execution/QA
+settings-navigation-ctas documents own policy. Generic Translation excludes only
+Website + navigation_ctas; Stats/hours/nav_item remain pending. Owners/About
+submenus still have fixed English labels; this change does not localize them.
