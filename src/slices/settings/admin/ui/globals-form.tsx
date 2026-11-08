@@ -19,6 +19,7 @@ import {
   useMediaQueue,
 } from "@slices/backoffice/contract";
 import { SITE_ICON_DEFAULTS, type SiteIconKey } from "../../site-icons";
+import { WEBSITE_LOCALES } from "../../website-locale-types";
 import { saveGlobals } from "../actions";
 import type { GlobalsEditData, StatForm } from "../queries";
 
@@ -165,6 +166,11 @@ export function GlobalsForm({
       whatsapp: orNull(state.whatsapp),
       checkin_phone: orNull(state.checkin_phone),
       website_url: orNull(state.website_url),
+      website_translations: {
+        es: state.website_translations?.es.trim() ?? "",
+        pt: state.website_translations?.pt.trim() ?? "",
+        fr: state.website_translations?.fr.trim() ?? "",
+      },
       social: Object.fromEntries(
         SOCIAL_KEYS.map((k) => [k, orNull(state.social[k])]),
       ),
@@ -282,18 +288,60 @@ export function GlobalsForm({
               onChange={(e) => set("checkin_phone", e.target.value)}
             />
           </Field>
-          <Field
-            label={t("admin.globals.fields.website")}
-            hint={t("admin.globals.fields.websiteHint")}
-            error={err("website_url")}
-          >
-            <TextInput
-              type="url"
-              value={state.website_url}
-              onChange={(e) => set("website_url", e.target.value)}
-              placeholder="https://"
-            />
-          </Field>
+          <div className="col-span-full">
+            <FieldGrid>
+              {WEBSITE_LOCALES.map((locale) => {
+                const field = locale === "en" ? "website_url" : `website_translations.${locale}`;
+                const id = `website-url-${locale}`;
+                return (
+                  <Field
+                    key={locale}
+                    label={t("admin.globals.websiteLocales.label", {
+                      locale: locale.toUpperCase(),
+                    })}
+                    htmlFor={id}
+                    hint={t(
+                      locale === "en"
+                        ? "admin.globals.websiteLocales.sourceHint"
+                        : "admin.globals.websiteLocales.fallbackHint",
+                    )}
+                    error={err(field)}
+                  >
+                    <TextInput
+                      id={id}
+                      type="url"
+                      maxLength={300}
+                      value={
+                        locale === "en"
+                          ? state.website_url
+                          : state.website_translations?.[locale] ?? ""
+                      }
+                      onChange={(event) => {
+                        const value = event.target.value;
+                        if (locale === "en") {
+                          set("website_url", value);
+                          return;
+                        }
+                        setState((previous) => ({
+                          ...previous,
+                          website_translations: {
+                            es: "",
+                            pt: "",
+                            fr: "",
+                            ...previous.website_translations,
+                            [locale]: value,
+                          },
+                        }));
+                      }}
+                      placeholder="https://"
+                      disabled={pending || preparing}
+                      aria-invalid={Boolean(err(field))}
+                    />
+                  </Field>
+                );
+              })}
+            </FieldGrid>
+          </div>
         </FieldGrid>
       </AdminCard>
 
