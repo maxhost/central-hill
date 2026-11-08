@@ -22,6 +22,9 @@ export interface FooterContact {
   officeAddress?: string;
   officeLabel?: string;
   bookingsLabel?: string;
+  /** Optional shared Owners phone (ADR0071). */
+  ownersPhone?: string;
+  ownersLabel?: string;
   checkinPhone?: string;
   checkinLabel?: string;
   phoneIcon?: ReactNode;
