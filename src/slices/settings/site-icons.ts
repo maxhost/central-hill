@@ -75,6 +75,7 @@ export type SiteIcons = Record<SiteIconKey, string>;
 export const SITE_ICON_KEYS = Object.keys(SITE_ICON_DEFAULTS) as SiteIconKey[];
 
 /** Legacy how-it-works controls have no public consumer; retain stored values only. */
-export const EDITABLE_SITE_ICON_KEYS = SITE_ICON_KEYS.filter((key) =>
+export type EditableSiteIconKey = Exclude<SiteIconKey, `services_how_${1 | 2 | 3}`>;
+export const EDITABLE_SITE_ICON_KEYS = SITE_ICON_KEYS.filter((key): key is EditableSiteIconKey =>
   !["services_how_1", "services_how_2", "services_how_3"].includes(key),
 );

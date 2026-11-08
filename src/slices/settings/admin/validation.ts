@@ -9,7 +9,7 @@ import { z } from "zod";
 import { navigationCtasByLocaleSchema } from "../navigation-cta-types";
 import { iconKey } from "@core/validation/icon-key";
 import { tStr } from "@core/validation/primitives";
-import { EDITABLE_SITE_ICON_KEYS, type SiteIconKey } from "../site-icons";
+import { EDITABLE_SITE_ICON_KEYS, type EditableSiteIconKey } from "../site-icons";
 import { httpsUrl } from "../validation";
 
 const socialUrl = z.url().nullable();
@@ -54,7 +54,7 @@ export const companySettingsSaveInput = z.object({
   show_building_count: z.unknown().optional(),
   /** Every site icon, as a strict Iconoir name (ADR 0034 amendment 2). */
   site_icons: z.object(
-    Object.fromEntries(EDITABLE_SITE_ICON_KEYS.map((k) => [k, iconKey])) as Record<SiteIconKey, typeof iconKey>,
+    Object.fromEntries(EDITABLE_SITE_ICON_KEYS.map((k) => [k, iconKey])) as Record<EditableSiteIconKey, typeof iconKey>,
   ),
 });
 export type CompanySettingsSaveInput = z.infer<typeof companySettingsSaveInput>;
