@@ -44,3 +44,22 @@ company_settings singleton absent (the form/footer use defaults). No separate
 Owners phone field or footer row exists. Owners contact fallback uses the general
 Phone, not a dedicated number. No remote-production assertion. Audit evidence:
 /private/tmp/central-hill-settings-whatsapp-qa/owners-phone-audit.json.
+
+## Progress
+
+Executable d38e77e: root handled two-source-file implementation as simple task;
+no visual redesign or role refactor. Typecheck0/lint0(7oldwarnings), ten actual
+component SSR cases0 via temporary external fixture loader (configured/custom
+changes/four locales/missing default/explicitblanknull/no digits/Ownerslink/newtab).
+No permanent helper/tests added for trivial plumbing. Safe isolated dependencies
+installed offline/frozen; package/lock unchanged. Build underway with2workers;
+main75173 remains live until candidate ready. Independent QA source/preflight
+passed with no writes: company_settings0 and translations snapshot retained.
+
+Build0/144routes/2workers; productionQA3071PID77358/session46392 after stopping
+verified main75173. Independent QA05704f3 approved source d38e77e: one bounded
+four-locale Guests +mobileEN pass,0pageerrors, correctdefaultWA/newtab and localized
+Owners href, footerPhones Bookings351910075725/Checkin351912310632 and no Owners
+phone. Settings/translation snapshots exact, no codefix/harnessretry/DBwrites.
+Current singleton absent; configured/blank cases proved by actualcomponentSSR10
+fixtures and source, not fabricated global Save. No remote-production claims.
