@@ -320,3 +320,15 @@ See settings-owners-phone execution/QA for schema authorization and evidence.
 The initial, absent-singleton scaffold uses the widget's existing bk_centralhill
 account so contact settings can be saved without an empty required account error.
 Stored account IDs, widget URLs/scripts and booking behavior remain unchanged.
+
+## Website URL by language (ADR0072)
+
+Contact exposes Website EN/ES/PT/FR in one Save, no tabs. EN stays in website_url;
+three approved manual target URLs reuse translation rows (no EN mirroring/schema
+change). Empty targets use EN; own targets survive EN change/clear, and old clients
+omitting targets preserve raw rows exactly. Admin reads raw pending values and blank
+missing inputs. Public getGlobals(locale).website picks only approved valid HTTPS
+target or canonical inline EN, ignoring legacy EN translation rows. Cache shapev4
+and existing global/layout invalidation refresh About's office link/text without
+republishing or modifying page content/SEO. No canonical domain or booking changes.
+Generic Translation excludes only this Website field; stats/hours remain available.

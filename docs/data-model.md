@@ -805,3 +805,13 @@ key preserve existing value/null. Public SiteGlobals.ownersPhone is optional for
 consumer compatibility but the reader emits string|null and uses cache shapev3.
 Absent singleton defaults include same number. Shared across locales; only labels
 translated. No existing phone replaced and no new About/Owners CTA behavior.
+
+### Settings Website locale overrides (ADR0072)
+
+company_settings.website_url remains canonical EN, nullable. Manual ES/PT/FR URL
+overrides use existing translation(company_settings,id,website_url,locale), approved
+on Save and individually removed for blank→EN fallback. No EN mirror/migration.
+Targets may exist with empty EN; legacy EN translation rows preserved but ignored.
+Public only accepts approved HTTPS targets; new input keeps HTTPS/max300 validation.
+About consumes the resolved URL from getGlobals(locale), keeping page labels/SEO/
+pubs unchanged. The generic translation workflow excludes this field only.

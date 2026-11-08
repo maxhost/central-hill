@@ -127,3 +127,9 @@ ADR0070 excludes `testimonial`: its existing ficha now owns all four manual quot
 inputs, approved targets and blank→English fallback. Generic actions/generation
 reject before writes; review links redirect to `/admin/testimonials/[id]`. No old
 rows are deleted by this retirement; unrelated entity types remain available.
+
+ADR0072 excludes only company_settings.website_url from legacy review/inbox/single
+field actions, bulk approval and generation. Settings' four Website URL inputs own
+it. Other company_settings labels retain the existing workflow. No rows deleted;
+legacy EN Website translation rows are preserved while inline website_url is the
+canonical English URL used by the public resolver.

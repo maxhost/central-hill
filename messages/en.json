@@ -1162,6 +1162,11 @@
             "guide_travellers": "Travellers",
             "guide_custom": "Custom"
           }
+        },
+        "websiteLocales": {
+          "label": "Website {locale}",
+          "sourceHint": "English URL used when another language has no URL.",
+          "fallbackHint": "Leave blank to use Website EN."
         }
       },
       "nav": {

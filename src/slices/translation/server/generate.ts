@@ -1,3 +1,4 @@
+import { isSettingsWebsiteField } from "@slices/settings/contract";
 import { isTestimonialEditorialEntity } from "@slices/testimonials/contract";
 import { isGuideEditorialEntity } from "@slices/guides/contract";
 import { isPropertyEditorialEntity } from "@slices/buildings/contract";
@@ -67,7 +68,7 @@ export async function generateDrafts(
   const rows = await loadTranslationRows({ type, id });
   const source = new Map<string, string>();
   for (const r of rows)
-    if (r.locale === SOURCE_LOCALE && r.value.trim())
+    if (r.locale === SOURCE_LOCALE && r.value.trim() && !isSettingsWebsiteField(type, r.field))
       source.set(r.field, r.value);
   if (source.size === 0) return summary;
 

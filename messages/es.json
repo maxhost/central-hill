@@ -1162,6 +1162,11 @@
             "guide_travellers": "Viajeros",
             "guide_custom": "Personalizada"
           }
+        },
+        "websiteLocales": {
+          "label": "Sitio web {locale}",
+          "sourceHint": "URL en inglés que se usa cuando otro idioma no tiene URL.",
+          "fallbackHint": "Deja vacío para usar Website EN."
         }
       },
       "nav": {
