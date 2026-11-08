@@ -4,9 +4,9 @@ import { db } from "@core/db/client";
 import { loadContent, loadTranslationRows } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
-import { COMPANY_SETTINGS, NAV_ITEM, type NavLocation, type StatKey } from "../contract";
+import { COMPANY_SETTINGS, type StatKey } from "../contract";
 import { DEFAULT_GLOBALS } from "../defaults";
-import { company_settings, nav_item } from "../schema";
+import { company_settings } from "../schema";
 import type { SiteIcons } from "../site-icons";
 import { resolveSiteIcons } from "../server/site-icons";
 import { rawWebsiteTranslations } from "../server/website-locales";
@@ -161,36 +161,9 @@ export interface NavigationEditData {
   footer: NavParentEdit[];
 }
 
+/** Legacy reader retained for old callers; the navigation editor is retired. */
 export async function getNavigationForEdit(): Promise<NavigationEditData> {
-  const rows = await db
-    .select({
-      id: nav_item.id,
-      location: nav_item.location,
-      parent_id: nav_item.parent_id,
-      url: nav_item.url,
-    })
-    .from(nav_item)
-    .orderBy(asc(nav_item.position));
-
-  const content = await loadContent(
-    rows.map((r) => ({ type: NAV_ITEM, id: r.id })),
-    SOURCE,
-  );
-  const labelOf = (id: string, url: string) => content.get(NAV_ITEM, id, "label") ?? url;
-
-  const build = (location: NavLocation): NavParentEdit[] => {
-    const top = rows.filter((r) => r.location === location && !r.parent_id);
-    return top.map((t) => ({
-      id: t.id,
-      url: t.url,
-      label: labelOf(t.id, t.url),
-      children: rows
-        .filter((r) => r.parent_id === t.id)
-        .map((c) => ({ id: c.id, url: c.url, label: labelOf(c.id, c.url) })),
-    }));
-  };
-
-  return { header: build("header"), footer: build("footer") };
+  return { header: [], footer: [] };
 }
 
 async function resolvePreviews(ids: (string | null)[]): Promise<Record<string, AdminMediaPreview>> {

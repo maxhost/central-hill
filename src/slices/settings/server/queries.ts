@@ -1,13 +1,12 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
-import { asc, eq } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import { db } from "@core/db/client";
 import type { Locale } from "@core/db/columns";
 import { loadContent, loadTranslationRows } from "@core/i18n/content";
 import { type MediaAsset, type MediaImageData, loadMedia, mediaUrl } from "@core/media";
 import {
   COMPANY_SETTINGS,
-  NAV_ITEM,
   SETTINGS_TAGS,
   type CompanyStat,
   type NavLink,
@@ -15,19 +14,21 @@ import {
   type SiteGlobals,
   type StatKey,
 } from "../contract";
-import { company_settings, nav_item } from "../schema";
+import { company_settings } from "../schema";
 import { SITE_ICON_KEYS } from "../site-icons";
 import { resolveSiteIcons } from "./site-icons";
 import { resolveWebsiteUrl } from "./website-locales";
 import { resolveNavigationCtas } from "./navigation-ctas";
+import { getFixedNav } from "./fixed-navigation";
 
 /**
  * Public read functions for slice `settings` / `globals` (conventions.md → reads go
  * through typed, cache-tagged `server/` functions; never the DB at request time).
  * Both are wrapped in `unstable_cache` keyed by locale and tagged `globals` / `nav`
  * so a settings publish busts them (see `./publish`). Translatable fields (stat
- * labels, office-hours label, nav labels) resolve via `core/i18n` with the
+ * labels and office-hours label) resolve via `core/i18n` with the
  * source-locale (`en`) fallback + `approved`-only gating for target locales.
+ * Navigation resolves the fixed multilingual code tree (ADR0074), never legacy DB rows.
  */
 
 const STAT_KEYS: StatKey[] = [
@@ -119,47 +120,9 @@ export function getGlobals(locale: Locale): Promise<SiteGlobals | null> {
   })();
 }
 
-// ── Navigation (header / footer trees) ─────────────────────────────────────────
-async function _getNav(locale: Locale, location: NavLocation): Promise<NavLink[]> {
-  const rows = await db
-    .select({
-      id: nav_item.id,
-      parent_id: nav_item.parent_id,
-      url: nav_item.url,
-    })
-    .from(nav_item)
-    .where(eq(nav_item.location, location))
-    .orderBy(asc(nav_item.position));
-  if (rows.length === 0) return [];
-
-  const content = await loadContent(
-    rows.map((r) => ({ type: NAV_ITEM, id: r.id })),
-    locale,
-  );
-
-  // Build nodes, then attach children — both iterations follow `position` order.
-  const byId = new Map<string, NavLink>();
-  for (const r of rows) {
-    byId.set(r.id, {
-      id: r.id,
-      label: content.get(NAV_ITEM, r.id, "label") ?? r.url,
-      url: r.url,
-      children: [],
-    });
-  }
-  const roots: NavLink[] = [];
-  for (const r of rows) {
-    const node = byId.get(r.id);
-    if (!node) continue;
-    const parent = r.parent_id ? byId.get(r.parent_id) : undefined;
-    if (parent) parent.children.push(node);
-    else roots.push(node);
-  }
-  return roots;
-}
-
+// ── Fixed navigation (header / footer trees, ADR0074) ──────────────────────────
 export function getNav(locale: Locale, location: NavLocation): Promise<NavLink[]> {
-  return unstable_cache(() => _getNav(locale, location), ["settings:getNav", locale, location], {
+  return unstable_cache(async () => getFixedNav(locale, location), ["settings:getNav", "fixed-v1", locale, location], {
     tags: [SETTINGS_TAGS.nav],
   })();
 }

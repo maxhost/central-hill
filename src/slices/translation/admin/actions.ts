@@ -1,5 +1,5 @@
 "use server";
-import { isSettingsManualLocaleField } from "@slices/settings/contract";
+import { isFixedNavigationEntity, isSettingsManualLocaleField } from "@slices/settings/contract";
 import { isTestimonialEditorialEntity } from "@slices/testimonials/contract";
 import { isGuideEditorialEntity } from "@slices/guides/contract";
 import { isPropertyEditorialEntity } from "@slices/buildings/contract";
@@ -65,6 +65,7 @@ export async function approveField(
     return { ok: false, error: "validation" };
   if (
     isSettingsManualLocaleField(type, field) ||
+    isFixedNavigationEntity(type) ||
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
@@ -89,6 +90,7 @@ export async function resetField(
     return { ok: false, error: "validation" };
   if (
     isSettingsManualLocaleField(type, field) ||
+    isFixedNavigationEntity(type) ||
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
@@ -118,6 +120,7 @@ export async function saveField(
     return { ok: false, error: "validation" };
   if (
     isSettingsManualLocaleField(type, field) ||
+    isFixedNavigationEntity(type) ||
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
@@ -168,6 +171,7 @@ export async function clearField(
     return { ok: false, error: "validation" };
   if (
     isSettingsManualLocaleField(type, field) ||
+    isFixedNavigationEntity(type) ||
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
@@ -188,6 +192,7 @@ export async function approveEntity(
   await requireStaff();
   if (!type || !id) return { ok: false, error: "validation" };
   if (
+    isFixedNavigationEntity(type) ||
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
@@ -219,6 +224,7 @@ export async function generateEntityDrafts(
   const staff = await requireStaff();
   if (!type || !id) return { ok: false, error: "validation" };
   if (
+    isFixedNavigationEntity(type) ||
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||

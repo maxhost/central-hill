@@ -1,3 +1,4 @@
+import { isFixedNavigationEntity } from "@slices/settings/contract";
 import { getTestimonialEditorialRedirect } from "@slices/testimonials/contract";
 import { getGuideEditorialRedirect } from "@slices/guides/contract";
 import Link from "next/link";
@@ -44,6 +45,7 @@ export async function TranslationReview({
   id: string;
   locale?: string;
 }) {
+  if (isFixedNavigationEntity(type)) redirect("/admin/settings");
   const editor =
     (await getGuideEditorialRedirect(type, id, locale)) ??
     (await getPropertyEditorialRedirect(type, id, locale)) ??
