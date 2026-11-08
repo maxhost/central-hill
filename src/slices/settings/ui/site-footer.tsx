@@ -111,6 +111,8 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
         officeAddress: g.officeAddress,
         officeLabel: t("footer.office"),
         bookingsLabel: t("footer.bookings"),
+        ownersPhone: g.ownersPhone?.trim() || undefined,
+        ownersLabel: t("footer.ownersPhone"),
         checkinPhone: g.checkinPhone || undefined,
         checkinLabel: t("footer.checkin"),
         phoneIcon: <Icon name="phone" size={18} />,

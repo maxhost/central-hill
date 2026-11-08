@@ -161,6 +161,7 @@ export function GlobalsForm({
     const payload = {
       email: state.email.trim(),
       phone: state.phone.trim(),
+      owners_phone: orNull(state.owners_phone ?? ""),
       whatsapp: orNull(state.whatsapp),
       checkin_phone: orNull(state.checkin_phone),
       website_url: orNull(state.website_url),
@@ -243,6 +244,23 @@ export function GlobalsForm({
             <TextInput
               value={state.phone}
               onChange={(e) => set("phone", e.target.value)}
+            />
+          </Field>
+          <Field
+            label={t("admin.globals.fields.ownersPhone")}
+            htmlFor="owners-phone"
+            hint={t("admin.globals.fields.ownersPhoneHint")}
+            error={err("owners_phone")}
+          >
+            <TextInput
+              id="owners-phone"
+              type="tel"
+              autoComplete="tel"
+              maxLength={40}
+              value={state.owners_phone ?? ""}
+              onChange={(e) => set("owners_phone", e.target.value)}
+              disabled={pending || preparing}
+              aria-invalid={Boolean(err("owners_phone"))}
             />
           </Field>
           <Field
