@@ -23,12 +23,12 @@ export const FIXED_HEADER: readonly FixedNavEntry[] = [
   { key: "blog", labelKey: "nav.blog", url: "/blog" },
 ];
 export const FIXED_FOOTER: readonly FixedNavEntry[] = [
-  { key: "owners", labelKey: "footer.ownersTitle", url: "/owners", children: [
+  { key: "owners", labelKey: "footer.ownersTitle", url: "/owners", children: ([
     ["earningsEstimate", "/owners"], ["ownerServices", "/owners"], ["pricing", "/owners"],
     ["listProperty", "/owners"], ["ownerTestimonials", "/owners"],
-  ].map(([key, url]) => ({ key, labelKey: `footer.${key}`, url })) },
-  { key: "company", labelKey: "footer.companyTitle", url: "/about", children: [
+  ] as const).map(([key, url]) => ({ key, labelKey: `footer.${key}`, url })) },
+  { key: "company", labelKey: "footer.companyTitle", url: "/about", children: ([
     ["browseApartments", "/buildings"], ["buildings", "/buildings"], ["about", "/about"],
     ["blog", "/blog"], ["contact", "/about"],
-  ].map(([key, url]) => ({ key, labelKey: `footer.${key}`, url })) },
+  ] as const).map(([key, url]) => ({ key, labelKey: `footer.${key}`, url })) },
 ];
