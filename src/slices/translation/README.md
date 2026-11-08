@@ -144,3 +144,8 @@ individual/bulk/generation writes, including the raw generator. Old review URLs
 redirect to Settings. Original rows remain; no translation table/schema deletion.
 Global Translation stays for Settings stats/hours, image ALT, city.intro policy and
 remaining legacy closeout, so Navigation retirement does not remove the whole UI.
+
+ADR0075: all company_settings fields now belong to Settings or are retired legacy
+stats. The entire type is excluded from inbox/entitymatrix and single/bulk/raw
+generation writes, with old review URLs redirected Settings. Historical EN/target
+rows remain untouched. This supersedes the older Website/CTA-only guard policy.

@@ -1,13 +1,21 @@
 # Contenidos del CMS — edición y publicación por idioma
 
-## Estado vigente — 2026-11-07, revisión de estadísticas y horarios
+## Estado vigente — 2026-11-07, limpieza de Settings y labels de horario
+
+Settings incorpora cuatro Hours Labels manuales EN/ES/PT/FR; horario compartido,
+fallback EN/default del idioma y preservación de textos propios. Se retiran sus
+bloques sin uso público Headline stats, Avantio y Buildings listing conservando
+datos/columnas; el widget Avantio real permanece. Site icons sí sigue activo como
+configuración global/default, salvo tres controles How sin consumidores. Se cierra
+la vía genérica company_settings completa. Ver [ejecución](settings-hours-cleanup.md),
+[QA](settings-hours-cleanup-qa.md) y ADR0075.
 
 Revisión posterior corrige el inventario: las estadísticas públicas de Home,
 Owners, Buildings, About y Real Estate ya pertenecen a sus editores visuales por
 idioma. Las estadísticas de Settings son heredadas y su único compositor no tiene
 consumidores activos; no falta otro editor. Los rangos horarios numéricos son
-comunes; sólo queda resolver el pequeño rótulo/días del panel About (hoy “Office
-Hours” y fallback “Monday–Friday”), no un editor nuevo de horarios. Ver
+comunes; el rótulo ya se resuelve con los cuatro inputs de Settings y sus días por
+defecto se localizan sólo cuando no hay horario escrito. Ver
 [revisión de código](settings-stats-hours-review.md). No cambios de producto/datos.
 
 La navegación de header/móvil/footer queda fija en código: textos traducidos
@@ -70,6 +78,7 @@ entrega actual; no autoriza iniciar otros auxiliares. Prevalece sobre notas hist
 | Testimonios | Quote EN/ES/PT/FR en una ficha, fallback EN, públicos localizados y vía antigua retirada (ADR0070) |
 | Settings: botones de navegación | Book Label/URL y Earn sólo Label por idioma, destinos propios/fallback EN, Earn /owners fijo (ADR0073) |
 | Settings: Website | Cuatro URLs en Contact y About localizado con fallback EN; retirada genérica sólo de ese campo (ADR0072) |
+| Settings: horario/limpieza | Hours Label por idioma, horario común y retiro de stats/Avantio/listing sin uso; iconos globales activos y vía genérica company_settings retirada (ADR0075) |
 | Navegación | Menús/submenús EN/ES/PT/FR fijos en código; Navigation y vía genérica nav_item retiradas, sin borrar datos (ADR0074) |
 | Fase5: restantes auxiliares y retirada de Translations | Pendiente según inventario siguiente |
 
@@ -77,13 +86,11 @@ entrega actual; no autoriza iniciar otros auxiliares. Prevalece sobre notas hist
 
 1. **Auxiliares pendientes**: los nombres de ciudades/barrios están cubiertos;
    queda decidir la autoría o política de `city.intro`, texto traducible histórico
-   fuera del cambio de nombres. Testimonios (`quote`) ya está cubierto. Quedan
-   el cierre técnico de campos heredados de Settings (`company_settings`). Sus
-   estadísticas públicas ya están cubiertas en Pages y las antiguas de Settings
-   no tienen consumidores activos; no añadir otro editor. Los horarios numéricos
-   son comunes: resolver sólo el rótulo/días de About, preferentemente como textos
-   fijos localizados. Website y los dos CTA tienen inputs propios. La navegación
-   (`nav_item`) ya sale del flujo porque textos/enlaces/orden quedan fijos en código. Las
+   fuera del cambio de nombres. Testimonios (`quote`) ya está cubierto. Settings
+   (`company_settings`) ya está cubierto: Website, botones y Hours Labels
+   tienen controles propios; estadísticas antiguas y controles sin uso retirados
+   sin borrar datos, vía genérica cerrada. La navegación (`nav_item`) queda fija
+   en código y también sale del flujo. Las
    FAQ de Building ya pertenecen a su editor. FAQ general admite ahora grupos
    separados elegidos por idioma; no requiere un nuevo editor con tabs para ese flujo.
 2. **Metadatos de imágenes**: cubrir `media_asset.alt` mediante una superficie

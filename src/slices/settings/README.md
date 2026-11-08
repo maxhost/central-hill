@@ -1,5 +1,25 @@
 # Slice `settings` / `globals` (S11)
 
+## Current Settings surface —2026-11-07
+
+Hours Label EN/ES/PT/FR added to Office, one shared schedule. Inline EN canonical,
+raw pending targets loaded, approved own targets → EN → localized default. Blank
+EN preserves own targets and legacy EN translation row; old omitted targets preserve
+all authored rows. About receives locale for default headings/weekdays only when
+authored fields are blank. No per-locale schedule/Pages publication change (ADR0075).
+
+Headline stats, Avantio and Buildings listing cards retired: no active public
+consumers of those Settings values. Actual Home Avantio widget remains its fixed
+bk_centralhill implementation. Existing columns/stat translations are kept exact,
+old submitted values ignored; new singleton uses existing internal defaults. Site
+icons remain global UI/defaults (navbar/Blog/Guides/apartment specs and service
+fallbacks), with per-content overrides preserved. Only unused services_how_1/2/3
+controls retired, raw hidden/unknown icon keys preserved by merge. Save posts only
+active fields/icon keys. Whole company_settings type now retired from generic
+Translations, old review redirects Settings; other types/global route remain.
+[Execution](../../../docs/specs/settings-hours-cleanup.md) and ADR0075 supersede
+historical surface descriptions below. No schema/data deletion.
+
 ## Current navigation policy —2026-11-07
 
 Header/mobile/Footer labels, order and links are fixed in code, localized by message

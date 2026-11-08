@@ -830,3 +830,14 @@ nav_item and its historical translation rows are retained without schema changes
 Public getNav returns fixed code trees with message-file labels for EN/ES/PT/FR,
 independent of stored navigation rows. No CMS label/URL/order editing remains; old
 actions reject, old editor/review routes redirect. Settings CTA rows remain active.
+
+### Settings Hours Label and retired controls (ADR0075)
+
+No migration. office_hours_label remains canonical inline EN; approved target rows
+use existing translation(company_settings,id,office_hours_label,es|pt|fr), with raw
+pending inputs and explicit blank-target removal for EN/default fallback. Legacy
+EN translation rows retained/ignored, no mirror. office_hours stays shared authored
+text. Retired stats/Avantio/Buildings listing columns and their translations stay
+exact on updates; defaults supplied internally only for a new singleton. Site icon
+updates merge active keys into raw saved JSON, retaining retired/unknown entries.
+No generic company_settings editing remains; Settings is its sole authoring surface.
