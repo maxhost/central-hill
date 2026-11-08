@@ -135,3 +135,16 @@ blankfallback/ownpreservation, mobile4drawers+Save/reload, genericreviewfieldmas
 allpass. One ownfixture7e985efb-1efc-40f5-9b70-69c88159711b reset+cleaned onlyits
 row/translationrows, Settings0 and42hashes exactly baseline; root independently
 compared JSON. Existing Pages/media/contacts/nav untouched. SourceunchangedafterQA.
+
+## Local main delivery
+
+QA report6272293; rootcloseout64cc24b. Main fast-forward9fbace5→64cc24b with no
+tracked userchanges; originallogo/publicmedia symlink preserveduntracked. Candidate
+68236/68230 stopped after cwdverification; sole actual-main dev3071 now **PID68928/
+parent68922/session43161**, cwdworkspace verified, safe syntheticDB5658/proxy4558/
+storage9077 unchanged. Finalread-only main-open.mjs0: Settings200/12CTAinputs/
+noEarnURL, AboutEN/PT200 with originaldefaultlabels/BookURL and fixedlocalizedEarn
+Ownershref,0pageerrors. No Save/cacheintervention/repeatedmatrix afterQA; baseline
+Settings0 remains, no syntheticconfig seeded forappearance. Evidence main-open.json/
+main-restart.log in rootartifact. Finaldoccommit via gitlog-1. No migration/remoteDB/
+push/deploy. All worktrees/envs/artifacts/caches/files preserved.

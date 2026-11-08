@@ -28,8 +28,12 @@ URLsyntax5pure/scopedlint0, build0/144routes/2workers includingfinalTS. Testsuse
 newsynthetic rows cleaned,42oldbusinesshashes exact/Settings0 beforebrowserQA.
 Independent QA approvedde04449:3boundedgroups firstpass/0pageerrors, no fixes.
 Onlynewfixture7e985efb-1efc-40f5-9b70-69c88159711b and owntranslations cleaned,
-Settings0/all42hashes exact (root compared JSON). QA candidate3071 PID68236/
-parent68230/session27979; root owns finalactual-main switch. Safe DB5658/
+Settings0/all42hashes exact (root compared JSON). QA report6272293; mainff9fbace5→64cc24b. Candidate68236/68230 stopped. Sole
+actual-main dev3071 **PID68928/parent68922/session43161**, workspacecwd verified.
+Finalread-only Settings200/12inputs/noEarnURL, AboutEN/PT200/defaultBook+Earnlabels/
+fixedlocalizedOwnershref,0pageerrors; main-open.json/main-restart.log in taskQA.
+No Save/cacheintervention/repeatedmatrix, Settings0 remains; finaldoccommit via
+gitlog-1. Safe DB5658/
 proxy4558/storage9077. No schema/remoteDB/push/deploy. Preserve worktrees/artifacts/
 ignored envs/caches/original logo/publicmedia symlink. Furthernav/submenus/copy/ALT/
 city.intro/Translations closure and rolecleanup await a new task.
