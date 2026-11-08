@@ -86,3 +86,10 @@ SQLdb/role, appliedoneALTER, default/nullable inspected,42oldbusinesshashes exac
 UI6bce8e9 ready, writerTS/scopedlint/diff0. Backend21pure+6DB0, cleanup onlyownnew
 singleton/translation rows (guarded initial0), TS/lint0; root SSR8Footercases0.
 Actual current Settings remains absent after tests; no userconfiguration changed.
+
+Integrated7da7aed: typecheck0/lint0(7oldwarnings),31cases0 (25pure+6DB), temporary
+ownsingleton cleaned, CoreFooterSSR8cases0. Initial db:check caught missing0029
+snapshot; root added snapshot0029 derived from0028 with ONLY owners_phone column
+and newUUID/prevId chain (assertedparsed equality excludingnewmetadata/column).
+SQL0029 unchanged/no reapply. db:check0 after bookkeeping correction (old0008
+breakpointwarning retained), all30files/snapshots chained. Build next2workers.
