@@ -109,3 +109,15 @@ Metadata db-check sandbox rerun failed IPC only; require_escalated rerun0 confir
 Correction verified:32tests0 (26pure+6DB) after scaffold account alignment; own
 singleton/translation cleanup passed. FooterSSR8 unchanged and still applicable.
 Only defaultscaffold+onepuretest changed after initial build; rebuild required.
+
+## QA accepted
+
+Correctedsource26e5e07 build0/144routes/2workers, typecheck/lint0,32tests0 (26pure/
+6DB), FooterSSR8cases0, db:check0. IndependentQA2e77d51 approved one bounded
+three-group production-browser run,0pageerrors: initialnumber/input/footer4,
+firstSave with realdefaultaccount, change/reload/public4, mobileclear/rawNULL/no
+revival4/auth, restoredgivenphone. Bookings/Checkin/WA and neutralconfiguration
+values stayed equal. Only ownnewSettingsID e95b36ec-e09e-478d-8e4e-ba9984ebfd40
+and itsnewtranslations deleted atcleanup; table returns0,42protectedhashes exact
+against premigration (excludingonlynewcolumnattribute). No productfix/retry inQA.
+Root controls final main ff/runtime and readonlyopening; no nexttask automatic.
