@@ -2206,7 +2206,9 @@
       "close": "Fermer",
       "preparing": "Préparation…",
       "queuedNote": "Envoyé à l’enregistrement",
-      "waitForMedia": "Attendez que les médias soient prêts."
+      "waitForMedia": "Attendez que les médias soient prêts.",
+      "altLabel": "Texte alternatif",
+      "altHint": "Décrivez l’image dans cette langue. Laissez vide pour utiliser la description existante ou automatique."
     },
     "icon": {
       "none": "Aucune icône",

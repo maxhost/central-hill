@@ -58,6 +58,7 @@ export {
  * (default), `"video"` (MP4/WebM — background loops), `"media"` (either) or `"animated"`
  * (images incl. animated WebP, MP4/WebM, Lottie `.json`/`.lottie` — spec S6).
  */
+export { MediaAltProvider, MediaAltField } from "./ui/media-alt-field";
 export { MediaField, MediaGalleryField } from "./ui/media-field";
 export type { MediaFieldAccept } from "./ui/media-accept";
 /**

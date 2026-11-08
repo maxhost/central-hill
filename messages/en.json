@@ -2206,7 +2206,9 @@
       "close": "Close",
       "preparing": "Preparing…",
       "queuedNote": "Uploads when you save",
-      "waitForMedia": "Wait until the media is ready."
+      "waitForMedia": "Wait until the media is ready.",
+      "altLabel": "Alternative text",
+      "altHint": "Describe the image in this language. Leave blank to keep the existing description or automatic fallback."
     },
     "icon": {
       "none": "No icon",

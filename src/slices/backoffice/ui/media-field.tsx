@@ -15,6 +15,7 @@ import {
   previewLabelKey,
 } from "./media-accept";
 import { reserveUpload, useMediaQueue } from "./media-queue";
+import { MediaAltField } from "./media-alt-field";
 
 /**
  * Media picker client islands (S12 + ADR 0018). The single `MediaField` (cover /
@@ -103,6 +104,8 @@ export function MediaField({
   accept = "image",
   variant = "default",
   addLabel,
+  editAlt = true,
+  mediaDisabled = false,
 }: {
   value: string | null;
   /** Resolved preview for an already-persisted `value` (edit screens). */
@@ -116,6 +119,10 @@ export function MediaField({
   /** Compact image card or a plain add button when empty; uses the same upload queue. */
   variant?: "default" | "gallery";
   addLabel?: string;
+  /** Existing inline ALT controls may opt out. */
+  editAlt?: boolean;
+  /** Locks shared photo controls without locking localized descriptions. */
+  mediaDisabled?: boolean;
 }) {
   const t = useTranslations("backoffice");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -166,7 +173,7 @@ export function MediaField({
         <button
           type="button"
           onClick={pick}
-          disabled={pending}
+          disabled={pending || mediaDisabled}
           className="inline-flex min-h-11 items-center rounded-md border border-line px-3 py-2 text-sm font-medium text-ink transition-colors hover:border-ink disabled:opacity-60"
         >
           {pending ? t("media.preparing") : addLabel ?? t("media.addImages")}
@@ -180,7 +187,7 @@ export function MediaField({
             <button
               type="button"
               onClick={pick}
-              disabled={pending}
+              disabled={pending || mediaDisabled}
               className={cn("rounded-md border border-line font-medium text-ink transition-colors hover:border-ink disabled:opacity-60", variant === "gallery" ? "px-2 py-1 text-xs" : "px-3 py-1.5 text-sm")}
             >
               {pending ? t("media.preparing") : value ? t("media.replace") : t("media.upload")}
@@ -193,7 +200,7 @@ export function MediaField({
                   setPreview(null);
                   onChange(null, null);
                 }}
-                disabled={pending}
+                disabled={pending || mediaDisabled}
                 className={cn("rounded-md border border-line font-medium text-ink-soft transition-colors hover:border-ink disabled:opacity-60", variant === "gallery" ? "px-2 py-1 text-xs" : "px-3 py-1.5 text-sm")}
               >
                 {t("media.remove")}
@@ -205,6 +212,7 @@ export function MediaField({
       <input
         ref={inputRef}
         type="file"
+        disabled={mediaDisabled}
         accept={acceptAttribute(accept)}
         className="hidden"
         onChange={(e) => {
@@ -226,6 +234,7 @@ export function MediaField({
       {variant !== "gallery" && !error && value && queue.isQueued(value) ? (
         <p className="text-xs text-ink-soft">{t("media.queuedNote")}</p>
       ) : null}
+      {editAlt && value && (shown ? shown.mime.startsWith("image/") : accept === "image") ? <MediaAltField mediaId={value} /> : null}
       {error ? <p className="text-xs font-medium text-red-600">{error}</p> : null}
     </div>
   );
@@ -346,6 +355,7 @@ export function MediaGalleryField({
                   </button>
                 </div>
               </div>
+              {previews[id]?.mime.startsWith("image/") || (!previews[id] && accept === "image") ? <div className="p-2"><MediaAltField mediaId={id} /></div> : null}
             </li>
           ))}
         </ul>
