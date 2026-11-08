@@ -20,6 +20,7 @@ import {
 } from "@slices/backoffice/contract";
 import { SITE_ICON_DEFAULTS, type SiteIconKey } from "../../site-icons";
 import { WEBSITE_LOCALES } from "../../website-locale-types";
+import { NAVIGATION_CTA_LOCALES, type NavigationCta, type NavigationCtasByLocale } from "../../navigation-cta-types";
 import { saveGlobals } from "../actions";
 import type { GlobalsEditData, StatForm } from "../queries";
 
@@ -103,6 +104,12 @@ const SOCIAL_KEYS: SocialKey[] = [
   "tiktok",
 ];
 
+function emptyNavigationCtas(): NavigationCtasByLocale {
+  return Object.fromEntries(NAVIGATION_CTA_LOCALES.map((locale) => [
+    locale, { book: { label: "", url: "" }, earn: { label: "" } },
+  ])) as NavigationCtasByLocale;
+}
+
 export function GlobalsForm({
   initial,
   previews: initialPreviews,
@@ -135,6 +142,22 @@ export function GlobalsForm({
     setState((prev) => ({ ...prev, social: { ...prev.social, [key]: value } }));
   const setIcon = (key: SiteIconKey, value: string) =>
     setState((prev) => ({ ...prev, site_icons: { ...prev.site_icons, [key]: value } }));
+  const setBookCta = (locale: (typeof NAVIGATION_CTA_LOCALES)[number], patch: Partial<NavigationCta>) =>
+    setState((previous) => {
+      const ctas = previous.navigation_ctas ?? emptyNavigationCtas();
+      return {
+        ...previous,
+        navigation_ctas: { ...ctas, [locale]: { ...ctas[locale], book: { ...ctas[locale].book, ...patch } } },
+      };
+    });
+  const setEarnLabel = (locale: (typeof NAVIGATION_CTA_LOCALES)[number], label: string) =>
+    setState((previous) => {
+      const ctas = previous.navigation_ctas ?? emptyNavigationCtas();
+      return {
+        ...previous,
+        navigation_ctas: { ...ctas, [locale]: { ...ctas[locale], earn: { label } } },
+      };
+    });
   const err = (key: string) => errors[key];
 
   function onSubmit() {
@@ -159,7 +182,17 @@ export function GlobalsForm({
     }
     setErrors({});
 
+    const navigationCtas = state.navigation_ctas;
     const payload = {
+      navigation_ctas: navigationCtas
+        ? Object.fromEntries(NAVIGATION_CTA_LOCALES.map((locale) => [locale, {
+            book: {
+              label: navigationCtas[locale].book.label.trim(),
+              url: navigationCtas[locale].book.url.trim(),
+            },
+            earn: { label: navigationCtas[locale].earn.label.trim() },
+          }]))
+        : undefined,
       email: state.email.trim(),
       phone: state.phone.trim(),
       owners_phone: orNull(state.owners_phone ?? ""),
@@ -343,6 +376,92 @@ export function GlobalsForm({
             </FieldGrid>
           </div>
         </FieldGrid>
+      </AdminCard>
+
+      <AdminCard title={t("admin.globals.navigationCtas.title")}>
+        <div className="space-y-6">
+          <p className="text-sm text-ink-soft">{t("admin.globals.navigationCtas.intro")}</p>
+          <section className="space-y-4" aria-labelledby="navigation-book-title">
+            <h3 id="navigation-book-title" className="text-sm font-semibold text-ink">
+              {t("admin.globals.navigationCtas.bookTitle")}
+            </h3>
+            {NAVIGATION_CTA_LOCALES.map((locale) => {
+              const labelField = `navigation_ctas.${locale}.book.label`;
+              const urlField = `navigation_ctas.${locale}.book.url`;
+              return (
+                <FieldGrid key={locale}>
+                  <Field
+                    label={t("admin.globals.navigationCtas.label", { locale: locale.toUpperCase() })}
+                    htmlFor={`navigation-book-label-${locale}`}
+                    required={locale === "en"}
+                    error={err(labelField)}
+                  >
+                    <TextInput
+                      id={`navigation-book-label-${locale}`}
+                      value={state.navigation_ctas?.[locale].book.label ?? ""}
+                      onChange={(event) => setBookCta(locale, { label: event.target.value })}
+                      maxLength={80}
+                      required={locale === "en"}
+                      disabled={pending || preparing}
+                      aria-invalid={Boolean(err(labelField))}
+                    />
+                  </Field>
+                  <Field
+                    label={t("admin.globals.navigationCtas.url", { locale: locale.toUpperCase() })}
+                    htmlFor={`navigation-book-url-${locale}`}
+                    required={locale === "en"}
+                    error={err(urlField)}
+                  >
+                    <TextInput
+                      id={`navigation-book-url-${locale}`}
+                      inputMode="url"
+                      autoCapitalize="none"
+                      spellCheck={false}
+                      value={state.navigation_ctas?.[locale].book.url ?? ""}
+                      onChange={(event) => setBookCta(locale, { url: event.target.value })}
+                      maxLength={300}
+                      required={locale === "en"}
+                      disabled={pending || preparing}
+                      aria-invalid={Boolean(err(urlField))}
+                      placeholder="https://"
+                    />
+                  </Field>
+                </FieldGrid>
+              );
+            })}
+            <p className="text-sm text-ink-soft">{t("admin.globals.navigationCtas.fallbackHint")}</p>
+          </section>
+          <section className="space-y-4" aria-labelledby="navigation-earn-title">
+            <h3 id="navigation-earn-title" className="text-sm font-semibold text-ink">
+              {t("admin.globals.navigationCtas.earnTitle")}
+            </h3>
+            <p className="text-sm text-ink-soft">{t("admin.globals.navigationCtas.earnHint")}</p>
+            <FieldGrid>
+              {NAVIGATION_CTA_LOCALES.map((locale) => {
+                const field = `navigation_ctas.${locale}.earn.label`;
+                return (
+                  <Field
+                    key={locale}
+                    label={t("admin.globals.navigationCtas.label", { locale: locale.toUpperCase() })}
+                    htmlFor={`navigation-earn-label-${locale}`}
+                    required={locale === "en"}
+                    error={err(field)}
+                  >
+                    <TextInput
+                      id={`navigation-earn-label-${locale}`}
+                      value={state.navigation_ctas?.[locale].earn.label ?? ""}
+                      onChange={(event) => setEarnLabel(locale, event.target.value)}
+                      maxLength={80}
+                      required={locale === "en"}
+                      disabled={pending || preparing}
+                      aria-invalid={Boolean(err(field))}
+                    />
+                  </Field>
+                );
+              })}
+            </FieldGrid>
+          </section>
+        </div>
       </AdminCard>
 
       <AdminCard title={t("admin.globals.sections.social")}>

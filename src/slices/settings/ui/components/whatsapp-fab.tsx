@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import type { Locale } from "@core/db/columns";
 import { DEFAULT_GLOBALS } from "../../defaults";
 import { getGlobals } from "../../server/queries";
+import { defaultNavigationCtas } from "../../server/navigation-ctas";
 import { Link } from "@/i18n/navigation";
 
 /**
@@ -26,7 +27,7 @@ export async function WhatsAppFab({ locale }: { locale: Locale }) {
   const number = (globals ? globals.whatsapp : DEFAULT_GLOBALS.whatsapp)?.replace(/\D/g, "");
   const whatsappHref = number ? `https://wa.me/${number}` : null;
   const label = t("whatsappCta");
-  const ownerLabel = t("ctaEarn");
+  const ownerLabel = globals?.navigationCtas?.earn.label ?? defaultNavigationCtas(locale).earn.label;
 
   return (
     <div className="fixed bottom-[calc(1.25rem_+_var(--fab-lift,0px))] right-5 z-50 flex flex-col items-center gap-[30px] sm:bottom-[calc(320px_+_var(--fab-lift,0px))] sm:right-7">

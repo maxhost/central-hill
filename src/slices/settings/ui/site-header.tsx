@@ -9,6 +9,8 @@ import { Link } from "@/i18n/navigation";
 import { AVANTIO_OWNERS_LOGIN_URL } from "../contract";
 import { SITE_ICON_DEFAULTS } from "../site-icons";
 import { getGlobals, getNav } from "../server/queries";
+import { defaultNavigationCtas } from "../server/navigation-ctas";
+import { navigationCtaHref } from "../navigation-cta-types";
 import { ContactDialog } from "./components/contact-dialog";
 import { HeaderScroll } from "./components/header-scroll";
 import { LocaleSwitcher } from "./components/locale-switcher";
@@ -42,8 +44,6 @@ const DEFAULT_HEADER: Array<{ key: string; href: string; children?: Array<{ key:
   { key: "about", href: "/about" },
   { key: "blog", href: "/blog" },
 ];
-
-const HEADER_BOOKING_URL = "https://www.centralhill.pt/en/rentals/holidays-rentals-rentals-d0/";
 
 /**
  * The "Owners" menu reveals the owners-page sections directly, hardcoded rather than read from the
@@ -91,6 +91,8 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
   // Site icons (Settings → "Site icons", ADR 0034 amendment 2). `?? defaults` also covers a
   // globals entry cached before `icons` existed.
   const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
+  const navigationCtas = globals?.navigationCtas ?? defaultNavigationCtas(locale);
+  const bookHref = navigationCtaHref(navigationCtas.book.url, locale);
 
   const baseLinks: NavEntry[] = items.length
     ? items.map((i) => ({
@@ -159,15 +161,15 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
         links={links}
         ctas={
           <>
-            {/* Booking opens the requested external rentals page in a new tab. */}
+            {/* Both header presentations use the selected language’s configured booking button. */}
             <a
-              href={HEADER_BOOKING_URL}
+              href={bookHref}
               target="_blank"
               rel="noopener noreferrer"
               data-cta="ghost"
               className={buttonClassName("ghost", undefined, "sm")}
             >
-              {t("ctaBook")}
+              {navigationCtas.book.label}
             </a>
           </>
         }
@@ -214,7 +216,7 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
                 intro={t("contactDialog.intro")}
               />
             }
-            book={{ href: HEADER_BOOKING_URL, label: t("ctaBook"), external: true }}
+            book={{ href: bookHref, label: navigationCtas.book.label, external: true }}
             openLabel={t("menu")}
             closeLabel={t("close")}
           />
