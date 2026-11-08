@@ -36,7 +36,7 @@ export default async function LocaleLayout({
           <SiteHeader locale={locale as Locale} />
           <div id="main">{children}</div>
           <SiteFooter locale={locale as Locale} />
-          <WhatsAppFab />
+          <WhatsAppFab locale={locale as Locale} />
         </NextIntlClientProvider>
       </body>
     </html>

@@ -294,3 +294,13 @@ owns the document visibility marker and `central-hill-preview-dialog` event;
 The preview bridge handles Close/backdrop/Escape and continues blocking form
 submissions. Public callers omit the prop and retain ordinary trigger/close/form
 behavior. See `docs/specs/guest-contact-dialog-preview.md`.
+
+## Floating WhatsApp uses Settings
+
+`WhatsAppFab` receives the validated public locale from LocaleLayout and reads
+cached getGlobals(locale), like the footer. It normalizes Settings.whatsapp to
+wa.me digits; a missing singleton uses DEFAULT_GLOBALS.whatsapp, an existing
+blank/null number hides only WhatsApp. The Owners floating navigation remains.
+Existing Settings save tag/layout revalidation refreshes the link across locales.
+No new tables/fields or number changes; Owners +351910438062 audit is recorded in
+settings-whatsapp-fab-owners-phone execution, not added to the footer by this task.
