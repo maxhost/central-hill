@@ -1,5 +1,26 @@
 # Central Hill agent instructions
 
+## Image ALT in owning forms —2026-11-08
+
+User requests ALT beside every active image uploader, editable in each language tab;
+images stay shared. ADR0076 and [execution](docs/specs/image-alt-locales.md).
+Content-owned optional media_alts maps, PageEnvelope.mediaAlts, existing own Page/
+Blogbody ALTs reused without duplicate controls. Author/City/Settings non-tab forms
+use4inputs, owner image_alt:<mediaUUID> rows, approvedtarget→EN→existingfallback.
+No global asset writes/backfill/migration. Own localized ALT edits follow existing
+custom/inherit and explicit Save draft/Publish; no draft leaks or crossdocument
+changes on reused photo. Global Translations remains for later technical closeout.
+
+Candidate004c089 in /private/tmp/central-hill-image-alt-integration. Twoisolated
+writers A d51f73c/Bd56b5e1 integrated. Root integrated57pure0/typecheck0/lint0
+(7oldwarnings); independent agent tests40+41pure and2+2DBgroups, root2DBcases/
+4locale Building+Apartmentreader checks0. Allownfixturescleaned;42oldbusinesshashes
+exact, Settings0. Build/independentQA pending; no claim of completed delivery.
+Main3071 PID13559/parent13553 remains until build0. Safe propertylocalesqa5658/
+proxy4558/storage9077. No remoteDB/push/deploy. Preserve all worktrees/files/envs/
+caches/artifacts/originallogo/publicmedia symlink. No new schema authorization
+needed because no migration. No automatic roles/legacyTranslations retirement.
+
 ## Final Translations readiness review —2026-11-08
 
 User asks if global Translations can retire after Settings. Source audit at0abdf0b

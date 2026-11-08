@@ -379,3 +379,11 @@ tab/noopener; safe internal paths use current locale. ADR0073 and execution/QA
 settings-navigation-ctas documents own policy. Generic Translation excludes only
 Website + navigation_ctas; Stats/hours/nav_item remain pending. Owners/About
 submenus still have fixed English labels; this change does not localize them.
+
+### Default social-image ALT (ADR0076)
+
+Four language descriptions sit beside the default OG image. Optional default_og_alts
+uses existing company_settings translation rows keyed image_alt:<mediaUUID>, with
+approved target → EN → existing fallback. Omitted old payloads preserve all rows;
+EN clear preserves authored targets; replacing the photo preserves historical ALT.
+Existing globals invalidation publishes Settings changes, without Page publication.

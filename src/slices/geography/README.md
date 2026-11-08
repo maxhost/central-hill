@@ -121,3 +121,11 @@ loader. An initial 9/10 run exposed a test helper misuse of `loadAllSlugs(type)`
 (the API returns every entity); filtering by owned entity corrected the assertion.
 It required no product change and its cleanup completed. Integrated build, actual
 Next cache/authorization and browser persistence remain the orchestrator/QA steps.
+
+### City image descriptions (ADR0076)
+
+The hero picker has four ALT inputs without new tabs. Optional hero_alts goes through
+the existing City Save and stores image_alt:<mediaUUID> on the City translation owner;
+blank targets use EN, then existing asset/name fallback. Replacing a photo starts
+its own descriptions and preserves old rows. The CityRef hero reader follows locale;
+this does not add a City hero to public views that currently do not render it.

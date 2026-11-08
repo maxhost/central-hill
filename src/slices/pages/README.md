@@ -1635,3 +1635,12 @@ already cached details/newsletter. Legacy source status blocks first adoption of
 data, while complete editorial snapshots are authoritative. Public Guides salvage and
 Blog blank-source translation policy remain separate from pending target drafts.
 Local rollout evidence: docs/specs/page-editor-editorial-pages-plan.md and QA report.
+
+### Image ALT per locale (ADR0076)
+
+Existing image_alt/media_alt/logo_alt fields remain the single control for their
+image slots. Other images and OG use optional PageEnvelope.mediaAlts keyed by
+media UUID, edited beside their picker in every language. Target photo controls
+remain locked while descriptions stay editable. Descriptions follow saved drafts,
+explicit locale publication and private live preview; old snapshots keep existing
+fallbacks. Shared-field validation excludes only the localized description map.

@@ -53,3 +53,14 @@ isolation and non-tab forms. Include mobile, unauthorized mutation and no pageer
 Preserve all worktrees/envs/caches/files. Deliver local main after approval; sole3071
 actual-main runtime and final read-only opening. Global Translations retirement is
 a later technical closeout; do not delete its tables or historical values here.
+
+## Integrated verification before independent QA
+
+Executable004c089 integrates rootf60a53b, B0a9ac75, A004c089 (isolated handoffs
+d56b5e1/d51f73c). Root shared contracts75f8c97/48326a5. Integrated57pure cases0,
+typecheck0, lint0 with7 unchanged warnings. WriterA40pure+2Blog DB+Building/Apartment
+4locale readers0; WriterB41pure+2DB groups0. Root8pure+2DB cases0. Root DBtest
+first harness selected no OG override in its legacy fixture; corrected fixture to
+select OG explicitly, no product change, then passes. All own fixtures cleaned;
+42 protected business-table hashes exactly equal baseline, Settings0. Build and
+independent QA pending. Browser may create only new own fixtures after guards.
