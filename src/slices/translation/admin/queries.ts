@@ -1,5 +1,5 @@
 import "server-only";
-import { isSettingsWebsiteField } from "@slices/settings/contract";
+import { isSettingsManualLocaleField } from "@slices/settings/contract";
 import { isTestimonialEditorialEntity } from "@slices/testimonials/contract";
 import { isGuideEditorialEntity } from "@slices/guides/contract";
 import { isPropertyEditorialEntity } from "@slices/buildings/contract";
@@ -63,7 +63,7 @@ export async function getTranslationInbox(
   const all = buildInbox(
     rows.filter(
       (row) =>
-        !isSettingsWebsiteField(row.entity_type, row.field) &&
+        !isSettingsManualLocaleField(row.entity_type, row.field) &&
         !isGuideEditorialEntity(row.entity_type) &&
         !isPropertyEditorialEntity(row.entity_type) &&
         !isBlogEditorialEntity(row.entity_type) &&
@@ -92,7 +92,7 @@ export async function getEntityTranslations(
   id: string,
 ): Promise<EntityTranslations | null> {
   const rows = (await loadTranslationRows({ type, id })).filter(
-    (row) => !isSettingsWebsiteField(type, row.field),
+    (row) => !isSettingsManualLocaleField(type, row.field),
   );
   if (rows.length === 0) return null;
   return buildEntity(type, id, rows, hashSource);

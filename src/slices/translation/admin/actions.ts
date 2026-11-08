@@ -1,5 +1,5 @@
 "use server";
-import { isSettingsWebsiteField } from "@slices/settings/contract";
+import { isSettingsManualLocaleField } from "@slices/settings/contract";
 import { isTestimonialEditorialEntity } from "@slices/testimonials/contract";
 import { isGuideEditorialEntity } from "@slices/guides/contract";
 import { isPropertyEditorialEntity } from "@slices/buildings/contract";
@@ -64,7 +64,7 @@ export async function approveField(
   if (!type || !id || !field || !isTargetLocale(locale))
     return { ok: false, error: "validation" };
   if (
-    isSettingsWebsiteField(type, field) ||
+    isSettingsManualLocaleField(type, field) ||
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
@@ -88,7 +88,7 @@ export async function resetField(
   if (!type || !id || !field || !isTargetLocale(locale))
     return { ok: false, error: "validation" };
   if (
-    isSettingsWebsiteField(type, field) ||
+    isSettingsManualLocaleField(type, field) ||
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
@@ -117,7 +117,7 @@ export async function saveField(
   if (!type || !id || !field || !isTargetLocale(locale))
     return { ok: false, error: "validation" };
   if (
-    isSettingsWebsiteField(type, field) ||
+    isSettingsManualLocaleField(type, field) ||
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
@@ -167,7 +167,7 @@ export async function clearField(
   if (!type || !id || !field || !isTargetLocale(locale))
     return { ok: false, error: "validation" };
   if (
-    isSettingsWebsiteField(type, field) ||
+    isSettingsManualLocaleField(type, field) ||
     isGuideEditorialEntity(type) ||
     isPropertyEditorialEntity(type) ||
     isBlogEditorialEntity(type) ||
@@ -198,7 +198,7 @@ export async function approveEntity(
 
   const rows = await loadTranslationRows({ type, id });
   for (const r of rows) {
-    if (!isSettingsWebsiteField(type, r.field) && r.locale !== SOURCE_LOCALE && r.state !== "approved") {
+    if (!isSettingsManualLocaleField(type, r.field) && r.locale !== SOURCE_LOCALE && r.state !== "approved") {
       await setTranslationState(type, id, r.field, r.locale, "approved");
     }
   }

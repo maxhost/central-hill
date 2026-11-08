@@ -1163,6 +1163,16 @@
             "guide_custom": "Custom"
           }
         },
+        "navigationCtas": {
+          "title": "Navigation buttons",
+          "intro": "Edit the public button text and booking destination for each language.",
+          "bookTitle": "Book Now",
+          "earnTitle": "Earn With Us",
+          "label": "Label {locale}",
+          "url": "URL {locale}",
+          "fallbackHint": "Empty ES, PT or FR fields use the English value. Book Now opens in a new tab.",
+          "earnHint": "Only the text changes. This floating button always opens the Owners page in the current language."
+        },
         "websiteLocales": {
           "label": "Website {locale}",
           "sourceHint": "English URL used when another language has no URL.",

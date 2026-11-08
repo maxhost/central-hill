@@ -153,3 +153,5 @@ export type { WebsiteTranslations } from "./website-locale-types";
 /** Manual locale configuration for Book Now and Earn With Us. */
 export { NAVIGATION_CTA_LOCALES, NAVIGATION_CTA_KEYS, NAVIGATION_CTAS_FIELD, isSettingsNavigationCtaField, navigationCtaHref } from "./navigation-cta-types";
 export type { NavigationCta, NavigationCtas, NavigationCtasByLocale } from "./navigation-cta-types";
+
+export { isSettingsManualLocaleField } from "./manual-locale-fields";

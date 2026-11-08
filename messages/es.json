@@ -1163,6 +1163,16 @@
             "guide_custom": "Personalizada"
           }
         },
+        "navigationCtas": {
+          "title": "Botones de navegación",
+          "intro": "Edita el texto de los botones públicos y el destino de reserva para cada idioma.",
+          "bookTitle": "Book Now",
+          "earnTitle": "Earn With Us",
+          "label": "Texto {locale}",
+          "url": "URL {locale}",
+          "fallbackHint": "Los campos ES, PT o FR vacíos usan el valor de EN. Book Now se abre en una pestaña nueva.",
+          "earnHint": "Sólo cambia el texto. Este botón flotante siempre abre la página Owners en el idioma actual."
+        },
         "websiteLocales": {
           "label": "Sitio web {locale}",
           "sourceHint": "URL en inglés que se usa cuando otro idioma no tiene URL.",
