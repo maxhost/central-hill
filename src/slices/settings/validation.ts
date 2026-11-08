@@ -21,6 +21,7 @@ export const companySettingsInput = z.object({
   email,
   phone: z.string().min(3).max(40),
   whatsapp: z.string().max(40).optional(),
+  owners_phone: z.string().trim().min(3).max(40).optional(),
   checkin_phone: z.string().min(3).max(40).optional(),
   website_url: httpsUrl.optional(),
   social: z

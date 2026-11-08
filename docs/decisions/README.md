@@ -1346,3 +1346,5 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 - [0069 — Geography name inputs](0069-geography-name-inputs.md): four manual names, stable slugs and inline row identities, with locale labels in public and selectors.
 
 - [0070 — Testimonial Quote EN/ES/PT/FR inputs](0070-testimonial-quote-inputs.md)
+
+- [0071 — Settings Owners phone and Footer row](0071-settings-owners-phone.md)

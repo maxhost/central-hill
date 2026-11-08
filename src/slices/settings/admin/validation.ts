@@ -22,6 +22,8 @@ export const companySettingsSaveInput = z.object({
   email: z.email(),
   phone: z.string().min(3).max(40),
   whatsapp: z.string().max(40).nullable(),
+  /** Omitted by old clients; explicit null hides the footer Owners row. */
+  owners_phone: z.string().trim().min(3).max(40).nullable().optional(),
   /** Same rule as `phone`; `null` (blank) hides the About "Check-in" row. */
   checkin_phone: z.string().min(3).max(40).nullable(),
   /** An `https://` URL; `null` (blank) hides the About "Website" row. */

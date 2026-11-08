@@ -30,6 +30,7 @@ export interface GlobalsEditData {
   email: string;
   phone: string;
   whatsapp: string;
+  owners_phone?: string;
   checkin_phone: string;
   website_url: string;
   social: Record<"instagram" | "facebook" | "linkedin" | "youtube" | "tiktok", string>;

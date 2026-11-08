@@ -64,6 +64,8 @@ export interface SiteGlobals {
   email: string;
   phone: string;
   whatsapp: string | null;
+  /** Shared Owners phone; explicit null/blank hides its footer row. */
+  ownersPhone?: string | null;
   /** Check-in phone (About office panel); null when unset — the row is then hidden. */
   checkinPhone: string | null;
   /** Company website, an `https://` URL; null when unset — the About row is then hidden. */
