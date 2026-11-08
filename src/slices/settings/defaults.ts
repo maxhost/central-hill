@@ -34,7 +34,8 @@ export const DEFAULT_GLOBALS: SiteGlobals = {
   officeHoursLabel: null,
   currency: "EUR",
   defaultOgImage: null,
-  avantio: { accountId: "", widgetConfig: {} },
+  // Existing widget account (server/avantio-widget.ts); makes first Settings Save valid.
+  avantio: { accountId: "bk_centralhill", widgetConfig: {} },
   showBuildingLocation: false,
   showBuildingCount: false,
   icons: { ...SITE_ICON_DEFAULTS },

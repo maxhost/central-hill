@@ -70,10 +70,11 @@ prepared/reviewable; do NOT apply until user authorizes onlypropertylocalesqa565
 No schemawrites in preparation. Existing syntheticnew-content QA authorization
 remains; otherfixtures allprotected. Node22 safeenv
 /private/tmp/central-hill-building-status-qa/env.sh; Neonblock/proxy4558. No secrets.
-Settings default Avantio account empty is an existing separate validation constraint;
-DB tests use valid temporary own synthetic settings and cleanup, never fabricate or
-persist productionbookingconfig. Browser writes onlyownnewfixture with valid test
-account, cleanup ownrecord at end; no existingconfig overwrite. If user creates
+An existing empty Avantio scaffold blocked the first contact Save; the correction
+below aligns its default with the already-used bk_centralhill widget account.
+DB tests use valid temporary own settings and cleanup. Browser Save uses the real
+scaffold without filling fake booking data, cleans its own newrecord; no existing
+configuration overwrite. If user creates
 singleton meanwhile stop dependentwrites/report, don't delete or replace it.
 
 ## Progress
@@ -93,3 +94,18 @@ snapshot; root added snapshot0029 derived from0028 with ONLY owners_phone column
 and newUUID/prevId chain (assertedparsed equality excludingnewmetadata/column).
 SQL0029 unchanged/no reapply. db:check0 after bookkeeping correction (old0008
 breakpointwarning retained), all30files/snapshots chained. Build next2workers.
+
+
+First-Save prerequisite correction before browser QA: the absent-singleton scaffold
+used an empty required Avantio account, so saving any contact would fail validation.
+Root aligns DEFAULT_GLOBALS.avantio.accountId with the EXISTING widget ACCOUNT
+bk_centralhill in server/avantio-widget.ts (source audited: no public consumer read
+that settings account; widget/booking URLs unchanged). No stored configuration is
+modified, required validation remains. One extra pure case validates full default
+contact payload. QA must use this real scaffold without entering a fake account.
+Initial build0/144routes is superseded by new build after this concrete correction.
+Metadata db-check sandbox rerun failed IPC only; require_escalated rerun0 confirmed.
+
+Correction verified:32tests0 (26pure+6DB) after scaffold account alignment; own
+singleton/translation cleanup passed. FooterSSR8 unchanged and still applicable.
+Only defaultscaffold+onepuretest changed after initial build; rebuild required.

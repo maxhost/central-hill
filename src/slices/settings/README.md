@@ -316,3 +316,7 @@ optional ownersPhone/ownersLabel are supplied by this slice; kernel Footer adds
 one tel row after Bookings with the existing icon. New labels authored4languages.
 Bookings/check-in/WhatsApp and About/Owners CTA contacts remain independent.
 See settings-owners-phone execution/QA for schema authorization and evidence.
+
+The initial, absent-singleton scaffold uses the widget's existing bk_centralhill
+account so contact settings can be saved without an empty required account error.
+Stored account IDs, widget URLs/scripts and booking behavior remain unchanged.
