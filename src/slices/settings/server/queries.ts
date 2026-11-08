@@ -19,6 +19,7 @@ import { company_settings, nav_item } from "../schema";
 import { SITE_ICON_KEYS } from "../site-icons";
 import { resolveSiteIcons } from "./site-icons";
 import { resolveWebsiteUrl } from "./website-locales";
+import { resolveNavigationCtas } from "./navigation-ctas";
 
 /**
  * Public read functions for slice `settings` / `globals` (conventions.md → reads go
@@ -63,10 +64,10 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
   if (!row) return null;
 
   const ogId = row.default_og_image_media_id;
-  const [content, media, websiteRows] = await Promise.all([
+  const [content, media, manualRows] = await Promise.all([
     loadContent([{ type: COMPANY_SETTINGS, id: row.id }], locale),
     ogId ? loadMedia([ogId]) : Promise.resolve(new Map<string, MediaAsset>()),
-    locale === "en" ? Promise.resolve([]) : loadTranslationRows({ type: COMPANY_SETTINGS, id: row.id, locale }),
+    loadTranslationRows({ type: COMPANY_SETTINGS, id: row.id }),
   ]);
 
   const stats = {} as Record<StatKey, CompanyStat>;
@@ -83,12 +84,13 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
     : null;
 
   return {
+    navigationCtas: resolveNavigationCtas(locale, manualRows),
     email: row.email,
     phone: row.phone,
     whatsapp: row.whatsapp ?? null,
     ownersPhone: row.owners_phone?.trim() || null,
     checkinPhone: row.checkin_phone?.trim() || null,
-    website: resolveWebsiteUrl(row.website_url, locale, websiteRows),
+    website: resolveWebsiteUrl(row.website_url, locale, manualRows),
     social: row.social,
     stats,
     officeAddress: row.office_address,
@@ -108,8 +110,8 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
 // cached before the key existed (its `icons` would lack it).
 const SITE_ICONS_SHAPE = SITE_ICON_KEYS.join(",");
 // Same reason for the read-model shape: bump it when `SiteGlobals` gains a field, so an entry
-// cached before the localized Website behavior is not served (v4, ADR0072).
-const GLOBALS_SHAPE = "v4";
+// cached before locale-aware navigation CTAs is not served (v5, ADR0073).
+const GLOBALS_SHAPE = "v5";
 
 export function getGlobals(locale: Locale): Promise<SiteGlobals | null> {
   return unstable_cache(() => _getGlobals(locale), ["settings:getGlobals", locale, GLOBALS_SHAPE, SITE_ICONS_SHAPE], {

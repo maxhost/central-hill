@@ -8,6 +8,7 @@ import { COMPANY_SETTINGS, NAV_ITEM, type StatKey } from "../contract";
 import { company_settings, nav_item } from "../schema";
 import { revalidateGlobals, revalidateNav } from "../server/publish";
 import { saveWebsiteTranslations } from "../server/website-locales";
+import { saveNavigationCtas } from "../server/navigation-ctas";
 import {
   type NavigationSaveInput,
   companySettingsSaveInput,
@@ -109,6 +110,8 @@ export async function saveGlobals(raw: unknown): Promise<SettingsSaveResult> {
     await setSourceContent(COMPANY_SETTINGS, id, labelFields, { updatedBy: staff.userId });
 
     await saveWebsiteTranslations(id, input.website_url, input.website_translations, staff.userId);
+
+    await saveNavigationCtas(id, input.navigation_ctas, staff.userId);
 
     revalidateGlobals();
     return { ok: true };

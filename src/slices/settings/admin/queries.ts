@@ -10,6 +10,7 @@ import { company_settings, nav_item } from "../schema";
 import type { SiteIcons } from "../site-icons";
 import { resolveSiteIcons } from "../server/site-icons";
 import { rawWebsiteTranslations } from "../server/website-locales";
+import { navigationCtasForEdit } from "../server/navigation-ctas";
 
 /**
  * Backoffice reads for slice `settings` (S12). Not cache-wrapped (admin is dynamic).
@@ -66,6 +67,7 @@ function scaffold(): GlobalsEditBundle {
   }
   return {
     data: {
+      navigation_ctas: navigationCtasForEdit([]),
       email: DEFAULT_GLOBALS.email,
       phone: DEFAULT_GLOBALS.phone,
       whatsapp: DEFAULT_GLOBALS.whatsapp ?? "",
@@ -98,7 +100,7 @@ export async function getGlobalsForEdit(): Promise<GlobalsEditBundle> {
     .limit(1);
   if (!row) return scaffold();
 
-  const [content, websiteRows] = await Promise.all([
+  const [content, manualRows] = await Promise.all([
     loadContent([{ type: COMPANY_SETTINGS, id: row.id }], SOURCE),
     loadTranslationRows({ type: COMPANY_SETTINGS, id: row.id }),
   ]);
@@ -118,13 +120,14 @@ export async function getGlobalsForEdit(): Promise<GlobalsEditBundle> {
   }
 
   const data: GlobalsEditData = {
+    navigation_ctas: navigationCtasForEdit(manualRows),
     email: row.email,
     phone: row.phone,
     whatsapp: row.whatsapp ?? "",
     owners_phone: row.owners_phone ?? "",
     checkin_phone: row.checkin_phone ?? "",
     website_url: row.website_url ?? "",
-    website_translations: rawWebsiteTranslations(websiteRows),
+    website_translations: rawWebsiteTranslations(manualRows),
     social,
     stats,
     office_address: row.office_address,
