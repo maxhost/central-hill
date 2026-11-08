@@ -1,6 +1,14 @@
 # Contenidos del CMS — edición y publicación por idioma
 
-## Estado vigente — 2026-11-07, navegación pública fija
+## Estado vigente — 2026-11-07, revisión de estadísticas y horarios
+
+Revisión posterior corrige el inventario: las estadísticas públicas de Home,
+Owners, Buildings, About y Real Estate ya pertenecen a sus editores visuales por
+idioma. Las estadísticas de Settings son heredadas y su único compositor no tiene
+consumidores activos; no falta otro editor. Los rangos horarios numéricos son
+comunes; sólo queda resolver el pequeño rótulo/días del panel About (hoy “Office
+Hours” y fallback “Monday–Friday”), no un editor nuevo de horarios. Ver
+[revisión de código](settings-stats-hours-review.md). No cambios de producto/datos.
 
 La navegación de header/móvil/footer queda fija en código: textos traducidos
 EN/ES/PT/FR, enlaces y orden sin edición CMS. Owners/About incorporan sus
@@ -70,10 +78,12 @@ entrega actual; no autoriza iniciar otros auxiliares. Prevalece sobre notas hist
 1. **Auxiliares pendientes**: los nombres de ciudades/barrios están cubiertos;
    queda decidir la autoría o política de `city.intro`, texto traducible histórico
    fuera del cambio de nombres. Testimonios (`quote`) ya está cubierto. Quedan
-   textos globales de Settings (`company_settings`: estadísticas/horarios; Website
-   y los dos CTA ya tienen inputs propios). La navegación (`nav_item`) ya sale de
-   este flujo porque sus textos/enlaces/orden quedan fijos en código. Resolver
-   la autoría de los textos de Settings en la misma ficha. Las
+   el cierre técnico de campos heredados de Settings (`company_settings`). Sus
+   estadísticas públicas ya están cubiertas en Pages y las antiguas de Settings
+   no tienen consumidores activos; no añadir otro editor. Los horarios numéricos
+   son comunes: resolver sólo el rótulo/días de About, preferentemente como textos
+   fijos localizados. Website y los dos CTA tienen inputs propios. La navegación
+   (`nav_item`) ya sale del flujo porque textos/enlaces/orden quedan fijos en código. Las
    FAQ de Building ya pertenecen a su editor. FAQ general admite ahora grupos
    separados elegidos por idioma; no requiere un nuevo editor con tabs para ese flujo.
 2. **Metadatos de imágenes**: cubrir `media_asset.alt` mediante una superficie

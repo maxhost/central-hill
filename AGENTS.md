@@ -1,5 +1,22 @@
 # Central Hill agent instructions
 
+## Review correction: statistics and hours —2026-11-07
+
+User questions remaining Translation blockers. Read-only code audit on7615b58
+confirms public Home/Owners/Buildings/About/RealEstate statistics belong to visual
+Pages editors per locale. company_settings.stats is legacy; its sole StatsBand
+composer has no callers. Do NOT present statistics as missing localization coverage
+or propose another editor. Old Settings inputs/write paths need eventual technical
+retirement while preserving data, not new authoring UI. Hours numeric range is
+shared/not[T]; the actual active About dependency is office_hours_label (“Office
+Hours”) plus English weekday fallback (“Monday–Friday”). A fixed translated heading/
+day template can resolve that small text without another schedule editor. About
+editor currently lacks hours label/value; other office labels are editable there.
+Read [review](docs/specs/settings-stats-hours-review.md) and corrected masterplan.
+No implementation/DB/schema/tests/browser/restart in this review; actual-main3071
+PID75584/parent75578/session24974 stays. ALT/city.intro/legacy closeout decisions
+remain; do not silently implement cleanup or delete legacy fields/data.
+
 ## Fixed multilingual navigation —2026-11-07
 
 User fixes public navigation text/order/links in code, translates Owners/About
