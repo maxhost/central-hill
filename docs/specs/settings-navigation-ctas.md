@@ -111,3 +111,27 @@ rule, no API/type shape change. Fullbuild will check finalTS again. Alltests pas
 without source corrections beyond that proactive syntax constraint before QA.
 Exact rootcommands/logs under /private/tmp/central-hill-settings-navigation-ctas-qa.
 No schema/migration. Main42358 still live while build prepares productioncandidate.
+
+Final executable de04449; build0/144routes/2workers including final typecheck.
+After DB cleanup root independently confirmed all42 hashes equal baseline and
+Settings0. Oldmain42358/42352 stopped only after build; productionQA sole3071
+PID68236/parent68230/session27979, integration cwd/login200 verified. Independent
+QA began3boundedgroups against that unchanged source. Root no DBwrites duringQA.
+
+Actual integrated test command (safeenv + NODE_OPTIONS require
+/private/tmp/central-hill-property-forms-qa/node-runtime.cjs):
+```sh
+pnpm exec tsx --import /private/tmp/central-hill-geography-name-locales-qa/backend/test-runtime.mjs --test --test-concurrency=1 src/slices/settings/tests/settings.test.ts src/slices/settings/tests/settings-admin.test.ts src/slices/settings/tests/owners-phone.test.ts src/slices/settings/tests/owners-phone.integration.test.ts src/slices/settings/tests/website-locales.test.ts src/slices/settings/tests/website-locales.integration.test.ts src/slices/settings/tests/navigation-ctas.test.ts src/slices/settings/tests/navigation-ctas.integration.test.ts src/slices/translation/tests/settings-website-guards.test.ts src/slices/translation/tests/translation.test.ts src/slices/translation/tests/testimonial-quote-guards.test.ts
+```
+Root's expanded existing settings-website-guards.test.ts covers both manualfields
+using one new random translationref, cleaned only its ownrows. Final5pureURLcases
+rechecked after tightening syntax (url-final-tests.log); allotherpolicycases had
+passed69integratedtests and finalbuild checks finalsource. No repeatedbroadQA.
+
+Independent QA approved de04449:3/3bounded groups first run,0pageerrors, no product
+or harness corrections. Real Settings Save/reload,12inputs/noEarnURL, validation/
+auth,4locale Book label/href/newtab and Earnlabel/fixedOwnershref, ENchange/target
+blankfallback/ownpreservation, mobile4drawers+Save/reload, genericreviewfieldmask
+allpass. One ownfixture7e985efb-1efc-40f5-9b70-69c88159711b reset+cleaned onlyits
+row/translationrows, Settings0 and42hashes exactly baseline; root independently
+compared JSON. Existing Pages/media/contacts/nav untouched. SourceunchangedafterQA.

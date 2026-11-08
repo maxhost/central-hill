@@ -1,5 +1,39 @@
 # Central Hill agent instructions
 
+## Settings Book Now / Earn With Us locales —2026-11-07
+
+User requests Book Now Label/URL EN/ES/PT/FR; correction explicitly limits Earn With
+Us to Label ONLY. Earn stays floating with locale-aware /owners destination, no
+link control/reintroduction in navbar. One Settings card, Book4label/URLpairs +
+Earn4labels, current localized defaults prefilled, no tabs. Target blanks use EN
+per field; own values survive EN changes. EN required. URLs HTTPS/max300 or safe
+root-relative paths; Book keeps newtab/noopener on desktop/mobile and locale-prefixes
+neutral internalpaths, preserving explicit locale/absolute URLs. Earn/WhatsApp
+links/positions unchanged. Page booking buttons/widgets/navigation tree unchanged.
+
+No schema/migration: translation company_settings.navigation_ctas JSON perlocale
+{book:{label,url},earn:{label}} through existing core write seams. EN JSON always
+nonempty; target manualSave approved; rawpending/invalid values editable, public
+approvedvalid fields only else EN. Missingconfig retains original localizedlabels
+and fixedENbookingURL; old omittedpayload preserves rows exactly. Globalscachev5,
+existing layout invalidation updates public without PagePublish. Only Website+
+newCTAfield excluded from genericTranslation, not Stats/hours/nav_item. Main menu
+fallback translated; Owners/About submenus still contain fixedEnglishlabels and
+Navigation still edits links/order. Those gaps remain separate tasks.
+
+See [execution](docs/specs/settings-navigation-ctas.md),
+[QA](docs/specs/settings-navigation-ctas-qa.md), ADR0073. Two isolated writers,
+executablede04449. Root69tests0(46pure+23DB)/typecheck0/lint0(7oldwarnings), final
+URLsyntax5pure/scopedlint0, build0/144routes/2workers includingfinalTS. Testsusedonly
+newsynthetic rows cleaned,42oldbusinesshashes exact/Settings0 beforebrowserQA.
+Independent QA approvedde04449:3boundedgroups firstpass/0pageerrors, no fixes.
+Onlynewfixture7e985efb-1efc-40f5-9b70-69c88159711b and owntranslations cleaned,
+Settings0/all42hashes exact (root compared JSON). QA candidate3071 PID68236/
+parent68230/session27979; root owns finalactual-main switch. Safe DB5658/
+proxy4558/storage9077. No schema/remoteDB/push/deploy. Preserve worktrees/artifacts/
+ignored envs/caches/original logo/publicmedia symlink. Furthernav/submenus/copy/ALT/
+city.intro/Translations closure and rolecleanup await a new task.
+
 ## Website EN/ES/PT/FR in Settings → About —2026-11-07
 
 User requests four Website URL inputs in Settings Contact, About office panel uses
