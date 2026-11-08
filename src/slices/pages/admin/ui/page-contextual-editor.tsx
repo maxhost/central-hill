@@ -188,7 +188,8 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   }
   const visibleImages = imageFields.filter(field => visible.some(binding => field.path.join(".") === binding.id || field.path.join(".").startsWith(`${binding.id}.`)));
   const targetPaths = editorialTextPaths(content, descriptor).filter(path => isEditableFieldPath(descriptor.rootNode, path) && visible.some(b => path === b.id || path.startsWith(`${b.id}.`)));
-  const pairedAltPaths = new Set(visibleImages.filter(field => field.inlineAltPath).map(field => field.inlineAltPath!.join(".")));
+  const visibleImagePreviews = visibleImages.filter(field => field.id && (!previews[field.id] || previews[field.id]!.mime.startsWith("image/")));
+  const pairedAltPaths = new Set(visibleImagePreviews.filter(field => field.inlineAltPath).map(field => field.inlineAltPath!.join(".")));
   const referencePaths = (descriptor.localeReferencePaths ?? []).filter(path => isEditableFieldPath(descriptor.rootNode, path) && visible.some(b => path === b.id || path.startsWith(`${b.id}.`)));
   const english = (states.en.model.draft ?? states.en.model.published ?? states.en.model.working).content;
   const englishText = Object.fromEntries(editorialTextPaths(english, descriptor).map(path => [editorialTranslationField(english, path, descriptor), editorialAt(english, path)]));
@@ -242,7 +243,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
         {visible.some(binding => binding.id === "og_image_media_id") ? <Field label={t("admin.fields.ogImage")}>
           <MediaField value={og} preview={og ? previews[og] ?? null : null} mediaDisabled onChange={() => {}} />
         </Field> : null}
-        {visibleImages.filter(field => field.id && (!previews[field.id] || previews[field.id]!.mime.startsWith("image/"))).map(field => <div key={field.path.join(".")} className="space-y-2">
+        {visibleImagePreviews.map(field => <div key={field.path.join(".")} className="space-y-2">
           <Field label={pageFieldLabel(field.path.join("."), labels.field)}>
             <MediaField value={field.id} preview={field.id ? previews[field.id] ?? null : null} accept={field.accept} mediaDisabled editAlt={!field.inlineAltPath} onChange={() => {}} />
           </Field>
