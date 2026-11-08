@@ -138,3 +138,9 @@ Settings manual-field guards now also cover navigation_ctas (Book Label/URL and
 floating Earn Label), alongside website_url. Both are masked from inbox/review,
 rejected by single actions and skipped by bulk approval/generation; other Settings
 copy and nav_item labels retain their current workflow. Rows are preserved (ADR0073).
+
+Fixed public navigation (ADR0074): nav_item is excluded from inbox/review and all
+individual/bulk/generation writes, including the raw generator. Old review URLs
+redirect to Settings. Original rows remain; no translation table/schema deletion.
+Global Translation stays for Settings stats/hours, image ALT, city.intro policy and
+remaining legacy closeout, so Navigation retirement does not remove the whole UI.

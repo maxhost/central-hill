@@ -1,5 +1,17 @@
 # Slice `settings` / `globals` (S11)
 
+## Current navigation policy —2026-11-07
+
+Header/mobile/Footer labels, order and links are fixed in code, localized by message
+files EN/ES/PT/FR. Owners/About submenus now translated. getNav retains its API but
+reads canonical fixed-navigation definitions, never nav_item/translation rows.
+Navigation sidebar/editor removed; old authenticated route redirects Settings,
+stale saveNavigation calls reject without writing. nav_item is masked/guarded
+from generic Translations and old reviews redirect Settings. Historical DB rows
+remain; no schema/backfill/delete. ADR0074 supersedes the historical nav-builder
+notes below. Book Label/URL and floating Earn Label stay editable in Settings;
+its other copy still uses the remaining Translation workflow.
+
 ## Brevo newsletter integration —2026-11-03
 
 FooterNewsletter retains inline capture → modal with editable prefilled email.

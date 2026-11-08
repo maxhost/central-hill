@@ -1,13 +1,19 @@
 # Contenidos del CMS — edición y publicación por idioma
 
-## Estado vigente — 2026-11-07, botones de navegación de Settings
+## Estado vigente — 2026-11-07, navegación pública fija
+
+La navegación de header/móvil/footer queda fija en código: textos traducidos
+EN/ES/PT/FR, enlaces y orden sin edición CMS. Owners/About incorporan sus
+submenús traducidos. Se retira Navigation y se bloquea nav_item en Translations,
+con redirección de enlaces antiguos a Settings, sin borrar filas históricas. Ver
+[ejecución](fixed-public-navigation.md), [QA](fixed-public-navigation-qa.md), ADR0074.
+La sección global Translations sigue pendiente por los campos siguientes.
 
 Settings incorpora Book Now con Label/URL y Earn With Us sólo Label EN/ES/PT/FR.
 Earn conserva su botón flotante y enlace a Owners. Se mantiene el texto traducido
 actual al abrir la ficha; vacíos de destino usan EN, valores propios se conservan.
 Ver [ejecución](settings-navigation-ctas.md), [QA](settings-navigation-ctas-qa.md),
-ADR0073. Esto no cubre la autoría de nav_item ni los submenús Owners/About que
-aún tienen textos fijos en inglés.
+ADR0073. Sus controles se conservan al fijar el resto de la navegación.
 
 Settings incorpora Website EN/ES/PT/FR en Contact, con un único Guardar. About
 consume la URL correspondiente; vacíos usan EN y las URLs propias sobreviven a
@@ -56,6 +62,7 @@ entrega actual; no autoriza iniciar otros auxiliares. Prevalece sobre notas hist
 | Testimonios | Quote EN/ES/PT/FR en una ficha, fallback EN, públicos localizados y vía antigua retirada (ADR0070) |
 | Settings: botones de navegación | Book Label/URL y Earn sólo Label por idioma, destinos propios/fallback EN, Earn /owners fijo (ADR0073) |
 | Settings: Website | Cuatro URLs en Contact y About localizado con fallback EN; retirada genérica sólo de ese campo (ADR0072) |
+| Navegación | Menús/submenús EN/ES/PT/FR fijos en código; Navigation y vía genérica nav_item retiradas, sin borrar datos (ADR0074) |
 | Fase5: restantes auxiliares y retirada de Translations | Pendiente según inventario siguiente |
 
 ### Dependencias pendientes para retirar la sección global
@@ -64,8 +71,9 @@ entrega actual; no autoriza iniciar otros auxiliares. Prevalece sobre notas hist
    queda decidir la autoría o política de `city.intro`, texto traducible histórico
    fuera del cambio de nombres. Testimonios (`quote`) ya está cubierto. Quedan
    textos globales de Settings (`company_settings`: estadísticas/horarios; Website
-   y los dos CTA ya tienen inputs propios) y etiquetas de navegación
-   (`nav_item`). Resolver su autoría en cada ficha con el patrón adecuado. Las
+   y los dos CTA ya tienen inputs propios). La navegación (`nav_item`) ya sale de
+   este flujo porque sus textos/enlaces/orden quedan fijos en código. Resolver
+   la autoría de los textos de Settings en la misma ficha. Las
    FAQ de Building ya pertenecen a su editor. FAQ general admite ahora grupos
    separados elegidos por idioma; no requiere un nuevo editor con tabs para ese flujo.
 2. **Metadatos de imágenes**: cubrir `media_asset.alt` mediante una superficie

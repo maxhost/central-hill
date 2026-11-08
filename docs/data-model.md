@@ -823,3 +823,10 @@ JSON {book:{label,url},earn:{label}}. EN is nonempty source JSON; approved manua
 targets permit blank individual fields for dynamic EN fallback. Existing absence
 uses localized message defaults. Old payload omission preserves rows, Earn link
 remains fixed /owners. Generic Translation cannot edit these managed rows.
+
+### Fixed public navigation (ADR0074)
+
+nav_item and its historical translation rows are retained without schema changes.
+Public getNav returns fixed code trees with message-file labels for EN/ES/PT/FR,
+independent of stored navigation rows. No CMS label/URL/order editing remains; old
+actions reject, old editor/review routes redirect. Settings CTA rows remain active.
