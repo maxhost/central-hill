@@ -1,10 +1,8 @@
 import { requireStaff } from "@core/auth";
-import { getNavigationForEdit } from "@slices/settings/admin/queries";
-import { NavForm } from "@slices/settings/admin/ui/nav-form";
+import { redirect } from "next/navigation";
 
-/** Navigation builder route (`/admin/navigation`). Admin-only, gated by `(panel)`. */
+/** Legacy navigation editor: the public menus are fixed in code (ADR0074). */
 export default async function NavigationPage() {
   await requireStaff(["admin"]);
-  const data = await getNavigationForEdit();
-  return <NavForm initial={data} />;
+  redirect("/admin/settings");
 }

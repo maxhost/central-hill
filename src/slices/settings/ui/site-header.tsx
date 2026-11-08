@@ -14,77 +14,13 @@ import { navigationCtaHref } from "../navigation-cta-types";
 import { ContactDialog } from "./components/contact-dialog";
 import { HeaderScroll } from "./components/header-scroll";
 import { LocaleSwitcher } from "./components/locale-switcher";
-import { REAL_ESTATE_SECTIONS } from "./subnav-sections";
 
 /**
- * Site-wide header (app-shell chrome). Renders the primary navigation from the
- * `nav_item` table (location `header`, with one level of sub-tabs); until the
- * backoffice (S12) seeds nav, it falls back to a localized default menu
- * (i18n `settings.nav.*`). Top-level items with children reveal their sub-tabs on
- * hover/focus (client feedback B1 — LovelyStay-style), with no JS (CSS group-hover).
- *
- * The top-right cluster carries the Contact form trigger, the Avantio owner-login icon,
- * and the language dropdown. The bar is `fixed`: transparent over a page hero, frosting
- * on scroll (see `globals.css` chrome rules + `HeaderScroll`). Mobile uses a drawer.
+ * Site-wide header with fixed localized navigation, shared with the mobile drawer.
+ * Labels, destinations and order come from the canonical code tree via getNav;
+ * Settings controls the booking CTA and site icons. The bar is fixed and changes
+ * from transparent to frosted on scroll (HeaderScroll and globals.css).
  */
-
-/** Default menu (key → route, optional sub-tabs) used when no `nav_item` rows exist yet. */
-const DEFAULT_HEADER: Array<{ key: string; href: string; children?: Array<{ key: string; href: string }> }> = [
-  { key: "owners", href: "/owners" },
-  { key: "buildings", href: "/buildings" },
-  { key: "realEstate", href: "/real-estate" },
-  {
-    key: "guests",
-    href: "/guests",
-    children: [
-      { key: "services", href: "/services" },
-      { key: "guides", href: "/guides" },
-    ],
-  },
-  { key: "about", href: "/about" },
-  { key: "blog", href: "/blog" },
-];
-
-/**
- * The "Owners" menu reveals the owners-page sections directly, hardcoded rather than read from the
- * DB nav sub-tabs (owner-directed). Hrefs map to the section anchors on the owners page — kept in
- * sync with `slices/pages/ui/owners-page.tsx` (see ADR 0023 updates / drizzle 0004→0007). On the
- * owners page this dropdown doubles as the page's section sub-nav, opened on hover or keyboard
- * navigation; on mobile they appear under "Owners" in the burger drawer.
- */
-const OWNERS_SECTIONS: Array<{ label: string; href: string }> = [
-  { label: "What's My Property Worth?", href: "/owners#worth" },
-  { label: "Numbers That Speak for Themselves", href: "/owners#numbers" },
-  { label: "Why Owners Choose Us", href: "/owners#why" },
-  { label: "Everything Done for You", href: "/owners#services" },
-  { label: "Find Your Perfect Plan", href: "/owners#plans" },
-  { label: "Your Growth Path", href: "/owners#journey" },
-  { label: "Full Visibility from Anywhere", href: "/owners#technology" },
-  { label: "What Our Owners Say", href: "/owners#testimonials" },
-  { label: "Got Questions? We Have Answers.", href: "/owners#faq" },
-  { label: "Start Earning More Today", href: "/owners#start" },
-];
-
-/**
- * Same hover-reveal treatment as `OWNERS_SECTIONS` above (and `REAL_ESTATE_SECTIONS` in
- * `./subnav-sections`), applied to
- * "About Us" — hardcoded rather than read from the DB nav sub-tabs. Hrefs map to the section
- * anchors on the about page — kept in sync with `slices/pages/ui/about-page.tsx` (section ids:
- * who-we-are, story, serve, values, organised, certifications, community, contact). Note the
- * "values" and "certifications" sections share the same "What We Stand For" eyebrow on the page
- * itself, so that label is intentionally repeated here too.
- */
-const ABOUT_SECTIONS: Array<{ label: string; href: string }> = [
-  { label: "Who We Are", href: "/about#who-we-are" },
-  { label: "How We Started", href: "/about#story" },
-  { label: "Our Platform", href: "/about#serve" },
-  { label: "What We Stand For", href: "/about#values" },
-  { label: "Our Structure", href: "/about#organised" },
-  { label: "What We Stand For", href: "/about#certifications" },
-  { label: "Our Responsibility", href: "/about#community" },
-  { label: "Get in Touch", href: "/about#contact" },
-];
-
 export async function SiteHeader({ locale }: { locale: Locale }) {
   const t = await getTranslations("settings");
   const [items, globals] = await Promise.all([getNav(locale, "header"), getGlobals(locale)]);
@@ -94,39 +30,11 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
   const navigationCtas = globals?.navigationCtas ?? defaultNavigationCtas(locale);
   const bookHref = navigationCtaHref(navigationCtas.book.url, locale);
 
-  const baseLinks: NavEntry[] = items.length
-    ? items.map((i) => ({
-        label: i.label,
-        href: i.url,
-        children: i.children.map((c) => ({ label: c.label, href: c.url })),
-      }))
-    : DEFAULT_HEADER.map((d) => ({
-        label: t(`nav.${d.key}`),
-        href: d.href,
-        children: d.children?.map((c) => ({ label: t(`nav.${c.key}`), href: c.href })),
-      }));
-
-  // Real Estate's sub-tab labels are i18n (`settings.subnav.realEstate.*`, list in `./subnav-sections`).
-  const realEstateSections = REAL_ESTATE_SECTIONS.map((s) => ({
-    label: t(`subnav.realEstate.${s.key}`),
-    href: s.href,
+  const links: NavEntry[] = items.map((item) => ({
+    label: item.label,
+    href: item.url,
+    children: item.children.map((child) => ({ label: child.label, href: child.url })),
   }));
-
-  // Owners', Real Estate's, and About's sub-tabs come from the mock section lists, not the DB.
-  const links: NavEntry[] = baseLinks.map((l) => {
-    if (l.href === "/owners") return { ...l, children: OWNERS_SECTIONS };
-    if (l.href === "/real-estate") return { ...l, children: realEstateSections };
-    if (l.href === "/about") return { ...l, children: ABOUT_SECTIONS };
-    if (l.href === "/guests") return {
-      ...l,
-      children: l.children?.map((child) => ({
-        ...child,
-        label: child.href === "/services" ? t("subnav.guests.services")
-          : child.href === "/guides" ? t("subnav.guests.guides") : child.label,
-      })),
-    };
-    return l;
-  });
 
   return (
     <>
