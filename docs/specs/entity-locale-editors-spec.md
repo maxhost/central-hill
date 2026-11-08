@@ -1,6 +1,6 @@
 ## ALT junto a imágenes —2026-11-08
 
-Implementado y aprobado en image-alt/integration (base02c6f21, producto f434afe), ver
+Entregado en main local (base02c6f21, producto aprobado f434afe), ver
 [plan](image-alt-locales.md), [QA](image-alt-locales-qa.md) y ADR0076. Imágenes compartidas, descripciones propias
 por contenido e idioma y el mismo Guardar borrador/Publicar. Se reutilizan los
 ALT existentes de Pages/cuerpo Blog; se completan covers/galerías/OG y módulos

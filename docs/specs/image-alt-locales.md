@@ -84,3 +84,14 @@ writes. Extra nested certification-logo pairing assertion passes focused5cases0.
 No product source change after f434afe. Local main fast-forward and its final
 read-only opening follow, no further Save or repeated QA matrix. GlobalTranslations
 remains for separate technical retirement; preserve all legacy values.
+
+## Local main delivery
+
+Main fast-forward02c6f21→452ed67, followed by this documentary closeout. Corrected
+QA42111/42105 stopped. Sole actual-main dev3071 PID42383/parent42377/session17334,
+workspacecwd verified; same safe DB5658/proxy4558/storage9077. Final read-only
+main-open.json passes existing Service/Guide ALT fields, About ES fallback ALT,
+Settings200/no temporary singleton and Guests EN/PT200, zero pageerrors. No Save,
+cache intervention or repeated matrix at final opening. Tracked work clean after
+commit; original untracked logo and public/propertylocalesqa symlink preserved.
+All worktrees/artifacts/envs/caches retained. No push/deploy/remote writes.

@@ -22,9 +22,12 @@ fixtures. Fourbounded independentbrowsergroups pass/0pageerrors, AboutP2closed;
 no broadmatrixrepeat/cacheflush. OnlyordinaryownOwners Publish resolves build
 fixturetiming. Allowne866fixtures/refs cleaned;42oldbusinesshashesexact, Settings0/
 Ownersabsent; root independentlycomparedJSON. Source unchangedafterf434afe; only
-docs and extra nestedlogo assertion (focused5cases0). Mainff/finalopening pending.
-Sole QAproduction3071 PID42111/parent42105/session16686 corrected-runtimecwd, old
-17489/17483andmain13559/13553stopped. Root owns final switch. Safe propertylocalesqa
+docs and extra nestedlogo assertion (focused5cases0). Mainff02c6f21→452ed67 done.
+CorrectedQA42111/42105 stopped; sole actual-main dev3071 **PID42383/parent42377/
+session17334**, workspacecwdverified. Finalreadonly main-open0: existingService+
+Guide200/ALTinputs, AboutESfallbackALTretained, Settings200/noownsingleton, Guests
+EN/PT200,0pageerrors. main-open.json/main-restart.log under taskQA. No Save/cache
+intervention/repeatedmatrix afterQA; finaldoccommit resolvesgitlog-1. Safe propertylocalesqa
 5658/proxy4558/storage9077. No schema/migration/remoteDB/push/deploy. Preserve all
 files/worktrees/envs/caches/artifacts/originallogo/publicmedia symlink. No automatic
 roles or legacyTranslations retirement.
