@@ -34,8 +34,13 @@ Correctedbuild4635f0b0/144routes/2workers in separate keyboard-runtimecheckout.
 Old72352/72346 stopped; solecorrectedproduction3071 PID74078/parent74072/
 session27579, cwdkeyboard-runtime/srcdiff0/sourceverified, login200. IndependentQA approved4635f0b:10/10targetedkeyboard/mousecases0errors, P2resolved;
 allother3readonlybrowsergroups retained,42oldhashesexact/rootcomparedJSON. No more
-DBfixtures or fullmatrixrepeat. Rootowns
-finalactual-main switch. Safe
+DBfixtures or fullmatrixrepeat. QA report4779469; mainff37a553f→ae581de. Corrected
+candidate74078/74072 stopped. Sole actual-main dev3071 **PID75584/parent75578/
+session24974**, workspacecwdverified. Finalreadonly main-open0: AboutEN/PT200/
+18localizedOwners+Aboutlinks/BookEarnintact, Navigation/navreview->Settings with
+noNavigationlink, globalTranslations200,0pageerrors. Evidence main-open.json/
+main-restart.log under /private/tmp/central-hill-fixed-navigation-qa. No Save/
+cacheintervention/repeatedmatrix afterQA; finaldoccommit via gitlog-1. Safe
 propertylocalesqa DB5658/proxy4558/storage9077 retained. No migration/remoteDB/push/
 deploy. Preserve all worktrees/envs/caches/artifacts/original logo/publicmedia symlink.
 

@@ -144,3 +144,17 @@ RealEstate/GuestsEN), Tabfirst+nextchild/ShiftTabback,8mousefocus-no-pin andhove
 open/close.0pageerrors, P2resolved, no otherproductfix. Browserread-only throughout,
 Settings0/nav0 and42hashesexact; root independently comparedJSON. Finalconfirmation
 made no DBreads/contentwrites; no repeatedfullmatrix. QA reportfinalsource4635f0b.
+
+## Local main delivery
+
+QA report4779469 approved4635f0b. Rootcloseoutae581de; main fast-forward37a553f→
+ae581de after trackedclean precheck. Correctedcandidate74078/74072 stopped; sole
+actual-main dev3071 now **PID75584/parent75578/session24974**, cwdworkspaceverified,
+same safe propertylocalesqa DB5658/proxy4558/storage9077. Finalreadonly main-open0:
+AboutEN/PT200/Owners10+About8localizedsublinks/BookEarnintact; oldNavigation/navreview
+URLs redirectSettings, noNavigationlink/Settingspresent, globalTranslations200;
+0pageerrors. No Save/cacheintervention/repeatedmatrix, no data/schema/remoteDB
+changes afterQA. main-open.json/main-restart.log in rootartifact. Finaldoccommit
+resolves via gitlog-1. Originaluntrackedlogo+publicmedia symlink and allworktrees/
+builds/envs/cache/artifacts preserved. No push/deploy. Globalretirementremaining
+work documented, not automatically started.
