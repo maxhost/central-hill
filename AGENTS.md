@@ -1,5 +1,35 @@
 # Central Hill agent instructions
 
+## Settings Hours Labels and cleanup —2026-11-07
+
+User requests editable Hours Label EN/ES/PT/FR and removes unused Settings blocks.
+Candidate e76c88c (productd53a321) in settings-cleanup/integration at
+/private/tmp/central-hill-settings-cleanup-integration. Read
+[execution](docs/specs/settings-hours-cleanup.md),
+[QA](docs/specs/settings-hours-cleanup-qa.md), ADR0075. Four rawHoursLabels/one shared
+schedule; ENinline canonical, approvedtarget→nonblankEN→locale default, ownlabels
+surviveENedit/clear, omittedtargets preserve; no legacyENrow mirror/delete. Onlyblank
+schedule gets defaultlocalizedweekdays withsame09:30–18:00; authoredschedule exact.
+About explicitlocale, Globalscachev6/existingrevalidation/noPagePublish.
+
+Headline stats/Avantio/Buildings listing cards removed: no activepublicconsumers of
+those Settingsfields, actualHomeAvantio widget remainsfixedbk_centralhill. Retired
+columns/stat+ENhours translations preservedexact; staleinputs ignored/newsingleton
+fills internaldefaults. SiteIcons staysACTIVEglobalUI/defaults (navbar/Blog/Guides/
+apartment specs and sevenServicefallbacks), only3unusedservices_how_*controls removed;
+activekeymerge preservesrawhidden/unknownicons. Wholecompany_settings retiredfrom
+S14inbox/actions/generator/review, oldreviewredirectSettings, originalrows intact.
+RemainingglobalTranslationwork ALT/city.intro/legacycloseout, no automaticnexttask.
+
+Twoisolatedwriters integrated; root102tests0/typecheck0/lint0(7oldwarnings), allown
+fixturescleaned/Settings0/42oldhashesexact. IndependentQA readonlypreflightpasses,
+build0/144routes/2workers. Oldmain75584/75578 stopped; soleproductionQA3071
+PID12985/parent12979/session95475 integrationcwd/login200verified. IndependentQA approvede76c88c/productd53a321:3boundedgroups firstpass/0pageerrors,
+no fixes. Onlyownfixture9a9b12fd-52e2-46bf-8c43-0809692cdf3c+owntranslations cleaned,
+Settings0/42oldhashesexact/rootcomparedJSON. Finalactual-main switchownedroot. Safe DB5658/
+proxy4558/storage9077. No schema/migration/remoteDB/push/deploy. Preserve all files/
+worktrees/envs/caches/artifacts/logo/publicmedia symlink.
+
 ## Review correction: statistics and hours —2026-11-07
 
 User questions remaining Translation blockers. Read-only code audit on7615b58

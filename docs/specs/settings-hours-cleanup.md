@@ -113,6 +113,22 @@ Integrated TS0/lint0(7oldwarnings),102tests0 serialDBfiles.
 Main75584 stays until buildready. Sourceunchanged after tests start exceptdocs.
 
 All ownfixtures cleaned after integratedtests; no schema/migration. Source d53a321
-unchanged after tests (docs only). Explicit 18 test files/commands in tests.log and
-root orchestration; updated S14Settingsguardtests assert whole-type retirement,
+unchanged after tests (docs only). Explicit 18 test files below, with TAP evidence in tests.log; updated S14Settingsguardtests assert whole-type retirement,
 Navguard othercopy uses unretiredFAQ. Rootindependent42hashcheck precedesbuild.
+
+Actual integrated command after sourcing safeenv/Node22 and the documented NODE_OPTIONS preload:
+```sh
+pnpm exec tsx --import /private/tmp/central-hill-geography-name-locales-qa/backend/test-runtime.mjs --test --test-concurrency=1 src/slices/settings/tests/settings.test.ts src/slices/settings/tests/settings-admin.test.ts src/slices/settings/tests/owners-phone.test.ts src/slices/settings/tests/owners-phone.integration.test.ts src/slices/settings/tests/website-locales.test.ts src/slices/settings/tests/website-locales.integration.test.ts src/slices/settings/tests/navigation-ctas.test.ts src/slices/settings/tests/navigation-ctas.integration.test.ts src/slices/settings/tests/fixed-navigation.test.ts src/slices/settings/tests/subnav.test.ts src/slices/settings/tests/fixed-navigation.integration.test.ts src/slices/settings/tests/hours-labels.test.ts src/slices/settings/tests/hours-labels.integration.test.ts src/slices/pages/tests/office-hours-labels.test.ts src/slices/translation/tests/fixed-navigation-guards.test.ts src/slices/translation/tests/settings-website-guards.test.ts src/slices/translation/tests/translation.test.ts src/slices/translation/tests/testimonial-quote-guards.test.ts
+```
+
+Build0/144routes/2workers on e76c88c (productd53a321). Oldmain75584/75578 stopped
+aftercwdverified; soleproductionQA3071 PID12985/parent12979/session95475, integration
+cwd/login200verified. IndependentQA runs3boundedgroups, one newownSettingsfixture
+only; rootnoDBwrites. Sourceunchanged afterchecks/build; onlyrootdocs updates.
+
+IndependentQA approves e76c88c/productd53a321:3/3boundedgroups firstpass,0pageerrors,
+no product/harnesscorrections. ActualSave/reload/About4labelssameschedule, ENchange/
+clear/fallback/ownpreservation, mobile/validation, activeiconSave/publicrender and
+Settingsreviewredirect/inboxmask allpass. Onlynewfixture9a9b12fd-52e2-46bf-8c43-
+0809692cdf3c restoreddefaults+cleaned withits owntranslations; Settings0/42hashesexact
+(rootindependentlycomparedJSON). No Page/mediawrites. Sourceunchanged afterQA.
