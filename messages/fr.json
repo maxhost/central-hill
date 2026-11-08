@@ -1198,6 +1198,28 @@
       }
     },
     "subnav": {
+      "owners": {
+        "worth": "Combien vaut mon bien ?",
+        "numbers": "Des chiffres qui parlent d’eux-mêmes",
+        "why": "Pourquoi les propriétaires nous choisissent",
+        "services": "Nous nous occupons de tout",
+        "plans": "Trouvez la formule idéale",
+        "journey": "Votre parcours de croissance",
+        "technology": "Une visibilité complète, où que vous soyez",
+        "testimonials": "L’avis de nos propriétaires",
+        "faq": "Des questions ? Nous avons les réponses.",
+        "start": "Commencez à gagner plus dès aujourd’hui"
+      },
+      "about": {
+        "whoWeAre": "Qui sommes-nous ?",
+        "story": "Nos débuts",
+        "serve": "Notre plateforme",
+        "values": "Nos valeurs",
+        "organised": "Notre organisation",
+        "certifications": "Nos valeurs",
+        "community": "Notre responsabilité",
+        "contact": "Contactez-nous"
+      },
       "guests": {
         "services": "Services et expériences pour les voyageurs",
         "guides": "Activités incontournables et recommandations"

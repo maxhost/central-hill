@@ -1352,3 +1352,5 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 - [0072 — Settings Website URLs per language](0072-settings-website-locales.md)
 
 - [0073 — Settings navigation CTA locales](0073-settings-navigation-ctas.md)
+
+- [0074 — Fixed multilingual public navigation](0074-fixed-public-navigation.md)

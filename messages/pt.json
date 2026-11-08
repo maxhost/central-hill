@@ -1198,6 +1198,28 @@
       }
     },
     "subnav": {
+      "owners": {
+        "worth": "Quanto vale o meu imóvel?",
+        "numbers": "Números que falam por si",
+        "why": "Porque os proprietários nos escolhem",
+        "services": "Tratamos de tudo por si",
+        "plans": "Encontre o plano ideal",
+        "journey": "O seu caminho de crescimento",
+        "technology": "Visibilidade total a partir de qualquer lugar",
+        "testimonials": "O que dizem os nossos proprietários",
+        "faq": "Tem perguntas? Temos respostas.",
+        "start": "Comece a ganhar mais hoje"
+      },
+      "about": {
+        "whoWeAre": "Quem somos",
+        "story": "Como começámos",
+        "serve": "A nossa plataforma",
+        "values": "O que defendemos",
+        "organised": "A nossa estrutura",
+        "certifications": "O que defendemos",
+        "community": "A nossa responsabilidade",
+        "contact": "Entre em contacto"
+      },
       "guests": {
         "services": "Serviços e experiências para hóspedes",
         "guides": "O melhor para fazer e recomendações"

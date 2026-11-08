@@ -155,3 +155,6 @@ export { NAVIGATION_CTA_LOCALES, NAVIGATION_CTA_KEYS, NAVIGATION_CTAS_FIELD, isS
 export type { NavigationCta, NavigationCtas, NavigationCtasByLocale } from "./navigation-cta-types";
 
 export { isSettingsManualLocaleField } from "./manual-locale-fields";
+
+/** Navigation is fixed in code; legacy nav_item rows are retained but not editable. */
+export { isFixedNavigationEntity } from "./fixed-navigation";

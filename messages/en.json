@@ -1198,6 +1198,28 @@
       }
     },
     "subnav": {
+      "owners": {
+        "worth": "What's My Property Worth?",
+        "numbers": "Numbers That Speak for Themselves",
+        "why": "Why Owners Choose Us",
+        "services": "Everything Done for You",
+        "plans": "Find Your Perfect Plan",
+        "journey": "Your Growth Path",
+        "technology": "Full Visibility from Anywhere",
+        "testimonials": "What Our Owners Say",
+        "faq": "Got Questions? We Have Answers.",
+        "start": "Start Earning More Today"
+      },
+      "about": {
+        "whoWeAre": "Who We Are",
+        "story": "How We Started",
+        "serve": "Our Platform",
+        "values": "What We Stand For",
+        "organised": "Our Structure",
+        "certifications": "What We Stand For",
+        "community": "Our Responsibility",
+        "contact": "Get in Touch"
+      },
       "guests": {
         "services": "Guest Services & Experiences",
         "guides": "Top Things to Do & Recommendations"
