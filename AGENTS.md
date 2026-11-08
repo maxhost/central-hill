@@ -1,5 +1,38 @@
 # Central Hill agent instructions
 
+## Floating WhatsApp uses Settings / Owners phone audit —2026-11-07
+
+User requests floating WhatsApp reads Settings and checks Owners +351910438062.
+Small task root-owned two source files, executabled38e77e; WhatsAppFab receives
+validatedlocale from LocaleLayout and reads cached getGlobals(locale). Missing
+singleton uses DEFAULT_GLOBALS.whatsapp (same as footer); configuredblank/null/
+nodigits hides onlyWhatsApp, Ownersfloating navigation remains. URL digitsnormalized,
+newtab/noopener preserved, styles unchanged. Existing Settings Save tag/layout
+revalidation covers all locales. No newAPI/kernel/schema/field/DBcontent writes.
+
+Read [execution](docs/specs/settings-whatsapp-fab-owners-phone.md) and
+[QA](docs/specs/settings-whatsapp-fab-owners-phone-qa.md). Typecheck0/lint0(7oldwarnings),
+10actual-componentSSRfixture cases0, build0/144routes/2workers. IndependentQA05704f3
+approved one bounded fourlocale+mobileEN pass,0pageerrors; Settings/translation
+snapshots exact, no sourcefix/harnessretry. Current singleton absent; realpublic
+usesdefaults. Configured/blank variants proven by SSRfixtures/source, no fake
+singleton/Save or existingPage mutation. No screenshots/aestheticloop/broadmatrix.
+
+Ownersnumber has0matches in current src/messages/scripts/docs/mock and guarded
+readonlyscan42business tables. Footer has general Phone(Bookings),Checkin,email,
+WhatsApp, no Ownersphone row/field. Ownerscontact fallback also general Phone.
+No new Ownersnumber assigned or remoteproduction claim. Artifact audit under
+/private/tmp/central-hill-settings-whatsapp-qa/owners-phone-audit.json.
+
+Main ff9866489→39b87ae done. Sole actual-main dev3071 **PID78758/parent78752/
+session68010**, cwdworkspace; safe propertylocalesqa DB5658/proxy4558/storage9077
+retained. QA77358 stopped. Finalreadonly GuestsEN/PT200 shows correctWA/Ownershref/
+newtab,0pageerrors (main-open.json); no cacheintervention or newmatrix. Finaldoc
+commit via gitlog-1. Preserve all files/worktrees/artifacts/envs/logo/media symlink.
+No remoteDB/push/deploy. Adminsingle-role removal, otherSettingslocales and new
+Ownersphonefield remain unstarted; follow next request.
+
+
 ## Local Admin access / single-role requirement —2026-11-07
 
 User clarifies product has ONE staff type, Admin; inherited admin/editor/translator

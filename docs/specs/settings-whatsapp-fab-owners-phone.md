@@ -63,3 +63,14 @@ Owners href, footerPhones Bookings351910075725/Checkin351912310632 and no Owners
 phone. Settings/translation snapshots exact, no codefix/harnessretry/DBwrites.
 Current singleton absent; configured/blank cases proved by actualcomponentSSR10
 fixtures and source, not fabricated global Save. No remote-production claims.
+
+
+## Local delivery
+
+Main ff9866489→39b87ae after cleantracked check; original logo/media symlink
+untracked preserved. QA77358/77352 stopped after cwd check. Sole actual-main
+safeenv dev3071PID78758/parent78752/session68010 now active, cwdworkspace.
+Read-only finalmainopening EN/PT Guests200, correctWA/newtab/Ownerslocalehref and
+0pageerrors, main-open.json/log. No Settings writes, cacheintervention, sourcefix,
+repeatmatrix or media writes. DB5658/proxy4558/storage9077 and all old files/
+worktrees/caches/envs retained. Finaldoccommit resolved by gitlog-1; no push/deploy.
