@@ -73,3 +73,8 @@ export type SiteIconKey = keyof typeof SITE_ICON_DEFAULTS;
 export type SiteIcons = Record<SiteIconKey, string>;
 
 export const SITE_ICON_KEYS = Object.keys(SITE_ICON_DEFAULTS) as SiteIconKey[];
+
+/** Legacy how-it-works controls have no public consumer; retain stored values only. */
+export const EDITABLE_SITE_ICON_KEYS = SITE_ICON_KEYS.filter((key) =>
+  !["services_how_1", "services_how_2", "services_how_3"].includes(key),
+);

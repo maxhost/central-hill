@@ -9,16 +9,11 @@ import { z } from "zod";
 import { navigationCtasByLocaleSchema } from "../navigation-cta-types";
 import { iconKey } from "@core/validation/icon-key";
 import { tStr } from "@core/validation/primitives";
-import { SITE_ICON_KEYS, type SiteIconKey } from "../site-icons";
+import { EDITABLE_SITE_ICON_KEYS, type SiteIconKey } from "../site-icons";
 import { httpsUrl } from "../validation";
 
 const socialUrl = z.url().nullable();
 const websiteTarget = z.string().trim().pipe(z.union([httpsUrl, z.literal("")]));
-
-const statForm = z.object({
-  value: z.string().max(40),
-  label: tStr({ min: 1, max: 80 }),
-});
 
 export const companySettingsSaveInput = z.object({
   /** Omitted by old clients: preserve all configured navigation CTAs. */
@@ -43,26 +38,23 @@ export const companySettingsSaveInput = z.object({
     youtube: socialUrl,
     tiktok: socialUrl,
   }),
-  stats: z.object({
-    bookings: statForm,
-    years: statForm,
-    guests: statForm,
-    revenue: statForm,
-    buildings: statForm,
-    apartments: statForm,
-  }),
+  /** Retired controls: accepted only for stale-client compatibility, never persisted. */
+  stats: z.unknown().optional(),
   office_address: z.string().min(1).max(300),
   office_hours: z.string().max(200).nullable(),
   office_hours_label: tStr({ max: 120 }).nullable(),
+  office_hours_translations: z.object({
+    es: z.string().trim().max(120), pt: z.string().trim().max(120), fr: z.string().trim().max(120),
+  }).strict().optional(),
   currency: z.literal("EUR"),
   default_og_image_media_id: z.uuid().nullable(),
-  avantio_account_id: z.string().min(1).max(120),
-  avantio_widget_config: z.record(z.string(), z.unknown()),
-  show_building_location: z.boolean(),
-  show_building_count: z.boolean(),
+  avantio_account_id: z.unknown().optional(),
+  avantio_widget_config: z.unknown().optional(),
+  show_building_location: z.unknown().optional(),
+  show_building_count: z.unknown().optional(),
   /** Every site icon, as a strict Iconoir name (ADR 0034 amendment 2). */
   site_icons: z.object(
-    Object.fromEntries(SITE_ICON_KEYS.map((k) => [k, iconKey])) as Record<SiteIconKey, typeof iconKey>,
+    Object.fromEntries(EDITABLE_SITE_ICON_KEYS.map((k) => [k, iconKey])) as Record<SiteIconKey, typeof iconKey>,
   ),
 });
 export type CompanySettingsSaveInput = z.infer<typeof companySettingsSaveInput>;

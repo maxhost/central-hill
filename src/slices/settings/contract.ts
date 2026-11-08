@@ -158,3 +158,8 @@ export { isSettingsManualLocaleField } from "./manual-locale-fields";
 
 /** Navigation is fixed in code; legacy nav_item rows are retained but not editable. */
 export { isFixedNavigationEntity } from "./fixed-navigation";
+
+export { EDITABLE_SITE_ICON_KEYS } from "./site-icons";
+export { HOURS_LABEL_LOCALES, HOURS_LABEL_TARGET_LOCALES, HOURS_LABEL_MAX, OFFICE_HOURS_DEFAULT_LABELS, OFFICE_HOURS_DEFAULT_VALUES } from "./hours-label-types";
+export type { HoursLabelTranslations } from "./hours-label-types";
+export { isSettingsEditorialEntity } from "./manual-locale-fields";

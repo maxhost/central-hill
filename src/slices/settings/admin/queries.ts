@@ -42,6 +42,7 @@ export interface GlobalsEditData {
   office_address: string;
   office_hours: string;
   office_hours_label: string;
+  office_hours_translations?: import("../hours-label-types").HoursLabelTranslations;
   currency: "EUR";
   default_og_image_media_id: string;
   avantio_account_id: string;
