@@ -7,48 +7,28 @@ import {
   AdminButton,
   AdminCard,
   AdminPageHeader,
-  Checkbox,
   Field,
   FieldGrid,
   FormActions,
   type AdminMediaPreview,
   IconField,
   MediaField,
-  TextArea,
   TextInput,
   useMediaQueue,
 } from "@slices/backoffice/contract";
-import { SITE_ICON_DEFAULTS, type SiteIconKey } from "../../site-icons";
+import { EDITABLE_SITE_ICON_KEYS, SITE_ICON_DEFAULTS, type EditableSiteIconKey } from "../../site-icons";
+import { HOURS_LABEL_LOCALES, HOURS_LABEL_MAX, OFFICE_HOURS_DEFAULT_LABELS } from "../../hours-label-types";
 import { WEBSITE_LOCALES } from "../../website-locale-types";
 import { NAVIGATION_CTA_LOCALES, type NavigationCta, type NavigationCtasByLocale } from "../../navigation-cta-types";
 import { saveGlobals } from "../actions";
-import type { GlobalsEditData, StatForm } from "../queries";
+import type { GlobalsEditData } from "../queries";
 
-/**
- * Company-globals editor (S12) — the site-wide singleton. Posts through `saveGlobals`;
- * the [T] stat labels + office-hours label are authored in English. The Avantio widget
- * config is edited as JSON (parsed on submit).
- */
+/** Company settings: shared contact/office details, localized labels and global icon defaults. */
 
-type StatKey =
-  | "bookings"
-  | "years"
-  | "guests"
-  | "revenue"
-  | "buildings"
-  | "apartments";
-const STAT_KEYS: StatKey[] = [
-  "bookings",
-  "years",
-  "guests",
-  "revenue",
-  "buildings",
-  "apartments",
-];
 /** Site icons, grouped as the form shows them (ADR 0034 amendment 2). */
 const SITE_ICON_GROUPS: {
   key: "general" | "detail" | "specs" | "services" | "guides";
-  icons: SiteIconKey[];
+  icons: EditableSiteIconKey[];
 }[] = [
   { key: "general", icons: ["account", "contact", "language", "location", "reading_time", "search"] },
   {
@@ -67,9 +47,6 @@ const SITE_ICON_GROUPS: {
   {
     key: "services",
     icons: [
-      "services_how_1",
-      "services_how_2",
-      "services_how_3",
       "service_included",
       "service_badge",
       "service_note",
@@ -133,14 +110,9 @@ export function GlobalsForm({
     key: K,
     value: GlobalsEditData[K],
   ) => setState((prev) => ({ ...prev, [key]: value }));
-  const setStat = (key: StatKey, patch: Partial<StatForm>) =>
-    setState((prev) => ({
-      ...prev,
-      stats: { ...prev.stats, [key]: { ...prev.stats[key], ...patch } },
-    }));
   const setSocial = (key: SocialKey, value: string) =>
     setState((prev) => ({ ...prev, social: { ...prev.social, [key]: value } }));
-  const setIcon = (key: SiteIconKey, value: string) =>
+  const setIcon = (key: EditableSiteIconKey, value: string) =>
     setState((prev) => ({ ...prev, site_icons: { ...prev.site_icons, [key]: value } }));
   const setBookCta = (locale: (typeof NAVIGATION_CTA_LOCALES)[number], patch: Partial<NavigationCta>) =>
     setState((previous) => {
@@ -165,21 +137,6 @@ export function GlobalsForm({
     setBanner(null);
     const orNull = (v: string) => (v.trim() === "" ? null : v.trim());
 
-    let widgetConfig: Record<string, unknown>;
-    try {
-      const parsed = JSON.parse(state.avantio_widget_config.trim() || "{}");
-      if (
-        typeof parsed !== "object" ||
-        parsed === null ||
-        Array.isArray(parsed)
-      )
-        throw new Error();
-      widgetConfig = parsed as Record<string, unknown>;
-    } catch {
-      setErrors({ avantio_widget_config: t("admin.errors.invalidJson") });
-      setBanner(tb("actions.saveError"));
-      return;
-    }
     setErrors({});
 
     const navigationCtas = state.navigation_ctas;
@@ -207,25 +164,17 @@ export function GlobalsForm({
       social: Object.fromEntries(
         SOCIAL_KEYS.map((k) => [k, orNull(state.social[k])]),
       ),
-      stats: Object.fromEntries(
-        STAT_KEYS.map((k) => [
-          k,
-          {
-            value: state.stats[k].value.trim(),
-            label: state.stats[k].label.trim(),
-          },
-        ]),
-      ),
       office_address: state.office_address.trim(),
       office_hours: orNull(state.office_hours),
       office_hours_label: orNull(state.office_hours_label),
+      office_hours_translations: {
+        es: state.office_hours_translations?.es.trim() ?? "",
+        pt: state.office_hours_translations?.pt.trim() ?? "",
+        fr: state.office_hours_translations?.fr.trim() ?? "",
+      },
       currency: "EUR" as const,
       default_og_image_media_id: state.default_og_image_media_id || null,
-      avantio_account_id: state.avantio_account_id.trim(),
-      avantio_widget_config: widgetConfig,
-      show_building_location: state.show_building_location,
-      show_building_count: state.show_building_count,
-      site_icons: state.site_icons,
+      site_icons: Object.fromEntries(EDITABLE_SITE_ICON_KEYS.map((key) => [key, state.site_icons[key]])),
     };
 
     void (async () => {
@@ -481,34 +430,6 @@ export function GlobalsForm({
         </FieldGrid>
       </AdminCard>
 
-      <AdminCard title={t("admin.globals.sections.stats")}>
-        <div className="space-y-4">
-          {STAT_KEYS.map((k) => (
-            <FieldGrid key={k}>
-              <Field
-                label={t(`admin.globals.stats.${k}`)}
-                error={err(`stats.${k}.value`)}
-              >
-                <TextInput
-                  value={state.stats[k].value}
-                  onChange={(e) => setStat(k, { value: e.target.value })}
-                  placeholder={t("admin.globals.fields.statValue")}
-                />
-              </Field>
-              <Field
-                label={t("admin.globals.fields.statLabel")}
-                error={err(`stats.${k}.label`)}
-              >
-                <TextInput
-                  value={state.stats[k].label}
-                  onChange={(e) => setStat(k, { label: e.target.value })}
-                />
-              </Field>
-            </FieldGrid>
-          ))}
-        </div>
-      </AdminCard>
-
       <AdminCard title={t("admin.globals.sections.office")}>
         <div className="space-y-4">
           <Field
@@ -521,25 +442,55 @@ export function GlobalsForm({
               onChange={(e) => set("office_address", e.target.value)}
             />
           </Field>
+          <Field
+            label={t("admin.globals.fields.officeHours")}
+            error={err("office_hours")}
+          >
+            <TextInput
+              value={state.office_hours}
+              onChange={(e) => set("office_hours", e.target.value)}
+            />
+          </Field>
           <FieldGrid>
-            <Field
-              label={t("admin.globals.fields.officeHours")}
-              error={err("office_hours")}
-            >
-              <TextInput
-                value={state.office_hours}
-                onChange={(e) => set("office_hours", e.target.value)}
-              />
-            </Field>
-            <Field
-              label={t("admin.globals.fields.officeHoursLabel")}
-              error={err("office_hours_label")}
-            >
-              <TextInput
-                value={state.office_hours_label}
-                onChange={(e) => set("office_hours_label", e.target.value)}
-              />
-            </Field>
+            {HOURS_LABEL_LOCALES.map((locale) => {
+              const field = locale === "en" ? "office_hours_label" : `office_hours_translations.${locale}`;
+              const id = `office-hours-label-${locale}`;
+              return (
+                <Field
+                  key={locale}
+                  label={t("admin.globals.hoursLabels.label", { locale: locale.toUpperCase() })}
+                  htmlFor={id}
+                  hint={t("admin.globals.hoursLabels.hint")}
+                  error={err(field)}
+                >
+                  <TextInput
+                    id={id}
+                    value={locale === "en" ? state.office_hours_label : state.office_hours_translations?.[locale] ?? ""}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      if (locale === "en") {
+                        set("office_hours_label", value);
+                        return;
+                      }
+                      setState((previous) => ({
+                        ...previous,
+                        office_hours_translations: {
+                          es: "",
+                          pt: "",
+                          fr: "",
+                          ...previous.office_hours_translations,
+                          [locale]: value,
+                        },
+                      }));
+                    }}
+                    placeholder={OFFICE_HOURS_DEFAULT_LABELS[locale]}
+                    maxLength={HOURS_LABEL_MAX}
+                    disabled={pending || preparing}
+                    aria-invalid={Boolean(err(field))}
+                  />
+                </Field>
+              );
+            })}
           </FieldGrid>
         </div>
       </AdminCard>
@@ -559,48 +510,6 @@ export function GlobalsForm({
             }}
           />
         </Field>
-      </AdminCard>
-
-      <AdminCard title={t("admin.globals.sections.avantio")}>
-        <div className="space-y-4">
-          <Field
-            label={t("admin.globals.fields.avantioAccount")}
-            required
-            error={err("avantio_account_id")}
-          >
-            <TextInput
-              value={state.avantio_account_id}
-              onChange={(e) => set("avantio_account_id", e.target.value)}
-            />
-          </Field>
-          <Field
-            label={t("admin.globals.fields.avantioConfig")}
-            hint={t("admin.globals.fields.avantioConfigHint")}
-            error={err("avantio_widget_config")}
-          >
-            <TextArea
-              rows={5}
-              className="font-mono text-xs"
-              value={state.avantio_widget_config}
-              onChange={(e) => set("avantio_widget_config", e.target.value)}
-            />
-          </Field>
-        </div>
-      </AdminCard>
-
-      <AdminCard title={t("admin.globals.sections.buildings")}>
-        <div className="space-y-3">
-          <Checkbox
-            label={t("admin.globals.fields.showBuildingLocation")}
-            checked={state.show_building_location}
-            onChange={(e) => set("show_building_location", e.target.checked)}
-          />
-          <Checkbox
-            label={t("admin.globals.fields.showBuildingCount")}
-            checked={state.show_building_count}
-            onChange={(e) => set("show_building_count", e.target.checked)}
-          />
-        </div>
       </AdminCard>
 
       <AdminCard title={t("admin.globals.sections.icons")}>
