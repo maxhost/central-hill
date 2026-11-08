@@ -11,12 +11,13 @@ import type { SiteIcons } from "../site-icons";
 import { resolveSiteIcons } from "../server/site-icons";
 import { rawWebsiteTranslations } from "../server/website-locales";
 import { navigationCtasForEdit } from "../server/navigation-ctas";
+import { rawHoursLabelTranslations } from "../server/hours-labels";
 
 /**
  * Backoffice reads for slice `settings` (S12). Not cache-wrapped (admin is dynamic).
  * The globals editor falls back to `DEFAULT_GLOBALS` when no row exists yet so the
- * form always renders; [T] labels resolve from the source-locale (`en`) translation
- * rows, falling back to the inline jsonb labels.
+ * form always renders. Retired stat labels remain in the compatibility DTO; the
+ * active hours label uses canonical inline EN and raw authored target values.
  */
 
 const SOURCE = "en" as const;
@@ -81,6 +82,7 @@ function scaffold(): GlobalsEditBundle {
       office_address: DEFAULT_GLOBALS.officeAddress,
       office_hours: DEFAULT_GLOBALS.officeHours ?? "",
       office_hours_label: DEFAULT_GLOBALS.officeHoursLabel ?? "",
+      office_hours_translations: { es: "", pt: "", fr: "" },
       currency: "EUR",
       default_og_image_media_id: "",
       avantio_account_id: DEFAULT_GLOBALS.avantio.accountId,
@@ -133,8 +135,8 @@ export async function getGlobalsForEdit(): Promise<GlobalsEditBundle> {
     stats,
     office_address: row.office_address,
     office_hours: row.office_hours ?? "",
-    office_hours_label:
-      content.get(COMPANY_SETTINGS, row.id, "office_hours_label") ?? row.office_hours_label ?? "",
+    office_hours_label: row.office_hours_label ?? "",
+    office_hours_translations: rawHoursLabelTranslations(manualRows),
     currency: "EUR",
     default_og_image_media_id: row.default_og_image_media_id ?? "",
     avantio_account_id: row.avantio_account_id,

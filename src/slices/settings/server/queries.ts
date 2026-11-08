@@ -20,14 +20,15 @@ import { resolveSiteIcons } from "./site-icons";
 import { resolveWebsiteUrl } from "./website-locales";
 import { resolveNavigationCtas } from "./navigation-ctas";
 import { getFixedNav } from "./fixed-navigation";
+import { resolveHoursLabel } from "./hours-labels";
 
 /**
  * Public read functions for slice `settings` / `globals` (conventions.md → reads go
  * through typed, cache-tagged `server/` functions; never the DB at request time).
  * Both are wrapped in `unstable_cache` keyed by locale and tagged `globals` / `nav`
- * so a settings publish busts them (see `./publish`). Translatable fields (stat
- * labels and office-hours label) resolve via `core/i18n` with the
- * source-locale (`en`) fallback + `approved`-only gating for target locales.
+ * so a settings publish busts them (see `./publish`). Retired stat fields remain
+ * readable for compatibility. Active hours labels use inline EN and approved
+ * manual targets, then localized defaults (ADR0075).
  * Navigation resolves the fixed multilingual code tree (ADR0074), never legacy DB rows.
  */
 
@@ -96,8 +97,7 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
     stats,
     officeAddress: row.office_address,
     officeHours: row.office_hours ?? null,
-    officeHoursLabel:
-      content.get(COMPANY_SETTINGS, row.id, "office_hours_label") ?? row.office_hours_label ?? null,
+    officeHoursLabel: resolveHoursLabel(row.office_hours_label, locale, manualRows),
     currency: row.currency,
     defaultOgImage: og,
     avantio: { accountId: row.avantio_account_id, widgetConfig: row.avantio_widget_config },
@@ -111,8 +111,8 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
 // cached before the key existed (its `icons` would lack it).
 const SITE_ICONS_SHAPE = SITE_ICON_KEYS.join(",");
 // Same reason for the read-model shape: bump it when `SiteGlobals` gains a field, so an entry
-// cached before locale-aware navigation CTAs is not served (v5, ADR0073).
-const GLOBALS_SHAPE = "v5";
+// cached before manually localized office-hours labels is not served (v6, ADR0075).
+const GLOBALS_SHAPE = "v6";
 
 export function getGlobals(locale: Locale): Promise<SiteGlobals | null> {
   return unstable_cache(() => _getGlobals(locale), ["settings:getGlobals", locale, GLOBALS_SHAPE, SITE_ICONS_SHAPE], {

@@ -3,26 +3,24 @@
 import { eq } from "drizzle-orm";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
-import { setSourceContent } from "@core/i18n/content-write";
-import { COMPANY_SETTINGS, type StatKey } from "../contract";
+import { DEFAULT_GLOBALS } from "../defaults";
 import { company_settings } from "../schema";
 import { revalidateGlobals } from "../server/publish";
 import { saveWebsiteTranslations } from "../server/website-locales";
 import { saveNavigationCtas } from "../server/navigation-ctas";
+import { saveHoursLabelTranslations } from "../server/hours-labels";
 import {
   companySettingsSaveInput,
 } from "./validation";
 
 /**
  * Backoffice write actions for slice `settings` (S12), **admin-only** (`requireStaff
- * (["admin"])`). Globals are a singleton (insert if none, else update). The source [T]
- * labels (stat labels + office-hours label) go through the `core/i18n`
- * write seam (ADR 0019); scalars/jsonb are written as columns. Navigation is fixed
+ * (["admin"])`). Globals are a singleton (insert if none, else update). Manual target
+ * labels go through the core write seam; EN stays inline. Retired stats/Avantio/
+ * listing fields are never changed by submitted values (ADR0075). Navigation is fixed
  * in code (ADR0074), so its legacy action authenticates and rejects without writes.
  * Globals saves revalidate their tag and each locale's layout tree.
  */
-
-const STAT_KEYS: StatKey[] = ["bookings", "years", "guests", "revenue", "buildings", "apartments"];
 
 export type SettingsSaveResult =
   | { ok: true }
@@ -50,12 +48,9 @@ export async function saveGlobals(raw: unknown): Promise<SettingsSaveResult> {
   }
   const input = parsed.data;
 
-  // jsonb columns: drop empty social handles; keep stat value + (source) label.
+  // Drop empty social handles. Retired fields deliberately stay out of update values.
   const social: Record<string, string> = {};
   for (const [k, v] of Object.entries(input.social)) if (v) social[k] = v;
-
-  const stats: Record<string, { value: string; label: string }> = {};
-  for (const key of STAT_KEYS) stats[key] = { value: input.stats[key].value, label: input.stats[key].label };
 
   const coreValues = {
     email: input.email,
@@ -66,22 +61,16 @@ export async function saveGlobals(raw: unknown): Promise<SettingsSaveResult> {
     checkin_phone: input.checkin_phone,
     website_url: input.website_url,
     social,
-    stats,
     office_address: input.office_address,
     office_hours: input.office_hours,
     office_hours_label: input.office_hours_label,
     currency: input.currency,
     default_og_image_media_id: input.default_og_image_media_id,
-    avantio_account_id: input.avantio_account_id,
-    avantio_widget_config: input.avantio_widget_config,
-    show_building_location: input.show_building_location,
-    show_building_count: input.show_building_count,
-    site_icons: input.site_icons,
   };
 
   try {
     const [existing] = await db
-      .select({ id: company_settings.id })
+      .select()
       .from(company_settings)
       .orderBy(company_settings.created_at)
       .limit(1);
@@ -91,25 +80,34 @@ export async function saveGlobals(raw: unknown): Promise<SettingsSaveResult> {
       id = existing.id;
       await db
         .update(company_settings)
-        .set({ ...coreValues, updated_at: new Date() })
+        .set({
+          ...coreValues,
+          site_icons: { ...existing.site_icons, ...input.site_icons },
+          updated_at: new Date(),
+        })
         .where(eq(company_settings.id, id));
     } else {
       const [ins] = await db
         .insert(company_settings)
-        .values(coreValues)
+        .values({
+          ...coreValues,
+          stats: DEFAULT_GLOBALS.stats,
+          avantio_account_id: DEFAULT_GLOBALS.avantio.accountId,
+          avantio_widget_config: DEFAULT_GLOBALS.avantio.widgetConfig,
+          show_building_location: DEFAULT_GLOBALS.showBuildingLocation,
+          show_building_count: DEFAULT_GLOBALS.showBuildingCount,
+          site_icons: { ...DEFAULT_GLOBALS.icons, ...input.site_icons },
+        })
         .returning({ id: company_settings.id });
       if (!ins) return { ok: false, error: "server" };
       id = ins.id;
     }
 
-    const labelFields: Record<string, string> = {};
-    for (const key of STAT_KEYS) labelFields[`stats.${key}.label`] = input.stats[key].label;
-    labelFields.office_hours_label = input.office_hours_label ?? "";
-    await setSourceContent(COMPANY_SETTINGS, id, labelFields, { updatedBy: staff.userId });
-
     await saveWebsiteTranslations(id, input.website_url, input.website_translations, staff.userId);
 
     await saveNavigationCtas(id, input.navigation_ctas, staff.userId);
+
+    await saveHoursLabelTranslations(id, input.office_hours_label, input.office_hours_translations, staff.userId);
 
     revalidateGlobals();
     return { ok: true };
