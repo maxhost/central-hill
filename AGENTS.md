@@ -1,5 +1,21 @@
 # Central Hill agent instructions
 
+## Final Translations readiness review —2026-11-08
+
+User asks if global Translations can retire after Settings. Source audit at0abdf0b
+finds city.intro has NO current public renderer: Geography DTO reads it but Guides
+reduces city toid/name/slug; Guide intro is a separate alreadylocalized field. Do
+not present city.intro as needing another public editor. Preserve legacy rows.
+Only unresolved product policy is shared media ALT: some Pages/Blog body images
+already have own alt fields, but covers/galleries/Guide media/OG still read asset
+ALT through core i18n. Global review edits existing targets, upload has no source
+ALT field. Choose per-image manual editing or existing-values/automaticfallback
+policy before removing its last UI; do not invent a mandatory media-library task.
+Then technical retirement of legacy routes/actions remains, with all stored data
+kept. Read [audit](docs/specs/translations-final-closeout-review.md) and masterplan.
+No code/DB/schema/tests/browser/restart in this review, actual-main3071 PID13559/
+parent13553/session19738 retained. No automatic global removal pending ALT policy.
+
 ## Settings Hours Labels and cleanup —2026-11-07
 
 User requests editable Hours Label EN/ES/PT/FR and removes unused Settings blocks.

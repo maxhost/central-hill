@@ -1,6 +1,15 @@
 # Contenidos del CMS — edición y publicación por idioma
 
-## Estado vigente — 2026-11-07, limpieza de Settings y labels de horario
+## Estado vigente — 2026-11-08, revisión de cierre de Translations
+
+Revisión final de consumidores corrige otro pendiente histórico: city.intro se
+carga en Geography, pero no se renderiza en la web actual; los textos intro de
+Guías son propios y ya están cubiertos. No hace falta otro editor de introducción
+de ciudades para preservar el resultado público. Queda una decisión de producto
+sobre los ALT compartidos que aún consumen portadas/galerías/OG: trasladar su edición
+manual a las imágenes o conservar valores existentes/fallbacks sin esa superficie.
+Después corresponde el cierre técnico de las vías genéricas, sin borrar datos.
+Ver [revisión](translations-final-closeout-review.md). No implementación en esta revisión.
 
 Settings incorpora cuatro Hours Labels manuales EN/ES/PT/FR; horario compartido,
 fallback EN/default del idioma y preservación de textos propios. Se retiran sus
@@ -85,18 +94,19 @@ entrega actual; no autoriza iniciar otros auxiliares. Prevalece sobre notas hist
 ### Dependencias pendientes para retirar la sección global
 
 1. **Auxiliares pendientes**: los nombres de ciudades/barrios están cubiertos;
-   queda decidir la autoría o política de `city.intro`, texto traducible histórico
-   fuera del cambio de nombres. Testimonios (`quote`) ya está cubierto. Settings
+   `city.intro` es histórico sin uso público activo y sólo necesita una política
+   de preservación/cierre técnico, no otro editor. Testimonios (`quote`) ya está cubierto. Settings
    (`company_settings`) ya está cubierto: Website, botones y Hours Labels
    tienen controles propios; estadísticas antiguas y controles sin uso retirados
    sin borrar datos, vía genérica cerrada. La navegación (`nav_item`) queda fija
    en código y también sale del flujo. Las
    FAQ de Building ya pertenecen a su editor. FAQ general admite ahora grupos
    separados elegidos por idioma; no requiere un nuevo editor con tabs para ese flujo.
-2. **Metadatos de imágenes**: cubrir `media_asset.alt` mediante una superficie
-   propia si se conserva su edición manual. Actualmente el lector soporta ALT
-   localizado y su fallback, pero no hay editor de metadatos que sustituya la
-   matriz global. Esto no pide construir una biblioteca de medios completa ahora.
+2. **Decisión sobre ALT de imágenes**: parte de Pages y el cuerpo de Blog ya tienen
+   ALT propio. Portadas/galerías/OG aún consumen `media_asset.alt`. Si se mantiene
+   edición manual, darle una superficie en las imágenes; si se acepta sólo lectura
+   de valores históricos y fallback automático, no hace falta otro editor.
+   No convertir esta decisión en una biblioteca de medios completa por defecto.
 3. **Cierre del flujo antiguo**: Services/Amenities/Service categories ya tienen
    formularios localizados pero siguen admitidos en el inbox/rutas/acciones de
    Translation. El filtro/guardas actuales reconocen Pages, Blog, Properties y ahora Guías.
