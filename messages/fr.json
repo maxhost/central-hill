@@ -1056,7 +1056,8 @@
         "error": "Nous n'avons pas pu traiter votre demande. Veuillez réessayer.",
         "success": "Votre demande a été reçue. Si vous recevez un email de confirmation, suivez son lien pour finaliser votre inscription.",
         "close": "Fermer"
-      }
+      },
+      "ownersPhone": "Propriétaires"
     },
     "admin": {
       "errors": {
@@ -1094,7 +1095,9 @@
           "avantioConfig": "Config. du widget Avantio",
           "avantioConfigHint": "Objet JSON transmis au widget de réservation.",
           "showBuildingLocation": "Afficher la barre de localisation (ville / région)",
-          "showBuildingCount": "Afficher le nombre total d'immeubles"
+          "showBuildingCount": "Afficher le nombre total d'immeubles",
+          "ownersPhone": "Téléphone des propriétaires",
+          "ownersPhoneHint": "Affiché dans le pied de page. Laissez vide pour masquer le téléphone des propriétaires."
         },
         "social": {
           "instagram": "Instagram",

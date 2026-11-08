@@ -73,6 +73,7 @@ export function Footer({
   /** Caller's own `<LocaleSwitcher>`. */
   localeSwitcher?: ReactNode;
 }) {
+  const ownersPhone = contact.ownersPhone?.trim();
   return (
     <footer className="bg-feature text-on-feature">
       <Container className="pb-9 pt-[35px]">
@@ -120,6 +121,16 @@ export function Footer({
                   {contact.bookingsLabel ? ` ${contact.bookingsLabel}` : null}
                 </span>
               </div>
+              {ownersPhone ? (
+                <div className="flex items-start gap-3">
+                  {contact.phoneIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.phoneIcon}</span> : null}
+                  <span>
+                    <a href={`tel:${ownersPhone.replace(/[^\d+]/g, "")}`} className="hover:text-on-feature">
+                      {ownersPhone}
+                    </a>{" "}{contact.ownersLabel}
+                  </span>
+                </div>
+              ) : null}
               {contact.checkinPhone ? (
                 <div className="flex items-start gap-3">
                   {contact.phoneIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.phoneIcon}</span> : null}

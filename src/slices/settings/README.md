@@ -304,3 +304,15 @@ blank/null number hides only WhatsApp. The Owners floating navigation remains.
 Existing Settings save tag/layout revalidation refreshes the link across locales.
 No new tables/fields or number changes; Owners +351910438062 audit is recorded in
 settings-whatsapp-fab-owners-phone execution, not added to the footer by this task.
+
+## Independent Owners phone (ADR0071)
+
+Settings Contact now includes optional Owners phone, shared across all languages.
+The new owners_phone column (migration0029) defaults to the user-supplied
++351 910 438 062. Explicit null hides only its Footer row; missing singleton uses
+DEFAULT_GLOBALS. Old save clients omitting the field preserve configured/null value.
+Public ownersPhone reads raw trimmed string|null, cache shapev3. FooterContact's
+optional ownersPhone/ownersLabel are supplied by this slice; kernel Footer adds
+one tel row after Bookings with the existing icon. New labels authored4languages.
+Bookings/check-in/WhatsApp and About/Owners CTA contacts remain independent.
+See settings-owners-phone execution/QA for schema authorization and evidence.

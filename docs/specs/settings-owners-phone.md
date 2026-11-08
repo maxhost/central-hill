@@ -75,3 +75,14 @@ DB tests use valid temporary own synthetic settings and cleanup, never fabricate
 persist productionbookingconfig. Browser writes onlyownnewfixture with valid test
 account, cleanup ownrecord at end; no existingconfig overwrite. If user creates
 singleton meanwhile stop dependentwrites/report, don't delete or replace it.
+
+## Progress
+
+Contracts3578c0a +FooterContacttype e79c9e4 stabilized before two writers. User
+explicitly authorized0029 onlypropertylocalesqa5658; root verified hostname and
+SQLdb/role, appliedoneALTER, default/nullable inspected,42oldbusinesshashes exact
+(company_settings comparison excludes only newlyaddedattribute). Evidence under
+/private/tmp/central-hill-owners-phone-qa/migration.json; no oldcontactdata writes.
+UI6bce8e9 ready, writerTS/scopedlint/diff0. Backend21pure+6DB0, cleanup onlyownnew
+singleton/translation rows (guarded initial0), TS/lint0; root SSR8Footercases0.
+Actual current Settings remains absent after tests; no userconfiguration changed.

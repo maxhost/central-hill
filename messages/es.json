@@ -1056,7 +1056,8 @@
         "error": "No pudimos completar tu solicitud. Inténtalo de nuevo.",
         "success": "Hemos recibido tu solicitud. Si recibes un correo de confirmación, sigue su enlace para completar la suscripción.",
         "close": "Cerrar"
-      }
+      },
+      "ownersPhone": "Propietarios"
     },
     "admin": {
       "errors": {
@@ -1094,7 +1095,9 @@
           "avantioConfig": "Config. del widget de Avantio",
           "avantioConfigHint": "Objeto JSON enviado al widget de reservas.",
           "showBuildingLocation": "Mostrar barra de ubicación (ciudad / región)",
-          "showBuildingCount": "Mostrar total de edificios"
+          "showBuildingCount": "Mostrar total de edificios",
+          "ownersPhone": "Teléfono de propietarios",
+          "ownersPhoneHint": "Se muestra en el footer. Deja vacío para ocultar el teléfono de propietarios."
         },
         "social": {
           "instagram": "Instagram",

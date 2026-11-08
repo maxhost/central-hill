@@ -795,3 +795,13 @@ rating/status/position stay shared. Cached locale/audience readers stay intact;
 Save invalidates testimonial-list without marketing-page republishing. Generic
 Translation routes/actions/generation retire testimonial with redirects and data
 preservation. See testimonial-quote-locales execution/QA.
+
+### Owners phone in Settings/Footer (ADR0071)
+
+Migration0029 adds only company_settings.owners_phone text nullable, default
++351 910 438 062 (number supplied by user). It initializes the new field, preserving
+all prior columns. Explicit null clears/hides its Footer row; old clients omitting
+key preserve existing value/null. Public SiteGlobals.ownersPhone is optional for
+consumer compatibility but the reader emits string|null and uses cache shapev3.
+Absent singleton defaults include same number. Shared across locales; only labels
+translated. No existing phone replaced and no new About/Owners CTA behavior.

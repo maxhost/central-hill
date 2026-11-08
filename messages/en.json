@@ -1056,7 +1056,8 @@
         "error": "We couldn't complete your request. Please try again.",
         "success": "Your request has been received. If you receive a confirmation email, follow its link to complete your subscription.",
         "close": "Close"
-      }
+      },
+      "ownersPhone": "Owners"
     },
     "admin": {
       "errors": {
@@ -1094,7 +1095,9 @@
           "avantioConfig": "Avantio widget config",
           "avantioConfigHint": "JSON object passed to the booking widget.",
           "showBuildingLocation": "Show location bar (city / region)",
-          "showBuildingCount": "Show total buildings count"
+          "showBuildingCount": "Show total buildings count",
+          "ownersPhone": "Owners phone",
+          "ownersPhoneHint": "Shown in the footer. Leave blank to hide the Owners phone row."
         },
         "social": {
           "instagram": "Instagram",
