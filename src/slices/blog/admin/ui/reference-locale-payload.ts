@@ -1,3 +1,4 @@
+import type { OwnerMediaAlts } from "@core/media/owner-alt";
 import {
   BLOG_REFERENCE_TARGET_LOCALES,
   type AuthorTranslations,
@@ -11,6 +12,7 @@ export interface AuthorFormValues {
   slug: string;
   status: AuthorEditData["status"];
   avatar_media_id: string;
+  avatar_alts: OwnerMediaAlts;
   name: string;
   bio: string;
   translations: Record<
@@ -38,6 +40,7 @@ export function authorFormValues(data: AuthorInitial | null): AuthorFormValues {
     slug: data?.slug ?? "",
     status: data?.status ?? "draft",
     avatar_media_id: data?.avatar_media_id ?? "",
+    avatar_alts: data?.avatar_alts ?? { en: "", es: "", pt: "", fr: "" },
     name: data?.name ?? "",
     bio: data?.bio ?? "",
     translations: Object.fromEntries(
@@ -79,6 +82,7 @@ export function authorLocalePayload(
     slug: values.slug.trim(),
     status: values.status,
     avatar_media_id: values.avatar_media_id || null,
+    avatar_alts: values.avatar_alts,
     name: values.name.trim(),
     bio: orNull(values.bio),
     translations: Object.fromEntries(

@@ -1,3 +1,4 @@
+import { rawOwnerMediaAlts, type OwnerMediaAlts } from "@core/media/owner-alt";
 import "server-only";
 import { asc, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@core/db/client";
@@ -117,6 +118,7 @@ export interface AuthorEditData {
   slug: string;
   status: Status;
   avatar_media_id: string | null;
+  avatar_alts?: OwnerMediaAlts;
   name: string;
   bio: string | null;
   translations?: import("../reference-locale-types").AuthorTranslations;
@@ -136,6 +138,7 @@ export async function getAuthorForEdit(id: string): Promise<AuthorEditBundle | n
     slug: row.slug,
     status: row.status,
     avatar_media_id: row.avatar_media_id,
+    avatar_alts: rawOwnerMediaAlts(translations, row.avatar_media_id),
     name: translations.find(row => row.locale === SOURCE && row.field === "name")?.value ?? "",
     bio: translations.find(row => row.locale === SOURCE && row.field === "bio")?.value ?? null,
     translations: rawAuthorTranslations(translations),

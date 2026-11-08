@@ -16,7 +16,7 @@ import {
   AdminButton,
   Checkbox,
   Field,
-  MediaField,
+  MediaField, MediaAltProvider,
   Select,
   TextArea,
   TextInput,
@@ -871,7 +871,7 @@ export function BuildingLocaleEditor({
   const titleId = `${fieldPrefix}-leave-title`;
   const descriptionId = `${fieldPrefix}-leave-description`;
   return (
-    <>
+    <MediaAltProvider locale={locale} value={content.media_alts} onChange={value => set("media_alts", value)} disabled={busy || archived}>
       <div
         className="w-full min-w-0 max-w-3xl selection:bg-accent/20 selection:text-ink"
         data-building-editor="form"
@@ -1228,6 +1228,6 @@ export function BuildingLocaleEditor({
           </AdminButton>
         </div>
       </dialog>
-    </>
+    </MediaAltProvider>
   );
 }

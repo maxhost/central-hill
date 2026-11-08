@@ -1,5 +1,21 @@
 # Slice `blog` (S4)
 
+## Image ALT by content locale —2026-11-08
+
+ADR0076 adds optional `content.media_alts` keyed by media UUID to existing locale
+snapshots. Shared image references stay unchanged; descriptions use the active
+locale's draft/Publish lifecycle and existing inheritance/custom ownership. Every
+active image picker exposes a localized ALT field; blank/missing text retains
+legacy approved asset ALT or the existing content fallback. Reorder keeps image
+identity, replacement cannot apply another image's description. Public and private
+mappers use only their supplied snapshot, never another locale's draft.
+
+Blog body image `alt` controls remain authoritative without duplicate fields. The
+Author avatar form uses four raw ALT inputs on the same Save, stored as owner
+translation fields `image_alt:<media UUID>`; missing old payloads preserve them.
+Avatar currently has no public renderer, and this change adds no new placement.
+
+
 ## Author/category locale inputs —2026-11-06
 
 ADR0067 moves author name/bio and category name into visible EN/ES/PT/FR inputs

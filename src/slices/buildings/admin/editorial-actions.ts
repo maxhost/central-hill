@@ -1,4 +1,5 @@
 "use server";
+import { resolveMediaAlt } from "@core/media/alt";
 import { createElement, Fragment, type ReactNode } from "react";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
@@ -164,7 +165,7 @@ export async function renderBuildingLivePreview(
             url: mediaUrl(stored.r2_key),
             width: stored.width ?? 1600,
             height: stored.height ?? 1200,
-            alt: detail.name,
+            alt: resolveMediaAlt(envelope.content.media_alts, id, detail.name),
             blurhash: stored.blurhash,
           }
         : local
@@ -172,7 +173,7 @@ export async function renderBuildingLivePreview(
               url: local.url,
               width: local.width ?? 1600,
               height: local.height ?? 1200,
-              alt: detail.name,
+              alt: resolveMediaAlt(envelope.content.media_alts, id, detail.name),
               blurhash: null,
             }
           : null;
@@ -191,7 +192,7 @@ export async function renderBuildingLivePreview(
               url: mediaUrl(asset.r2_key),
               width: asset.width ?? 1600,
               height: asset.height ?? 1200,
-              alt: detail.name,
+              alt: resolveMediaAlt(envelope.content.media_alts, id, detail.name),
               blurhash: asset.blurhash,
             }
           : image(id);

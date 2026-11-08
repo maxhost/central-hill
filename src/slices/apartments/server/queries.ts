@@ -1,3 +1,4 @@
+import { resolveMediaAlt } from "@core/media/alt";
 import "server-only";
 import { unstable_cache } from "next/cache";
 import { eq } from "drizzle-orm";
@@ -61,7 +62,7 @@ export async function resolveApartmentDocument(
       url: stored ? mediaUrl(stored.r2_key) : local!.url,
       width: stored?.width ?? local?.width ?? 1600,
       height: stored?.height ?? local?.height ?? 1200,
-      alt: alts.get("media_asset", mid, "alt") ?? c.name,
+      alt: resolveMediaAlt(c.media_alts, mid, alts.get("media_asset", mid, "alt") ?? c.name),
       blurhash: stored?.blurhash ?? null,
     };
   }

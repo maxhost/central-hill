@@ -1,4 +1,5 @@
 "use server";
+import { resolveMediaAlt } from "@core/media/alt";
 import { createElement, Fragment, type ReactNode } from "react";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
@@ -42,8 +43,8 @@ export async function renderPostLivePreview(raw: unknown): Promise<{ ok: true; c
     for (const [id, asset] of Object.entries(localMedia)) {
       const stored = persisted.get(id);
       post.bodyMedia[id] = stored
-        ? { url: mediaUrl(stored.r2_key), width: stored.width ?? 1600, height: stored.height ?? 1200, alt: "", blurhash: stored.blurhash }
-        : { url: asset.url, width: asset.width ?? 1600, height: asset.height ?? 1200, alt: "", blurhash: null };
+        ? { url: mediaUrl(stored.r2_key), width: stored.width ?? 1600, height: stored.height ?? 1200, alt: resolveMediaAlt(envelope.content.media_alts, id, post.bodyMedia[id]?.alt ?? ""), blurhash: stored.blurhash }
+        : { url: asset.url, width: asset.width ?? 1600, height: asset.height ?? 1200, alt: resolveMediaAlt(envelope.content.media_alts, id, post.bodyMedia[id]?.alt ?? ""), blurhash: null };
       if (id === envelope.content.cover_media_id) post.cover = post.bodyMedia[id]!;
       if (id === envelope.content.og_image_media_id) post.ogImage = post.bodyMedia[id]!;
     }

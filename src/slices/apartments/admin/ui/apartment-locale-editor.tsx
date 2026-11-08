@@ -13,7 +13,7 @@ import { useTranslations } from "next-intl";
 import {
   AdminButton,
   Field,
-  MediaField,
+  MediaField, MediaAltProvider,
   FieldGrid,
   TextInput,
   useMediaQueue,
@@ -515,8 +515,9 @@ export function ApartmentLocaleEditor({
         hint={t("admin.fields.coverHint")}
         error={error("cover_media_id")}
       >
-        <fieldset disabled={!editableShared || busy}>
+        <fieldset disabled={busy}>
           <MediaField
+            mediaDisabled={!editableShared}
             key={`cover-${locale}-${content.cover_media_id}-${content.cover_media_id ? previews[content.cover_media_id]?.url : ""}`}
             value={content.cover_media_id}
             preview={
@@ -545,7 +546,7 @@ export function ApartmentLocaleEditor({
   const titleId = `${fieldPrefix}-leave-title`;
   const descriptionId = `${fieldPrefix}-leave-description`;
   return (
-    <>
+    <MediaAltProvider locale={locale} value={content.media_alts} onChange={value => set("media_alts", value)} disabled={busy || archived}>
       <div className="space-y-8">
         <div className="sticky top-0 z-20 -mx-2 space-y-4 border-b border-line bg-bg px-2 py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -741,6 +742,6 @@ export function ApartmentLocaleEditor({
           </AdminButton>
         </div>
       </dialog>
-    </>
+    </MediaAltProvider>
   );
 }

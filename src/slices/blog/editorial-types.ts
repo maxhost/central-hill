@@ -1,3 +1,4 @@
+import type { MediaAlts } from "@core/media/alt";
 import type { Locale } from "@core/db/columns";
 import type { PostBody } from "./body";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
@@ -5,6 +6,8 @@ import type { AdminMediaPreview } from "@slices/backoffice/contract";
 export const BLOG_EDITOR_LOCALES = ["en", "es", "pt", "fr"] as const;
 /** Persist references and authored values only; resolved media remains ephemeral. */
 export interface BlogPostContent {
+  /** Localized per-document descriptions; media references remain shared. */
+  media_alts?: MediaAlts;
   title: string;
   excerpt: string;
   body: PostBody;

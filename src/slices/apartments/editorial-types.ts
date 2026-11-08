@@ -1,5 +1,8 @@
+import type { MediaAlts } from "@core/media/alt";
 import type { PropertyEditorialModel, PropertyEnvelope, SavePropertyDraftInput, PublishPropertyDraftInput } from "@slices/backoffice/contract";
 export interface ApartmentEditorialContent {
+  /** Localized per-document descriptions; media references remain shared. */
+  media_alts?: MediaAlts;
   name: string; badge: string | null; description: string;
   meta_title: string | null; meta_description: string | null;
   bedrooms: number; bathrooms: number; max_guests: number; beds_count: number;

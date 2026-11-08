@@ -1,3 +1,4 @@
+import { ownerMediaAltsSchema } from "@core/media/owner-alt";
 /**
  * Admin **save** schemas for slice `blog` (S12) — category, author and post editors.
  * Mirrors the public `blog/validation` in the editor's post shape: `id?`, nullable
@@ -49,6 +50,7 @@ export const authorSaveInput = z.object({
   slug,
   status: contentStatus,
   avatar_media_id: z.uuid().nullable(),
+  avatar_alts: ownerMediaAltsSchema.optional(),
   // [T] source values (en):
   name: tStr({ min: 1, max: 120 }).trim().min(1),
   bio: tStr({ max: 1000 }).nullable(),

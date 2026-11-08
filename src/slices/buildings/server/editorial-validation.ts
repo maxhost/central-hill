@@ -1,3 +1,4 @@
+import { mediaAltsSchema } from "@core/media/alt";
 import { z } from "zod";
 import { locale, slug, uuid } from "@core/validation/primitives";
 import type { BuildingEnvelope } from "../editorial-types";
@@ -32,6 +33,7 @@ export const buildingEnvelopeSchema = z
     localeMode: z.enum(["inherit", "custom"]).optional(),
     content: z
       .object({
+        media_alts: mediaAltsSchema.optional(),
         name: z.string().max(200),
         headline: text,
         teaser: z.string().max(1000),

@@ -1,3 +1,4 @@
+import { resolveMediaAlt } from "@core/media/alt";
 import "server-only";
 import { unstable_cache } from "next/cache";
 import { and, eq, inArray, ne } from "drizzle-orm";
@@ -56,7 +57,7 @@ async function resolveSummaries(documents: PublishedPostDocument[], locale: Loca
     const bio = content.get("author", auth.id, "bio")?.trim();
     if (bio) authorRef.bio = bio;
     return [{ id, slug, title: c.title, excerpt: c.excerpt, category, author: authorRef,
-      cover: c.cover_media_id ? imageData(media.get(c.cover_media_id), content.get("media_asset", c.cover_media_id, "alt") ?? c.title) : null,
+      cover: c.cover_media_id ? imageData(media.get(c.cover_media_id), resolveMediaAlt(c.media_alts, c.cover_media_id, content.get("media_asset", c.cover_media_id, "alt") ?? c.title)) : null,
       readingMinutes: c.reading_minutes, isFeatured: c.is_featured, publishedAt: c.published_at }];
   });
 }
@@ -106,10 +107,10 @@ export async function resolvePostDocument(id: string, envelope: BlogPostEnvelope
     readPublishedPostDocuments(locale, c.related_ids), loadAlternateSlugs(BLOG_POST, id),
   ]);
   const bodyMedia = Object.fromEntries(mediaIds.flatMap(mid => {
-    const img = imageData(media.get(mid), alt.get("media_asset", mid, "alt") ?? "");
+    const img = imageData(media.get(mid), resolveMediaAlt(c.media_alts, mid, alt.get("media_asset", mid, "alt") ?? ""));
     return img ? [[mid, img]] : [];
   }));
-  if (c.cover_media_id) summary = { ...summary, cover: imageData(media.get(c.cover_media_id), alt.get("media_asset", c.cover_media_id, "alt") ?? c.title) };
+  if (c.cover_media_id) summary = { ...summary, cover: imageData(media.get(c.cover_media_id), resolveMediaAlt(c.media_alts, c.cover_media_id, alt.get("media_asset", c.cover_media_id, "alt") ?? c.title)) };
   const relatedSummaries = await resolveSummaries(relatedDocs, locale);
   const relatedById = new Map(relatedSummaries.map(post => [post.id, post]));
   const alternates: PostDetail["alternateSlugs"] = {};
@@ -119,7 +120,7 @@ export async function resolvePostDocument(id: string, envelope: BlogPostEnvelope
   return { ...summary, slug: slugOverride ?? summary.slug, body: c.body, bodyMedia,
     cta: c.cta_label && c.cta_url ? { label: c.cta_label, url: c.cta_url } : null,
     metaTitle: c.meta_title ?? undefined, metaDescription: c.meta_description ?? undefined,
-    ogImage: c.og_image_media_id ? imageData(media.get(c.og_image_media_id), c.title) ?? summary.cover : summary.cover,
+    ogImage: c.og_image_media_id ? imageData(media.get(c.og_image_media_id), resolveMediaAlt(c.media_alts, c.og_image_media_id, c.title)) ?? summary.cover : summary.cover,
     related: c.related_ids.flatMap(rid => relatedById.has(rid) ? [relatedById.get(rid)!] : []), alternateSlugs: alternates };
 }
 export function getPostBySlug(locale: Locale, slugValue: string): Promise<PostDetail | null> {

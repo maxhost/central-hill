@@ -25,7 +25,7 @@ function ArticleNodeView({ node, updateAttributes, deleteNode }: NodeViewProps) 
     </div>
     <fieldset disabled={disabled} contentEditable={false} className="space-y-3">
       {image ? <>
-        <Field label={t("image")}><MediaField key={`${attrs.media_id}:${preview?.url ?? ""}`} value={attrs.media_id || null} preview={preview ?? null}
+        <Field label={t("image")}><MediaField editAlt={false} key={`${attrs.media_id}:${preview?.url ?? ""}`} value={attrs.media_id || null} preview={preview ?? null}
           onChange={(id, media) => { if (disabled) return; updateAttributes({ media_id: id ?? "" }); onPreview(media); }} /></Field>
         <Field label={t("caption")} htmlFor={`${fieldPrefix}-caption`}><TextInput id={`${fieldPrefix}-caption`} value={attrs.caption ?? ""} onChange={event => updateAttributes({ caption: event.target.value })} /></Field>
         <Field label={t("alt")} htmlFor={`${fieldPrefix}-alt`}><TextInput id={`${fieldPrefix}-alt`} value={attrs.alt ?? ""} onChange={event => updateAttributes({ alt: event.target.value })} /></Field>

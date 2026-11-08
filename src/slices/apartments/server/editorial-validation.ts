@@ -1,3 +1,4 @@
+import { mediaAltsSchema } from "@core/media/alt";
 import { z } from "zod";
 import { locale, uuid } from "@core/validation/primitives";
 import {
@@ -24,6 +25,7 @@ export const apartmentEnvelopeSchema = z
     localeMode: z.enum(["inherit", "custom"]).optional(),
     content: z
       .object({
+        media_alts: mediaAltsSchema.optional(),
         name: z.string().max(200),
         badge: nullableText(200),
         description: z.string().max(50000),

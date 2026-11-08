@@ -1,5 +1,16 @@
 # Slice `apartments` (S3)
 
+## Image ALT by content locale —2026-11-08
+
+ADR0076 adds optional `content.media_alts` keyed by media UUID to existing locale
+snapshots. Shared image references stay unchanged; descriptions use the active
+locale's draft/Publish lifecycle and existing inheritance/custom ownership. Every
+active image picker exposes a localized ALT field; blank/missing text retains
+legacy approved asset ALT or the existing content fallback. Reorder keeps image
+identity, replacement cannot apply another image's description. Public and private
+mappers use only their supplied snapshot, never another locale's draft.
+
+
 The **bookable unit** — a single apartment inside a building, linked to the **Avantio**
 booking engine. Amenities & FAQ live on the **building** (S2), not here. This slice has
 **no public route of its own**: the public UX books a unit through its building's Avantio

@@ -1,4 +1,5 @@
 "use server";
+import { saveOwnerMediaAlts } from "@core/media/owner-alt-write";
 
 import { revalidatePath } from "next/cache";
 import { eq, sql } from "drizzle-orm";
@@ -146,6 +147,7 @@ export async function saveAuthor(raw: unknown): Promise<BlogSaveResult> {
       id = ins.id;
     }
     await saveAuthorLabels(id, input, staff.userId);
+    await saveOwnerMediaAlts("author", id, input.avatar_media_id, input.avatar_alts, staff.userId);
     revalidatePath("/admin/posts", "layout");
     revalidateBlogList();
     revalidatePath("/admin/authors");

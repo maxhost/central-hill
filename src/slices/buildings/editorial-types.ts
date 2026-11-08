@@ -1,3 +1,4 @@
+import type { MediaAlts } from "@core/media/alt";
 import type { Locale } from "@core/db/columns";
 import type { PropertyEditorialModel, PropertyEnvelope } from "@slices/backoffice/contract";
 export const PROPERTY_GRAPH_LOCK = 7158;
@@ -5,6 +6,8 @@ export interface BuildingEditorialFaq { id: string; question: string; answer: st
 /** Localized button. Absence retains legacy URL resolution; null link explicitly hides it. */
 export interface BuildingBookingButton { label: string; link: string | null }
 export interface BuildingEditorialContent {
+  /** Localized per-document descriptions; media references remain shared. */
+  media_alts?: MediaAlts;
   name: string; headline: string; teaser: string; description_intro: string;
   description_neighbourhood: string | null; meta_title: string | null; meta_description: string | null;
   position: number; is_new: boolean; is_featured: boolean;

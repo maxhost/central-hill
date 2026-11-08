@@ -1,3 +1,4 @@
+import { mediaAltsSchema } from "@core/media/alt";
 import { z } from "zod";
 import { locale, slug, uuid } from "@core/validation/primitives";
 import { headingBlock, paragraphBlock, listBlock, imageBlock, quoteBlock, calloutBlock, dividerBlock, ctaBlock, postBody, bodyInlineErrors } from "../body";
@@ -20,6 +21,7 @@ const draftBlock = z.discriminatedUnion("type", [
 export const blogEnvelopeSchema = z.object({
   schemaVersion: z.literal(1),
   content: z.object({
+    media_alts: mediaAltsSchema.optional(),
     title: z.string().max(200), excerpt: z.string().max(400),
     body: z.array(draftBlock).max(200),
     category_id: uuid, author_id: uuid,

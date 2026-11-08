@@ -13,6 +13,7 @@ import {
   FormActions,
   type AdminMediaPreview,
   MediaField,
+  OwnerMediaAltFields,
   Select,
   TextArea,
   TextInput,
@@ -250,9 +251,13 @@ export function AuthorForm({
             <MediaField
               value={state.avatar_media_id || null}
               preview={previews[state.avatar_media_id] ?? null}
-              onChange={(id) => set("avatar_media_id", id ?? "")}
+              onChange={(id) => setState(previous => ({ ...previous,
+                avatar_media_id: id ?? "",
+                avatar_alts: id === initial?.avatar_media_id ? initial?.avatar_alts ?? { en: "", es: "", pt: "", fr: "" } : { en: "", es: "", pt: "", fr: "" },
+              }))}
             />
           </Field>
+          <OwnerMediaAltFields mediaId={state.avatar_media_id || null} value={state.avatar_alts} onChange={value => set("avatar_alts", value)} disabled={busy} />
         </fieldset>
       </AdminCard>
 

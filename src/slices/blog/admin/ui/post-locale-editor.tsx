@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { UiIcon } from "@core/ui";
 import {
-  AdminButton, Checkbox, Field, MediaField, Select, TextArea,
+  AdminButton, Checkbox, Field, MediaField, MediaAltProvider, Select, TextArea,
   TextInput, useMediaQueue, type AdminMediaPreview, type EditorLocale,
 } from "@slices/backoffice/contract";
 import { BLOG_EDITOR_LOCALES, type BlogPostContent, type BlogPostEditorialModel, type BlogPostEditorialResult } from "../editorial-contract";
@@ -262,7 +262,7 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
   ].join(" · ")}`;
   const titleId = `${fieldPrefix}-leave-title`;
   const descriptionId = `${fieldPrefix}-leave-description`;
-  return <>
+  return <MediaAltProvider locale={locale} value={content.media_alts} onChange={value => set("media_alts", value)} disabled={busy || archived}>
     <div ref={formRoot} className="min-w-0 selection:bg-accent/20 selection:text-ink" data-post-editor="form" aria-busy={busy}>
       <header className="sticky top-0 z-20 space-y-3 border-b border-line bg-bg py-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -405,8 +405,8 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
           </section>
           <section data-post-field="cover_media_id" tabIndex={-1} aria-labelledby={fieldId("cover-heading")} className="scroll-mt-40 space-y-4 border-t border-line pt-6 focus:outline-none">
             <h2 id={fieldId("cover-heading")} className="font-serif text-xl">{t("admin.post.fields.cover")}</h2>
-            <fieldset disabled={!editableShared || busy}>
-              <MediaField key={`${locale}-cover-${content.cover_media_id}-${content.cover_media_id ? previews[content.cover_media_id]?.url : ""}`} value={content.cover_media_id} preview={content.cover_media_id ? previews[content.cover_media_id] ?? null : null}
+            <fieldset disabled={busy}>
+              <MediaField mediaDisabled={!editableShared} key={`${locale}-cover-${content.cover_media_id}-${content.cover_media_id ? previews[content.cover_media_id]?.url : ""}`} value={content.cover_media_id} preview={content.cover_media_id ? previews[content.cover_media_id] ?? null : null}
                 onChange={(id, preview) => { set("cover_media_id", id); remember(preview); }} />
             </fieldset>
             {error("cover_media_id") ? <p role="alert" className="text-xs text-red-700">{error("cover_media_id")}</p> : null}
@@ -417,8 +417,8 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
             {input("meta_description", t("admin.post.fields.metaDescription"), true)}
             <div data-post-field="og_image_media_id" tabIndex={-1} className="scroll-mt-40 focus:outline-none">
               <Field label={t("admin.post.fields.ogImage")} error={error("og_image_media_id")} hint={t("admin.post.fields.ogImageHint")}>
-                <fieldset disabled={!editableShared || busy}>
-                  <MediaField key={`${locale}-social-${content.og_image_media_id}-${content.og_image_media_id ? previews[content.og_image_media_id]?.url : ""}`} value={content.og_image_media_id} preview={content.og_image_media_id ? previews[content.og_image_media_id] ?? null : null}
+                <fieldset disabled={busy}>
+                  <MediaField mediaDisabled={!editableShared} key={`${locale}-social-${content.og_image_media_id}-${content.og_image_media_id ? previews[content.og_image_media_id]?.url : ""}`} value={content.og_image_media_id} preview={content.og_image_media_id ? previews[content.og_image_media_id] ?? null : null}
                     onChange={(id, preview) => { set("og_image_media_id", id); remember(preview); }} />
                 </fieldset>
               </Field>
@@ -459,5 +459,5 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
         <AdminButton variant="danger" disabled={busy} onClick={() => { if (confirmAction) void lifecycle(confirmAction); }}>{te("continue")}</AdminButton>
       </div>
     </dialog>
-  </>;
+  </MediaAltProvider>;
 }
