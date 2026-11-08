@@ -23,8 +23,13 @@ Two isolated writers integrated into fda13a4. Typecheck0/lint0(7oldwarnings),57t
 (41pure+16DB, singleton files serial), build0/144routes/2workers. Independent QA
 approved source fda13a4:3bounded groups/0pageerrors, all42 oldbusiness hashes exact.
 Three own temporary Settings setups and only their translations cleaned, singleton0.
-Harness selector/case fixes only, no product correction. Final actual-main runtime
-is recorded below on close.
+Harness selector/case fixes only, no product correction. QA report9f2f34a; main
+ff933becc→2f0739f. Sole actual-main dev3071 **PID42358/parent42352/session97788**,
+workspace cwd verified, safe DB5658/proxy4558/storage9077 preserved. Candidate
+40169/40163 stopped. Final read-only Settings200/4inputs and AboutEN/PT200 with
+old absent-singleton Websitehidden behavior,0pageerrors; main-open.json and
+main-restart.log in /private/tmp/central-hill-settings-website-locales-qa.
+No Save/cacheintervention/repeatedmatrix after QA. Finaldoccommit via gitlog-1.
 Preserve all worktrees/artifacts/envs/original logo/publicmedia symlink/caches.
 Other Settings copy/navigation/ALT/city.intro/legacy retirement and Admin-only role
 cleanup remain separate; do not start another task automatically.

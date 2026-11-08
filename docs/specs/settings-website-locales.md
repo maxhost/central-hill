@@ -120,3 +120,15 @@ no product fixes. Defensivecleanup required three serial temporarysetup IDs, all
 removed with only their translations. Singleton0, all42 protectedhashes exactly
 root baseline (root independently compared JSON). About/Page content/pubs/media
 untouched. Source unchanged after QA; report settings-website-locales-qa.md.
+
+## Local main delivery
+
+QA report9f2f34a, root closeout2f0739f. Local main fast-forward933becc→2f0739f,
+no tracked user work displaced. QA40169/40163 stopped after cwd verification; sole
+actual-main dev3071 now PID42358/parent42352/session97788, workspace cwd verified,
+same safe propertylocalesqa DB5658/proxy4558/storage9077. Read-only finalmain
+main-open.mjs exited0: Settings200/fourWebsiteinputs, EN/PTAbout200/Websitehidden
+as expected with singleton0,0pageerrors; no Save/cacheintervention or repeatedmatrix.
+Evidence main-open.json/main-restart.log in rootartifact. Finaldoccommit resolves
+via gitlog-1. Existing logo/syntheticpublicmedia symlink remain untracked and all
+worktrees/artifacts/envs/caches preserved. No schema/remoteDB/push/deploy.
