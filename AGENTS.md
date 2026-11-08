@@ -1,5 +1,44 @@
 # Central Hill agent instructions
 
+## Fixed multilingual navigation —2026-11-07
+
+User fixes public navigation text/order/links in code, translates Owners/About
+submenus EN/ES/PT/FR and retires Navigation + its generictranslation workflow.
+Canonical code trees preserve current header6items, Owners10/About8/RealEstate10/
+Guests2 sublinks and Footer2groups×5links. getNav API now fixed-v1cached code/messages
+only, no nav_item/translation reads. Header/mobile/Footer consume same data; styles,
+BookSettings label/URL, floatingEarn label/fixedOwnerslink, contacts/widgets intact.
+Navigation sidebar removed; old gated /admin/navigation and nav_item review URLs
+redirect Settings. Legacy saveNavigation auth→validationdenial; all6 genericnav
+mutations/rawgenerator/inbox/entityreview blocked. Historical navrows preserved,
+no schema/backfill/deletion. ADR0074 supersedes old navigation-builder notes.
+
+Global Translations remains: Settings stats/hours, ALT, city.intro policy and old
+Services/Amenities/categories/FAQ/geo write-path closeout still pending. User asked
+readiness, not automatic implementation of all those editors/policies. Explain
+Navigation retired while global removal needs remaining decisions/work. Preserve
+translation/kernel tables and all oldlocalized data; no further task automatically.
+
+Read [execution](docs/specs/fixed-public-navigation.md) and
+[QA](docs/specs/fixed-public-navigation-qa.md). Integration
+/private/tmp/central-hill-fixed-navigation-integration branch fixed-navigation/integration,
+executablefa6b0f6, twoisolatedwriters +approved extraTranslationtestfile forboundaries.
+Root88tests0/typecheck0/lint0(7oldwarnings),42oldbusinesshashesexact/Settings0/nav0
+postcleanup. Only ownsyntheticnavrow/translationrefs cleaned. Build0/144routes/
+2workers. IndependentQA source/read-onlypreflightpasses; browsergroups underway
+on solecandidate3071 PID72352/parent72346/session24919, integrationcwdverified.
+Oldmain68928/68922 stopped. All browser cases passed except a confirmed pre-existing
+keyboardtransfer bug. Root4635f0b fixes ONLY shared globals.css hide selector
+(ADR0074): preserve transientfocus-within during Tab/ShiftTab, retain mouseclose.
+Correctedbuild4635f0b0/144routes/2workers in separate keyboard-runtimecheckout.
+Old72352/72346 stopped; solecorrectedproduction3071 PID74078/parent74072/
+session27579, cwdkeyboard-runtime/srcdiff0/sourceverified, login200. IndependentQA approved4635f0b:10/10targetedkeyboard/mousecases0errors, P2resolved;
+allother3readonlybrowsergroups retained,42oldhashesexact/rootcomparedJSON. No more
+DBfixtures or fullmatrixrepeat. Rootowns
+finalactual-main switch. Safe
+propertylocalesqa DB5658/proxy4558/storage9077 retained. No migration/remoteDB/push/
+deploy. Preserve all worktrees/envs/caches/artifacts/original logo/publicmedia symlink.
+
 ## Settings Book Now / Earn With Us locales —2026-11-07
 
 User requests Book Now Label/URL EN/ES/PT/FR; correction explicitly limits Earn With
