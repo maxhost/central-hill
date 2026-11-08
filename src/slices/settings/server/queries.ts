@@ -3,7 +3,7 @@ import { unstable_cache } from "next/cache";
 import { asc, eq } from "drizzle-orm";
 import { db } from "@core/db/client";
 import type { Locale } from "@core/db/columns";
-import { loadContent } from "@core/i18n/content";
+import { loadContent, loadTranslationRows } from "@core/i18n/content";
 import { type MediaAsset, type MediaImageData, loadMedia, mediaUrl } from "@core/media";
 import {
   COMPANY_SETTINGS,
@@ -18,6 +18,7 @@ import {
 import { company_settings, nav_item } from "../schema";
 import { SITE_ICON_KEYS } from "../site-icons";
 import { resolveSiteIcons } from "./site-icons";
+import { resolveWebsiteUrl } from "./website-locales";
 
 /**
  * Public read functions for slice `settings` / `globals` (conventions.md → reads go
@@ -62,9 +63,10 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
   if (!row) return null;
 
   const ogId = row.default_og_image_media_id;
-  const [content, media] = await Promise.all([
+  const [content, media, websiteRows] = await Promise.all([
     loadContent([{ type: COMPANY_SETTINGS, id: row.id }], locale),
     ogId ? loadMedia([ogId]) : Promise.resolve(new Map<string, MediaAsset>()),
+    locale === "en" ? Promise.resolve([]) : loadTranslationRows({ type: COMPANY_SETTINGS, id: row.id, locale }),
   ]);
 
   const stats = {} as Record<StatKey, CompanyStat>;
@@ -86,7 +88,7 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
     whatsapp: row.whatsapp ?? null,
     ownersPhone: row.owners_phone?.trim() || null,
     checkinPhone: row.checkin_phone?.trim() || null,
-    website: row.website_url?.trim() || null,
+    website: resolveWebsiteUrl(row.website_url, locale, websiteRows),
     social: row.social,
     stats,
     officeAddress: row.office_address,
@@ -106,8 +108,8 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
 // cached before the key existed (its `icons` would lack it).
 const SITE_ICONS_SHAPE = SITE_ICON_KEYS.join(",");
 // Same reason for the read-model shape: bump it when `SiteGlobals` gains a field, so an entry
-// cached before the field existed is not served (v3: `ownersPhone`, ADR0071).
-const GLOBALS_SHAPE = "v3";
+// cached before the localized Website behavior is not served (v4, ADR0072).
+const GLOBALS_SHAPE = "v4";
 
 export function getGlobals(locale: Locale): Promise<SiteGlobals | null> {
   return unstable_cache(() => _getGlobals(locale), ["settings:getGlobals", locale, GLOBALS_SHAPE, SITE_ICONS_SHAPE], {

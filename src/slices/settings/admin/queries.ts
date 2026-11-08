@@ -1,7 +1,7 @@
 import "server-only";
 import { asc } from "drizzle-orm";
 import { db } from "@core/db/client";
-import { loadContent } from "@core/i18n/content";
+import { loadContent, loadTranslationRows } from "@core/i18n/content";
 import { loadMedia, mediaUrl } from "@core/media";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
 import { COMPANY_SETTINGS, NAV_ITEM, type NavLocation, type StatKey } from "../contract";
@@ -9,6 +9,7 @@ import { DEFAULT_GLOBALS } from "../defaults";
 import { company_settings, nav_item } from "../schema";
 import type { SiteIcons } from "../site-icons";
 import { resolveSiteIcons } from "../server/site-icons";
+import { rawWebsiteTranslations } from "../server/website-locales";
 
 /**
  * Backoffice reads for slice `settings` (S12). Not cache-wrapped (admin is dynamic).
@@ -70,6 +71,7 @@ function scaffold(): GlobalsEditBundle {
       owners_phone: DEFAULT_GLOBALS.ownersPhone ?? "",
       checkin_phone: DEFAULT_GLOBALS.checkinPhone ?? "",
       website_url: DEFAULT_GLOBALS.website ?? "",
+      website_translations: { es: "", pt: "", fr: "" },
       social: { ...EMPTY_SOCIAL },
       stats,
       office_address: DEFAULT_GLOBALS.officeAddress,
@@ -95,7 +97,10 @@ export async function getGlobalsForEdit(): Promise<GlobalsEditBundle> {
     .limit(1);
   if (!row) return scaffold();
 
-  const content = await loadContent([{ type: COMPANY_SETTINGS, id: row.id }], SOURCE);
+  const [content, websiteRows] = await Promise.all([
+    loadContent([{ type: COMPANY_SETTINGS, id: row.id }], SOURCE),
+    loadTranslationRows({ type: COMPANY_SETTINGS, id: row.id }),
+  ]);
 
   const stats = {} as Record<StatKey, StatForm>;
   for (const key of STAT_KEYS) {
@@ -118,6 +123,7 @@ export async function getGlobalsForEdit(): Promise<GlobalsEditBundle> {
     owners_phone: row.owners_phone ?? "",
     checkin_phone: row.checkin_phone ?? "",
     website_url: row.website_url ?? "",
+    website_translations: rawWebsiteTranslations(websiteRows),
     social,
     stats,
     office_address: row.office_address,
