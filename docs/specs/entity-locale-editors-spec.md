@@ -1,6 +1,12 @@
 # Contenidos del CMS — edición y publicación por idioma
 
-## Estado vigente — 2026-11-07, Quote de Testimonios
+## Estado vigente — 2026-11-07, Website de Settings
+
+Settings incorpora Website EN/ES/PT/FR en Contact, con un único Guardar. About
+consume la URL correspondiente; vacíos usan EN y las URLs propias sobreviven a
+cambios o vaciado de EN. Se reutilizan traducciones existentes sin migración;
+sólo Website sale de la vía genérica, no todo Settings. Ver
+[ejecución](settings-website-locales.md), [QA](settings-website-locales-qa.md) y ADR0072.
 
 Testimonios incorpora Quote EN/ES/PT/FR en la misma ficha, sin tabs y con un
 Guardar. Vacíos usan EN y los textos propios sobreviven a EN posterior; autor,
@@ -41,6 +47,7 @@ entrega actual; no autoriza iniciar otros auxiliares. Prevalece sobre notas hist
 | FAQ por página/idioma | Selector independiente EN/ES/PT/FR, vacío sin FAQ y sin fallback EN; se conservan grupos y traducciones legacy (ADR0068) |
 | Ciudades/barrios: nombres | Cuatro inputs en una ficha; nombres públicos y selectores localizados, fallback EN, slugs e intro histórica preservados (ADR0069) |
 | Testimonios | Quote EN/ES/PT/FR en una ficha, fallback EN, públicos localizados y vía antigua retirada (ADR0070) |
+| Settings: Website | Cuatro URLs en Contact y About localizado con fallback EN; retirada genérica sólo de ese campo (ADR0072) |
 | Fase5: restantes auxiliares y retirada de Translations | Pendiente según inventario siguiente |
 
 ### Dependencias pendientes para retirar la sección global
@@ -48,7 +55,8 @@ entrega actual; no autoriza iniciar otros auxiliares. Prevalece sobre notas hist
 1. **Auxiliares pendientes**: los nombres de ciudades/barrios están cubiertos;
    queda decidir la autoría o política de `city.intro`, texto traducible histórico
    fuera del cambio de nombres. Testimonios (`quote`) ya está cubierto. Quedan
-   textos globales de Settings (`company_settings`) y etiquetas de navegación
+   textos globales de Settings (`company_settings`: estadísticas/horarios; Website
+   ya tiene inputs propios) y etiquetas de navegación
    (`nav_item`). Resolver su autoría en cada ficha con el patrón adecuado. Las
    FAQ de Building ya pertenecen a su editor. FAQ general admite ahora grupos
    separados elegidos por idioma; no requiere un nuevo editor con tabs para ese flujo.

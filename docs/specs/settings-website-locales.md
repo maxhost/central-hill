@@ -98,3 +98,25 @@ bk_centralhill account and is valid; do not invent fake booking config.
 Root controls sole3071 main→productionQA→actual-main; final read-only opening.
 No user DB schema approval needed because no schema change. No automatic further
 Settings copy/nav/ALT/role removal or global Translations retirement after task.
+
+## Progress
+
+Contracts9cab216 before writers. Roota6c0cf8 field guards/messages/tests, UI2ea384d
+integratedc83ee8e and backend3cd061f integratedfda13a4. Both writers TS/lint0;
+backend30cases0 (21pure+9DB), onlynew own singleton/URLs cleaned. Root integration
+TS0/lint0(7oldwarnings),57cases0 (41pure+16DB) with --test-concurrency=1 so the two
+singleton DB files never race. Includes oldOwners6DB and a new isolatedTranslation
+ref for bulk/generator/readmask field guards; allnewrows cleaned, no singleton left.
+No schema/migration. Build0/144routes/2workers. Sole productionQA3071 PID40169/
+parent40163/session71654 from integration fda13a4, cwd/login200 verified; old main
+97374/97368 stopped only after build passed. Independent QA started three bounded
+groups; existing About4locale rows remain read-only. Source remains fda13a4.
+
+Independent QA approved source fda13a4:3/3 bounded groups,0pageerrors, exacthref/
+visibletext4locales, fallbackEN/ENclear/own-target independence, Save/reload/mobile/
+HTTPS validation/auth and genericreview fieldmask. Harness first picked earlier
+photo-card h3 then encountered CSSuppercase labels; corrected only selectors/case,
+no product fixes. Defensivecleanup required three serial temporarysetup IDs, all
+removed with only their translations. Singleton0, all42 protectedhashes exactly
+root baseline (root independently compared JSON). About/Page content/pubs/media
+untouched. Source unchanged after QA; report settings-website-locales-qa.md.

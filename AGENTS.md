@@ -1,5 +1,34 @@
 # Central Hill agent instructions
 
+## Website EN/ES/PT/FR in Settings → About —2026-11-07
+
+User requests four Website URL inputs in Settings Contact, About office panel uses
+its public language. Canonical EN remains inline website_url; targets reuse existing
+translation rows. Blank target follows current EN; own target survives later EN
+change/clear and may exist with ENempty. Raw authored/pending targets load as-is,
+manual Save approves targets, blank deletes only selected Website target; old
+clients omitting targets preserve them. Legacy EN translation rows preserved but
+ignored; no mirror/backfill. Public only accepts approved valid HTTPS target,
+else inlineEN. Four inputs/oneSave/noTabs, existing form/controls and contacts intact.
+About exact href/visible text already consumes getGlobals(locale).website; cache
+shapev4 and existing global/layout invalidation update it without PagePublish or
+SEO/content/revision changes. Missing singleton keeps old About Websitehidden.
+No singleton is seeded merely for the final UI; admin can fill and Save Settings.
+
+ADR0072, [execution](docs/specs/settings-website-locales.md) and
+[QA](docs/specs/settings-website-locales-qa.md). Only Website is excluded from the
+generic Translation inbox/review/single actions/bulk/generator; Stats/hours remain
+there. No schema/migration/kernel API or roles change. No remoteDB/push/deploy.
+Two isolated writers integrated into fda13a4. Typecheck0/lint0(7oldwarnings),57tests0
+(41pure+16DB, singleton files serial), build0/144routes/2workers. Independent QA
+approved source fda13a4:3bounded groups/0pageerrors, all42 oldbusiness hashes exact.
+Three own temporary Settings setups and only their translations cleaned, singleton0.
+Harness selector/case fixes only, no product correction. Final actual-main runtime
+is recorded below on close.
+Preserve all worktrees/artifacts/envs/original logo/publicmedia symlink/caches.
+Other Settings copy/navigation/ALT/city.intro/legacy retirement and Admin-only role
+cleanup remain separate; do not start another task automatically.
+
 ## Owners phone in Settings and Footer —2026-11-07
 
 User requests independent Owners phone input and footer row, using +351910438062.
