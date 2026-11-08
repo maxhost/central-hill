@@ -132,3 +132,17 @@ clear/fallback/ownpreservation, mobile/validation, activeiconSave/publicrender a
 Settingsreviewredirect/inboxmask allpass. Onlynewfixture9a9b12fd-52e2-46bf-8c43-
 0809692cdf3c restoreddefaults+cleaned withits owntranslations; Settings0/42hashesexact
 (rootindependentlycomparedJSON). No Page/mediawrites. Sourceunchanged afterQA.
+
+## Local main delivery
+
+QA reportca698c8 approved e76c88c/productd53a321; rootcloseout31deec4. Main
+fast-forward7c1a205→31deec4 after trackedclean precheck. QA12985/12979 stopped
+aftercwdverification; soleactual-main dev3071 **PID13559/parent13553/session19738**,
+cwdworkspaceverified, safe propertylocalesqa DB5658/proxy4558/storage9077 unchanged.
+Finalreadonly main-open0: Settings200/4HoursLabels/no3retiredcards/activeicons,
+AboutEN/PT200/localizeddefaultsamedaytimes, oldcompany_settingsreview->Settings,
+globalTranslations200,0pageerrors. No Save/cacheintervention/repeatedmatrix afterQA;
+Settings0 remains/no configseeded merelyforappearance. Evidence main-open.json/
+main-restart.log in rootartifact. Finaldoccommit resolvesgitlog-1. Originaluntracked
+logo/publicmedia symlink andallworktrees/envs/caches/builds/artifacts/files preserved.
+No schema/remoteDB/push/deploy. OtherTranslation/rolecleanup notautomaticallystarted.

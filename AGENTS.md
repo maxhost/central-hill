@@ -26,7 +26,13 @@ fixturescleaned/Settings0/42oldhashesexact. IndependentQA readonlypreflightpasse
 build0/144routes/2workers. Oldmain75584/75578 stopped; soleproductionQA3071
 PID12985/parent12979/session95475 integrationcwd/login200verified. IndependentQA approvede76c88c/productd53a321:3boundedgroups firstpass/0pageerrors,
 no fixes. Onlyownfixture9a9b12fd-52e2-46bf-8c43-0809692cdf3c+owntranslations cleaned,
-Settings0/42oldhashesexact/rootcomparedJSON. Finalactual-main switchownedroot. Safe DB5658/
+Settings0/42oldhashesexact/rootcomparedJSON. QA reportca698c8; mainff7c1a205→31deec4.
+Candidate12985/12979 stopped. Sole actual-main dev3071 **PID13559/parent13553/
+session19738**, workspacecwdverified. Finalreadonly Settings200/4HoursLabels/
+no3legacycards/activeicons, AboutEN/PT200/localizeddefaulthours, oldSettingsreview
+->Settings/globalTranslations200/0pageerrors. main-open.json/main-restart.log in
+/private/tmp/central-hill-settings-cleanup-qa. No Save/cacheintervention/repeated
+matrix afterQA; Settings0 remains, finaldoccommit via gitlog-1. Safe DB5658/
 proxy4558/storage9077. No schema/migration/remoteDB/push/deploy. Preserve all files/
 worktrees/envs/caches/artifacts/logo/publicmedia symlink.
 
