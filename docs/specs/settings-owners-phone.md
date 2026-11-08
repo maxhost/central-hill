@@ -121,3 +121,16 @@ values stayed equal. Only ownnewSettingsID e95b36ec-e09e-478d-8e4e-ba9984ebfd40
 and itsnewtranslations deleted atcleanup; table returns0,42protectedhashes exact
 against premigration (excludingonlynewcolumnattribute). No productfix/retry inQA.
 Root controls final main ff/runtime and readonlyopening; no nexttask automatic.
+
+
+## Local main delivery
+
+Main ff064554c→2da8ff2 after tracked-clean check, original untracked logo and media
+symlink preserved. QA96139/96133 stopped after cwd verified. Sole actual-main
+safeenv dev3071 PID97374/parent97368/session54450, cwdworkspace, DB5658/proxy4558/
+storage9077 retained. Final read-only opening exit0: Settings200 with given Owners
+number and GuestsEN/PT200 with Ownerslabel/tel and otherphones/WA intact,0errors.
+Evidence main-open.json/log and main-restart.log. No finalSave/content/cache
+intervention/repeatedmatrix, no schema reapply. Finaldocumentarycommit via gitlog-1.
+No remoteDB/push/deploy; all worktrees/data/files/oldcaches/envs retained. Follow
+next user request; no automatic role or globalTranslation work.

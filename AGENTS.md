@@ -1,5 +1,48 @@
 # Central Hill agent instructions
 
+## Owners phone in Settings and Footer —2026-11-07
+
+User requests independent Owners phone input and footer row, using +351910438062.
+Delivered nullable owners_phone (0029) with supplied initial default; optional
+Contact input, shared across4languages, localized Owners/Propietarios/Proprietários/
+Propriétaires footer row after Bookings, tel link and existing icon. Blank/null
+hides only Owners row, no default revival. Missing singleton uses DEFAULT_GLOBALS.
+Old clients omitting key preserve custom/null; new UI posts trimmedstring/null.
+Bookings/Checkin/WhatsApp and About/Owners CTA contacts unchanged. Reader cache
+shapev3 avoids old objects missing new field. ADR0071 owns additive optional
+FooterContact props/core rendering; no unrelated role/localization refactor.
+
+User explicitly authorized0029 onlypropertylocalesqa5658. Root verified host+SQL
+DB/role, appliedoneALTER, inspectednullable/default and proved42oldbusinesshashes
+exact (excludeonlynewattribute). No remoteDB migration. Snapshot0029 completed
+before finaldbcheck; SQL/hash unchanged, no reapply. Read
+[execution](docs/specs/settings-owners-phone.md),
+[QA](docs/specs/settings-owners-phone-qa.md), ADR0071 and migrationartifact under
+/private/tmp/central-hill-owners-phone-qa/. Two isolated writers integrated. Source
+26e5e07 independentlyQA approved2e77d51:3bounded realbrowser groups,0pageerrors,
+Save/reload/change/clearNULL/no revival across4locales/mobile/auth, othercontacts
+and neutralsettings unchanged. Only newfixturee95b36ec-e09e-478d-8e4e-ba9984ebfd40
+and its translations cleaned; table returns0,42hashes equal premigration. No old
+singleton snapshot/delete/restore or Pages/media writes.
+
+First Save had an existing blocker: missing-singleton scaffold required an Avantio
+account but defaulted empty. DEFAULT_GLOBALS now prefills the ALREADY-used widget
+account bk_centralhill (server/avantio-widget.ts), not fake configuration. Stored
+IDs and widget scripts/URLs/booking behavior unchanged. Full defaultpayload test+
+real firstSave passed. Final32tests0 (26pure+6DB), FooterSSR8cases0, typecheck0/
+lint0(7oldwarnings), db:check0(30migrations,old0008warning), correctedbuild0/144routes/
+2workers. Earlier build archivedbefore-scaffold; no QA retries/product fixes inQA.
+
+Main ff064554c→2da8ff2 done. Sole actual-main dev3071 **PID97374/parent97368/
+session54450**, cwdworkspace, existing safe DB5658/proxy4558/storage9077 unchanged.
+QA96139 stopped. Final readonly mainSettings200 prefills Ownersnumber; GuestsEN/PT
+200 footer3numbers/WA correct,0pageerrors (main-open.json). No new Save/cache
+intervention/repeatedmatrix at final opening. Finaldoccommit via gitlog-1.
+Preserve all worktrees/files/artifacts/ignored envs/logo/publicmedia symlink/caches.
+No push/deploy. Further Settings locales/Navigation/ALT/Translations retirement
+and Adminsingle-role removal remain pending; do not start another task automatically.
+
+
 ## Floating WhatsApp uses Settings / Owners phone audit —2026-11-07
 
 User requests floating WhatsApp reads Settings and checks Owners +351910438062.
