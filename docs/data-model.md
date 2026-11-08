@@ -841,3 +841,14 @@ text. Retired stats/Avantio/Buildings listing columns and their translations sta
 exact on updates; defaults supplied internally only for a new singleton. Site icon
 updates merge active keys into raw saved JSON, retaining retired/unknown entries.
 No generic company_settings editing remains; Settings is its sole authoring surface.
+
+### Content-owned image descriptions (ADR0076, 2026-11-08)
+
+Active localized forms author optional `content.media_alts` (Blog/Building/Apartment/
+Service/Guide) or PageEnvelope `mediaAlts`, keyed by media UUID. They are localized
+text, excluded from shared photo/layout guards, and follow the owning document's
+draft/publication lifecycle. Existing inline Page/Blog-body ALTs remain authoritative.
+Non-tab Author/City/Settings forms use `translation.field=image_alt:<mediaUUID>` on
+the owning entity, with EN and approved targets. No table/column additions, eager
+copy/backfill or global media_asset ALT writes. Existing asset ALT rows remain
+fallbacks and are preserved; blank overrides use the previous reader fallback.

@@ -47,6 +47,7 @@ test("existing Page sibling ALT fields pair to the same image, including nested 
   const about = aboutAdapter.defaultContent();
   const slots = pageImageFields(aboutAdapter.descriptor.rootNode, about);
   assert.equal(slots.find(slot => slot.path.join(".") === "hero.image_media_id")?.inlineAltPath?.join("."), "hero.image_alt");
+  assert.equal(slots.find(slot => slot.path.join(".") === "certifications.items.0.logo_media_id")?.inlineAltPath?.join("."), "certifications.items.0.logo_alt");
   const realEstate = realEstateAdapter.defaultContent();
   const re = pageImageFields(realEstateAdapter.descriptor.rootNode, realEstate);
   assert.equal(re.find(slot => slot.path.join(".") === "market.fundamentals.image_left_media_id")?.inlineAltPath?.join("."), "market.fundamentals.image_left_alt");

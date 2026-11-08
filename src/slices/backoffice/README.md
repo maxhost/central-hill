@@ -258,3 +258,11 @@ synchronization scrolls and highlights with `focus:false`, preserving typing in
 the inspector; explicit selector actions retain focus behavior. Omitted flags
 remain compatible with earlier senders. Source/origin/instance/binding guards
 also apply to these messages.
+
+### Localized ALT beside image pickers (ADR0076)
+
+`MediaAltProvider` binds the current locale's controlled description map to nested
+MediaField/MediaGalleryField image inputs. `editAlt={false}` retains existing inline
+ALT controls; `mediaDisabled` locks only shared photo controls. Videos/documents/
+Lottie never receive an image ALT input. `OwnerMediaAltFields` supplies four inputs
+for non-tab forms; persistence and publication remain owned by the consumer.

@@ -64,3 +64,23 @@ first harness selected no OG override in its legacy fixture; corrected fixture t
 select OG explicitly, no product change, then passes. All own fixtures cleaned;
 42 protected business-table hashes exactly equal baseline, Settings0. Build and
 independent QA pending. Browser may create only new own fixtures after guards.
+
+## Independent approval and integration boundary
+
+Independent report175e597 approves productf434afe, four bounded browser groups0
+pageerrors. Firstbuild004c0890/144routes/2workers. One confirmed P2: target Pages
+inspector hid existing sibling ALT for stock photos with no upload. Rootf434afe
+uses the actual rendered image-preview set for exclusion; scopedlint0/typecheck0.
+Separate corrected-runtime checkout/build0/153routes/2workers (own QAfixtures
+account for additional local routes), preserving active server's .next. Corrected
+About ES field edit/restore/mobile passes without Save; unaffected groups retained.
+Own Owners corrected-runtime ordinary Publish sequence handles fixture/build timing,
+not a manual cache intervention. See independent report for exact cases/harness notes.
+
+All own e866 fixtures and refs cleaned; independent42hashes exactly equal original
+baseline, root separately compared JSON. Settings0, Owners absent in both tables.
+No old singleton/Page snapshot-delete-restore, media writes, migration or remote
+writes. Extra nested certification-logo pairing assertion passes focused5cases0.
+No product source change after f434afe. Local main fast-forward and its final
+read-only opening follow, no further Save or repeated QA matrix. GlobalTranslations
+remains for separate technical retirement; preserve all legacy values.

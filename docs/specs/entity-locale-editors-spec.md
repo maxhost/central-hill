@@ -1,7 +1,7 @@
 ## ALT junto a imágenes —2026-11-08
 
-Implementación en curso en image-alt/integration (base02c6f21), ver
-[plan](image-alt-locales.md) y ADR0076. Imágenes compartidas, descripciones propias
+Implementado y aprobado en image-alt/integration (base02c6f21, producto f434afe), ver
+[plan](image-alt-locales.md), [QA](image-alt-locales-qa.md) y ADR0076. Imágenes compartidas, descripciones propias
 por contenido e idioma y el mismo Guardar borrador/Publicar. Se reutilizan los
 ALT existentes de Pages/cuerpo Blog; se completan covers/galerías/OG y módulos
 anidados. Fichas sin tabs: cuatro inputs, almacenamiento existente por dueño+foto.

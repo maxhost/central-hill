@@ -1,5 +1,11 @@
 # Review — final Translations retirement readiness
 
+Update2026-11-08: ALT policy implemented and independently approved in f434afe;
+see [execution](image-alt-locales.md), [QA](image-alt-locales-qa.md) and ADR0076.
+Descriptions live beside the owning image pickers, per content/language, with
+existing data retained. The product decision below is resolved; bounded legacy
+route/action/inbox/generator retirement remains. No new city.intro editor required.
+
 2026-11-08. Read-only source audit at main0abdf0b after Settings cleanup, no product,
 DB/schema/browser/test/runtime changes. User asks whether global UI can now retire.
 
