@@ -6,6 +6,7 @@
  * carry `min(1)` where required. `avantio_widget_config` arrives as a parsed object.
  */
 import { z } from "zod";
+import { navigationCtasByLocaleSchema } from "../navigation-cta-types";
 import { iconKey } from "@core/validation/icon-key";
 import { tStr } from "@core/validation/primitives";
 import { SITE_ICON_KEYS, type SiteIconKey } from "../site-icons";
@@ -20,6 +21,8 @@ const statForm = z.object({
 });
 
 export const companySettingsSaveInput = z.object({
+  /** Omitted by old clients: preserve all configured navigation CTAs. */
+  navigation_ctas: navigationCtasByLocaleSchema.optional(),
   email: z.email(),
   phone: z.string().min(3).max(40),
   whatsapp: z.string().max(40).nullable(),

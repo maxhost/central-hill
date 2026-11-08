@@ -61,6 +61,8 @@ export interface SocialLinks {
 
 /** Site-wide singleton read model (contact, stats, office, Avantio, default OG). */
 export interface SiteGlobals {
+  /** Locale-resolved Book Now and floating Earn With Us configuration. */
+  navigationCtas?: import("./navigation-cta-types").NavigationCtas;
   email: string;
   phone: string;
   whatsapp: string | null;
@@ -147,3 +149,7 @@ export { SiteFooter } from "./ui/site-footer";
 /** Manual Website fields; other Settings copy retains its existing translation workflow. */
 export { WEBSITE_LOCALES, WEBSITE_TARGET_LOCALES, isSettingsWebsiteField } from "./website-locale-types";
 export type { WebsiteTranslations } from "./website-locale-types";
+
+/** Manual locale configuration for Book Now and Earn With Us. */
+export { NAVIGATION_CTA_LOCALES, NAVIGATION_CTA_KEYS, NAVIGATION_CTAS_FIELD, isSettingsNavigationCtaField, navigationCtaHref } from "./navigation-cta-types";
+export type { NavigationCta, NavigationCtas, NavigationCtasByLocale } from "./navigation-cta-types";

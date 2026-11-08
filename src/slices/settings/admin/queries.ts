@@ -28,6 +28,7 @@ export interface StatForm {
 }
 
 export interface GlobalsEditData {
+  navigation_ctas?: import("../navigation-cta-types").NavigationCtasByLocale;
   email: string;
   phone: string;
   whatsapp: string;
