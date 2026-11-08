@@ -68,7 +68,7 @@ export interface SiteGlobals {
   ownersPhone?: string | null;
   /** Check-in phone (About office panel); null when unset — the row is then hidden. */
   checkinPhone: string | null;
-  /** Company website, an `https://` URL; null when unset — the About row is then hidden. */
+  /** Website resolved for the requested locale (own approved URL or EN); null hides About row. */
   website: string | null;
   social: SocialLinks;
   stats: Record<StatKey, CompanyStat>;
@@ -143,3 +143,7 @@ export { settingsAdminScreens } from "./admin/screens";
 /** Shared public chrome for authenticated contextual previews. */
 export { SiteHeader } from "./ui/site-header";
 export { SiteFooter } from "./ui/site-footer";
+
+/** Manual Website fields; other Settings copy retains its existing translation workflow. */
+export { WEBSITE_LOCALES, WEBSITE_TARGET_LOCALES, isSettingsWebsiteField } from "./website-locale-types";
+export type { WebsiteTranslations } from "./website-locale-types";

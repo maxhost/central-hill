@@ -33,6 +33,7 @@ export interface GlobalsEditData {
   owners_phone?: string;
   checkin_phone: string;
   website_url: string;
+  website_translations?: import("../website-locale-types").WebsiteTranslations;
   social: Record<"instagram" | "facebook" | "linkedin" | "youtube" | "tiktok", string>;
   stats: Record<StatKey, StatForm>;
   office_address: string;

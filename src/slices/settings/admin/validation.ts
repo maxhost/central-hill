@@ -12,6 +12,7 @@ import { SITE_ICON_KEYS, type SiteIconKey } from "../site-icons";
 import { httpsUrl } from "../validation";
 
 const socialUrl = z.url().nullable();
+const websiteTarget = z.string().trim().pipe(z.union([httpsUrl, z.literal("")]));
 
 const statForm = z.object({
   value: z.string().max(40),
@@ -28,6 +29,10 @@ export const companySettingsSaveInput = z.object({
   checkin_phone: z.string().min(3).max(40).nullable(),
   /** An `https://` URL; `null` (blank) hides the About "Website" row. */
   website_url: httpsUrl.nullable(),
+  /** Omission preserves authored targets; blank clears only that locale for EN fallback. */
+  website_translations: z.object({
+    es: websiteTarget, pt: websiteTarget, fr: websiteTarget,
+  }).strict().optional(),
   social: z.object({
     instagram: socialUrl,
     facebook: socialUrl,

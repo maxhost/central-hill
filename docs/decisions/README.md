@@ -1348,3 +1348,5 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 - [0070 — Testimonial Quote EN/ES/PT/FR inputs](0070-testimonial-quote-inputs.md)
 
 - [0071 — Settings Owners phone and Footer row](0071-settings-owners-phone.md)
+
+- [0072 — Settings Website URLs per language](0072-settings-website-locales.md)
