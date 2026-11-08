@@ -1,5 +1,25 @@
 # Central Hill agent instructions
 
+## Local Admin access / single-role requirement —2026-11-07
+
+User clarifies product has ONE staff type, Admin; inherited admin/editor/translator
+from initial scaffold is not the desired product model. Full removal is pending,
+not implemented by the temporary access change below. Do not justify legacy role
+restrictions as a current product requirement or start the refactor automatically.
+
+User explicitly authorized promoting the currently connected local account to Admin
+to inspect Settings. Host + SQL DB/role propertylocalesqa verified. The only account
+with active sessions is property-locales-qa (Property QA), matching the existing
+local authenticated session. Updated only its staff_role row Editor→Admin; all
+other role rows unchanged, no credentials/session/content/schema changes. Read-only
+browser verified topbar Admin, Settings+Navigation sidebar links, /admin/settings
+200 with Company settings form. Reload existing browser to refresh the layout.
+Audit identity/before-role/result under /private/tmp/central-hill-local-admin-access/
+(no tokens/passwords copied). Main dev3071PID75173/session15758 retained; no restart,
+remote DB action/push/deploy. This authorizes the one local grant, not arbitrary
+other account grants or a production role/schema migration.
+
+
 ## Latest Testimonial Quote inputs —2026-11-07
 
 User requests Quote EN/ES/PT/FR in same ficha, blank uses EN, public follows page
