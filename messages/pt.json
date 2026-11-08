@@ -2208,7 +2208,8 @@
       "queuedNote": "Carrega ao guardar",
       "waitForMedia": "Aguarde até os ficheiros estarem prontos.",
       "altLabel": "Texto alternativo",
-      "altHint": "Descreva a imagem neste idioma. Deixe vazio para usar a descrição existente ou automática."
+      "altHint": "Descreva a imagem neste idioma. Deixe vazio para usar a descrição existente ou automática.",
+      "altLocalesHint": "As traduções vazias usam EN. Se EN também estiver vazio, utiliza-se a descrição existente ou automática."
     },
     "icon": {
       "none": "Sem ícone",
