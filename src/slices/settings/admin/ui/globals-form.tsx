@@ -1,5 +1,6 @@
 "use client";
 
+import { rawOwnerMediaAlts } from "@core/media/owner-alt";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -13,6 +14,7 @@ import {
   type AdminMediaPreview,
   IconField,
   MediaField,
+  OwnerMediaAltFields,
   TextInput,
   useMediaQueue,
 } from "@slices/backoffice/contract";
@@ -174,6 +176,7 @@ export function GlobalsForm({
       },
       currency: "EUR" as const,
       default_og_image_media_id: state.default_og_image_media_id || null,
+      default_og_alts: state.default_og_alts,
       site_icons: Object.fromEntries(EDITABLE_SITE_ICON_KEYS.map((key) => [key, state.site_icons[key]])),
     };
 
@@ -504,12 +507,13 @@ export function GlobalsForm({
             value={state.default_og_image_media_id || null}
             preview={previews[state.default_og_image_media_id] ?? null}
             onChange={(id, preview) => {
-              set("default_og_image_media_id", id ?? "");
+              setState(previous => ({ ...previous, default_og_image_media_id: id ?? "", default_og_alts: id === initial.default_og_image_media_id ? initial.default_og_alts : rawOwnerMediaAlts([], null) }));
               if (preview)
                 setPreviews((prev) => ({ ...prev, [preview.id]: preview }));
             }}
           />
         </Field>
+        <OwnerMediaAltFields mediaId={state.default_og_image_media_id || null} value={state.default_og_alts} onChange={value => set("default_og_alts", value)} disabled={pending || preparing} />
       </AdminCard>
 
       <AdminCard title={t("admin.globals.sections.icons")}>

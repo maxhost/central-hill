@@ -1,3 +1,13 @@
+## ALT junto a imágenes —2026-11-08
+
+Implementación en curso en image-alt/integration (base02c6f21), ver
+[plan](image-alt-locales.md) y ADR0076. Imágenes compartidas, descripciones propias
+por contenido e idioma y el mismo Guardar borrador/Publicar. Se reutilizan los
+ALT existentes de Pages/cuerpo Blog; se completan covers/galerías/OG y módulos
+anidados. Fichas sin tabs: cuatro inputs, almacenamiento existente por dueño+foto.
+No migración/backfill ni borrado de traducciones de medios. No se retira aún la
+UI global ni sus rutas: ese cierre técnico queda para una tarea posterior.
+
 # Contenidos del CMS — edición y publicación por idioma
 
 ## Estado vigente — 2026-11-08, revisión de cierre de Translations

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { mediaAltsSchema } from "@core/media/alt";
 import { getEditorialAdapter } from "../server/editorial-adapters";
 import { sharedEnvelope } from "../editorial-content";
 import type { EditorialPageKey, PageEnvelope } from "../editorial-types";
@@ -12,6 +13,7 @@ const envelope = <K extends EditorialPageKey>(key: K, publication: boolean) =>
         ? getEditorialAdapter(key).publishSchema
         : getEditorialAdapter(key).draftSchema,
       ogImageMediaId: z.uuid().nullable(),
+      mediaAlts: mediaAltsSchema.optional(),
     })
     .strict();
 export function validateEnvelope<K extends EditorialPageKey = "home">(

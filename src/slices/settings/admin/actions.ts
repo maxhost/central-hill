@@ -1,5 +1,6 @@
 "use server";
 
+import { saveOwnerMediaAlts } from "@core/media/owner-alt-write";
 import { eq } from "drizzle-orm";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
@@ -108,6 +109,8 @@ export async function saveGlobals(raw: unknown): Promise<SettingsSaveResult> {
     await saveNavigationCtas(id, input.navigation_ctas, staff.userId);
 
     await saveHoursLabelTranslations(id, input.office_hours_label, input.office_hours_translations, staff.userId);
+
+    await saveOwnerMediaAlts("company_settings", id, input.default_og_image_media_id, input.default_og_alts, staff.userId);
 
     revalidateGlobals();
     return { ok: true };

@@ -1,4 +1,5 @@
 import "server-only";
+import { rawOwnerMediaAlts, type OwnerMediaAlts } from "@core/media/owner-alt";
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { type ContentRef, loadContent, loadTranslationRows } from "@core/i18n/content";
@@ -73,6 +74,7 @@ export interface CityEditData {
   status: Status;
   country: string;
   hero_media_id: string | null;
+  hero_alts?: OwnerMediaAlts;
   name: string;
   intro: string | null;
   translations?: import("../reference-name-types").GeographyNameTranslations;
@@ -112,6 +114,7 @@ export async function getCityForEdit(id: string): Promise<CityEditBundle | null>
     status: row.status,
     country: row.country,
     hero_media_id: row.hero_media_id,
+    hero_alts: rawOwnerMediaAlts(rawRows[0]!, row.hero_media_id),
     name: content.get(CITY, id, "name") ?? "",
     intro: content.get(CITY, id, "intro") ?? null,
     translations: rawGeographyNameTranslations(rawRows[0]!),

@@ -1,4 +1,5 @@
 "use server";
+import { resolveMediaAlt } from "@core/media/alt";
 import { requireStaff } from "@core/auth";
 import { env } from "@core/env";
 import type { PageLivePreviewResult } from "@slices/backoffice/contract";
@@ -28,6 +29,7 @@ export async function renderPageLivePreview<K extends EditorialPageKey>(
       envelope.content,
       envelope.ogImageMediaId,
       locale as Locale,
+      envelope.mediaAlts,
     );
     // A completed upload wins over the earlier raw local preview for its ID.
     for (const [id, local] of Object.entries(localMedia))
@@ -37,7 +39,7 @@ export async function renderPageLivePreview<K extends EditorialPageKey>(
           width: local.width ?? 1200,
           height: local.height ?? 1500,
           mime: local.mime,
-          alt: "",
+          alt: resolveMediaAlt(envelope.mediaAlts, id),
           blurhash: null,
         };
     if (

@@ -29,6 +29,7 @@ export function prepareTargetEnvelope<K extends EditorialPageKey = "home">(
   descriptor: PageEditorialDescriptor = homeDescriptor,
 ): PageEnvelope<K> {
   const next = structuredClone(template);
+  if (target?.mediaAlts !== undefined) next.mediaAlts = structuredClone(target.mediaAlts);
   const texts = new Map<string, string>();
   if (target)
     for (const path of editorialTextPaths(target.content, descriptor)) {
@@ -81,6 +82,7 @@ export function sharedEnvelope<K extends EditorialPageKey = "home">(
     homeSet(copy.content, path, undefined);
   // Optional text containers have no shared semantics.
   delete copy.content.seo;
+  delete copy.mediaAlts;
   return JSON.stringify(canonical(copy));
 }
 function canonical(value: unknown): unknown {

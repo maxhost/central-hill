@@ -968,7 +968,7 @@
           "on_request": "Sur demande",
           "hidden": "Ne pas afficher de prix"
         },
-        "mediaAltHint": "Le texte alternatif est géré dans la médiathèque et partagé partout où la même image est utilisée."
+        "mediaAltHint": "Les images sont partagées. Modifiez leur texte alternatif dans l’onglet de chaque langue."
       }
     },
     "ctaImageAlt": "Salon lumineux et élégamment meublé avec vue sur la ville dans l’un de nos appartements à Lisbonne",

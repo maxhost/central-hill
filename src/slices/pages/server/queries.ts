@@ -33,10 +33,10 @@ import { servicesSchema, defaultServices } from "../schemas/services";
  */
 
 const published = <K extends import("../editorial-types").EditorialPageKey>(key: K, locale: Locale) =>
-  unstable_cache(() => getPublishedPageLocale(key, locale), ["pages:publishedLocale:v1", key, locale], { tags: [pageLocaleTag(key, locale)] })();
+  unstable_cache(() => getPublishedPageLocale(key, locale), ["pages:publishedLocale:v2-alt", key, locale], { tags: [pageLocaleTag(key, locale)] })();
 
 export const getHomePage = (locale: Locale): Promise<HomePage | null> =>
-  unstable_cache(() => getPublishedPageLocale("home", locale), ["pages:publishedLocale:v1", "home", locale], { tags: [pageLocaleTag("home", locale)] })();
+  unstable_cache(() => getPublishedPageLocale("home", locale), ["pages:publishedLocale:v2-alt", "home", locale], { tags: [pageLocaleTag("home", locale)] })();
 
 export const getOwnersPage = (locale: Locale): Promise<OwnersPage | null> =>
   published("owners", locale);

@@ -1,5 +1,6 @@
 "use client";
 
+import { rawOwnerMediaAlts } from "@core/media/owner-alt";
 import { useId, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,6 +14,7 @@ import {
   FormActions,
   type AdminMediaPreview,
   MediaField,
+  OwnerMediaAltFields,
   Select,
   TextArea,
   TextInput,
@@ -324,9 +326,10 @@ export function CityForm({
             <MediaField
               value={state.hero_media_id || null}
               preview={previews[state.hero_media_id] ?? null}
-              onChange={(id) => set("hero_media_id", id ?? "")}
+              onChange={(id) => setState(previous => ({ ...previous, hero_media_id: id ?? "", hero_alts: id === initial?.hero_media_id ? initial.hero_alts : rawOwnerMediaAlts([], null) }))}
             />
           </Field>
+          <OwnerMediaAltFields mediaId={state.hero_media_id || null} value={state.hero_alts} onChange={value => set("hero_alts", value)} disabled={busy} />
         </fieldset>
       </AdminCard>
 

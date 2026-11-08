@@ -45,7 +45,7 @@ export async function ServicesHero({
           media={page.media[hero?.media_media_id ?? ""]}
           poster={page.media[hero?.poster_media_id ?? ""]}
           fallback={SERVICES_HERO_IMAGE}
-          alt=""
+          alt={hero?.media_alt?.trim() || page.media[hero?.media_media_id ?? ""]?.alt || ""}
           hero
         />
       }
@@ -152,7 +152,7 @@ export async function ServicesFinalCta({
               media={page.media[cta?.media_media_id ?? ""]}
               poster={page.media[cta?.poster_media_id ?? ""]}
               fallback={SERVICES_CTA_IMAGE}
-              alt={orMessage(cta?.media_alt, t("ctaImageAlt"))}
+              alt={orMessage(cta?.media_alt, page.media[cta?.media_media_id ?? ""]?.alt || t("ctaImageAlt"))}
             />
           }
         />

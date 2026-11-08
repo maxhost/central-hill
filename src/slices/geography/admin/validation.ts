@@ -4,6 +4,7 @@
  * slug (slug table). Optional fields are `nullable` (the client posts `null` for an
  * empty control); required [T] text gets a `min(1)`.
  */
+import { ownerMediaAltsSchema } from "@core/media/owner-alt";
 import { z } from "zod";
 import { contentStatus, position, slug, tStr } from "@core/validation/primitives";
 
@@ -26,6 +27,7 @@ export const citySaveInput = z.object({
   status: contentStatus,
   country: z.string().length(2),
   hero_media_id: z.uuid().nullable(),
+  hero_alts: ownerMediaAltsSchema.optional(),
   // [T] source values (en):
   name: tStr({ min: 1, max: 120 }).trim().min(1),
   translations: nameTranslations.optional(),

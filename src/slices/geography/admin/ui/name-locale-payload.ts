@@ -17,6 +17,7 @@ export interface CityFormValues {
   status: CityEditData["status"];
   country: string;
   hero_media_id: string;
+  hero_alts?: import("@core/media/owner-alt").OwnerMediaAlts;
   name: string;
   translations: GeographyNameTranslations;
   intro: string;
@@ -41,6 +42,7 @@ export function cityFormValues(data: CityEditData | null): CityFormValues {
     status: data?.status ?? "draft",
     country: data?.country ?? "PT",
     hero_media_id: data?.hero_media_id ?? "",
+    hero_alts: data?.hero_alts,
     name: data?.name ?? "",
     translations: nameFormTranslations(data?.translations),
     intro: data?.intro ?? "",
@@ -76,6 +78,7 @@ export function cityNamePayload(
     status: state.status,
     country: state.country.trim().toUpperCase(),
     hero_media_id: state.hero_media_id || null,
+    hero_alts: state.hero_alts,
     name: state.name.trim(),
     translations: namePayload(state.translations),
     intro: state.intro.trim() || null,

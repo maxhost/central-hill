@@ -7,6 +7,7 @@ they are made by the **orchestrator**, not by feature agents mid-task.
 Format per ADR: Context · Decision · Consequences · Status. Keep them short.
 
 ## Index
+- [0076 — Content-owned image ALT in localized forms](0076-content-image-alt-locales.md)
 - [0056 — Keep displayed figures current when props change](0056-live-preview-stat-prop-updates.md)
 - [0055 — Localized Home CTA links and annotated CTA labels](0055-home-localized-cta-links.md)
 - [0040 — Page JSON drafts and publication per locale](0040-page-locale-drafts.md) — Home first; planning accepted, implementation pending.

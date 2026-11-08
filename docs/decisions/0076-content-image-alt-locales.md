@@ -19,4 +19,7 @@ only image previews get ALT, never videos, Lottie or documents. No global media
 library, generic Translation removal, navigation or role refactor in this task.
 
 Non-tab forms use four language inputs beside their image and existing translation
-storage keyed to that owner. Original source/target asset rows remain untouched.
+storage keyed to that owner and `image_alt:<mediaUUID>`. Public targets require approval
+and blank targets use EN, then the pre-existing fallback. `core/media/owner-alt.ts`
+is the client-safe schema/raw-reader contract; owner-alt-write.ts is the server-only
+validated-action write seam. Omitted payloads preserve rows; EN clear preserves targets. Original source/target asset rows remain untouched.

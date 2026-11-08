@@ -11,6 +11,8 @@ export interface PageEnvelope<K extends EditorialPageKey = "home"> {
   schemaVersion: 1;
   content: PageContentMap[K];
   ogImageMediaId: string | null;
+  /** Localized descriptions; image references remain shared. */
+  mediaAlts?: import("@core/media/alt").MediaAlts;
 }
 export interface PageLocaleEditorialModel<K extends EditorialPageKey = "home"> {
   locale: Locale;

@@ -13,7 +13,7 @@ export function GuidesMedia({ video, poster }: { video?: PageMedia; poster?: Pag
     {video && (video.mime === "video/mp4" || video.mime === "video/webm") ? (
       <ServicesLoopMedia src={video.url} poster={guidesPosterUrl(poster)} className={className} eager />
     ) : poster && (!poster.mime || poster.mime.startsWith("image/")) ? (
-      <MediaImage data={{ ...poster, alt: "" }} sizes="100vw" priority className={className} />
+      <MediaImage data={poster} sizes="100vw" priority className={className} />
     ) : (
       // eslint-disable-next-line @next/next/no-img-element -- preserved stock background until media is authored
       <img src={GUIDES_HERO_IMAGE} alt="" className={className} fetchPriority="high" loading="eager" />

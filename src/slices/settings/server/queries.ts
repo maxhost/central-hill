@@ -1,4 +1,5 @@
 import "server-only";
+import { resolveOwnerMediaAlt } from "@core/media/owner-alt";
 import { unstable_cache } from "next/cache";
 import { asc } from "drizzle-orm";
 import { db } from "@core/db/client";
@@ -82,7 +83,7 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
   }
 
   const og = ogId
-    ? toImageData(media.get(ogId), content.get("media_asset", ogId, "alt") ?? "Central Hill")
+    ? toImageData(media.get(ogId), resolveOwnerMediaAlt(manualRows, ogId, locale, content.get("media_asset", ogId, "alt") ?? "Central Hill"))
     : null;
 
   return {
@@ -112,7 +113,7 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
 const SITE_ICONS_SHAPE = SITE_ICON_KEYS.join(",");
 // Same reason for the read-model shape: bump it when `SiteGlobals` gains a field, so an entry
 // cached before manually localized office-hours labels is not served (v6, ADR0075).
-const GLOBALS_SHAPE = "v6";
+const GLOBALS_SHAPE = "v7-image-alt";
 
 export function getGlobals(locale: Locale): Promise<SiteGlobals | null> {
   return unstable_cache(() => _getGlobals(locale), ["settings:getGlobals", locale, GLOBALS_SHAPE, SITE_ICONS_SHAPE], {

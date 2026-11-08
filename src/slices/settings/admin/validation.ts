@@ -1,6 +1,7 @@
 /** Active Settings save schema. Retired stats/Avantio/listing values are accepted only
  * for stale-client compatibility and ignored by the action; no hidden field blocks Save.
  * Website, button and hours translations use manual Settings controls. */
+import { ownerMediaAltsSchema } from "@core/media/owner-alt";
 import { z } from "zod";
 import { navigationCtasByLocaleSchema } from "../navigation-cta-types";
 import { iconKey } from "@core/validation/icon-key";
@@ -44,6 +45,7 @@ export const companySettingsSaveInput = z.object({
   }).strict().optional(),
   currency: z.literal("EUR"),
   default_og_image_media_id: z.uuid().nullable(),
+  default_og_alts: ownerMediaAltsSchema.optional(),
   avantio_account_id: z.unknown().optional(),
   avantio_widget_config: z.unknown().optional(),
   show_building_location: z.unknown().optional(),

@@ -21,7 +21,7 @@ export async function resolveEditorialEnvelope<
   if (!envelope) return null;
   return {
     content: envelope.content,
-    ...(await resolveMedia(envelope.content, envelope.ogImageMediaId, locale)),
+    ...(await resolveMedia(envelope.content, envelope.ogImageMediaId, locale, envelope.mediaAlts)),
   };
 }
 /** Public, read-only: never bootstraps or visits a cached public getter. */

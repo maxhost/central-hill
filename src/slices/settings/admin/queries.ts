@@ -1,4 +1,5 @@
 import "server-only";
+import { rawOwnerMediaAlts, type OwnerMediaAlts } from "@core/media/owner-alt";
 import { asc } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { loadContent, loadTranslationRows } from "@core/i18n/content";
@@ -46,6 +47,7 @@ export interface GlobalsEditData {
   office_hours_translations?: import("../hours-label-types").HoursLabelTranslations;
   currency: "EUR";
   default_og_image_media_id: string;
+  default_og_alts?: OwnerMediaAlts;
   avantio_account_id: string;
   /** Pretty-printed JSON for the textarea editor. */
   avantio_widget_config: string;
@@ -139,6 +141,7 @@ export async function getGlobalsForEdit(): Promise<GlobalsEditBundle> {
     office_hours_translations: rawHoursLabelTranslations(manualRows),
     currency: "EUR",
     default_og_image_media_id: row.default_og_image_media_id ?? "",
+    default_og_alts: rawOwnerMediaAlts(manualRows, row.default_og_image_media_id),
     avantio_account_id: row.avantio_account_id,
     avantio_widget_config: JSON.stringify(row.avantio_widget_config ?? {}, null, 2),
     show_building_location: row.show_building_location,

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { saveOwnerMediaAlts } from "@core/media/owner-alt-write";
 import { eq } from "drizzle-orm";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
@@ -112,6 +113,8 @@ export async function saveCity(raw: unknown): Promise<CitySaveResult> {
         updatedBy: staff.userId, preserveTargetsOnClear: true,
       });
     }
+
+    await saveOwnerMediaAlts(CITY, id, input.hero_media_id, input.hero_alts, staff.userId);
 
     revalidateCity(id);
     revalidatePath("/admin/cities");

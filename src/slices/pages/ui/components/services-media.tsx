@@ -52,7 +52,7 @@ export function ServicesMedia({
       <ServicesLottieMedia
         src={media.url}
         poster={still}
-        alt={hero ? "" : alt}
+        alt={alt}
         className={fill}
         eager={hero}
       />
@@ -64,7 +64,7 @@ export function ServicesMedia({
         <source media="(prefers-reduced-motion: reduce)" srcSet={still} />
         <img
           src={media.url}
-          alt={hero ? "" : alt}
+          alt={alt}
           loading={hero ? "eager" : "lazy"}
           fetchPriority={hero ? "high" : undefined}
           className={fill}
@@ -74,7 +74,7 @@ export function ServicesMedia({
   } else if (media && mime.startsWith("image/")) {
     visual = (
       <MediaImage
-        data={{ ...media, alt: hero ? "" : alt }}
+        data={{ ...media, alt }}
         className={fill}
         sizes={hero ? "100vw" : "(max-width: 1024px) 100vw, 560px"}
         priority={hero}
@@ -85,7 +85,7 @@ export function ServicesMedia({
       // eslint-disable-next-line @next/next/no-img-element -- established stock fallback
       <img
         src={fallback}
-        alt={hero ? "" : alt}
+        alt={alt}
         loading={hero ? "eager" : "lazy"}
         fetchPriority={hero ? "high" : undefined}
         className={fill}

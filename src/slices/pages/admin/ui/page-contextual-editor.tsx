@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { AdminButton, Field, MediaField, PageEditorShell, TextArea, TextInput, useMediaQueue, type EditorLocale, type AdminMediaPreview } from "@slices/backoffice/contract";
+import { AdminButton, Field, MediaField, MediaAltProvider, PageEditorShell, TextArea, TextInput, useMediaQueue, type EditorLocale, type AdminMediaPreview } from "@slices/backoffice/contract";
 import type { EditorialPageKey, PageContentMap, PageEditorialModel, PageLocaleEditorialModel } from "../../editorial-types";
 import { prepareTargetEnvelope, sameEditorialSnapshot } from "../../editorial-content";
 import { homeNode, homeButtonFields, pageFieldLabel, descriptorMediaIds, isEditableFieldPath } from "../home-contextual";
@@ -11,6 +11,7 @@ import { publishPageDraft, savePageDraft } from "../editorial-actions";
 import { NodeField, useFieldLabels } from "./schema-fields";
 import type { AboutListOperation } from "../form-model";
 import { PageNavigation } from "./page-navigation";
+import { pageImageFields } from "../image-alt-fields";
 import { setPageField } from "../field-update";
 import { editorViewSections, type PageEditorView } from "../editorial-views";
 
@@ -173,10 +174,21 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     }
   }
 
+  const imageFields = pageImageFields(descriptor.rootNode, content);
+  const inlineAltMediaPaths = imageFields.filter(field => field.inlineAltPath).map(field => field.path.join("."));
   const selectedFields = descriptor.key === "home" ? homeButtonFields(selected) : [selected];
-  const visible = selected === section.id || section.selectAsGroup ? section.bindings : section.bindings.filter(b => selectedFields.includes(b.id));
+  let visible = selected === section.id || section.selectAsGroup ? section.bindings : section.bindings.filter(b => selectedFields.includes(b.id));
   // Include blank and absent optional copy, especially SEO, in every target locale.
+  // Selecting a photo directly also exposes its existing schema-owned ALT sibling.
+  for (const image of imageFields) {
+    if (!image.inlineAltPath || !visible.some(binding => binding.id === image.path.join("."))) continue;
+    const altPath = image.inlineAltPath.join(".");
+    if (!visible.some(binding => altPath === binding.id || altPath.startsWith(`${binding.id}.`)))
+      visible = [...visible, { id: altPath, label: pageFieldLabel(altPath, labels.field), sectionId: section.id }];
+  }
+  const visibleImages = imageFields.filter(field => visible.some(binding => field.path.join(".") === binding.id || field.path.join(".").startsWith(`${binding.id}.`)));
   const targetPaths = editorialTextPaths(content, descriptor).filter(path => isEditableFieldPath(descriptor.rootNode, path) && visible.some(b => path === b.id || path.startsWith(`${b.id}.`)));
+  const pairedAltPaths = new Set(visibleImages.filter(field => field.inlineAltPath).map(field => field.inlineAltPath!.join(".")));
   const referencePaths = (descriptor.localeReferencePaths ?? []).filter(path => isEditableFieldPath(descriptor.rootNode, path) && visible.some(b => path === b.id || path.startsWith(`${b.id}.`)));
   const english = (states.en.model.draft ?? states.en.model.published ?? states.en.model.working).content;
   const englishText = Object.fromEntries(editorialTextPaths(english, descriptor).map(path => [editorialTranslationField(english, path, descriptor), editorialAt(english, path)]));
@@ -196,7 +208,12 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
       </div>;
     });
   }
-  const inspector = <fieldset disabled={busy} className="min-w-0 space-y-5">
+  const inspector = <MediaAltProvider locale={locale} value={state.model.working.mediaAlts} disabled={busy} onChange={mediaAlts => {
+    setStates(previous => {
+      const own = previous[locale];
+      return { ...previous, [locale]: { ...own, notice: "", model: { ...own.model, working: { ...own.model.working, mediaAlts } } } };
+    });
+  }}><fieldset disabled={busy} className="min-w-0 space-y-5">
     <h2 className="font-serif text-xl text-ink">{section.label}</h2>
     {view === "blog_article" ? <p className="text-sm leading-relaxed text-ink-soft">{t("admin.blogEditors.context")}</p> : null}
     {["portfolio", "services_carousel", "faq"].includes(section.id) ? <p className="text-xs text-ink-soft">
@@ -217,15 +234,26 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
             return { ...previous, en: { ...own, notice: "", model: { ...own.model, working: { ...own.model.working, ogImageMediaId: id } } } };
           }); }} />
         </Field>
-      : <NodeField key={`${locale}-${binding.id}`} pageKey={descriptor.key} node={homeNode(descriptor.rootNode, binding.id)!}
+      : <NodeField key={`${locale}-${binding.id}`} pageKey={descriptor.key} inlineAltMediaPaths={inlineAltMediaPaths} node={homeNode(descriptor.rootNode, binding.id)!}
           value={editorialAt(content, binding.id)} path={binding.id.split(".")} label={binding.label} depth={0}
           onChange={change} onListChange={listChange} listIds={editorialAt(content, "_list_ids") as Record<string, string[]> | undefined} listPolicy={{ paths: descriptor.listPaths, scope: path => editorialListScope(content, path, descriptor) }} errors={state.errors} previews={previews} options={model.options} />})))
       : <>
         <p className="text-xs text-ink-soft">{t("admin.contextual.sourceOnly")}</p>
-        {referencePaths.map(path => <NodeField key={`${locale}-${path}`} pageKey={descriptor.key} node={homeNode(descriptor.rootNode, path)!}
+        {visible.some(binding => binding.id === "og_image_media_id") ? <Field label={t("admin.fields.ogImage")}>
+          <MediaField value={og} preview={og ? previews[og] ?? null : null} mediaDisabled onChange={() => {}} />
+        </Field> : null}
+        {visibleImages.filter(field => field.id && (!previews[field.id] || previews[field.id]!.mime.startsWith("image/"))).map(field => <div key={field.path.join(".")} className="space-y-2">
+          <Field label={pageFieldLabel(field.path.join("."), labels.field)}>
+            <MediaField value={field.id} preview={field.id ? previews[field.id] ?? null : null} accept={field.accept} mediaDisabled editAlt={!field.inlineAltPath} onChange={() => {}} />
+          </Field>
+          {field.inlineAltPath ? <NodeField pageKey={descriptor.key} node={homeNode(descriptor.rootNode, field.inlineAltPath.join("."))!}
+            value={editorialAt(content, field.inlineAltPath.join("."))} path={field.inlineAltPath} label={pageFieldLabel(field.inlineAltPath.join("."), labels.field)} depth={0}
+            onChange={change} errors={state.errors} previews={previews} options={model.options} /> : null}
+        </div>)}
+        {referencePaths.map(path => <NodeField key={`${locale}-${path}`} pageKey={descriptor.key} inlineAltMediaPaths={inlineAltMediaPaths} node={homeNode(descriptor.rootNode, path)!}
           value={editorialAt(content, path)} path={path.split(".")} label={visible.find(binding => binding.id === path)?.label ?? pageFieldLabel(path, labels.field)} depth={0}
           onChange={change} errors={state.errors} previews={previews} options={model.options} />)}
-        {groupContactFields(targetPaths.map(path => {
+        {groupContactFields(targetPaths.filter(path => !pairedAltPaths.has(path)).map(path => {
           const field = editorialTranslationField(content, path, descriptor);
           const source = String(englishText[field] ?? "");
           return { id: path, node: <Field key={`${locale}-${field}`} label={pageFieldLabel(path, labels.field)} error={state.errors[path]}>
@@ -236,7 +264,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
           </Field> };
         }))}
       </>}
-  </fieldset>;
+  </fieldset></MediaAltProvider>;
   return <PageEditorShell adapter={{
     pageNavigation: <PageNavigation currentKey={descriptor.key} view={view} hasUnsavedChanges={unsavedPage} busy={busy} onLeave={() => {
       // These previews/queued files belong to this page, never to the destination.

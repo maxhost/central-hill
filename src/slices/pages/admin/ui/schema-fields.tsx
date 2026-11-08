@@ -65,6 +65,7 @@ export function useFieldLabels() {
 
 interface RenderProps {
   pageKey?: string;
+  inlineAltMediaPaths?: string[];
   inheritedValues?: Record<string, string>;
   listIds?: Record<string, string[]>;
   /** Explicit contextual-editor policy; omitted keeps legacy About/Home behavior. */
@@ -84,6 +85,7 @@ interface RenderProps {
 export function NodeField(props: RenderProps) {
   const {
     pageKey,
+    inlineAltMediaPaths,
     inheritedValues,
     listIds,
     listPolicy,
@@ -129,6 +131,7 @@ export function NodeField(props: RenderProps) {
       <NodeField
         key={f.key}
         pageKey={pageKey}
+        inlineAltMediaPaths={inlineAltMediaPaths}
         inheritedValues={inheritedValues}
         listIds={listIds}
         listPolicy={listPolicy}
@@ -213,6 +216,7 @@ export function NodeField(props: RenderProps) {
             </div>
             <NodeField
               pageKey={pageKey}
+              inlineAltMediaPaths={inlineAltMediaPaths}
               inheritedValues={inheritedValues}
               listIds={listIds}
               listPolicy={listPolicy}
@@ -264,6 +268,7 @@ export function NodeField(props: RenderProps) {
           {errors[errorKey] || hint ? <span id={`${controlId}-description`} className="sr-only">{errors[errorKey] || hint}</span> : null}
           <MediaField
             value={id}
+            editAlt={!inlineAltMediaPaths?.includes(errorKey)}
             accept={node.accept}
             preview={id ? (previews[id] ?? null) : null}
             onChange={(next, preview) => onChange(path, next ?? "", preview)}

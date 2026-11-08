@@ -1,4 +1,5 @@
 import "server-only";
+import { resolveMediaAlt, type MediaAlts } from "@core/media/alt";
 import type { Locale } from "@core/db/columns";
 import { loadContent } from "@core/i18n/content";
 import { type MediaImageData, loadMedia, mediaUrl } from "@core/media";
@@ -44,6 +45,7 @@ export async function resolveMedia(
   data: Json,
   ogImageMediaId: string | null,
   locale: Locale,
+  mediaAlts?: MediaAlts,
 ): Promise<{ media: Record<string, PageMedia>; ogImage: MediaImageData | null }> {
   const ids: string[] = [];
   collectMediaIds(data, ids);
@@ -66,7 +68,7 @@ export async function resolveMedia(
       url: mediaUrl(asset.r2_key),
       width: asset.width ?? 0,
       height: asset.height ?? 0,
-      alt: alts.get(MEDIA_ASSET, id, "alt") ?? "",
+      alt: resolveMediaAlt(mediaAlts, id, alts.get(MEDIA_ASSET, id, "alt") ?? ""),
       blurhash: asset.blurhash,
       mime: asset.mime,
     };

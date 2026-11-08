@@ -1,4 +1,5 @@
 import "server-only";
+import { ownerMediaAltField } from "@core/media/owner-alt";
 import { unstable_cache } from "next/cache";
 import { and, eq } from "drizzle-orm";
 import { db } from "@core/db/client";
@@ -85,7 +86,7 @@ function mapCity(row: CityRow, ctx: CityCtx): CityRef {
   const hero = row.hero_media_id
     ? toImageData(
         media.get(row.hero_media_id),
-        content.get("media_asset", row.hero_media_id, "alt") ?? name,
+        content.get(CITY, row.id, ownerMediaAltField(row.hero_media_id))?.trim() || content.get("media_asset", row.hero_media_id, "alt") || name,
       )
     : null;
   return {
@@ -116,7 +117,7 @@ async function _listCities(locale: Locale): Promise<CityRef[]> {
 }
 
 export function listCities(locale: Locale): Promise<CityRef[]> {
-  return unstable_cache(() => _listCities(locale), ["geography:listCities", locale], {
+  return unstable_cache(() => _listCities(locale), ["geography:listCities", "image-alt-v1", locale], {
     tags: [GEO_TAGS.list],
   })();
 }
@@ -138,7 +139,7 @@ async function _getCityBySlug(locale: Locale, slugValue: string): Promise<CityRe
 export function getCityBySlug(locale: Locale, slugValue: string): Promise<CityRef | null> {
   return unstable_cache(
     () => _getCityBySlug(locale, slugValue),
-    ["geography:getCityBySlug", locale, slugValue],
+    ["geography:getCityBySlug", "image-alt-v1", locale, slugValue],
     { tags: [GEO_TAGS.list] },
   )();
 }
