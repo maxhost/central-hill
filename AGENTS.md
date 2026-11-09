@@ -1,5 +1,22 @@
 # Central Hill agent instructions
 
+## Neon migrations 0024–0029 —2026-11-08
+
+User explicitly requests checking Neon through MCP and applying pending local
+migrations. This authorizes the remote schema update for this task, superseding
+earlier local-only migration limits. Verified project central-hill /
+weathered-cake-89640915, main / br-little-heart-aihh9v63, neondb / neondb_owner.
+Preflight: ledger0000..0023 exactly matches24 local hashes/timestamps; all target
+objects absent. Applied unchanged local SQL0024..0029 plus six Drizzle ledger rows
+in ONE guarded MCP transaction. Postflight30/30 hashes+timestamps exact, nine new
+tables empty,41constraints validated, owners_phone nullabletext/default and stored
+'+351 910 438 062' verified. All33 business table counts/fingerprints identical,
+excluding only new owners_phone from Settings comparison; auth tables excluded.
+Read [execution](docs/specs/neon-migrations-0024-0029.md); full evidence under
+/private/tmp/central-hill-neon-migrations-0024-0029/. No content/fixture transfer,
+code/SQL changes, push/deploy, local DB/env/runtime/cache changes. Old task-specific
+claims of no remote migration describe their original executions only.
+
 ## Image ALT in owning forms —2026-11-08
 
 User requests ALT beside every active image uploader, editable in each language tab;
