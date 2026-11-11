@@ -2,8 +2,46 @@
 
 2026-11-11. Depende del [spec](translations-retirement-spec.md). El inventario y
 las decisiones de producto están en la [auditoría](translations-retirement-plan.md).
-Estado: adversarial documental aprobado, AD01–AD04 cerrados. Preparación O0–O3
-en inicio; no hay lotes de producto ni E2E aprobados todavía.
+Estado: adversarial documental aprobado, AD01–AD04 cerrados. Lote1 integrado y
+QA Q1 aprobado en `a5dd998`; comienza lote2. La batería final52 sigue pendiente.
+
+## Registro de ejecución
+
+- O0 documental `0c14786` en main; contratos base `250b244` en integración.
+  Worktrees A/B/QA creados según los paths propuestos. Main3071 PID72223 sigue
+  activo, sin fuente de producto nueva ni cambios a su `.env`/`.next`.
+- Nuevos targets `translationsretirementqa` y `translationsretirementunitqa`,
+  hostname `{dbname}.local`, rol homónimo y proxy4558. Cada ledger tiene30hashes/
+  timestamps exactos y47tablas. Contienen los scaffolds originales de migración,
+  no están vacíos después del replay. No hay transferencia de datos de otra DB.
+- Primera inicialización de esquema QA abortó por SQL con varios comandos en una
+  prepared statement. La transacción revirtió completamente; se comprobó0tablas
+  antes de separar léxicamente statements, sin cambiar SQL/hash, y completar ambas
+  inicializaciones. No se reaplicó SQL sobre datos o esquema parcialmente creado.
+- A1 `d40f9b1`, integrado como `b63c441`: pure16/DB5/typecheck/scopedlint0;
+  fixtures unitarias propias limpias. B1 `71e59ff`:44pruebas/typecheck/lint0.
+- O4 candidato `a5dd998`: rutas autenticadas/export/consumidor Pages adaptados.
+  Root61pure0 (incluye engine Pages),5DB0,typecheck0,lintfocal0. Un primer comando
+  de pure omitió el loader auth requerido y falló por env ausente; se corrigió el
+  comando y los16casos de acciones/Testimonial pasaron. No fue corrección de producto.
+- QA hizo guard de DB y paró antes del seed al encontrar4Page scaffolds. Root
+  verificó IDs/keys/hashes y su origen0012/0016/0017. Seed247statements en una
+  transacción adoptó sólo esas4raíces con CAS, insertó5restantes y36publicaciones
+  Page, Service4, Guide4,2Posts8 y auxiliares propios. FAQbootstrap2/14/28exactos.
+- Admin sintético propio con signup/login normal; nada de tokens extraídos o
+  cookies manuales. Sources/evidence/secret envs bajo el directorio de QA; los
+  secretos no se incorporan a git/reportes. Root guardó42huellas de negocio del
+  entorno del usuario en `protected-user-before.json` para comparación final.
+- QA congeló baseline/media antes del build; manifiesto concreto SHA256
+  `4d3b009e540a31f5cda27d9186e7e815b463a7110f8c1f039ad049c503d9d98c`.
+  Build `a5dd998`0/105rutas/2workers; producción3081 PID97768/session24147,
+  cwd QA runtime verificado. Main3071 PID72223 sigue intacto.
+- QA Q1 aprobado `a5dd998`:29rutas/auth/conservación42hashes0deltas; ServiceES
+  ocho campos+ALT por UI, Save draft/reload/public baseline/Publish/update normal,
+  otras tres publicaciones+drafts exactos y0pageerrors. Harness corrigió un selector
+  `<main>` inexistente en ServiceDetail; reanudó desde draft guardado sin repetir
+  Save ni rutas. Ninguna corrección de producto. Evidencia en results y checkpoints
+  del directorio QA. A2/B2/O5 se abren ahora, batería final52pendiente.
 
 ## Base y archivos preexistentes
 
@@ -89,6 +127,8 @@ IDs inválidos y sesión anónima. Confirmar que abrir enlaces no cambia conteni
 E2E incremental S1 ES: cambiar cuerpo/detalle/CTA/ALT en el servicio propio,
 Save draft → recarga → público sin cambios → Publish → público actualizado.
 Comprobar otros idiomas intactos. Reportar commit y evidencia antes del lote 2.
+Service/Guide no tienen preview privado: se verifica draft recargado en el editor
+y público baseline. Pages/Post sí ejercitan su preview existente.
 
 ## Lote 2 Retirar las superficies y el pipeline sin consumidores
 

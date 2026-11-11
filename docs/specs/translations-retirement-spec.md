@@ -131,7 +131,10 @@ Ciclo de cada unidad:
    EN/ES/PT/FR según el manifiesto. No insertar el contenido que se pretende
    probar mediante SQL, llamadas directas a acciones o endpoints ocultos.
 2. Guardar borrador, salir/recargar y verificar los valores. Comprobar que el
-   público sigue mostrando el baseline; preview privado muestra el borrador.
+   público sigue mostrando el baseline. Donde ya existe (Pages/Post), el preview
+   privado muestra el borrador; Service/Guide no tienen esa superficie y prueban
+   draft recargado en su editor + público baseline hasta Publish. No se construye
+   una función nueva de preview para retirar el traductor.
 3. Publicar mediante el botón del editor. Abrir el público sin cookies de Admin,
    esperar la actualización normal con timeout acotado y comprobar los campos
    en DOM visible/atributos/metadata según corresponda.
