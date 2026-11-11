@@ -24,8 +24,12 @@ host/DB/rol exactos; Admin propio/login normal, sin extraer tokens/cookies.
 42tablas originales usuario conteos/huellas exactos ySettings0; QA comparóJSON.
 Fixtures propias retenidas (incluye Service mínima sóloENdraft), sin limpiar datos
 ajenos. No schema de producto, remoteDB,rolecleanup,push/deploy. Preservar envs,
-.next/worktrees/artifacts,PNGlogo y public/propertylocalesqa. Entrega main/apertura
-final pendientes; candidatoQA3081PID4574/session32378 conserva producciónb30.
+.next/worktrees/artifacts,PNGlogo y public/propertylocalesqa. Main ff0c14786→79703a6, producto src/messages idéntico ab30. Soleactual-main
+dev3071PID49033/parent49027/session91704,cwdworkspace verificado. Apertura readonly
+GuestsEN/PT/login200 y oldroutes anónimos→login,0pageerrors. Evidencia main-open.json/
+main-restart.log en /private/tmp/central-hill-translations-retirement-qa/. QA3081
+PID4574/4568 detenido; bases/build/fixtures/artefactos retenidos. Sin Save ni nueva
+matriz sobre main después de QA. Último commit documental vía gitlog-1.
 
 ## Neon migrations 0024–0029 —2026-11-08
 

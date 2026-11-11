@@ -4,8 +4,8 @@
 las decisiones de producto están en la [auditoría](translations-retirement-plan.md).
 Estado: adversarial documental aprobado, AD01–AD04 cerrados. Q1 aprobado en
 `a5dd998`, Q2 cerrado en `b30a18c` tras B3. Producto congelado en `b30a18c`;
-batería final52/52 y Q6 aprobados por QA independiente. Entrega local pendiente de
-apertura final en main; no hay push/deploy.
+batería final52/52 y Q6 aprobados por QA independiente. Integrado en main local y apertura final
+aprobada; no hay push/deploy.
 
 ## Registro de ejecución
 
@@ -93,6 +93,18 @@ apertura final en main; no hay push/deploy.
   de B3. Build corregido0/105rutas/2workers;68pure+4DB del lote2 y17focales B3,
   typecheck0/lint0(7warnings previos). Suites no ejecutadas permanecen explícitas.
   Informe independiente: [QA](translations-retirement-qa.md).
+- Main fast-forward `0c14786`→`79703a6`, producto src/messages idéntico ab30.
+  Viejo main72217/72223 detenido tras aprobación; nuevo dev3071PID49033/
+  parent49027/session91704,cwd workspace real y `.env.local`/`.next` preservados.
+  Apertura final sólo lectura: GuestsEN/PT/login200 y rutas antiguas anónimas
+  →login,0pageerrors. No nueva autenticación ni Save sobre el entorno del usuario.
+  QA3081PID4568/4574 detenido; sus bases,fixtures,builds y artefactos retenidos.
+  Evidencia `main-open.json` y `main-restart.log` bajo el directorio QA.
+- Fuentes E2E incorporadas por allowlist en `scripts/qa/translations-retirement/`:33
+  MJS/CJS+3docs, sin secretos/resultados masivos. Node22 syntax33/33, scopedlint0/0;
+  limpieza sólo de imports/bindings sin uso, manteniendo las acciones await.
+  Producto sin cambios desdeb30; no se repitieron los52por empaquetado.
+
 
 ## Base y archivos preexistentes
 

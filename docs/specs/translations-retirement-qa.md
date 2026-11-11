@@ -112,13 +112,25 @@ mal introducido se corrigió explícitamente antes de publicar.
 Base `/private/tmp/central-hill-translations-retirement-qa/`:
 `results/final-scoreboard.json`, `results/final-rollup.json`, gates Q1/Q2/Q4a–c/
 Q5a–c, `q3-source-review.md`, manifiestos e históricos de intentos. Manifiesto
-final v7 SHA256 `3159e07b7e254d224f147941a6a6d7725157bcaa5c44694906d3941a88d52cad`.
+final v7 SHA256 `2491cf226e81614dc69cf3d8d4ac7fe6fac49bea160c4f29b53f677c99bf98fd`.
 El rollup final contiene pending0 y referencias de resolución; las limitaciones
 browser anteriores son explícitas, no casos falsamente aprobados.
 
-Fuentes reutilizables sin credenciales se entregan en `scripts-source/` con
+Fuentes reutilizables sin credenciales conservadas en
+[`scripts/qa/translations-retirement/`](../../scripts/qa/translations-retirement/README.md), con
 README parametrizado/allowlist. No se copian envs, login-private, sesiones ni
 resultados masivos al repositorio. Los originales temporales se preservan. Main,
 logo original, symlink público y otros archivos/worktrees/envs/caches no se limpian.
 La integración/apertura final de main corresponde al orquestador después de revisar
 esta entrega; QA no hace push, deploy, migraciones o cambios de código de producto.
+
+## Entrega local del orquestador
+
+Main integrado localmente, fuente de producto idéntica a `b30a18c`. Nuevo dev3071
+PID49033/parent49027/session91704, cwd workspace real verificado. Apertura final
+sólo lectura de Guests EN/PT, login y dos URLs antiguas anónimas:5/5,0pageerrors.
+No Save ni autenticación nueva sobre el entorno original. QA3081 detenido; bases,
+fixtures, builds y artefactos retenidos. Scripts incorporados mediante allowlist
+explícita:33MJS/CJS+3docs, sin secretos; sintaxis33/33 y scoped lint0/0. Sólo
+se quitaron imports/bindings sin uso, preservando acciones await. Sin nuevo código
+de producto ni repetición de los52ciclos por empaquetado. Sin push/deploy.
