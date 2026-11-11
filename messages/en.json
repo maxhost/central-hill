@@ -1959,10 +1959,8 @@
       },
       "aboutSourceInvalid": "The saved About content is invalid. Reload or repair the source before saving.",
       "aboutConflict": "About changed since this editor was opened. Reload to review the latest content before saving.",
-      "aboutSourceNote": "Edit the English source here. Approved translations appear on the public page; manage them in Translations.",
       "reloadSource": "Reload stored content",
       "aboutListBounds": "{count} items · {min}–{max} allowed",
-      "blogSourceNote": "Source text is authored in English. Review Portuguese, Spanish and French in Translations. Blank fields inherit the current text in each visitor language; the placeholder shows the English default.",
       "blogSourceInvalid": "The saved Blog content is invalid. Reload or repair it before saving.",
       "blogInheritedHint": "Use the default text for the visitor language.",
       "contextual": {
@@ -2135,7 +2133,6 @@
         "website": "Website",
         "content": "Content",
         "crm": "Leads & CRM",
-        "translation": "Translations",
         "system": "System"
       },
       "leads": "Leads",
@@ -2153,7 +2150,6 @@
       "posts": "Blog Posts",
       "settings": "Settings",
       "navigation": "Navigation",
-      "translations": "Translations",
       "guides": "Guest Guides",
       "forms": "Forms"
     },
@@ -2407,65 +2403,6 @@
         "neighbourhoodName": "Neighbourhood name {locale}",
         "fallbackHint": "Leave a translation empty to use English."
       }
-    }
-  },
-  "translation": {
-    "title": "Translations",
-    "subtitle": "Review and approve machine-drafted translations across all content.",
-    "views": {
-      "all": "All",
-      "attention": "Needs attention",
-      "done": "Up to date"
-    },
-    "allTypes": "All types",
-    "status": {
-      "missing": "Missing",
-      "stale": "Stale",
-      "needsReview": "Needs review",
-      "approved": "Approved"
-    },
-    "columns": {
-      "entity": "Content",
-      "type": "Type",
-      "fields": "Fields",
-      "progress": "Progress",
-      "updated": "Updated"
-    },
-    "empty": "Nothing to translate yet",
-    "emptyHint": "Translatable content appears here once source text is authored.",
-    "backToInbox": "← Back to inbox",
-    "noFields": "No translatable fields",
-    "noFieldsHint": "This entity has no source text to translate.",
-    "entityTypes": {
-      "building": "Building",
-      "apartment": "Apartment",
-      "blog_post": "Blog post",
-      "service": "Service",
-      "guide_page": "Guide",
-      "testimonial": "Testimonial",
-      "faq_group": "FAQ group",
-      "faq_item": "FAQ item",
-      "page_content": "Page",
-      "city": "City",
-      "neighbourhood": "Neighbourhood",
-      "service_category": "Service category",
-      "blog_category": "Blog category",
-      "author": "Author",
-      "building_faq": "Building FAQ"
-    },
-    "actions": {
-      "approve": "Approve",
-      "reset": "Reset",
-      "edit": "Edit",
-      "add": "Add",
-      "clear": "Clear",
-      "save": "Save",
-      "cancel": "Cancel",
-      "generate": "Generate",
-      "generateAll": "Generate (all)",
-      "approveAll": "Approve all",
-      "editLabel": "Edit {field}",
-      "conflict": "This translation could not be saved. The source may have changed or been removed. Your draft is still here; review the source before retrying."
     }
   },
   "propertyEditor": {

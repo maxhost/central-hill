@@ -30,7 +30,6 @@ export {
   EmptyState,
   StateBadge,
   DataTable,
-  TranslationFieldRow,
 } from "./ui/primitives";
 export type { Column } from "./ui/primitives";
 

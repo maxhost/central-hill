@@ -1,5 +1,10 @@
 # Architecture
 
+2026-11-11 update: ADR0077 retires the S14 global inbox/review/generation workflow.
+Manual locale editing belongs to each content editor. Historical pipeline notes
+below do not authorize generation; `core/i18n`, stored translations and public
+fallbacks remain. See [retirement spec](specs/translations-retirement-spec.md).
+
 > Companion to `CLAUDE.md`. This is the system-level "why" and "how". For the data model see
 > `docs/data-model.md`; for slice ownership see `docs/vertical-slices.md`.
 

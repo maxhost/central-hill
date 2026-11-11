@@ -60,8 +60,9 @@ The auth-gated **admin app shell** + the **plug-in framework** that every other
 slice's `admin/` composes against (ADR 0009 auth, ADR 0017 routing). It is a
 *skeleton*, not CRUD for an entity: it owns the login, the gated chrome
 (sidebar + topbar), the dashboard, the screen **registry**, and the shared admin
-**primitives**. Feature slices (leads inbox, page-content editor, translation
-review, …) plug their own screens in — those land as separate slice work.
+**primitives**. Feature slices (leads inbox, page-content editor, …) plug their
+own screens in — those land as separate slice work. ADR0077 retires the global
+translation screen and its group; locale editing remains in the owning forms.
 
 ## Owns
 
@@ -113,7 +114,7 @@ row is treated as not-staff.
   child whose parent is unavailable stays accessible at the top level.
 - **Shell** — `AdminShell`, `Dashboard`, `LoginForm`.
 - **Primitives** — `AdminPageHeader`, `AdminCard`, `EmptyState`, `StateBadge`,
-  `DataTable` (+ `Column`), `TranslationFieldRow` (translation-review scaffold).
+  `DataTable` (+ `Column`).
   Pure/presentational so slice **server** components compose them directly.
 - **Form primitives** (`ui/form.tsx`) — `Field`, `TextInput`, `TextArea`,
   `Select`, `Checkbox`, `AdminButton`, `FieldGrid`, `FormActions`, `controlClass`.

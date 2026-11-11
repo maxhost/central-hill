@@ -1,5 +1,10 @@
 # Vertical Slice Catalog & Dependency Graph
 
+2026-11-11: S14 is retired as an authoring workflow under ADR0077. Its remaining
+contract only resolves authenticated legacy links and denies retired generation;
+content slices still use the locale kernel and retained data. Historical S14
+descriptions below describe the original architecture, not an active UI.
+
 > Each slice owns `src/slices/<slice>/` end-to-end and the DB tables listed for it in
 > `docs/data-model.md`. The orchestrator schedules by the dependency graph below; disjoint slices
 > run in parallel. "Consumes" = contracts this slice imports; "Produces" = the contract it exports.

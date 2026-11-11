@@ -1,24 +1,11 @@
 /**
- * Public contract of slice `translation` (S14 — the LLM-draft → review → approve
- * pipeline, ADR 0007/0021). The ONLY surface other slices/app may import.
+ * Compatibility surface of retired S14 (ADR0077). There is no global inbox,
+ * review UI or generation workflow. Locale editing belongs to the owning form;
+ * the core i18n table/readers/writers remain in use and are preserved.
  *
- * The slice owns **no tables** (it operates on the kernel `translation` table
- * generically by `entity_type`, through the `core/i18n` seam) and **no migration**.
- *
- * What others use:
- *  - **`translationAdminScreens`** — spread into `composeAdminNav` by the admin
- *    panel layout to add the review inbox to the sidebar (`translation` group).
- *    Pure data, safe to import anywhere.
- *  - **`generateDrafts(type, id, opts?)`** — (re)generate target-locale drafts for
- *    an entity through the provider seam. Used by the review screen's "Generate"
- *    action; available for content slices to optionally call from `publish()` on
- *    source save (a future, additive wiring — see README).
- *
- * The inbox/review screens mount under `app/(admin)/admin/(panel)/translations/…`.
+ * The resolver is called only after the app route's staff gate. Generation keeps
+ * its historical signature solely to reject stale callers before any work.
  */
-
-export { translationAdminScreens } from "./admin/screens";
-
+export { getLegacyTranslationRedirect } from "./server/legacy-redirect";
 export { generateDrafts } from "./server/generate";
 export type { GenerateOptions, GenerateSummary } from "./server/generate";
-export { getLegacyTranslationRedirect } from "./server/legacy-redirect";

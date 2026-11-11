@@ -1,5 +1,13 @@
 # Slice `pages` (S9)
 
+## Global translation workflow retired —2026-11-11 (ADR0077)
+
+Pages owns its manual EN/ES/PT/FR snapshots and Save draft/Publish lifecycle.
+The global Translations menu/review/generation workflow is retired; old links
+redirect to the owning editors. The fallback legacy PageEditor no longer offers
+Translation links or source-only notes. Historical translations and the kernel
+remain available to bootstrap/readers. No Page data is migrated or republished.
+
 ## FAQ selection per page language —2026-11-07 (ADR0068)
 
 Home, Owners, Real Estate, Guest and About choose their FAQ group separately in
@@ -1381,8 +1389,8 @@ Plugs into the backoffice shell. Contributes one `content`-group screen (top of 
   real-estate-admin-editor S1, `real_estate` — see "Real Estate content model"; since spec
   guests-admin-editor S1, `guest` — see "Guests content model"; since spec about-admin-editor S1,
   `about` — see "About content model"). An ordered list of cards with **stable ids** — `seo`, `hero`, `stats`,
-  `guests_pitch`, `portfolio`, `services_carousel`, `faq`, `dual_cta` (never rename one: they will
-  be the unit of the translation arc's per-section "Translate with AI") — each listing the `data`
+  `guests_pitch`, `portfolio`, `services_carousel`, `faq`, `dual_cta` (never rename these
+  section identities) — each listing the `data`
   root keys it renders, plus read-only rows/notes (the Avantio search bar → Settings; notes with
   links to Buildings / Services / FAQ / Settings; "the secondary button always links to /owners").
   The `seo` card also hosts the OG image. `faq` groups `faq_group_key` + `faq`. `resolveEditorLayout`

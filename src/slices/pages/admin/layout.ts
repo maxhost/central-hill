@@ -6,8 +6,7 @@
  * the `data` root keys it contains and an optional read-only note (+ admin link) — in the
  * order the sections appear on the public page.
  *
- * Card `id`s are **stable**: they will be the unit of the per-section "Translate with AI"
- * button of the translation arc. Never rename one.
+ * Card `id`s are stable identities for editor sections. Never rename one.
  *
  * Safety net: any root key of `data` that no card claims is rendered at the end in an
  * "Other" card, so a field added to a schema can never disappear from the editor. A card

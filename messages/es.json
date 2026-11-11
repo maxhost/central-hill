@@ -1959,10 +1959,8 @@
       },
       "aboutSourceInvalid": "El contenido guardado de About no es válido. Recarga o repara la fuente antes de guardar.",
       "aboutConflict": "About cambió desde que abriste el editor. Recarga para revisar el contenido actual antes de guardar.",
-      "aboutSourceNote": "Edita aquí la fuente en inglés. La página pública muestra traducciones aprobadas; se gestionan en Traducciones.",
       "reloadSource": "Recargar contenido guardado",
       "aboutListBounds": "{count} elementos · permitidos: {min}–{max}",
-      "blogSourceNote": "El contenido fuente se escribe en inglés. Revisa portugués, español y francés en Traducciones. Los campos vacíos usan el texto actual del idioma del visitante; el placeholder muestra el valor inglés.",
       "blogSourceInvalid": "El contenido guardado de Blog no es válido. Recarga o repáralo antes de guardar.",
       "blogInheritedHint": "Usar el texto predeterminado del idioma del visitante.",
       "contextual": {
@@ -2135,7 +2133,6 @@
         "website": "Sitio web",
         "content": "Contenido",
         "crm": "Leads y CRM",
-        "translation": "Traducciones",
         "system": "Sistema"
       },
       "leads": "Leads",
@@ -2153,7 +2150,6 @@
       "posts": "Entradas del blog",
       "settings": "Ajustes",
       "navigation": "Navegación",
-      "translations": "Traducciones",
       "guides": "Guías para huéspedes",
       "forms": "Formularios"
     },
@@ -2407,65 +2403,6 @@
         "neighbourhoodName": "Nombre del barrio {locale}",
         "fallbackHint": "Deja una traducción vacía para usar inglés."
       }
-    }
-  },
-  "translation": {
-    "title": "Traducciones",
-    "subtitle": "Revisa y aprueba las traducciones generadas automáticamente en todos los contenidos.",
-    "views": {
-      "all": "Todas",
-      "attention": "Requiere atención",
-      "done": "Al día"
-    },
-    "allTypes": "Todos los tipos",
-    "status": {
-      "missing": "Faltan",
-      "stale": "Obsoleta",
-      "needsReview": "Por revisar",
-      "approved": "Aprobada"
-    },
-    "columns": {
-      "entity": "Contenido",
-      "type": "Tipo",
-      "fields": "Campos",
-      "progress": "Progreso",
-      "updated": "Actualizado"
-    },
-    "empty": "Aún no hay nada que traducir",
-    "emptyHint": "El contenido traducible aparece aquí cuando se redacta el texto de origen.",
-    "backToInbox": "← Volver a la bandeja",
-    "noFields": "Sin campos traducibles",
-    "noFieldsHint": "Esta entidad no tiene texto de origen para traducir.",
-    "entityTypes": {
-      "building": "Edificio",
-      "apartment": "Apartamento",
-      "blog_post": "Artículo",
-      "service": "Servicio",
-      "guide_page": "Guía",
-      "testimonial": "Testimonio",
-      "faq_group": "Grupo de FAQ",
-      "faq_item": "FAQ",
-      "page_content": "Página",
-      "city": "Ciudad",
-      "neighbourhood": "Barrio",
-      "service_category": "Categoría de servicio",
-      "blog_category": "Categoría del blog",
-      "author": "Autor",
-      "building_faq": "FAQ del edificio"
-    },
-    "actions": {
-      "approve": "Aprobar",
-      "reset": "Restablecer",
-      "edit": "Editar",
-      "add": "Añadir",
-      "clear": "Borrar",
-      "save": "Guardar",
-      "cancel": "Cancelar",
-      "generate": "Generar",
-      "generateAll": "Generar (todo)",
-      "approveAll": "Aprobar todo",
-      "editLabel": "Editar {field}",
-      "conflict": "No se pudo guardar esta traducción. La fuente puede haber cambiado o haberse eliminado. Tu borrador sigue aquí; revisa la fuente antes de reintentar."
     }
   },
   "propertyEditor": {

@@ -17,7 +17,7 @@ export const CORE_ADMIN_SCREENS: AdminScreen[] = [
 ];
 
 /** Render order of the sidebar groups. */
-const GROUP_ORDER: AdminNavGroupId[] = ["overview", "website", "content", "crm", "translation", "system"];
+const GROUP_ORDER: AdminNavGroupId[] = ["overview", "website", "content", "crm", "system"];
 
 /**
  * Merge the core screens with any slice-contributed `extra` screens, filter by

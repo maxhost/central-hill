@@ -3,7 +3,7 @@ import { cn } from "@core/ui";
 
 /**
  * Presentational admin primitives shared by every slice's `admin/` screens — the
- * list/CRUD/translation-review building blocks (S12). Pure (no hooks, no
+ * list/CRUD building blocks (S12). Pure (no hooks, no
  * `"use client"`) so slice **server** components can compose them directly;
  * interactive bits (forms, row actions) stay in each slice's own client islands.
  * Denser + more neutral than the public design system, but on the same tokens.
@@ -131,39 +131,6 @@ export function DataTable<T>({
           ))}
         </tbody>
       </table>
-    </div>
-  );
-}
-
-/**
- * Source-vs-target row scaffold for translation review (S14 builds the workflow
- * on top of this). Shows the field name, the source value, the target value (or
- * an empty hint), a state badge, and any per-row action.
- */
-export function TranslationFieldRow({
-  field,
-  source,
-  target,
-  badge,
-  action,
-}: {
-  field: string;
-  source: string;
-  target?: string;
-  badge?: ReactNode;
-  action?: ReactNode;
-}) {
-  return (
-    <div className="grid gap-3 border-b border-line py-4 last:border-0 md:grid-cols-[10rem_1fr_1fr_auto] md:items-start">
-      <div className="text-xs font-semibold uppercase tracking-wide text-ink-soft">{field}</div>
-      <p className="text-sm text-ink-soft">{source}</p>
-      <p className={cn("text-sm", target ? "text-ink" : "italic text-ink-soft/60")}>
-        {target ?? "—"}
-      </p>
-      <div className="flex items-center gap-2">
-        {badge}
-        {action}
-      </div>
     </div>
   );
 }
