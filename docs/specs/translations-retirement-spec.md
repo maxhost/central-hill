@@ -183,8 +183,8 @@ libres en el preflight y registrar PID/cwd; preservar el localhost del usuario.
 Preparar imágenes sintéticas locales y medios propios, sin uploads a R2 remoto
 ni cambios de assets antiguos. Los bytes deben estar disponibles antes del build.
 
-El manifiesto de fixtures reserva IDs/keys propios, todos los nueve slots Page
-ausentes en la nueva base, referencias publicadas suficientes, cuatro grupos FAQ,
+El manifiesto de fixtures reserva IDs/keys propios, los nueve slots Page de la
+nueva base, referencias publicadas suficientes, cuatro grupos FAQ,
 post/servicio/guía y sus auxiliares. Los baselines públicos se crean antes del
 build; las ediciones verificadas se realizan después por navegador. Conservar
 evidencia/fixtures en el entorno aislado para reproducibilidad, salvo limpieza
@@ -193,6 +193,16 @@ La matriz principal parte de publicaciones propias EN/ES/PT/FR en modo custom,
 sin drafts, con valores diferenciados. El manifiesto registra por separado
 published, draft y working; los casos de herencia usan fixtures/expectativas
 dedicadas y no confunden la proyección de EN en working con una publicación.
+
+Preflight 2026-11-11: las migraciones existentes insertan scaffolds de Pages
+`blog`, `buildings`, `guest`, `guides` y dos grupos FAQ/14items/28traducciones.
+No son datos traídos del usuario: se generaron al aplicar las migraciones a estas
+bases recién creadas. Se autoriza adoptar sólo esas cuatro Page roots de la DB
+E2E por UPDATE con ID/key/hash exactos registrados en `schema-scaffold-before.json`,
+sin DELETE/restore. Los otros cinco slots y todos los snapshots deben estar
+ausentes antes del seed. Las filas FAQ de migración permanecen intactas; los
+grupos FAQ del E2E son identidades adicionales propias. Esta excepción no permite
+adoptar o editar Pages de `propertylocalesqa` ni datos de cualquier otro entorno.
 
 ## Equipo y gates
 

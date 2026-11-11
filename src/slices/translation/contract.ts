@@ -21,3 +21,4 @@ export { translationAdminScreens } from "./admin/screens";
 
 export { generateDrafts } from "./server/generate";
 export type { GenerateOptions, GenerateSummary } from "./server/generate";
+export { getLegacyTranslationRedirect } from "./server/legacy-redirect";

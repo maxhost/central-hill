@@ -124,6 +124,6 @@ test("Home legacy translation generation is blocked before any stored translatio
   const before = await loadTranslationRows({ type: "page_content", id: legacy.id });
   assert.equal(await getPageEditorialRedirect("page_content", legacy.id), "/admin/pages/home");
   assert.equal(await getPageEditorialRedirect("building", legacy.id), null);
-  await assert.rejects(generateDrafts("page_content", legacy.id), /page editor/);
+  await assert.rejects(generateDrafts("page_content", legacy.id), /workflow is retired/);
   assert.deepEqual(await loadTranslationRows({ type: "page_content", id: legacy.id }), before);
 });

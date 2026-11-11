@@ -1,11 +1,9 @@
 import { requireStaff } from "@core/auth";
-import { TranslationReview } from "@slices/translation/admin/ui/review";
+import { getLegacyTranslationRedirect } from "@slices/translation/contract";
+import { redirect } from "next/navigation";
 
 /**
- * Per-entity translation review route (`/admin/translations/[type]/[id]`). Gated by
- * `(panel)`; the selected target locale comes from `?locale=` (validated by the
- * screen, defaulting to the first target). The screen `notFound()`s when the entity
- * has no [T] rows.
+ * Authenticated compatibility links to the owning editors (ADR0077).
  */
 export default async function TranslationReviewPage({
   params,
@@ -19,5 +17,5 @@ export default async function TranslationReviewPage({
   const sp = await searchParams;
   const locale = typeof sp.locale === "string" ? sp.locale : undefined;
 
-  return <TranslationReview type={type} id={id} locale={locale} />;
+  redirect(await getLegacyTranslationRedirect(type, id, locale));
 }

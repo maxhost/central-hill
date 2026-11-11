@@ -43,6 +43,11 @@ manifiesto/baseline para el candidato final; no lo descubre por primera vez.
 La matriz principal comienza con cuatro publicaciones custom diferenciadas y
 drafts nulos. Manifestar published/draft/working por separado. Las expectativas
 inherit/custom se ejercitan en casos propios, sin contaminar ese baseline.
+El preflight detectó cuatro Page scaffolds insertados por las propias migraciones
+en la DB nueva. Adoptarlos sólo por CAS UPDATE ID/key/hash del inventario root;
+no borrarlos/restaurarlos. Insertar los cinco slots restantes ausentes. Preservar
+los dos grupos FAQ/14items/28traducciones del bootstrap; usar grupos propios extra.
+Ver excepción concreta en el spec, limitada exclusivamente a esta nueva base.
 
 **O2 — Contratos.** Estabilizar los helpers de resolución de padres que falten en
 Geography y FAQ, con exports por `contract.ts`, y su política de ID inválido/padre
