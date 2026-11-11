@@ -17,8 +17,8 @@ test("all individual Settings translation actions reject manually owned and reti
   }
 });
 test("Settings bulk approval, generation and review retire without modifying legacy translations", async () => {
-  assert.equal(new URL(process.env.DATABASE_URL ?? "http://invalid.test").hostname, "propertylocalesqa.local");
-  assert.deepEqual((await db.execute(sql`select current_database()as db,current_user as role`)).rows[0], { db: "propertylocalesqa", role: "propertylocalesqa" });
+  assert.equal(new URL(process.env.DATABASE_URL ?? "http://invalid.test").hostname, "translationsretirementunitqa.local");
+  assert.deepEqual((await db.execute(sql`select current_database()as db,current_user as role`)).rows[0], { db: "translationsretirementunitqa", role: "translationsretirementunitqa" });
   const id = randomUUID(), type = "company_settings";
   const rows = () => loadTranslationRows({ type, id });
   assert.equal((await rows()).length, 0);
@@ -29,7 +29,7 @@ test("Settings bulk approval, generation and review retire without modifying leg
     const before = await rows();
     assert.deepEqual(await approveEntity(type, id), { ok: false, error: "validation" });
     assert.deepEqual(await generateEntityDrafts(type, id, true), { ok: false, error: "validation" });
-    await assert.rejects(generateDrafts(type, id, { locales: ["es"], overwrite: true }), /edited in Settings/);
+    await assert.rejects(generateDrafts(type, id, { locales: ["es"], overwrite: true }), /workflow is retired/);
     assert.equal(await getEntityTranslations(type, id), null);
     const inbox = await getTranslationInbox({ entityType: type });
     assert.deepEqual(inbox.items, []);

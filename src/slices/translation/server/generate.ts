@@ -1,123 +1,27 @@
-import { isFixedNavigationEntity, isSettingsEditorialEntity, isSettingsManualLocaleField } from "@slices/settings/contract";
-import { isTestimonialEditorialEntity } from "@slices/testimonials/contract";
-import { isGuideEditorialEntity } from "@slices/guides/contract";
-import { isPropertyEditorialEntity } from "@slices/buildings/contract";
 import "server-only";
-import { isBlogEditorialEntity } from "@slices/blog/contract";
-import { getPageEditorialRedirect } from "@slices/pages/contract";
 import type { Locale } from "@core/db/columns";
-import {
-  getTranslateProvider,
-  hashSource,
-  loadTranslationRows,
-  setTargetTranslation,
-  type TranslateUnit,
-} from "@core/i18n";
-import { SOURCE_LOCALE, TARGET_LOCALES } from "../admin/derive";
 
-/**
- * Draft-generation pipeline (S14 — ADR 0007/0021). For one entity, translate its
- * source-locale ([T]) fields into each target locale through the
- * `core/i18n` provider seam and persist them as `needs_review` drafts via the
- * kernel target-write seam. By default only **missing or stale** target cells are
- * (re)drafted; `overwrite` re-drafts every field. Never runs on the public path —
- * it is invoked from a `requireStaff`-gated admin action.
- */
-
+/** Historical call shape retained only to reject old S14 callers (ADR0077). */
 export interface GenerateOptions {
-  /** Restrict to these target locales (default: all targets). */
   locales?: Locale[];
-  /** Re-draft even fresh, already-translated cells. */
   overwrite?: boolean;
-  /** Staff id stamped on the written rows. */
   updatedBy?: string;
 }
 
 export interface GenerateSummary {
   provider: string;
-  /** Drafts written, per target locale. */
   written: Partial<Record<Locale, number>>;
   total: number;
 }
 
+/** No provider or content is loaded, even for unknown or malformed entities. */
 export async function generateDrafts(
   type: string,
   id: string,
   opts: GenerateOptions = {},
 ): Promise<GenerateSummary> {
-  if (isSettingsEditorialEntity(type)) throw new Error("Company settings are edited in Settings.");
-  if (isFixedNavigationEntity(type)) throw new Error("Navigation is fixed in code and cannot be translated here.");
-  if (
-    isGuideEditorialEntity(type) ||
-    isPropertyEditorialEntity(type) ||
-    isBlogEditorialEntity(type) ||
-    isTestimonialEditorialEntity(type) ||
-    (await getPageEditorialRedirect(type, id))
-  )
-    throw new Error(
-      "Use the page editor to save and publish this page by language.",
-    );
-  const provider = getTranslateProvider();
-  const targets = (opts.locales ?? TARGET_LOCALES).filter(
-    (l) => l !== SOURCE_LOCALE,
+  void [type, id, opts];
+  throw new Error(
+    "The global translation workflow is retired. Use the owning editor.",
   );
-  const summary: GenerateSummary = {
-    provider: provider.name,
-    written: {},
-    total: 0,
-  };
-
-  const rows = await loadTranslationRows({ type, id });
-  const source = new Map<string, string>();
-  for (const r of rows)
-    if (r.locale === SOURCE_LOCALE && r.value.trim() && !isSettingsManualLocaleField(type, r.field))
-      source.set(r.field, r.value);
-  if (source.size === 0) return summary;
-
-  for (const locale of targets) {
-    // Existing target rows for this locale → decide which fields need a draft.
-    const existing = new Map(
-      rows.filter((r) => r.locale === locale).map((r) => [r.field, r]),
-    );
-    const units: TranslateUnit[] = [];
-    for (const [field, value] of source) {
-      const current = existing.get(field);
-      const stale = !current || current.source_hash !== hashSource(value);
-      if (opts.overwrite || stale) units.push({ field, value });
-    }
-    if (units.length === 0) continue;
-
-    const results = await provider.translate({
-      entityType: type,
-      sourceLocale: SOURCE_LOCALE,
-      targetLocale: locale,
-      units,
-    });
-
-    const sourceByField = new Map(units.map((u) => [u.field, u.value]));
-    let written = 0;
-    for (const r of results) {
-      const sourceValue = sourceByField.get(r.field);
-      if (sourceValue === undefined) continue; // provider returned an unknown field
-      const saved = await setTargetTranslation(
-        type,
-        id,
-        r.field,
-        locale,
-        r.value,
-        {
-          sourceValue,
-          state: "needs_review",
-          updatedBy: opts.updatedBy,
-        },
-      );
-      if (saved) written += 1;
-    }
-    if (written > 0) {
-      summary.written[locale] = written;
-      summary.total += written;
-    }
-  }
-
-  return summary;
 }

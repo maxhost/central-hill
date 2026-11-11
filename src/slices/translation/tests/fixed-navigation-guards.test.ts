@@ -15,8 +15,8 @@ let verified = false;
 const navRows = async () => (await loadTranslationRows({ type: "nav_item", id }))
   .sort((a, b) => a.field.localeCompare(b.field) || a.locale.localeCompare(b.locale));
 before(async () => {
-  assert.equal(new URL(process.env.DATABASE_URL ?? "http://invalid.test").hostname, "propertylocalesqa.local");
-  assert.deepEqual((await db.execute(sql`select current_database() as db,current_user as role`)).rows[0], { db: "propertylocalesqa", role: "propertylocalesqa" });
+  assert.equal(new URL(process.env.DATABASE_URL ?? "http://invalid.test").hostname, "translationsretirementunitqa.local");
+  assert.deepEqual((await db.execute(sql`select current_database() as db,current_user as role`)).rows[0], { db: "translationsretirementunitqa", role: "translationsretirementunitqa" });
   assert.equal((await navRows()).length, 0);
   assert.equal((await loadTranslationRows({ type: "faq_item", id: faqId })).length, 0);
   verified = true;
@@ -37,7 +37,7 @@ test("all generic Navigation mutations and direct generation reject without chan
     await approveField(...args), await resetField(...args), await saveField(...args, "Overwrite"),
     await clearField(...args), await approveEntity("nav_item", id), await generateEntityDrafts("nav_item", id, true),
   ]) assert.deepEqual(result, { ok: false, error: "validation" });
-  await assert.rejects(generateDrafts("nav_item", id, { overwrite: true }), /Navigation is fixed/);
+  await assert.rejects(generateDrafts("nav_item", id, { overwrite: true }), /workflow is retired/);
   assert.deepEqual(await navRows(), beforeRows);
 });
 test("generic Navigation queries hide historical rows without modifying them", async () => {
@@ -48,15 +48,17 @@ test("generic Navigation queries hide historical rows without modifying them", a
   assert.deepEqual(inbox.entityTypes, []);
   assert.deepEqual(await navRows(), beforeRows);
 });
-test("unretired FAQ copy can still be reviewed, approved and generated", async () => {
-  const beforeRows = await navRows();
-  await setSourceContent("faq_item", faqId, { "question": "Own QA question" });
+test("retired generic FAQ actions preserve pending copy and unrelated Navigation rows", async () => {
+  const beforeNavigation = await navRows();
+  await setSourceContent("faq_item", faqId, { question: "Own QA question" });
   await setTargetTranslation("faq_item", faqId, "question", "es", "Pregunta QA", { sourceValue: "Own QA question", state: "needs_review" });
-  assert.deepEqual((await getEntityTranslations("faq_item", faqId))?.fields.map((field) => field.field), ["question"]);
-  assert.deepEqual(await approveField("faq_item", faqId, "question", "es"), { ok: true });
-  assert.equal((await loadTranslationRows({ type: "faq_item", id: faqId, locale: "es" }))[0]?.state, "approved");
-  const generated = await generateDrafts("faq_item", faqId, { locales: ["es"], overwrite: true });
-  assert.equal(generated.provider, "identity");
-  assert.equal(generated.total, 1);
-  assert.deepEqual(await navRows(), beforeRows);
+  const beforeFaq = await loadTranslationRows({ type: "faq_item", id: faqId });
+  const args = ["faq_item", faqId, "question", "es"] as const;
+  for (const result of [
+    await approveField(...args), await resetField(...args), await saveField(...args, "Rejected overwrite"),
+    await clearField(...args), await approveEntity("faq_item", faqId), await generateEntityDrafts("faq_item", faqId, true),
+  ]) assert.deepEqual(result, { ok: false, error: "validation" });
+  await assert.rejects(generateDrafts("faq_item", faqId, { locales: ["es"], overwrite: true }), /workflow is retired/);
+  assert.deepEqual(await loadTranslationRows({ type: "faq_item", id: faqId }), beforeFaq);
+  assert.deepEqual(await navRows(), beforeNavigation);
 });
