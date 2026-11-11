@@ -1,3 +1,17 @@
+## Retirada de Translations —2026-11-11
+
+Ver [auditoría y plan](translations-retirement-plan.md). ALT ya está cubierto y
+el usuario confirma FAQ con grupos independientes por idioma, elegidos en cada
+Page. La ficha FAQ edita el texto de un grupo; no tiene cuatro versiones internas.
+city.intro no tiene renderizador público actual. No falta otro editor para el
+modelo confirmado. Queda retirar menú/bandeja, redirigir enlaces y cerrar todas
+las acciones/generación genéricas, incluyendo Forms, preservando kernel, tablas
+y contenido histórico. Esta revisión sólo documenta el plan, sin implementarlo.
+El [spec de retirada](translations-retirement-spec.md) y el
+[plan de ejecución](translations-retirement-execution-plan.md) añaden los gates
+adversarial/QA y el E2E completo solicitado por el usuario, con dos implementadores
+aislados y QA independiente. ADR0077 recoge la decisión; implementación pendiente.
+
 ## ALT junto a imágenes —2026-11-08
 
 Entregado en main local (base02c6f21, producto aprobado f434afe), ver

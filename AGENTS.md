@@ -1,5 +1,23 @@
 # Central Hill agent instructions
 
+## Retirada de Translations —2026-11-11
+
+Usuario pide spec→plan→adversarial→implementación con dos implementadores,
+QA independiente y raíz orquestador; QA incremental y E2E final de nueve Pages,
+Blog post/Service/Guide EN/ES/PT/FR, más sidebar Blog. FAQ confirma grupos
+independientes por idioma. Read [spec](docs/specs/translations-retirement-spec.md),
+[plan por lotes](docs/specs/translations-retirement-execution-plan.md),
+[adversarial](docs/specs/translations-retirement-adversarial.md), ADR0077.
+Plan aprobado documentalmente tras cerrar3P2+1P3; producto/E2E no aprobados aún.
+Preparación entorno/contratos empieza, fuentes basef947c4f. Preservar main3071
+PID72223, .next, envs, worktrees/artifacts, PNGlogo y public/propertylocalesqa.
+Nuevas bases aisladas translationsretirementqa y translationsretirementunitqa,
+guardas exactas host/DB/rol; ninguna escritura en propertylocalesqa/Neonremoto.
+Login normal con Admin sintético propio; no extraer tokens de sesiones existentes
+ni fabricar cookies. Preservar tablas/kernel/traducciones/slugs/snapshots/fallbacks;
+no schema de producto, rolecleanup, push/deploy. Todo caso E2E requiere controles
+reales Save/reload/Publish y DOM público sin sesión, sin flush/restart para aprobar.
+
 ## Neon migrations 0024–0029 —2026-11-08
 
 User explicitly requests checking Neon through MCP and applying pending local

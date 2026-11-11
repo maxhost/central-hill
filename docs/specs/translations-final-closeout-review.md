@@ -1,5 +1,13 @@
 # Review — final Translations retirement readiness
 
+Update 2026-11-11: current source/local-data audit and concrete removal plan in
+[Translations retirement plan](translations-retirement-plan.md). Six legacy types
+remain in the local inbox despite dedicated editors. FAQ uses independent groups
+per page language, explicitly reconfirmed by the user; it does not expose four
+translations inside one group. City intro remains unused publicly, ALT is covered
+by ADR0076, and Forms must also be included in complete generic-path shutdown.
+No new editor is required for the confirmed model. This is planning, not removal.
+
 Update2026-11-08: ALT policy implemented and independently approved in f434afe;
 see [execution](image-alt-locales.md), [QA](image-alt-locales-qa.md) and ADR0076.
 Descriptions live beside the owning image pickers, per content/language, with
