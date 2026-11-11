@@ -37,6 +37,7 @@ export interface FaqGroupOption {
 }
 
 export { getFaqGroup, listFaqGroups } from "./server/queries";
+export { getFaqLegacyEditorRedirect } from "./server/legacy-editor-redirect";
 
 /**
  * Backoffice contribution (S12). `faqAdminScreens` is spread into `composeAdminNav`
