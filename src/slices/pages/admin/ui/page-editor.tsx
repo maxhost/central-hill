@@ -81,7 +81,6 @@ export function PageEditor({
   options,
   sourceInvalid = false,
   revision,
-  pageId,
   inheritedValues,
 }: {
   pageKey: string;
@@ -231,15 +230,6 @@ export function PageEditor({
         }
       />
 
-      {pageKey === "about" ? <p className="text-sm text-ink-soft">
-        {t("admin.aboutSourceNote")} {" "}
-        <Link href="/admin/translations" className="font-medium text-ink underline underline-offset-2">{tb("nav.translations")}</Link>
-      </p> : null}
-      {pageKey === "blog" ? <p className="text-sm text-ink-soft">
-        {t("admin.blogSourceNote")}{" "}
-        <Link href={pageId ? `/admin/translations/page_content/${pageId}` : "/admin/translations"}
-          className="font-medium text-ink underline underline-offset-2">{tb("nav.translations")}</Link>
-      </p> : null}
       {conflict || invalidSource ? <AdminButton variant="ghost" onClick={() => window.location.reload()}>
         {t("admin.reloadSource")}
       </AdminButton> : null}
