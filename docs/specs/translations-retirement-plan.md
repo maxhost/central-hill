@@ -1,5 +1,9 @@
 # Plan para retirar Translations
 
+Cierre: producto `b30a18c` aprobado por QA independiente:52/52ciclos y Q6.
+Ver [informe](translations-retirement-qa.md). Este inventario conserva el estado
+previo a la retirada; sus consultas/bandeja se describen en pasado.
+
 Ampliación del pedido 2026-11-11: el [spec de producto](translations-retirement-spec.md)
 y el [plan por lotes](translations-retirement-execution-plan.md) concretan equipo
 A/B + QA/orquestador, revisión adversarial previa y E2E incrementales/finales de

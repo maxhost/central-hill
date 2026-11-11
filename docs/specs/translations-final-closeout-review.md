@@ -1,6 +1,11 @@
 # Review — final Translations retirement readiness
 
-Update 2026-11-11: current source/local-data audit and concrete removal plan in
+Delivery 2026-11-11: product `b30a18c` closes the generic workflow and preserves
+historical data. Independent [QA](translations-retirement-qa.md) approved52/52
+browser cycles and final compatibility/conservation checks. The audits below
+describe their original source state.
+
+Audit update 2026-11-11: current source/local-data audit and concrete removal plan in
 [Translations retirement plan](translations-retirement-plan.md). Six legacy types
 remain in the local inbox despite dedicated editors. FAQ uses independent groups
 per page language, explicitly reconfirmed by the user; it does not expose four

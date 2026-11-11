@@ -1,7 +1,7 @@
 # ADR0077 — Retire global translation authoring and retain localized content
 
-2026-11-11. Product direction confirmed; implementation pending the execution
-plan's adversarial and QA gates. Supplements ADR0007/ADR0021: their generic S14
+2026-11-11. Accepted and implemented in product `b30a18c`; independent QA
+approved the incremental gates, final52 browser cycles and Q6 checks. Supplements ADR0007/ADR0021: their generic S14
 authoring UI/pipeline is retired, while the shared locale kernel/data seams remain.
 
 ## Context
@@ -26,6 +26,12 @@ existing public fallback behavior. Historical FAQ and asset ALT targets remain
 readable. No migration, backfill, deletion or content republication follows from
 retiring S14. The staff-role refactor is a separate task.
 
+Existing decorative rendering remains authoritative. In particular, Blog's hero
+forces an empty image ALT before and after this retirement. Its owner-scoped ALT
+may be stored without appearing in that decorative DOM slot; QA distinguishes
+that behavior from publishing an authored ALT. This does not restore an asset
+editor or change the meaning of other image descriptions under ADR0076.
+
 ## Consequences
 
 Normal editing occurs in the content's owning form. Old links remain useful;
@@ -36,3 +42,5 @@ Guide in all four locales, using an isolated new database and normal test login.
 
 See [spec](../specs/translations-retirement-spec.md) and
 [execution plan](../specs/translations-retirement-execution-plan.md).
+
+Independent evidence: [QA report](../specs/translations-retirement-qa.md).

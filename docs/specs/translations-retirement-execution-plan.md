@@ -2,8 +2,10 @@
 
 2026-11-11. Depende del [spec](translations-retirement-spec.md). El inventario y
 las decisiones de producto están en la [auditoría](translations-retirement-plan.md).
-Estado: adversarial documental aprobado, AD01–AD04 cerrados. Lote1 integrado y
-QA Q1 aprobado en `a5dd998`; comienza lote2. La batería final52 sigue pendiente.
+Estado: adversarial documental aprobado, AD01–AD04 cerrados. Q1 aprobado en
+`a5dd998`, Q2 cerrado en `b30a18c` tras B3. Producto congelado en `b30a18c`;
+batería final52/52 y Q6 aprobados por QA independiente. Entrega local pendiente de
+apertura final en main; no hay push/deploy.
 
 ## Registro de ejecución
 
@@ -42,6 +44,55 @@ QA Q1 aprobado en `a5dd998`; comienza lote2. La batería final52 sigue pendiente
   `<main>` inexistente en ServiceDetail; reanudó desde draft guardado sin repetir
   Save ni rutas. Ninguna corrección de producto. Evidencia en results y checkpoints
   del directorio QA. A2/B2/O5 se abren ahora, batería final52pendiente.
+- A2 `c0e42f6`, B2 `5d4db7d` integrado como `1d26c93`, O5 `fc244bc`:
+  retiro completo de menú/mensajes/UI interna; root68pure0,4DB0,typecheck0,
+  lint0(7warnings anteriores),detector[]. Build0/105rutas/2workers. QA aprobó
+  GuidePT10campos+ALT y ausencia UI9editores+3compat,0errores; AboutFR no guardó.
+- QA detectó error boundary preexistente al seleccionar Certifications en About
+  FR; helper original homeNode idéntico a basef947c4f sólo recorría objetos.
+  B3 `b30a18c`: regresión real6casos antes3fail/3pass; arreglo y suites focales
+ 17/17pass,typecheck/lint0; root confirmó17/17. Sólo helper y test asignados.
+  QA revisó el fix sin observaciones, build corregido0/105rutas/2workers.
+- Q2 cerrado en `b30a18c`: CertFR retest sin boundary ni escrituras por abrir;
+  AboutFR46campos+ALT anidado Save/reload/privatepreview/publicbaseline/Publish/
+  public correctos; FAQblancoFR no heredaEN,0errores. GuidePT/UIabsence retenidos.
+  QA fuente revisó retiro y fix: contratos/auth/zero writes correctos, sin cambios
+  kernel/schema/publicreaders. Producto congelado salvo defecto confirmado nuevo.
+- QA producción3081 PID4574/session32378, cwd QA runtime verificado. Q1/Q2
+  `.next` originales archivados completos antes de cambiar candidato, sin borrar
+  caches; ningún reinicio se usó para aprobar una revalidación dentro de un caso.
+- Q3 baseline actual:12unidades×4custom distintas,drafts null; manifest v3 SHA256
+  `f8f8c7f9c4aae26202e4a5d7e6cd87f7bf6754b784f46e66d78a91a0031fe047`.
+  IDs422controles comprobados sólo EN; targets usan descriptor/guard de cantidad
+  y comprobación del path persistido. Exclusiones legacy/editor-only se documentan
+  con renderer, nunca como pass público. Campos código/clasificación no son copy.
+- Batería final Q4/Q5 aprobada:52/52, nueve Pages×4, sidebar Blog×4 y
+  Post/Service/Guide×4. Cada ciclo usa controles reales, Save draft/reload,
+  preview donde existe, público sin filtración y Publish con invalidación normal.
+  Owners/Post/Service/Guide preservaron drafts EN/ES realmente pendientes al
+  publicar PT. Cero pageerrors y error boundaries en los casos finales.
+- Q6 aprobado:12campos condicionales Service×4, catálogo Guides vacío×4 mediante
+  Archive/Restore propio, FAQ/ALT históricos y edición móvil de cuatro familias.
+  Guide source-only comprobó working heredado, público404 antes de publicar,
+  snapshot publicado estable frente a EN nuevo y transición custom por UI.
+  Pages/Post/Service:42pruebas puras de helpers/modelos y fuente, sin afirmar
+  browser pass de herencia donde faltan slots/media. Nueva Service mínima conserva
+  sólo draft EN: publicar requiere cover y se detuvo sin añadir infraestructura.
+- Q6 conservación:13filas históricas propias con hashes/estado/source_hash/xmin
+  exactos más2identidades FAQ; bootstrap FAQ2/14/28 intacto. Cierre de12unidades
+  principales con drafts nulos, compartidos/media/OG invariantes y36slugs exactos.
+  Compatibilidad final12rutas+auth, GETs sin delta en42tablas QA. Root y QA
+  compararon las42tablas originales del usuario: conteos/huellas exactos,
+  Settings0. Evidencia `protected-user-comparison.json`; sin escrituras allí.
+- Blog hero decorativo conserva ALT vacío por renderer; los campos heredados
+  sin consumidor se registran como editor-only, no como traducción pública.
+  Harness retoma checkpoints tras ajustes de selectores sin duplicar Publish.
+  El PDF opcional inválido del fixture Real Estate se retiró por UI antes de sus
+  ciclos; el label secundario sigue renderizado mediante el enlace fallback.
+- QA aprueba producto exacto `b30a18c`; no hubo otro arreglo de fuente después
+  de B3. Build corregido0/105rutas/2workers;68pure+4DB del lote2 y17focales B3,
+  typecheck0/lint0(7warnings previos). Suites no ejecutadas permanecen explícitas.
+  Informe independiente: [QA](translations-retirement-qa.md).
 
 ## Base y archivos preexistentes
 
@@ -151,6 +202,20 @@ otro target sin cambios. E2E incremental P7 FR: About copy y selección de su FA
 propia, incluyendo blank sin herencia. Reabrir y comprobar aislamiento. Sólo el
 orquestador asigna defectos a A/B; QA no corrige producto.
 
+**B3 — Corrección acotada requerida por Q2.** QA reprodujo en `fc244bc` un P2
+preexistente: seleccionar Certifications en About FR activa el error boundary
+antes de guardar (por tanto pageerrors[] no basta para aprobar). `homeNode`
+devuelve undefined para ALT dentro de una lista. El implementador B recibe nuevo
+worktree `/private/tmp/central-hill-translations-retirement-page-array-fix`, rama
+`translations-retirement/page-array-fix`, base `fc244bc`; escribe sólo
+`pages/admin/home-contextual.ts` (función homeNode) y
+`pages/tests/home-node-arrays.test.ts`. Recorrer índices canónicos de array hacia
+element sin mutar datos ni unwrap hidden; mantener objetos/paths inválidos.
+Test real About rojo antes del arreglo, luego suites focales y typecheck/lint.
+QA retesta selección/edición/publicación de About FR y nested ALT en el nuevo
+build. GuidePT y ausencia UI ya aprobados se conservan; la batería final todavía
+no empezó. No se repite una matriz anterior ni se crea otro editor/preview.
+
 ## Lote 3 Verificación final por grupos pequeños
 
 **O6 — Congelar producto.** Resolver hallazgos de Q1/Q2, revisar importaciones y
@@ -233,6 +298,16 @@ de los lotes; cualquier ampliación identifica primero efectos y target:
 Las suites DB de otras tareas y los glob amplios de `*.integration.test.ts` quedan
 fuera de la ejecución. No utilizar un loader que salte guards o convierta una
 escritura real en mock para presentar esa misma suite como prueba de persistencia.
+
+Q6 debe reflejar soporte real de herencia: no existe control UI Reset/inherit
+para targets ya custom. Los9Page keys están ocupados por fixtures propias y Post
+exige cover/media sin un picker de assets existentes. Esas familias se verifican
+mediante pruebas puras/helpers/fuente para target ausente, sin inventar browser
+pass ni crear una feature/infra de uploads. Service/Guide pueden añadir ficha
+source-only nueva por UI sólo si el flujo mínimo lo soporta; no se resetean los
+targets ya probados. La tabla final separa evidencias browser y pure/source.
+El requisito principal de52cicloscustom+aislamiento y las demás variantes Q6
+permanece; no se relajan a raíz de un control que la tarea nunca debía construir.
 Antes de QA final: `pnpm typecheck`, `pnpm lint`, suites relevantes y `pnpm build`
 con identidad local verificada. `pnpm test`/`boundary:check` no son evidencia.
 `db:check` sólo si el entorno de esquema lo requiere; no hay nueva migración.

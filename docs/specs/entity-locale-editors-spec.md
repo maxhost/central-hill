@@ -4,13 +4,15 @@ Ver [auditoría y plan](translations-retirement-plan.md). ALT ya está cubierto 
 el usuario confirma FAQ con grupos independientes por idioma, elegidos en cada
 Page. La ficha FAQ edita el texto de un grupo; no tiene cuatro versiones internas.
 city.intro no tiene renderizador público actual. No falta otro editor para el
-modelo confirmado. Queda retirar menú/bandeja, redirigir enlaces y cerrar todas
-las acciones/generación genéricas, incluyendo Forms, preservando kernel, tablas
-y contenido histórico. Esta revisión sólo documenta el plan, sin implementarlo.
+modelo confirmado. Menú/bandeja retirados, enlaces redirigidos y todas las
+acciones/generación genéricas cerradas, incluyendo Forms; kernel, tablas y
+contenido histórico preservados. Producto `b30a18c` aprobado por QA independiente.
 El [spec de retirada](translations-retirement-spec.md) y el
 [plan de ejecución](translations-retirement-execution-plan.md) añaden los gates
 adversarial/QA y el E2E completo solicitado por el usuario, con dos implementadores
-aislados y QA independiente. ADR0077 recoge la decisión; implementación pendiente.
+aislados y QA independiente. ADR0077 recoge la decisión; ver [QA final](translations-retirement-qa.md):52/52ciclos y Q6 aprobados.
+Los apartados históricos posteriores describen su fecha original y no reabren
+los pendientes de retirada ya cerrados.
 
 ## ALT junto a imágenes —2026-11-08
 

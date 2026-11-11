@@ -8,15 +8,24 @@ Blog post/Service/Guide EN/ES/PT/FR, más sidebar Blog. FAQ confirma grupos
 independientes por idioma. Read [spec](docs/specs/translations-retirement-spec.md),
 [plan por lotes](docs/specs/translations-retirement-execution-plan.md),
 [adversarial](docs/specs/translations-retirement-adversarial.md), ADR0077.
-Plan aprobado documentalmente tras cerrar3P2+1P3; producto/E2E no aprobados aún.
-Preparación entorno/contratos empieza, fuentes basef947c4f. Preservar main3071
-PID72223, .next, envs, worktrees/artifacts, PNGlogo y public/propertylocalesqa.
-Nuevas bases aisladas translationsretirementqa y translationsretirementunitqa,
-guardas exactas host/DB/rol; ninguna escritura en propertylocalesqa/Neonremoto.
-Login normal con Admin sintético propio; no extraer tokens de sesiones existentes
-ni fabricar cookies. Preservar tablas/kernel/traducciones/slugs/snapshots/fallbacks;
-no schema de producto, rolecleanup, push/deploy. Todo caso E2E requiere controles
-reales Save/reload/Publish y DOM público sin sesión, sin flush/restart para aprobar.
+Adversarial3P2+1P3 cerrado; producto exactob30a18c aprobado por QA independiente.
+Dos implementadores A/B y QA incrementalQ1/Q2; finales52/52ciclos (9Pages×4,
+sidebarBlog×4,Post/Service/Guide×4),0pageerrors/boundaries. Q6 condicionales,
+FAQ/ALT legacy,móvil4,Guide inherit404/snapshot/custom aprobados. Pages/Post/Service
+herencia sólo42pure+fuente donde UI/media no permiten caso mínimo; no browserpass.
+B3 corrige defecto previo homeNode índicesarray/AboutCertificationsALT;17focales0.
+Lote2 root68pure/4DB/typecheck/lint0(7oldwarnings);build0/105rutas/2workers.
+Read [QA](docs/specs/translations-retirement-qa.md). GlobalTranslations menú/UI/
+queries retirados; URLs autenticadas redirigen fichas;6acciones y generador
+rechazan sin contenido/proveedor/revalidation. Kernel/tablas/filas/slugs/lectores/
+fallbacks/roles preservados; city.intro sin renderer, Bloghero ALT decorativovacío.
+Bases nuevas translationsretirementqa y translationsretirementunitqa con guardas
+host/DB/rol exactos; Admin propio/login normal, sin extraer tokens/cookies.
+42tablas originales usuario conteos/huellas exactos ySettings0; QA comparóJSON.
+Fixtures propias retenidas (incluye Service mínima sóloENdraft), sin limpiar datos
+ajenos. No schema de producto, remoteDB,rolecleanup,push/deploy. Preservar envs,
+.next/worktrees/artifacts,PNGlogo y public/propertylocalesqa. Entrega main/apertura
+final pendientes; candidatoQA3081PID4574/session32378 conserva producciónb30.
 
 ## Neon migrations 0024–0029 —2026-11-08
 

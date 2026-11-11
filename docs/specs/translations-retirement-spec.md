@@ -5,6 +5,8 @@ construir el plan, someterlo a revisión adversarial y después implementar medi
 dos implementadores, un QA independiente y el orquestador. La implementación y
 sus E2E se entregarán por etapas pequeñas. Este documento define el resultado;
 el [plan de ejecución](translations-retirement-execution-plan.md) define el orden.
+Estado final: producto `b30a18c` aprobado por QA independiente,52/52ciclos y Q6;
+ver [informe](translations-retirement-qa.md).
 
 ## Resultado de producto
 
@@ -33,6 +35,14 @@ en los editores visuales como sustitución.
 No se incluye una biblioteca de medios, refactor de roles, nuevas migraciones,
 borrado/backfill de datos, cambios de slugs, publicación remota o despliegue.
 
+Corrección necesaria B3, detectada por el E2E: About FR no podía abrir
+Certifications por un fallo preexistente del resolver `homeNode`, que sólo
+recorría objetos y devolvía undefined para `certifications.items.0.logo_alt`.
+Se amplía sólo ese helper a índices válidos de arrays y se añade regresión sobre
+el schema real. No cambia controles, estado editorial, API, datos o lectores
+públicos. La reproducción previa falla antes de guardar; QA debe cerrar el caso
+en navegador antes de aprobar Q2 y las Pages finales.
+
 ## Requisitos verificables
 
 | ID | Requisito |
@@ -47,7 +57,7 @@ borrado/backfill de datos, cambios de slugs, publicación remota o despliegue.
 | TR08 | Se conservan las tablas y APIs del kernel usadas por fichas y lectores: traducciones, slugs, atribución, hash de fuente y snapshots. No se eliminan campos/filas por estar missing, stale, sin fuente o sin consumidor público actual. |
 | TR09 | Las publicaciones y borradores existentes no cambian por abrir o redirigir una URL antigua. Las acciones retiradas tampoco los alteran. |
 | TR10 | FAQ conserva la selección independiente por Page/idioma; vacío no hereda de EN. El lector conserva targets históricos aprobados y su fallback actual. |
-| TR11 | Los ALT propios conservan aislamiento por documento/idioma; un borrador no modifica el público ni otro documento que reutilice la foto. Los ALT globales anteriores continúan como fallback. |
+| TR11 | Los ALT propios conservan aislamiento por documento/idioma; un borrador no modifica el público ni otro documento que reutilice la foto. Los ALT globales anteriores continúan como fallback en sus consumidores existentes. El Hero decorativo de Blog conserva su `alt=""` fijado por el renderer; su ALT guardado no se etiqueta como publicado en DOM. |
 | TR12 | Los E2E demuestran por navegador la edición/guardado/recarga/publicación y salida pública de las nueve Pages y un Blog post, servicio y guía, en EN/ES/PT/FR. |
 | TR13 | Se prueba ausencia de filtración de borradores y aislamiento entre idiomas; una publicación target no publica cambios pendientes en EN u otros targets. |
 | TR14 | Las actualizaciones públicas resultan de Save/Publish y la invalidación ordinaria. No se acepta como prueba un cache flush, borrar `.next`, reiniciar el servidor o publicar otra página para forzar visibilidad. |
@@ -146,6 +156,13 @@ Ciclo de cada unidad:
 Los textos son fixtures manuales de prueba; se valida el flujo funcional, no la
 calidad lingüística de un proveedor. En un caso acotado por familia se comprueba
 también el modo heredar/custom y su fallback, sin sobrescribir un target propio.
+Esta comprobación secundaria respeta los controles existentes: la UI actual no
+ofrece Reset/inherit para volver atrás desde un target custom. No se añade ese
+botón ni se borran/restauran snapshots para simularlo. Donde una ficha source-only
+nueva puede crearse por UI con el flujo mínimo existente se comprueba target
+ausente → custom; si exige uploads/infra extra (Post cover) o no hay un slot Page
+libre, se aporta evidencia de helpers/pruebas puras y fuente, marcada expresamente
+como tal. No cuenta como browser pass ni sustituye ninguno de los52ciclos pedidos.
 También se intercala un caso de borradores simultáneos por familia (una Page,
 Post, Service y Guide): guardar por navegador cambios textuales EN y ES aún sin
 publicar; registrar sus drafts/revisiones y sus publicaciones distintas; guardar
