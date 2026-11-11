@@ -53,9 +53,22 @@ export function homeButtonFields(selectedId: string): readonly string[] {
  return groups.find(group => group.includes(selectedId)) ?? [selectedId];
 }
 export function homeNode(root:FieldNode,path:string):FieldNode|undefined {
- let current:FieldNode|undefined=root;
- for(const part of path.split(".")){if(current?.kind!=="object")return undefined;current=current.fields.find(f=>f.key===part)?.node;}
- return current;
+  let current: FieldNode | undefined = root;
+  for (const part of path.split(".")) {
+    if (current?.kind === "object") {
+      current = current.fields.find(field => field.key === part)?.node;
+    } else if (
+      current?.kind === "array" &&
+      /^(0|[1-9]\d*)$/.test(part) &&
+      Number.isSafeInteger(Number(part))
+    ) {
+      // Each positional row shares this schema; current data length lives elsewhere.
+      current = current.element;
+    } else {
+      return undefined;
+    }
+  }
+  return current;
 }
 
 /** Private preview allowlist, including fields that remain reachable only through the outline. */
