@@ -1,151 +1,78 @@
-# Slice `translation` / `translation-pipeline` (S14)
+# Slice `translation` (S14) — retired authoring workflow
 
-Adapted Guides (ADR0066): guide_page, guide_section and guide_place use the guide's
-whole-tree manual locale editor. Inbox excludes all three types; old links resolve
-their guide through the Guides contract and redirect to its selected language.
-All six legacy mutations and direct generation reject Guides before writes. No
-translation rows are deleted; global Translations and other entity workflows remain.
+ADR0077 retires the global translation inbox, review and generation workflow.
+Content is edited manually in its owning Page, Blog, Property, Service, Guide,
+auxiliary form or Settings editor. FAQ keeps independent groups selected by each
+Page language; there is no new internal FAQ translation editor.
 
-Adapted Pages (ADR0040): Home, Owners, Buildings listing, Real Estate, Guest, Services, About, Guides and Blog. Pages owns complete draft/published JSON by locale. These pages
-are excluded from this generic review inbox, and direct review routes redirect to their
-contextual editors. Save/clear/approve/reset/generate entrypoints reject these registered pages via the
-Pages contract identity lookup; other entity workflows remain unchanged. Legacy page
-rows are retained for bootstrap and are never deleted by this adaptation.
+The slice owns no tables and introduces no migration. `core/i18n`, `translation`,
+`slug`, editorial snapshots, historical values and public fallbacks remain active
+and unchanged. Removing S14 does not delete stored content, approve old targets,
+run a backfill or republish any document. Image ALT follows ADR0076 and belongs
+to the consuming document and language; previous asset ALT remains a fallback.
 
-Adapted Blog Posts (ADR0057): `blog_post` is excluded from this inbox. Direct
-review links redirect to `/admin/posts/[id]?locale=...`; all six legacy mutations
-and direct generation reject articles before touching their translation data.
-The Blog contract owns this identity policy. Articles use manual complete
-draft/published snapshots per language in Blog, preserving legacy rows.
-ADR0067 also excludes `author` and `blog_category`: their single forms own manual
-EN/ES/PT/FR inputs, one Save and English fallback. Old review links redirect to
-`/admin/authors/[id]` and `/admin/blog-categories/[id]`; generic actions/generation
-reject both types. All legacy translation rows remain. Other unadapted entities
-keep this workflow. Historical page-content notes apply only where still active.
+## Compatibility only
 
-Adapted Properties (ADR0058): `building`, `apartment` and `building_faq` are
-excluded from the generic inbox. Direct review redirects to the building or
-nested apartment editor in the requested locale; FAQ links resolve their owning
-building. All six legacy mutations and direct generation reject these types
-before writes via the Buildings contract policy. Complete locale snapshots own
-the manual workflow; old translation rows remain preserved. Amenities and
-geography retain the generic workflow.
+- `/admin/translations` authenticates staff and redirects to `/admin/pages`,
+  including old filter URLs.
+- `/admin/translations/[type]/[id]` authenticates staff and resolves the owning
+  editor through `getLegacyTranslationRedirect`. Parent identities come from
+  their slices' contracts. Unknown types and malformed IDs never open a generic
+  editor; a shared asset has no arbitrary chosen owner.
+- `approveField`, `resetField`, `saveField`, `clearField`, `approveEntity` and
+  `generateEntityDrafts` keep their old call shapes. Each requires staff and
+  unconditionally returns `{ ok: false, error: "validation" }`, without reading,
+  writing or revalidating editorial content.
+- `generateDrafts` and its `GenerateOptions`/`GenerateSummary` types remain for old
+  imports. The function always rejects with an explicit retirement error before
+  loading content or selecting a provider. It does not create a new session just
+  to reject a removed operation.
 
-About follow-up (ADR0037): page-content target writes compare and lock the source
-value in the same SQL statement. If source has changed/disappeared, the write is
-rejected; generation counts only successful writes. Per-cell editing retains its
-draft and shows an error on failed saves. Page-content mutations also invalidate
-`page:about`, so approved About copy updates without rebuilding the site.
+The public contract exposes the compatibility resolver and rejected generation
+entrypoint. There is no replacement automatic translator and no supported
+inbox/review/query API. The removed in-memory matrix, rollups and per-cell UI
+are not part of the locale kernel. The separate staff-role cleanup remains out
+of scope.
 
-The LLM-assisted, human-reviewed **translation workflow** (ADR 0007 / ADR 0021).
-Owns **no tables** and **no migration** — it operates on the cross-cutting kernel
-`translation` table **generically by `entity_type`**, exclusively through the
-`core/i18n` read/write/provider seam (golden rule 4). Backoffice-only; never on the
-public ISR path.
+## Verification
 
-## Workflow
+`retirement-actions.test.ts` calls the real retired action/generator modules with
+spies only at their dependencies. It covers known and unknown entity types,
+Forms, malformed payloads, authentication denial and zero editorial/provider
+side effects. The Testimonial guard tests also remain.
 
-`source authored (en, draft)` → **`generateDrafts`** (LLM provider → `needs_review`
-per target locale, stamping `source_hash`) → **backoffice review** (approve / edit /
-reset / clear) → **`approved`** → publish revalidates the entity's public cache.
-Editing the source later makes a target **stale** (its `source_hash` no longer
-matches the live source) — surfaced in the inbox and re-draftable.
+Run the pure action tests with Node22:
 
-The public render policy is unchanged (`core/i18n/loadContent`): a target renders
-only when `approved`, otherwise it falls back to the source (`en`). So this slice's
-job is purely getting target rows to `approved`.
+```sh
+node --import ./node_modules/tsx/dist/loader.mjs \
+  --import ./src/slices/translation/tests/retirement-actions-runtime.mjs \
+  --test src/slices/translation/tests/retirement-actions.test.ts \
+  src/slices/translation/tests/testimonial-quote-guards.test.ts
+```
 
-## What it produces
+`fixed-navigation-guards.test.ts` and `settings-website-guards.test.ts` retain
+real SQL comparisons of their own source/target rows before and after denied
+operations. FAQ pending targets and unrelated Navigation rows stay exact.
+Fixtures use fresh UUIDs and clean only their own rows. These suites require the
+exact `translationsretirementunitqa.local` hostname, database and role; they must
+not run against the browser E2E database or environments from earlier tasks.
+The DB runtime only doubles authentication and the `server-only` marker; content
+reads/writes and the PostgreSQL connection are real. Use the orchestrator's
+verified unit-test environment and restricted local preload:
 
-- **Review inbox** (`/admin/translations`) — one row per entity with a per-state
-  rollup (missing · stale · needs-review · approved), view + entity-type filters.
-- **Per-entity review** (`/admin/translations/[type]/[id]`) — the source-vs-target
-  matrix with target-locale tabs and per-cell actions (approve, edit, reset, clear)
-  plus entity-level actions (generate, generate-all, approve-all).
-- **`generateDrafts(type, id, opts?)`** — the draft-generation pipeline (provider
-  seam → kernel target writes). Fills missing/stale cells by default; `overwrite`
-  re-drafts everything.
+```sh
+node --env-file="$QA_UNIT_ENV" --require "$QA_RUNTIME" \
+  --import ./node_modules/tsx/dist/loader.mjs \
+  --import ./src/slices/translation/tests/retirement-actions-db-runtime.mjs \
+  --test --test-concurrency=1 \
+  src/slices/translation/tests/fixed-navigation-guards.test.ts \
+  src/slices/translation/tests/settings-website-guards.test.ts
+```
 
-## Boundaries
-
-All translation-table access is the kernel seam (ADR 0021 additions):
-- read: `loadTranslationRows(filter?)`
-- write: `setTargetTranslation`, `setTranslationState`, `deleteTranslation`
-- provider: `getTranslateProvider()`, `hashSource()`
-
-The inbox matrix (source vs targets, staleness, rollup) is derived **in memory**
-(`admin/derive.ts`, pure + unit-tested) from the raw rows — the dataset is the CMS's
-[T] content, small, read dynamically in the gated admin. The slice never imports
-another content slice's internals; it treats `entity_type` as opaque (entity-type
-labels fall back to the raw string when unkeyed).
-
-## Provider
-
-`core/i18n/translate.ts` defines `TranslateProvider`; the default is a **pass-through
-identity** stub (seeds each draft from source for a human to refine) until a concrete
-LLM client is wired behind the same interface (`TRANSLATE_API_KEY`; ADR 0021
-follow-up). Public pages never reach the provider.
-
-## Revalidation
-
-Approving/resetting/editing a target is a `requireStaff`-gated Server Action that
-`revalidatePath`s the admin screens and best-effort busts the entity's public ISR
-tags (`cacheTags.entity(type,id)` + `cacheTags.list(type)`, covering both tag
-conventions slices use). Other tag shapes ride the daily ISR fallback.
-
-## Contract (`contract.ts`)
-
-`translationAdminScreens` (sidebar registration, `translation` group);
-`generateDrafts` + `GenerateOptions`/`GenerateSummary`.
-
-## Routes (brand-new, gated `(panel)`)
-
-`app/(admin)/admin/(panel)/translations/{page.tsx, [type]/[id]/page.tsx}` — thin
-handlers importing the inbox/review screens.
-
-## i18n
-
-A root `translation` message namespace + `backoffice.nav.translations` label,
-authored for **en/pt/es/fr** (messages consolidated in root `messages/<locale>.json`).
-
-## Deferred / follow-ups
-
-- A concrete LLM provider behind `getTranslateProvider()` (the interface is ready).
-- Auto-`generateDrafts` from each content slice's `publish()` on source save (the
-  contract exports `generateDrafts` for this; currently triggered manually from the
-  review screen).
-- Per-cell translator attribution/history (only `updated_by`/`updated_at` are kept).
-
-## Tests
-
-`tests/translation.test.ts` — pure derivation tests (cell status incl. stale vs
-approved, the entity matrix + rollup, inbox attention-first ordering, title
-derivation) + the kernel `hashSource` and identity provider. Run:
-`npx tsx --test src/slices/translation/tests/translation.test.ts`.
-
-ADR0070 excludes `testimonial`: its existing ficha now owns all four manual quote
-inputs, approved targets and blank→English fallback. Generic actions/generation
-reject before writes; review links redirect to `/admin/testimonials/[id]`. No old
-rows are deleted by this retirement; unrelated entity types remain available.
-
-ADR0072 excludes only company_settings.website_url from legacy review/inbox/single
-field actions, bulk approval and generation. Settings' four Website URL inputs own
-it. Other company_settings labels retain the existing workflow. No rows deleted;
-legacy EN Website translation rows are preserved while inline website_url is the
-canonical English URL used by the public resolver.
-
-Settings manual-field guards now also cover navigation_ctas (Book Label/URL and
-floating Earn Label), alongside website_url. Both are masked from inbox/review,
-rejected by single actions and skipped by bulk approval/generation; other Settings
-copy and nav_item labels retain their current workflow. Rows are preserved (ADR0073).
-
-Fixed public navigation (ADR0074): nav_item is excluded from inbox/review and all
-individual/bulk/generation writes, including the raw generator. Old review URLs
-redirect to Settings. Original rows remain; no translation table/schema deletion.
-Global Translation stays for Settings stats/hours, image ALT, city.intro policy and
-remaining legacy closeout, so Navigation retirement does not remove the whole UI.
-
-ADR0075: all company_settings fields now belong to Settings or are retired legacy
-stats. The entire type is excluded from inbox/entitymatrix and single/bulk/raw
-generation writes, with old review URLs redirected Settings. Historical EN/target
-rows remain untouched. This supersedes the older Website/CTA-only guard policy.
+The old `translation.test.ts` tested only the removed inbox derivation. It and
+assertions about hiding rows through deleted inbox queries are removed with
+those modules. Assertions that denied mutations preserve actual stored rows
+remain; an obsolete successful FAQ-generation case now verifies rejection and
+unchanged pending content. Resolver tests cover link compatibility separately.
+The task's independent QA verifies the integrated UI, redirects and public E2E;
+unit tests do not replace Save/reload/Publish checks in the owning editors.

@@ -5,7 +5,6 @@ import { sql } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { deleteContent, loadTranslationRows, setSourceContent, setTargetTranslation } from "@core/i18n";
 import { approveField, resetField, saveField, clearField, approveEntity, generateEntityDrafts } from "../admin/actions";
-import { getEntityTranslations, getTranslationInbox } from "../admin/queries";
 import { generateDrafts } from "../server/generate";
 
 test("all individual Settings translation actions reject manually owned and retired fields", async () => {
@@ -16,7 +15,7 @@ test("all individual Settings translation actions reject manually owned and reti
       assert.deepEqual(result, { ok: false, error: "validation" });
   }
 });
-test("Settings bulk approval, generation and review retire without modifying legacy translations", async () => {
+test("Settings bulk approval and generation retire without modifying legacy translations", async () => {
   assert.equal(new URL(process.env.DATABASE_URL ?? "http://invalid.test").hostname, "translationsretirementunitqa.local");
   assert.deepEqual((await db.execute(sql`select current_database()as db,current_user as role`)).rows[0], { db: "translationsretirementunitqa", role: "translationsretirementunitqa" });
   const id = randomUUID(), type = "company_settings";
@@ -30,10 +29,6 @@ test("Settings bulk approval, generation and review retire without modifying leg
     assert.deepEqual(await approveEntity(type, id), { ok: false, error: "validation" });
     assert.deepEqual(await generateEntityDrafts(type, id, true), { ok: false, error: "validation" });
     await assert.rejects(generateDrafts(type, id, { locales: ["es"], overwrite: true }), /workflow is retired/);
-    assert.equal(await getEntityTranslations(type, id), null);
-    const inbox = await getTranslationInbox({ entityType: type });
-    assert.deepEqual(inbox.items, []);
-    assert.deepEqual(inbox.entityTypes, []);
     assert.deepEqual(await rows(), before);
   } finally { await deleteContent(type, id); assert.equal((await rows()).length, 0); }
 });

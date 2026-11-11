@@ -5,7 +5,6 @@ import { sql } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { deleteContent, loadTranslationRows, setSourceContent, setTargetTranslation } from "@core/i18n";
 import { approveField, resetField, saveField, clearField, approveEntity, generateEntityDrafts } from "../admin/actions";
-import { getEntityTranslations, getTranslationInbox } from "../admin/queries";
 import { generateDrafts } from "../server/generate";
 
 const id = randomUUID();
@@ -38,14 +37,6 @@ test("all generic Navigation mutations and direct generation reject without chan
     await clearField(...args), await approveEntity("nav_item", id), await generateEntityDrafts("nav_item", id, true),
   ]) assert.deepEqual(result, { ok: false, error: "validation" });
   await assert.rejects(generateDrafts("nav_item", id, { overwrite: true }), /workflow is retired/);
-  assert.deepEqual(await navRows(), beforeRows);
-});
-test("generic Navigation queries hide historical rows without modifying them", async () => {
-  const beforeRows = await navRows();
-  assert.equal(await getEntityTranslations("nav_item", id), null);
-  const inbox = await getTranslationInbox({ entityType: "nav_item" });
-  assert.deepEqual(inbox.items, []);
-  assert.deepEqual(inbox.entityTypes, []);
   assert.deepEqual(await navRows(), beforeRows);
 });
 test("retired generic FAQ actions preserve pending copy and unrelated Navigation rows", async () => {
