@@ -30,3 +30,8 @@ Layout edits use EN; target languages keep their current text-only controls and 
 Reordering does not change text hashes, translation state or field identity. Email and
 validation iterate the same visual order. Date/File, recipient, reply-to, staff gates,
 archived/revision checks and existing email provider configuration remain in force.
+
+Blueprint text validation does not trim authored definitions while reading or saving
+layout. Required strings must contain non-whitespace text, but their exact valid values
+are preserved so moving a row cannot change a legacy source hash. Form name/recipient
+and explicit target-locale text saves retain their existing trimming behavior.

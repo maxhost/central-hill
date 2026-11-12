@@ -243,3 +243,13 @@ Se delegan los archivos de la tabla de responsabilidad después de registrar est
 contratos. Los agentes no leen credenciales ni ejecutan escrituras DB; QA recibirá
 solo la configuración sintética guardada por raíz y login normal cuando el candidato
 esté integrado. QA puede preparar revisión/harness antes, sin mutaciones.
+
+Preflight QA posterior: raíz verificó host+SQL DB/rol translationsretirementqa,
+capturó conteos/huellas de42tablas de negocio y creó únicamente fixture propia
+legacy1d227a24-8a84-4c3e-9774-977b02fbf060 (v1). Datos/entorno/fixtures de tareas
+anteriores se conservan. Artefactos en /private/tmp/central-hill-form-row-layout-qa:
+baseline.json,legacy-fixture.json,own-form-ids.json,seed-v1.mjs. Preload limitado a
+esa base y email falso interceptado; login normal con Admin sintético existente.
+Main/DB del usuario no se usan para QA. Read de definiciones y Save de estructura
+preservan textos exactos, incluidos espacios válidos de datos históricos, para no
+marcar traducciones como obsoletas por una edición exclusiva de layout.

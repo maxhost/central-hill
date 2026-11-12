@@ -7,7 +7,7 @@ independent starting blueprints, with stable UUID fields/steps/options.
 
 ## Storage and contracts
 
-`form_definition` stores a version1 EN blueprint, internal name, one recipient, revision,
+`form_definition` stores an EN blueprint, internal name, one recipient, revision,
 and draft/archived state. `form_test_submission` retains the exact localized blueprint
 (including select labels and consent notices), normalized values, staff identity, saved
 revision, recipient and provider attempt outcome. Tests are separate from production leads.
@@ -47,3 +47,26 @@ Node22: `pnpm exec tsx --test src/slices/forms/tests/forms.test.ts` exercises te
 stable paths, localization fallback, definition constraints, full-step submitted values
 and exact-label notifications. Integrated typecheck/lint/build/db:check and isolated
 save/reload/browser QA are orchestrator-owned; see the active execution spec.
+
+## Rows and columns (ADR0079)
+
+New definitions use JSON schemaVersion2: steps contain ordered rows, each with one
+or two columns and zero or one field per column. Fields retain their stable identity
+in a flat catalog; step ownership and visual order derive from rows. The editor adds
+rows and fields at explicit positions, reorders/moves rows, and moves or explicitly
+swaps fields. Collapsing two occupied columns creates two consecutive single-column
+rows without dropping either field. Empty slots remain editable; the test runtime
+omits empty rows, preserves right-only desktop placement and stacks on mobile.
+
+Strictly validated legacy schemaVersion1 definitions normalize deterministically in
+memory. Opening a form or saving target-language text does not rewrite its legacy
+definition. Explicit EN Save persists v2 through the existing revision guard. Old
+clients cannot overwrite v2 with v1, and historical test snapshots remain untouched.
+Layout-only changes preserve exact field/step/option texts and translation paths.
+Forty fields/rows, six steps and thirty select options are bounded before save.
+
+`layout.ts` owns immutable operations, pure normalization and visual-order traversal,
+shared by editor, runtime, validation and notifications. New field/row IDs are stable
+across moves and saves. Date/File inputs remain mounted between wizard steps and
+retain their validated attachment behavior. No SQL schema or public form placement
+change is introduced. See [plan](../../../docs/specs/form-builder/row-column-field-plan.md).
