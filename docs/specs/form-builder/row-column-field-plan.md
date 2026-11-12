@@ -1,6 +1,6 @@
 # Plan de implementación — Forms por filas, columnas y campos
 
-Fecha: 2026-11-11. Estado: **plan preparado; implementación no iniciada**.
+Fecha: 2026-11-11. Estado: **implementación autorizada y en curso**.
 
 Base revisada: `226d0d8f74e7bc9b5517d79ee4be83a5f3c71fab`, rama `main`.
 Spec funcional: propuesta acordada en la conversación después de Date/File:
@@ -192,7 +192,7 @@ afectados por defectos confirmados; no ampliar a matrices públicas ajenas.
 
 ## 8. Entorno y límites de ejecución
 
-Planificación actual: solo se escribe este documento. No hay cambios de producto,
+Durante la planificación solo se escribió este documento. No hubo cambios de producto,
 DB, env, servidor, caché o formularios guardados, ni agentes de implementación iniciados.
 
 Al implementar, las escrituras de QA serán solo fixtures propias en una base
@@ -212,4 +212,34 @@ schema SQL, push o deploy dentro de este cambio.
 
 Antes de comenzar la fase 0, revisar este plan buscando pérdida de campos,
 conversiones inesperadas, desajustes de orden/idioma y regresiones de Date/File.
-La implementación queda pendiente de la siguiente instrucción del usuario.
+El usuario autorizó expresamente ejecutar el plan con dos implementadores, un QA
+independiente y raíz como orquestador. La planificación anterior describe el estado
+previo; desde esta autorización se ejecutan las fases de este documento.
+
+## 9. Registro de ejecución y contratos congelados
+
+Base de producto226d0d8; plan registrado en main74d5f90. Raíz implementa en
+`/private/tmp/central-hill-form-row-layout-integration`, rama `forms/row-layout-integration`.
+Main conserva el producto anterior y localhost3071PID69158 durante el desarrollo.
+Los únicos untracked ajenos son el PNG original y public/propertylocalesqa.
+
+Contratos comunes en `types.ts` y `layout.ts`: `FormBlueprint` es v2 canónico,
+`LegacyFormBlueprint` es v1 y `StoredFormBlueprint` su unión. `FormRecord.definition`
+es v2 normalizado; JSON de tablas/snapshots acepta la unión. Una fila contiene
+`{id,stepId,columns:[{id,fieldId:null|UUID}]}`; fields no duplica stepId/width.
+IDs layout nuevos UUID; legacy usa los namespaces de ADR0079.
+
+Funciones puras compartidas: `normalizeBlueprint`, `orderedFields`, `rowsForStep`,
+`fieldLocation`, `addRow`, `addFieldToColumn`, `removeField`, `removeRow`,
+`setRowColumns`, `moveRow`, `setRowStep`, `moveField`, `addStep`, `removeStep`.
+Operaciones devuelven una definición inmutable; fallos lanzan `FormLayoutError`
+con código `not_found|row_limit|field_limit|step_limit|last_step|occupied|invalid`.
+UI localiza estos códigos y confirma borrado/intercambio antes de ejecutarlos.
+`newField` será `newField(type?:FieldType):FormField` en domain.ts (implementador A),
+sin ubicación; B lo inserta con addFieldToColumn y completa opciones de select.
+
+Root9/9 pruebas de layout pasan con Node22.23.3; no DB, env o servidor modificados.
+Se delegan los archivos de la tabla de responsabilidad después de registrar estos
+contratos. Los agentes no leen credenciales ni ejecutan escrituras DB; QA recibirá
+solo la configuración sintética guardada por raíz y login normal cuando el candidato
+esté integrado. QA puede preparar revisión/harness antes, sin mutaciones.

@@ -5,8 +5,8 @@ export type FieldType = "text" | "email" | "tel" | "textarea" | "number" | "sele
 export interface FormOption { id: string; label: string }
 export interface FormStep { id: string; title: string }
 export interface FormField {
-  id: string; stepId: string; type: FieldType; label: string;
-  placeholder: string; help: string; required: boolean; width: 1 | 2;
+  id: string; type: FieldType; label: string;
+  placeholder: string; help: string; required: boolean;
   options: FormOption[]; min?: number; max?: number;
   /** Consent answers retain their exact rendered label in the test snapshot. */
   consent: boolean;
@@ -15,10 +15,19 @@ export interface FormCopy {
   title: string; description: string; submit: string; next: string; back: string;
   cancel: string; successTitle: string; successMessage: string; errorMessage: string;
 }
-export interface FormBlueprint {
-  schemaVersion: 1; columns: 1 | 2; steps: FormStep[]; fields: FormField[];
+export interface LegacyFormField extends FormField { stepId: string; width: 1 | 2 }
+export interface LegacyFormBlueprint {
+  schemaVersion: 1; columns: 1 | 2; steps: FormStep[]; fields: LegacyFormField[];
   copy: FormCopy; replyToFieldId: string | null;
 }
+export interface FormColumn { id: string; fieldId: string | null }
+export interface FormRow { id: string; stepId: string; columns: FormColumn[] }
+export interface FormBlueprint {
+  schemaVersion: 2; steps: FormStep[]; rows: FormRow[]; fields: FormField[];
+  copy: FormCopy; replyToFieldId: string | null;
+}
+/** Persisted definitions and historical test snapshots can retain their original version. */
+export type StoredFormBlueprint = LegacyFormBlueprint | FormBlueprint;
 export type TargetLocale = Exclude<Locale, "en">;
 export interface FormRecord {
   id: string; name: string; template: FormTemplate; recipient: string;
