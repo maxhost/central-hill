@@ -46,8 +46,10 @@ translations exact, ledger31exact. QAendsGuest/Aboutpublishednull/draftnull,head
 
 Main3071PID42708/parent42702/session64963 andmedia9081PID42630/session56332 retained;
 REQUIRED NODE_OPTIONS=--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs
-with original.env.local, onlyneoncontentlocal20261111→proxy4558. Finalmainff/opening recorded
-inexecution; authoredmain no Save/fixture/cacheflush. Preserve originalPNGlogo/publicsymlinks,
+with original.env.local, onlyneoncontentlocal20261111→proxy4558. Mainff8aa7a2e→8b17ef7 afterQA; finaldoccommit via gitlog-1. QA3084PID53549/parent53543
+stopped; main/media retained withoutrestart. Finalreadonly5openings200 Guesteditor/Forms/
+GuestsENPT/AboutEN,0errors/nulllegacyGuestHeaderAbout, noSave.44business+ledger/1504rows exact
+afteropening; env/logo/symlinks exact. AuthonlynormalLogin; no fixture/cacheflush onmain. Preserve originalPNGlogo/publicsymlinks,
 allbases/worktrees/checkpoints/envs/caches/artifacts. Resend remainsconsole/unconfigured,
 no realemail/attachmentreception claimed or externalsetup. No automaticnexttask.
 

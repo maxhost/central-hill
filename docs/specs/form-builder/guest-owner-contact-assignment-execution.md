@@ -45,8 +45,8 @@ Aceptación y comandos en plan: pnpm exec tsx --test <archivos explícitos>/type
 dbcheck. Slice imports solo contratos declarados, server-only fuera de clientbarrels. Sin
 nesteddelegation, sharedfiles singlewriter; solo root integra después QA aprobado.
 
-Estado: contratos b3f5366 entregados; A/B en worktrees aislados y QA independiente
-prepara harness sin browser hasta readiness. Ownschema-only DBs guestcontactpagesqa20261112
+Estado: entrega integrada enmain local y apertura final aprobada; contratosb3f5366,
+A/B aislados e independienteQA completos. Ownschema-only DBs guestcontactpagesqa20261112
 y guestcontactunitqa20261112 preparados; 1344objetosGit/183mediaSHA exactos verificados.
 
 Root pre-QA focus review: private inertbody fields must be excluded from focusablelist;
@@ -119,3 +119,30 @@ explícita solo Guest/About/Settings(+susTranslations), propiosA/B/capturas/test
 Ledger31exacto. FinalcloneQA Guest/Aboutpublishednull+draftnull, headernull;5propiosleads
 (4Guest+1header),1stafftest,console1notificación porganador. No recepción real Resend.
 Root mantiene main-conservation por separado; ninguna escritura de QA en authoredmain.
+
+
+## Main integrado y apertura final
+
+Main8aa7a2e→8b17ef7 por fast-forward después de QA; último commit solo documental
+resuelve con gitlog-1. Producto src/messages/SQL idéntico al752c791 aprobado, sin cambios
+de producto después deQA ni push/deploy. Trespreexistentes retenidos sinabsorber enGit:
+PNGlogo y public/neoncontentlocal +public/propertylocalesqa.
+
+Main3071PID42708/parent42702/session64963 sigueenworkspace, SINreinicio ni cacheflush.
+Mismo Node22, env original exacto y REQUIRED NODE_OPTIONS=
+--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs (exclusivoDB/rol
+neoncontentlocal20261111→proxy4558). Media9081PID42630/session56332 retenido. Solo elruntime
+QA3084PID53549/parent53543 fue detenido después de aprobación; bases/fixtures/build/env/
+cachés/worktrees/artifacts preservados.
+
+main-open.json:5aperturas readonly200 (Guesteditor+Forms+GuestsEN/PT+AboutEN), selector
+exactamentebajoOwnerIntro, null/legacyselected; modalOwnerGuest yHeader conservan contacto
+anterior activo, Aboutinline igual;0pageerrors/0writesbloqueadas. No Save/Publish/Test ni
+captura/fixture en main. Única mutación legítima: login local normal; catálogo y preview
+privada son acciones de lectura. main-assignments.json antesfinal confirma3null intactos.
+
+main-conservation.json posterior:44tablas negocio+ledger/1504filas EXACTAS alcheckpoint,
+auth excluida por login normal.42negociosoriginales/1473filas +ratevacío +ledger31 intactos.
+Envprincipal, logo y ambos symlinks exactos. No migración de producto/remoteDB/R2writes,
+rolecleanup ni configuración externa. Resendconsole siguependiente de key/sender/prueba
+real autorizada; ninguna entrega ni recepción real de adjuntos afirmada.
