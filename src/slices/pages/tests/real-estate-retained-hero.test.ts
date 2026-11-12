@@ -36,7 +36,7 @@ test("Real Estate unrelated Save draft and Publish preserve the exact unresolved
   const original = structuredClone(edited);
   assert.ok(realEstateMediaErrors(edited.content, null, new Map())["hero.image_media_id"], "The base media policy still rejects an unresolved reference");
   for (const publication of [false, true]) {
-    const result = await validation(new Map()).validateDraftMutation(edited, previous, "en", publication, "real_estate");
+    const result = await validation(new Map()).validateDraftMutation(edited, previous, "en", publication, "real_estate", previous);
     assert.deepEqual(Object.keys(result.errors), []);
     assert.equal(result.payload?.content.hero.image_media_id, missing);
     assert.equal(result.payload?.content.deal_enquiry?.form_id, other);
@@ -46,26 +46,26 @@ test("Real Estate unrelated Save draft and Publish preserve the exact unresolved
 test("new or changed missing Hero references are rejected", async () => {
   const previous = envelope(), next = structuredClone(previous);
   previous.content.hero.image_media_id = "";
-  assert.ok((await validation(new Map()).validateDraftMutation(next, previous, "en", false, "real_estate")).errors["hero.image_media_id"]);
+  assert.ok((await validation(new Map()).validateDraftMutation(next, previous, "en", false, "real_estate", previous)).errors["hero.image_media_id"]);
   previous.content.hero.image_media_id = other;
-  assert.ok((await validation(new Map()).validateDraftMutation(next, previous, "en", true, "real_estate")).errors["hero.image_media_id"]);
+  assert.ok((await validation(new Map()).validateDraftMutation(next, previous, "en", true, "real_estate", previous)).errors["hero.image_media_id"]);
 });
 test("malformed retained Hero and available unsupported MIME remain rejected", async () => {
   const previous = envelope(), next = structuredClone(previous);
   previous.content.hero.image_media_id = next.content.hero.image_media_id = "invalid";
-  assert.ok((await validation(new Map()).validateDraftMutation(next, previous, "en", false, "real_estate")).errors["hero.image_media_id"]);
+  assert.ok((await validation(new Map()).validateDraftMutation(next, previous, "en", false, "real_estate", previous)).errors["hero.image_media_id"]);
   for (const mime of ["video/mp4", "application/pdf"]) {
     const en = envelope();
-    assert.ok((await validation(new Map([[missing, { mime }]])).validateDraftMutation(en, en, "en", true, "real_estate")).errors["hero.image_media_id"]);
+    assert.ok((await validation(new Map([[missing, { mime }]])).validateDraftMutation(en, en, "en", true, "real_estate", en)).errors["hero.image_media_id"]);
   }
   const uppercase = envelope(); uppercase.content.hero.image_media_id = missing.toUpperCase();
-  assert.ok((await validation(new Map([[missing, { mime: "application/pdf" }]])).validateDraftMutation(uppercase, uppercase, "en", true, "real_estate")).errors["hero.image_media_id"], "Canonical DB key cannot be mistaken for an unresolved uppercase reference");
+  assert.ok((await validation(new Map([[missing, { mime: "application/pdf" }]])).validateDraftMutation(uppercase, uppercase, "en", true, "real_estate", uppercase)).errors["hero.image_media_id"], "Canonical DB key cannot be mistaken for an unresolved uppercase reference");
 });
 test("other unresolved media and OG remain errors while the retained Hero alone is exempt", async () => {
   const en = envelope();
   en.content.market.fundamentals.image_left_media_id = other;
   en.ogImageMediaId = other;
-  const result = await validation(new Map()).validateDraftMutation(en, en, "en", false, "real_estate");
+  const result = await validation(new Map()).validateDraftMutation(en, en, "en", false, "real_estate", en);
   assert.deepEqual(Object.keys(result.errors).sort(), ["market.fundamentals.image_left_media_id", "og_image_media_id"]);
 });
 test("Owners keeps strict Save draft and Publish validation for its existing unresolved Hero", async () => {
@@ -73,7 +73,20 @@ test("Owners keeps strict Save draft and Publish validation for its existing unr
   en.content.hero.image_media_id = missing;
   for (const cta of [en.content.why.cta_primary, en.content.why.cta_secondary, en.content.services.cta, en.content.dashboard.cta, ...en.content.plans.helpers.flatMap(helper => helper.cta ? [helper.cta] : [])]) cta.url = "https://example.test/fixed";
   for (const publication of [false, true]) {
-    const result = await validation(new Map()).validateDraftMutation(en, en, "en", publication, "owners");
+    const result = await validation(new Map()).validateDraftMutation(en, en, "en", publication, "owners", en);
     assert.ok(result.errors["hero.image_media_id"]);
   }
+});
+
+test("a draft cannot self-authorize a new missing Hero without the matching published authority", async () => {
+  const published = envelope(); published.content.hero.image_media_id = other;
+  const injectedDraft = envelope();
+  const original = structuredClone(injectedDraft);
+  for (const publication of [false, true]) {
+    const withDifferentPublished = await validation(new Map()).validateDraftMutation(injectedDraft, injectedDraft, "en", publication, "real_estate", published);
+    assert.ok(withDifferentPublished.errors["hero.image_media_id"], "A new orphan cannot borrow authority from itself");
+    const noPublished = await validation(new Map()).validateDraftMutation(injectedDraft, injectedDraft, "en", publication, "real_estate", null);
+    assert.ok(noPublished.errors["hero.image_media_id"], "No published baseline means no exemption");
+  }
+  assert.deepEqual(injectedDraft, original);
 });

@@ -230,6 +230,7 @@ export async function saveEditorialDraft<K extends EditorialPageKey = "home">(
       input.locale,
       false,
       input.key,
+      current.published,
     );
     if (!validation.payload || Object.keys(validation.errors).length)
       return invalid(validation.errors);
@@ -291,6 +292,7 @@ export async function publishEditorialDraft<
       input.locale,
       true,
       input.key,
+      current.published,
     );
     if (!checked.payload || Object.keys(checked.errors).length)
       return invalid(checked.errors);

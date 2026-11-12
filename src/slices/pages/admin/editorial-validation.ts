@@ -53,6 +53,7 @@ export async function validateDraftMutation<
   locale: string,
   publication = false,
   key: K = "home" as K,
+  retainedPublished: PageEnvelope<K> | null = null,
 ) {
   const checked = validateEnvelope(payload, publication, key);
   if (!checked.payload || Object.keys(checked.errors).length) return checked;
@@ -91,8 +92,8 @@ export async function validateDraftMutation<
   );
   return {
     payload: { ...checked.payload, content },
-    errors: key === "real_estate"
-      ? retainRealEstateHeroFallback(content as RealEstateContent, previous.content as RealEstateContent, assets, errors)
+    errors: key === "real_estate" && retainedPublished
+      ? retainRealEstateHeroFallback(content as RealEstateContent, retainedPublished.content as RealEstateContent, assets, errors)
       : errors,
   };
 }

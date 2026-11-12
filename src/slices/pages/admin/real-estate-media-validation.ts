@@ -83,20 +83,20 @@ export function realEstateMediaErrors(
   return errors;
 }
 
-/** Preserve the already-rendered fallback for an unchanged, unresolved legacy Hero.
+/** Preserve the already-rendered fallback for an unresolved Hero retained from the authoritative published snapshot.
  * This does not approve a newly chosen reference or an available asset of the wrong
  * type. loadMedia can omit assets it cannot resolve for the image renderer, so this
  * deliberately describes resolution rather than assuming the database row is absent.
  */
 export function retainRealEstateHeroFallback(
   content: RealEstateContent,
-  previous: RealEstateContent,
+  published: RealEstateContent,
   assets: ReadonlyMap<string, { mime: string }>,
   errors: Record<string, string>,
 ): Record<string, string> {
   const id = content.hero.image_media_id;
   if (
-    id !== previous.hero.image_media_id ||
+    id !== published.hero.image_media_id ||
     !uuid.safeParse(id).success ||
     assets.has(id) || assets.has(id.toLowerCase())
   ) return errors;

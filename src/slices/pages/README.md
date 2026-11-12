@@ -1734,7 +1734,9 @@ No SQL migration/backfill, external setup or real email delivery is introduced.
 
 Real Estate compatibility: an unchanged valid Hero UUID already using the public
 image fallback may remain unresolved by `loadMedia` during an unrelated Save draft
-or Publish. Validation preserves that exact reference and suppresses only its Hero
+or Publish. The exemption is anchored to the current server-read published snapshot
+on both operations, never to a draft or client-supplied baseline; no publication
+means no exemption. Validation preserves that exact reference and suppresses only its Hero
 media error. New/changed unresolved references, malformed UUIDs, resolved assets of
 an unsupported MIME, other slots and all other page keys retain their strict checks.
 This neither repairs data nor creates an asset; the existing public fallback stays.
