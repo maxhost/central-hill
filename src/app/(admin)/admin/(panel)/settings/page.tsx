@@ -1,4 +1,4 @@
-import { listHeaderContactFormOptions } from "@slices/forms/contract";
+import { listHeaderContactFormOptions } from "@slices/forms/server-contract";
 import { requireStaff } from "@core/auth";
 import { getGlobalsForEdit } from "@slices/settings/admin/queries";
 import { GlobalsForm } from "@slices/settings/admin/ui/globals-form";

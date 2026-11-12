@@ -11,5 +11,4 @@ export { FormEditor } from "./admin/form-editor";
 export { listForms, getFormEditor } from "./server/queries";
 
 export * from "./public-types";
-export { listHeaderContactFormOptions, getAssignableHeaderForm, assignableHeaderFormGuard, readHeaderContactForm } from "./server/public-queries";
 export { PublicContactForm } from "./ui/public-contact-form";

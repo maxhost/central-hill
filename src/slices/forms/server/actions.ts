@@ -6,7 +6,7 @@ import { z } from "zod";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
 import { executeSerialized } from "@core/db/serialized";
-import { headerContactUsageGuard } from "@slices/settings/contract";
+import { headerContactUsageGuard } from "@slices/settings/server-contract";
 import { HEADER_CONTACT_LOCK } from "../public-types";
 import { refreshPublicForm } from "./public-publish";
 import { sendEmail } from "@core/email";

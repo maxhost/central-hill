@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { LOCALES } from "@core/db/columns";
 import { updateTag, revalidatePath } from "@core/revalidate";
-import { headerContactUsageGuard } from "@slices/settings/contract";
+import { headerContactUsageGuard } from "@slices/settings/server-contract";
 import { FORMS_PUBLIC_TAGS } from "../public-types";
 
 export async function refreshPublicForm(id: string): Promise<void> {

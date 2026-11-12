@@ -40,4 +40,3 @@ export type { LeadFormProps } from "./ui/types";
 export { leadsAdminScreens } from "./admin/screens";
 
 export type * from "./form-capture-types";
-export { captureFormContact } from "./server/capture-form-contact";

@@ -18,8 +18,10 @@ capture guards. No awaitable database transaction callback is assumed.
 
 Schema-only exception to contract.ts: settings/schema imports Forms' tiny
 schema-contract.ts solely for its foreign key. Importing the general runtime barrel
-would load server-only/auth/UI modules into drizzle-kit. All runtime cross-slice
-access continues through contract.ts. The FK remains represented in Drizzle so
+would load server-only/auth/UI modules into drizzle-kit. Server composition also has explicit server-contract.ts entry points, guarded by
+server-only, for SQL/capture helpers and placement readers. They are not re-exported
+through barrels consumed by client islands; doing so poisoned the client dependency
+graph in the integrated build. Runtime cross-slice access uses these declared contracts. The FK remains represented in Drizzle so
 future generation cannot silently remove it.
 
 Checkpoint: restore/header-contact-2026-11-12-1794491175278 at34ada31, full local DB

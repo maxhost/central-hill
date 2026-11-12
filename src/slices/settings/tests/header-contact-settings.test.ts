@@ -33,7 +33,8 @@ function harness({ existing = true, available = true, saved = true } = {}) {
       state.locks.push(key); state.queries.push(new PgDialect().sqlToQuery(query));
       return { rows: saved ? [{ id }] : [] };
     } },
-    "@slices/forms/contract": { HEADER_CONTACT_LOCK: "header-contact:v1", getAssignableHeaderForm: async () => { state.candidateReads++; return available ? { id: choice, revision: 3 } : null; }, assignableHeaderFormGuard: (value: string, revision: number) => sql`exists(select 1 from form_definition where id=${value}::uuid and revision=${revision} and status='draft')` },
+    "@slices/forms/contract": { HEADER_CONTACT_LOCK: "header-contact:v1" },
+    "@slices/forms/server-contract": { getAssignableHeaderForm: async () => { state.candidateReads++; return available ? { id: choice, revision: 3 } : null; }, assignableHeaderFormGuard: (value: string, revision: number) => sql`exists(select 1 from form_definition where id=${value}::uuid and revision=${revision} and status='draft')` },
     "../defaults": { DEFAULT_GLOBALS }, "../schema": { company_settings },
     "../server/publish": { revalidateGlobals: () => { state.revalidated++; } },
     "../server/website-locales": { saveWebsiteTranslations: noop },
