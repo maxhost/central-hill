@@ -45,4 +45,7 @@ qa-independent.md; browser/DBespera exactocandidato+runtime readiness. Login nor
 extraer cookies/tokens. No nesteddelegation; rootintegra trasaprobación. Pruebas explícitas
 pnpm exec tsx --test, typecheck/lint/build/dbcheck. No placeholders comoevidencia.
 
-Estado: contratos iniciales en preparación tras checkpoint completo verificado.
+Estado: contratos948e846 entregados, dos implementadores aislados en marcha y QA
+preparado sin browser/DB hasta readiness. Bases schema-only independientes preparadas;
+dependencias+next-env/env/preload propios, sin modificar main. ADR0083 registra kind
+deal_enquiry fijo nuevoorigen y compatibilidadcontact de3existentes.
