@@ -17,3 +17,25 @@ sin modificar authoredmain. Nuevas bases restore y QA separadas, anteriores inta
 
 Main3071 PID42708/parent42702 y media9081 PID42630 retenidos. Working tree solo tenía
 PNGlogo y ambos symlinks públicos preexistentes; se preservan.
+
+## Entorno y revisión previa
+
+Implementadores aislados en service-enquiry/services y service-enquiry/forms; cada uno
+tiene nueva DB schema-only serviceenquiryservicesqa20261112/serviceenquiryunitqa20261112,
+env privado y preload de host/DB/rol exactos. Integration usa clon QA completo propio.
+QA independiente revisa contratos y prepara harness con conservación antes/después;
+sin navegador/escrituras hasta candidato verificado. Dependencias integration copiadas
+por clonefile para Turbopack, sin alterar node_modules del usuario.
+
+Los procesos heredados main/media dejaron de escuchar antes de la primera captura de
+editor, fuera de acciones de esta tarea. Se reabrieron mismos scripts/archivos/env con
+Node22 y preload original obligatorio; no cambio de DB/caché. Baseline readonly pasó
+con espera de hidratación, sin Save ni captura de formulario. Dos intentos de harness
+previos: login antes de hidratar y screenshot con ocultado de caret antes de hidratar
+editor; el segundo provocó warning dev de atributos y POST de logging bloqueado.
+Se corrigió solo espera de harness; no se deduce defecto de producto. Tercer pase0
+pageerrors/0writes bloqueadas. Booking screenshot conserva diseño vigente.
+
+Conservación main tras reapertura: 44 tablas de negocio+ledger/1504 filas exactas al
+checkpoint; auth excluida únicamente por login local normal. Env/logo/ambos symlinks
+SHA o destino exactos. Ninguna fixture ni escritura de contenido en main.
