@@ -61,6 +61,7 @@ export interface SocialLinks {
 
 /** Site-wide singleton read model (contact, stats, office, Avantio, default OG). */
 export interface SiteGlobals {
+  headerContactFormId?: string | null;
   /** Locale-resolved Book Now and floating Earn With Us configuration. */
   navigationCtas?: import("./navigation-cta-types").NavigationCtas;
   email: string;
@@ -163,3 +164,5 @@ export { EDITABLE_SITE_ICON_KEYS } from "./site-icons";
 export { HOURS_LABEL_LOCALES, HOURS_LABEL_TARGET_LOCALES, HOURS_LABEL_MAX, OFFICE_HOURS_DEFAULT_LABELS, OFFICE_HOURS_DEFAULT_VALUES } from "./hours-label-types";
 export type { HoursLabelTranslations } from "./hours-label-types";
 export { isSettingsEditorialEntity } from "./manual-locale-fields";
+
+export { headerContactAssignmentGuard, headerContactUsageGuard } from "./server/header-contact";

@@ -1,4 +1,4 @@
-import { integer, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { pkUuid, timestamps } from "@core/db/columns";
 import type { DeliveryState, StoredFormBlueprint, FormTemplate, FormValues } from "./types";
 
@@ -15,4 +15,9 @@ export const form_test_submission = pgTable("form_test_submission", {
   definition_snapshot: jsonb().$type<StoredFormBlueprint>().notNull(), values: jsonb().$type<FormValues>().notNull(),
   created_by: text().notNull(), delivery: text().$type<DeliveryState>().notNull().default("skipped"),
   provider_id: text(), delivery_error: text(), ...timestamps,
+});
+
+/** Durable short-window counters for anonymous header contact attempts. */
+export const form_public_rate_limit = pgTable("form_public_rate_limit", {
+  key: text().primaryKey(), attempts: integer().notNull(), window_start: timestamp("window_start", { withTimezone: true }).notNull(),
 });

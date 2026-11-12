@@ -1,0 +1,59 @@
+import "server-only";
+import { createHash } from "node:crypto";
+import { eq, desc, sql } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
+import { z } from "zod";
+import { requireStaff } from "@core/auth";
+import { db } from "@core/db/client";
+import type { Locale } from "@core/db/columns";
+import { loadTranslationRows, hashSource } from "@core/i18n";
+import { getGlobals } from "@slices/settings/contract";
+import { form_definition } from "../schema";
+import { approvedBlueprint, textFields } from "../domain";
+import { readStoredBlueprint, formIdSchema } from "../validation";
+import type { FormTranslations } from "../types";
+import type { HeaderFormOption, PublicFormModel } from "../public-types";
+import { record } from "./queries";
+
+export async function listHeaderContactFormOptions(): Promise<HeaderFormOption[]> {
+  await requireStaff(["admin"]);
+  return (await db.select().from(form_definition).orderBy(desc(form_definition.updated_at))).map(row => {
+    let reason: HeaderFormOption["reason"] = row.status === "archived" ? "archived" : !z.email().max(254).safeParse(row.recipient).success ? "recipient" : null;
+    try { readStoredBlueprint(row.definition); } catch { reason = "definition"; }
+    return { id: row.id, name: row.name, available: reason === null, reason };
+  });
+}
+export async function getAssignableHeaderForm(id: string): Promise<{ id: string; revision: number } | null> {
+  if (!formIdSchema.safeParse(id).success) return null;
+  const [row] = await db.select().from(form_definition).where(eq(form_definition.id,id)).limit(1);
+  if (!row || row.status !== "draft" || !z.email().max(254).safeParse(row.recipient).success) return null;
+  try { readStoredBlueprint(row.definition); } catch { return null; }
+  return { id: row.id, revision: row.revision };
+}
+export function assignableHeaderFormGuard(id: string, revision: number) {
+  return sql`exists(select 1 from ${form_definition} where ${form_definition.id}=${id}::uuid and ${form_definition.revision}=${revision} and ${form_definition.status}='draft')`;
+}
+/** Server-only fresh source for submission. Recipient never enters the public model. */
+export async function readPublicFormSource(id: string, locale: Locale) {
+  if (!formIdSchema.safeParse(id).success) return null;
+  const [row] = await db.select().from(form_definition).where(eq(form_definition.id,id)).limit(1);
+  if (!row || row.status !== "draft" || !z.email().max(254).safeParse(row.recipient).success) return null;
+  let form;try { form = record(row); } catch { return null; }
+  const translations: FormTranslations = { es: {}, pt: {}, fr: {} };
+  const source = textFields(form.definition);
+  for (const target of await loadTranslationRows({ type: "form_definition", id })) {
+    if (target.locale === "en" || source[target.field] === undefined) continue;
+    translations[target.locale][target.field] = { value: target.value, state: target.state, stale: target.source_hash !== hashSource(source[target.field] ?? "") };
+  }
+  const definition = approvedBlueprint(form.definition,translations,locale);
+  const fingerprint = createHash("sha256").update(JSON.stringify({ id, revision: form.revision, locale, definition })).digest("hex");
+  return { form, definition, fingerprint };
+}
+export async function readHeaderContactForm(locale: Locale): Promise<PublicFormModel | null> {
+  const id = (await getGlobals(locale))?.headerContactFormId;
+  if (!id) return null;
+  return unstable_cache(async () => {
+    const source = await readPublicFormSource(id,locale);
+    return source ? { id, revision: source.form.revision, locale, fingerprint: source.fingerprint, definition: source.definition } : null;
+  }, ["header-contact-form",id,locale,"v1"], { tags: ["forms:public",`form_definition:${id}`] })();
+}

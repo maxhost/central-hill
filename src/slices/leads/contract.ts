@@ -38,3 +38,6 @@ export type { LeadFormProps } from "./ui/types";
  * leads/…`. Pure data (no server/client runtime) — safe to import anywhere.
  */
 export { leadsAdminScreens } from "./admin/screens";
+
+export type * from "./form-capture-types";
+export { captureFormContact } from "./server/capture-form-contact";

@@ -7,5 +7,5 @@ import { env } from "@core/env";
  * `server/` query functions and backoffice actions. Public pages are statically
  * rendered and must NOT call this at request time (conventions.md → rendering).
  */
-const sql = neon(env.DATABASE_URL);
-export const db = drizzle(sql);
+export const sqlClient = neon(env.DATABASE_URL);
+export const db = drizzle(sqlClient);

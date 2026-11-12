@@ -1,4 +1,5 @@
 import { boolean, integer, jsonb, pgTable, text, uuid } from "drizzle-orm/pg-core";
+import { form_definition } from "@slices/forms/schema-contract";
 import { pkUuid, timestamps } from "@core/db/columns";
 
 /**
@@ -8,6 +9,7 @@ import { pkUuid, timestamps } from "@core/db/columns";
  */
 export const company_settings = pgTable("company_settings", {
   id: pkUuid(),
+  header_contact_form_id: uuid().references(() => form_definition.id, { onDelete: "restrict" }),
   email: text().notNull(),
   phone: text().notNull(),
   whatsapp: text(),

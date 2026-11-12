@@ -1,4 +1,5 @@
-import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import type { ContactFormSnapshot } from "./form-capture-types";
 import { pkUuid, timestamps } from "@core/db/columns";
 
 /**
@@ -7,6 +8,8 @@ import { pkUuid, timestamps } from "@core/db/columns";
  */
 export const lead = pgTable("lead", {
   id: pkUuid(),
+  form_snapshot: jsonb().$type<ContactFormSnapshot>(),
+  submission_key: uuid().unique(),
   kind: text()
     .$type<"earnings_estimate" | "deal_enquiry" | "contact" | "newsletter">()
     .notNull(),
