@@ -16,7 +16,9 @@ guestContactUsageGuard(id). Solo publishedEN keyguest; uso ENdraft/publicado, pa
 content.dual_cta.owner.contact.form_id. PublicFormModel y Leads sourcePage union amplían
 'guests-dual-cta'. Forms B expondrá readGuestContactForm(locale, override?:string|null)
 por Forms/server-contract y submitGuestOwnerContactForm acción explícita. Override requiere
-staff, solo preview. Root docs/ADR0082/provisión/scripts externos/integración.
+staff, solo preview. Root docs/ADR0082/provisión/scripts externos/integración y único escritor
+src/slices/settings/ui/components/contact-dialog.tsx: envolver solo body con inert
+cuando editorPreviewId privado, preservando ancho/markup público y controles diálogo.
 
 Integration /private/tmp/central-hill-guest-contact-integration branch guest-contact/integration.
 A /private/tmp/central-hill-guest-contact-pages branch guest-contact/pages, único escritor
@@ -43,4 +45,6 @@ Aceptación y comandos en plan: pnpm exec tsx --test <archivos explícitos>/type
 dbcheck. Slice imports solo contratos declarados, server-only fuera de clientbarrels. Sin
 nesteddelegation, sharedfiles singlewriter; solo root integra después QA aprobado.
 
-Estado: contratos iniciales en preparación; checkpoint completo verificado.
+Estado: contratos b3f5366 entregados; A/B en worktrees aislados y QA independiente
+prepara harness sin browser hasta readiness. Ownschema-only DBs guestcontactpagesqa20261112
+y guestcontactunitqa20261112 preparados; 1344objetosGit/183mediaSHA exactos verificados.

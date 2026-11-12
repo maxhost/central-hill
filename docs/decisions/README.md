@@ -1366,3 +1366,5 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 - [0080 — Configured public header contact](0080-configured-header-contact.md)
 
 - [0081 — Shared About Contact assignment](0081-about-contact-form-assignment.md)
+
+- [0082 — Guest owner contact Form assignment](0082-guest-owner-contact-form-assignment.md)

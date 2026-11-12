@@ -93,6 +93,8 @@ export function ContactDialog({
     };
   }, [isOpen]);
 
+  const body = children === undefined ? <ContactForm source={source} className="mt-6" /> : children;
+
   return (
     <>
       <button
@@ -148,7 +150,7 @@ export function ContactDialog({
                 </button>
                 <h2 className="font-serif text-2xl text-ink">{title}</h2>
                 {intro && <p className="mt-2 text-sm leading-relaxed text-ink-soft">{intro}</p>}
-                {children === undefined ? <ContactForm source={source} className="mt-6" /> : children}
+                {editorPreviewId ? <div inert>{body}</div> : body}
               </div>
             </div>,
             document.body,
