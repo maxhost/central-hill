@@ -13,6 +13,7 @@ import { resolveEditorialEnvelope } from "../server/editorial-publication";
 import { getPageEditorialModel } from "./editorial-queries";
 import { renderPageLivePreview } from "./live-preview-actions";
 import { readEditorialRows } from "./editorial-store";
+import { realEstateEnquiryFormId } from "../real-estate-enquiry-content";
 import { guestContactFormId } from "../guest-contact-content";
 import { aboutContactFormId } from "../about-contact-content";
 import { homeEditorBindingIds } from "./home-contextual";
@@ -49,11 +50,13 @@ export async function PageEditorialPreview({ pageKey, query }: {
  const aboutOverride = pageKey === "about" ? { aboutContactFormId: aboutContactFormId((enAbout?.draft ?? enAbout?.published)?.content) ?? null } : {};
  const enGuest = pageKey === "guest" ? (await readEditorialRows("guest")).find(row => row.locale === "en") : null;
  const guestOverride = pageKey === "guest" ? { guestContactFormId: guestContactFormId((enGuest?.draft ?? enGuest?.published)?.content) ?? null } : {};
+ const enRealEstate = pageKey === "real_estate" ? (await readEditorialRows("real_estate")).find(row => row.locale === "en") : null;
+ const realEstateOverride = pageKey === "real_estate" ? { realEstateEnquiryFormId: realEstateEnquiryFormId((enRealEstate?.draft ?? enRealEstate?.published)?.content) ?? null } : {};
  return <NextIntlClientProvider locale={locale} messages={messages}>
   <SiteHeader locale={locale as Locale} />
   <PageEditorLivePreview instance={query.instance} bindingIds={ids}
    renderPreviewAction={async (payload) => { "use server"; return renderPageLivePreview(pageKey, locale, payload, surface); }}>
-   {await adapter.render({ locale: locale as Locale, preview: true, page, surface, ...aboutOverride, ...guestOverride })}
+   {await adapter.render({ locale: locale as Locale, preview: true, page, surface, ...aboutOverride, ...guestOverride, ...realEstateOverride })}
   </PageEditorLivePreview>
   <SiteFooter locale={locale as Locale} />
  </NextIntlClientProvider>;

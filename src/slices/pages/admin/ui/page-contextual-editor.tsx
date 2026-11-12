@@ -14,6 +14,7 @@ import { PageNavigation } from "./page-navigation";
 import { pageImageFields } from "../image-alt-fields";
 import { setPageField } from "../field-update";
 import { AboutContactSelector } from "./about-contact-selector";
+import { realEstateEnquiryFormId } from "../../real-estate-enquiry-content";
 import { guestContactFormId } from "../../guest-contact-content";
 import { aboutContactFormId } from "../../about-contact-content";
 import { editorViewSections, type PageEditorView } from "../editorial-views";
@@ -65,6 +66,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     envelope: state.model.working,
     ...(descriptor.key === "about" ? { aboutContactFormId: aboutContactFormId(states.en.model.working.content) ?? null } : {}),
     ...(descriptor.key === "guest" ? { guestContactFormId: guestContactFormId(states.en.model.working.content) ?? null } : {}),
+    ...(descriptor.key === "real_estate" ? { realEstateEnquiryFormId: realEstateEnquiryFormId(states.en.model.working.content) ?? null } : {}),
     localMedia: Object.fromEntries(descriptorMediaIds(state.model.working.content, state.model.working.ogImageMediaId, descriptor)
       .flatMap(id => localPreviews[id]?.url.startsWith("blob:") ? [[id, localPreviews[id]!]] : [])),
   }), [state.model.working, states.en.model.working, localPreviews, descriptor]);
@@ -199,6 +201,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   const english = (states.en.model.draft ?? states.en.model.published ?? states.en.model.working).content;
   const englishText = Object.fromEntries(editorialTextPaths(english, descriptor).map(path => [editorialTranslationField(english, path, descriptor), editorialAt(english, path)]));
   function groupContactFields(fields: { id: string; node: ReactNode }[]) {
+    if (descriptor.key === "real_estate" && section.id === "deal_enquiry") return fields.flatMap(field => [field.node, ...(field.id === "deal_enquiry.note" ? [<AboutContactSelector key="real-estate-enquiry-form" placement="real_estate" value={realEstateEnquiryFormId(states.en.model.working.content)} readOnly={locale !== "en"} disabled={busy} error={states.en.errors["deal_enquiry.form_id"]} onEnglish={() => selectLocale("en")} onChange={value => change(["deal_enquiry", "form_id"], value)} />] : [])]);
     if (descriptor.key === "about" && section.id === "contact") return fields.flatMap(field => [field.node, ...(field.id === "contact.form.subheadline" ? [<AboutContactSelector key="about-contact-form" value={aboutContactFormId(states.en.model.working.content)} readOnly={locale !== "en"} disabled={busy} error={states.en.errors["contact.form.form_id"]} onEnglish={() => selectLocale("en")} onChange={value => change(["contact", "form", "form_id"], value)} />] : [])]);
     if (descriptor.key !== "guest" || section.id !== "dual_cta") return fields.map(field => field.node);
     const contactIds = ["dual_cta.owner.contact.title", "dual_cta.owner.contact.intro"];

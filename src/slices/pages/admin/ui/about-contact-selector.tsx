@@ -6,11 +6,11 @@ import type { HeaderFormOption } from "@slices/forms/contract";
 import { listAboutContactForms } from "../about-contact-actions";
 
 export function AboutContactSelector({ value, onChange, readOnly, onEnglish, error, disabled, placement = "about" }: {
-  placement?: "about" | "guest";
+  placement?: "about" | "guest" | "real_estate";
   value: string | null | undefined; onChange(value: string | null): void;
   readOnly: boolean; onEnglish(): void; error?: string; disabled: boolean;
 }) {
-  const t = useTranslations(placement === "guest" ? "pages.admin.guestContact" : "pages.admin.aboutContact");
+  const t = useTranslations(placement === "real_estate" ? "pages.admin.realEstateEnquiry" : placement === "guest" ? "pages.admin.guestContact" : "pages.admin.aboutContact");
   const id = useId();
   const [options, setOptions] = useState<HeaderFormOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,7 +23,7 @@ export function AboutContactSelector({ value, onChange, readOnly, onEnglish, err
   useEffect(() => { let active = true; listAboutContactForms().then(rows => { if (active) setOptions(rows); }).catch(() => { if (active) setFailed(true); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, []);
   const selected = options.find(option => option.id === value);
   const unavailable = !!value && !loading && !failed && (!selected || !selected.available);
-  return <div className="space-y-2" data-about-contact-selector={placement === "about" ? "" : undefined} data-guest-contact-selector={placement === "guest" ? "" : undefined}>
+  return <div className="space-y-2" data-about-contact-selector={placement === "about" ? "" : undefined} data-guest-contact-selector={placement === "guest" ? "" : undefined} data-real-estate-enquiry-selector={placement === "real_estate" ? "" : undefined}>
     <label className="block text-sm font-medium text-ink" htmlFor={id}>{t("label")}</label>
     <select id={id} value={value ?? ""} disabled={disabled || readOnly || loading} aria-describedby={`${id}-help${error || unavailable ? ` ${id}-error` : ""}`} aria-invalid={!!error || unavailable}
       className="w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:opacity-60"

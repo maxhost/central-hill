@@ -1705,3 +1705,29 @@ the mutation. Published-ID/published_at identity stays stable across EN draft sa
 Pages server-contract exposes the Guest published assignment and usage SQL guards;
 archival checks EN draft or published, never target copies. There is no SQL migration,
 backfill or automatic provider configuration; Resend remains console/unconfigured.
+
+## Real Estate Enquiry Forms assignment —2026-11-12
+
+The Enquiry inspector places Form after Note. Optional/nullable `deal_enquiry.form_id`
+has one shared EN selection for EN/ES/PT/FR, activated only by EN Publish. EN draft
+saves remain private, target saves cannot replace the common choice, omitted old EN
+payloads preserve it and explicit null restores the current static enquiry form.
+The Real Estate adapter omits the new hidden field from scaffold defaults. Invalid
+manual references fall back without discarding authored page copy or GET repairs.
+
+Forms controls selected fields, rows, steps, submission, consent and responses. The
+Page retains EnquirySplit, `#deal-enquiry`, headline/lede and direct contacts. Page
+Submit label and Note belong only to the legacy static form; selector help explains
+this distinction. A presentational frame matching FormCard surrounds the configured
+runtime, never a second `<form>`. The fallback StaticFormCard still cancels submit;
+no previously unused Leads DealEnquiryForm is activated. Both previews are inert.
+
+The editor passes an explicit unsaved EN working override only to the authenticated
+private preview, including target tabs. Public resolution uses the independent
+published EN assignment from Pages server-contract. EN Publish invalidates four
+`/real-estate` paths/tags; Forms Save/Approve updates public fields without Page
+republish. Header/About/Guest assignments and previous submission hashes stay separate.
+Real Estate Save/Publish acquire the existing shared advisory lock before the fresh
+mutation snapshot, retaining locale CAS, EN-first locks and template guards. Capture
+and Archive coordinate through the published-assignment/EN-draft-or-published guards.
+No SQL migration/backfill, external setup or real email delivery is introduced.

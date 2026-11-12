@@ -41,6 +41,7 @@ function preview(saved: unknown, locale = "en") {
     "./live-preview-actions": { renderPageLivePreview: async () => ({ ok: true }) },
     "./home-contextual": { homeEditorBindingIds: [] },
     "./editorial-store": { readEditorialRows: async () => { assert.fail("Owners preview must not read About assignment rows"); } },
+    "../real-estate-enquiry-content": { realEstateEnquiryFormId: () => { assert.fail("Owners preview must not resolve a Real Estate assignment"); } },
     "../guest-contact-content": { guestContactFormId: () => { assert.fail("Owners preview must not resolve a Guest assignment"); } },
     "../about-contact-content": { aboutContactFormId: () => { assert.fail("Owners preview must not resolve an About assignment"); } },
   };

@@ -2071,6 +2071,28 @@
           "recipient": "Missing recipient",
           "definition": "Invalid definition"
         }
+      },
+      "realEstateEnquiry": {
+        "label": "Form",
+        "original": "Use current enquiry form",
+        "help": "Publish Real Estate in EN to activate this selection for all four languages. Later saves in Forms update its public fields without publishing Real Estate again. Submit label and Note above apply only to the current static form; a selected form supplies its own button and responses.",
+        "shared": "The same form is used for EN, ES, PT and FR.",
+        "editEnglish": "Edit selection in EN",
+        "loadingSelection": "Loading selected form…",
+        "missing": "Selected form is unavailable",
+        "invalid": "Choose an available form with a valid recipient and definition, or use the current contact form.",
+        "unavailable": "This form is unavailable. Select another form or use the current contact form.",
+        "loadError": "Could not load forms. Refresh the list to try again.",
+        "empty": "No available forms yet. Create a form, save it, then refresh this list.",
+        "create": "Create form",
+        "edit": "Edit selected form",
+        "refresh": "Refresh list",
+        "loading": "Loading…",
+        "reason": {
+          "archived": "Archived",
+          "recipient": "Missing recipient",
+          "definition": "Invalid definition"
+        }
       }
     }
   },

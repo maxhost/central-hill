@@ -12,6 +12,8 @@ import {
   FormSubmit,
   FormTextarea,
 } from "@core/ui";
+import { PublicContactForm } from "@slices/forms/contract";
+import { readRealEstateEnquiryForm } from "@slices/forms/server-contract";
 import { getGlobals } from "@slices/settings/contract";
 import type { RealEstateContent } from "../../schemas/real-estate";
 import { enquiryContactLines } from "../contact-line";
@@ -37,8 +39,8 @@ import { StaticFormCard } from "./static-form-card";
  * - **Form fields are fixed i18n** (`pages.dealEnquiryForm.*`, not editable). Select options are
  *   `{ value, label }` with stable English values, so the future lead keeps a locale-independent
  *   value; only the label is translated.
- * - **The form still submits nothing** (`StaticFormCard` cancels the submit). Wiring it to leads
- *   is out of scope.
+ * - Without a configured saved Form, the legacy static form still submits nothing.
+ *   Configured definitions use the Forms public pipeline inside a presentational frame.
  * Every field's `id`/`name`/`type`/`required` is unchanged; `id="deal-enquiry"` is the anchor for
  * the page's `#deal-enquiry` CTAs.
  */
@@ -66,8 +68,12 @@ const MODELS = [
 export async function DealEnquirySection({
   locale,
   content,
+  preview = false,
+  realEstateEnquiryFormId,
 }: {
   locale: Locale;
+  preview?: boolean;
+  realEstateEnquiryFormId?: string | null;
   /** The page's optional `deal_enquiry` copy (blank / absent → i18n defaults). */
   content?: RealEstateContent["deal_enquiry"];
 }) {
@@ -76,6 +82,7 @@ export async function DealEnquirySection({
     getTranslations({ locale, namespace: "pages.dealEnquiryForm" }),
     getGlobals(locale),
   ]);
+  const model = preview ? await readRealEstateEnquiryForm(locale, realEstateEnquiryFormId ?? null) : await readRealEstateEnquiryForm(locale);
   const options = (list: readonly (readonly [string, string])[]) =>
     list.map(([value, key]) => ({ value, label: f(key) }));
 
@@ -96,7 +103,9 @@ export async function DealEnquirySection({
       contact={contact}
       reveal
     >
-      <StaticFormCard>
+      {model ? <div className="rounded-[8px] border border-line bg-surface px-[36px] pt-[38px] pb-[34px] [box-shadow:0_30px_60px_-34px_rgba(0,0,0,0.45)] [&>div]:mt-0" data-real-estate-enquiry-frame>
+        <PublicContactForm key={`${model.id}:${model.revision}:${model.fingerprint}`} model={model} preview={preview} />
+      </div> : <StaticFormCard inert={preview || undefined}>
         <FormGroup title={f("orgTitle")} tag={f("required")}>
           <FormField htmlFor="company" label={f("companyLabel")} required>
             <FormInput id="company" name="company" type="text" placeholder={f("companyPlaceholder")} required />
@@ -155,7 +164,7 @@ export async function DealEnquirySection({
 
         <FormSubmit>{`${orMessage(content?.submit_label, f("submit"))} →`}</FormSubmit>
         <FormNote>{orMessage(content?.note, f("note"))}</FormNote>
-      </StaticFormCard>
+      </StaticFormCard>}
     </EnquirySplit>
   );
 }

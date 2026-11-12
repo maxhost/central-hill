@@ -263,6 +263,7 @@ export const realEstateSchema = z.object({
    */
   deal_enquiry: z
     .object({
+      form_id: adminHidden(z.string().max(100).nullable().optional()),
       headline: tStrOpt({ max: 160 }).describe(
         "Leave blank for “Ready to Explore a Partnership?”",
       ),

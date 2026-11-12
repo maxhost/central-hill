@@ -25,10 +25,10 @@ export async function publishPageDraft<K extends EditorialPageKey>(
   if (!result.ok) return result;
   try {
     updateTag(pageLocaleTag(input.key, input.locale));
-    if ((input.key === "about" || input.key === "guest") && input.locale === "en") {
+    if ((input.key === "about" || input.key === "guest" || input.key === "real_estate") && input.locale === "en") {
       for (const locale of LOCALES) {
         updateTag(pageLocaleTag(input.key, locale));
-        revalidatePath(`/${locale}/${input.key === "guest" ? "guests" : "about"}`);
+        revalidatePath(`/${locale}/${input.key === "guest" ? "guests" : input.key === "real_estate" ? "real-estate" : "about"}`);
       }
     }
     const adapter = getEditorialAdapter(input.key);

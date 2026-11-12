@@ -23,6 +23,8 @@ import { executeSerialized } from "@core/db/serialized";
 import { HEADER_CONTACT_LOCK, getAssignableContactForm, assignableContactFormGuard } from "@slices/forms/server-contract";
 import { aboutContactFormId, preserveAboutContactAssignment } from "../about-contact-content";
 import { guestContactFormId, preserveGuestContactAssignment } from "../guest-contact-content";
+import { realEstateEnquiryFormId, preserveRealEstateEnquiryAssignment } from "../real-estate-enquiry-content";
+import type { RealEstateContent } from "../schemas/real-estate";
 import type { GuestContent } from "../schemas/guest";
 import type { AboutContent } from "../schemas/about";
 import { eq, sql, type SQL } from "drizzle-orm";
@@ -157,7 +159,7 @@ export async function commitEditorial<
       ${input.assignmentGuard ? sql`and (${input.assignmentGuard})` : sql``}
     returning id
   ) select id from saved`;
-  const result = (input.key === "about" || input.key === "guest") ? await executeSerialized(HEADER_CONTACT_LOCK, statement) : await db.execute(statement);
+  const result = (input.key === "about" || input.key === "guest" || input.key === "real_estate") ? await executeSerialized(HEADER_CONTACT_LOCK, statement) : await db.execute(statement);
   return result.rows.length === 1;
 }
 
@@ -211,9 +213,12 @@ export async function saveEditorialDraft<K extends EditorialPageKey = "home">(
     } as PageEnvelope<K> : input.key === "guest" ? {
       ...checked.payload,
       content: preserveGuestContactAssignment(checked.payload.content as GuestContent, current.working.content as GuestContent, input.locale),
+    } as PageEnvelope<K> : input.key === "real_estate" ? {
+      ...checked.payload,
+      content: preserveRealEstateEnquiryAssignment(checked.payload.content as RealEstateContent, current.working.content as RealEstateContent, input.locale),
     } as PageEnvelope<K> : checked.payload;
-    const assignmentReader = input.key === "about" ? aboutContactFormId : input.key === "guest" ? guestContactFormId : () => null;
-    const assignmentField = input.key === "guest" ? "dual_cta.owner.contact.form_id" : "contact.form.form_id";
+    const assignmentReader = input.key === "about" ? aboutContactFormId : input.key === "guest" ? guestContactFormId : input.key === "real_estate" ? realEstateEnquiryFormId : () => null;
+    const assignmentField = input.key === "guest" ? "dual_cta.owner.contact.form_id" : input.key === "real_estate" ? "deal_enquiry.form_id" : "contact.form.form_id";
     const selectedId = input.locale === "en" ? assignmentReader(candidate.content) : null;
     const changedAssignment = selectedId !== assignmentReader(current.working.content);
     const selected = selectedId && z.uuid().safeParse(selectedId).success ? await getAssignableContactForm(selectedId) : null;
@@ -274,8 +279,8 @@ export async function publishEditorialDraft<
     if (current.revision !== input.expectedRevision)
       return { ok: false, error: "conflict" };
     if (!current.draft) return { ok: false, error: "no_draft" };
-    const assignmentReader = input.key === "about" ? aboutContactFormId : input.key === "guest" ? guestContactFormId : () => null;
-    const assignmentField = input.key === "guest" ? "dual_cta.owner.contact.form_id" : "contact.form.form_id";
+    const assignmentReader = input.key === "about" ? aboutContactFormId : input.key === "guest" ? guestContactFormId : input.key === "real_estate" ? realEstateEnquiryFormId : () => null;
+    const assignmentField = input.key === "guest" ? "dual_cta.owner.contact.form_id" : input.key === "real_estate" ? "deal_enquiry.form_id" : "contact.form.form_id";
     const selectedId = input.locale === "en" ? assignmentReader(current.draft.content) : null;
     const selected = selectedId && z.uuid().safeParse(selectedId).success ? await getAssignableContactForm(selectedId) : null;
     if (selectedId !== null && selectedId !== undefined && !selected)

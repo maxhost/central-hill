@@ -26,6 +26,8 @@ import {
 } from "../schemas/real-estate";
 import { DealEnquirySection } from "./components/deal-enquiry-section";
 import { AssetTypeCards } from "./components/asset-type-cards";
+import { withoutRealEstateEnquiryAssignment } from "../real-estate-enquiry-content";
+import type { RealEstateContent } from "../schemas/real-estate";
 import { realEstateAssetFallbackIndex, realEstateProcessFallbackIndex } from "../real-estate-content";
 import { FaqSection } from "./components/faq-section";
 import { SIDE_MEDIA_CLASS, sideMedia } from "./components/side-media";
@@ -126,14 +128,15 @@ function PreviewBinding({ preview, id, children }: { preview: boolean; id: strin
   return preview ? <div data-editor-binding={id}>{children}</div> : <>{children}</>;
 }
 
-export async function RealEstatePage({ locale, preview = false, page: injectedPage }: {
-  locale: Locale; preview?: boolean; page?: RealEstatePageResult | null;
+export async function RealEstatePage({ locale, preview = false, page: injectedPage, realEstateEnquiryFormId }: {
+  locale: Locale; preview?: boolean; page?: RealEstatePageResult | null; realEstateEnquiryFormId?: string | null;
 }) {
   setRequestLocale(locale);
   const [page, t] = await Promise.all([injectedPage === undefined ? getRealEstatePage(locale) : Promise.resolve(injectedPage), getTranslations("pages")]);
   if (!page) notFound();
 
-  const { content, media } = page;
+  const { media } = page;
+  const content = withoutRealEstateEnquiryAssignment(page.content) as RealEstateContent;
   const binding = (id: string) => preview ? { "data-editor-binding": id } : {};
   const heroFallbackAlt = t("realEstate.heroAlt");
   const capFallbackAlt = t("realEstate.capabilitiesAlt");
@@ -496,7 +499,7 @@ export async function RealEstatePage({ locale, preview = false, page: injectedPa
        * raw `BODY_BOTTOM` markup + its `.enquiry`/`.form-card`/`.ffield`/`.facc` CSS. Copy from
        * `content.deal_enquiry` (blank → i18n), contact lines from Settings (spec S5).
        */}
-      <div {...binding("deal_enquiry")} className="[&_section]:py-[70px]"><DealEnquirySection locale={locale} content={content.deal_enquiry} /></div>
+      <div {...binding("deal_enquiry")} className="[&_section]:py-[70px]"><DealEnquirySection locale={locale} content={content.deal_enquiry} preview={preview} realEstateEnquiryFormId={realEstateEnquiryFormId} /></div>
     </>
   );
 }

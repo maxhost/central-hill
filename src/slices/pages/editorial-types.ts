@@ -52,6 +52,8 @@ export interface PageLivePreviewInput<K extends EditorialPageKey = "home"> {
   aboutContactFormId?: string | null;
   /** Explicit EN working reference for authenticated Guest owner dialog preview. */
   guestContactFormId?: string | null;
+  /** Explicit EN working reference for authenticated Real Estate enquiry preview. */
+  realEstateEnquiryFormId?: string | null;
   envelope: PageEnvelope<K>;
   localMedia: Record<string, import("@slices/backoffice/contract").AdminMediaPreview>;
 }

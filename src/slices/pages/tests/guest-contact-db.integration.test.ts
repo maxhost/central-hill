@@ -15,6 +15,7 @@ import { getEditorialAdapter } from "../server/editorial-adapters";
 import { prepareTargetEnvelope } from "../editorial-content";
 import { usesPageLocaleDrafts, isEditorialPageKey } from "../editorial-registry";
 import { editorialLocale } from "../server/editorial-policy";
+import { realEstateEnquiryFormId, preserveRealEstateEnquiryAssignment } from "../real-estate-enquiry-content";
 import { guestContactFormId, preserveGuestContactAssignment } from "../guest-contact-content";
 import { aboutContactFormId, preserveAboutContactAssignment } from "../about-contact-content";
 import type { PageEnvelope } from "../editorial-types";
@@ -28,15 +29,17 @@ function load<T>(source: URL, dependencies: Record<string, unknown>): T {
   }, structuredClone });
   return compiled.exports as T;
 }
-const enabled = process.env.GUEST_CONTACT_PAGES_DB_TEST === "1";
+const realEstateRegression = process.env.REAL_ESTATE_ENQUIRY_PAGES_REGRESSION === "1";
+const enabled = process.env.GUEST_CONTACT_PAGES_DB_TEST === "1" || realEstateRegression;
 
 test("Guest DB: concurrent revision winners, published/draft separation and form assignment mutation guard", { skip: !enabled }, async () => {
   const config = parse(readFileSync(".env.local"));
   const u = new URL(config.DATABASE_URL!);
-  assert.deepEqual([u.hostname, u.pathname, u.username], ["guestcontactpagesqa20261112.local", "/guestcontactpagesqa20261112", "guestcontactpagesqa20261112"]);
+  const target = realEstateRegression ? "realestateenquirypagesqa20261112" : "guestcontactpagesqa20261112";
+  assert.deepEqual([u.hostname, u.pathname, u.username], [`${target}.local`, `/${target}`, target]);
   const client = neon(u.href), db = drizzle(client);
   const identity = await db.execute(sql`select current_database() as db,current_user as role`);
-  assert.deepEqual(identity.rows[0], { db: "guestcontactpagesqa20261112", role: "guestcontactpagesqa20261112" });
+  assert.deepEqual(identity.rows[0], { db: target, role: target });
   assert.equal((await db.select().from(page_locale_content).where(eq(page_locale_content.page_key, "guest"))).length, 0, "Own schema-only fixture dataset required");
   const serialized = load<typeof import("../../../core/db/serialized")>(new URL("../../../core/db/serialized.ts", import.meta.url), {
     "server-only": {}, "drizzle-orm/pg-core": { PgDialect }, "./client": { sqlClient: client },
@@ -49,6 +52,7 @@ test("Guest DB: concurrent revision winners, published/draft separation and form
     "@core/db/serialized": serialized, "@slices/forms/server-contract": { HEADER_CONTACT_LOCK: "header-contact:v1" },
     "../about-contact-content": { aboutContactFormId, preserveAboutContactAssignment },
     "../guest-contact-content": { guestContactFormId, preserveGuestContactAssignment },
+    "../real-estate-enquiry-content": { realEstateEnquiryFormId, preserveRealEstateEnquiryAssignment },
     "drizzle-orm": { eq, sql }, "@core/db/client": { db }, "../schema": { page_locale_content },
     "../editorial-content": { prepareTargetEnvelope }, "../server/editorial-legacy": { legacyEditorialRows: async () => [] },
   };

@@ -23,6 +23,7 @@ export const realEstateAdapter: PageEditorialAdapter<"real_estate"> = {
   draftSchema: realEstateDraftSchema, publishSchema: realEstateSchema,
   defaultContent() {
     const content = applyDefaults(realEstateDescriptor.rootNode, {}) as RealEstateContent;
+    if (content.deal_enquiry) delete content.deal_enquiry.form_id;
     content.capabilities = structuredClone(defaultCapabilities);
     content.deal_structures = structuredClone(defaultDealStructures);
     content.process = structuredClone(defaultProcess);

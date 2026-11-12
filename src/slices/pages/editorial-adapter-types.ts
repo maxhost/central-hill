@@ -39,6 +39,6 @@ export interface PageEditorialAdapter<K extends EditorialPageKey> {
   translationField(content: PageContentMap[K], path: string): string;
   collectMediaReferences(content: PageContentMap[K], og: string | null): EditorialMediaReference[];
   mediaErrors(content: PageContentMap[K], og: string | null, assets: ReadonlyMap<string, { mime: string }>): Record<string, string>;
-  render(input: { locale: Locale; page: PageResult<PageContentMap[K]> | null; preview: true; aboutContactFormId?: string | null; guestContactFormId?: string | null; surface?: "page" | "shared_aside" }): Promise<ReactNode>;
+  render(input: { locale: Locale; page: PageResult<PageContentMap[K]> | null; preview: true; aboutContactFormId?: string | null; guestContactFormId?: string | null; realEstateEnquiryFormId?: string | null; surface?: "page" | "shared_aside" }): Promise<ReactNode>;
 }
 export type AnyPageEnvelope = PageEnvelope<EditorialPageKey>;
