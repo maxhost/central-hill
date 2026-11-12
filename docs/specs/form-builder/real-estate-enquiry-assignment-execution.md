@@ -45,8 +45,8 @@ qa-independent.md; browser/DBespera exactocandidato+runtime readiness. Login nor
 extraer cookies/tokens. No nesteddelegation; rootintegra trasaprobación. Pruebas explícitas
 pnpm exec tsx --test, typecheck/lint/build/dbcheck. No placeholders comoevidencia.
 
-Estado: contratos948e846 entregados, dos implementadores aislados en marcha y QA
-preparado sin browser/DB hasta readiness. Bases schema-only independientes preparadas;
+Estado: entrega local integrada y apertura final aprobada. Contratos948e846, dos
+implementadores aislados e independienteQA completos. Bases schema-only independientes preparadas;
 dependencias+next-env/env/preload propios, sin modificar main. ADR0083 registra kind
 deal_enquiry fijo nuevoorigen y compatibilidadcontact de3existentes.
 
@@ -138,3 +138,30 @@ QA35tablas ajenas+originalForms/Leads/Fields/ALLotherPages inclAbout/Guest+trans
 Settingsautorizado)exactos. Ledger31exacto.5leadspropios(4deal_enquiry+1headercontact),1Teststaff
 logged,1notificaciónconsoleporganador. FinalQARealEstate formnull/draftnull/headernull. NiCore/
 SQL/migración/remoteDB/R2writes/envíoreal ni modificación deMain/env/cache porQA.
+
+
+## Main integrado y apertura final
+
+Mainf630bba→0649ddc porfast-forward despuésQA aprobado; finalcommit solo documental resuelve
+congitlog-1. Fuentes src/messages/SQL exactas alproductod7bf8dd aprobado, sin modificaciones
+de producto trasconfirmación. No push/deploy ni migración/schema/backfill de producto.
+
+main-open.json:6aperturasreadonly200 (RealEstateeditor+Forms+RealEstateEN/PT+AboutEN+GuestEN),
+selector exactamente debajoNote/nulllegacy. Enquirypublic sigue1formestático12campos/2accordions
+sin atributo deFormconfigurado; Header/About/Guest mantienen contactos anteriores.0pageerrors,
+0writesbloqueadas. No Save/Publish/Submit/Test/fixture enauthoredmain; loginlocalnormaly
+accioneslectura catálogo/preview solamente. Ninguna referenciaHero modificada; businesshashes
+incluyenoriginalpage_content y page_locale_content enteros.
+
+main-conservation.json despuésapertura:44tablas negocio+ledger/1504filas EXACTOS alcheckpoint,
+42negociosoriginales1473filas+ratevacío+ledger31 intactos. Auth excluida solo porlogin normal.
+Envprincipal/logoPNG/ambossymlinks exactos. Únicosuntracked son3preexistentes originales.
+Main3071PID42708/parent42702/session64963 cwdworkspace ymedia9081PID42630/session56332 retenidos
+sinreinicio/cacheflush. Mismo Node22/env y REQUIRED NODE_OPTIONS=
+--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs (soloDB/rol
+neoncontentlocal20261111→proxy4558). QAcorregido3085PID85221/parent85215 detenido trasaprobación;
+inicial82085/82079 yaestabadetenido, ambosbuilds/envs/cachés/bases/fixtures/artefactos preservados.
+
+Resend permanececonsole/unconfigured. Sin correo real ni afirmaciones de recepción/adjuntos;
+key/sender/pruebareal controlada pendientes del hito separado. No siguienteimplementación,
+rolecleanup, limpieza de bases, remoteDB/R2writes ni acciones externas automáticas.

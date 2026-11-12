@@ -54,7 +54,10 @@ FinalQARealEstateformnull/draftnull/headernull. No mainfixtures.
 
 Main3071PID42708/parent42702/session64963+media9081PID42630/session56332 retained. REQUIRED
 NODE_OPTIONS=--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs andoriginal
-.env.local (onlyneoncontentlocal20261111→proxy4558). Finalmainff/opening inexecution; noSave/
+.env.local (onlyneoncontentlocal20261111→proxy4558). Mainfff630bba→0649ddc approvedQA, finaldoccommit viagitlog-1. Finalreadonly6openings200
+RealEstateeditor/Forms/RealEstateENPT/AboutEN/GuestEN,0errors/4nullassignments/legacycontacts;
+44business+ledger/1504rows exactafteropening, env/logo/symlinks exact. AuthonlynormalLogin.
+Main/media retainedwithoutrestart; correctedQA3085PID85221/parent85215 stopped. NoSave/
 cacheflush/mainfixtures. Preserve logoPNG/bothpublicsymlinks/allolderbases/envs/caches/worktrees.
 Resendstillconsole/unconfigured; realkey/sender/inboxattachments testseparatelypending.
 Noautomaticnexttask, schema/remoteDB/R2writes/push/deploy/rolecleanup.
