@@ -1,5 +1,34 @@
 # Central Hill agent instructions
 
+## Current local content clone from Neon —2026-11-11
+
+User requests using Neon content locally. Main localhost3071 now uses NEW local
+DB/role **neoncontentlocal20261111**, not propertylocalesqa. Root guarded READ ONLY
+REPEATABLE READ export from configured Neon neondb/neondb_owner:42business tables,
+1473rows,30migration hashes/timestamps exact. Fresh local schema/import preserves
+all42counts/hashes,columns/constraints and oldcontent. Productionauth excluded;
+only existing local Property QA Admin/account/role mirrored, no session tokens.
+Same local login.183R2media copied,size/SHA256 verified;actual125758058bytes includes
+one sourcebytesnull preserved. IndependentQA exact42/1473/30/183 before+after,
+12boundedbrowser cases+targetedOwnersbridge ready,0pageerrors/hydration/mediafailures.
+OwnersEN/PT,publicdetails,privatepreview,Admin and apartment200;video206. No productfix.
+
+Read [execution](docs/specs/neon-content-local-copy.md). Artifact root
+/private/tmp/central-hill-neon-content-local-copy,privateexports/env/auth mode600
+under700. **Required current preload runtime.cjs there**, onlynewDB→proxy4558;
+old propertypreload will reject newDB. Actual-main Node22dev3071PID14553/session2803,
+cwdworkspace verified. Localmedia **127.0.0.1:9081PID13693/session68858** required,
+local-media-server.mjs,public/neoncontentlocal symlink. EMAIL_PROVIDERconsole and
+synthetic localstorage keys only. Do not silently restart without current preload.
+
+Old propertylocalesqa42business hashes exact/intact; oldenv previous-main.env.local
+and old.next previous-main.next archived intact in artifact root. Original production
+env backup unchanged. Preserve all DBs,media,envs,caches,worktrees,logo and both public
+symlinks. No remoteDB/R2writes,push/deploy. This is a one-time independent snapshot;
+local changes never synchronize automatically. Treat current clone as authored data,
+not an isolated synthetic QA fixture database; future QA uses separate own datasets.
+Current application src/SQL unchanged280d23b;finaldoccommit resolves gitlog-1.
+
 ## Retirada de Translations —2026-11-11
 
 Usuario pide spec→plan→adversarial→implementación con dos implementadores,
