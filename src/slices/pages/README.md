@@ -1731,3 +1731,10 @@ Real Estate Save/Publish acquire the existing shared advisory lock before the fr
 mutation snapshot, retaining locale CAS, EN-first locks and template guards. Capture
 and Archive coordinate through the published-assignment/EN-draft-or-published guards.
 No SQL migration/backfill, external setup or real email delivery is introduced.
+
+Real Estate compatibility: an unchanged valid Hero UUID already using the public
+image fallback may remain unresolved by `loadMedia` during an unrelated Save draft
+or Publish. Validation preserves that exact reference and suppresses only its Hero
+media error. New/changed unresolved references, malformed UUIDs, resolved assets of
+an unsupported MIME, other slots and all other page keys retain their strict checks.
+This neither repairs data nor creates an asset; the existing public fallback stays.

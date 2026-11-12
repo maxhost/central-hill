@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { RealEstateContent } from "../schemas/real-estate";
+import { retainRealEstateHeroFallback } from "./real-estate-media-validation";
 import { mediaAltsSchema } from "@core/media/alt";
 import { getEditorialAdapter } from "../server/editorial-adapters";
 import { sharedEnvelope } from "../editorial-content";
@@ -87,5 +89,10 @@ export async function validateDraftMutation<
     payload.ogImageMediaId,
     assets,
   );
-  return { payload: { ...checked.payload, content }, errors };
+  return {
+    payload: { ...checked.payload, content },
+    errors: key === "real_estate"
+      ? retainRealEstateHeroFallback(content as RealEstateContent, previous.content as RealEstateContent, assets, errors)
+      : errors,
+  };
 }
