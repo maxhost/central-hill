@@ -12,7 +12,7 @@ import type { FieldType, FormBlueprint, FormCopy, FormEditorModel, FormField, Fo
 
 type Language = "en" | TargetLocale;
 const languages: Language[] = ["en", "es", "pt", "fr"];
-const types: FieldType[] = ["text", "email", "tel", "textarea", "number", "select", "checkbox"];
+const types: FieldType[] = ["text", "email", "tel", "textarea", "number", "select", "checkbox", "date", "file"];
 function move<T>(items: T[], index: number, delta: number): T[] {
   const next = [...items]; const destination = index + delta;
   if (destination < 0 || destination >= next.length) return items;
@@ -138,8 +138,8 @@ export function FormEditor({ model }: { model: FormEditorModel }) {
     </div>
     <div aria-live="polite">{error && <p role="alert" className="text-sm text-red-700">{error}</p>}{notice && <p className="text-sm text-ink-soft">{notice}</p>}{(dirty || Object.values(targetDirty).some(Boolean)) && <p className="mt-1 text-sm text-accent-deep">{t("unsavedHint")}</p>}</div>
     <div className="flex flex-wrap items-center gap-2"><span className="mr-2 text-sm text-ink-soft">{t("previewSize")}</span><AdminButton aria-pressed={!compact} onClick={() => setCompact(false)}>{t("desktop")}</AdminButton><AdminButton aria-pressed={compact} onClick={() => setCompact(true)}>{t("mobile")}</AdminButton><span className="text-sm text-ink-soft">{t("revision", { revision: saved.revision })}</span></div>
-    {testing ? <section className="space-y-5 rounded-lg border border-line bg-bg p-4 sm:p-7"><p className="max-w-3xl text-sm leading-relaxed text-ink-soft">{t("savedTestHint", { recipient: saved.recipient, revision: saved.revision })}</p><div className="mx-auto w-full rounded-lg border border-line bg-surface p-5 sm:p-7" style={{ maxWidth: compact ? 390 : 760 }}><FormRuntime key={`${saved.revision}-${language}`} compact={compact} definition={approvedBlueprint(saved.definition, translations, language)} onSubmit={async values => {
-      const result = await testForm({ id: saved.id, expectedRevision: saved.revision, locale: language, values });
+    {testing ? <section className="space-y-5 rounded-lg border border-line bg-bg p-4 sm:p-7"><p className="max-w-3xl text-sm leading-relaxed text-ink-soft">{t("savedTestHint", { recipient: saved.recipient, revision: saved.revision })}</p><div className="mx-auto w-full rounded-lg border border-line bg-surface p-5 sm:p-7" style={{ maxWidth: compact ? 390 : 760 }}><FormRuntime key={`${saved.revision}-${language}`} compact={compact} definition={approvedBlueprint(saved.definition, translations, language)} onSubmit={async (values, files) => {
+      const result = await testForm({ id: saved.id, expectedRevision: saved.revision, locale: language, values }, files);
       if (!result.ok) return { ok: false, error: result.code === "conflict" ? t("conflict") : validationMessage(result) };
       setNotice(t(`delivery.${result.data.delivery}`)); return result.data.delivery === "failed" ? { ok: false, error: t("delivery.failed") } : { ok: true };
     }} /></div></section> : <fieldset disabled={busy} className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
@@ -150,7 +150,7 @@ export function FormEditor({ model }: { model: FormEditorModel }) {
           <div className="my-5 flex flex-wrap gap-2">{rendered.steps.map((step, index) => <AdminButton key={step.id} variant={step.id === activeStep ? "primary" : "ghost"} onClick={() => { setActiveStep(step.id); setSelected(step.id); }}>{index + 1}. {step.title}</AdminButton>)}</div>
           <div className={`grid gap-3 ${!compact && rendered.columns === 2 ? "sm:grid-cols-2" : "grid-cols-1"}`}>
             {rendered.fields.filter(field => field.stepId === activeStep).map(field => <button type="button" key={field.id} aria-pressed={selected === field.id} className={`min-w-0 rounded-md border p-3 text-left hover:border-accent focus-visible:outline-2 focus-visible:outline-accent ${selected === field.id ? "border-accent bg-accent/5 outline-1 outline-accent" : "border-line"} ${field.width === 2 && !compact && rendered.columns === 2 ? "sm:col-span-2" : ""}`} onClick={() => setSelected(field.id)}>
-              <span className="block break-words text-sm font-medium text-ink">{field.label || t("newField")}{field.required ? " *" : ""}</span><span className={`mt-2 block rounded border border-line bg-bg px-3 py-2 text-sm text-ink-soft ${field.type === "textarea" ? "min-h-20" : ""}`}>{field.type === "checkbox" ? t("checkboxPreview") : field.placeholder || t(`types.${field.type}`)}</span>{field.help && <span className="mt-2 block break-words text-sm text-ink-soft">{field.help}</span>}
+              <span className="block break-words text-sm font-medium text-ink">{field.label || t("newField")}{field.required ? " *" : ""}</span><span className={`mt-2 block rounded border border-line bg-bg px-3 py-2 text-sm text-ink-soft ${field.type === "textarea" ? "min-h-20" : ""}`}>{field.type === "checkbox" ? t("checkboxPreview") : field.type === "date" ? t("datePreview") : field.type === "file" ? t("filePreview") : field.placeholder || t(`types.${field.type}`)}</span>{field.type === "file" && <span className="mt-2 block text-sm leading-relaxed text-ink-soft">{t("fileHint")}</span>}{field.help && <span className="mt-2 block break-words text-sm text-ink-soft">{field.help}</span>}
             </button>)}
           </div>
           {sourceMode && <div className="mt-5 flex flex-wrap gap-2"><AdminButton disabled={definition.fields.length >= 40} onClick={() => { const field = { ...newField(activeStep), label: t("newField") }; changeDefinition({ ...definition, fields: [...definition.fields, field] }); setSelected(field.id); }}>{t("addField")}</AdminButton><AdminButton disabled={definition.steps.length >= 6} onClick={() => { const step = { id: crypto.randomUUID(), title: t("newStep") }; changeDefinition({ ...definition, steps: [...definition.steps, step] }); setActiveStep(step.id); setSelected(step.id); }}>{t("addStep")}</AdminButton></div>}
@@ -162,7 +162,8 @@ export function FormEditor({ model }: { model: FormEditorModel }) {
         {!sourceMode && <p className="text-sm leading-relaxed text-ink-soft">{t("targetHint")}</p>}
         {selectedField ? <>
           {textControl(`block:fields.${selectedField.id}.label`, t("label"))}
-          {textControl(`block:fields.${selectedField.id}.placeholder`, t("placeholder"))}
+          {selectedField.type !== "file" && selectedField.type !== "date" && textControl(`block:fields.${selectedField.id}.placeholder`, t("placeholder"))}
+          {selectedField.type === "file" && <p className="text-sm leading-relaxed text-ink-soft">{t("fileHint")}</p>}
           {textControl(`block:fields.${selectedField.id}.help`, t("help"), true)}
           {sourceMode && <>
             <Field label={t("fieldType")} htmlFor="field-type"><Select id="field-type" value={selectedField.type} onChange={event => { const type = event.target.value as FieldType; changeDefinition({ ...definition, replyToFieldId: definition.replyToFieldId === selectedField.id && type !== "email" ? null : definition.replyToFieldId, fields: definition.fields.map(field => field.id === selectedField.id ? { ...field, type, options: type === "select" ? field.options.length ? field.options : [{ id: crypto.randomUUID(), label: t("newOption") }] : [], min: type === "number" ? field.min : undefined, max: type === "number" ? field.max : undefined, consent: type === "checkbox" ? field.consent : false } : field) }); }}>{types.map(type => <option key={type} value={type}>{t(`types.${type}`)}</option>)}</Select></Field>
