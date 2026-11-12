@@ -14,6 +14,7 @@ import { SITE_ICON_DEFAULTS } from "./site-icons";
  * locale-neutral globals fallback.
  */
 export const DEFAULT_GLOBALS: SiteGlobals = {
+  headerContactFormId: null,
   email: "info@centralhill.pt",
   phone: "+351 910 075 725",
   whatsapp: "+351 910 075 725",

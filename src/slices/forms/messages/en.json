@@ -14,7 +14,7 @@
   "edit": "Edit",
   "archive": "Archive",
   "restore": "Restore",
-  "placementLater": "These forms can be tested by staff. Selecting a form for a public page will be added with the visual page editor. Existing public forms remain separate.",
+  "placementLater": "You can assign a form to the header contact from Settings.",
   "editorTitle": "Form editor",
   "editorDescription": "Select a field in the preview to edit its content and rules.",
   "backToCatalog": "Back to Forms",
@@ -169,5 +169,11 @@
     "last_step": "Keep at least one step in the form.",
     "occupied": "This column already has a field. Choose an empty column or confirm a swap.",
     "invalid": "This layout change is invalid. Your fields have been kept."
-  }
+  },
+  "publicAnother": "Send another message",
+  "publicStale": "This form has changed. Load the current version to continue.",
+  "publicReload": "Load current form",
+  "publicRateLimited": "There are too many requests right now. Wait a few minutes and try again.",
+  "publicInvalidField": "Check this field and try again.",
+  "publicLeaveEmpty": "Leave this field empty"
 }

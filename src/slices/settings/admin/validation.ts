@@ -13,6 +13,8 @@ const socialUrl = z.url().nullable();
 const websiteTarget = z.string().trim().pipe(z.union([httpsUrl, z.literal("")]));
 
 export const companySettingsSaveInput = z.object({
+  /** Omitted by old clients; null explicitly restores the original contact form. */
+  header_contact_form_id: z.uuid().nullable().optional(),
   /** Omitted by old clients: preserve all configured navigation CTAs. */
   navigation_ctas: navigationCtasByLocaleSchema.optional(),
   email: z.email(),

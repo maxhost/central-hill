@@ -61,7 +61,7 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
   const rows = await db
     .select()
     .from(company_settings)
-    .orderBy(asc(company_settings.created_at))
+    .orderBy(asc(company_settings.created_at), asc(company_settings.id))
     .limit(1);
   const row = rows[0];
   if (!row) return null;
@@ -87,6 +87,7 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
     : null;
 
   return {
+    headerContactFormId: row.header_contact_form_id ?? null,
     navigationCtas: resolveNavigationCtas(locale, manualRows),
     email: row.email,
     phone: row.phone,
@@ -113,7 +114,7 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
 const SITE_ICONS_SHAPE = SITE_ICON_KEYS.join(",");
 // Same reason for the read-model shape: bump it when `SiteGlobals` gains a field, so an entry
 // cached before manually localized office-hours labels is not served (v6, ADR0075).
-const GLOBALS_SHAPE = "v7-image-alt";
+const GLOBALS_SHAPE = "v8-header-contact-form";
 
 export function getGlobals(locale: Locale): Promise<SiteGlobals | null> {
   return unstable_cache(() => _getGlobals(locale), ["settings:getGlobals", locale, GLOBALS_SHAPE, SITE_ICONS_SHAPE], {

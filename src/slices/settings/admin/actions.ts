@@ -1,9 +1,11 @@
 "use server";
 
 import { saveOwnerMediaAlts } from "@core/media/owner-alt-write";
-import { eq } from "drizzle-orm";
+import { and, eq, sql, type SQL } from "drizzle-orm";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
+import { executeSerialized } from "@core/db/serialized";
+import { HEADER_CONTACT_LOCK, getAssignableHeaderForm, assignableHeaderFormGuard } from "@slices/forms/contract";
 import { DEFAULT_GLOBALS } from "../defaults";
 import { company_settings } from "../schema";
 import { revalidateGlobals } from "../server/publish";
@@ -54,6 +56,7 @@ export async function saveGlobals(raw: unknown): Promise<SettingsSaveResult> {
   for (const [k, v] of Object.entries(input.social)) if (v) social[k] = v;
 
   const coreValues = {
+    ...(input.header_contact_form_id === undefined ? {} : { header_contact_form_id: input.header_contact_form_id }),
     email: input.email,
     phone: input.phone,
     whatsapp: input.whatsapp,
@@ -70,38 +73,48 @@ export async function saveGlobals(raw: unknown): Promise<SettingsSaveResult> {
   };
 
   try {
+    const candidate = input.header_contact_form_id ? await getAssignableHeaderForm(input.header_contact_form_id) : null;
+    const invalidSelection = (): SettingsSaveResult => ({ ok: false, error: "validation", fieldErrors: { header_contact_form_id: "Choose an available form with a valid recipient, or reload Settings." } });
+    if (input.header_contact_form_id && !candidate) return invalidSelection();
+    const assignmentGuard = candidate ? assignableHeaderFormGuard(candidate.id, candidate.revision) : sql`true`;
     const [existing] = await db
       .select()
       .from(company_settings)
-      .orderBy(company_settings.created_at)
+      .orderBy(company_settings.created_at, company_settings.id)
       .limit(1);
 
     let id: string;
     if (existing) {
       id = existing.id;
-      await db
+      const saved = await executeSerialized(HEADER_CONTACT_LOCK, db
         .update(company_settings)
         .set({
           ...coreValues,
           site_icons: { ...existing.site_icons, ...input.site_icons },
           updated_at: new Date(),
         })
-        .where(eq(company_settings.id, id));
+        .where(and(eq(company_settings.id, id), assignmentGuard))
+        .returning({ id: company_settings.id }).getSQL());
+      if (saved.rows.length !== 1) return invalidSelection();
     } else {
-      const [ins] = await db
-        .insert(company_settings)
-        .values({
-          ...coreValues,
-          stats: DEFAULT_GLOBALS.stats,
-          avantio_account_id: DEFAULT_GLOBALS.avantio.accountId,
-          avantio_widget_config: DEFAULT_GLOBALS.avantio.widgetConfig,
-          show_building_location: DEFAULT_GLOBALS.showBuildingLocation,
-          show_building_count: DEFAULT_GLOBALS.showBuildingCount,
-          site_icons: { ...DEFAULT_GLOBALS.icons, ...input.site_icons },
-        })
-        .returning({ id: company_settings.id });
-      if (!ins) return { ok: false, error: "server" };
-      id = ins.id;
+      const values = {
+        ...coreValues,
+        stats: DEFAULT_GLOBALS.stats,
+        avantio_account_id: DEFAULT_GLOBALS.avantio.accountId,
+        avantio_widget_config: DEFAULT_GLOBALS.avantio.widgetConfig,
+        show_building_location: DEFAULT_GLOBALS.showBuildingLocation,
+        show_building_count: DEFAULT_GLOBALS.showBuildingCount,
+        site_icons: { ...DEFAULT_GLOBALS.icons, ...input.site_icons },
+      };
+      // The missing-singleton case is guarded in the same serialized statement.
+      // Keys come only from this server-owned object, never from the request.
+      const columns = Object.keys(values).map(key => sql.identifier(key));
+      const entries: SQL[] = Object.values(values).map(value => value !== null && typeof value === "object" ? sql`${JSON.stringify(value)}::jsonb` : sql`${value}`);
+      const saved = await executeSerialized(HEADER_CONTACT_LOCK, sql`insert into ${company_settings} (${sql.join(columns, sql`, `)})
+        select ${sql.join(entries, sql`, `)} where not exists(select 1 from ${company_settings}) and ${assignmentGuard} returning id`);
+      const insertedId = saved.rows[0]?.id;
+      if (typeof insertedId !== "string") return invalidSelection();
+      id = insertedId;
     }
 
     await saveWebsiteTranslations(id, input.website_url, input.website_translations, staff.userId);

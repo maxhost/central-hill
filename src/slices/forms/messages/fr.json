@@ -14,7 +14,7 @@
   "edit": "Modifier",
   "archive": "Archiver",
   "restore": "Restaurer",
-  "placementLater": "L’équipe peut tester ces formulaires. Leur sélection sur une page publique sera ajoutée avec l’éditeur visuel. Les formulaires publics actuels restent distincts.",
+  "placementLater": "Vous pouvez attribuer un formulaire au contact de l’en-tête dans Settings.",
   "editorTitle": "Éditeur de formulaires",
   "editorDescription": "Sélectionnez un champ dans l’aperçu pour modifier ses textes et ses règles.",
   "backToCatalog": "Retour aux formulaires",
@@ -169,5 +169,11 @@
     "last_step": "Conservez au moins une étape dans le formulaire.",
     "occupied": "Cette colonne contient déjà un champ. Choisissez une colonne vide ou confirmez la permutation.",
     "invalid": "Cette modification de disposition est invalide. Les champs ont été conservés."
-  }
+  },
+  "publicAnother": "Envoyer un autre message",
+  "publicStale": "Ce formulaire a changé. Chargez la version actuelle pour continuer.",
+  "publicReload": "Charger le formulaire actuel",
+  "publicRateLimited": "Trop de demandes pour le moment. Attendez quelques minutes et réessayez.",
+  "publicInvalidField": "Vérifiez ce champ et réessayez.",
+  "publicLeaveEmpty": "Laissez ce champ vide"
 }

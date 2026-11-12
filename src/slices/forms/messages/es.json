@@ -14,7 +14,7 @@
   "edit": "Editar",
   "archive": "Archivar",
   "restore": "Restaurar",
-  "placementLater": "El equipo puede probar estos formularios. La selección por página pública llegará con el editor visual. Los formularios públicos actuales siguen separados.",
+  "placementLater": "Puedes asignar un formulario al contacto del encabezado desde Settings.",
   "editorTitle": "Editor de formularios",
   "editorDescription": "Selecciona un campo en la vista previa para editar textos y reglas.",
   "backToCatalog": "Volver a formularios",
@@ -169,5 +169,11 @@
     "last_step": "Mantén al menos un paso en el formulario.",
     "occupied": "Esta columna ya tiene un campo. Elige una columna vacía o confirma el intercambio.",
     "invalid": "Este cambio de distribución no es válido. Se han conservado los campos."
-  }
+  },
+  "publicAnother": "Enviar otro mensaje",
+  "publicStale": "El formulario ha cambiado. Carga su versión actual para continuar.",
+  "publicReload": "Cargar formulario actual",
+  "publicRateLimited": "Hay demasiadas solicitudes en este momento. Espera unos minutos y vuelve a intentarlo.",
+  "publicInvalidField": "Revisa este campo y vuelve a intentarlo.",
+  "publicLeaveEmpty": "Deja este campo vacío"
 }

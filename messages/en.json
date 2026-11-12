@@ -1181,6 +1181,26 @@
           "label": "Website {locale}",
           "sourceHint": "English URL used when another language has no URL.",
           "fallbackHint": "Leave blank to use Website EN."
+        },
+        "headerContactForm": {
+          "title": "Header contact form",
+          "label": "Form to open from the header",
+          "hint": "Used by the header contact button on every public page, including the mobile menu.",
+          "original": "Use the current contact form",
+          "unavailable": "Saved form unavailable",
+          "unavailableHint": "This form is unavailable. Open it to complete its configuration, or choose another form.",
+          "empty": "No forms are ready to use. Create a form and save a valid recipient in Forms.",
+          "manage": "Create or manage forms",
+          "edit": "Edit selected form",
+          "liveHint": "Save Settings to apply your selection. Later saves and approved translations of the selected form update the public contact.",
+          "saveError": "The selected form is unavailable or changed while saving. Choose another form or reload Settings.",
+          "reasons": {
+            "archived": "Archived",
+            "recipient": "Save a valid recipient first",
+            "definition": "Form needs attention"
+          },
+          "refresh": "Refresh form list",
+          "newTab": "Opens in a new tab"
         }
       },
       "nav": {

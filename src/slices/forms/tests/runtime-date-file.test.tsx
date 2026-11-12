@@ -20,8 +20,8 @@ function runtime(locale: string) {
     react: React,
     "react/jsx-runtime": jsxRuntime,
     "next-intl": { useTranslations: () => (key: string) => messages[key] },
-    "@slices/backoffice/contract": {
-      AdminButton: control("button"), TextInput: control("input"), TextArea: control("textarea"), Select: control("select"), Checkbox: control("input"),
+    "./runtime-controls": {
+      RuntimeButton: control("button"), TextInput: control("input"), TextArea: control("textarea"), Select: control("select"), Checkbox: control("input"),
       Field: ({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) => React.createElement("div", {}, React.createElement("label", { htmlFor }, label), children),
     },
     "../file-policy": filePolicy,

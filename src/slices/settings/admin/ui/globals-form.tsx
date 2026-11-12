@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import type { HeaderFormOption } from "@slices/forms/contract";
 import { rawOwnerMediaAlts } from "@core/media/owner-alt";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -16,6 +18,7 @@ import {
   MediaField,
   OwnerMediaAltFields,
   TextInput,
+  Select,
   useMediaQueue,
 } from "@slices/backoffice/contract";
 import { EDITABLE_SITE_ICON_KEYS, SITE_ICON_DEFAULTS, type EditableSiteIconKey } from "../../site-icons";
@@ -92,8 +95,10 @@ function emptyNavigationCtas(): NavigationCtasByLocale {
 export function GlobalsForm({
   initial,
   previews: initialPreviews,
+  headerFormOptions = [],
 }: {
   initial: GlobalsEditData;
+  headerFormOptions?: HeaderFormOption[];
   previews: Record<string, AdminMediaPreview>;
 }) {
   const t = useTranslations("settings");
@@ -152,6 +157,7 @@ export function GlobalsForm({
             earn: { label: navigationCtas[locale].earn.label.trim() },
           }]))
         : undefined,
+      header_contact_form_id: state.header_contact_form_id ? state.header_contact_form_id : null,
       email: state.email.trim(),
       phone: state.phone.trim(),
       owners_phone: orNull(state.owners_phone ?? ""),
@@ -328,6 +334,26 @@ export function GlobalsForm({
             </FieldGrid>
           </div>
         </FieldGrid>
+      </AdminCard>
+
+      <AdminCard title={t("admin.globals.headerContactForm.title")}>
+        <div className="space-y-4">
+          <Field label={t("admin.globals.headerContactForm.label")} htmlFor="header-contact-form" hint={t("admin.globals.headerContactForm.hint")} error={err("header_contact_form_id") ? t("admin.globals.headerContactForm.saveError") : undefined}>
+            <Select id="header-contact-form" value={state.header_contact_form_id ?? ""} onChange={event => set("header_contact_form_id", event.target.value)} disabled={pending || preparing} aria-invalid={Boolean(err("header_contact_form_id"))}>
+              <option value="">{t("admin.globals.headerContactForm.original")}</option>
+              {state.header_contact_form_id && !headerFormOptions.some(option => option.id === state.header_contact_form_id) && <option value={state.header_contact_form_id} disabled>{t("admin.globals.headerContactForm.unavailable")}</option>}
+              {headerFormOptions.map(option => <option key={option.id} value={option.id} disabled={!option.available}>{option.name}{option.reason ? ` — ${t(`admin.globals.headerContactForm.reasons.${option.reason}`)}` : ""}</option>)}
+            </Select>
+          </Field>
+          {state.header_contact_form_id && !headerFormOptions.some(option => option.id === state.header_contact_form_id && option.available) && <p role="alert" className="text-sm text-accent-deep">{t("admin.globals.headerContactForm.unavailableHint")}</p>}
+          {!headerFormOptions.some(option => option.available) && <p className="text-sm text-ink-soft">{t("admin.globals.headerContactForm.empty")}</p>}
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+            <Link href="/admin/forms" target="_blank" rel="noopener noreferrer" title={t("admin.globals.headerContactForm.newTab")} className="font-medium text-accent-deep underline underline-offset-4">{t("admin.globals.headerContactForm.manage")}</Link>
+            {state.header_contact_form_id && <Link href={`/admin/forms/${state.header_contact_form_id}`} target="_blank" rel="noopener noreferrer" title={t("admin.globals.headerContactForm.newTab")} className="font-medium text-accent-deep underline underline-offset-4">{t("admin.globals.headerContactForm.edit")}</Link>}
+          </div>
+          <AdminButton disabled={pending || preparing} onClick={() => start(() => router.refresh())}>{t("admin.globals.headerContactForm.refresh")}</AdminButton>
+          <p className="text-xs leading-relaxed text-ink-soft">{t("admin.globals.headerContactForm.liveHint")}</p>
+        </div>
       </AdminCard>
 
       <AdminCard title={t("admin.globals.navigationCtas.title")}>

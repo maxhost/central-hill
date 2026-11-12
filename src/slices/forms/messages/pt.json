@@ -14,7 +14,7 @@
   "edit": "Editar",
   "archive": "Arquivar",
   "restore": "Restaurar",
-  "placementLater": "Estes formulários podem ser testados pela equipa. A seleção por página pública chegará com o editor visual. Os formulários públicos atuais continuam separados.",
+  "placementLater": "Pode atribuir um formulário ao contacto do cabeçalho em Settings.",
   "editorTitle": "Editor de formulários",
   "editorDescription": "Selecione um campo na pré-visualização para editar textos e regras.",
   "backToCatalog": "Voltar aos formulários",
@@ -169,5 +169,11 @@
     "last_step": "Mantenha pelo menos um passo no formulário.",
     "occupied": "Esta coluna já tem um campo. Escolha uma coluna vazia ou confirme a troca.",
     "invalid": "Esta alteração de disposição é inválida. Os campos foram mantidos."
-  }
+  },
+  "publicAnother": "Enviar outra mensagem",
+  "publicStale": "Este formulário mudou. Carregue a versão atual para continuar.",
+  "publicReload": "Carregar formulário atual",
+  "publicRateLimited": "Há demasiados pedidos neste momento. Aguarde alguns minutos e tente novamente.",
+  "publicInvalidField": "Reveja este campo e tente novamente.",
+  "publicLeaveEmpty": "Deixe este campo vazio"
 }

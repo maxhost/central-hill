@@ -1181,6 +1181,26 @@
           "label": "Site web {locale}",
           "sourceHint": "URL anglaise utilisée lorsqu’une autre langue n’a pas d’URL.",
           "fallbackHint": "Laissez vide pour utiliser Website EN."
+        },
+        "headerContactForm": {
+          "title": "Formulaire de contact de l’en-tête",
+          "label": "Formulaire ouvert depuis l’en-tête",
+          "hint": "Utilisé par le contact de l’en-tête sur toutes les pages publiques, y compris le menu mobile.",
+          "original": "Utiliser le formulaire de contact actuel",
+          "unavailable": "Formulaire enregistré indisponible",
+          "unavailableHint": "Ce formulaire est indisponible. Ouvrez-le pour compléter sa configuration ou choisissez-en un autre.",
+          "empty": "Aucun formulaire prêt à utiliser. Créez-en un et enregistrez un destinataire valide dans Forms.",
+          "manage": "Créer ou gérer les formulaires",
+          "edit": "Modifier le formulaire sélectionné",
+          "liveHint": "Enregistrez Settings pour appliquer votre choix. Les prochains enregistrements et traductions approuvées du formulaire choisi actualisent le contact public.",
+          "saveError": "Le formulaire choisi est indisponible ou a changé pendant l’enregistrement. Choisissez-en un autre ou rechargez Settings.",
+          "reasons": {
+            "archived": "Archivé",
+            "recipient": "Enregistrez d’abord un destinataire valide",
+            "definition": "Vérifiez la configuration du formulaire"
+          },
+          "refresh": "Actualiser la liste des formulaires",
+          "newTab": "S’ouvre dans un nouvel onglet"
         }
       },
       "nav": {

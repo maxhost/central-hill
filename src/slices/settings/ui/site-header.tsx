@@ -3,6 +3,7 @@ import Image from "next/image";
 import topBarLogo from "../../../../logos/Logo Barra Topo bg.png";
 import darkTopBarLogo from "../../../../logos/logo-barra-topo-base.png";
 import type { Locale } from "@core/db/columns";
+import { PublicContactForm, readHeaderContactForm } from "@slices/forms/contract";
 import { MobileDrawer, NavBar, buttonClassName, type NavEntry } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import { Link } from "@/i18n/navigation";
@@ -23,7 +24,7 @@ import { LocaleSwitcher } from "./components/locale-switcher";
  */
 export async function SiteHeader({ locale }: { locale: Locale }) {
   const t = await getTranslations("settings");
-  const [items, globals] = await Promise.all([getNav(locale, "header"), getGlobals(locale)]);
+  const [items, globals, contactForm] = await Promise.all([getNav(locale, "header"), getGlobals(locale), readHeaderContactForm(locale)]);
   // Site icons (Settings → "Site icons", ADR 0034 amendment 2). `?? defaults` also covers a
   // globals entry cached before `icons` existed.
   const icons = globals?.icons ?? SITE_ICON_DEFAULTS;
@@ -97,10 +98,13 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
             <ContactDialog
               variant="icon"
               label={t("contact")}
-              title={t("contactDialog.title")}
-              intro={t("contactDialog.intro")}
+              title={contactForm?.definition.copy.title ?? t("contactDialog.title")}
+              intro={contactForm?.definition.copy.description ?? t("contactDialog.intro")}
+              closeLabel={t("close")}
               icon={<Icon name={icons.contact} size={20} />}
-            />
+            >
+              {contactForm ? <PublicContactForm key={`${contactForm.id}:${contactForm.revision}:${contactForm.fingerprint}`} model={contactForm} /> : undefined}
+            </ContactDialog>
             <LocaleSwitcher
               current={locale}
               label={t("language")}
@@ -120,9 +124,12 @@ export async function SiteHeader({ locale }: { locale: Locale }) {
                 key="drawer-contact"
                 variant="button"
                 label={t("contact")}
-                title={t("contactDialog.title")}
-                intro={t("contactDialog.intro")}
-              />
+                title={contactForm?.definition.copy.title ?? t("contactDialog.title")}
+                intro={contactForm?.definition.copy.description ?? t("contactDialog.intro")}
+                closeLabel={t("close")}
+              >
+                {contactForm ? <PublicContactForm key={`${contactForm.id}:${contactForm.revision}:${contactForm.fingerprint}`} model={contactForm} /> : undefined}
+              </ContactDialog>
             }
             book={{ href: bookHref, label: navigationCtas.book.label, external: true }}
             openLabel={t("menu")}

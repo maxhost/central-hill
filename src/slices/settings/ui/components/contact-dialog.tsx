@@ -30,7 +30,11 @@ export function ContactDialog({
   source = "header-contact",
   triggerClassName,
   editorPreviewId,
+  children,
+  closeLabel = "Close",
 }: {
+  children?: ReactNode;
+  closeLabel?: string;
   label: string;
   title: string;
   intro: string;
@@ -69,8 +73,14 @@ export function ContactDialog({
 
   useEffect(() => {
     if (!isOpen) return;
+    const previousFocus = document.activeElement;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") { e.preventDefault(); setOpen(false); }
+      if (e.key !== "Tab") return;
+      const items = Array.from(panelRef.current?.querySelectorAll<HTMLElement>("button:not(:disabled),input:not(:disabled):not([tabindex='-1']),select:not(:disabled),textarea:not(:disabled),a[href]") ?? []).filter(item => item.getClientRects().length > 0);
+      const first = items[0], last = items.at(-1);
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === panelRef.current)) { e.preventDefault(); last?.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
     };
     document.addEventListener("keydown", onKey);
     const prevOverflow = document.body.style.overflow;
@@ -79,6 +89,7 @@ export function ContactDialog({
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
     };
   }, [isOpen]);
 
@@ -124,20 +135,20 @@ export function ContactDialog({
                 aria-modal="true"
                 aria-label={title}
                 tabIndex={-1}
-                className="relative w-full max-w-lg rounded-2xl bg-bg p-7 shadow-xl outline-none sm:p-9"
+                className={cn("relative w-full rounded-2xl bg-bg p-7 shadow-xl outline-none sm:p-9", children === undefined ? "max-w-lg" : "max-h-[calc(100dvh-2rem)] max-w-3xl overflow-y-auto")}
               >
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  aria-label="Close"
+                  aria-label={closeLabel}
                   data-editor-dialog-close={editorPreviewId}
                   className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-surface hover:text-ink"
                 >
                   <UiIcon name="xmark" size={28} />
                 </button>
                 <h2 className="font-serif text-2xl text-ink">{title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{intro}</p>
-                <ContactForm source={source} className="mt-6" />
+                {intro && <p className="mt-2 text-sm leading-relaxed text-ink-soft">{intro}</p>}
+                {children === undefined ? <ContactForm source={source} className="mt-6" /> : children}
               </div>
             </div>,
             document.body,

@@ -1181,6 +1181,26 @@
           "label": "Sitio web {locale}",
           "sourceHint": "URL en inglés que se usa cuando otro idioma no tiene URL.",
           "fallbackHint": "Deja vacío para usar Website EN."
+        },
+        "headerContactForm": {
+          "title": "Formulario de contacto del encabezado",
+          "label": "Formulario que abre el encabezado",
+          "hint": "Se usa en el contacto del encabezado de todas las páginas públicas, incluido el menú móvil.",
+          "original": "Usar el formulario de contacto actual",
+          "unavailable": "Formulario guardado no disponible",
+          "unavailableHint": "Este formulario no está disponible. Ábrelo para completar su configuración o elige otro.",
+          "empty": "No hay formularios listos para usar. Crea uno y guarda un destinatario válido en Forms.",
+          "manage": "Crear o gestionar formularios",
+          "edit": "Editar formulario seleccionado",
+          "liveHint": "Guarda Settings para aplicar la selección. Los próximos guardados y las traducciones aprobadas del formulario elegido actualizarán el contacto público.",
+          "saveError": "El formulario seleccionado no está disponible o cambió al guardar. Elige otro o recarga Settings.",
+          "reasons": {
+            "archived": "Archivado",
+            "recipient": "Guarda primero un destinatario válido",
+            "definition": "Revisa la configuración del formulario"
+          },
+          "refresh": "Actualizar lista de formularios",
+          "newTab": "Abre en una pestaña nueva"
         }
       },
       "nav": {

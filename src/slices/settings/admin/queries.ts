@@ -31,6 +31,7 @@ export interface StatForm {
 }
 
 export interface GlobalsEditData {
+  header_contact_form_id?: string;
   navigation_ctas?: import("../navigation-cta-types").NavigationCtasByLocale;
   email: string;
   phone: string;
@@ -72,6 +73,7 @@ function scaffold(): GlobalsEditBundle {
   return {
     data: {
       navigation_ctas: navigationCtasForEdit([]),
+      header_contact_form_id: "",
       email: DEFAULT_GLOBALS.email,
       phone: DEFAULT_GLOBALS.phone,
       whatsapp: DEFAULT_GLOBALS.whatsapp ?? "",
@@ -101,7 +103,7 @@ export async function getGlobalsForEdit(): Promise<GlobalsEditBundle> {
   const [row] = await db
     .select()
     .from(company_settings)
-    .orderBy(asc(company_settings.created_at))
+    .orderBy(asc(company_settings.created_at), asc(company_settings.id))
     .limit(1);
   if (!row) return scaffold();
 
@@ -126,6 +128,7 @@ export async function getGlobalsForEdit(): Promise<GlobalsEditBundle> {
 
   const data: GlobalsEditData = {
     navigation_ctas: navigationCtasForEdit(manualRows),
+    header_contact_form_id: row.header_contact_form_id ?? "",
     email: row.email,
     phone: row.phone,
     whatsapp: row.whatsapp ?? "",
