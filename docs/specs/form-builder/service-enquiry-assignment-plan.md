@@ -1,6 +1,6 @@
 # Service individual → Consulta del servicio → Forms
 
-2026-11-12. Implementación autorizada al retomar el handoff. Alcance: creación y
+2026-11-12. Implementado localmente y aprobado por QA independiente. Alcance: creación y
 edición de cada `/admin/services`, nunca Pages → Services ni una selección global.
 
 ## Auditoría y autoridad

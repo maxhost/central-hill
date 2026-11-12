@@ -1,6 +1,6 @@
 # ADR0084 — Forms por Service individual
 
-Fecha: 2026-11-12. Estado: aceptado para implementación local.
+Fecha: 2026-11-12. Estado: aceptado e implementado localmente.
 
 Services combina snapshots editoriales por idioma con datos comunes vivos. Una
 referencia en `service_shared_content` se publicaría con Save draft. La selección

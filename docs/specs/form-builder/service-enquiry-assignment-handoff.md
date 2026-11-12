@@ -1,6 +1,8 @@
 # Próximo trabajo tras clear — Forms en Consulta del servicio
 
-2026-11-12. **Relevo guardado; implementación NO iniciada.** El usuario hará clear y
+2026-11-12. Relevo histórico retomado e implementado; ver [plan](service-enquiry-assignment-plan.md), [ejecución](service-enquiry-assignment-execution.md) y [QA](service-enquiry-assignment-qa.md).
+
+Estado al guardar originalmente: **implementación NO iniciada.** El usuario hará clear y
 retomará después este trabajo. No iniciar código, migraciones, fixtures ni QA hasta
 que vuelva y pida continuar.
 

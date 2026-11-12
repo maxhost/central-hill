@@ -84,3 +84,35 @@ fallos de timing del harness; se reemplazaron por control explícito y se repiti
 solo esos2casos. Lifecycle previo retenido. Limpieza solo UUIDs propios fallidos;
 service/category/media/forms/slug/locale/shared propios terminan0. Typecheck final0
 con archivo de pruebas nuevo. Total afectado214pure/render +10casosDB, todos pasan.
+
+## QA independiente
+
+Candidato1651d49/producto23fd910 aprobado:39casos funcionales,0defectos producto y
+0pageerrors (7editor/10captura/3locales/7creación/12lifecycle). Sin cambios producto ni
+rebuild durante QA. Una tanda visual posicionada desktop/móvil aprobada por QA y raíz.
+
+A/B creados UI y recipient/copy guardados; solo layout9tipos/2steps y120textos del
+propioA sembrados por SQL. Nueva Service creada/primerSave UI con selector antes de
+persistir; cover existente del propio draft/shared/mirror se preparó como fixture sin
+upload/storagewrites, después Publish real. PT404 hasta su propioPublish, inherit y
+custom conservados. ENPublish común no toca target JSON; draft privado/omisión/null,
+archivo por draft/published, hidden/external/none/restore, stale/replay/crosskeys entre
+2servicios yHeader, guard de origen UUID, FormsSave/Approve sin ServicePublish y labels
+históricos aprobados. About/Guest/RealEstate se abrieron como regresión sin editarPages.
+
+Captura real anónima:9campos/steps/Date/File/5MiB/falsoPDF/consentimiento; contact con
+origen service:UUID independiente de template newsletter, marketingfalse. Replay/altered
+payload/concurrentwinner no duplican;5leads propios(4Service/1Header),1teststaff logged,
+exactamente1console por ganador. No envío real ni recepción de email/adjuntos afirmados.
+
+Creation group mantuvo3casos pasados y reanudó solo4tras cambiar locator inexistente
+main por body. Comparación final selectedService normalizó Dateobject/JSONstring y
+repitió solo lectura; sin cambio de datos ni browser. Son dos correcciones de harness,
+no producto; no matriz global repetida. Fixtures QA retenidas.
+
+Root leyó protected-check.json:31tablas ajenas completas exactas; originalesForms/
+Leads/Fields/ALLPages/otrosServices/slugs/translations exactos salvo excepciones propias
+autorizadas de Settings. Campos comunes originales del Service seleccionado y relaciones
+de medios conservan valores; sus snapshots/identidades de gallery pueden cambiar por
+Save normal autorizado en clon. Ledger31 exacto. FinalA/B seleccionadosnull tanto en
+example como newService, headernull; textos sintéticos del clon retenidos. Main intacto.

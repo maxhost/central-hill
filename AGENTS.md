@@ -1,19 +1,58 @@
 # Central Hill agent instructions
 
-## Next after clear — Service enquiry Forms selector —2026-11-12
+## Service enquiry Forms assignment —2026-11-12
 
-User is clearing context and requests NEXT work after returning: add a Forms selector
-in BOTH creation/editing of EACH Service, replacing that service's public «Consulta del
-servicio» form. Example /admin/services/4e1e32d3-927d-47de-8b57-dee7a1079e2b; options from
-/admin/forms. Read [handoff](docs/specs/form-builder/service-enquiry-assignment-handoff.md).
-This is individual Services, NOT /admin/pages/services or a global selection. No
-implementation/DB/QA/delegation started: resume only when user returns and continues.
-Audit Services own locale inherit/custom + live shared revisions and creation/Publish
-before choosing authority/persistence; do not expose draft assignment through live shared
-data accidentally. Preserve enquiry/external/none routing and previous4placements.
-Start future implementation with fresh verified paired code+data checkpoint, isolated
-writers/datasets and independentQA; Resend staysconsole/unconfigured. This handoff was
-documentation-only, main3071PID42708 andmedia9081PID42630 retained, noDB/content changes.
+User resumed service-enquiry-assignment-handoff.md. Delivered per-Service Forms selector
+in BOTH /admin/services/new and /admin/services/[id], at end of Booking. Read
+[plan](docs/specs/form-builder/service-enquiry-assignment-plan.md),
+[execution](docs/specs/form-builder/service-enquiry-assignment-execution.md),
+[QA](docs/specs/form-builder/service-enquiry-assignment-qa.md), ADR0084.
+
+Optional nullable content.enquiry_form_id in EN locale snapshot, NEVER live shared.
+EN Save draft private; EN Publish common4locales without target copy changes. Target
+read-only+EN access/server tamper guard, target payload strips field/inherit unchanged.
+Old omission preserves; null restores legacy. New Service UUID stable before firstSave;
+no public target until ownPublish. Selecting Form never changes booking_type; only
+Enquiry renders configured runtime, external/none unchanged. Invalid manual reference
+retains all Service copy/legacy contact, no GETwrites/defaults. Existing4placements
+independent. No new Service preview system (none existed).
+
+Service public action fixes contact/service:<canonicalUUID>, snapshot serviceId+published
+identity binds replays across2Services+4priorlocations; old hashes/subjects unchanged.
+Public guard checks service published/enquiry/locale publication; EN ID+published_at
+identity independent of draft/shared revision/slug. Atomic fields/history/consent,
+marketingfalse, shared quotas/files and winner-only console notification reused.
+Services Save/Publish/archive/restore/delete join HEADER_CONTACT_LOCK before graph lock;
+legacy stale Save checks adaptation inside serialized SQL. Archive Form blocks any
+Service ENdraftORpublished incl hidden/external; UUIDcase-insensitive/targets ignored.
+Forms Save/Approve invalidates services tag/routes without ServicePublish.
+
+Checkpoint restore/service-enquiry-2026-11-12-1794511343983 at0f9e9f8, private
+/private/tmp/central-hill-service-enquiry/checkpoint:49tables1515rows inclauth/ledger31,
+columns/constraints/counts/hashes exact2restores,1364Gitobjects/183mediaSHAexact.
+RESTORE.md preserveslaterstatefirst and restores paired code+DB in newcheckout/base;
+no automatic laterdata merge. Preserve serviceenquiryrestore20261112, ownbrowserclone
+serviceenquiryqa20261112 and schema-only serviceenquiryservicesqa20261112/unitqa20261112;
+alloldbases/checkpoints/worktrees/envs/caches/artifacts/logo/bothsymlinks retained.
+
+Two isolated writers A84b50a6 +test5c31091, B9305096 integrated product23fd910.
+IndependentQA approved1651d49:39cases(7editor/10capture/3locales/7creation/12lifecycle),
+0productdefects/pageerrors; one positioned desktop/mobile visualbatch pass. Two harness
+fixes only (public body locator, DateJSON normalization), no productcorrection/rebuild.
+QA31complete unrelatedtables + scoped originalForms/Leads/ALLPages/otherServices/slugs/
+translations exact, ledger31exact.5ownleads(4Service/1Header),1loggedstafftest,1console
+perwinner. Final ownService/example/header null selections; no main fixtures.
+Root214pure/render+10DB pass, typecheck0/lint0(7oldwarn)/dbcheck31(old0008warn)/detector[].
+Fullbuild0/215static/2workers, compile14.8s/TS13.5s/static8.1min after automatic60s
+BuildingsESFR/GuestENPT retries2each; build-only4querycap, productconfig unchanged.
+
+Inherited main/media processes exited outside task actions; same env/scripts/preload
+reopened. Current main3071PID8573/session18330 cwdworkspace, media9081PID8524/session17713.
+REQUIRED NODE_OPTIONS=--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs
+with original.env.local (onlyneoncontentlocal20261111→proxy4558). Finalmain opening/data
+conservation recorded below after integration. Resend staysconsole/unconfigured; real
+key/sender/inbox/attachments separately pending. No SQLschema/migration/backfill/core,
+remoteDB/R2writes, push/deploy, rolecleanup or automatic nexttask.
 
 
 ## Real Estate Enquiry Forms assignment —2026-11-12
