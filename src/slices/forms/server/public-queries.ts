@@ -13,6 +13,7 @@ import { approvedBlueprint, textFields } from "../domain";
 import { readStoredBlueprint, formIdSchema } from "../validation";
 import type { FormTranslations } from "../types";
 import type { HeaderFormOption, PublicFormModel } from "../public-types";
+import { FORMS_PUBLIC_TAGS } from "../public-types";
 import { record } from "./queries";
 
 export async function listHeaderContactFormOptions(): Promise<HeaderFormOption[]> {
@@ -55,5 +56,5 @@ export async function readHeaderContactForm(locale: Locale): Promise<PublicFormM
   return unstable_cache(async () => {
     const source = await readPublicFormSource(id,locale);
     return source ? { id, revision: source.form.revision, locale, fingerprint: source.fingerprint, definition: source.definition } : null;
-  }, ["header-contact-form",id,locale,"v1"], { tags: ["forms:public",`form_definition:${id}`] })();
+  }, ["header-contact-form",id,locale,"v1"], { tags: [FORMS_PUBLIC_TAGS.all,FORMS_PUBLIC_TAGS.form(id)] })();
 }

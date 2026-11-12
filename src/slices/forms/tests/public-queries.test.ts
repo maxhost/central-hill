@@ -7,6 +7,7 @@ import ts from "typescript";
 import { z } from "zod";
 import * as domain from "../domain";
 import * as validation from "../validation";
+import * as publicTypes from "../public-types";
 
 function harness() {
   const id = crypto.randomUUID();
@@ -22,7 +23,7 @@ function harness() {
     "@core/i18n": { hashSource: (value: string) => value, loadTranslationRows: async () => state.targets },
     "@slices/settings/contract": { getGlobals: async () => ({ headerContactFormId: state.selected }) },
     "../schema": { form_definition: { id: "id", updated_at: "updated" } },
-    "../domain": domain, "../validation": validation,
+    "../domain": domain, "../validation": validation, "../public-types": publicTypes,
     "./queries": { record: (value: typeof row) => ({ ...value, definition: validation.readStoredBlueprint(value.definition), updatedAt: value.updated_at.toISOString() }) },
   };
   const compiled = { exports: {} };
