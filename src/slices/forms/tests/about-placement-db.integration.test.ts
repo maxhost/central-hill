@@ -39,7 +39,7 @@ function harness() {
 
 test("About DB: draft and published EN each block archive; target copies do not create independent uses",{skip:!enabled},async()=>{
   const h=harness(),formId=crypto.randomUUID(),pageId=crypto.randomUUID(),targetId=crypto.randomUUID();
-  const envelope={schemaVersion:1,content:{contact:{form:{form_id:formId}}},ogImageMediaId:null};
+  const envelope={schemaVersion:1,content:{contact:{form:{form_id:formId.toUpperCase()}}},ogImageMediaId:null};
   assert.equal((await h.client`select current_database() as db,current_user as role`)[0]?.db,"aboutcontactunitqa20261112");
   // This schema-only test DB is reserved for this implementer; never alter an existing About.
   assert.equal((await h.client`select count(*)::int as n from page_locale_content where page_key='about'`)[0]?.n,0);
@@ -50,6 +50,7 @@ test("About DB: draft and published EN each block archive; target copies do not 
     await h.client`update page_locale_content set draft=null,published=${JSON.stringify(envelope)}::jsonb,published_at=clock_timestamp() where id=${pageId}::uuid`;
     result=await h.actions.archiveForm(formId,1,true);assert.equal(result.ok,false);
     const assignment=await h.pages.readAboutContactAssignment();assert.ok(assignment);assert.equal(assignment.formId,formId);
+    assert.equal((await h.db.execute(sql`select ${h.pages.aboutContactAssignmentGuard(formId,assignment.identity)} as assigned`)).rows[0]?.assigned,true,"Uppercase saved UUID retains canonical public authority");
     await h.client`update page_locale_content set revision=revision+1,draft=${JSON.stringify(envelope)}::jsonb where id=${pageId}::uuid`;
     assert.equal((await h.pages.readAboutContactAssignment())?.identity,assignment.identity,"Draft save must preserve public identity");
     await h.client`insert into page_locale_content(id,page_key,locale,draft,published) values(${targetId}::uuid,'about','es',${JSON.stringify(envelope)}::jsonb,${JSON.stringify(envelope)}::jsonb)`;
