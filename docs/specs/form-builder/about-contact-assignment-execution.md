@@ -18,7 +18,7 @@ B único escritor de src/slices/forms y src/slices/leads (excepto public-types.t
 
 Raíz posee docs, contratos iniciales, integración, provisión/verificación/entrega y scripts externos. Si hay cambios de contrato necesarios acordarlos con raíz. No delegación anidada. Independent QA después integración: auditoría adversarial y browser desktop/móvil + guardado/recarga/publicación solo QA DB. Plan aprobado contiene aceptación completa. Comandos reales pnpm exec tsx --test <files>, typecheck, lint, build, db:check. UI revisión agrupada, sin matriz global repetida.
 
-Estado: checkpoint verificado y contratos f744299 entregados; implementadores A/B en marcha. QA independiente prepara revisión acotada sin escrituras hasta candidato integrado. Root confirma 44 tablas (negocio+ledger, 1504 filas) exactas tras delegación; 1331 objetos Git del archivo restaurado exactos y183 medios SHA256 inventariados. Bases schema-only separadas aboutcontactpagesqa20261112 para A y aboutcontactunitqa20261112 para B; ninguna colisión con QA browser. Ownership A ampliado solo a pages.admin.aboutContact en messages/{en,es,pt,fr}.json. ADR0081 documenta contratos y autoridad.
+Estado: entrega local completada; contratos f744299, dos implementadores aislados e independiente QA aprobados. Root confirma 44 tablas (negocio+ledger, 1504 filas) exactas tras delegación; 1331 objetos Git del archivo restaurado exactos y183 medios SHA256 inventariados. Bases schema-only separadas aboutcontactpagesqa20261112 para A y aboutcontactunitqa20261112 para B; ninguna colisión con QA browser. Ownership A ampliado solo a pages.admin.aboutContact en messages/{en,es,pt,fr}.json. ADR0081 documenta contratos y autoridad.
 
 
 ## Candidato integrado y comprobaciones
@@ -83,5 +83,35 @@ cincoleads propios (4About+1header), unteststaff. Preservarfixtures/bases/artefa
 
 Antes de apertura final, los procesos heredados3071/9081 ya no estaban activos;
 root no los había detenido.9081 reabierto con el mismo script/files/env, PID42630/
-session56332 y archivo existente200. Se reabrirá main con Node22 y el preload
+session56332 y archivo existente200. Main reabierto con Node22 y el preload
 actual exclusivo de neoncontentlocal20261111; ningún servidor ajeno fue detenido.
+
+
+## Integración y apertura final
+
+Main4b28638→7d11b76 por fast-forward después de QA aprobado. Commit final únicamente
+documental resuelve con gitlog-1; producto src/messages/SQL exacto al17b3199, con
+harness-only79cec74 y documentación posterior. Sin push/deploy.
+
+Único actual-main dev3071 PID42708/parent42702/session64963, cwdworkspace verificado.
+REQUIRED NODE_OPTIONS=--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs
+con .env.local original exacto (DB/rol neoncontentlocal20261111→proxy4558). Media9081
+PID42630/session56332, mismo script y183archivos originales. ProducciónQA3083
+PID42376/parent42370 detenida después de aprobación; build/env/caché/fixtures intactos.
+
+main-open.json: Settings+Forms+Abouteditor200, selector debajo deSubtitle con opción
+actual seleccionada, AboutEN/PT200 con ContactForm previo inline y en header,
+0pageerrors/0writes bloqueadas. Ningún Save/Publish/Test/capture en authoredmain.
+Solo login local normal y acciones GET/lectura privada catálogo/preview. Primer intento
+usó locator de botón Contact inexistente; se corrigió el harness al select real de
+secciones, preservando Settings ya aprobado y sin cambio de producto.
+
+main-conservation.json posterior a apertura:44tablas negocio+ledger/1504filas exactas
+respecto al snapshot (auth excluida solo por login normal). Los42negocios/1473filas
+originales siguen exactos, igual que ledger31 y rate vacío; ningún dato de About,
+Forms o Leads main cambiado. Env principal, logo y ambos symlinks originales exactos.
+No cacheflush, nueva matriz ni datos sintéticos sobre main. Workingtree solo conserva
+los3preexistentes ajenos: PNGlogo +public/neoncontentlocal +public/propertylocalesqa.
+
+Resend sin configurar; EMAIL_PROVIDERconsole. Recepción real y adjuntos por email
+siguen pendientes del hito autorizado por separado; no se enviaron correos reales.

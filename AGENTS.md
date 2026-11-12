@@ -46,8 +46,11 @@ published/draftnull, headernull,5ownleads(4About/1header),1stafftest. No mainfix
 Inherited main3071PID2270/media9081PID13693 exited outside task-owned actions before
 finalopening; media re-opened same script/files PID42630/session56332. Main reopening
 uses existing .env.local and REQUIRED NODE_OPTIONS=--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs
-onlyneoncontentlocal20261111→proxy4558. Finalread-only opening/runtime recorded below
-in execution; no Save/cacheflush/broadmatrix on authored main. Preserve envs/caches/
+onlyneoncontentlocal20261111→proxy4558. Final actual-main3071PID42708/parent42702/session64963; media9081PID42630/session56332.
+QA3083PID42376/parent42370 stopped afterapproval. Finalopening Settings/Forms/Abouteditor
++AboutEN/PT200,0pageerrors; selection remainsnull/legacy inline+header.44business+ledger
+tables/1504rows exact afteropening (authonlynormalLogin), env/logo/symlinks exact.
+Mainff4b28638→7d11b76; finaldoccommit via gitlog-1. No Save/cacheflush/broadmatrix on authored main. Preserve envs/caches/
 worktrees/media/logo/bothsymlinks/oldcheckpoints. No DDL/remoteDB/R2writes/push/deploy,
 rolecleanup or automaticResendsetup. Realmail/attachmentreception remains pending.
 
