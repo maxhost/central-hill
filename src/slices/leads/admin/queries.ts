@@ -3,7 +3,8 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { lead, lead_field } from "../schema";
 import type { LeadKind } from "../validation";
-import { deriveLeadTitle, groupFields } from "./derive";
+import { capturedContactFields, deriveCapturedContactTitle, groupFields } from "./derive";
+import type { ContactFormSnapshot } from "../form-capture-types";
 
 /**
  * Backoffice read queries for the leads inbox (S12 — slice `leads`). Server-only;
@@ -56,6 +57,7 @@ export async function listLeads(filters: LeadListFilters = {}): Promise<LeadList
       source_page: lead.source_page,
       marketing_consent: lead.marketing_consent,
       created_at: lead.created_at,
+      form_snapshot: lead.form_snapshot,
     })
     .from(lead)
     .where(conditions.length ? and(...conditions) : undefined)
@@ -77,7 +79,8 @@ export async function listLeads(filters: LeadListFilters = {}): Promise<LeadList
 
   return rows.map((row) => {
     const fields = byLead.get(row.id) ?? {};
-    return { ...row, title: deriveLeadTitle(fields), email: fields.email ?? null };
+    const { form_snapshot, ...metadata } = row;
+    return { ...metadata, title: deriveCapturedContactTitle(form_snapshot, fields), email: fields.email ?? null };
   });
 }
 
@@ -97,7 +100,8 @@ export interface LeadDetail {
   created_at: Date;
   updated_at: Date;
   /** Captured fields, in insertion order (matches the form the user filled). */
-  fields: { key: string; value: string }[];
+  fields: { key: string; value: string; label?: string }[];
+  formSnapshot: ContactFormSnapshot | null;
 }
 
 /** Load one lead with its captured fields, or `null` if it does not exist. */
@@ -129,7 +133,8 @@ export async function getLead(id: string): Promise<LeadDetail | null> {
     user_agent: row.user_agent,
     created_at: row.created_at,
     updated_at: row.updated_at,
-    fields,
+    fields: capturedContactFields(row.form_snapshot) ?? fields,
+    formSnapshot: row.form_snapshot,
   };
 }
 

@@ -1,4 +1,5 @@
 import type { LeadKind } from "../validation";
+import type { ContactFormSnapshot } from "../form-capture-types";
 
 /**
  * Pure presentation helpers for the backoffice leads inbox (S12 — slice `leads`).
@@ -31,6 +32,18 @@ export function deriveLeadTitle(fields: Record<string, string>): string {
     if (value) return value;
   }
   return NO_TITLE;
+}
+
+/** Dynamic questionnaires have stable UUID field keys, not a translated-name
+ * heuristic. Use the validated reply-to alias or the captured internal name. */
+export function deriveCapturedContactTitle(snapshot: ContactFormSnapshot | null | undefined, fields: Record<string, string>): string {
+  if (!snapshot) return deriveLeadTitle(fields);
+  return fields.email || snapshot.name || NO_TITLE;
+}
+
+export function capturedContactFields(snapshot: ContactFormSnapshot | null | undefined): { key: string; label: string; value: string }[] | null {
+  if (!snapshot || !Array.isArray(snapshot.fields)) return null;
+  return snapshot.fields.map(field => ({ key: field.id, label: field.label, value: field.displayValue }));
 }
 
 /**

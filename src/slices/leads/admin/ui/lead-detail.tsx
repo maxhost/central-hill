@@ -7,7 +7,7 @@ import {
   EmptyState,
   StateBadge,
 } from "@slices/backoffice/contract";
-import { deriveLeadTitle, formatAdminDate, statusTone } from "../derive";
+import { deriveCapturedContactTitle, formatAdminDate, statusTone } from "../derive";
 import { getLead } from "../queries";
 import { AssignControl } from "./assign-control";
 import { StatusControl } from "./status-control";
@@ -53,7 +53,7 @@ export async function LeadDetail({
   const detail = await getLead(id);
   if (!detail) notFound();
 
-  const title = deriveLeadTitle(
+  const title = deriveCapturedContactTitle(detail.formSnapshot,
     Object.fromEntries(detail.fields.map((f) => [f.key, f.value])),
   );
   const fieldLabel = (key: string) =>
@@ -74,7 +74,7 @@ export async function LeadDetail({
 
       <AdminPageHeader
         title={title}
-        description={t(`admin.kind.${detail.kind}`)}
+        description={detail.formSnapshot ? `${t(`admin.kind.${detail.kind}`)} · ${detail.formSnapshot.name}` : t(`admin.kind.${detail.kind}`)}
         actions={
           <div className="flex flex-wrap items-center gap-3">
             <StatusControl id={detail.id} current={detail.status} />
@@ -117,7 +117,7 @@ export async function LeadDetail({
         ) : (
           <dl>
             {detail.fields.map((f) => (
-              <Row key={f.key} label={fieldLabel(f.key)}>
+              <Row key={f.key} label={f.label ?? fieldLabel(f.key)}>
                 <span className="whitespace-pre-wrap">{f.value}</span>
               </Row>
             ))}
