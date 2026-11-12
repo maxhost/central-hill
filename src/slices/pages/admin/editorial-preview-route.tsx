@@ -9,6 +9,8 @@ import type { Locale } from "@core/db/columns";
 import { usesPageLocaleDrafts } from "../editorial-registry";
 import { getEditorialAdapter } from "../server/editorial-adapters";
 import { getPageDraftPreview } from "../server/editorial-preview";
+import { resolveEditorialEnvelope } from "../server/editorial-publication";
+import { getPageEditorialModel } from "./editorial-queries";
 import { renderPageLivePreview } from "./live-preview-actions";
 import { homeEditorBindingIds } from "./home-contextual";
 
@@ -32,7 +34,14 @@ export async function PageEditorialPreview({ pageKey, query }: {
  }
  const ids = pageKey === "home" ? homeEditorBindingIds : [...bindings(root), ...adapter.descriptor.externalSections, "og_image_media_id"];
  const messages = await getMessages({ locale });
- const page = await getPageDraftPreview(pageKey, locale as Locale);
+ let page = await getPageDraftPreview(pageKey, locale as Locale);
+ // An unsaved page already has an in-memory working envelope in the editor.
+ // Mount the same starting point so the live bridge can receive local edits;
+ // rendering null here would throw 404 before the bridge can mount.
+ if (!page) {
+  const model = await getPageEditorialModel(pageKey, locale as Locale);
+  page = await resolveEditorialEnvelope(model?.working ?? null, locale as Locale);
+ }
  return <NextIntlClientProvider locale={locale} messages={messages}>
   <SiteHeader locale={locale as Locale} />
   <PageEditorLivePreview instance={query.instance} bindingIds={ids}
