@@ -969,6 +969,28 @@
           "hidden": "Não mostrar preço"
         },
         "mediaAltHint": "As imagens são partilhadas. Edite o texto alternativo no separador de cada idioma."
+      },
+      "enquiryForm": {
+        "label": "Formulário de pedido do serviço",
+        "original": "Usar o formulário de contacto atual",
+        "loadingSelection": "A carregar o formulário selecionado…",
+        "missing": "O formulário selecionado não está disponível",
+        "help": "Escolha o formulário para a secção de pedidos deste serviço. Guarde o rascunho e publique inglês para ativar a mesma seleção em todos os idiomas. Só aparece com o tipo de reserva Pedido. As alterações guardadas depois em Forms atualizam os campos automaticamente.",
+        "shared": "Este serviço usa o mesmo formulário em todos os idiomas.",
+        "editEnglish": "Editar seleção em inglês",
+        "invalid": "Selecione um formulário disponível com um destinatário válido.",
+        "unavailable": "Esta seleção não está disponível. Escolha outro formulário ou use o formulário de contacto atual.",
+        "loadError": "Não foi possível carregar os formulários. Atualize a lista.",
+        "empty": "Ainda não há formulários disponíveis. Crie um em Forms e atualize esta lista.",
+        "create": "Criar formulários",
+        "edit": "Editar formulário selecionado",
+        "loading": "A carregar…",
+        "refresh": "Atualizar formulários",
+        "reason": {
+          "archived": "Arquivado",
+          "recipient": "Precisa de um destinatário válido",
+          "definition": "Definição inválida"
+        }
       }
     },
     "ctaImageAlt": "Sala luminosa e elegantemente mobilada com vista para a cidade num dos nossos apartamentos de Lisboa",

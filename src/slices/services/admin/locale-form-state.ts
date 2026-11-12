@@ -160,6 +160,8 @@ export function createServiceWorkspace(
           localeMode: locale === "en" ? "custom" : "inherit",
         } as ServiceEnvelope);
       const form = formFromEnvelope(envelope, slug, model?.status ?? "draft");
+      // The common assignment is edited only in EN; targets never own this field.
+      if (locale !== "en") delete form.enquiry_form_id;
       return [
         locale,
         {

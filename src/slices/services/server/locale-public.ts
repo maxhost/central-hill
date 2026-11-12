@@ -32,7 +32,12 @@ export async function loadServicePublications(
   for (const row of rows) {
     if (!out.has(row.service_id)) out.set(row.service_id, null);
     if (row.locale !== locale || !row.published) continue;
-    const checkedSnapshot = checkServiceEnvelope(row.published);
+    // An invalid optional assignment must never discard the service publication.
+    // Public assignment authority is read independently from the EN snapshot.
+    const publication = structuredClone(row.published);
+    if (publication?.content && typeof publication.content === "object")
+      delete publication.content.enquiry_form_id;
+    const checkedSnapshot = checkServiceEnvelope(publication);
     if (
       !checkedSnapshot.envelope ||
       Object.keys(checkedSnapshot.errors).length
@@ -54,8 +59,8 @@ export async function loadServicePublications(
     }
     const envelope =
       shared?.schemaVersion === 1
-        ? overlayServiceShared(row.published, shared.content)
-        : row.published;
+        ? overlayServiceShared(publication, shared.content)
+        : publication;
     const checked = checkServiceEnvelope(envelope);
     out.set(
       row.service_id,

@@ -16,6 +16,8 @@ import {
   type EnquiryContactLine,
 } from "@core/ui";
 import { ContactForm } from "@slices/leads/contract";
+import { PublicContactForm } from "@slices/forms/contract";
+import { readServiceEnquiryForm } from "@slices/forms/server-contract";
 import { SITE_ICON_DEFAULTS, getGlobals, type SiteGlobals } from "@slices/settings/contract";
 import {
   getServiceBySlug,
@@ -153,10 +155,11 @@ export async function ServiceDetail({
   const svc: ServiceDetailData | null = await getServiceBySlug(locale, slug);
   if (!svc) notFound();
 
-  const [all, globals, t] = await Promise.all([
+  const [all, globals, t, enquiryForm] = await Promise.all([
     listServices(locale),
     getGlobals(locale), // site icons; enquiry pages also use the contact details
     getTranslations("services"),
+    svc.bookingType === "enquiry" ? readServiceEnquiryForm(svc.id, locale) : Promise.resolve(null),
   ]);
 
   const { detail } = svc;
@@ -431,7 +434,7 @@ export async function ServiceDetail({
                 : undefined;
             })()}
           >
-            <ContactForm source={`service:${svc.slug}`} />
+            {enquiryForm ? <PublicContactForm model={enquiryForm} className="mt-0" /> : <ContactForm source={`service:${svc.slug}`} />}
           </EnquirySplit>
         </div>
       ) : null}

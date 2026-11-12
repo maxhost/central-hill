@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
+import { executeSerialized } from "@core/db/serialized";
+import { HEADER_CONTACT_LOCK } from "@slices/forms/server-contract";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
 import { loadContent, resolveSlug } from "@core/i18n/content";
@@ -230,10 +232,14 @@ export async function saveService(raw: unknown): Promise<ServiceSaveResult> {
         .where(eq(service.id, input.id))
         .limit(1);
       if (!exists) return { ok: false, error: "not_found" };
-      await db
+      // A legacy request may have passed its pre-read before the first locale
+      // save. Recheck adaptation under the same lock as assignment/capture.
+      const updated = await executeSerialized(HEADER_CONTACT_LOCK, db
         .update(service)
         .set({ ...coreValues, updated_at: new Date() })
-        .where(eq(service.id, input.id));
+        .where(sql`${service.id}=${input.id}::uuid and not exists(select 1 from service_locale_content lc where lc.service_id=${service.id})`)
+        .returning({ id: service.id }).getSQL());
+      if (!updated.rows.length) return { ok:false,error:"validation",fieldErrors:{ _source:"Use the language draft and publication controls for this service." } };
     } else {
       const [ins] = await db
         .insert(service)
@@ -298,7 +304,7 @@ export async function saveService(raw: unknown): Promise<ServiceSaveResult> {
 export async function deleteService(id: string): Promise<{ ok: boolean }> {
   await requireStaff();
   try {
-    await db.delete(service).where(eq(service.id, id)); // cascades service_media
+    await executeSerialized(HEADER_CONTACT_LOCK, sql`delete from ${service} where ${service.id}=${id}::uuid`); // cascades locale/shared/media
     await deleteContent(SERVICE, id);
     await deleteSlugs(SERVICE, id);
     revalidateServices();

@@ -969,6 +969,28 @@
           "hidden": "Do not show a price"
         },
         "mediaAltHint": "Images are shared. Edit their alternative text in each language tab."
+      },
+      "enquiryForm": {
+        "label": "Service enquiry form",
+        "original": "Use the current contact form",
+        "loadingSelection": "Loading selected form…",
+        "missing": "Selected form is unavailable",
+        "help": "Choose the form for this service’s enquiry section. Save a draft, then publish English to activate the same selection in every language. It is shown only for Enquiry booking. Later saved changes in Forms update its fields automatically.",
+        "shared": "This service uses one form in all languages.",
+        "editEnglish": "Edit selection in English",
+        "invalid": "Select an available form with a valid recipient.",
+        "unavailable": "This selection is unavailable. Choose another form or use the current contact form.",
+        "loadError": "Forms could not be loaded. Try refreshing the list.",
+        "empty": "No forms are available yet. Create one in Forms, then refresh this list.",
+        "create": "Create forms",
+        "edit": "Edit selected form",
+        "loading": "Loading…",
+        "refresh": "Refresh forms",
+        "reason": {
+          "archived": "Archived",
+          "recipient": "Needs a valid recipient",
+          "definition": "Invalid definition"
+        }
       }
     },
     "ctaImageAlt": "Bright, elegantly furnished living room with a city outlook in one of our Lisbon apartments",

@@ -1,3 +1,13 @@
+Individual service creation and editing includes a Booking → Service enquiry form
+selector. `content.enquiry_form_id` belongs exclusively to the English locale snapshot,
+not live shared data: Save draft is private and Publish EN activates one selection
+for all published languages without rewriting their copy. Target tabs show EN working
+selection read-only and keep their inherit/custom mode. Omission preserves, explicit
+null restores the existing ContactForm; enquiry/external/none routing is unchanged.
+Forms edits update assigned public forms without republishing a service. Assignment
+and anonymous capture use stable service UUIDs and published EN identity; archive
+checks both EN draft and published uses, including hidden/non-enquiry services.
+
 # Slice `services` (S5)
 
 Image descriptions are edited beside the cover, gallery, social image and nested

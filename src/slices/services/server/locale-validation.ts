@@ -27,6 +27,7 @@ export const serviceDraftContentSchema = serviceSaveInput
     cover_media_id: z.uuid().nullable(),
     cta_url: url,
     media_alts: mediaAltsSchema.optional(),
+    enquiry_form_id: z.uuid().nullable().optional(),
   });
 export const serviceSharedSchema = serviceDraftContentSchema
   .pick({

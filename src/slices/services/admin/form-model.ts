@@ -142,6 +142,7 @@ export interface FormState {
   detail: DetailDraft;
   gallery: string[];
   media_alts?: MediaAlts;
+  enquiry_form_id?: string | null;
   presentation: ServicePresentation | null;
   copy: ServiceCopy;
 }
@@ -175,6 +176,7 @@ export function initialState(
     detail: detailToDraft(data?.detail ?? EMPTY_DETAIL),
     gallery: [...(data?.gallery ?? [])],
     ...(data && "media_alts" in data && data.media_alts !== undefined ? { media_alts: structuredClone(data.media_alts) } : {}),
+    ...(data && "enquiry_form_id" in data ? { enquiry_form_id: data.enquiry_form_id } : {}),
     presentation: data?.presentation
       ? structuredClone(data.presentation)
       : null,
@@ -224,6 +226,7 @@ export function buildPayload(s: FormState, id: string | undefined) {
     detail: draftToDetail(s.detail),
     gallery: s.gallery,
     ...(s.media_alts !== undefined ? { media_alts: s.media_alts } : {}),
+    ...(s.enquiry_form_id !== undefined ? { enquiry_form_id: s.enquiry_form_id } : {}),
     presentation: s.presentation,
     copy: s.copy,
   };

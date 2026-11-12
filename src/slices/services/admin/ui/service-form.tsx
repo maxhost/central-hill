@@ -58,6 +58,7 @@ import {
 import { DetailEditor } from "./detail-editor";
 import { ServiceField as Field } from "./service-section-controls";
 import { ServiceCopyEditor } from "./service-copy-editor";
+import { ServiceEnquirySelector } from "./enquiry-form-selector";
 import {
   SERVICE_ICON_SLOTS,
   SERVICE_PRICE_DISPLAYS,
@@ -997,6 +998,14 @@ export function ServiceForm({
               </FieldGrid>
             ) : null}
             <DetailEditor mode="booking" {...detailProps} />
+            <ServiceEnquirySelector
+              value={workspace.locales.en.working.enquiry_form_id}
+              onChange={value => set("enquiry_form_id", value)}
+              readOnly={locale !== "en"}
+              onEnglish={() => selectLocale("en")}
+              error={workspace.locales.en.errors.enquiry_form_id}
+              disabled={busy}
+            />
           </div>
         </AdminCard>
 

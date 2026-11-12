@@ -969,6 +969,28 @@
           "hidden": "No mostrar precio"
         },
         "mediaAltHint": "Las imágenes se comparten. Edita su texto alternativo en la pestaña de cada idioma."
+      },
+      "enquiryForm": {
+        "label": "Formulario de consulta del servicio",
+        "original": "Usar el formulario de contacto actual",
+        "loadingSelection": "Cargando formulario seleccionado…",
+        "missing": "El formulario seleccionado no está disponible",
+        "help": "Elige el formulario de la sección de consulta de este servicio. Guarda el borrador y publica inglés para activar la misma selección en todos los idiomas. Solo se muestra con reserva de tipo Consulta. Los cambios guardados después en Forms actualizan sus campos automáticamente.",
+        "shared": "Este servicio usa un formulario común en todos los idiomas.",
+        "editEnglish": "Editar selección en inglés",
+        "invalid": "Selecciona un formulario disponible con destinatario válido.",
+        "unavailable": "La selección no está disponible. Elige otro formulario o usa el formulario de contacto actual.",
+        "loadError": "No se pudieron cargar los formularios. Actualiza la lista.",
+        "empty": "Aún no hay formularios disponibles. Crea uno en Forms y actualiza esta lista.",
+        "create": "Crear formularios",
+        "edit": "Editar formulario seleccionado",
+        "loading": "Cargando…",
+        "refresh": "Actualizar formularios",
+        "reason": {
+          "archived": "Archivado",
+          "recipient": "Necesita un destinatario válido",
+          "definition": "Definición no válida"
+        }
       }
     },
     "ctaImageAlt": "Salón luminoso y elegantemente amueblado con vistas a la ciudad en uno de nuestros apartamentos de Lisboa",

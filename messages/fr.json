@@ -969,6 +969,28 @@
           "hidden": "Ne pas afficher de prix"
         },
         "mediaAltHint": "Les images sont partagées. Modifiez leur texte alternatif dans l’onglet de chaque langue."
+      },
+      "enquiryForm": {
+        "label": "Formulaire de demande du service",
+        "original": "Utiliser le formulaire de contact actuel",
+        "loadingSelection": "Chargement du formulaire sélectionné…",
+        "missing": "Le formulaire sélectionné est indisponible",
+        "help": "Choisissez le formulaire de la section de demande de ce service. Enregistrez le brouillon, puis publiez l’anglais pour activer la même sélection dans toutes les langues. Il apparaît uniquement pour une réservation de type Demande. Les modifications enregistrées ensuite dans Forms mettent automatiquement ses champs à jour.",
+        "shared": "Ce service utilise un formulaire commun à toutes les langues.",
+        "editEnglish": "Modifier la sélection en anglais",
+        "invalid": "Sélectionnez un formulaire disponible avec un destinataire valide.",
+        "unavailable": "Cette sélection est indisponible. Choisissez un autre formulaire ou utilisez le formulaire de contact actuel.",
+        "loadError": "Impossible de charger les formulaires. Actualisez la liste.",
+        "empty": "Aucun formulaire disponible. Créez-en un dans Forms, puis actualisez cette liste.",
+        "create": "Créer des formulaires",
+        "edit": "Modifier le formulaire sélectionné",
+        "loading": "Chargement…",
+        "refresh": "Actualiser les formulaires",
+        "reason": {
+          "archived": "Archivé",
+          "recipient": "Destinataire valide requis",
+          "definition": "Définition invalide"
+        }
       }
     },
     "ctaImageAlt": "Salon lumineux et élégamment meublé avec vue sur la ville dans l’un de nos appartements à Lisbonne",

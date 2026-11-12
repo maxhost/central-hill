@@ -1,6 +1,7 @@
 import "server-only";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
+import { getAssignableContactForm, assignableContactFormGuard, HEADER_CONTACT_LOCK } from "@slices/forms/server-contract";
 import {
   SlugConflictError,
   loadAlternateSlugs,
@@ -129,6 +130,8 @@ function sharedPayloadErrors(
 /** All locale/shared mutations serialize on the same graph lock. The following
  * statement sees a fresh READ COMMITTED snapshot after waiting for that lock. */
 const graphLock = () => db.execute(sql`select pg_advisory_xact_lock(7159,1)`);
+const contactLock = () => db.execute(sql`select pg_advisory_xact_lock(hashtextextended(${HEADER_CONTACT_LOCK},0))`);
+type AssignedForm = { id: string; revision: number } | null;
 async function reserveIdentity(
   input: SaveServiceDraftInput,
 ): Promise<ServiceIdentity | null> {
@@ -174,9 +177,11 @@ async function commitDraft(
   shared: ServiceSharedContent,
   identity: ServiceIdentity,
   actor: string,
+  assignedForm: AssignedForm,
 ): Promise<boolean> {
   const c = input.payload.content;
-  const [, , result] = await db.batch([
+  const [, , , result] = await db.batch([
+    contactLock(),
     graphLock(),
     seedQuery(identity, rows, sharedBefore, actor),
     db.execute(sql`with parent as materialized (
@@ -190,6 +195,7 @@ async function commitDraft(
     ), eligible as materialized (
       select selected.id from selected,common,english,parent where selected.revision=${input.expectedRevision}
       and common.revision=${input.expectedSharedRevision}
+      and ${assignedForm ? assignableContactFormGuard(assignedForm.id, assignedForm.revision) : sql`true`}
       ${input.templateRevision != null ? sql`and english.revision=${input.templateRevision}` : sql``}
     ), saved as (
       update service_locale_content set draft=${JSON.stringify(input.payload)}::jsonb,revision=revision+1,
@@ -234,6 +240,12 @@ export async function saveServiceDraft(
     },
   };
   try {
+    let assignedForm: AssignedForm = null;
+    // Validate a new choice before reserving even an unpublished identity.
+    if (input.locale === "en" && input.payload.content.enquiry_form_id) {
+      assignedForm = await getAssignableContactForm(input.payload.content.enquiry_form_id);
+      if (!assignedForm) return invalid({ enquiry_form_id: "Select an available form with a valid recipient." });
+    }
     if (input.shared) {
       const errors = sharedPayloadErrors(input.payload, input.shared);
       if (Object.keys(errors).length) return invalid(errors);
@@ -281,6 +293,21 @@ export async function saveServiceDraft(
     const model = await readServiceEditorialModel(input.serviceId);
     if (!model) return { ok: false, error: "not_found" };
     const selected = model.locales[input.locale];
+    const previousAssignment = model.locales.en.working.content.enquiry_form_id;
+    if (input.locale === "en") {
+      if (!Object.hasOwn(input.payload.content, "enquiry_form_id") && previousAssignment !== undefined)
+        input.payload.content.enquiry_form_id = previousAssignment;
+      if (input.payload.content.enquiry_form_id && !assignedForm) {
+        assignedForm = await getAssignableContactForm(input.payload.content.enquiry_form_id);
+        if (!assignedForm) return invalid({ enquiry_form_id: "Select an available form with a valid recipient." });
+      }
+    } else {
+      const submitted = input.payload.content.enquiry_form_id;
+      if (Object.hasOwn(input.payload.content, "enquiry_form_id")
+        && (submitted?.toLowerCase() ?? null) !== (previousAssignment?.toLowerCase() ?? null))
+        return invalid({ enquiry_form_id: "Choose the service enquiry form in English." });
+      delete input.payload.content.enquiry_form_id;
+    }
     if (
       selected.revision !== input.expectedRevision ||
       model.shared.revision !== input.expectedSharedRevision ||
@@ -394,6 +421,7 @@ export async function saveServiceDraft(
         shared,
         identity,
         actor,
+        assignedForm,
       ))
     )
       return { ok: false, error: "conflict" };
@@ -439,12 +467,17 @@ export async function publishServiceDraft(
     const checked = checkServiceEnvelope(publishing, true);
     if (!checked.envelope || Object.keys(checked.errors).length)
       return invalid(checked.errors);
+    const assignedForm = input.locale === "en" && publishing.content.enquiry_form_id
+      ? await getAssignableContactForm(publishing.content.enquiry_form_id) : null;
+    if (input.locale === "en" && publishing.content.enquiry_form_id && !assignedForm)
+      return invalid({ enquiry_form_id: "Select an available form with a valid recipient." });
     const errors = await validateServiceReferences(publishing);
     if (Object.keys(errors).length) return invalid(errors);
     if (!model.slugByLocale[input.locale] && !model.slugByLocale.en)
       return invalid({ slug: "This service has no public URL." });
     const rows = await readServiceLocaleRows(identity);
-    const [, , result] = await db.batch([
+    const [, , , result] = await db.batch([
+      contactLock(),
       graphLock(),
       seedQuery(identity, rows, model.shared.content, actor),
       db.execute(sql`with parent as materialized(select id,status from service where id=${input.serviceId}::uuid for update),
@@ -453,6 +486,7 @@ export async function publishServiceDraft(
           published_at=now(),draft_saved_at=null,updated_at=now(),updated_by=${actor}
           where service_id=${input.serviceId}::uuid and locale=${input.locale} and revision=${input.expectedRevision} and draft is not null
           and exists(select 1 from parent)
+          and ${assignedForm ? assignableContactFormGuard(assignedForm.id, assignedForm.revision) : sql`true`}
           and exists(select 1 from common where revision=${model.shared.revision}) returning id),
         activated as(update service set status='published',updated_at=now() where id=${input.serviceId}::uuid and exists(select 1 from saved) returning id)
         select id from saved`),
@@ -484,7 +518,8 @@ export async function setServiceArchived(
   const before = await readServiceEditorialModel(serviceId);
   if (!before) return { ok: false, error: "not_found" };
   const rows = await readServiceLocaleRows(identity);
-  const [, , result] = await db.batch([
+  const [, , , result] = await db.batch([
+    contactLock(),
     graphLock(),
     seedQuery(identity, rows, before.shared.content, actor),
     db.execute(sql`update service set status=${archived ? sql`'archived'` : sql`case when exists(select 1 from service_locale_content lc where lc.service_id=service.id and lc.published is not null) then 'published' else 'draft' end`},updated_at=now()

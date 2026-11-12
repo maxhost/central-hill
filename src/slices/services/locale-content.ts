@@ -49,6 +49,8 @@ export function serviceLocalizedContent(content: ServiceContent): unknown {
   const c = identifyServiceContent(content);
   const local = { ...c } as Partial<ServiceContent>;
   for (const key of SERVICE_SHARED_KEYS) delete local[key];
+  // Assignment ownership is EN-only, independent of translated text ownership.
+  delete local.enquiry_form_id;
   return { ...local, detail: { ...c.detail,
     facts: c.detail.facts.map(fact => withoutKey(fact, "icon")),
     itinerary: c.detail.itinerary.map(step => withoutKey(step, "media_id")),
