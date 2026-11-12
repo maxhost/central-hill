@@ -5,6 +5,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
+import { executeSerialized } from "@core/db/serialized";
+import { headerContactUsageGuard } from "@slices/settings/contract";
+import { HEADER_CONTACT_LOCK } from "../public-types";
+import { refreshPublicForm } from "./public-publish";
 import { sendEmail } from "@core/email";
 import { sourceSnapshotCtes, targetSnapshotCtes } from "@core/i18n";
 import { approvedBlueprint, createBlueprint, textFields } from "../domain";
@@ -22,9 +26,9 @@ function failed(error: unknown): FormResult<never> {
   console.error("[forms] operation failed", error instanceof Error ? error.message : "unknown error");
   return { ok: false, code: "server", error: "The operation could not be completed. Please try again." };
 }
-function refresh(id?: string) {
+async function refresh(id?: string) {
   revalidatePath("/admin/forms");
-  if (id) revalidatePath(`/admin/forms/${id}`);
+  if (id) { revalidatePath(`/admin/forms/${id}`); await refreshPublicForm(id); }
 }
 
 export async function createForm(template: FormTemplate, name: string): Promise<FormResult<{ id: string }>> {
@@ -39,7 +43,7 @@ export async function createForm(template: FormTemplate, name: string): Promise<
     ), ${snapshot} select id from saved`);
     const id = result.rows[0]?.id;
     if (typeof id !== "string") throw new Error("Create returned no form");
-    refresh();
+    await refresh();
     return { ok: true, data: { id } };
   } catch (error) { return failed(error); }
 }
@@ -54,13 +58,13 @@ export async function saveForm(input: SaveFormInput): Promise<FormResult<{ revis
   const value = parsed.data;
   try {
     const snapshot = sourceSnapshotCtes("form_definition", sql`select id from saved`, textFields(value.definition), staff.userId);
-    const result = await db.execute(sql`with saved as (
+    const result = await executeSerialized(HEADER_CONTACT_LOCK, sql`with saved as (
       update form_definition set name=${value.name},recipient=${value.recipient},definition=${JSON.stringify(value.definition)}::jsonb,
       revision=revision+1,updated_at=now() where id=${value.id}::uuid and revision=${value.expectedRevision} and status='draft' returning id,revision
     ), ${snapshot} select revision from saved`);
     const revision = result.rows[0]?.revision;
     if (typeof revision !== "number") return conflict();
-    refresh(value.id);
+    await refresh(value.id);
     return { ok: true, data: { revision } };
   } catch (error) { return failed(error); }
 }
@@ -83,12 +87,12 @@ export async function saveFormLocale(input: SaveFormLocaleInput): Promise<FormRe
       fields[key] = { value: translated, sourceValue: source[key] ?? "" };
     }
     const snapshot = targetSnapshotCtes("form_definition", sql`select id from saved`, value.locale, fields, value.approve ? "approved" : "needs_review", staff.userId);
-    const result = await db.execute(sql`with saved as (
+    const result = await executeSerialized(HEADER_CONTACT_LOCK, sql`with saved as (
       update form_definition set revision=revision+1,updated_at=now() where id=${value.id}::uuid and revision=${value.expectedRevision} and status='draft' returning id,revision
     ), ${snapshot} select revision from saved`);
     const revision = result.rows[0]?.revision;
     if (typeof revision !== "number") return conflict();
-    refresh(value.id);
+    await refresh(value.id);
     return { ok: true, data: { revision } };
   } catch (error) { return failed(error); }
 }
@@ -97,11 +101,14 @@ export async function archiveForm(id: string, expectedRevision: number, archived
   await requireStaff();
   if (!formIdSchema.safeParse(id).success || !revisionSchema.safeParse(expectedRevision).success || typeof archived !== "boolean") return invalid();
   try {
-    const result = await db.execute(sql`update form_definition set status=${archived ? "archived" : "draft"},revision=revision+1,updated_at=now()
-      where id=${id}::uuid and revision=${expectedRevision} returning revision`);
+    const result = await executeSerialized(HEADER_CONTACT_LOCK, sql`update form_definition set status=${archived ? "archived" : "draft"},revision=revision+1,updated_at=now()
+      where id=${id}::uuid and revision=${expectedRevision} and (${!archived} or not ${headerContactUsageGuard(id)}) returning revision`);
     const revision = result.rows[0]?.revision;
-    if (typeof revision !== "number") return conflict();
-    refresh(id);
+    if (typeof revision !== "number") {
+      if (archived) { const usage = await db.execute(sql`select ${headerContactUsageGuard(id)} as used`); if (usage.rows[0]?.used === true) return { ok: false, code: "validation", error: "This form is assigned to the header contact. Select another form in Settings before archiving it." }; }
+      return conflict();
+    }
+    await refresh(id);
     return { ok: true, data: { revision } };
   } catch (error) { return failed(error); }
 }

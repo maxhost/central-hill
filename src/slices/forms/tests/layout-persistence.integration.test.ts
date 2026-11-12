@@ -89,6 +89,10 @@ function harness(definition: StoredFormBlueprint = legacy()) {
   const actions = load<typeof import("../server/actions")>("../server/actions.ts", {
     ...shared, "zod": { z },
     "next/cache": { revalidatePath: (path: string) => state.revalidated.push(path) },
+    "@core/db/serialized": { executeSerialized: async (_key: string, query: Query) => db.execute(query) },
+    "@slices/settings/contract": { headerContactUsageGuard: () => sql`false` },
+    "../public-types": { HEADER_CONTACT_LOCK: "header-contact:v1" },
+    "./public-publish": { refreshPublicForm: async () => undefined },
     "@core/email": { sendEmail: async (message: unknown) => { state.emails.push(message); return { ok: true, id: "console" }; } },
     "./queries": queries, "./notification": { testNotification }, "./attachments": { validateAttachments },
   });
