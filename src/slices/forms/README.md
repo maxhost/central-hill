@@ -38,8 +38,8 @@ URL or persistent file storage is created. See ADR0078. Console/disabled email m
 retain their existing behavior; they do not deliver attachments to an inbox.
 
 Admin routes are dynamic/authenticated; no public ISR/SEO changes are introduced.
-Public placement, immutable release policy, retention, anonymous submission protections
-and integration with Leads remain a future arc.
+Other placements, a separate published-release lifecycle and broader retention policies
+remain future work. The configured header placement is documented below.
 
 ## Verification
 
@@ -70,3 +70,36 @@ shared by editor, runtime, validation and notifications. New field/row IDs are s
 across moves and saves. Date/File inputs remain mounted between wizard steps and
 retain their validated attachment behavior. No SQL schema or public form placement
 change is introduced. See [plan](../../../docs/specs/form-builder/row-column-field-plan.md).
+
+## Configured public header contact (ADR0080)
+
+Settings stores a nullable form ID. No selection keeps the existing contact. Assigned
+forms use their latest saved revision and approved locale copy/EN fallback. All three
+templates are starting blueprints; this placement always captures kind contact.
+Archiving an assigned form is blocked until Settings chooses another form or clears it.
+
+`server-contract.ts` owns server-only options/availability/placement readers;
+`schema-contract.ts` exposes only the FK table. Neither poisons the client barrel.
+The public DTO contains only ID/revision/locale/fingerprint/definition, never recipient
+or test history. The shared renderer uses neutral public controls, retains fields/files
+across steps, displays field/stale/rate errors and preserves one key across retries.
+
+The anonymous action checks the current assignment and revision again inside atomic
+capture through the Leads server contract. Stable-key retries never capture/notify twice;
+changed answers or bytes cannot reuse another capture. Snapshots retain localized
+labels/options/accepted notices and file metadata. No file bytes enter lead persistence.
+
+`form_public_rate_limit` shares five logical attempts per ten minutes per HMAC IP key
+and a100/minute global ceiling across processes; recent identical keys can retry within
+the global ceiling. Old counters are pruned opportunistically. The same transaction
+advisory lock serializes assignment, saves, archival and guarded capture, with a fresh
+READ COMMITTED statement after the lock. Public cache tags are declared in public-types.
+
+Notifications use the saved recipient and validated reply-to through core/email/Resend.
+Local delivery remains console pending Resend configuration; neither console nor a provider
+ID proves inbox reception. A failed email preserves the captured lead. Attachments are
+not persisted for later retries; their names/types/sizes remain visible in Leads.
+
+See [execution](../../../docs/specs/form-builder/header-contact-assignment-execution.md),
+[plan](../../../docs/specs/form-builder/header-contact-assignment-plan.md) and
+[QA](../../../docs/specs/form-builder/header-contact-assignment-qa.md).

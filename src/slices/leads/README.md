@@ -18,7 +18,8 @@ follow-up workflow lives in the backoffice inbox (**S12**). Lead field values ar
   `company_name, contact_name, contact_title?, email, phone?, country, asset_type,
   units_count?, locations?, …`; contact `name, email, subject, message`; newsletter `email`.
 
-No new migration: both tables already ship in `0000`.
+Both tables originate in `0000`; migration0030 adds nullable configured-form snapshot
+and unique submission key to lead, preserving legacy captures.
 
 ## Contract (`contract.ts`)
 
@@ -134,3 +135,22 @@ user.id` — no staff directory lookup (that would cross into `core/auth` user d
 non-positive count, empty consent, mismatched fields), `flattenFields`, and
 `buildLeadNotification`. Run:
 `npx tsx --test src/slices/leads/tests/leads.test.ts`.
+
+## Configured header form captures (ADR0080)
+
+The Forms anonymous action uses Leads' server-contract capture helper with a trusted
+server-owned placement/revision predicate. Capture and lead_field rows commit atomically
+under the header lock. Only the unique insertion winner notifies; identical replays
+succeed without a second lead/email, while changed payloads conflict.
+
+`form_snapshot` retains form identity/revision/locale, fingerprint, payload hash and
+ordered captured fields with exact localized labels, raw/display values and accepted
+notice flags. Metadata only for files; reply-to email is also stored as an inbox alias.
+The inbox/detail readers display captured labels/options even after the form changes.
+Legacy leads use their original reader and label mapping.
+
+All header captures have kind contact/source header-contact and marketing_consent=false.
+Only configured consent checkboxes actually accepted contribute text/time proof;
+consent_at is null when nothing was accepted. The saved Forms recipient determines the
+new notification, separate from the legacy LEAD_NOTIFY_TO path. Email failure leaves
+the lead intact. Local console and simulated Resend transport do not prove delivery.

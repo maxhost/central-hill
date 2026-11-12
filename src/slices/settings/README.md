@@ -1,5 +1,21 @@
 # Slice `settings` / `globals` (S11)
 
+## Header contact form —2026-11-12
+
+Settings now selects the saved Forms definition used by the header contact, both
+desktop and mobile, across EN/ES/PT/FR. One shared selection, same existing Save.
+The card provides create/manage/edit links, refreshable options and unavailable-state
+feedback. Unsaved selection stays local; later Saves/approved translations of the
+assigned form update the public popup without Page Publish.
+
+A nullable header_contact_form_id FK preserves the existing contact when unset.
+Old clients omitting the field keep the stored value; explicit null clears it. Assignment
+and Forms archival/capture share a serialized transaction guard; historical invalid
+references use the legacy public fallback and remain visible for Admin correction.
+Global reader shape is v8-header-contact. Schema/runtime-only contract boundaries
+are explicit in ADR0080. Resend remains unconfigured, EMAIL_PROVIDERconsole locally.
+[Execution](../../../docs/specs/form-builder/header-contact-assignment-execution.md).
+
 ## Current Settings surface —2026-11-07
 
 Hours Label EN/ES/PT/FR added to Office, one shared schedule. Inline EN canonical,

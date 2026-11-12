@@ -1,5 +1,66 @@
 # Central Hill agent instructions
 
+## Configured header contact form —2026-11-12
+
+User authorized the Settings→Forms header assignment plan, a verified code/data
+restore point before changes, and local implementation while Resend is unconfigured.
+Delivered source **68a6171**, two isolated implementers + independentQA. Read
+[plan](docs/specs/form-builder/header-contact-assignment-plan.md),
+[execution](docs/specs/form-builder/header-contact-assignment-execution.md),
+[QA](docs/specs/form-builder/header-contact-assignment-qa.md), ADR0080.
+
+Settings has one global header form selector with create/edit/refresh links. Both
+desktop and mobile header contacts render the saved definition/approvedlocale→EN.
+Nullable/unset keeps original contact; other page/body/hero/service/newsletter
+forms retain their integrations. Later Saves/Approve invalidate public model/layouts.
+Public DTO excludes recipient/test data; anonymous submissions use validated saved
+recipient/reply-to, atomic contact lead+fields, historical labels/values/consent,
+idempotency and durable rate limits. Only unique capture winner emails; marketing
+false, consent timestamp null without accepted configured notice. Files max5MiB/
+20MiB aggregate attached only, metadata stored; no persisted attachmentbytes/retry.
+Tests remain staff-only. Archive assigned form blocked; slot operations share real
+NeonHTTP READCOMMITTED batch lock statement then fresh mutation statement.
+
+**0030 applied only locally**, including current authored main DB/role
+**neoncontentlocal20261111**. Neon remote remains ledger30; no remote migration
+authorized here. New rate table, nullable Settings FK and lead snapshot/key.
+Main47oldpublic hashes exact at migration; final42oldbusiness/1473rows exact
+excluding only3newnullable attributes; rate0, headerselectionNULL. No QAfixtures or
+Save on authored main. Final normal local auth login is separate from businessdata.
+Main ff34ada31→68a6171 afterQA. Finaldoccommit resolves with gitlog-1; product
+src/messages/SQL unchanged after independently approved68a6171.
+
+Checkpoint **restore/header-contact-2026-11-12-1794491175278** at34ada31. Private
+root /private/tmp/central-hill-header-contact/checkpoint: consistent completeDB
+48tables/1509rows inclauth+ledger, schema/constraints/allhash exact in two isolated
+restores;1303codeobjects verified,183mediaSHA exact. Originaluntrackedplan/logo/
+publicsymlinks/envs preserved. Extra pre-main-migration.dump and main-before-
+integration.next retained. RESTORE.md has paired code+DB procedure. RestoreDB
+headercontactrestore20261112 remains intact with own strictpreload/env. QA DB
+headercontactqa20261112 retains twoforms/threeleads/onetest fixtures; schema-only
+headercontactunitqa20261112 ownfixturescleaned. Do not delete any bases/artifacts.
+
+Checks143domain/UI(132native+11oldpureSettings through explicit IO seams),4realDB
+capture/rate,3realDBfirstSave,8concurrentwriters+freshsnapshot proof, typecheck0,
+lint0(7oldwarnings),dbcheck31(old0008warning),UI detector0. FullTurbopackbuild0/
+215static/2workers using a build-only query/page concurrency cap to avoid local
+PGconnection saturation, no productconfig override. QA27cases/3boundedgroups/
+15captures firstpass/0pageerrors, no productcorrection inQA. RealpublicPOST replays,
+changedpayload, concurrentwinner,4locales/mobile/stale/archive/cache/historical
+labels/private-test separation/null and oldcontacts verified. Mainopening readonly
+Settings+Forms200/headerfallbackEN+PT200/0pageerrors in main-open.json.
+
+Sole actual-main dev3071 **PID2270/parent2264/session81406**, cwd workspace.
+REQUIRED NODE_OPTIONS=--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs
+and existing main.env.local (newDB only→proxy4558). Media9081PID13693/session68858
+retained. QAproduction3082PID1318 stopped after approval. Preserve caches/envs/
+worktrees/artifacts/logos and both publicmedia symlinks; no resets or broad QA repeat.
+
+**Resend still unconfigured**: main EMAIL_PROVIDERconsole, no real mail sent or
+inbox/attachment reception claimed. Lote7 pending private key/sender/provider
+configuration and authorized controlled real test. No automatic external setup,
+remoteDB/R2 writes, push/deploy or legacy-role cleanup.
+
 ## Current local content clone from Neon —2026-11-11
 
 User requests using Neon content locally. Main localhost3071 now uses NEW local

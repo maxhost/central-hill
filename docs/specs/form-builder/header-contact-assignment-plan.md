@@ -1,6 +1,6 @@
 # Plan — formulario configurable para el contacto del encabezado
 
-Fecha: 2026-11-12. Estado: **en implementación local; Resend pendiente de configuración**.
+Fecha: 2026-11-12. Estado: **lotes0–6 implementados y aprobados para integración local; lote7 Resend pendiente**.
 
 Actualización: se añade un punto de restauración obligatorio antes de implementar
 y se separa la integración local del envío real por Resend, todavía sin configurar.
@@ -270,3 +270,10 @@ La ejecución se registra en este documento. El correo real continúa pendiente 
 ## Detalle técnico de ejecución
 
 La limitación entre procesos usa `form_public_rate_limit`, una tabla de contadores de ventana corta propia de Forms. ADR0080 documenta el nuevo contrato público y la transacción Neon HTTP con bloqueo y mutación en statements separados READ COMMITTED.
+
+## Entrega local
+
+Producto aprobado por QA independiente en68a6171 e integrado a main. Migración0030
+aplicada únicamente en DBs locales propias y en neoncontentlocal20261111 tras QA;
+los47 hashes de tablas previas se conservaron excluyendo los nuevos atributos nullable.
+Neon remoto no migrado. Ver ejecución y QA adjuntos; Resend real sigue pendiente.

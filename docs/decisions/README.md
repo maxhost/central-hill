@@ -1362,3 +1362,5 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 - [0078 — Form dates and email attachments](0078-form-date-and-email-attachments.md)
 
 - [0079 — Explicit form rows and columns](0079-form-row-column-layout.md)
+
+- [0080 — Configured public header contact](0080-configured-header-contact.md)
