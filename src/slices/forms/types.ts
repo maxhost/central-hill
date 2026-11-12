@@ -1,7 +1,7 @@
 import type { Locale } from "@core/db/columns";
 
 export type FormTemplate = "contact" | "newsletter" | "owner-estimate";
-export type FieldType = "text" | "email" | "tel" | "textarea" | "number" | "select" | "checkbox";
+export type FieldType = "text" | "email" | "tel" | "textarea" | "number" | "select" | "checkbox" | "date" | "file";
 export interface FormOption { id: string; label: string }
 export interface FormStep { id: string; title: string }
 export interface FormField {
@@ -30,7 +30,10 @@ export interface FormTranslation {
 }
 export type FormTranslations = Record<TargetLocale, Record<string, FormTranslation>>;
 export interface FormEditorModel { form: FormRecord; translations: FormTranslations }
-export type FormValues = Record<string, string | boolean>;
+/** File bytes travel separately as multipart FormData, never as stored answers. */
+export interface FormFileValue { kind: "file"; name: string; type: string; size: number }
+export type FormInputValues = Record<string, string | boolean>;
+export type FormValues = Record<string, string | boolean | FormFileValue>;
 export type DeliveryState = "accepted" | "logged" | "skipped" | "failed";
 export type FormResult<T> = { ok: true; data: T } | {
   ok: false; code: "validation" | "conflict" | "not_found" | "server";
@@ -45,5 +48,5 @@ export interface SaveFormLocaleInput {
   values: Record<string, string>; approve: boolean;
 }
 export interface TestFormInput {
-  id: string; expectedRevision: number; locale: Locale; values: FormValues;
+  id: string; expectedRevision: number; locale: Locale; values: FormInputValues;
 }

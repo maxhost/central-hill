@@ -8,6 +8,13 @@ import { createResendProvider } from "./resend";
  */
 
 /** A transactional message. `text` is required; `html` is an optional richer body. */
+export interface EmailAttachment {
+  filename: string;
+  /** Base64 content supplied by the owning slice after validation. No remote URLs. */
+  content: string;
+  contentType: string;
+}
+
 export interface EmailMessage {
   to: string | string[];
   subject: string;
@@ -15,6 +22,7 @@ export interface EmailMessage {
   html?: string;
   /** Address replies should go to (e.g. the lead's own email). */
   replyTo?: string;
+  attachments?: EmailAttachment[];
 }
 
 export interface EmailResult {
