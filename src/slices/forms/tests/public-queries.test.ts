@@ -21,6 +21,7 @@ function harness() {
     "@core/auth": { requireStaff: async () => { if (state.denied) throw Error("Unauthorized"); } },
     "@core/db/client": { db: { select: () => selection } },
     "@core/i18n": { hashSource: (value: string) => value, loadTranslationRows: async () => state.targets },
+    "@slices/pages/server-contract": { readAboutContactAssignment: async () => state.selected ? { formId: state.selected, identity: "a".repeat(32) } : null },
     "@slices/settings/contract": { getGlobals: async () => ({ headerContactFormId: state.selected }) },
     "../schema": { form_definition: { id: "id", updated_at: "updated" } },
     "../domain": domain, "../validation": validation, "../public-types": publicTypes,
@@ -67,4 +68,21 @@ test("selector options are auth gated and explain unavailable forms",async () =>
   const { queries,row,state } = harness();row.recipient = "";
   const [choice] = await queries.listHeaderContactFormOptions();assert.ok(choice);assert.equal(choice.available,false);assert.equal(choice.reason,"recipient");
   state.denied = true;await assert.rejects(queries.listHeaderContactFormOptions(),/Unauthorized/);
+});
+
+
+test("About public model uses shared assignment and returns no private data", async () => {
+  const { queries,row,state } = harness();
+  const model = await queries.readAboutContactForm("fr");assert.ok(model);
+  assert.equal(model.placement,"about-contact");assert.equal(model.assignmentIdentity,"a".repeat(32));
+  assert.equal(model.locale,"fr");assert.equal(JSON.stringify(model).includes(row.recipient),false);
+  state.selected = null;assert.equal(await queries.readAboutContactForm("fr"),null);
+});
+test("About explicit preview override is fresh, auth gated and cannot inherit public assignment", async () => {
+  const { queries,row,state } = harness();
+  assert.equal(await queries.readAboutContactForm("en",null),null);
+  state.selected = null;const model = await queries.readAboutContactForm("en",row.id);assert.ok(model);
+  assert.equal(model.assignmentIdentity,undefined);assert.equal(model.placement,"about-contact");
+  assert.equal(state.tags.length,0);
+  state.denied = true;await assert.rejects(queries.readAboutContactForm("en",row.id),/Unauthorized/);
 });

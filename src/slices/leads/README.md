@@ -154,3 +154,15 @@ Only configured consent checkboxes actually accepted contribute text/time proof;
 consent_at is null when nothing was accepted. The saved Forms recipient determines the
 new notification, separate from the legacy LEAD_NOTIFY_TO path. Email failure leaves
 the lead intact. Local console and simulated Resend transport do not prove delivery.
+
+## Configured About contact capture
+
+The trusted Forms service supplies `sourcePage=about-contact` for About; omitted
+source retains `header-contact` for compatible existing captures. The capture SQL
+rechecks its trusted assignment/revision guard for both insert and replay under
+the shared placement serialization lock. Replay equality includes the stored
+`lead.source_page`, so a key from one placement cannot acknowledge the other.
+About snapshot hashes also bind their published assignment identity; historical
+header snapshots retain their original hash shape. Leads remain kind contact,
+marketing false, with exact historical field/consent labels, atomic field capture
+and no attachment bytes in persistence.

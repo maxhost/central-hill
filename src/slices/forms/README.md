@@ -103,3 +103,28 @@ not persisted for later retries; their names/types/sizes remain visible in Leads
 See [execution](../../../docs/specs/form-builder/header-contact-assignment-execution.md),
 [plan](../../../docs/specs/form-builder/header-contact-assignment-plan.md) and
 [QA](../../../docs/specs/form-builder/header-contact-assignment-qa.md).
+
+## About Contact shared placement
+
+Pages → About → Contact owns one optional form selection, exclusively in EN draft
+and published JSON. The public reader follows published EN for all four languages;
+explicit staff-preview overrides read saved definitions without becoming public
+assignment authority. PublicContactForm `preview` is inert and has no submission
+path. The selected blueprint supplies fields and responses; About keeps its own
+heading and subtitle. Invalid/unset references preserve the original contact form.
+
+The About action verifies the published assignment identity and form revision,
+then shares the header validator, attachment policy, durable global/personal rate
+counters, atomic Leads capture and core/email notification. About always captures
+`contact`/`about-contact`, regardless of the definition's starting template. Its
+payload hash binds published assignment and placement; capture also compares the
+stored lead source. Original header hashes and valid historical retries remain
+compatible. Both insert and replay recheck assignment/revision under the shared
+serialized lock. Draft saves do not alter the published assignment identity.
+
+About EN draft and published uses independently block archive; target snapshot
+copies create no additional use. Form Save/Approve invalidates all four About
+routes as well as the independent header when applicable. Cross-slice SQL readers
+and guards live in server-only contracts, outside client-consumed barrels.
+Resend remains unconfigured; console and simulated transport checks do not prove
+inbox receipt or attachment delivery. No new schema or backfill is required.

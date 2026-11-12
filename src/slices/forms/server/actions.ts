@@ -7,6 +7,7 @@ import { requireStaff } from "@core/auth";
 import { db } from "@core/db/client";
 import { executeSerialized } from "@core/db/serialized";
 import { headerContactUsageGuard } from "@slices/settings/server-contract";
+import { aboutContactUsageGuard } from "@slices/pages/server-contract";
 import { HEADER_CONTACT_LOCK } from "../public-types";
 import { refreshPublicForm } from "./public-publish";
 import { sendEmail } from "@core/email";
@@ -102,10 +103,19 @@ export async function archiveForm(id: string, expectedRevision: number, archived
   if (!formIdSchema.safeParse(id).success || !revisionSchema.safeParse(expectedRevision).success || typeof archived !== "boolean") return invalid();
   try {
     const result = await executeSerialized(HEADER_CONTACT_LOCK, sql`update form_definition set status=${archived ? "archived" : "draft"},revision=revision+1,updated_at=now()
-      where id=${id}::uuid and revision=${expectedRevision} and (${!archived} or not ${headerContactUsageGuard(id)}) returning revision`);
+      where id=${id}::uuid and revision=${expectedRevision} and (${!archived} or (not ${headerContactUsageGuard(id)} and not ${aboutContactUsageGuard(id)})) returning revision`);
     const revision = result.rows[0]?.revision;
     if (typeof revision !== "number") {
-      if (archived) { const usage = await db.execute(sql`select ${headerContactUsageGuard(id)} as used`); if (usage.rows[0]?.used === true) return { ok: false, code: "validation", error: "This form is assigned to the header contact. Select another form in Settings before archiving it." }; }
+      if (archived) {
+        const usage = await db.execute(sql`select ${headerContactUsageGuard(id)} as header_used, ${aboutContactUsageGuard(id)} as about_used`);
+        const row = usage.rows[0];
+        if (row?.header_used === true || row?.about_used === true) return {
+          ok: false, code: "validation", error: row.header_used === true && row.about_used === true
+            ? "This form is used by the header and About Contact. Change Settings and the EN draft and published selection in Pages → About before archiving it."
+            : row.about_used === true ? "This form is used by About Contact. Change the EN draft and published selection in Pages → About before archiving it."
+            : "This form is assigned to the header contact. Select another form in Settings before archiving it.",
+        };
+      }
       return conflict();
     }
     await refresh(id);

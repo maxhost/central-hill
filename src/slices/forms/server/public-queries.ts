@@ -8,6 +8,7 @@ import { db } from "@core/db/client";
 import type { Locale } from "@core/db/columns";
 import { loadTranslationRows, hashSource } from "@core/i18n";
 import { getGlobals } from "@slices/settings/contract";
+import { readAboutContactAssignment } from "@slices/pages/server-contract";
 import { form_definition } from "../schema";
 import { approvedBlueprint, textFields } from "../domain";
 import { readStoredBlueprint, formIdSchema } from "../validation";
@@ -57,4 +58,22 @@ export async function readHeaderContactForm(locale: Locale): Promise<PublicFormM
     const source = await readPublicFormSource(id,locale);
     return source ? { id, revision: source.form.revision, locale, fingerprint: source.fingerprint, definition: source.definition } : null;
   }, ["header-contact-form",id,locale,"v1"], { tags: [FORMS_PUBLIC_TAGS.all,FORMS_PUBLIC_TAGS.form(id)] })();
+}
+
+/** One published EN assignment serves all About languages. An explicit override
+ * is private preview state and must never become public assignment authority. */
+export async function readAboutContactForm(locale: Locale, override?: string | null): Promise<PublicFormModel | null> {
+  if (override !== undefined) {
+    await requireStaff();
+    if (!override) return null;
+    const source = await readPublicFormSource(override, locale);
+    return source ? { id: override, revision: source.form.revision, locale, fingerprint: source.fingerprint, definition: source.definition, placement: "about-contact" } : null;
+  }
+  const assignment = await readAboutContactAssignment();
+  if (!assignment) return null;
+  const { formId: id, identity } = assignment;
+  return unstable_cache(async () => {
+    const source = await readPublicFormSource(id, locale);
+    return source ? { id, revision: source.form.revision, locale, fingerprint: source.fingerprint, definition: source.definition, placement: "about-contact" as const, assignmentIdentity: identity } : null;
+  }, ["about-contact-form", id, locale, identity, "v1"], { tags: [FORMS_PUBLIC_TAGS.all, FORMS_PUBLIC_TAGS.form(id)] })();
 }

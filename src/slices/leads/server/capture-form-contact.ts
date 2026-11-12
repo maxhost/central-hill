@@ -8,15 +8,16 @@ import type { ContactCaptureInput, ContactCaptureResult } from "../form-capture-
 /** Trusted assignment/revision SQL is composed by Forms. Capture and KV fields
  * commit together under the same serialization lock as Settings and archival. */
 export async function captureFormContact(input: ContactCaptureInput, guard: SQL): Promise<ContactCaptureResult> {
+  const sourcePage = input.sourcePage ?? "header-contact";
   const consent = input.snapshot.fields.filter(field => field.consent && field.value === true).map(field => field.label).join("\n") || null;
   const fields = input.snapshot.fields.map(field => ({ key: field.id, value: field.displayValue }));
   if (input.email) fields.push({ key: "email", value: input.email });
   const result = await executeSerialized(HEADER_CONTACT_LOCK, sql`
     with existing as (
-      select id,form_snapshot from ${lead} where ${lead.submission_key}=${input.submissionKey}::uuid
+      select id,form_snapshot,source_page from ${lead} where ${lead.submission_key}=${input.submissionKey}::uuid
     ), captured as (
       insert into ${lead}(kind,locale,source_page,marketing_consent,consent_text,consent_at,ip_address,user_agent,form_snapshot,submission_key)
-      select 'contact',${input.snapshot.locale},'header-contact',false,${consent},
+      select 'contact',${input.snapshot.locale},${sourcePage},false,${consent},
         case when ${consent}::text is null then null else clock_timestamp() end,
         ${input.ipAddress},${input.userAgent},${JSON.stringify(input.snapshot)}::jsonb,${input.submissionKey}::uuid
       where (${guard}) and not exists(select 1 from existing)
@@ -26,8 +27,9 @@ export async function captureFormContact(input: ContactCaptureInput, guard: SQL)
       select captured.id,field.key,field.value from captured
       cross join jsonb_to_recordset(${JSON.stringify(fields)}::jsonb) as field(key text,value text)
     ) select
-      case when exists(select 1 from captured) then 'created'
-        when exists(select 1 from existing where form_snapshot->>'payloadHash'=${input.snapshot.payloadHash}
+      case when not (${guard}) then 'stale'
+        when exists(select 1 from captured) then 'created'
+        when exists(select 1 from existing where source_page=${sourcePage} and form_snapshot->>'payloadHash'=${input.snapshot.payloadHash}
           and form_snapshot->>'formId'=${input.snapshot.formId}
           and form_snapshot->>'fingerprint'=${input.snapshot.fingerprint}
           and form_snapshot->>'revision'=${String(input.snapshot.revision)}) then 'duplicate'
