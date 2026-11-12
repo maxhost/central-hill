@@ -111,3 +111,30 @@ ADR0083 documents boundedcompatibility. Publicframe/Forms/capture codeunchanged.
 Root rebuildingin NEWcorrectedruntime to preserveinitialproductionbuild/cache. Browserwill
 resumeonlyfromSaveDraft withsameA/note/submit andpreservedHero; first6passedcasesretained,
 notrerun. Capture/locales/lifecycle werenotrun beforeblocker andwillrunonce afterfix.
+
+
+## Corrección integrada y aprobación final
+
+Producto corregidod7bf8dd, candidato aprobado daf041b2a5203e7307ac49034d3a7e31cf27b44b.
+Root179pruebas afectadas0/0skip trasfix,3DBPages regresión0, typecheck0/lint0(7oldwarnings).
+10DBForms previos válidos: fuentesForms/Leads no cambiaron encompatfix. Nuevos10tests focales
+nativos conIOexplícito incluyenbaselinepublicado, nuevoorphanmanipuladono-selfauthorize,
+noPublicado/noexemption, MIMEresuelto/uppercase/othermedia/OG/Owners strict. Logs corrected.
+
+Freshcorrectedruntime /private/tmp/central-hill-real-estate-enquiry-corrected-runtime rama
+real-estate-enquiry/corrected-runtime: build0/215static/2workers, compilación9.4s/TS13.0s y
+staticgen2.7s usando COPIAindependiente de cachefinalanterior (originalconservado). NodeModules
+clonefile/envpropio/preloadbuildcap4; ninguna pruebaDB concurrente coneste build. Producción
+corregida3085PID85221/parent85215/session92477, login200. Solo inicial82085/82079 detenido.
+
+QA32casos (9editor+10captura+3locales/móvil+10lifecycle),0pageerrors/adminerrors.6casos iniciales
+retenidosdelcdf15c3;3Save/reload/Publish confirmadosfocalmente en daf041b, y23captura/locales/
+lifecycle antesnoejecutados pasanunavez en corregido. Sin repetir matrizgeneral. UnP2preexistente
+Hero cerrado; helper se ancla apublicado leído porservidor, preservó UUID8c343da2... exacto en
+draft/publicado ymedia_asset sigueausente. PublictargetJSONexacto. No reparación/fixturehack.
+Una aserciónharness buscaba consoleenloginicial: apuntadaalogcorregido, sin repetircapturas.
+
+QA35tablas ajenas+originalForms/Leads/Fields/ALLotherPages inclAbout/Guest+translations(excepto
+Settingsautorizado)exactos. Ledger31exacto.5leadspropios(4deal_enquiry+1headercontact),1Teststaff
+logged,1notificaciónconsoleporganador. FinalQARealEstate formnull/draftnull/headernull. NiCore/
+SQL/migración/remoteDB/R2writes/envíoreal ni modificación deMain/env/cache porQA.

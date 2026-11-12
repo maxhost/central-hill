@@ -1,5 +1,65 @@
 # Central Hill agent instructions
 
+## Real Estate Enquiry Forms assignment —2026-11-12
+
+User requests Forms selector at endof Enquiry belowNote in/admin/pages/real_estate. Read
+[plan](docs/specs/form-builder/real-estate-enquiry-assignment-plan.md),
+[execution](docs/specs/form-builder/real-estate-enquiry-assignment-execution.md),
+[QA](docs/specs/form-builder/real-estate-enquiry-assignment-qa.md), ADR0083.
+
+Optionalnullable deal_enquiry.form_id, commonpublishedEN authority4locales. ENdraftprivate,
+ENPublish changesselection withouttouchingtargettexts; targetsreadonly+ENaccess/serverguard,
+oldomitpreserves/nullremoves. Selector afterNote/createeditrefresh keepslocaledits. Private
+ENworkingoverridealltabs/savedfreshdefinition/inertbody. Publicinvalidref retainssectioncopy
+andlegacyStaticFormCard; old12fields/accordions/submit/note/inactivity remainwhenunselected.
+Adapterdefault explicitlydeletesonlynewhiddenid toavoidapplyDefaults''. No GETwrites/default
+materialization. Configuredbody usespresentationalframe(notFormCard<form>), singleRuntime
+form/no headingduplication. EnquirySplit#deal-enquiry/headline/lede/directcontacts retained;
+selectedFormownsfields/button/messages,PageSubmitLabel+Notelegacyonly ashelpexplains.
+
+Explicit submitRealEstateEnquiryForm fixes source_page=real-estate-enquiry andtrustedcapture
+deriveskinddeal_enquiry onlynewsource regardlesstemplate. Header/About/Gueststaycontact,
+oldhashes/replays/subjectscompatible. Replaychecks kind+source+hash/rev, fourorigins12crosskeys
+rejected. Atomicfields/history/consent/marketingfalse, winneronlyconsole/email, sharedglobal/
+personalquotas andexistingDate/File/attachmentlimits, no persistedbytes/publicassets.
+Allfourassignment/FormsArchiveSave/capture share HEADER_CONTACT_LOCK separateREADCOMMITTED
+lock/mutation/freshsnapshot. ENdraft ORpublished blocksarchiveplusother3placements,
+UUIDcaseinsensitive; targetrefsignored. PublishedID+published_at identitynotdraftrev.
+FormsSave/Approve cache4real-estate routeswithoutPagePublish, otherinvalidationspreserved.
+
+Checkpoint restore/real-estate-enquiry-2026-11-12-1794508510198 atb7741ed, private
+/private/tmp/central-hill-real-estate-enquiry/checkpoint:49tables1514rows inclauth/ledger31,
+columns/constraints/counts/hashes exact2restores,1353Gitobjects/183mediaSHAexact. Preserve
+realestateenquiryrestore20261112, browserclone realestateenquiryqa20261112 and ownschema-only
+realestateenquirypagesqa20261112/realestateenquiryunitqa20261112; alloldcheckpoints/bases/
+worktrees/envs/caches/artifacts retained. PairedRESTORE.md preserveslaterstatefirst,newcheckout/
+DBrestore,noautomaticlaterdata merge. NoSQLschema/migration/backfill/core/remoteDB/R2write,
+push/deploy/rolecleanup or externalmailsetup. Resendconsole/unconfigured remains pending.
+
+PreexistingHeroorphan8c343da2-a2bd-4ff1-9416-9e0bc9a2a7a0 blockedfullSave. NarrowPagescompat:
+onlyRealEstate unchangedvalidunresolvedHero matchingSERVERcurrent.published mayretainexisting
+fallback; no publishedbaseline/noexception, draftcannotselfauthorize. New/changed/malformed/
+resolvedwrongMIME/othermedia/OG/otherPagesstrict. Storepassescurrent.published onlyserverread.
+No datarepair/referenceclear/newasset. Unit10focal+actualSavePublish confirmedpointerunchanged.
+
+TwoisolatedwritersAd085214/Bb2f5ce2, Afix3a66631→14b667a integrated56f46f2→d7bf8dd. FinalQA
+approveddaf041b/productd7bf8dd:32cases/0errors, oldP2closed via3focusedSavePublishcases,
+6earliercasesretained and23remainingrunonce; no broadrepeat. Root179pure/render0/3PagesDB
+rerun0+10FormsDBpriorunchangedsource0,typecheck/lint0(7oldwarn),dbcheck31(old0008warn),detector0.
+Initialbuild0/215static/2workers6.5min after2autoBuildings60s retries; correctedbuild0/215static/
+2workers(compile9.4s/TS13s/static2.7scopiedindependentcache), productconfiguntouched. Bothbuilds/
+cache/envs/artifactsretained. QA35protectedtables andoriginalForms/Leads/ALLotherPages exact,
+ledger31exact;5ownleads(4deal_enquiry/1headercontact),1loggedstafftest,console1perwinner.
+FinalQARealEstateformnull/draftnull/headernull. No mainfixtures.
+
+Main3071PID42708/parent42702/session64963+media9081PID42630/session56332 retained. REQUIRED
+NODE_OPTIONS=--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs andoriginal
+.env.local (onlyneoncontentlocal20261111→proxy4558). Finalmainff/opening inexecution; noSave/
+cacheflush/mainfixtures. Preserve logoPNG/bothpublicsymlinks/allolderbases/envs/caches/worktrees.
+Resendstillconsole/unconfigured; realkey/sender/inboxattachments testseparatelypending.
+Noautomaticnexttask, schema/remoteDB/R2writes/push/deploy/rolecleanup.
+
+
 ## Guest Closing dual CTA owner Form —2026-11-12
 
 User requests same configurableForms work asAbout in /admin/pages/guest, ClosingdualCTA

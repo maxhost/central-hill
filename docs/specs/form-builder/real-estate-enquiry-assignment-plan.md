@@ -1,6 +1,7 @@
 # Real Estate → Enquiry → Forms
 
-2026-11-12. Implementación solicitada por el usuario, mismo patrón About/Guest.
+2026-11-12. Implementado localmente; QA independiente aprobado.
+Solicitado por el usuario, mismo patrón About/Guest.
 
 ## Resultado y compatibilidad
 
