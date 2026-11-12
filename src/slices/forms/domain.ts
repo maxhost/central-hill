@@ -1,7 +1,8 @@
-import type { FormBlueprint, FormCopy, FormField, FormTemplate, FormTranslations, TargetLocale } from "./types";
+import { normalizeBlueprint } from "./layout";
+import type { FormBlueprint, FormCopy, FormField, FormTemplate, FormTranslations, LegacyFormBlueprint, LegacyFormField, StoredFormBlueprint, TargetLocale } from "./types";
 
 /** Stable IDs are independent of order, labels and locale. All copy paths are kernel-owned block keys. */
-export function textFields(definition: FormBlueprint): Record<string, string> {
+export function textFields(definition: StoredFormBlueprint): Record<string, string> {
   const fields: Record<string, string> = {};
   for (const [key, value] of Object.entries(definition.copy)) fields[`block:copy.${key}`] = value;
   for (const step of definition.steps) fields[`block:steps.${step.id}.title`] = step.title;
@@ -30,13 +31,14 @@ export function approvedBlueprint(definition: FormBlueprint, translations: FormT
   if (locale === "en") return definition;
   return localizedBlueprint(definition, Object.fromEntries(Object.entries(translations[locale]).filter(([, row]) => row.state === "approved").map(([key, row]) => [key, row.value])));
 }
-export function newField(stepId: string, type: FormField["type"] = "text"): FormField {
-  return { id: crypto.randomUUID(), stepId, type, label: "New field", placeholder: "", help: "", required: false, width: 2, options: [], consent: false };
+export function newField(type: FormField["type"] = "text"): FormField {
+  return { id: crypto.randomUUID(), type, label: "New field", placeholder: "", help: "", required: false, options: [], consent: false };
 }
 export function createBlueprint(template: FormTemplate): FormBlueprint {
   const propertyStep = crypto.randomUUID();
   const contactStep = crypto.randomUUID();
-  const make = (label: string, type: FormField["type"], required = true, stepId = propertyStep): FormField => ({ ...newField(stepId, type), label, required });
+  // Build the existing template placement, then materialize explicit rows with fresh IDs.
+  const make = (label: string, type: FormField["type"], required = true, stepId = propertyStep): LegacyFormField => ({ ...newField(type), stepId, width: 2, label, required });
   const email = make("Email", "email", true, template === "owner-estimate" ? contactStep : propertyStep);
   const copy: FormCopy = { title: "Contact us", description: "", submit: "Send message", next: "Continue", back: "Back", cancel: "Cancel", successTitle: "Thank you", successMessage: "Your message has been received.", errorMessage: "We could not send your message. Please try again." };
   let steps = [{ id: propertyStep, title: "Contact details" }];
@@ -58,5 +60,7 @@ export function createBlueprint(template: FormTemplate): FormBlueprint {
   }
   if (template === "contact") fields = fields.map(field => field.type === "email" || field.label === "Name" ? { ...field, width: 1 } : field);
   if (template === "owner-estimate") fields = fields.map(field => ["Number of properties", "Bedrooms", "Name", "Email"].includes(field.label) ? { ...field, width: 1 } : field);
-  return { schemaVersion: 1, columns: template === "newsletter" ? 1 : 2, steps, fields, copy, replyToFieldId: email.id };
+  const legacy: LegacyFormBlueprint = { schemaVersion: 1, columns: template === "newsletter" ? 1 : 2, steps, fields, copy, replyToFieldId: email.id };
+  const definition = normalizeBlueprint(legacy);
+  return { ...definition, rows: definition.rows.map(row => ({ ...row, id: crypto.randomUUID(), columns: row.columns.map(column => ({ ...column, id: crypto.randomUUID() })) })) };
 }

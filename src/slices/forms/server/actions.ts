@@ -10,7 +10,7 @@ import { sourceSnapshotCtes, targetSnapshotCtes } from "@core/i18n";
 import { approvedBlueprint, createBlueprint, textFields } from "../domain";
 import { form_definition, form_test_submission } from "../schema";
 import type { DeliveryState, FormResult, FormTemplate, SaveFormInput, SaveFormLocaleInput, TestFormInput } from "../types";
-import { formIdSchema, formTemplateSchema, issueFields, revisionSchema, saveFormSchema, saveLocaleSchema, testFormSchema, validateValues } from "../validation";
+import { formIdSchema, formTemplateSchema, issueFields, readStoredBlueprint, revisionSchema, saveFormSchema, saveLocaleSchema, testFormSchema, validateValues } from "../validation";
 import { getFormEditor } from "./queries";
 import { testNotification } from "./notification";
 import { validateAttachments } from "./attachments";
@@ -46,6 +46,9 @@ export async function createForm(template: FormTemplate, name: string): Promise<
 
 export async function saveForm(input: SaveFormInput): Promise<FormResult<{ revision: number }>> {
   const staff = await requireStaff();
+  // Older browser bundles may still submit v1. Never silently replace an explicit layout.
+  if (input && typeof input === "object" && "definition" in input && input.definition && typeof input.definition === "object" && "schemaVersion" in input.definition && input.definition.schemaVersion !== 2)
+    return { ok: false, code: "validation", error: "The form editor has changed. Reload before saving; your saved form was not changed." };
   const parsed = saveFormSchema.safeParse(input);
   if (!parsed.success) return invalid(issueFields(parsed.error.issues));
   const value = parsed.data;
@@ -71,7 +74,7 @@ export async function saveFormLocale(input: SaveFormLocaleInput): Promise<FormRe
     const [row] = await db.select().from(form_definition).where(eq(form_definition.id, value.id)).limit(1);
     if (!row) return missing();
     if (row.status !== "draft" || row.revision !== value.expectedRevision) return conflict();
-    const source = textFields(row.definition);
+    const source = textFields(readStoredBlueprint(row.definition));
     const fields: Record<string, { value: string; sourceValue: string }> = {};
     for (const [key, translated] of Object.entries(value.values)) {
       if (!Object.hasOwn(source, key)) return invalid({ [key]: "This text no longer exists." });

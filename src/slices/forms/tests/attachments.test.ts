@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { Buffer } from "node:buffer";
 import sharp from "sharp";
 import { createBlueprint, newField } from "../domain";
+import { addFieldToColumn, addRow } from "../layout";
 import { MAX_FILE_BYTES, MAX_TOTAL_FILE_BYTES } from "../file-policy";
 import { validateAttachments } from "../server/attachments";
 import { testNotification } from "../server/notification";
@@ -11,8 +12,12 @@ import type { FormBlueprint } from "../types";
 const pdf = Buffer.from("%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF\n");
 
 function fileDefinition(count = 1): FormBlueprint {
-  const definition = createBlueprint("contact");
-  definition.fields = Array.from({ length: count }, (_, index) => ({ ...newField(definition.steps[0]!.id, "file"), label: `Attachment ${index + 1}`, required: true }));
+  let definition = createBlueprint("contact");
+  definition = { ...definition, fields: [], rows: [] };
+  for (let index = 0; index < count; index++) {
+    definition = addRow(definition, definition.steps[0]!.id, 1);
+    definition = addFieldToColumn(definition, definition.rows.at(-1)!.columns[0]!.id, { ...newField("file"), label: `Attachment ${index + 1}`, required: true });
+  }
   definition.replyToFieldId = null;
   return definition;
 }
@@ -134,4 +139,15 @@ test("a later invalid file discards earlier valid metadata and attachments", asy
   assert.ok(checked.fieldErrors[definition.fields[1]!.id]);
   assert.deepEqual(checked.files, {});
   assert.deepEqual(checked.attachments, []);
+});
+
+
+test("email attachments follow visual field order rather than submitted multipart order", async () => {
+  const definition = fileDefinition(2);
+  const form = new FormData();
+  form.append(definition.fields[1]!.id, new File([pdf], "second.pdf", { type: "application/pdf" }));
+  form.append(definition.fields[0]!.id, new File([pdf], "first.pdf", { type: "application/pdf" }));
+  const checked = await validateAttachments(definition, form);
+  assert.deepEqual(checked.fieldErrors, {});
+  assert.deepEqual(checked.attachments.map(file => file.filename), ["first.pdf", "second.pdf"]);
 });

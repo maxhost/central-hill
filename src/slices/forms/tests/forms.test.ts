@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { approvedBlueprint, createBlueprint, localizedBlueprint, textFields } from "../domain";
-import { blueprintSchema, saveFormSchema, testFormSchema, validateValues } from "../validation";
+import { approvedBlueprint, createBlueprint, localizedBlueprint, newField, textFields } from "../domain";
+import { blueprintSchema, legacyBlueprintSchema, readStoredBlueprint, saveFormSchema, storedBlueprintSchema, testFormSchema, validateValues } from "../validation";
 import { testNotification } from "../server/notification";
-import type { FormBlueprint, FormInputValues, FormTranslations } from "../types";
+import { addFieldToColumn, addRow, fieldLocation, moveRow, normalizeBlueprint, orderedFields } from "../layout";
+import type { FormBlueprint, FormInputValues, FormTranslations, LegacyFormBlueprint } from "../types";
 
 function answers(definition: FormBlueprint): FormInputValues {
   return Object.fromEntries(definition.fields.map(field => [field.id,
@@ -21,14 +22,15 @@ test("all three independent templates validate; Owner includes Studio and contac
   const owner = createBlueprint("owner-estimate");
   assert.equal(owner.steps.length, 2);
   assert.ok(owner.fields.some(field => field.options.some(option => option.label === "Studio")));
-  assert.ok(owner.fields.some(field => field.type === "email" && field.stepId === owner.steps[1]?.id));
+  assert.ok(owner.fields.some(field => field.type === "email" && fieldLocation(owner, field.id)?.stepId === owner.steps[1]?.id));
 });
 
 test("Date and File definitions validate without becoming reply-to fields", () => {
-  const definition = createBlueprint("contact");
-  const original = definition.fields[0]!;
-  definition.fields.push({ ...original, id: crypto.randomUUID(), type: "date", label: "Arrival date" });
-  definition.fields.push({ ...original, id: crypto.randomUUID(), type: "file", label: "Attachment" });
+  let definition = createBlueprint("contact");
+  for (const type of ["date", "file"] as const) {
+    definition = addRow(definition, definition.steps[0]!.id, 1);
+    definition = addFieldToColumn(definition, definition.rows.at(-1)!.columns[0]!.id, { ...newField(type), label: type });
+  }
   assert.equal(blueprintSchema.safeParse(definition).success, true);
   definition.replyToFieldId = definition.fields.at(-1)!.id;
   assert.equal(blueprintSchema.safeParse(definition).success, false);
@@ -96,7 +98,7 @@ test("definition rejects duplicate IDs, dangling steps, invalid reply-to and rev
   const original = createBlueprint("owner-estimate");
   for (const mutate of [
     (value: FormBlueprint) => { if (value.fields[0] && value.fields[1]) value.fields[1].id = value.fields[0].id; },
-    (value: FormBlueprint) => { if (value.fields[0]) value.fields[0].stepId = crypto.randomUUID(); },
+    (value: FormBlueprint) => { if (value.rows[0]) value.rows[0].stepId = crypto.randomUUID(); },
     (value: FormBlueprint) => { value.replyToFieldId = value.fields[0]?.id ?? null; },
     (value: FormBlueprint) => { const field = value.fields.find(item => item.type === "number"); if (field) { field.min = 5; field.max = 1; } },
     (value: FormBlueprint) => { value.steps = Array.from({ length: 7 }, () => ({ id: crypto.randomUUID(), title: "Step" })); },
@@ -137,4 +139,53 @@ test("test notification preserves translated option and consent labels with vali
   assert.ok(message.text.includes("Acepto la política exacta [consent]: Yes"));
   assert.ok(message.text.includes(`${select.label}: Studio`));
   assert.ok(!message.text.includes(String(values[select.id])));
+});
+
+
+test("v2 rejects orphan/duplicate/missing placements, bad layout identities, limits and legacy properties", () => {
+  const original = createBlueprint("contact");
+  for (const mutate of [
+    (value: FormBlueprint) => { value.rows[0]!.columns[0]!.fieldId = null; },
+    (value: FormBlueprint) => { value.rows[0]!.columns[1]!.fieldId = value.rows[0]!.columns[0]!.fieldId; },
+    (value: FormBlueprint) => { value.rows[0]!.columns[0]!.fieldId = crypto.randomUUID(); },
+    (value: FormBlueprint) => { value.rows[0]!.columns[0]!.id = value.fields[0]!.id; },
+    (value: FormBlueprint) => { value.rows[0]!.id = value.steps[0]!.id; },
+    (value: FormBlueprint) => { value.rows[0]!.columns = []; },
+    (value: FormBlueprint) => { value.rows[0]!.columns.push({ id: crypto.randomUUID(), fieldId: null }); },
+    (value: FormBlueprint) => { value.rows = Array.from({ length: 41 }, () => ({ id: crypto.randomUUID(), stepId: value.steps[0]!.id, columns: [{ id: crypto.randomUUID(), fieldId: null }] })); },
+    (value: FormBlueprint) => { Object.assign(value.fields[0]!, { width: 1 }); },
+    (value: FormBlueprint) => { Object.assign(value, { columns: 2 }); },
+  ]) {
+    const value = structuredClone(original); mutate(value);
+    assert.equal(blueprintSchema.safeParse(value).success, false);
+  }
+});
+
+test("validated legacy reads normalize without mutation and unsupported/malformed versions fail legibly", () => {
+  const current = createBlueprint("contact");
+  const legacy: LegacyFormBlueprint = {
+    schemaVersion: 1, columns: 2, copy: current.copy, steps: current.steps,
+    replyToFieldId: current.replyToFieldId,
+    fields: current.fields.map(field => ({ ...field, stepId: current.steps[0]!.id, width: field.label === "Name" || field.type === "email" ? 1 : 2 })),
+  };
+  const before = JSON.stringify(legacy);
+  assert.equal(legacyBlueprintSchema.safeParse(legacy).success, true);
+  assert.equal(storedBlueprintSchema.safeParse(legacy).success, true);
+  assert.deepEqual(readStoredBlueprint(legacy), normalizeBlueprint(legacy));
+  assert.equal(JSON.stringify(legacy), before);
+  assert.equal(blueprintSchema.safeParse(legacy).success, false);
+  assert.equal(storedBlueprintSchema.safeParse({ ...legacy, schemaVersion: 3 }).success, false);
+  const invalid = structuredClone(legacy); invalid.fields[0]!.stepId = crypto.randomUUID();
+  assert.throws(() => readStoredBlueprint(invalid), /invalid definition.*no fields were changed/);
+});
+
+test("row-only changes retain exact source paths/values and email follows visual order", () => {
+  const original = createBlueprint("contact");
+  const next = moveRow(original, original.rows.at(-1)!.id, -1);
+  assert.deepEqual(textFields(next), textFields(original));
+  const reversedCatalog = { ...next, fields: [...next.fields].reverse() };
+  const notification = testNotification("Form", "staff@example.test", reversedCatalog, answers(next), "test");
+  const visual = orderedFields(next);
+  assert.ok(notification.text.indexOf(visual[0]!.label+":") < notification.text.indexOf(visual[1]!.label+":"));
+  assert.deepEqual(validateValues(next, answers(next)).fieldErrors, {});
 });

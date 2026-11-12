@@ -3,6 +3,7 @@ import sharp from "sharp";
 import type { EmailAttachment } from "@core/email";
 import { MAX_TOTAL_FILE_BYTES, fileSelectionError } from "../file-policy";
 import type { FormBlueprint, FormFileValue } from "../types";
+import { orderedFields } from "../layout";
 
 export interface ValidatedAttachments {
   files: Record<string, FormFileValue>;
@@ -49,7 +50,8 @@ export async function validateAttachments(definition: FormBlueprint, uploads?: F
     result.fieldErrors.files = "Choose valid attached files.";
     return result;
   }
-  const fields = new Set(definition.fields.filter(field => field.type === "file").map(field => field.id));
+  const visualFields = orderedFields(definition).filter(field => field.type === "file");
+  const fields = new Set(visualFields.map(field => field.id));
   const candidates: { id: string; file: File }[] = [];
   const seen = new Set<string>();
   let total = 0;
@@ -68,7 +70,11 @@ export async function validateAttachments(definition: FormBlueprint, uploads?: F
   }
   if (Object.keys(result.fieldErrors).length) return result;
   // Bound bytes before allocating buffers. Build output only when every file is valid.
-  for (const { id, file } of candidates) {
+  const byId = new Map(candidates.map(candidate => [candidate.id, candidate]));
+  for (const field of visualFields) {
+    const candidate = byId.get(field.id);
+    if (!candidate) continue;
+    const { id, file } = candidate;
     const bytes = Buffer.from(await file.arrayBuffer());
     const detected = await contentType(bytes);
     const extensionType = file.name.toLowerCase().endsWith(".pdf") ? "application/pdf"
