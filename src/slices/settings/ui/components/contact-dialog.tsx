@@ -77,7 +77,7 @@ export function ContactDialog({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") { e.preventDefault(); setOpen(false); }
       if (e.key !== "Tab") return;
-      const items = Array.from(panelRef.current?.querySelectorAll<HTMLElement>("button:not(:disabled),input:not(:disabled):not([tabindex='-1']),select:not(:disabled),textarea:not(:disabled),a[href]") ?? []).filter(item => item.getClientRects().length > 0);
+      const items = Array.from(panelRef.current?.querySelectorAll<HTMLElement>("button:not(:disabled),input:not(:disabled):not([tabindex='-1']),select:not(:disabled),textarea:not(:disabled),a[href]") ?? []).filter(item => item.getClientRects().length > 0 && !item.closest("[inert]"));
       const first = items[0], last = items.at(-1);
       if (e.shiftKey && (document.activeElement === first || document.activeElement === panelRef.current)) { e.preventDefault(); last?.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
