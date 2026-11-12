@@ -1,5 +1,57 @@
 # Central Hill agent instructions
 
+## About Contact shared Forms assignment —2026-11-12
+
+User authorized the approved About Contact plan, starting with a new paired code/data
+restore point. Same form EN/ES/PT/FR; Resend remains console/unconfigured. Read
+[plan](docs/specs/form-builder/about-contact-assignment-plan.md),
+[execution](docs/specs/form-builder/about-contact-assignment-execution.md),
+[QA](docs/specs/form-builder/about-contact-assignment-qa.md), ADR0081.
+
+About Contact has a Forms selector below Subtitle, editable in EN/read-only targets.
+EN Save draft keeps public assignment; EN Publish activates common published EN ID
+in4locales without changing target copy. Omitted oldEN payload preserves; explicitnull
+restores legacy ContactForm. Target Save/Publish cannot replace common reference.
+Preview explicitly takes unsaved EN working choice, staff-only and inert. Form latest
+validSave/Approve updates public fields without About republish; About title/subtitle
+remain owncopy. Header selection independent. Invalid refs retain original contact
+and authored localizedtext, no GET correction. UUID comparisons case-insensitive.
+
+Public About action fixes source_page=about-contact/kindcontact, reuses validation,
+Date/File attachments, consent/marketingfalse, durable shared quotas and notification.
+Replays bound to location+published assignment; oldheader hash/retry compatible.
+About Save/Publish, Form Save/Archive, Settings and capture share HEADER_CONTACT_LOCK
+with separate lock/mutation statements READCOMMITTED. Draft revision doesn't stale
+publicform; publishedID+published_at identity detects replacement. Archive blocked by
+EN draft OR published About plus header. Server-only Pages contract avoids client
+barrel poisoning. No new schema/SQL/migration/backfill.
+
+Checkpoint restore/about-contact-2026-11-12-1794500271340 at d9c8776, private root
+/private/tmp/central-hill-about-contact/checkpoint: full49tables/1511rows inclauth+
+ledger31, two isolated restores exact columns/constraints/counts/hashes;1331Gitobjects
+and183mediaSHA exact. RESTORE.md restores paired code+data in newcheckout/DB after
+preserving laterstate; no automatic merge of laterdata. Preserve restoreDB
+aboutcontactrestore20261112, QAclone aboutcontactqa20261112 and schema-only own
+aboutcontactpagesqa20261112/aboutcontactunitqa20261112 plus all artifacts/envs/caches.
+
+Root123pure/7realDB/typecheck/lint0(7oldwarnings)/dbcheck31/detector0; fullbuild0/
+215static/2workers with build-only4query cap (productconfig unchanged). IndependentQA
+approved8dee5d6/product17b3199:33functionalcases,0pageerrors, stablevisualbatch pass,
+0productcorrections. Loadingellipsis observation was falsepositive serialization;
+8strings+actualbrowser confirmedU+2026. Existing unrelatedGuide test fails identical
+on pre-task Pages baseline; documented, not declaredpass. QA35unrelatedtables and
+originalForms/Leads/Fields/otherPages/translations exact; ledger31exact. QAendsA
+published/draftnull, headernull,5ownleads(4About/1header),1stafftest. No mainfixtures.
+
+Inherited main3071PID2270/media9081PID13693 exited outside task-owned actions before
+finalopening; media re-opened same script/files PID42630/session56332. Main reopening
+uses existing .env.local and REQUIRED NODE_OPTIONS=--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs
+onlyneoncontentlocal20261111→proxy4558. Finalread-only opening/runtime recorded below
+in execution; no Save/cacheflush/broadmatrix on authored main. Preserve envs/caches/
+worktrees/media/logo/bothsymlinks/oldcheckpoints. No DDL/remoteDB/R2writes/push/deploy,
+rolecleanup or automaticResendsetup. Realmail/attachmentreception remains pending.
+
+
 ## Configured header contact form —2026-11-12
 
 User authorized the Settings→Forms header assignment plan, a verified code/data

@@ -41,12 +41,12 @@ sin cambios durante build. Logs privados en /private/tmp/central-hill-about-cont
 - Root6DBForms+1DBPages finales contra la fuente integrada, usando cwd/env/preload de
   las dos bases schema-only propias:0fallos/0skip. Sin fixtures en authored main.
 - pnpm lint0 (7warnings antiguos), pnpm db:check0/31migraciones (advertencia0008 antigua),
-  detector UI0. pnpm typecheck0; build en generación estática al registrar esta tanda.
+  detector UI0. pnpm typecheck0; pnpm build0/215rutas estáticas/2workers (6.7min).
 
 Primera prueba de build falló por un symlink recursivo accidental de dependencias,
 creado por ln sobre node_modules ya enlazado. Solo ese link nuevo se retiró de main
 (y su copia QA); dependencias/cachés existentes conservadas. Segundo build con
-node_modules local por copia clonefile compila/TypeScript0; generación estática en curso.
+node_modules local por copia clonefile: compilación/TypeScript/generación estática0.
 Se usa únicamente preload de build con2workers y máximo4queries locales simultáneas,
 sin cambiar next.config.ts de producto.
 
@@ -56,3 +56,32 @@ no cambiaron. Es un fallo preexistente ajeno al alcance, documentado en guide-ba
 no se declara aprobado ni se cambia Guides para hacerlo pasar. Los6fallos iniciales
 Owners preview eran mocks incompletos tras los nuevos imports; corregidos en79cec74,
 7casos preview pasan y el conjunto afectado123pasa.
+
+
+## QA independiente
+
+QA funcional sobre8dee5d6 (producto17b3199):33casos (8editor+10captura+
+3locales/móvil+12lifecycle),0pageerrors/adminerrors. No corrección de producto duranteQA.
+Tres tandas acotadas; screenshots posicionados en una sola tanda visual desktop/móvil.
+La supuesta observación de puntos suspensivos era un falso positivo del root al leer
+JSON serializado por las herramientas: los8valores decodificados contienen U+2026.
+El script de cambio falló en una aserción antes de escribir; git productdiff0, sin
+nuevo commit ni otro build. QA confirmó los8valores U+2026 y los dos textos de carga reales en browser,0errores;
+aprobación final exacta8dee5d680f84864263156c04bd95a083badaf316.
+
+Se crearon A/B desde UI, seed solo layout9tipos/2steps/textos target del propioA;
+Save draft mantiene público, PublishEN común4idiomas sin alterar JSON targets;
+Date/File sobrevivientes, validación5MiB/PDFreal, capturas anónimas/contacto/About,
+replay/alteración/carrera, ambos cruces de claves con header rechazados, archivo
+por draft/publicado, FormSave/Approve cache sin PagePublish, histórico intacto,
+staffTest separado y null/regresiones focales aprobados. No inbox/Resendreal.
+
+QA35tablas ajenas y originalesForms/Leads/Fields/otrasPages/translations exactas,
+con excepciones explícitas solo About/Settings(+susTranslations), fixturesA/B y
+rate counters. Ledger31 exacto. QA termina AboutpublicadoA/draftnull y headernull,
+cincoleads propios (4About+1header), unteststaff. Preservarfixtures/bases/artefactos.
+
+Antes de apertura final, los procesos heredados3071/9081 ya no estaban activos;
+root no los había detenido.9081 reabierto con el mismo script/files/env, PID42630/
+session56332 y archivo existente200. Se reabrirá main con Node22 y el preload
+actual exclusivo de neoncontentlocal20261111; ningún servidor ajeno fue detenido.

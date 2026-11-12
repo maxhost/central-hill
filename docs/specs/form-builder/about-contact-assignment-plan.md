@@ -1,6 +1,6 @@
 # Plan — formulario configurable en About → Contact
 
-Fecha: 2026-11-12. Estado: **aprobado por el usuario; implementación local en curso**.
+Fecha: 2026-11-12. Estado: **implementado localmente; QA independiente aprobado**.
 
 ## Resultado y alcance
 
