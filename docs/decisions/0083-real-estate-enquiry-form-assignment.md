@@ -23,3 +23,16 @@ andwinner-onlynotification. No newrate namespaces or persistedattachmentbytes/pu
 PublishEN invalidates common tag+4real-estate paths. FormsSave/Approve invalidatesmodels and
 allusedplacements without PagePublish. Resendconsole/unconfigured; realmail/receivingfiles
 remain separatelypending. No mainfixtures, remoteDB/R2writes, push/deploy orrolecleanup.
+
+
+## Existing unresolved Hero compatibility
+
+First actualSave on the clone exposed a preexisting orphanhero UUID in the authored
+RealEstate source. Publicalready uses itsstockfallback while strictfull-pagemediavalidation
+blocked evenunrelated Enquiry edits. Preserve that reference without datarepair/backfill:
+only RealEstate andonly anunchanged validUUID matching the SERVER-READ publishedsnapshot
+may retain its existingunresolved Hero fallback onSave/Publish. The draft cannotauthorize
+itself; withoutpublishedbaseline thereisnoexception. New/changedmissingrefs, malformedUUIDs,
+resolvedunsupportedMIME (includinguppercase lookup), othermedia/OG andotherpages remainstrict.
+This narrowPages-onlycompatibility keepsusercontent/publicappearance andenablethe requested
+Formassignment; no mediaassetcreation, originalreferenceclear orweakeningofnewuploads.

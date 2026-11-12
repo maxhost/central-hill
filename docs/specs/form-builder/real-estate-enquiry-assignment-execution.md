@@ -73,8 +73,41 @@ pnpm typecheck0, pnpm lint0(7warnings anteriores), pnpm db:check0/31migraciones 
 advertencia0008), UI detector0, diffcheck0. Fullbuild compilación/TypeScript0; generación
 estática en curso con2workers ycap4queries/preloadbuildonly, producto next.config intacto.
 Dos reintentos automáticos por60s /es/buildings y/fr/buildings durante solapamiento con
-pruebasDB; resultadofinal pendiente, sin modificar producto ni reiniciar PostgreSQL/main.
+pruebasDB; fullbuild final0/215static/2workers6.5min, ambasrutas finalmente aprobadas sin
+modificar producto ni reiniciar PostgreSQL/main.
 
 main-conservation.json44tablas negocio+ledger/1504filas exactos al nuevocheckpoint, authsolo
 login normal. main-assignments.json confirma header/About/Guest/RealEstate publicadosnull.
 No Save/Publish/fixtures enmain; main/media procesos originales activos sin reinicio.
+
+
+## Readiness QA
+
+Candidato cdf15c37c70e41167a18d6636956fbf9b63c168d/producto71116df, cwdintegration,
+producción3085PID82085/session25671, login200. Preloadrealestateenquiryqa20261112.cjs/
+envownclone emailconsole/localmedia9081. Fuente sin cambios tracked despuésdebuild.
+QA autorizado tras todosloschecks0; fixturesAnewsletter/Bcontact porUI+seedsoloA layout,
+baseline/guardas exactas yscopeRealEstate/Settings/ownfixtures; About/Guest solo lectura.
+No mainactions/cacheresets/cuotareset ni providerreal. Todosresultados browser pendientes
+al registrar readiness, no se declaran aprobados por preparación de harness.
+
+
+## First browser finding and scoped correction
+
+Initialcdf15c3 passed6editor/legacycases but firstENSaveDraft rejectedhero.image_media_id.
+qa/diagnose-save.json +diagnose-media.json prove originalsource and4bootstrapped published
+snapshots pointto8c343da2-a2bd-4ff1-9416-9e0bc9a2a7a0, withno media_asset row. Media validator
+Gitblob fda2cab identicalbefore/afterfeature: preexistingfull-save blocker, notForm selection.
+No publicselection/captureactivated; QA didnotfixfixturedata orclearHero.
+
+A followups3a66631→14b667a integrated56f46f2→d7bf8dd: trustedcurrent.published passedby
+editorialstore tovalidateDraftMutation onSave/Publish. OnlyvalidsamepublishedHero unresolved
+may keep itsalreadypublicfallback. No baseline/noexemption; previousdraftalonecannotself-
+authorize. Strictnew/changed/malformed/resolvedwrongMIME/othermedia/OG/Owners retained.
+10focalnativevalidationtests pass via explicitMediaIOseam (actualvalidationlogic), including
+manualnewmissingdraft versusdifferentpublishedHero rejected. No DBwrites/datarepair.
+ADR0083 documents boundedcompatibility. Publicframe/Forms/capture codeunchanged.
+
+Root rebuildingin NEWcorrectedruntime to preserveinitialproductionbuild/cache. Browserwill
+resumeonlyfromSaveDraft withsameA/note/submit andpreservedHero; first6passedcasesretained,
+notrerun. Capture/locales/lifecycle werenotrun beforeblocker andwillrunonce afterfix.
