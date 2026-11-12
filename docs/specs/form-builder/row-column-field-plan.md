@@ -1,6 +1,6 @@
 # Plan de implementación — Forms por filas, columnas y campos
 
-Fecha: 2026-11-11. Estado: **implementación autorizada y en curso**.
+Fecha: 2026-11-11. Estado: **implementado y aprobado por QA independiente para entrega local**.
 
 Base revisada: `226d0d8f74e7bc9b5517d79ee4be83a5f3c71fab`, rama `main`.
 Spec funcional: propuesta acordada en la conversación después de Date/File:
@@ -253,3 +253,51 @@ esa base y email falso interceptado; login normal con Admin sintético existente
 Main/DB del usuario no se usan para QA. Read de definiciones y Save de estructura
 preservan textos exactos, incluidos espacios válidos de datos históricos, para no
 marcar traducciones como obsoletas por una edición exclusiva de layout.
+
+### Candidato integrado y verificación
+
+Contratos7933f02, implementador A bc8e346 integrado970b762, implementador B5d18bb3
+integrado34a280f. Candidato exacto aprobado de producto:
+`34a280fd13b7918045dd08e66d860e4233f093fc`. Root docs5d0693a no cambian comportamiento.
+Worktrees de escritores verificados y preservados; cada uno escribió únicamente
+su conjunto asignado. A incorporó su dependencia en B para comprobar tipos; raíz
+integró únicamente el commit de UI de B, sin duplicar el trabajo de A.
+
+Node22.23.3:49/49 pruebas focalizadas pasan; typecheck0; lint0 con los mismos siete
+avisos históricos; diff-check0 y revisión explícita de imports/fronteras. Detector
+Impeccable de los cuatro archivos UI devuelve[]/exit0. Build de producción0 en
+runtime separado con dependencias clonadas locales,107/107 páginas estáticas y
+dos workers. No se usó ni alteró la caché .next del localhost del usuario.
+
+QA independiente aprobó24 comprobaciones de navegador (13layout/persistencia,
+8runtime/adjuntos,3guardas), cero pageerrors, mismo candidato completo. GET legacy
+no escribe; seis Saves/approvals ES/PT/FR preservan JSONv1; el único Save EN convierte
+a v2 conservando IDs y valores/estados/hashes de traducción. Nuevo formulario v2
+permite filas/columnas explícitas, movimientos/intercambio confirmado, colapso sin
+pérdidas, cambios/borrado de pasos y Save/reload exactos. Prueba guardada excluye
+campos locales sin guardar; runtime omite filas vacías, conserva lado derecho en
+desktop y apila en móvil. Fechas y File sobreviven Back; cancelación limpia valores.
+PDF5,242,880bytes +PNG93bytes llegan exactos al transporte Resend falso, snapshot
+guarda solo metadatos. Conflicto entre pestañas, payload v1 autenticado y archived
+rechazan sin sobrescribir la ficha. No corrección de producto en QA; solo comparación
+de timestamps del harness normalizada antes de Save, reutilizando la misma fixture.
+
+Chrome EN en navegador; contenido ES/PT/FR editado/guardado/aprobado realmente. Los
+controles nativos/diccionarios en4idiomas tienen cobertura SSR/fuente; no se afirma
+una matriz de envíos de navegador en cuatro idiomas. Borrado positivo de fila con
+campos, cleanup reply-to, límites y datos malformados tienen cobertura pura/mock/UI
+focalizada, sin inventar pases de navegador adicionales. Raíz inspeccionó las mismas
+cuatro capturas desktop/móvil agrupadas y revisó independientemente los tres JSON
+de resultados y los hashes/longitudes de los dos adjuntos interceptados.
+
+Datos previos de la base QA: las42tablas mantienen conteos/huellas exactos, excluyendo
+solo las dos fichas nuevas propias y sus traducciones/prueba. Raíz ejecutó y comparó
+`compare-final.mjs`; `db-compare.json` tiene differences[]. Fixtures propias retenidas:
+legacy1d227a24-8a84-4c3e-9774-977b02fbf060 v2/rev8 y nueva735981d8-c1ae-4227-84f1-efb536995eef
+v2/rev6; una prueba propia v2/rev3. Fixtures Date/File anteriores y otras filas intactas.
+Informe independiente: /private/tmp/central-hill-form-row-layout-qa/independent-qa.md;
+resultados/harness,db-final.json,mail-capture.jsonl,logs y capturas se conservan allí.
+
+Queda apertura final de main después del fast-forward autorizado; producto src será
+idéntico al aprobado34a280f. No schema SQL/migración/kernel, base del usuario ni
+formulario original modificados por QA; sin push/deploy/configuración real de correo.
