@@ -15,6 +15,7 @@ import { getEditorialAdapter } from "../server/editorial-adapters";
 import { prepareTargetEnvelope } from "../editorial-content";
 import { usesPageLocaleDrafts, isEditorialPageKey } from "../editorial-registry";
 import { editorialLocale } from "../server/editorial-policy";
+import { guestContactFormId, preserveGuestContactAssignment } from "../guest-contact-content";
 import { aboutContactFormId, preserveAboutContactAssignment } from "../about-contact-content";
 import type { PageEnvelope } from "../editorial-types";
 
@@ -27,15 +28,17 @@ function load<T>(source: URL, dependencies: Record<string, unknown>): T {
   }, structuredClone });
   return compiled.exports as T;
 }
-const enabled = process.env.ABOUT_CONTACT_PAGES_DB_TEST === "1";
+const guestRegression = process.env.GUEST_CONTACT_ABOUT_REGRESSION === "1";
+const enabled = process.env.ABOUT_CONTACT_PAGES_DB_TEST === "1" || guestRegression;
 
 test("About DB: concurrent revision winners, published/draft separation and form assignment mutation guard", { skip: !enabled }, async () => {
   const config = parse(readFileSync(".env.local"));
   const u = new URL(config.DATABASE_URL!);
-  assert.deepEqual([u.hostname, u.pathname, u.username], ["aboutcontactpagesqa20261112.local", "/aboutcontactpagesqa20261112", "aboutcontactpagesqa20261112"]);
+  const target = guestRegression ? "guestcontactpagesqa20261112" : "aboutcontactpagesqa20261112";
+  assert.deepEqual([u.hostname, u.pathname, u.username], [`${target}.local`, `/${target}`, target]);
   const client = neon(u.href), db = drizzle(client);
   const identity = await db.execute(sql`select current_database() as db,current_user as role`);
-  assert.deepEqual(identity.rows[0], { db: "aboutcontactpagesqa20261112", role: "aboutcontactpagesqa20261112" });
+  assert.deepEqual(identity.rows[0], { db: target, role: target });
   assert.equal((await db.select().from(page_locale_content).where(eq(page_locale_content.page_key, "about"))).length, 0, "Own schema-only fixture dataset required");
   const serialized = load<typeof import("../../../core/db/serialized")>(new URL("../../../core/db/serialized.ts", import.meta.url), {
     "server-only": {}, "drizzle-orm/pg-core": { PgDialect }, "./client": { sqlClient: client },
@@ -47,6 +50,7 @@ test("About DB: concurrent revision winners, published/draft separation and form
     "../editorial-registry": { usesPageLocaleDrafts, isEditorialPageKey },
     "@core/db/serialized": serialized, "@slices/forms/server-contract": { HEADER_CONTACT_LOCK: "header-contact:v1" },
     "../about-contact-content": { aboutContactFormId, preserveAboutContactAssignment },
+    "../guest-contact-content": { guestContactFormId, preserveGuestContactAssignment },
     "drizzle-orm": { eq, sql }, "@core/db/client": { db }, "../schema": { page_locale_content },
     "../editorial-content": { prepareTargetEnvelope }, "../server/editorial-legacy": { legacyEditorialRows: async () => [] },
   };

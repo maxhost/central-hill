@@ -14,6 +14,7 @@ import { PageNavigation } from "./page-navigation";
 import { pageImageFields } from "../image-alt-fields";
 import { setPageField } from "../field-update";
 import { AboutContactSelector } from "./about-contact-selector";
+import { guestContactFormId } from "../../guest-contact-content";
 import { aboutContactFormId } from "../../about-contact-content";
 import { editorViewSections, type PageEditorView } from "../editorial-views";
 
@@ -63,6 +64,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   const previewPayload = useMemo(() => ({
     envelope: state.model.working,
     ...(descriptor.key === "about" ? { aboutContactFormId: aboutContactFormId(states.en.model.working.content) ?? null } : {}),
+    ...(descriptor.key === "guest" ? { guestContactFormId: guestContactFormId(states.en.model.working.content) ?? null } : {}),
     localMedia: Object.fromEntries(descriptorMediaIds(state.model.working.content, state.model.working.ogImageMediaId, descriptor)
       .flatMap(id => localPreviews[id]?.url.startsWith("blob:") ? [[id, localPreviews[id]!]] : [])),
   }), [state.model.working, states.en.model.working, localPreviews, descriptor]);
@@ -209,7 +211,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
         <AdminButton aria-pressed={contactPreviewOpen} onClick={() => setContactPreviewOpen(open => !open)}>
           {t(contactPreviewOpen ? "admin.contextual.hideContactForm" : "admin.contextual.showContactForm")}
         </AdminButton>
-        {contactFields.map(contact => contact.node)}
+        {contactFields.flatMap(contact => [contact.node, ...(contact.id === "dual_cta.owner.contact.intro" ? [<AboutContactSelector key="guest-contact-form" placement="guest" value={guestContactFormId(states.en.model.working.content)} readOnly={locale !== "en"} disabled={busy} error={states.en.errors["dual_cta.owner.contact.form_id"]} onEnglish={() => selectLocale("en")} onChange={value => change(["dual_cta", "owner", "contact", "form_id"], value)} />] : [])])}
       </div>;
     });
   }

@@ -64,6 +64,7 @@ export async function renderPageLivePreview<K extends EditorialPageKey>(
       locale: locale as Locale,
       preview: true,
       ...(key === "about" && Object.hasOwn(checked, "aboutContactFormId") ? { aboutContactFormId: checked.aboutContactFormId } : {}),
+      ...(key === "guest" && Object.hasOwn(checked, "guestContactFormId") ? { guestContactFormId: checked.guestContactFormId } : {}),
       surface,
       page: { content: envelope.content, ...resolved },
     });

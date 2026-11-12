@@ -1677,3 +1677,31 @@ Forms/Settings/capture before a separate fresh-snapshot statement, retaining EN
 template and locale revision guards. Archive checks both EN draft and published
 references. No schema migration, backfill or GET writes are introduced.
 Resend remains unconfigured; console transport does not prove inbox delivery.
+
+## Guest owner dialog Forms assignment —2026-11-12
+
+Closing dual CTA has a Form selector immediately after Owner contact dialog intro.
+`dual_cta.owner.contact.form_id` is optional/nullable and shared across EN/ES/PT/FR;
+no selection retains the existing `guests-dual-cta` contact. Only EN edits the
+selection. EN Save draft remains private; EN Publish activates the common published
+reference on all four `/guests` routes without changing their localized copy.
+Omitted old EN payloads preserve the choice; targets cannot replace it. Form latest
+valid Save/Approve updates public fields without publishing Guest again. Header and
+About retain independent selections, including when they share the same Form.
+
+The existing About selector accepts an additive `placement="guest"` for Guest copy;
+About default behavior/API stay unchanged. Catalogue refresh/create/edit links do
+not mutate Page snapshots. An explicit authenticated preview override carries the
+unsaved EN working reference even in target tabs. Configured form preview is inert
+and uses the existing owner-dialog preview bridge. ContactDialog keeps Guest title,
+intro and trigger styling; Form heading/description are omitted. Public rendering
+strips only the independently resolved reference from its copy input, so corrupt
+manual references cannot discard authored Guest content and no GET repairs data.
+
+Guest Save/Publish use the shared advisory lock before a separate fresh-snapshot
+mutation statement, preserving locale revision and EN-first template predicates.
+Assignment validation repeats on EN Publish with a current Form revision guard in
+the mutation. Published-ID/published_at identity stays stable across EN draft saves.
+Pages server-contract exposes the Guest published assignment and usage SQL guards;
+archival checks EN draft or published, never target copies. There is no SQL migration,
+backfill or automatic provider configuration; Resend remains console/unconfigured.

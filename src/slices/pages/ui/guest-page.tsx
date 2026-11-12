@@ -13,6 +13,10 @@ import {
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
 import { ContactDialog, getGlobals, SITE_ICON_DEFAULTS } from "@slices/settings/contract";
+import { PublicContactForm } from "@slices/forms/contract";
+import { readGuestContactForm } from "@slices/forms/server-contract";
+import type { GuestContent } from "../schemas/guest";
+import { withoutGuestContactAssignment } from "../guest-contact-content";
 import { listServices } from "@slices/services/contract";
 import { listGuideCityGroups } from "@slices/guides/contract";
 import { getGuestPage, type GuestPage as GuestPageResult, type PageMedia } from "../contract";
@@ -136,7 +140,7 @@ function dualCtaContactLines(globals: Awaited<ReturnType<typeof getGlobals>>): {
   };
 }
 
-export async function GuestPage({ locale, preview = false, page: injectedPage }: { locale: Locale; preview?: boolean; page?: GuestPageResult | null }) {
+export async function GuestPage({ locale, preview = false, page: injectedPage, guestContactFormId: previewFormId }: { locale: Locale; preview?: boolean; page?: GuestPageResult | null; guestContactFormId?: string | null }) {
   setRequestLocale(locale);
   const [page, globals, t, tSettings, services, guideGroups] = await Promise.all([
     injectedPage === undefined ? getGuestPage(locale) : Promise.resolve(injectedPage),
@@ -149,7 +153,9 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
   ]);
   if (!page) notFound();
 
-  const { content, media } = page;
+  const { media } = page;
+  const content = withoutGuestContactAssignment(page.content) as GuestContent;
+  const contactForm = preview ? await readGuestContactForm(locale, previewFormId ?? null) : await readGuestContactForm(locale);
   const binding = (id: string) => preview ? { "data-editor-binding": id } : {};
   const { hero, welcome, portfolio } = content;
   const welcomeMedia = media[welcome.image_media_id ?? ""];
@@ -422,7 +428,9 @@ export async function GuestPage({ locale, preview = false, page: injectedPage }:
                       source="guests-dual-cta"
                       editorPreviewId={preview ? "dual_cta.owner.contact.title" : undefined}
                       triggerClassName={splitCtaButtonClassName("dark")}
-                    />
+                    >
+                      {contactForm ? <PublicContactForm key={`${contactForm.id}:${contactForm.revision}:${contactForm.fingerprint}`} model={contactForm} preview={preview} /> : undefined}
+                    </ContactDialog>
                   ),
                   contactLine: orMessage(dualCta.owner.contact_line, contactLines.owner),
                 },

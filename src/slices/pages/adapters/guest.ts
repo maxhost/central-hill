@@ -47,6 +47,8 @@ export const guestAdapter: PageEditorialAdapter<"guest"> = {
   publishSchema: guestSchema,
   defaultContent() {
     const content = applyDefaults(guestDescriptor.rootNode, {}) as GuestContent;
+    // The optional assignment is never a scaffold value or implicit selection.
+    if (content.dual_cta.owner.contact) delete content.dual_cta.owner.contact.form_id;
     for (const list of [
       content.why.benefits,
       content.services_teaser.items,

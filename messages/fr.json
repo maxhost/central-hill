@@ -2049,6 +2049,28 @@
           "recipient": "Destinataire manquant",
           "definition": "Définition invalide"
         }
+      },
+      "guestContact": {
+        "label": "Formulaire",
+        "original": "Utiliser le formulaire de contact actuel",
+        "help": "Publiez Guests en EN pour activer cette sélection dans les quatre langues. Les enregistrements suivants dans Forms actualisent ses champs publics sans republier Guests.",
+        "shared": "Le même formulaire est utilisé en EN, ES, PT et FR.",
+        "editEnglish": "Modifier la sélection en EN",
+        "loadingSelection": "Chargement du formulaire sélectionné…",
+        "missing": "Le formulaire sélectionné est indisponible",
+        "invalid": "Choisissez un formulaire disponible avec un destinataire et une définition valides, ou utilisez le formulaire de contact actuel.",
+        "unavailable": "Ce formulaire est indisponible. Choisissez-en un autre ou utilisez le formulaire de contact actuel.",
+        "loadError": "Impossible de charger les formulaires. Actualisez la liste pour réessayer.",
+        "empty": "Aucun formulaire disponible. Créez-en un, enregistrez-le puis actualisez cette liste.",
+        "create": "Créer un formulaire",
+        "edit": "Modifier le formulaire sélectionné",
+        "refresh": "Actualiser la liste",
+        "loading": "Chargement…",
+        "reason": {
+          "archived": "Archivé",
+          "recipient": "Destinataire manquant",
+          "definition": "Définition invalide"
+        }
       }
     }
   },

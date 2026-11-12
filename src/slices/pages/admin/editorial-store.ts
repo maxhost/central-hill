@@ -22,6 +22,8 @@ function emptyEditorialEnvelope<K extends EditorialPageKey>(
 import { executeSerialized } from "@core/db/serialized";
 import { HEADER_CONTACT_LOCK, getAssignableContactForm, assignableContactFormGuard } from "@slices/forms/server-contract";
 import { aboutContactFormId, preserveAboutContactAssignment } from "../about-contact-content";
+import { guestContactFormId, preserveGuestContactAssignment } from "../guest-contact-content";
+import type { GuestContent } from "../schemas/guest";
 import type { AboutContent } from "../schemas/about";
 import { eq, sql, type SQL } from "drizzle-orm";
 import { db } from "@core/db/client";
@@ -155,7 +157,7 @@ export async function commitEditorial<
       ${input.assignmentGuard ? sql`and (${input.assignmentGuard})` : sql``}
     returning id
   ) select id from saved`;
-  const result = input.key === "about" ? await executeSerialized(HEADER_CONTACT_LOCK, statement) : await db.execute(statement);
+  const result = (input.key === "about" || input.key === "guest") ? await executeSerialized(HEADER_CONTACT_LOCK, statement) : await db.execute(statement);
   return result.rows.length === 1;
 }
 
@@ -206,12 +208,17 @@ export async function saveEditorialDraft<K extends EditorialPageKey = "home">(
     const candidate = input.key === "about" ? {
       ...checked.payload,
       content: preserveAboutContactAssignment(checked.payload.content as AboutContent, current.working.content as AboutContent, input.locale),
+    } as PageEnvelope<K> : input.key === "guest" ? {
+      ...checked.payload,
+      content: preserveGuestContactAssignment(checked.payload.content as GuestContent, current.working.content as GuestContent, input.locale),
     } as PageEnvelope<K> : checked.payload;
-    const selectedId = input.key === "about" && input.locale === "en" ? aboutContactFormId(candidate.content) : null;
-    const changedAssignment = selectedId !== aboutContactFormId(current.working.content);
+    const assignmentReader = input.key === "about" ? aboutContactFormId : input.key === "guest" ? guestContactFormId : () => null;
+    const assignmentField = input.key === "guest" ? "dual_cta.owner.contact.form_id" : "contact.form.form_id";
+    const selectedId = input.locale === "en" ? assignmentReader(candidate.content) : null;
+    const changedAssignment = selectedId !== assignmentReader(current.working.content);
     const selected = selectedId && z.uuid().safeParse(selectedId).success ? await getAssignableContactForm(selectedId) : null;
     if (selectedId !== null && selectedId !== undefined && changedAssignment && !selected)
-      return invalid({ "contact.form.form_id": "Choose an available form with a valid recipient and definition." });
+      return invalid({ [assignmentField]: "Choose an available form with a valid recipient and definition." });
     const validation = await validateDraftMutation(
       candidate,
       current.working,
@@ -267,10 +274,12 @@ export async function publishEditorialDraft<
     if (current.revision !== input.expectedRevision)
       return { ok: false, error: "conflict" };
     if (!current.draft) return { ok: false, error: "no_draft" };
-    const selectedId = input.key === "about" && input.locale === "en" ? aboutContactFormId(current.draft.content) : null;
+    const assignmentReader = input.key === "about" ? aboutContactFormId : input.key === "guest" ? guestContactFormId : () => null;
+    const assignmentField = input.key === "guest" ? "dual_cta.owner.contact.form_id" : "contact.form.form_id";
+    const selectedId = input.locale === "en" ? assignmentReader(current.draft.content) : null;
     const selected = selectedId && z.uuid().safeParse(selectedId).success ? await getAssignableContactForm(selectedId) : null;
     if (selectedId !== null && selectedId !== undefined && !selected)
-      return invalid({ "contact.form.form_id": "Choose an available form with a valid recipient and definition." });
+      return invalid({ [assignmentField]: "Choose an available form with a valid recipient and definition." });
     const checked = await validateDraftMutation(
       current.draft,
       current.draft,

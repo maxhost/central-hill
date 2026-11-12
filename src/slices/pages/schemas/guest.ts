@@ -91,6 +91,7 @@ const dualPanel = z.object({
 const ownerPanel = dualPanel.extend({
   contact: z
     .object({
+      form_id: adminHidden(z.string().max(100).nullable().optional()),
       title: tStrOpt({ max: 80 }).describe("Title of the contact dialog the button opens. Leave blank for “Contact us”."),
       intro: tStrOpt({ max: 280 }).describe(
         "Intro line of the contact dialog. Leave blank for “Send us a message and our team will get back to you shortly.”",

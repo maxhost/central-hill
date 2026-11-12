@@ -50,6 +50,8 @@ export type PageEditorialResult<K extends EditorialPageKey = "home"> =
 export interface PageLivePreviewInput<K extends EditorialPageKey = "home"> {
   /** Explicit EN working reference, accepted only by authenticated About preview. */
   aboutContactFormId?: string | null;
+  /** Explicit EN working reference for authenticated Guest owner dialog preview. */
+  guestContactFormId?: string | null;
   envelope: PageEnvelope<K>;
   localMedia: Record<string, import("@slices/backoffice/contract").AdminMediaPreview>;
 }

@@ -2049,6 +2049,28 @@
           "recipient": "Sem destinatário",
           "definition": "Definição inválida"
         }
+      },
+      "guestContact": {
+        "label": "Formulário",
+        "original": "Usar formulário de contacto atual",
+        "help": "Publique Guests em EN para ativar esta seleção nos quatro idiomas. As gravações seguintes em Forms atualizam os campos públicos sem voltar a publicar Guests.",
+        "shared": "O mesmo formulário é utilizado em EN, ES, PT e FR.",
+        "editEnglish": "Editar seleção em EN",
+        "loadingSelection": "A carregar formulário selecionado…",
+        "missing": "O formulário selecionado não está disponível",
+        "invalid": "Escolha um formulário disponível com destinatário e definição válidos, ou use o formulário de contacto atual.",
+        "unavailable": "Este formulário não está disponível. Escolha outro ou use o formulário de contacto atual.",
+        "loadError": "Não foi possível carregar os formulários. Atualize a lista para tentar novamente.",
+        "empty": "Não há formulários disponíveis. Crie um, guarde-o e atualize esta lista.",
+        "create": "Criar formulário",
+        "edit": "Editar formulário selecionado",
+        "refresh": "Atualizar lista",
+        "loading": "A carregar…",
+        "reason": {
+          "archived": "Arquivado",
+          "recipient": "Sem destinatário",
+          "definition": "Definição inválida"
+        }
       }
     }
   },
