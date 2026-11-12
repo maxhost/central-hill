@@ -49,8 +49,11 @@ BuildingsESFR/GuestENPT retries2each; build-only4querycap, productconfig unchang
 Inherited main/media processes exited outside task actions; same env/scripts/preload
 reopened. Current main3071PID8573/session18330 cwdworkspace, media9081PID8524/session17713.
 REQUIRED NODE_OPTIONS=--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs
-with original.env.local (onlyneoncontentlocal20261111→proxy4558). Finalmain opening/data
-conservation recorded below after integration. Resend staysconsole/unconfigured; real
+with original.env.local (onlyneoncontentlocal20261111→proxy4558). Finalmain5readonly
+openings200(edit/new/Forms/ServiceENPT),0pageerrors/noSave;44business+ledger1504rows exact,
+all4previousnull+Service0refs, env/logo/symlinks exact. Mainff8b30d08→b3b7810 afterQA;
+finaldoccommit via gitlog-1. QA3086PID16870/parent16864 stoppedafterapproval; allfixtures/
+envs/builds/caches/artifactsretained. Resend staysconsole/unconfigured; real
 key/sender/inbox/attachments separately pending. No SQLschema/migration/backfill/core,
 remoteDB/R2writes, push/deploy, rolecleanup or automatic nexttask.
 

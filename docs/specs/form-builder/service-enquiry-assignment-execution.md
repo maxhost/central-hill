@@ -116,3 +116,29 @@ autorizadas de Settings. Campos comunes originales del Service seleccionado y re
 de medios conservan valores; sus snapshots/identidades de gallery pueden cambiar por
 Save normal autorizado en clon. Ledger31 exacto. FinalA/B seleccionadosnull tanto en
 example como newService, headernull; textos sintéticos del clon retenidos. Main intacto.
+
+## Integración y apertura final de main
+
+Main avanzó por fast-forward8b30d08→b3b7810 después de aprobación independiente.
+Producto exacto23fd910; solo pruebas/documentación posteriores. Último commit de
+entrega es documental y se resuelve con gitlog-1. Sin push/deploy ni cambios DB/schema.
+
+main-open.json aprobó5aperturas200: edición del Serviceejemplo y creación con selector
+disponible/valorlegacy, catálogoForms y ServicepúblicoEN/PT con ContactForm anterior.
+0pageerrors/0writesbloqueadas; solo login local normal, catálogo readonly y navegación.
+Sin Save/Publish/Test/envío/upload/fixture ni nueva matriz sobre authoredmain.
+main-assignments.json confirma0referenciasService y las4asignacionespreviasnull;
+EMAIL_PROVIDERconsole. No selección de prueba se trasladó a main.
+
+main-conservation.json posterior a apertura:44tablas negocio+ledger/1504filas exactas
+al checkpoint completo, auth excluida únicamente por login normal. Env principal,
+logoPNG y destinos de ambos symlinks originales exactos. Únicos3untracked originales
+retenidos. Caché temporal nueva de pnpmNode24 fallido quedó archivada privadamente,
+sin tocar dependencias/cachés anteriores. No cacheflush ni cambios de contenidos.
+
+Actualmain3071PID8573/parent8550/session18330 cwdworkspace y media9081PID8524/session17713
+retenidos tras integrar, sin nuevo restart. Node22 y env/preload obligatorio original
+neoncontentlocal20261111→4558. ProducciónQA3086PID16870/parent16864 detenida tras aprobación;
+build/env/cachés/fixtures/DBs/worktrees/checkpoints/medios/logs permanecen. No otro proceso
+detenido. Resend continúa sin configurar; recepción real de email/adjuntos pendiente del
+hito separado autorizado. No siguiente tarea, cleanup ni acción externa automática.
