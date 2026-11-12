@@ -48,3 +48,7 @@ nesteddelegation, sharedfiles singlewriter; solo root integra después QA aproba
 Estado: contratos b3f5366 entregados; A/B en worktrees aislados y QA independiente
 prepara harness sin browser hasta readiness. Ownschema-only DBs guestcontactpagesqa20261112
 y guestcontactunitqa20261112 preparados; 1344objetosGit/183mediaSHA exactos verificados.
+
+Root pre-QA focus review: private inertbody fields must be excluded from focusablelist;
+ContactDialog now filters inert descendants. Current ownbuild stopped beforeQA to include
+this fix in the first browsercandidate; no other process/runtime/cache touched.
