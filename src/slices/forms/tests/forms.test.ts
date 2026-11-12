@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { approvedBlueprint, createBlueprint, localizedBlueprint, textFields } from "../domain";
-import { blueprintSchema, saveFormSchema, validateValues } from "../validation";
+import { blueprintSchema, saveFormSchema, testFormSchema, validateValues } from "../validation";
 import { testNotification } from "../server/notification";
-import type { FormBlueprint, FormTranslations, FormValues } from "../types";
+import type { FormBlueprint, FormInputValues, FormTranslations } from "../types";
 
-function answers(definition: FormBlueprint): FormValues {
+function answers(definition: FormBlueprint): FormInputValues {
   return Object.fromEntries(definition.fields.map(field => [field.id,
     field.type === "checkbox" ? true : field.type === "email" ? "guest@example.test" : field.type === "select" ? field.options[0]?.id ?? "" : field.type === "number" ? "1" : "Test answer"]));
 }
@@ -22,6 +22,57 @@ test("all three independent templates validate; Owner includes Studio and contac
   assert.equal(owner.steps.length, 2);
   assert.ok(owner.fields.some(field => field.options.some(option => option.label === "Studio")));
   assert.ok(owner.fields.some(field => field.type === "email" && field.stepId === owner.steps[1]?.id));
+});
+
+test("Date and File definitions validate without becoming reply-to fields", () => {
+  const definition = createBlueprint("contact");
+  const original = definition.fields[0]!;
+  definition.fields.push({ ...original, id: crypto.randomUUID(), type: "date", label: "Arrival date" });
+  definition.fields.push({ ...original, id: crypto.randomUUID(), type: "file", label: "Attachment" });
+  assert.equal(blueprintSchema.safeParse(definition).success, true);
+  definition.replyToFieldId = definition.fields.at(-1)!.id;
+  assert.equal(blueprintSchema.safeParse(definition).success, false);
+});
+
+test("Date validates Gregorian days and keeps dates without timezone conversion", () => {
+  const definition = createBlueprint("contact");
+  const field = definition.fields[0]!;
+  field.type = "date";
+  const input = answers(definition);
+  for (const valid of ["2026-11-11", "2024-02-29", "2000-02-29", "0001-01-01", "9999-12-31"]) {
+    input[field.id] = valid;
+    const checked = validateValues(definition, input);
+    assert.deepEqual(checked.fieldErrors, {}, valid);
+    assert.equal(checked.values[field.id], valid);
+  }
+  for (const invalid of ["2026-02-29", "1900-02-29", "2026-04-31", "2026-00-01", "2026-13-01", "2026-01-00", "0000-01-01", "2026-1-1", "11/11/2026", "2026-11-11T00:00:00Z", ""]) {
+    input[field.id] = invalid;
+    assert.ok(validateValues(definition, input).fieldErrors[field.id], invalid);
+  }
+  field.required = false;
+  delete input[field.id];
+  assert.equal(validateValues(definition, input).values[field.id], "");
+  assert.deepEqual(validateValues(definition, input).fieldErrors, {});
+});
+
+test("File answers require verified multipart metadata and cannot be spoofed through JSON", () => {
+  const definition = createBlueprint("contact");
+  const field = definition.fields[0]!;
+  field.type = "file";
+  const input = answers(definition);
+  delete input[field.id];
+  assert.ok(validateValues(definition, input).fieldErrors[field.id]);
+  const metadata = { kind: "file" as const, name: "document.pdf", type: "application/pdf", size: 1024 };
+  const accepted = validateValues(definition, input, { [field.id]: metadata });
+  assert.deepEqual(accepted.fieldErrors, {});
+  assert.deepEqual(accepted.values[field.id], metadata);
+  input[field.id] = "document.pdf";
+  assert.ok(validateValues(definition, input, { [field.id]: metadata }).fieldErrors[field.id]);
+  assert.equal(testFormSchema.safeParse({ id: crypto.randomUUID(), expectedRevision: 1, locale: "en", values: { [field.id]: metadata } }).success, false);
+  field.required = false;
+  delete input[field.id];
+  assert.deepEqual(validateValues(definition, input).fieldErrors, {});
+  assert.equal(validateValues(definition, input).values[field.id], "");
 });
 
 test("field text paths retain identity across reorder and localization", () => {

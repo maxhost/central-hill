@@ -13,6 +13,7 @@ import type { DeliveryState, FormResult, FormTemplate, SaveFormInput, SaveFormLo
 import { formIdSchema, formTemplateSchema, issueFields, revisionSchema, saveFormSchema, saveLocaleSchema, testFormSchema, validateValues } from "../validation";
 import { getFormEditor } from "./queries";
 import { testNotification } from "./notification";
+import { validateAttachments } from "./attachments";
 
 const conflict = (): FormResult<never> => ({ ok: false, code: "conflict", error: "The saved form has changed or is archived. Reload before continuing." });
 const missing = (): FormResult<never> => ({ ok: false, code: "not_found", error: "Form not found." });
@@ -102,7 +103,7 @@ export async function archiveForm(id: string, expectedRevision: number, archived
   } catch (error) { return failed(error); }
 }
 
-export async function testForm(input: TestFormInput): Promise<FormResult<{ submissionId: string; delivery: DeliveryState }>> {
+export async function testForm(input: TestFormInput, files?: FormData): Promise<FormResult<{ submissionId: string; delivery: DeliveryState }>> {
   const staff = await requireStaff();
   const parsed = testFormSchema.safeParse(input);
   if (!parsed.success) return invalid(issueFields(parsed.error.issues));
@@ -113,14 +114,16 @@ export async function testForm(input: TestFormInput): Promise<FormResult<{ submi
     if (model.form.status !== "draft" || model.form.revision !== value.expectedRevision) return conflict();
     if (!z.email().max(254).safeParse(model.form.recipient).success) return invalid({ recipient: "Save a valid recipient before testing." });
     const definition = approvedBlueprint(model.form.definition, model.translations, value.locale);
-    const checked = validateValues(definition, value.values);
-    if (Object.keys(checked.fieldErrors).length) return invalid(checked.fieldErrors);
+    const uploaded = await validateAttachments(definition, files);
+    const checked = validateValues(definition, value.values, uploaded.files);
+    const fieldErrors = { ...checked.fieldErrors, ...uploaded.fieldErrors };
+    if (Object.keys(fieldErrors).length) return invalid(fieldErrors);
     const captured = await db.execute(sql`insert into form_test_submission(form_id,revision,locale,recipient,definition_snapshot,"values",created_by,delivery)
       select id,revision,${value.locale},recipient,${JSON.stringify(definition)}::jsonb,${JSON.stringify(checked.values)}::jsonb,${staff.userId},'skipped'
       from form_definition where id=${value.id}::uuid and revision=${value.expectedRevision} and status='draft' returning id`);
     const submissionId = captured.rows[0]?.id;
     if (typeof submissionId !== "string") return conflict();
-    const result = await sendEmail(testNotification(model.form.name, model.form.recipient, definition, checked.values, submissionId));
+    const result = await sendEmail(testNotification(model.form.name, model.form.recipient, definition, checked.values, submissionId, uploaded.attachments));
     const delivery: DeliveryState = !result.ok ? "failed" : result.skipped ? "skipped" : result.id === "console" ? "logged" : "accepted";
     await db.update(form_test_submission).set({ delivery, provider_id: result.id ?? null, delivery_error: result.error?.slice(0, 1000) ?? null, updated_at: new Date() }).where(eq(form_test_submission.id, submissionId));
     return { ok: true, data: { submissionId, delivery } };

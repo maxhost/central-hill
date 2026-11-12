@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { FormBlueprint, FormValues } from "./types";
+import type { FormBlueprint, FormFileValue, FormInputValues, FormValues } from "./types";
 
 export const formTemplateSchema = z.enum(["contact", "newsletter", "owner-estimate"]);
 export const formIdSchema = z.uuid();
@@ -14,7 +14,7 @@ export const blueprintSchema = z.object({
   schemaVersion: z.literal(1), columns: z.union([z.literal(1), z.literal(2)]),
   steps: z.array(z.object({ id: formIdSchema, title: short.min(1) }).strict()).min(1).max(6),
   fields: z.array(z.object({
-    id: formIdSchema, stepId: formIdSchema, type: z.enum(["text", "email", "tel", "textarea", "number", "select", "checkbox"]),
+    id: formIdSchema, stepId: formIdSchema, type: z.enum(["text", "email", "tel", "textarea", "number", "select", "checkbox", "date", "file"]),
     label: short.min(1), placeholder: short, help: z.string().trim().max(1000), required: z.boolean(),
     width: z.union([z.literal(1), z.literal(2)]),
     options: z.array(z.object({ id: formIdSchema, label: short.min(1) }).strict()).max(30),
@@ -49,13 +49,21 @@ export function issueFields(issues: readonly { path: PropertyKey[]; message: str
   return Object.fromEntries(issues.map(issue => [issue.path.map(String).join("."), issue.message]));
 }
 /** All steps are validated server-side; absent optional answers are normalized. */
-export function validateValues(definition: FormBlueprint, input: FormValues): { values: FormValues; fieldErrors: Record<string, string> } {
+export function validateValues(definition: FormBlueprint, input: FormInputValues, files: Record<string, FormFileValue> = {}): { values: FormValues; fieldErrors: Record<string, string> } {
   const values: FormValues = {};
   const fieldErrors: Record<string, string> = {};
   const known = new Set(definition.fields.map(field => field.id));
   for (const key of Object.keys(input)) if (!known.has(key)) fieldErrors[key] = "Unexpected field.";
   for (const field of definition.fields) {
     const raw = input[field.id];
+    if (field.type === "file") {
+      // JSON answers never stand in for verified multipart files, even a filename.
+      if (raw !== undefined) fieldErrors[field.id] = "Choose an attached file instead of a text answer.";
+      const file = files[field.id];
+      values[field.id] = file ?? "";
+      if (field.required && !file) fieldErrors[field.id] = "This field is required.";
+      continue;
+    }
     if (field.type === "checkbox") {
       if (raw !== undefined && typeof raw !== "boolean") fieldErrors[field.id] = "Choose a valid checkbox value.";
       values[field.id] = raw === true;
@@ -69,6 +77,7 @@ export function validateValues(definition: FormBlueprint, input: FormValues): { 
     if (value.length > (field.type === "textarea" ? 10000 : 1000)) fieldErrors[field.id] = "This value is too long.";
     if (field.type === "email" && !z.email().max(254).safeParse(value).success) fieldErrors[field.id] = "Enter a valid email address.";
     if (field.type === "select" && !field.options.some(option => option.id === value)) fieldErrors[field.id] = "Choose a valid option.";
+    if (field.type === "date" && !isCalendarDate(value)) fieldErrors[field.id] = "Choose a valid date (YYYY-MM-DD).";
     if (field.type === "number") {
       const number = Number(value);
       if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value) || !Number.isFinite(number) || Math.abs(number) > 1e12) fieldErrors[field.id] = "Enter a valid number.";
@@ -76,4 +85,14 @@ export function validateValues(definition: FormBlueprint, input: FormValues): { 
     }
   }
   return { values, fieldErrors };
+}
+
+/** A calendar date, not an instant: preserve YYYY-MM-DD without timezone conversion. */
+function isCalendarDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year = 0, month = 0, day = 0] = value.split("-").map(Number);
+  if (year < 1 || month < 1 || month > 12 || day < 1) return false;
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return day <= (days[month - 1] ?? 0);
 }
