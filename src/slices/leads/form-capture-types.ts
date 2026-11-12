@@ -5,10 +5,10 @@ export interface CapturedContactField {
 }
 export interface ContactFormSnapshot {
   formId: string; name: string; revision: number; locale: Locale; fingerprint: string;
-  payloadHash: string; fields: CapturedContactField[];
+  sourcePage?: "header-contact" | "about-contact"; assignmentIdentity?: string; payloadHash: string; fields: CapturedContactField[];
 }
 export interface ContactCaptureInput {
-  submissionKey: string; snapshot: ContactFormSnapshot;
+  sourcePage?: "header-contact" | "about-contact"; submissionKey: string; snapshot: ContactFormSnapshot;
   email: string | null; ipAddress: string | null; userAgent: string | null;
 }
 export type ContactCaptureResult =
