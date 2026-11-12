@@ -48,6 +48,8 @@ export type PageEditorialResult<K extends EditorialPageKey = "home"> =
 
 /** Ephemeral private preview only; local URLs must never enter PageEnvelope storage. */
 export interface PageLivePreviewInput<K extends EditorialPageKey = "home"> {
+  /** Explicit EN working reference, accepted only by authenticated About preview. */
+  aboutContactFormId?: string | null;
   envelope: PageEnvelope<K>;
   localMedia: Record<string, import("@slices/backoffice/contract").AdminMediaPreview>;
 }

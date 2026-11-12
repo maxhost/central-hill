@@ -63,6 +63,7 @@ export async function renderPageLivePreview<K extends EditorialPageKey>(
     const content = await adapter.render({
       locale: locale as Locale,
       preview: true,
+      ...(key === "about" && Object.hasOwn(checked, "aboutContactFormId") ? { aboutContactFormId: checked.aboutContactFormId } : {}),
       surface,
       page: { content: envelope.content, ...resolved },
     });

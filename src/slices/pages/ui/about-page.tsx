@@ -17,10 +17,13 @@ import {
   type ContactSplitRow,
 } from "@core/ui";
 import { Icon } from "@core/ui/icon";
+import { PublicContactForm } from "@slices/forms/contract";
+import { readAboutContactForm } from "@slices/forms/server-contract";
 import { ContactForm } from "@slices/leads/contract";
 import { getGlobals } from "@slices/settings/contract";
 import { getAboutPage, type AboutPage as AboutPageResult } from "../contract";
 import { aboutSchema, defaultAbout } from "../schemas/about";
+import { withoutAboutContactAssignment } from "../about-contact-content";
 import { normalizeAbout } from "../about-content";
 import { aboutAudienceImage, aboutContactHref, aboutStatColumns } from "./about-presentation";
 import { AboutMedia } from "./components/about-media";
@@ -136,9 +139,10 @@ function PreviewBinding({ preview, id, children }: { preview: boolean; id: strin
   return preview ? <div data-editor-binding={id}>{children}</div> : <>{children}</>;
 }
 
-export async function AboutPage({ locale, preview = false, page: injectedPage }: {
+export async function AboutPage({ locale, preview = false, page: injectedPage, aboutContactFormId: previewFormId }: {
   locale: Locale;
   preview?: boolean;
+  aboutContactFormId?: string | null;
   page?: AboutPageResult | null;
 }) {
   setRequestLocale(locale);
@@ -148,7 +152,9 @@ export async function AboutPage({ locale, preview = false, page: injectedPage }:
     getTranslations("pages"),
   ]);
   // A row (or a cache entry) still in the pre-3d shape renders the default copy, not a crash.
-  const c = normalizeAbout(page && aboutSchema.safeParse(page.content).success ? page.content : defaultAbout);
+  const contactForm = preview ? await readAboutContactForm(locale, previewFormId ?? null) : await readAboutContactForm(locale);
+  const checkedContent = aboutSchema.safeParse(withoutAboutContactAssignment(page?.content));
+  const c = normalizeAbout(checkedContent.success ? checkedContent.data : defaultAbout);
   const media = page?.media ?? {};
   const binding = (id: string) => preview ? { "data-editor-binding": id } : {};
   const faqGroupKey = c.faq_group_key ?? "";
@@ -364,7 +370,7 @@ export async function AboutPage({ locale, preview = false, page: injectedPage }:
               formIntro={c.contact.form.subheadline || undefined}
             >
               <PreviewBinding preview={preview} id="contact.form">
-                {preview ? <div inert><ContactForm source="about-contact" /></div> : <ContactForm source="about-contact" />}
+                {contactForm ? <PublicContactForm key={`${contactForm.id}:${contactForm.revision}:${contactForm.fingerprint}`} model={contactForm} preview={preview} /> : preview ? <div inert><ContactForm source="about-contact" /></div> : <ContactForm source="about-contact" />}
               </PreviewBinding>
             </ContactSplit>
           </Reveal>

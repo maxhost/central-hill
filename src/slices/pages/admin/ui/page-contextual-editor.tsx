@@ -13,6 +13,8 @@ import type { AboutListOperation } from "../form-model";
 import { PageNavigation } from "./page-navigation";
 import { pageImageFields } from "../image-alt-fields";
 import { setPageField } from "../field-update";
+import { AboutContactSelector } from "./about-contact-selector";
+import { aboutContactFormId } from "../../about-contact-content";
 import { editorViewSections, type PageEditorView } from "../editorial-views";
 
 type LocaleState<K extends EditorialPageKey> = {
@@ -60,9 +62,10 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   const og = state.model.working.ogImageMediaId;
   const previewPayload = useMemo(() => ({
     envelope: state.model.working,
+    ...(descriptor.key === "about" ? { aboutContactFormId: aboutContactFormId(states.en.model.working.content) ?? null } : {}),
     localMedia: Object.fromEntries(descriptorMediaIds(state.model.working.content, state.model.working.ogImageMediaId, descriptor)
       .flatMap(id => localPreviews[id]?.url.startsWith("blob:") ? [[id, localPreviews[id]!]] : [])),
-  }), [state.model.working, localPreviews, descriptor]);
+  }), [state.model.working, states.en.model.working, localPreviews, descriptor]);
   const dirty = isDirty(state.model);
   const busy = operation !== null || queue.isPreparing;
   const unsavedPage = Object.entries(states).some(([key, value]) =>
@@ -194,6 +197,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   const english = (states.en.model.draft ?? states.en.model.published ?? states.en.model.working).content;
   const englishText = Object.fromEntries(editorialTextPaths(english, descriptor).map(path => [editorialTranslationField(english, path, descriptor), editorialAt(english, path)]));
   function groupContactFields(fields: { id: string; node: ReactNode }[]) {
+    if (descriptor.key === "about" && section.id === "contact") return fields.flatMap(field => [field.node, ...(field.id === "contact.form.subheadline" ? [<AboutContactSelector key="about-contact-form" value={aboutContactFormId(states.en.model.working.content)} readOnly={locale !== "en"} disabled={busy} error={states.en.errors["contact.form.form_id"]} onEnglish={() => selectLocale("en")} onChange={value => change(["contact", "form", "form_id"], value)} />] : [])]);
     if (descriptor.key !== "guest" || section.id !== "dual_cta") return fields.map(field => field.node);
     const contactIds = ["dual_cta.owner.contact.title", "dual_cta.owner.contact.intro"];
     const contactFields = fields.filter(field => contactIds.includes(field.id));

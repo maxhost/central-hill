@@ -31,6 +31,7 @@ const localPreview = z
 const request = z
   .object({
     envelope: z.unknown(),
+    aboutContactFormId: z.string().max(100).nullable().optional(),
     localMedia: z.record(z.uuid(), localPreview),
   })
   .strict();
@@ -44,7 +45,7 @@ export function validatePageLivePreview<K extends EditorialPageKey>(
   try {
     if (JSON.stringify(raw).length > 256 * 1024) return null;
     const parsed = request.safeParse(raw);
-    if (!parsed.success) return null;
+    if (!parsed.success || (key !== "about" && Object.hasOwn(parsed.data, "aboutContactFormId"))) return null;
     const adapter = getEditorialAdapter(key);
     if (
       Object.keys(parsed.data.localMedia).length >
@@ -104,7 +105,7 @@ export function validatePageLivePreview<K extends EditorialPageKey>(
       ).length
     )
       return null;
-    return { envelope: checked.payload, localMedia: parsed.data.localMedia };
+    return { envelope: checked.payload, localMedia: parsed.data.localMedia, ...(Object.hasOwn(parsed.data, "aboutContactFormId") ? { aboutContactFormId: parsed.data.aboutContactFormId } : {}) };
   } catch {
     return null;
   }

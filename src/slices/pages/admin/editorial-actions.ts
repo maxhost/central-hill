@@ -1,5 +1,6 @@
 "use server";
 import { revalidatePath, updateTag } from "next/cache";
+import { LOCALES } from "@core/db/columns";
 import { requireStaff } from "@core/auth";
 import { getEditorialAdapter } from "../server/editorial-adapters";
 import type {
@@ -24,6 +25,12 @@ export async function publishPageDraft<K extends EditorialPageKey>(
   if (!result.ok) return result;
   try {
     updateTag(pageLocaleTag(input.key, input.locale));
+    if (input.key === "about" && input.locale === "en") {
+      for (const locale of LOCALES) {
+        updateTag(pageLocaleTag("about", locale));
+        revalidatePath(`/${locale}/about`);
+      }
+    }
     const adapter = getEditorialAdapter(input.key);
     if (adapter.publicationScope === "layout") revalidatePath(`/${input.locale}`, "layout");
     else revalidatePath(`/${input.locale}${adapter.descriptor.publicPath}`);

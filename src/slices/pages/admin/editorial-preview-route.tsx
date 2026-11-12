@@ -12,6 +12,8 @@ import { getPageDraftPreview } from "../server/editorial-preview";
 import { resolveEditorialEnvelope } from "../server/editorial-publication";
 import { getPageEditorialModel } from "./editorial-queries";
 import { renderPageLivePreview } from "./live-preview-actions";
+import { readEditorialRows } from "./editorial-store";
+import { aboutContactFormId } from "../about-contact-content";
 import { homeEditorBindingIds } from "./home-contextual";
 
 /** Dynamic staff route shared by every enabled page. Never mounts on public routes. */
@@ -42,11 +44,13 @@ export async function PageEditorialPreview({ pageKey, query }: {
   const model = await getPageEditorialModel(pageKey, locale as Locale);
   page = await resolveEditorialEnvelope(model?.working ?? null, locale as Locale);
  }
+ const enAbout = pageKey === "about" ? (await readEditorialRows("about")).find(row => row.locale === "en") : null;
+ const aboutOverride = pageKey === "about" ? { aboutContactFormId: aboutContactFormId((enAbout?.draft ?? enAbout?.published)?.content) ?? null } : {};
  return <NextIntlClientProvider locale={locale} messages={messages}>
   <SiteHeader locale={locale as Locale} />
   <PageEditorLivePreview instance={query.instance} bindingIds={ids}
    renderPreviewAction={async (payload) => { "use server"; return renderPageLivePreview(pageKey, locale, payload, surface); }}>
-   {await adapter.render({ locale: locale as Locale, preview: true, page, surface })}
+   {await adapter.render({ locale: locale as Locale, preview: true, page, surface, ...aboutOverride })}
   </PageEditorLivePreview>
   <SiteFooter locale={locale as Locale} />
  </NextIntlClientProvider>;

@@ -19,7 +19,11 @@ function emptyEditorialEnvelope<K extends EditorialPageKey>(
     ogImageMediaId: null,
   };
 }
-import { eq, sql } from "drizzle-orm";
+import { executeSerialized } from "@core/db/serialized";
+import { HEADER_CONTACT_LOCK, getAssignableContactForm, assignableContactFormGuard } from "@slices/forms/server-contract";
+import { aboutContactFormId, preserveAboutContactAssignment } from "../about-contact-content";
+import type { AboutContent } from "../schemas/about";
+import { eq, sql, type SQL } from "drizzle-orm";
 import { db } from "@core/db/client";
 import type { Locale } from "@core/db/columns";
 import { page_locale_content } from "../schema";
@@ -128,6 +132,7 @@ export async function commitEditorial<
   templateRevision?: number | null;
   publish?: boolean;
   actor: string;
+  assignmentGuard?: SQL;
 }): Promise<boolean> {
   // The EN lock serializes first-target writes with template changes. Locks are
   // always acquired EN first to keep concurrent EN/target saves deadlock-free.
@@ -135,7 +140,7 @@ export async function commitEditorial<
     input.templateRevision != null
       ? sql`and exists(select 1 from template where revision=${input.templateRevision})`
       : sql``;
-  const result = await db.execute(sql`with template as materialized (
+  const statement = sql`with template as materialized (
     select revision from page_locale_content where page_key=${input.key ?? "home"} and locale='en' for update
   ), saved as (
     update page_locale_content set
@@ -147,8 +152,10 @@ export async function commitEditorial<
     where page_key=${input.key ?? "home"} and locale=${input.locale} and revision=${input.revision}
       and exists(select 1 from template) ${templateGuard}
       ${input.publish ? sql`and draft is not null` : sql``}
+      ${input.assignmentGuard ? sql`and (${input.assignmentGuard})` : sql``}
     returning id
-  ) select id from saved`);
+  ) select id from saved`;
+  const result = input.key === "about" ? await executeSerialized(HEADER_CONTACT_LOCK, statement) : await db.execute(statement);
   return result.rows.length === 1;
 }
 
@@ -196,8 +203,17 @@ export async function saveEditorialDraft<K extends EditorialPageKey = "home">(
         current.templateRevision !== input.templateRevision)
     )
       return { ok: false, error: "conflict" };
+    const candidate = input.key === "about" ? {
+      ...checked.payload,
+      content: preserveAboutContactAssignment(checked.payload.content as AboutContent, current.working.content as AboutContent, input.locale),
+    } as PageEnvelope<K> : checked.payload;
+    const selectedId = input.key === "about" && input.locale === "en" ? aboutContactFormId(candidate.content) : null;
+    const changedAssignment = selectedId !== aboutContactFormId(current.working.content);
+    const selected = selectedId && z.uuid().safeParse(selectedId).success ? await getAssignableContactForm(selectedId) : null;
+    if (selectedId !== null && selectedId !== undefined && changedAssignment && !selected)
+      return invalid({ "contact.form.form_id": "Choose an available form with a valid recipient and definition." });
     const validation = await validateDraftMutation(
-      checked.payload,
+      candidate,
       current.working,
       input.locale,
       false,
@@ -210,6 +226,7 @@ export async function saveEditorialDraft<K extends EditorialPageKey = "home">(
       locale: input.locale,
       revision: input.expectedRevision,
       payload: validation.payload,
+      assignmentGuard: selected ? assignableContactFormGuard(selected.id, selected.revision) : undefined,
       templateRevision:
         input.locale !== "en" && !current.draft ? input.templateRevision : null,
       actor: actor,
@@ -250,6 +267,10 @@ export async function publishEditorialDraft<
     if (current.revision !== input.expectedRevision)
       return { ok: false, error: "conflict" };
     if (!current.draft) return { ok: false, error: "no_draft" };
+    const selectedId = input.key === "about" && input.locale === "en" ? aboutContactFormId(current.draft.content) : null;
+    const selected = selectedId && z.uuid().safeParse(selectedId).success ? await getAssignableContactForm(selectedId) : null;
+    if (selectedId !== null && selectedId !== undefined && !selected)
+      return invalid({ "contact.form.form_id": "Choose an available form with a valid recipient and definition." });
     const checked = await validateDraftMutation(
       current.draft,
       current.draft,
@@ -265,6 +286,7 @@ export async function publishEditorialDraft<
         locale: input.locale,
         revision: input.expectedRevision,
         publish: true,
+        assignmentGuard: selected ? assignableContactFormGuard(selected.id, selected.revision) : undefined,
         actor: actor,
       }))
     )

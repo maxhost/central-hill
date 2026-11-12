@@ -192,6 +192,7 @@ export const aboutSchema = z.object({
     form: z.object({
       headline: tStr({ max: 160 }),
       subheadline: tStrOpt({ max: 280 }),
+      form_id: adminHidden(z.string().max(100).nullable().optional()),
     }),
   }),
   /** Optional FAQ group to show on the page (blank = none). */

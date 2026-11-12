@@ -1652,3 +1652,28 @@ media UUID, edited beside their picker in every language. Target photo controls
 remain locked while descriptions stay editable. Descriptions follow saved drafts,
 explicit locale publication and private live preview; old snapshots keep existing
 fallbacks. Shared-field validation excludes only the localized description map.
+
+## About Contact assignment —2026-11-12
+
+`contact.form.form_id` is optional/nullable and shared across languages. EN Save draft
+keeps the selection private; EN Publish activates it for all four About routes.
+The published EN snapshot is the only public authority; target snapshots cannot
+replace it. Old EN payloads omitting the field retain the saved value; explicit
+null restores the existing contact. Malformed stored references remain editable
+and fall back to the existing public contact without replacing localized copy.
+
+The inspector places Form directly below Subtitle, with Forms catalogue refresh
+and create/edit links. Unsaved EN selection travels as an explicit authenticated
+preview override, including when previewing another language. Preview is inert.
+Forms owns the localized saved definition and submission action; About keeps its
+heading, subtitle, office panel and cards. Subsequent Form Saves/Approve invalidate
+its public model and the four About paths without another About Publish.
+
+Pages server-contract.ts exposes the published assignment reader and trusted SQL
+guards for capture/usage. Its identity hashes the selected ID and published_at;
+EN draft revisions do not invalidate an open public form, while an EN Publish
+refreshes publication identity. About mutations acquire the same advisory lock as
+Forms/Settings/capture before a separate fresh-snapshot statement, retaining EN
+template and locale revision guards. Archive checks both EN draft and published
+references. No schema migration, backfill or GET writes are introduced.
+Resend remains unconfigured; console transport does not prove inbox delivery.

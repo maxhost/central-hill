@@ -2027,6 +2027,28 @@
         "articleTitle": "Blog · Barra lateral de artículos",
         "sharedDraft": "Ambos editores comparten el borrador de Blog de cada idioma. Guardar borrador y Publicar se aplican a ese borrador completo.",
         "context": "Edita la llamada a la acción compartida junto a este artículo de ejemplo. El artículo es ilustrativo y no se edita aquí. Los artículos con un botón propio lo conservan."
+      },
+      "aboutContact": {
+        "label": "Formulario",
+        "original": "Usar formulario de contacto actual",
+        "help": "Publica About en EN para activar esta selección en los cuatro idiomas. Los siguientes guardados en Forms actualizan sus campos públicos sin volver a publicar About.",
+        "shared": "Se usa el mismo formulario en EN, ES, PT y FR.",
+        "editEnglish": "Editar selección en EN",
+        "loadingSelection": "Cargando formulario seleccionado…",
+        "missing": "El formulario seleccionado no está disponible",
+        "invalid": "Elige un formulario disponible con destinatario y definición válidos, o usa el formulario de contacto actual.",
+        "unavailable": "Este formulario no está disponible. Elige otro o usa el formulario de contacto actual.",
+        "loadError": "No se pudieron cargar los formularios. Actualiza la lista para reintentarlo.",
+        "empty": "No hay formularios disponibles. Crea uno, guárdalo y actualiza esta lista.",
+        "create": "Crear formulario",
+        "edit": "Editar formulario seleccionado",
+        "refresh": "Actualizar lista",
+        "loading": "Cargando…",
+        "reason": {
+          "archived": "Archivado",
+          "recipient": "Falta destinatario",
+          "definition": "Definición inválida"
+        }
       }
     }
   },
