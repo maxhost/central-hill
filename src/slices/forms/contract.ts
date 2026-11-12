@@ -1,4 +1,5 @@
-/** Forms owns reusable definitions and staff-only tests. Placement/public submission are a later arc. */
+/** Forms owns reusable definitions (including dates and email attachments) and staff-only tests.
+ * Placement/public submission are a later arc; file bytes are never public assets. */
 import type { AdminScreen } from "@slices/backoffice/contract";
 export type * from "./types";
 export { createBlueprint, textFields, localizedBlueprint, approvedBlueprint } from "./domain";

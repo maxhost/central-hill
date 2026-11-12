@@ -1358,3 +1358,5 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 - [0074 — Fixed multilingual public navigation](0074-fixed-public-navigation.md)
 
 - [0075 — Settings hours labels and retired controls](0075-settings-hours-and-cleanup.md)
+
+- [0078 — Form dates and email attachments](0078-form-date-and-email-attachments.md)

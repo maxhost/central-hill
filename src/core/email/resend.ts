@@ -9,7 +9,7 @@ export function createResendProvider(apiKey: string | undefined, from: string | 
         const response = await transport("https://api.resend.com/emails", {
           method: "POST",
           headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({ from, to: Array.isArray(message.to) ? message.to : [message.to], subject: message.subject, text: message.text, ...(message.html ? { html: message.html } : {}), ...(message.replyTo ? { reply_to: message.replyTo } : {}) }),
+          body: JSON.stringify({ from, to: Array.isArray(message.to) ? message.to : [message.to], subject: message.subject, text: message.text, ...(message.html ? { html: message.html } : {}), ...(message.replyTo ? { reply_to: message.replyTo } : {}), ...(message.attachments?.length ? { attachments: message.attachments.map(attachment => ({ filename: attachment.filename, content: attachment.content, content_type: attachment.contentType })) } : {}) }),
           signal: AbortSignal.timeout(10_000),
         });
         // Do not expose vendor response bodies (may contain message/recipient content).

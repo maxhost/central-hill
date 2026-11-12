@@ -38,6 +38,10 @@ function r2RemotePatterns(): NonNullable<NextConfig["images"]>["remotePatterns"]
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Forms accepts up to 20 MiB of attachments; leave room for multipart metadata (ADR0078).
+  experimental: {
+    serverActions: { bodySizeLimit: "21mb" },
+  },
   // `sharp` (core/media resize, ADR 0018) is a native module — keep it external so the
   // bundler never inlines it and it loads its platform binary from node_modules at
   // runtime. Paired with pnpm `onlyBuiltDependencies: ["sharp"]` so the linux-x64 binary
