@@ -1,6 +1,7 @@
 # Guest → Closing dual CTA → Owner contact form
 
-2026-11-12. Implementación local autorizada por «el mismo trabajo» que About.
+2026-11-12. Implementado localmente; QA independiente aprobado.
+Autorizado por «el mismo trabajo» que About.
 
 ## Resultado
 

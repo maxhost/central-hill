@@ -81,10 +81,41 @@ siendo ausencia, sin defaults en schema ni escriturasGET. Pureassertion cubre el
   GuestCAS uno ganador y esperaArchive→freshsnapshotPublishreject, targetJSONexacto.
 - pnpm typecheck0; pnpm lint0(7warnings antiguos); scopedSettingseslint0 después delfocusfix.
   pnpm db:check0/31ledger, solo antigua advertencia0008. DetectorUI0 en5targets cambiados.
-- Fullbuild final en generación de215rutas con2workers y cap4queries/preloadbuildonly;
+- Fullbuild final0/215rutas con2workers (4.7min) y cap4queries/preloadbuildonly;
   compilación+TypeScript0. El build anterior propio se interrumpió antesQA para incluir
   focusfix; no se abrió ni ensayó ese binario como candidatoQA. Sin borrar cachés.
 
 Main3071PID42708 y media9081PID42630 siguen en ejecución, no reiniciados. Rootreadonly
 main-conservation.json44tablas/1504filas (negocio+ledger) exactos al nuevocheckpoint,
 auth excluido para login normal; ningún Save/fixture en main.
+
+
+## Runtime de QA independiente
+
+Candidato exacto24fa21331cefa041396911a43c21782eaf1fc09b (producto752c791), cwdintegration.
+Producción3084PID53549/session86247, login200 y strictpreloadguestcontactqa20261112.cjs.
+QA autorizado a iniciar tras todosloschecks; creaA/BporUI (A desde newsletter para probar
+kindcontact independiente de template), solo fixturespropios y excepciones Guest/About/Settings
+del cloneQA con baseline. Resendconsole, medias9081local. No mainwrites ni cache/quotaresets.
+
+
+## QA aprobado y datos protegidos
+
+Aprobación independiente exacta24fa21331cefa041396911a43c21782eaf1fc09b/producto752c791.
+33casos (9editor+10captura+3locales/móvil+11lifecycle),0pageerrors/adminerrors,0defectos
+abiertos y0correcciones/retests de producto duranteQA. Una tanda visual posicionada aprobada.
+
+Selector bajoIntro, refreshsinperderedits, legacy/configuredpreviewbodyinert+CloseTab/ShiftTab
+contenidos, puenteShow/Hide, ENworkingunsavedtargetES/selecciónreadonly, savedraftpublicanterior,
+PublishEN4conJSONtargetexacto/titleintroGuest, Date/File/2columnasdesktop1móvil/modal-scroll/
+focus-close-reopen, capturacontact+sourceguests-dual-cta aunqueAtemplateNewsletter, actualPOST
+replay/alteredpayload/carrera1winner, histórico legible yconsent/adjuntometadata correctos;
+independencia/compartido3ubicaciones, seiscrucesDB y amboscrucesGuest/HeaderporPOST real,
+identitynodraftSave/stalepublish0capture, archiveporambossnapshots, FormSave/ApprovePTcache
+sinGuestrepublish, staffTestseparadologged ynullfallbackEN/PT+CTAbooking/About/Header intactos.
+
+QA35tablas ajenas y filasoriginalesForms/Leads/Fields/otrasPages/translations exactas, excepción
+explícita solo Guest/About/Settings(+susTranslations), propiosA/B/capturas/tests yratecounters.
+Ledger31exacto. FinalcloneQA Guest/Aboutpublishednull+draftnull, headernull;5propiosleads
+(4Guest+1header),1stafftest,console1notificación porganador. No recepción real Resend.
+Root mantiene main-conservation por separado; ninguna escritura de QA en authoredmain.

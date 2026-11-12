@@ -1,5 +1,57 @@
 # Central Hill agent instructions
 
+## Guest Closing dual CTA owner Form —2026-11-12
+
+User requests same configurableForms work asAbout in /admin/pages/guest, ClosingdualCTA
+below Ownercontactdialogintro. Read [plan](docs/specs/form-builder/guest-owner-contact-assignment-plan.md),
+[execution](docs/specs/form-builder/guest-owner-contact-assignment-execution.md),
+[QA](docs/specs/form-builder/guest-owner-contact-assignment-qa.md), ADR0082.
+
+Guest has optionalnullable dual_cta.owner.contact.form_id with commonpublishedEN authority
+for4locales. ENSaveDraft private, ENPublish activatesselection without touchingtargettexts;
+targetsreadonly+ENlink/servertamperprotected, oldomissionpreserves, null/invalidkeepslegacy
+ContactForm sourceguests-dual-cta. Selector afterIntro usesexistingForms catalog andrefresh
+preservesedits. FormSave/Approve updatesfields without GuestPublish. OwnerDialogkeepsown
+title/intro/trigger, configuredbody no Formsheadingduplicate. Header/About/otherGuestCTAs
+independent. Publicmanualinvalidref cannotdiscardGuesttext. DefaultGuest scaffold explicitly
+omitsnewhiddenid (applyDefaults otherwisecreates''); no GETwrites/materializediddefault.
+
+Privatepreviewexplicit ENworkingoverride appliesalsotargettabs; savedFormdefinitionfresh,
+bodyinert. ContactDialog editorPreviewId wrapsbodyonlyinert andfocusablefilter excludesinert
+descendants, preservingpublicmarkup/width andprivateShowHide/Closefocus. Guest publicaction
+submitGuestOwnerContactForm fixes kindcontact/source_page=guests-dual-cta regardlesstemplate,
+reuses atomicfields/history/consent/marketingfalse/files/idempotency/sharedquotas/email.
+All3placementscrosskeysrejected, oldAbout/Headerhashes/replayscompatible. GuestSave/Publish,
+Archive/FormSave/Settings/About/capture share HEADER_CONTACT_LOCK separateREADCOMMITTED
+lock/mutation freshsnapshot; publishedID+published_at independentdraftrev. Archive checks
+GuestENdraft OR published plusAbout/header. UUIDcaseinsensitive. Cache4/<locale>/guests
+invalidation onENPublish andFormsSave/Approve; Header/About invalidationsretained.
+
+Checkpoint restore/guest-contact-2026-11-12-1794504562503 at613b798, private
+/private/tmp/central-hill-guest-contact/checkpoint: full49tables1513rows inclauth/ledger31,
+columns/constraints/counts/hashes exactin2restores;1344Gitobjects/183mediaSHAexact. Paired
+RESTORE.md preserveslaterstate first and restoresnewDB/checkout; no automaticmergeoflaterdata.
+Preserve guestcontactrestore20261112, browsercloneguestcontactqa20261112 and schema-only
+own guestcontactpagesqa20261112/guestcontactunitqa20261112, alloldbases/envs/caches/artifacts.
+NoSQLmigration/backfill/corechange/remoteDB/R2writes/push/deploy/rolecleanup.
+
+Twoisolatedwriters A34264f9/Bac27238 integrated; finalcandidate24fa213/product752c791
+independentlyQAapproved. Root153pure+10realDB pass(0skip),typecheck/lint0(7oldwarnings),
+dbcheck31(old0008warning),UI detector0. FullTurbopackbuild0/215static/2workers4.7min with
+build-only4querycap, no productconfigoverride. First ownbuild stopped beforeQA to include
+rootprivatefocusfix; no broadmatrixrepeat. QA33casesfirstpass/0errors/0defects/corrections,
+positioneddesktop/mobilevisualbatchpass.35unrelatedtables+originalForms/Leads/Fields/otherPages/
+translations exact, ledger31exact. QAendsGuest/Aboutpublishednull/draftnull,headernull,
+5ownleads(4Guest/1header)and1loggedstafftest; Anewslettertemplate capturescontact correctly.
+
+Main3071PID42708/parent42702/session64963 andmedia9081PID42630/session56332 retained;
+REQUIRED NODE_OPTIONS=--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs
+with original.env.local, onlyneoncontentlocal20261111→proxy4558. Finalmainff/opening recorded
+inexecution; authoredmain no Save/fixture/cacheflush. Preserve originalPNGlogo/publicsymlinks,
+allbases/worktrees/checkpoints/envs/caches/artifacts. Resend remainsconsole/unconfigured,
+no realemail/attachmentreception claimed or externalsetup. No automaticnexttask.
+
+
 ## About Contact shared Forms assignment —2026-11-12
 
 User authorized the approved About Contact plan, starting with a new paired code/data
