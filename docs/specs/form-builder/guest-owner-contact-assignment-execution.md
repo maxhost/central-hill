@@ -52,3 +52,39 @@ y guestcontactunitqa20261112 preparados; 1344objetosGit/183mediaSHA exactos veri
 Root pre-QA focus review: private inertbody fields must be excluded from focusablelist;
 ContactDialog now filters inert descendants. Current ownbuild stopped beforeQA to include
 this fix in the first browsercandidate; no other process/runtime/cache touched.
+
+
+## Candidato integrado
+
+A34264f9 integrado2cdafd5; Bac27238 integrado50d83cf. Root6aca247 previewbodyinert y
+8aa7a2e focusfilter de inertdescendants; candidato final752c791cb271a941f90a36f284ea04fee60d2730.
+No cambios src/pages/forms/leads/messages entre2cdafd5 de pruebas y752c791; solo el
+ajuste root de foco privado y documentación. No Settingspubliclayout/width changes.
+
+El defaultGuest anterior usa applyDefaults, que materializaba el nuevo hiddenstring
+como ''. A detectó esto con su propio testDB y lo corrigió eliminando únicamente ese
+nuevo campo del scaffold devuelto por guestAdapter.defaultContent; ausencia sigue
+siendo ausencia, sin defaults en schema ni escriturasGET. Pureassertion cubre el caso.
+
+- Root153pruebas afectadas de30archivos explícitos pasan,0skip: pnpm exec tsx
+  --tsconfig src/slices/pages/tests/tsconfig.json --test con Guest helpers/regresiones,
+  About helpers/editor/adapters, engine/preview/drafts, Forms/layout/date/file/attachments/
+  public/queries/cache/archive y Leads. Log integrated-tests.log.
+- Root8realDBForms+2realDBPages pasan,0skip, contra fuentes finales enintegration y
+  cwd/env/preload de las bases propias. Flags GUEST_CONTACT_DB_TEST=1 para Forms;
+  GUEST_CONTACT_PAGES_DB_TEST=1 +GUEST_CONTACT_ABOUT_REGRESSION=1 para Pages;
+  pnpm exec tsx --tsconfig <integration>/src/slices/pages/tests/tsconfig.json --test
+  --test-concurrency=1 sobre about-placement-db/public-rate-db/configured-form-db
+  y guest-contact-db/about-contact-db, respectivamente. Logs integrated-db-{forms,pages}.log.
+  Archivo con uppercase ENdraft/publicado, identidad estable con draftSave, all3origins/
+  seisclavescruzadas, legacyHeader/About hashcompat, staleguard, atomicidad y cuotas reales;
+  GuestCAS uno ganador y esperaArchive→freshsnapshotPublishreject, targetJSONexacto.
+- pnpm typecheck0; pnpm lint0(7warnings antiguos); scopedSettingseslint0 después delfocusfix.
+  pnpm db:check0/31ledger, solo antigua advertencia0008. DetectorUI0 en5targets cambiados.
+- Fullbuild final en generación de215rutas con2workers y cap4queries/preloadbuildonly;
+  compilación+TypeScript0. El build anterior propio se interrumpió antesQA para incluir
+  focusfix; no se abrió ni ensayó ese binario como candidatoQA. Sin borrar cachés.
+
+Main3071PID42708 y media9081PID42630 siguen en ejecución, no reiniciados. Rootreadonly
+main-conservation.json44tablas/1504filas (negocio+ledger) exactos al nuevocheckpoint,
+auth excluido para login normal; ningún Save/fixture en main.
