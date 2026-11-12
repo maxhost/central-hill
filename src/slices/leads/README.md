@@ -166,3 +166,10 @@ About snapshot hashes also bind their published assignment identity; historical
 header snapshots retain their original hash shape. Leads remain kind contact,
 marketing false, with exact historical field/consent labels, atomic field capture
 and no attachment bytes in persistence.
+
+Guest owner dialogs use the same trusted contact capture with source
+`guests-dual-cta`. Idempotency checks the persisted source across all three
+placements, and final assignment/revision guards also apply to existing-key
+replays after waiting for the shared lock. Guest snapshots bind their published
+assignment identity; historical About/header snapshots and valid retries retain
+their original hash shape. No new lead kind, field table or attachment storage.

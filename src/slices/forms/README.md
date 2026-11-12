@@ -128,3 +128,25 @@ routes as well as the independent header when applicable. Cross-slice SQL reader
 and guards live in server-only contracts, outside client-consumed barrels.
 Resend remains unconfigured; console and simulated transport checks do not prove
 inbox receipt or attachment delivery. No new schema or backfill is required.
+
+## Guest owner dialog shared placement
+
+Guest → Closing dual CTA → Owner contact selects one saved Form from the common
+catalog. Its public authority is exclusively the Guest EN published assignment;
+About and header retain independent selections. `readGuestContactForm` returns
+approved locale copy with EN fallback and no recipient or test data. Explicit
+preview overrides require staff and stay fresh/private; the runtime remains inert.
+Guest keeps its own dialog title and intro, while Forms contributes only its body.
+
+The dedicated Guest owner action fixes `contact`/`guests-dual-cta`, validates the
+published identity and current definition, and shares all durable rate counters,
+attachment limits, capture guards and core/email notification with About/header.
+Guest snapshot hashes bind location and published identity without changing either
+historical About hash shape or legacy header hashes. Stored lead source prevents
+cross-location key replay even when snapshots are otherwise identical.
+
+Guest EN draft OR published use blocks archive alongside About and Settings;
+messages identify every active location. Guest target copies create no independent
+use. Form Save/Approve invalidates all four `/guests` routes when used there and
+retains existing About/header invalidations. No schema, external service setup or
+real email delivery is introduced; Resend remains unconfigured.

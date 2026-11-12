@@ -8,7 +8,7 @@ import { db } from "@core/db/client";
 import type { Locale } from "@core/db/columns";
 import { loadTranslationRows, hashSource } from "@core/i18n";
 import { getGlobals } from "@slices/settings/contract";
-import { readAboutContactAssignment } from "@slices/pages/server-contract";
+import { readAboutContactAssignment, readGuestContactAssignment } from "@slices/pages/server-contract";
 import { form_definition } from "../schema";
 import { approvedBlueprint, textFields } from "../domain";
 import { readStoredBlueprint, formIdSchema } from "../validation";
@@ -76,4 +76,21 @@ export async function readAboutContactForm(locale: Locale, override?: string | n
     const source = await readPublicFormSource(id, locale);
     return source ? { id, revision: source.form.revision, locale, fingerprint: source.fingerprint, definition: source.definition, placement: "about-contact" as const, assignmentIdentity: identity } : null;
   }, ["about-contact-form", id, locale, identity, "v1"], { tags: [FORMS_PUBLIC_TAGS.all, FORMS_PUBLIC_TAGS.form(id)] })();
+}
+
+/** Guest owner dialog: one published EN choice, with a staff-only fresh preview override. */
+export async function readGuestContactForm(locale: Locale, override?: string | null): Promise<PublicFormModel | null> {
+  if (override !== undefined) {
+    await requireStaff();
+    if (!override) return null;
+    const source = await readPublicFormSource(override, locale);
+    return source ? { id: override, revision: source.form.revision, locale, fingerprint: source.fingerprint, definition: source.definition, placement: "guests-dual-cta" } : null;
+  }
+  const assignment = await readGuestContactAssignment();
+  if (!assignment) return null;
+  const { formId: id, identity } = assignment;
+  return unstable_cache(async () => {
+    const source = await readPublicFormSource(id, locale);
+    return source ? { id, revision: source.form.revision, locale, fingerprint: source.fingerprint, definition: source.definition, placement: "guests-dual-cta" as const, assignmentIdentity: identity } : null;
+  }, ["guest-contact-form", id, locale, identity, "v1"], { tags: [FORMS_PUBLIC_TAGS.all, FORMS_PUBLIC_TAGS.form(id)] })();
 }

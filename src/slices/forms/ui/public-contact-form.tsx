@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { PublicFormModel } from "../public-types";
-import { submitHeaderContactForm, submitAboutContactForm } from "../server/public-actions";
+import { submitHeaderContactForm, submitAboutContactForm, submitGuestOwnerContactForm } from "../server/public-actions";
 import { FormRuntime } from "./form-runtime";
 
 /** Only the server-selected public model enters this island; recipient stays server-side. */
@@ -20,8 +20,8 @@ export function PublicContactForm({ model, preview = false }: { model: PublicFor
     </div>
     <FormRuntime definition={model.definition} publicMode showHeading={false} onReset={() => { key.current = ""; setHoneypot(""); }} onSubmit={async (values, uploads) => {
       key.current ||= crypto.randomUUID();
-      const submit = model.placement === "about-contact" ? submitAboutContactForm : submitHeaderContactForm;
-      return submit({ id: model.id, expectedRevision: model.revision, locale: model.locale, fingerprint: model.fingerprint, ...(model.placement === "about-contact" ? { assignmentIdentity: model.assignmentIdentity } : {}), submissionKey: key.current, values, honeypot }, uploads);
+      const submit = model.placement === "guests-dual-cta" ? submitGuestOwnerContactForm : model.placement === "about-contact" ? submitAboutContactForm : submitHeaderContactForm;
+      return submit({ id: model.id, expectedRevision: model.revision, locale: model.locale, fingerprint: model.fingerprint, ...(model.placement && model.placement !== "header-contact" ? { assignmentIdentity: model.assignmentIdentity } : {}), submissionKey: key.current, values, honeypot }, uploads);
     }} />
   </div>;
 }

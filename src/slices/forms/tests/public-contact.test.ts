@@ -52,14 +52,14 @@ function actionHarness() {
     "drizzle-orm": { sql }, "zod": { z }, "@core/db/client": { db: { execute: async () => { state.queries++; return { rows: [{ assigned: state.assigned }] }; } } },
     "@core/email": { sendEmail: async (message: unknown) => { state.sent.push(message); return { ok: state.mailOk, id: "console" }; } },
     "@slices/leads/server-contract": { captureFormContact: async (input: ContactCaptureInput) => { state.captures.push(input); return { status: state.captureStatus, leadId: "own-lead" }; } },
-    "@slices/pages/server-contract": { aboutContactAssignmentGuard: () => sql`true` },
+    "@slices/pages/server-contract": { aboutContactAssignmentGuard: () => sql`true`, guestContactAssignmentGuard: () => sql`true` },
     "@slices/settings/server-contract": { headerContactAssignmentGuard: () => sql`true` },
     "./public-queries": { assignableHeaderFormGuard: () => sql`true`, readPublicFormSource: async () => state.sourcePresent ? { form: own.form, definition: own.definition, fingerprint: own.fingerprint } : null },
     "./attachments": { validateAttachments }, "../validation": validation,
     "./public-rate-limit": { admitPublicContact: async () => { state.rateCalls++; return state.rateAllowed; } },
     "./public-notification": { buildContactSnapshot, publicContactNotification },
   });
-  return { ...own, state, submit: actions.submitHeaderContactForm, submitAbout: actions.submitAboutContactForm };
+  return { ...own, state, submit: actions.submitHeaderContactForm, submitAbout: actions.submitAboutContactForm, submitGuest: actions.submitGuestOwnerContactForm };
 }
 
 test("public snapshots preserve localized labels, display options and exact accepted checkbox text", () => {
@@ -193,4 +193,26 @@ test("About snapshot hashes bind placement and published assignment while origin
   const legacyHash = createHash("sha256").update(JSON.stringify({ formId:h.form.id,revision:h.form.revision,locale:"en",fingerprint:h.fingerprint,fields:old.fields,attachmentHashes:[] })).digest("hex");
   assert.equal(old.payloadHash,legacyHash);assert.equal(old.payloadHash,same.payloadHash);assert.equal(Object.hasOwn(old,"sourcePage"),false);
   assert.notEqual(old.payloadHash,aboutA.payloadHash);assert.notEqual(aboutA.payloadHash,aboutB.payloadHash);
+});
+
+
+test("Guest owner action fixes source, requires public identity, validates Date/File and shares admission", async () => {
+  const h=actionHarness(),input={...h.input,assignmentIdentity:"c".repeat(32)};
+  assert.equal((await h.submitGuest(h.input)).ok,false);assert.equal(h.state.queries,0);
+  const uploads=new FormData();uploads.append(h.file.id,new File(["%PDF-1.7\nGuest\n%%EOF"],"guest.pdf",{type:"application/pdf"}));
+  assert.equal((await h.submitGuest(input,uploads)).ok,true);
+  assert.equal(h.state.captures[0]?.sourcePage,"guests-dual-cta");assert.equal(h.state.captures[0]?.snapshot.sourcePage,"guests-dual-cta");
+  assert.equal(h.state.captures[0]?.snapshot.assignmentIdentity,input.assignmentIdentity);assert.equal(h.state.rateCalls,1);
+  const message=h.state.sent[0] as ReturnType<typeof publicContactNotification>;assert.match(message.text,/^Guest owner contact:/);assert.equal(message.attachments?.[0]?.filename,"guest.pdf");
+  h.state.assigned=false;assert.equal((await h.submitGuest(input)).ok,false);assert.equal(h.state.rateCalls,1);assert.equal(h.state.captures.length,1);
+  assert.equal((await h.submitGuest({...input,sourcePage:"header-contact"} as PublicContactInput)).ok,false);
+});
+test("Guest hashes bind source and assignment without changing saved About hash shape",()=>{
+  const h=fixture(),placement={sourcePage:"about-contact" as const,assignmentIdentity:"a".repeat(32)};
+  const about=buildContactSnapshot(h.form,h.definition,h.input.values,"en",h.fingerprint,[],placement);
+  const expected=createHash("sha256").update(JSON.stringify({formId:h.form.id,revision:h.form.revision,locale:"en",fingerprint:h.fingerprint,fields:about.fields,attachmentHashes:[],placement})).digest("hex");
+  assert.equal(about.payloadHash,expected);
+  const guest=buildContactSnapshot(h.form,h.definition,h.input.values,"en",h.fingerprint,[],{...placement,sourcePage:"guests-dual-cta"});
+  assert.notEqual(guest.payloadHash,about.payloadHash);
+  assert.notEqual(guest.payloadHash,buildContactSnapshot(h.form,h.definition,h.input.values,"en",h.fingerprint,[],{sourcePage:"guests-dual-cta",assignmentIdentity:"b".repeat(32)}).payloadHash);
 });

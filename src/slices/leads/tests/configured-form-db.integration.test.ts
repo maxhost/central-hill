@@ -10,9 +10,10 @@ import ts from "typescript";
 import { lead, lead_field } from "../schema";
 import type { ContactCaptureInput } from "../form-capture-types";
 
+const guestEnabled = process.env.GUEST_CONTACT_DB_TEST === "1";
 const aboutEnabled = process.env.ABOUT_CONTACT_DB_TEST === "1";
-const enabled = process.env.HEADER_CONTACT_DB_TEST === "1" || aboutEnabled;
-const ownDatabase = aboutEnabled ? "aboutcontactunitqa20261112" : "headercontactqa20261112";
+const enabled = process.env.HEADER_CONTACT_DB_TEST === "1" || aboutEnabled || guestEnabled;
+const ownDatabase = guestEnabled ? "guestcontactunitqa20261112" : aboutEnabled ? "aboutcontactunitqa20261112" : "headercontactqa20261112";
 function load<T>(source: URL, dependencies: Record<string, unknown>): T {
   const compiled = { exports: {} };
   const code = ts.transpileModule(readFileSync(source, "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
@@ -96,4 +97,20 @@ test("QA DB: About and legacy header replays are scoped to verified source, even
     const [row] = await h.client`select kind,source_page,marketing_consent from lead where submission_key=${about.submissionKey}::uuid`;
     assert.equal(row?.kind,"contact");assert.equal(row?.source_page,"about-contact");assert.equal(row?.marketing_consent,false);
   } finally { await h.client`delete from lead where submission_key=any(${keys}::uuid[])`; }
+});
+
+
+test("QA DB: all three placements reject each other's keys even with identical snapshots", {skip:!enabled},async()=>{
+  const h=harness(),own=fixture(),keys:string[]=[];
+  const placements=["header-contact","about-contact","guests-dual-cta"] as const;
+  try {
+    for(const sourcePage of placements) {
+      const input={...own,sourcePage,submissionKey:crypto.randomUUID()};keys.push(input.submissionKey);
+      const winners=await Promise.all([h.capture(input,sql`true`),h.capture(input,sql`true`)]);
+      assert.deepEqual(winners.map(x=>x.status).sort(),["created","duplicate"]);
+      assert.equal((await h.capture(input,sql`false`)).status,"stale");
+      for(const other of placements.filter(p=>p!==sourcePage)) assert.equal((await h.capture({...input,sourcePage:other},sql`true`)).status,"conflict",`${sourcePage} key cannot acknowledge ${other}`);
+      const [row]=await h.client`select kind,source_page from lead where submission_key=${input.submissionKey}::uuid`;assert.equal(row?.kind,"contact");assert.equal(row?.source_page,sourcePage);
+    }
+  } finally {await h.client`delete from lead where submission_key=any(${keys}::uuid[])`;}
 });

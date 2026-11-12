@@ -10,9 +10,10 @@ import { PgDialect } from "drizzle-orm/pg-core";
 import ts from "typescript";
 import { form_public_rate_limit } from "../schema";
 
+const guestEnabled = process.env.GUEST_CONTACT_DB_TEST === "1";
 const aboutEnabled = process.env.ABOUT_CONTACT_DB_TEST === "1";
-const enabled = process.env.HEADER_CONTACT_DB_TEST === "1" || aboutEnabled;
-const ownDatabase = aboutEnabled ? "aboutcontactunitqa20261112" : "headercontactqa20261112";
+const enabled = process.env.HEADER_CONTACT_DB_TEST === "1" || aboutEnabled || guestEnabled;
+const ownDatabase = guestEnabled ? "guestcontactunitqa20261112" : aboutEnabled ? "aboutcontactunitqa20261112" : "headercontactqa20261112";
 function load<T>(source: URL, dependencies: Record<string, unknown>): T {
   const compiled = { exports: {} };
   const code = ts.transpileModule(readFileSync(source, "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
@@ -44,6 +45,6 @@ test("QA DB: durable rate bound holds concurrently and a retry does not consume 
     assert.equal(await a.admitPublicContact(ip, keys[6]!), false);
   } finally {
     await client`delete from form_public_rate_limit where key=any(${owned}::text[])`;
-    if (aboutEnabled && !hadGlobal) await client`delete from form_public_rate_limit where key='header-contact:global'`;
+    if ((aboutEnabled || guestEnabled) && !hadGlobal) await client`delete from form_public_rate_limit where key='header-contact:global'`;
   }
 });
