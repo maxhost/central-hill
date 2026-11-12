@@ -1,6 +1,6 @@
 # Plan — formulario configurable en About → Contact
 
-Fecha: 2026-11-12. Estado: **plan para revisión; implementación no iniciada**.
+Fecha: 2026-11-12. Estado: **aprobado por el usuario; implementación local en curso**.
 
 ## Resultado y alcance
 

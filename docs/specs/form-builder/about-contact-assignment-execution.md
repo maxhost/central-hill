@@ -18,4 +18,41 @@ B único escritor de src/slices/forms y src/slices/leads (excepto public-types.t
 
 Raíz posee docs, contratos iniciales, integración, provisión/verificación/entrega y scripts externos. Si hay cambios de contrato necesarios acordarlos con raíz. No delegación anidada. Independent QA después integración: auditoría adversarial y browser desktop/móvil + guardado/recarga/publicación solo QA DB. Plan aprobado contiene aceptación completa. Comandos reales pnpm exec tsx --test <files>, typecheck, lint, build, db:check. UI revisión agrupada, sin matriz global repetida.
 
-Estado: checkpoint aprobado; contratos en preparación.
+Estado: checkpoint verificado y contratos f744299 entregados; implementadores A/B en marcha. QA independiente prepara revisión acotada sin escrituras hasta candidato integrado. Root confirma 44 tablas (negocio+ledger, 1504 filas) exactas tras delegación; 1331 objetos Git del archivo restaurado exactos y183 medios SHA256 inventariados. Bases schema-only separadas aboutcontactpagesqa20261112 para A y aboutcontactunitqa20261112 para B; ninguna colisión con QA browser. Ownership A ampliado solo a pages.admin.aboutContact en messages/{en,es,pt,fr}.json. ADR0081 documenta contratos y autoridad.
+
+
+## Candidato integrado y comprobaciones
+
+Contratos f744299; A a8d355b (integrado b19c5a1), B9aa1417 (integrado053a4e8).
+Root17b3199 corrige guards SQL case-insensitive y lector UUID canónico: una referencia
+manual válida en mayúsculas no puede eludir el bloqueo de archivo. TestDB real con
+referencia uppercase, guard y lector pasa. Harness-only79cec74 (A22d0878) declara las
+nuevas dependencias de preview y sigue demostrando que Owners no las invoca.
+Producto estable17b3199, candidato con tests79cec74; src/messages/SQL de producto
+sin cambios durante build. Logs privados en /private/tmp/central-hill-about-contact.
+
+- A18pure+1grupoDB inicial: dos writers optimistas/uno ganador, About Publish espera
+  lock de Archive y rechaza formulario archivado con snapshot fresco, draft/publicado
+  separados, target JSON exacto y published_at estable ante Save draft.
+- B49dominio/UI+6DB inicial, typecheck y scopedlint0.
+- Root123pruebas afectadas de23archivos explícitos:0fallos/0skip en integrated-tests-final.log.
+  Se ejecutan con pnpm exec tsx --tsconfig src/slices/pages/tests/tsconfig.json --test,
+  incluyendo About/schema/engine/preview y Forms/layout/date/file/public/Leads.
+- Root6DBForms+1DBPages finales contra la fuente integrada, usando cwd/env/preload de
+  las dos bases schema-only propias:0fallos/0skip. Sin fixtures en authored main.
+- pnpm lint0 (7warnings antiguos), pnpm db:check0/31migraciones (advertencia0008 antigua),
+  detector UI0. pnpm typecheck0; build en generación estática al registrar esta tanda.
+
+Primera prueba de build falló por un symlink recursivo accidental de dependencias,
+creado por ln sobre node_modules ya enlazado. Solo ese link nuevo se retiró de main
+(y su copia QA); dependencias/cachés existentes conservadas. Segundo build con
+node_modules local por copia clonefile compila/TypeScript0; generación estática en curso.
+Se usa únicamente preload de build con2workers y máximo4queries locales simultáneas,
+sin cambiar next.config.ts de producto.
+
+Exploración adicional: editorial-rollout.test.ts (Guides city_filter.note) falla
+idénticamente en la base Pages anterior f744299 del worktreeB, cuyos archivos Guides
+no cambiaron. Es un fallo preexistente ajeno al alcance, documentado en guide-baseline-test.log;
+no se declara aprobado ni se cambia Guides para hacerlo pasar. Los6fallos iniciales
+Owners preview eran mocks incompletos tras los nuevos imports; corregidos en79cec74,
+7casos preview pasan y el conjunto afectado123pasa.
