@@ -30,8 +30,11 @@ Pages tests/preview-initial-state.test.tsx and this report. No kernel/schema/mig
 
 Node22: seven actual-module/SSR regression tests pass: unsaved working fallback
 in EN/ES/PT/FR, saved content priority, rejected requests still authenticated and
-admin404 with one html/body. Typecheck0. Scoped/full lint and separate build are
-recorded below when finished. One test variable was renamed to satisfy Next ESLint.
+admin404 with one html/body. Typecheck0; full lint0 with the same seven historical
+warnings. One test variable was renamed to satisfy Next ESLint. Isolated production
+build0 on exact executable16305dd:107/107 static pages, two workers, synthetic guarded
+translationsretirementqa configuration and locally cloned dependencies. Admin error
+UI detector returned[]/exit0. The main .next cache was not used for the build or cleared.
 
 Real Chromium check on localhost3071 with normal existing local Admin login:
 Owners editor/iframe200; a private unsaved Hero Title change appears in the iframe;
@@ -47,3 +50,6 @@ browser-report.json,owners-desktop.png,typecheck.log,lint.log; focal test output
 Node22/localhost3071PID87925/session28410 is retained; env/preload/media/caches are
 preserved. No push/deploy or actual email. Tests are root-owned; no independent
 QA approval is claimed for this small correction.
+
+Code delivered locally in16305dd; final documentary commit resolves with git log -1.
+Main's same dev process serves the corrected route through HMR, without another restart.
