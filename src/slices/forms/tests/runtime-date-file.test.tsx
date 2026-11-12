@@ -13,7 +13,7 @@ import type { FormRuntimeProps } from "../ui/form-runtime";
 /** Render the actual runtime with isolated presentation/i18n seams; no auth, DB or provider. */
 function runtime(locale: string) {
   const messages = JSON.parse(readFileSync(new URL(`../messages/${locale}.json`, import.meta.url), "utf8"));
-  const control = (tag: string) => ({ children, ...props }: Record<string, unknown>) => React.createElement(tag, props, children as React.ReactNode);
+  const control = (tag: string) => function Control({ children, ...props }: Record<string, unknown>) { return React.createElement(tag, props, children as React.ReactNode); };
   const dependencies: Record<string, unknown> = {
     react: React,
     "react/jsx-runtime": jsxRuntime,
