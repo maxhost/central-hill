@@ -267,7 +267,8 @@ Node22.23.3:49/49 pruebas focalizadas pasan; typecheck0; lint0 con los mismos si
 avisos históricos; diff-check0 y revisión explícita de imports/fronteras. Detector
 Impeccable de los cuatro archivos UI devuelve[]/exit0. Build de producción0 en
 runtime separado con dependencias clonadas locales,107/107 páginas estáticas y
-dos workers. No se usó ni alteró la caché .next del localhost del usuario.
+dos workers. El build no se ejecutó sobre .next del localhost del usuario ni borró
+o movió esa caché.
 
 QA independiente aprobó24 comprobaciones de navegador (13layout/persistencia,
 8runtime/adjuntos,3guardas), cero pageerrors, mismo candidato completo. GET legacy
@@ -298,6 +299,17 @@ v2/rev6; una prueba propia v2/rev3. Fixtures Date/File anteriores y otras filas 
 Informe independiente: /private/tmp/central-hill-form-row-layout-qa/independent-qa.md;
 resultados/harness,db-final.json,mail-capture.jsonl,logs y capturas se conservan allí.
 
-Queda apertura final de main después del fast-forward autorizado; producto src será
-idéntico al aprobado34a280f. No schema SQL/migración/kernel, base del usuario ni
-formulario original modificados por QA; sin push/deploy/configuración real de correo.
+Main recibió fast-forward74d5f90→3b976e4 después de QA; producto src/messages idéntico
+al aprobado34a280f, comprobado con git diff. QA3081PID85698/session31606 detenido;
+fixtures, build, worktrees y artefactos retenidos. Actual-main3071 relanzado con
+Node22 y el mismo preload existente de propertylocalesqa/proxy4558, PID87925,
+session28410, cwdworkspace verificado. Configuración/env, logo y media conservados.
+
+Apertura final de solo lectura: host+SQL DB/rol propertylocalesqa verificados;
+login200 y URL del formulario anónimo→login307. El formulario original
+0c9b03b5-e0fa-4f85-87ef-7617acc88397 sigue guardado exactamente en v1/rev1,
+4campos: el lector canónico lo interpreta como v2/3filas sin cambiar JSON/revisión
+(comparación SQL antes/después). No Save ni nueva matriz de QA sobre main.
+Evidencia main-open.json/main-open.mjs/main-restart.log en directorio QA. Último
+commit solo documental resuelve con git log -1. No schema SQL/migración/kernel,
+push/deploy/configuración real de correo o contenido del usuario modificado.
