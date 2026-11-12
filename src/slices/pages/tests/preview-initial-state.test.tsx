@@ -40,6 +40,8 @@ function preview(saved: unknown, locale = "en") {
     "../server/editorial-publication": { resolveEditorialEnvelope: async (envelope: unknown, language: string) => { calls.push("resolve"); assert.strictEqual(envelope, working); assert.equal(language, locale); return resolved; } },
     "./live-preview-actions": { renderPageLivePreview: async () => ({ ok: true }) },
     "./home-contextual": { homeEditorBindingIds: [] },
+    "./editorial-store": { readEditorialRows: async () => { assert.fail("Owners preview must not read About assignment rows"); } },
+    "../about-contact-content": { aboutContactFormId: () => { assert.fail("Owners preview must not resolve an About assignment"); } },
   };
   const route = load(new URL("../admin/editorial-preview-route.tsx", import.meta.url), dependencies).PageEditorialPreview!;
   return { route, calls, resolved, get rendered() { return rendered as { page: unknown }; } };
