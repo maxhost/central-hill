@@ -7,7 +7,7 @@ import type { FormBlueprint, FormRecord, FormValues } from "../types";
 
 /** Exact localized labels survive future edits. Byte hashes distinguish files
  * sharing a filename, MIME and length; attachment bytes never enter persistence. */
-export function buildContactSnapshot(form: Pick<FormRecord, "id" | "name" | "revision">, definition: FormBlueprint, values: FormValues, locale: Locale, fingerprint: string, attachments: EmailAttachment[] = [], placement?: { sourcePage: "about-contact" | "guests-dual-cta"; assignmentIdentity: string }): ContactFormSnapshot {
+export function buildContactSnapshot(form: Pick<FormRecord, "id" | "name" | "revision">, definition: FormBlueprint, values: FormValues, locale: Locale, fingerprint: string, attachments: EmailAttachment[] = [], placement?: { sourcePage: "about-contact" | "guests-dual-cta" | "real-estate-enquiry"; assignmentIdentity: string }): ContactFormSnapshot {
   const fields = orderedFields(definition).map(field => {
     const value = values[field.id] ?? "";
     const displayValue = field.type === "select" ? field.options.find(option => option.id === value)?.label ?? ""
@@ -23,8 +23,8 @@ export function buildContactSnapshot(form: Pick<FormRecord, "id" | "name" | "rev
 
 export function publicContactNotification(snapshot: ContactFormSnapshot, recipient: string, leadId: string, replyTo: string | null, attachments: EmailAttachment[] = []): EmailMessage {
   return {
-    to: recipient, subject: `[Contact] ${snapshot.name.replace(/[\r\n]+/g, " ").slice(0, 150)}`,
-    text: [`${snapshot.sourcePage === "guests-dual-cta" ? "Guest owner" : snapshot.sourcePage === "about-contact" ? "About" : "Header"} contact: ${snapshot.name}`, `Lead: ${leadId}`, `Form: ${snapshot.formId} · revision ${snapshot.revision}`, `Language: ${snapshot.locale}`, "",
+    to: recipient, subject: `[${snapshot.sourcePage === "real-estate-enquiry" ? "Deal enquiry" : "Contact"}] ${snapshot.name.replace(/[\r\n]+/g, " ").slice(0, 150)}`,
+    text: [snapshot.sourcePage === "real-estate-enquiry" ? `Real Estate deal enquiry: ${snapshot.name}` : `${snapshot.sourcePage === "guests-dual-cta" ? "Guest owner" : snapshot.sourcePage === "about-contact" ? "About" : "Header"} contact: ${snapshot.name}`, `Lead: ${leadId}`, `Form: ${snapshot.formId} · revision ${snapshot.revision}`, `Language: ${snapshot.locale}`, "",
       ...snapshot.fields.map(field => `${field.label}${field.consent ? " [consent]" : ""}: ${field.displayValue}`)].join("\n"),
     ...(replyTo ? { replyTo } : {}), ...(attachments.length ? { attachments } : {}),
   };

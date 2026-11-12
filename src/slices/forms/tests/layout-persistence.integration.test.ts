@@ -90,7 +90,7 @@ function harness(definition: StoredFormBlueprint = legacy()) {
     ...shared, "zod": { z },
     "next/cache": { revalidatePath: (path: string) => state.revalidated.push(path) },
     "@core/db/serialized": { executeSerialized: async (_key: string, query: Query) => db.execute(query) },
-    "@slices/pages/server-contract": { aboutContactUsageGuard: () => sql`false`, guestContactUsageGuard: () => sql`false` },
+    "@slices/pages/server-contract": { aboutContactUsageGuard: () => sql`false`, guestContactUsageGuard: () => sql`false`, realEstateEnquiryUsageGuard: () => sql`false` },
     "@slices/settings/server-contract": { headerContactUsageGuard: () => sql`false` },
     "../public-types": { HEADER_CONTACT_LOCK: "header-contact:v1" },
     "./public-publish": { refreshPublicForm: async () => undefined },

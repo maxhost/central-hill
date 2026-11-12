@@ -173,3 +173,11 @@ placements, and final assignment/revision guards also apply to existing-key
 replays after waiting for the shared lock. Guest snapshots bind their published
 assignment identity; historical About/header snapshots and valid retries retain
 their original hash shape. No new lead kind, field table or attachment storage.
+
+Configured Real Estate forms use trusted source `real-estate-enquiry`, from which
+capture derives existing kind `deal_enquiry`; the other three sources still derive
+`contact`. Kind is never a public request parameter. Replay equality checks the
+stored kind and source as well as immutable answer identity, so a malformed
+historical row with the wrong kind cannot acknowledge a valid retry. Atomic
+capture, stale-first assignment guards, exact consent history and attachment
+metadata behavior remain shared, without changing old placement hashes or data.

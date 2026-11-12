@@ -150,3 +150,25 @@ messages identify every active location. Guest target copies create no independe
 use. Form Save/Approve invalidates all four `/guests` routes when used there and
 retains existing About/header invalidations. No schema, external service setup or
 real email delivery is introduced; Resend remains unconfigured.
+
+## Real Estate Enquiry placement
+
+Real Estate → Enquiry selects one saved Form from published EN for all four
+languages; staff preview explicitly supplies the current EN working selection.
+`readRealEstateEnquiryForm` uses approved locale copy/EN fallback and excludes
+recipient, tests and pending translations. PublicContactForm routes this model to
+`submitRealEstateEnquiryForm`; its private preview remains inert. Pages retains the
+section/contact copy and the original static fallback when no Form is selected.
+
+The configured placement fixes source `real-estate-enquiry`. Trusted Leads capture
+derives existing kind `deal_enquiry` for this source alone; Header/About/Guest
+remain `contact`. Replay checks expected kind as well as source, payload, form and
+revision. Existing three-placement hash seeds and notifications remain unchanged;
+Real Estate uses a `[Deal enquiry]` notification. All four share the same durable
+admission counters, validation, attachment limits and unique-winner notification.
+
+Real Estate EN draft OR published use blocks archive alongside the three earlier
+placements, with every active location named. Form Save/Approve invalidates four
+`/real-estate` routes when used there and preserves other placement invalidations.
+No schema/backfill, external setup or email delivery verification is introduced.
+Resend remains unconfigured; console/simulated transport cannot prove inbox receipt.

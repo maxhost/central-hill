@@ -8,7 +8,7 @@ import { db } from "@core/db/client";
 import { sendEmail } from "@core/email";
 import { captureFormContact } from "@slices/leads/server-contract";
 import { headerContactAssignmentGuard } from "@slices/settings/server-contract";
-import { aboutContactAssignmentGuard, guestContactAssignmentGuard } from "@slices/pages/server-contract";
+import { aboutContactAssignmentGuard, guestContactAssignmentGuard, realEstateEnquiryAssignmentGuard } from "@slices/pages/server-contract";
 import { assignableHeaderFormGuard, readPublicFormSource } from "./public-queries";
 import { validateAttachments } from "./attachments";
 import { formIdSchema, revisionSchema, validateValues } from "../validation";
@@ -39,7 +39,11 @@ export async function submitGuestOwnerContactForm(input: PublicContactInput, upl
   return submitContact("guests-dual-cta", input, uploads);
 }
 
-async function submitContact(placement: "header-contact" | "about-contact" | "guests-dual-cta", input: PublicContactInput, uploads?: FormData): Promise<PublicContactResult> {
+export async function submitRealEstateEnquiryForm(input: PublicContactInput, uploads?: FormData): Promise<PublicContactResult> {
+  return submitContact("real-estate-enquiry", input, uploads);
+}
+
+async function submitContact(placement: "header-contact" | "about-contact" | "guests-dual-cta" | "real-estate-enquiry", input: PublicContactInput, uploads?: FormData): Promise<PublicContactResult> {
   if (input && typeof input === "object" && typeof input.honeypot === "string" && input.honeypot.trim()) return { ok: true };
   const parsed = (placement !== "header-contact" ? pageInputSchema : inputSchema).safeParse(input);
   if (!parsed.success) return { ok: false, code: "validation" };
@@ -47,7 +51,9 @@ async function submitContact(placement: "header-contact" | "about-contact" | "gu
   const assignmentIdentity = "assignmentIdentity" in value && typeof value.assignmentIdentity === "string" ? value.assignmentIdentity : undefined;
   if (placement !== "header-contact" && !assignmentIdentity) return { ok: false, code: "validation" };
   try {
-    const assignmentGuard: SQL = placement === "guests-dual-cta"
+    const assignmentGuard: SQL = placement === "real-estate-enquiry"
+      ? realEstateEnquiryAssignmentGuard(value.id, assignmentIdentity ?? "")
+      : placement === "guests-dual-cta"
       ? guestContactAssignmentGuard(value.id, assignmentIdentity ?? "")
       : placement === "about-contact" ? aboutContactAssignmentGuard(value.id, assignmentIdentity ?? "")
       : headerContactAssignmentGuard(value.id);

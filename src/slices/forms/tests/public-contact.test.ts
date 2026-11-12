@@ -52,14 +52,14 @@ function actionHarness() {
     "drizzle-orm": { sql }, "zod": { z }, "@core/db/client": { db: { execute: async () => { state.queries++; return { rows: [{ assigned: state.assigned }] }; } } },
     "@core/email": { sendEmail: async (message: unknown) => { state.sent.push(message); return { ok: state.mailOk, id: "console" }; } },
     "@slices/leads/server-contract": { captureFormContact: async (input: ContactCaptureInput) => { state.captures.push(input); return { status: state.captureStatus, leadId: "own-lead" }; } },
-    "@slices/pages/server-contract": { aboutContactAssignmentGuard: () => sql`true`, guestContactAssignmentGuard: () => sql`true` },
+    "@slices/pages/server-contract": { aboutContactAssignmentGuard: () => sql`true`, guestContactAssignmentGuard: () => sql`true`, realEstateEnquiryAssignmentGuard: () => sql`true` },
     "@slices/settings/server-contract": { headerContactAssignmentGuard: () => sql`true` },
     "./public-queries": { assignableHeaderFormGuard: () => sql`true`, readPublicFormSource: async () => state.sourcePresent ? { form: own.form, definition: own.definition, fingerprint: own.fingerprint } : null },
     "./attachments": { validateAttachments }, "../validation": validation,
     "./public-rate-limit": { admitPublicContact: async () => { state.rateCalls++; return state.rateAllowed; } },
     "./public-notification": { buildContactSnapshot, publicContactNotification },
   });
-  return { ...own, state, submit: actions.submitHeaderContactForm, submitAbout: actions.submitAboutContactForm, submitGuest: actions.submitGuestOwnerContactForm };
+  return { ...own, state, submit: actions.submitHeaderContactForm, submitAbout: actions.submitAboutContactForm, submitGuest: actions.submitGuestOwnerContactForm, submitRealEstate: actions.submitRealEstateEnquiryForm };
 }
 
 test("public snapshots preserve localized labels, display options and exact accepted checkbox text", () => {
@@ -215,4 +215,26 @@ test("Guest hashes bind source and assignment without changing saved About hash 
   const guest=buildContactSnapshot(h.form,h.definition,h.input.values,"en",h.fingerprint,[],{...placement,sourcePage:"guests-dual-cta"});
   assert.notEqual(guest.payloadHash,about.payloadHash);
   assert.notEqual(guest.payloadHash,buildContactSnapshot(h.form,h.definition,h.input.values,"en",h.fingerprint,[],{sourcePage:"guests-dual-cta",assignmentIdentity:"b".repeat(32)}).payloadHash);
+});
+
+
+test("Real Estate enquiry validates published authority, fixed source and attachments before notification",async()=>{
+  const h=actionHarness(),input={...h.input,assignmentIdentity:"d".repeat(32)};
+  assert.equal((await h.submitRealEstate(h.input)).ok,false);assert.equal(h.state.queries,0);
+  const uploads=new FormData();uploads.append(h.file.id,new File(["%PDF-1.7\nEnquiry\n%%EOF"],"enquiry.pdf",{type:"application/pdf"}));
+  assert.equal((await h.submitRealEstate(input,uploads)).ok,true);assert.equal(h.state.captures[0]?.sourcePage,"real-estate-enquiry");
+  assert.equal(h.state.captures[0]?.snapshot.assignmentIdentity,input.assignmentIdentity);assert.equal(h.state.rateCalls,1);
+  const mail=h.state.sent[0] as ReturnType<typeof publicContactNotification>;assert.match(mail.subject,/^\[Deal enquiry\]/);assert.match(mail.text,/^Real Estate deal enquiry:/);assert.equal(mail.attachments?.[0]?.filename,"enquiry.pdf");
+  assert.equal((await h.submitRealEstate({...input,kind:"contact"} as PublicContactInput)).ok,false);
+  assert.equal((await h.submitRealEstate({...input,sourcePage:"about-contact"} as PublicContactInput)).ok,false);
+  h.state.assigned=false;assert.equal((await h.submitRealEstate(input)).ok,false);assert.equal(h.state.captures.length,1);
+});
+test("All saved contact hash seeds remain exact and Real Estate is isolated",()=>{
+  const h=fixture();
+  for(const sourcePage of ["about-contact","guests-dual-cta"] as const){
+    const placement={sourcePage,assignmentIdentity:"a".repeat(32)},snapshot=buildContactSnapshot(h.form,h.definition,h.input.values,"en",h.fingerprint,[],placement);
+    const legacyHash=createHash("sha256").update(JSON.stringify({formId:h.form.id,revision:h.form.revision,locale:"en",fingerprint:h.fingerprint,fields:snapshot.fields,attachmentHashes:[],placement})).digest("hex");assert.equal(snapshot.payloadHash,legacyHash);
+    const real=buildContactSnapshot(h.form,h.definition,h.input.values,"en",h.fingerprint,[],{...placement,sourcePage:"real-estate-enquiry"});assert.notEqual(real.payloadHash,snapshot.payloadHash);
+    assert.match(publicContactNotification(snapshot,h.form.recipient,"own-id",null).subject,/^\[Contact\]/);
+  }
 });

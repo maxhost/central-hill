@@ -10,10 +10,11 @@ import ts from "typescript";
 import { lead, lead_field } from "../schema";
 import type { ContactCaptureInput } from "../form-capture-types";
 
+const realEstateEnabled = process.env.REAL_ESTATE_ENQUIRY_DB_TEST === "1";
 const guestEnabled = process.env.GUEST_CONTACT_DB_TEST === "1";
 const aboutEnabled = process.env.ABOUT_CONTACT_DB_TEST === "1";
-const enabled = process.env.HEADER_CONTACT_DB_TEST === "1" || aboutEnabled || guestEnabled;
-const ownDatabase = guestEnabled ? "guestcontactunitqa20261112" : aboutEnabled ? "aboutcontactunitqa20261112" : "headercontactqa20261112";
+const enabled = process.env.HEADER_CONTACT_DB_TEST === "1" || aboutEnabled || guestEnabled || realEstateEnabled;
+const ownDatabase = realEstateEnabled ? "realestateenquiryunitqa20261112" : guestEnabled ? "guestcontactunitqa20261112" : aboutEnabled ? "aboutcontactunitqa20261112" : "headercontactqa20261112";
 function load<T>(source: URL, dependencies: Record<string, unknown>): T {
   const compiled = { exports: {} };
   const code = ts.transpileModule(readFileSync(source, "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
@@ -72,13 +73,13 @@ test("QA DB: stale guard prevents capture and consent proof only records accepte
   } finally { await h.client`delete from lead where submission_key=${own.submissionKey}::uuid`; }
 });
 
-test("QA DB: failure inserting any captured field rolls back its lead", { skip: !enabled }, async () => {
-  const h = harness(), own = fixture();
-  own.snapshot.fields[0]!.id = null as unknown as string;
-  try {
-    await assert.rejects(h.capture(own, sql`true`));
-    assert.equal((await h.client`select count(*)::int as n from lead where submission_key=${own.submissionKey}::uuid`)[0]?.n, 0);
-  } finally { await h.client`delete from lead where submission_key=${own.submissionKey}::uuid`; }
+test("QA DB: failure inserting any captured field rolls back contact and deal enquiry leads", { skip: !enabled }, async () => {
+  const h = harness();
+  for(const sourcePage of ["header-contact","real-estate-enquiry"] as const){
+    const own={...fixture(),sourcePage};own.snapshot.fields[0]!.id=null as unknown as string;
+    try {await assert.rejects(h.capture(own,sql`true`));assert.equal((await h.client`select count(*)::int as n from lead where submission_key=${own.submissionKey}::uuid`)[0]?.n,0);}
+    finally {await h.client`delete from lead where submission_key=${own.submissionKey}::uuid`;}
+  }
 });
 
 
@@ -100,9 +101,9 @@ test("QA DB: About and legacy header replays are scoped to verified source, even
 });
 
 
-test("QA DB: all three placements reject each other's keys even with identical snapshots", {skip:!enabled},async()=>{
+test("QA DB: all four placements reject each other's keys even with identical snapshots", {skip:!enabled},async()=>{
   const h=harness(),own=fixture(),keys:string[]=[];
-  const placements=["header-contact","about-contact","guests-dual-cta"] as const;
+  const placements=["header-contact","about-contact","guests-dual-cta","real-estate-enquiry"] as const;
   try {
     for(const sourcePage of placements) {
       const input={...own,sourcePage,submissionKey:crypto.randomUUID()};keys.push(input.submissionKey);
@@ -110,7 +111,21 @@ test("QA DB: all three placements reject each other's keys even with identical s
       assert.deepEqual(winners.map(x=>x.status).sort(),["created","duplicate"]);
       assert.equal((await h.capture(input,sql`false`)).status,"stale");
       for(const other of placements.filter(p=>p!==sourcePage)) assert.equal((await h.capture({...input,sourcePage:other},sql`true`)).status,"conflict",`${sourcePage} key cannot acknowledge ${other}`);
-      const [row]=await h.client`select kind,source_page from lead where submission_key=${input.submissionKey}::uuid`;assert.equal(row?.kind,"contact");assert.equal(row?.source_page,sourcePage);
+      const [row]=await h.client`select kind,source_page,marketing_consent,consent_text,consent_at from lead where submission_key=${input.submissionKey}::uuid`;assert.equal(row?.kind,sourcePage==="real-estate-enquiry"?"deal_enquiry":"contact");assert.equal(row?.source_page,sourcePage);assert.equal(row?.marketing_consent,false);assert.equal(row?.consent_text,null);assert.equal(row?.consent_at,null);
     }
   } finally {await h.client`delete from lead where submission_key=any(${keys}::uuid[])`;}
+});
+
+
+test("QA DB: Real Estate deal kind and accepted consent are fixed; wrong stored kind cannot replay",{skip:!enabled},async()=>{
+  const h=harness(),own=fixture(),input={...own,sourcePage:"real-estate-enquiry" as const};
+  input.snapshot.fields[1]!.value=true;input.snapshot.fields[1]!.displayValue="Yes";
+  try {
+    assert.equal((await h.capture(input,sql`true`)).status,"created");
+    const [row]=await h.client`select kind,source_page,marketing_consent,consent_text,consent_at from lead where submission_key=${input.submissionKey}::uuid`;
+    assert.equal(row?.kind,"deal_enquiry");assert.equal(row?.source_page,"real-estate-enquiry");assert.equal(row?.marketing_consent,false);assert.equal(row?.consent_text,"Aviso capturado");assert.ok(row?.consent_at);
+    await h.client`update lead set kind='contact' where submission_key=${input.submissionKey}::uuid`;
+    assert.equal((await h.capture(input,sql`true`)).status,"conflict");
+    assert.equal((await h.capture(input,sql`false`)).status,"stale");
+  } finally {await h.client`delete from lead where submission_key=${input.submissionKey}::uuid`;}
 });

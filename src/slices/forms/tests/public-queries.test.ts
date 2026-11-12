@@ -12,7 +12,7 @@ import * as publicTypes from "../public-types";
 function harness() {
   const id = crypto.randomUUID();
   const row = { id, name: "Private catalog name", recipient: "private@example.test", status: "draft", revision: 2, template: "contact", definition: domain.createBlueprint("contact"), updated_at: new Date() };
-  const state = { selected: id as string | null, guestSelected: id as string | null, row: row as typeof row | null, denied: false, queries: 0, tags: [] as string[], targets: [] as { locale: "es"; field: string; value: string; state: string; source_hash: string }[] };
+  const state = { selected: id as string | null, guestSelected: id as string | null, realEstateSelected: id as string | null, row: row as typeof row | null, denied: false, queries: 0, tags: [] as string[], targets: [] as { locale: "es"; field: string; value: string; state: string; source_hash: string }[] };
   const selection = { from: () => selection, where: () => selection, limit: async () => { state.queries++; return state.row ? [state.row] : []; }, orderBy: async () => state.row ? [state.row] : [] };
   const dependencies: Record<string, unknown> = {
     "server-only": {}, "node:crypto": { createHash }, "zod": { z },
@@ -21,7 +21,7 @@ function harness() {
     "@core/auth": { requireStaff: async () => { if (state.denied) throw Error("Unauthorized"); } },
     "@core/db/client": { db: { select: () => selection } },
     "@core/i18n": { hashSource: (value: string) => value, loadTranslationRows: async () => state.targets },
-    "@slices/pages/server-contract": { readAboutContactAssignment: async () => state.selected ? { formId: state.selected, identity: "a".repeat(32) } : null, readGuestContactAssignment: async () => state.guestSelected ? { formId: state.guestSelected, identity: "c".repeat(32) } : null },
+    "@slices/pages/server-contract": { readAboutContactAssignment: async () => state.selected ? { formId: state.selected, identity: "a".repeat(32) } : null, readGuestContactAssignment: async () => state.guestSelected ? { formId: state.guestSelected, identity: "c".repeat(32) } : null, readRealEstateEnquiryAssignment: async () => state.realEstateSelected ? {formId:state.realEstateSelected,identity:"d".repeat(32)}:null },
     "@slices/settings/contract": { getGlobals: async () => ({ headerContactFormId: state.selected }) },
     "../schema": { form_definition: { id: "id", updated_at: "updated" } },
     "../domain": domain, "../validation": validation, "../public-types": publicTypes,
@@ -97,4 +97,14 @@ test("Guest public choice is independent of About/header and its DTO excludes pr
   assert.equal(await queries.readGuestContactForm("en",null),null);
   const preview=await queries.readGuestContactForm("en",row.id);assert.ok(preview);assert.equal(preview.assignmentIdentity,undefined);
   state.denied=true;await assert.rejects(queries.readGuestContactForm("en",row.id),/Unauthorized/);
+});
+
+
+test("Real Estate public DTO and staff preview stay independent and exclude all private fields",async()=>{
+  const {queries,row,state}=harness();state.selected=null;state.guestSelected=null;
+  const model=await queries.readRealEstateEnquiryForm("es");assert.ok(model);assert.equal(model.placement,"real-estate-enquiry");assert.equal(model.assignmentIdentity,"d".repeat(32));
+  assert.deepEqual(Object.keys(model).sort(),["assignmentIdentity","definition","fingerprint","id","locale","placement","revision"]);assert.equal(JSON.stringify(model).includes(row.recipient),false);assert.equal(JSON.stringify(model).includes(row.name),false);
+  state.realEstateSelected=null;assert.equal(await queries.readRealEstateEnquiryForm("es"),null);assert.equal(await queries.readRealEstateEnquiryForm("es",null),null);
+  const preview=await queries.readRealEstateEnquiryForm("es",row.id);assert.ok(preview);assert.equal(preview.assignmentIdentity,undefined);
+  state.denied=true;await assert.rejects(queries.readRealEstateEnquiryForm("en",row.id),/Unauthorized/);
 });
