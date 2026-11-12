@@ -1,5 +1,21 @@
 # Central Hill agent instructions
 
+## Next after clear — Service enquiry Forms selector —2026-11-12
+
+User is clearing context and requests NEXT work after returning: add a Forms selector
+in BOTH creation/editing of EACH Service, replacing that service's public «Consulta del
+servicio» form. Example /admin/services/4e1e32d3-927d-47de-8b57-dee7a1079e2b; options from
+/admin/forms. Read [handoff](docs/specs/form-builder/service-enquiry-assignment-handoff.md).
+This is individual Services, NOT /admin/pages/services or a global selection. No
+implementation/DB/QA/delegation started: resume only when user returns and continues.
+Audit Services own locale inherit/custom + live shared revisions and creation/Publish
+before choosing authority/persistence; do not expose draft assignment through live shared
+data accidentally. Preserve enquiry/external/none routing and previous4placements.
+Start future implementation with fresh verified paired code+data checkpoint, isolated
+writers/datasets and independentQA; Resend staysconsole/unconfigured. This handoff was
+documentation-only, main3071PID42708 andmedia9081PID42630 retained, noDB/content changes.
+
+
 ## Real Estate Enquiry Forms assignment —2026-11-12
 
 User requests Forms selector at endof Enquiry belowNote in/admin/pages/real_estate. Read
