@@ -172,3 +172,29 @@ placements, with every active location named. Form Save/Approve invalidates four
 `/real-estate` routes when used there and preserves other placement invalidations.
 No schema/backfill, external setup or email delivery verification is introduced.
 Resend remains unconfigured; console/simulated transport cannot prove inbox receipt.
+
+## Individual Service enquiry placement
+
+Each Service chooses a saved Form from its EN editorial snapshot. The shared
+Services data is live on Save, so this reference deliberately stays outside it:
+EN draft is private, and EN Publish activates the common selection in all four
+languages without publishing target copy. Target references never own assignment.
+Services preserves its `enquiry` / `external` / `none` routing and original contact
+fallback. `readServiceEnquiryForm(serviceId, locale)` also verifies that the service
+and requested locale remain public and enquiry-enabled before returning a model.
+
+`submitServiceEnquiryForm` requires a stable service UUID and the published
+assignment identity. Services supplies the fresh SQL guard; Forms derives canonical
+`source_page=service:<UUID>` on the server, with kind `contact` for every template.
+The historical snapshot stores the service UUID, source and assignment identity;
+its payload hash separates two services sharing one Form and prevents replays
+across the four older placements. Their hash seeds and notifications are unchanged.
+Public DTOs include only identity and localized blueprint, never the recipient or
+private tests. Service notifications name the stable UUID. All five placements
+share validation, durable quotas, atomic capture and unique-winner notification.
+
+Forms Archive also checks EN draft OR published use by any Service, including
+archived and non-enquiry services; target references do not reserve Forms. Save and
+translation approval invalidate actual localized Service routes and service-list
+alongside existing Header/About/Guest/Real Estate caches. No schema or backfill,
+private preview system, external setup or real email delivery is introduced.

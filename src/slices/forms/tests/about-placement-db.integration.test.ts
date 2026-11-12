@@ -14,10 +14,11 @@ import { form_definition, form_test_submission } from "../schema";
 import { testNotification } from "../server/notification";
 import { validateAttachments } from "../server/attachments";
 
+const serviceEnabled=process.env.SERVICE_ENQUIRY_DB_TEST === "1";
 const realEstateEnabled=process.env.REAL_ESTATE_ENQUIRY_DB_TEST === "1";
 const guestEnabled=process.env.GUEST_CONTACT_DB_TEST === "1";
-const enabled = process.env.ABOUT_CONTACT_DB_TEST === "1" || guestEnabled || realEstateEnabled;
-const ownDatabase=realEstateEnabled?"realestateenquiryunitqa20261112":guestEnabled?"guestcontactunitqa20261112":"aboutcontactunitqa20261112";
+const enabled = process.env.ABOUT_CONTACT_DB_TEST === "1" || guestEnabled || realEstateEnabled || serviceEnabled;
+const ownDatabase=serviceEnabled?"serviceenquiryunitqa20261112":realEstateEnabled?"realestateenquiryunitqa20261112":guestEnabled?"guestcontactunitqa20261112":"aboutcontactunitqa20261112";
 function load<T>(source: URL, dependencies: Record<string, unknown>): T {
   const compiled = { exports: {} };
   const code = ts.transpileModule(readFileSync(source,"utf8"), {compilerOptions: {module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
@@ -42,7 +43,7 @@ function harness() {
   const pages={...aboutPages,...guestPages,...realEstatePages};
   const actions=load<typeof import("../server/actions")>(new URL("../server/actions.ts",import.meta.url),{
     "drizzle-orm":{eq,sql},"next/cache":{revalidatePath:()=>undefined},"zod":{z},"@core/auth":{requireStaff:async()=>({userId:"own-test"})},"@core/db/client":{db},"@core/db/serialized":serialized,
-    "@slices/settings/server-contract":{headerContactUsageGuard:()=>sql`false`},"@slices/pages/server-contract":pages,"../public-types":{HEADER_CONTACT_LOCK:"header-contact:v1"},"./public-publish":{refreshPublicForm:async()=>undefined},"@core/email":{sendEmail:async()=>{throw Error("No mail in archive test");}},"@core/i18n":{},"../domain":domain,"../schema":{form_definition,form_test_submission},"../validation":validation,"./queries":{},"./notification":{testNotification},"./attachments":{validateAttachments},
+    "@slices/settings/server-contract":{headerContactUsageGuard:()=>sql`false`},"@slices/services/server-contract": { serviceEnquiryUsageGuard: () => sql`false` }, "@slices/pages/server-contract":pages,"../public-types":{HEADER_CONTACT_LOCK:"header-contact:v1"},"./public-publish":{refreshPublicForm:async()=>undefined},"@core/email":{sendEmail:async()=>{throw Error("No mail in archive test");}},"@core/i18n":{},"../domain":domain,"../schema":{form_definition,form_test_submission},"../validation":validation,"./queries":{},"./notification":{testNotification},"./attachments":{validateAttachments},
   });
   return {client,pages,actions,db};
 }

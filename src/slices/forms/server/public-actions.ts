@@ -9,6 +9,7 @@ import { sendEmail } from "@core/email";
 import { captureFormContact } from "@slices/leads/server-contract";
 import { headerContactAssignmentGuard } from "@slices/settings/server-contract";
 import { aboutContactAssignmentGuard, guestContactAssignmentGuard, realEstateEnquiryAssignmentGuard } from "@slices/pages/server-contract";
+import { serviceEnquiryAssignmentGuard } from "@slices/services/server-contract";
 import { assignableHeaderFormGuard, readPublicFormSource } from "./public-queries";
 import { validateAttachments } from "./attachments";
 import { formIdSchema, revisionSchema, validateValues } from "../validation";
@@ -25,6 +26,7 @@ const inputSchema = z.object({
 }).strict();
 
 const pageInputSchema = inputSchema.extend({ assignmentIdentity: z.string().regex(/^[a-f0-9]{32}$/) });
+const serviceInputSchema = pageInputSchema.extend({ serviceId: formIdSchema });
 
 /** Explicit entry points fix authority and source on the server; neither is
  * accepted as a caller-controlled destination. */
@@ -43,15 +45,24 @@ export async function submitRealEstateEnquiryForm(input: PublicContactInput, upl
   return submitContact("real-estate-enquiry", input, uploads);
 }
 
-async function submitContact(placement: "header-contact" | "about-contact" | "guests-dual-cta" | "real-estate-enquiry", input: PublicContactInput, uploads?: FormData): Promise<PublicContactResult> {
+export async function submitServiceEnquiryForm(input: PublicContactInput, uploads?: FormData): Promise<PublicContactResult> {
+  return submitContact("service-enquiry", input, uploads);
+}
+
+async function submitContact(placement: "header-contact" | "about-contact" | "guests-dual-cta" | "real-estate-enquiry" | "service-enquiry", input: PublicContactInput, uploads?: FormData): Promise<PublicContactResult> {
   if (input && typeof input === "object" && typeof input.honeypot === "string" && input.honeypot.trim()) return { ok: true };
-  const parsed = (placement !== "header-contact" ? pageInputSchema : inputSchema).safeParse(input);
+  const parsed = (placement === "service-enquiry" ? serviceInputSchema : placement !== "header-contact" ? pageInputSchema : inputSchema).safeParse(input);
   if (!parsed.success) return { ok: false, code: "validation" };
   const value = parsed.data;
   const assignmentIdentity = "assignmentIdentity" in value && typeof value.assignmentIdentity === "string" ? value.assignmentIdentity : undefined;
   if (placement !== "header-contact" && !assignmentIdentity) return { ok: false, code: "validation" };
+  const serviceId = "serviceId" in value && typeof value.serviceId === "string" ? value.serviceId.toLowerCase() : undefined;
+  if (placement === "service-enquiry" && !serviceId) return { ok: false, code: "validation" };
+  const sourcePage = placement === "service-enquiry" ? `service:${serviceId!}` as const : placement;
   try {
-    const assignmentGuard: SQL = placement === "real-estate-enquiry"
+    const assignmentGuard: SQL = placement === "service-enquiry"
+      ? serviceEnquiryAssignmentGuard(serviceId!, value.locale, value.id, assignmentIdentity ?? "")
+      : placement === "real-estate-enquiry"
       ? realEstateEnquiryAssignmentGuard(value.id, assignmentIdentity ?? "")
       : placement === "guests-dual-cta"
       ? guestContactAssignmentGuard(value.id, assignmentIdentity ?? "")
@@ -72,10 +83,11 @@ async function submitContact(placement: "header-contact" | "about-contact" | "gu
     const fieldErrors = { ...checked.fieldErrors, ...uploaded.fieldErrors };
     if (Object.keys(fieldErrors).length) return { ok: false, code: "validation", fieldErrors };
     const snapshot = buildContactSnapshot(source.form, source.definition, checked.values, value.locale, source.fingerprint, uploaded.attachments,
-      placement !== "header-contact" ? { sourcePage: placement, assignmentIdentity: assignmentIdentity ?? "" } : undefined);
+      placement === "service-enquiry" ? { sourcePage: `service:${serviceId!}`, assignmentIdentity: assignmentIdentity ?? "", serviceId: serviceId! }
+        : placement !== "header-contact" ? { sourcePage: placement, assignmentIdentity: assignmentIdentity ?? "" } : undefined);
     const reply = source.definition.replyToFieldId ? checked.values[source.definition.replyToFieldId] : undefined;
     const email = typeof reply === "string" && z.email().max(254).safeParse(reply).success ? reply : null;
-    const captured = await captureFormContact({ sourcePage: placement, submissionKey: value.submissionKey, snapshot, email, ipAddress, userAgent },
+    const captured = await captureFormContact({ sourcePage, submissionKey: value.submissionKey, snapshot, email, ipAddress, userAgent },
       sql`${assignmentGuard} and ${assignableHeaderFormGuard(value.id, value.expectedRevision)}`);
     if (captured.status === "stale") return { ok: false, code: "stale" };
     if (captured.status === "conflict") return { ok: false, code: "validation" };

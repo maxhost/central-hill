@@ -53,13 +53,14 @@ function actionHarness() {
     "@core/email": { sendEmail: async (message: unknown) => { state.sent.push(message); return { ok: state.mailOk, id: "console" }; } },
     "@slices/leads/server-contract": { captureFormContact: async (input: ContactCaptureInput) => { state.captures.push(input); return { status: state.captureStatus, leadId: "own-lead" }; } },
     "@slices/pages/server-contract": { aboutContactAssignmentGuard: () => sql`true`, guestContactAssignmentGuard: () => sql`true`, realEstateEnquiryAssignmentGuard: () => sql`true` },
+    "@slices/services/server-contract": { serviceEnquiryAssignmentGuard: () => sql`true` },
     "@slices/settings/server-contract": { headerContactAssignmentGuard: () => sql`true` },
     "./public-queries": { assignableHeaderFormGuard: () => sql`true`, readPublicFormSource: async () => state.sourcePresent ? { form: own.form, definition: own.definition, fingerprint: own.fingerprint } : null },
     "./attachments": { validateAttachments }, "../validation": validation,
     "./public-rate-limit": { admitPublicContact: async () => { state.rateCalls++; return state.rateAllowed; } },
     "./public-notification": { buildContactSnapshot, publicContactNotification },
   });
-  return { ...own, state, submit: actions.submitHeaderContactForm, submitAbout: actions.submitAboutContactForm, submitGuest: actions.submitGuestOwnerContactForm, submitRealEstate: actions.submitRealEstateEnquiryForm };
+  return { ...own, state, submit: actions.submitHeaderContactForm, submitAbout: actions.submitAboutContactForm, submitGuest: actions.submitGuestOwnerContactForm, submitRealEstate: actions.submitRealEstateEnquiryForm, submitService: actions.submitServiceEnquiryForm };
 }
 
 test("public snapshots preserve localized labels, display options and exact accepted checkbox text", () => {
@@ -236,5 +237,41 @@ test("All saved contact hash seeds remain exact and Real Estate is isolated",()=
     const legacyHash=createHash("sha256").update(JSON.stringify({formId:h.form.id,revision:h.form.revision,locale:"en",fingerprint:h.fingerprint,fields:snapshot.fields,attachmentHashes:[],placement})).digest("hex");assert.equal(snapshot.payloadHash,legacyHash);
     const real=buildContactSnapshot(h.form,h.definition,h.input.values,"en",h.fingerprint,[],{...placement,sourcePage:"real-estate-enquiry"});assert.notEqual(real.payloadHash,snapshot.payloadHash);
     assert.match(publicContactNotification(snapshot,h.form.recipient,"own-id",null).subject,/^\[Contact\]/);
+  }
+});
+
+test("Service endpoint requires stable UUID and published identity, fixes canonical source and keeps all other actions strict", async () => {
+  const h = actionHarness(), serviceId = crypto.randomUUID();
+  for (const invalid of [h.input, { ...h.input, serviceId }, { ...h.input, serviceId: "airport-transfer", assignmentIdentity: "e".repeat(32) }]) {
+    assert.equal((await h.submitService(invalid)).ok, false);
+  }
+  assert.equal(h.state.queries, 0);
+  const input = { ...h.input, serviceId: serviceId.toUpperCase(), assignmentIdentity: "e".repeat(32) };
+  const uploads = new FormData();uploads.append(h.file.id,new File(["%PDF-1.7\nService\n%%EOF"],"service.pdf",{type:"application/pdf"}));
+  assert.equal((await h.submitService(input, uploads)).ok, true);
+  const capture=h.state.captures[0]!;
+  assert.equal(capture.sourcePage, `service:${serviceId}`);assert.equal(capture.snapshot.sourcePage, `service:${serviceId}`);
+  assert.equal(capture.snapshot.serviceId, serviceId);assert.equal(capture.snapshot.assignmentIdentity,input.assignmentIdentity);
+  assert.equal(h.state.rateCalls,1);
+  const mail=h.state.sent[0] as ReturnType<typeof publicContactNotification>;
+  assert.match(mail.subject,/^\[Contact\]/);assert.match(mail.text,/^Service contact:/);assert.ok(mail.text.includes(`Service: ${serviceId}`));assert.equal(mail.attachments?.[0]?.filename,"service.pdf");
+  for(const submit of [h.submit,h.submitAbout,h.submitGuest,h.submitRealEstate]) assert.equal((await submit(input)).ok,false);
+  assert.equal((await h.submitService({...input,sourcePage:"header-contact"} as PublicContactInput)).ok,false);
+  assert.equal((await h.submitService({...input,slug:"airport-transfer"} as PublicContactInput)).ok,false);
+  assert.equal((await h.submitService({...input,kind:"deal_enquiry"} as PublicContactInput)).ok,false);
+  h.state.assigned=false;assert.equal((await h.submitService(input)).ok,false);assert.equal(h.state.rateCalls,1);assert.equal(h.state.captures.length,1);
+});
+
+test("Service snapshots distinguish two services and all four old placements while their hash seeds remain compatible",()=>{
+  const h=fixture(),serviceA=crypto.randomUUID(),serviceB=crypto.randomUUID();
+  const a=buildContactSnapshot(h.form,h.definition,h.input.values,"en",h.fingerprint,[],{sourcePage:`service:${serviceA}`,serviceId:serviceA,assignmentIdentity:"e".repeat(32)});
+  const b=buildContactSnapshot(h.form,h.definition,h.input.values,"en",h.fingerprint,[],{sourcePage:`service:${serviceB}`,serviceId:serviceB,assignmentIdentity:"e".repeat(32)});
+  assert.notEqual(a.payloadHash,b.payloadHash);
+  for(const sourcePage of ["header-contact","about-contact","guests-dual-cta","real-estate-enquiry"] as const){
+    const placement=sourcePage==="header-contact"?undefined:{sourcePage,assignmentIdentity:"e".repeat(32)};
+    const old=buildContactSnapshot(h.form,h.definition,h.input.values,"en",h.fingerprint,[],placement);
+    const expected=createHash("sha256").update(JSON.stringify({formId:h.form.id,revision:h.form.revision,locale:"en",fingerprint:h.fingerprint,fields:old.fields,attachmentHashes:[],...(placement?{placement}:{})})).digest("hex");
+    assert.equal(old.payloadHash,expected);assert.notEqual(a.payloadHash,old.payloadHash);
+    assert.equal(Object.hasOwn(old,"serviceId"),false);
   }
 });

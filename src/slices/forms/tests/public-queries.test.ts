@@ -12,16 +12,17 @@ import * as publicTypes from "../public-types";
 function harness() {
   const id = crypto.randomUUID();
   const row = { id, name: "Private catalog name", recipient: "private@example.test", status: "draft", revision: 2, template: "contact", definition: domain.createBlueprint("contact"), updated_at: new Date() };
-  const state = { selected: id as string | null, guestSelected: id as string | null, realEstateSelected: id as string | null, row: row as typeof row | null, denied: false, queries: 0, tags: [] as string[], targets: [] as { locale: "es"; field: string; value: string; state: string; source_hash: string }[] };
+  const state = { selected: id as string | null, guestSelected: id as string | null, realEstateSelected: id as string | null, serviceSelected: id as string | null, serviceAssigned: true, row: row as typeof row | null, denied: false, queries: 0, tags: [] as string[], targets: [] as { locale: "es"; field: string; value: string; state: string; source_hash: string }[] };
   const selection = { from: () => selection, where: () => selection, limit: async () => { state.queries++; return state.row ? [state.row] : []; }, orderBy: async () => state.row ? [state.row] : [] };
   const dependencies: Record<string, unknown> = {
     "server-only": {}, "node:crypto": { createHash }, "zod": { z },
     "drizzle-orm": { eq: () => null, desc: () => null, sql: () => null },
     "next/cache": { unstable_cache: (fn: () => unknown, _key: string[], options: { tags: string[] }) => { state.tags.push(...options.tags); return fn; } },
     "@core/auth": { requireStaff: async () => { if (state.denied) throw Error("Unauthorized"); } },
-    "@core/db/client": { db: { select: () => selection } },
+    "@core/db/client": { db: { select: () => selection, execute: async () => ({ rows: [{ assigned: state.serviceAssigned }] }) } },
     "@core/i18n": { hashSource: (value: string) => value, loadTranslationRows: async () => state.targets },
     "@slices/pages/server-contract": { readAboutContactAssignment: async () => state.selected ? { formId: state.selected, identity: "a".repeat(32) } : null, readGuestContactAssignment: async () => state.guestSelected ? { formId: state.guestSelected, identity: "c".repeat(32) } : null, readRealEstateEnquiryAssignment: async () => state.realEstateSelected ? {formId:state.realEstateSelected,identity:"d".repeat(32)}:null },
+    "@slices/services/server-contract": { readServiceEnquiryAssignment: async () => state.serviceSelected ? { formId: state.serviceSelected, identity: "e".repeat(32) } : null, serviceEnquiryAssignmentGuard: () => null },
     "@slices/settings/contract": { getGlobals: async () => ({ headerContactFormId: state.selected }) },
     "../schema": { form_definition: { id: "id", updated_at: "updated" } },
     "../domain": domain, "../validation": validation, "../public-types": publicTypes,
@@ -107,4 +108,15 @@ test("Real Estate public DTO and staff preview stay independent and exclude all 
   state.realEstateSelected=null;assert.equal(await queries.readRealEstateEnquiryForm("es"),null);assert.equal(await queries.readRealEstateEnquiryForm("es",null),null);
   const preview=await queries.readRealEstateEnquiryForm("es",row.id);assert.ok(preview);assert.equal(preview.assignmentIdentity,undefined);
   state.denied=true;await assert.rejects(queries.readRealEstateEnquiryForm("en",row.id),/Unauthorized/);
+});
+
+test("Service DTO resolves only visible locale authority and includes canonical stable ID without private data",async()=>{
+  const {queries,row,state}=harness(),serviceId=crypto.randomUUID();
+  const model=await queries.readServiceEnquiryForm(serviceId.toUpperCase(),"pt");assert.ok(model);
+  assert.equal(model.serviceId,serviceId);assert.equal(model.placement,"service-enquiry");assert.equal(model.assignmentIdentity,"e".repeat(32));
+  assert.deepEqual(Object.keys(model).sort(),["assignmentIdentity","definition","fingerprint","id","locale","placement","revision","serviceId"]);
+  assert.equal(JSON.stringify(model).includes(row.recipient),false);assert.equal(JSON.stringify(model).includes(row.name),false);
+  state.serviceAssigned=false;assert.equal(await queries.readServiceEnquiryForm(serviceId,"pt"),null);
+  state.serviceAssigned=true;state.serviceSelected=null;assert.equal(await queries.readServiceEnquiryForm(serviceId,"pt"),null);
+  assert.equal(await queries.readServiceEnquiryForm("airport-transfer","en"),null);
 });

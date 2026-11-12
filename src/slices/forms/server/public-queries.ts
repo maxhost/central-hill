@@ -9,6 +9,7 @@ import type { Locale } from "@core/db/columns";
 import { loadTranslationRows, hashSource } from "@core/i18n";
 import { getGlobals } from "@slices/settings/contract";
 import { readAboutContactAssignment, readGuestContactAssignment, readRealEstateEnquiryAssignment } from "@slices/pages/server-contract";
+import { readServiceEnquiryAssignment, serviceEnquiryAssignmentGuard } from "@slices/services/server-contract";
 import { form_definition } from "../schema";
 import { approvedBlueprint, textFields } from "../domain";
 import { readStoredBlueprint, formIdSchema } from "../validation";
@@ -110,4 +111,19 @@ export async function readRealEstateEnquiryForm(locale: Locale, override?: strin
     const source = await readPublicFormSource(id, locale);
     return source ? { id, revision: source.form.revision, locale, fingerprint: source.fingerprint, definition: source.definition, placement: "real-estate-enquiry" as const, assignmentIdentity: identity } : null;
   }, ["real-estate-enquiry-form", id, locale, identity, "v1"], { tags: [FORMS_PUBLIC_TAGS.all, FORMS_PUBLIC_TAGS.form(id)] })();
+}
+
+/** Services resolve their own published EN selection; every locale must remain public. */
+export async function readServiceEnquiryForm(serviceId: string, locale: Locale): Promise<PublicFormModel | null> {
+  if (!formIdSchema.safeParse(serviceId).success) return null;
+  const canonicalServiceId = serviceId.toLowerCase();
+  const assignment = await readServiceEnquiryAssignment(canonicalServiceId);
+  if (!assignment) return null;
+  const { formId: id, identity } = assignment;
+  const current = await db.execute(sql`select ${serviceEnquiryAssignmentGuard(canonicalServiceId, locale, id, identity)} as assigned`);
+  if (current.rows[0]?.assigned !== true) return null;
+  return unstable_cache(async () => {
+    const source = await readPublicFormSource(id, locale);
+    return source ? { id, revision: source.form.revision, locale, fingerprint: source.fingerprint, definition: source.definition, placement: "service-enquiry" as const, assignmentIdentity: identity, serviceId: canonicalServiceId } : null;
+  }, ["service-enquiry-form", canonicalServiceId, id, locale, identity, "v1"], { tags: [FORMS_PUBLIC_TAGS.all, FORMS_PUBLIC_TAGS.form(id)] })();
 }
