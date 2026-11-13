@@ -1,6 +1,6 @@
-/** One attachment per File field; aggregate bound keeps the encoded email below 40 MB. */
-export const MAX_FILE_BYTES = 5 * 1024 * 1024;
-export const MAX_TOTAL_FILE_BYTES = 20 * 1024 * 1024;
+/** One attachment per File field; aggregate bound leaves room for multipart request data. */
+export const MAX_FILE_BYTES = 3 * 1024 * 1024;
+export const MAX_TOTAL_FILE_BYTES = 3 * 1024 * 1024;
 export const FORM_FILE_TYPES = {
   "application/pdf": ["pdf"],
   "image/jpeg": ["jpg", "jpeg"],

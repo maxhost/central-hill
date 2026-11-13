@@ -13,7 +13,7 @@ export interface ValidatedAttachments {
 
 const fileErrors = {
   fileEmpty: "Choose a non-empty file.",
-  fileTooLarge: "The file must be 5 MB or smaller.",
+  fileTooLarge: "The file must be 3 MiB or smaller.",
   fileTypeError: "Choose a PDF, JPEG, PNG, GIF, WebP or AVIF file.",
 };
 
@@ -66,7 +66,7 @@ export async function validateAttachments(definition: FormBlueprint, uploads?: F
     candidates.push({ id, file: entry });
   }
   if (total > MAX_TOTAL_FILE_BYTES) {
-    for (const { id } of candidates) result.fieldErrors[id] = "Attachments together must be 20 MB or smaller.";
+    for (const { id } of candidates) result.fieldErrors[id] = "Attachments together must be 3 MiB or smaller.";
   }
   if (Object.keys(result.fieldErrors).length) return result;
   // Bound bytes before allocating buffers. Build output only when every file is valid.

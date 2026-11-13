@@ -38,9 +38,10 @@ function r2RemotePatterns(): NonNullable<NextConfig["images"]>["remotePatterns"]
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Forms accepts up to 20 MiB of attachments; leave room for multipart metadata (ADR0078).
+  // Forms accepts 3 MiB total; allow multipart data below Vercel's 4.5 MB request cap.
+  // CMS media bytes use direct-to-R2 PUTs and do not transit server actions.
   experimental: {
-    serverActions: { bodySizeLimit: "21mb" },
+    serverActions: { bodySizeLimit: "4mb" },
   },
   // `sharp` (core/media resize, ADR 0018) is a native module — keep it external so the
   // bundler never inlines it and it loads its platform binary from node_modules at
