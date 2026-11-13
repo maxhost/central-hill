@@ -93,6 +93,7 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
     phone: row.phone,
     whatsapp: row.whatsapp ?? null,
     ownersPhone: row.owners_phone?.trim() || null,
+    ownersEmail: row.owners_email?.trim() || null,
     checkinPhone: row.checkin_phone?.trim() || null,
     website: resolveWebsiteUrl(row.website_url, locale, manualRows),
     social: row.social,
@@ -114,7 +115,7 @@ async function _getGlobals(locale: Locale): Promise<SiteGlobals | null> {
 const SITE_ICONS_SHAPE = SITE_ICON_KEYS.join(",");
 // Same reason for the read-model shape: bump it when `SiteGlobals` gains a field, so an entry
 // cached before manually localized office-hours labels is not served (v6, ADR0075).
-const GLOBALS_SHAPE = "v8-header-contact-form";
+const GLOBALS_SHAPE = "v9-owners-email";
 
 export function getGlobals(locale: Locale): Promise<SiteGlobals | null> {
   return unstable_cache(() => _getGlobals(locale), ["settings:getGlobals", locale, GLOBALS_SHAPE, SITE_ICONS_SHAPE], {

@@ -63,6 +63,7 @@ export async function saveGlobals(raw: unknown): Promise<SettingsSaveResult> {
     whatsapp: input.whatsapp,
     // Old clients omit the new field: preserve its saved value (including null).
     ...(input.owners_phone === undefined ? {} : { owners_phone: input.owners_phone }),
+    ...(input.owners_email === undefined ? {} : { owners_email: input.owners_email }),
     checkin_phone: input.checkin_phone,
     website_url: input.website_url,
     social,
