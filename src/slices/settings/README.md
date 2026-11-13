@@ -380,7 +380,7 @@ The footer groups bookings/check-in/general email/WhatsApp under For Guests and
 Owners phone/email under For Owners, with localized headings and responsive columns.
 These display contacts do not configure lead/form notification recipients.
 See docs/specs/settings-owners-email-footer.md for isolated implementation and the
-separate authorization required before applying0031 to authored local main.
+authorized local migration0031 and final delivery evidence.
 
 ## Website URL by language (ADR0072)
 

@@ -81,7 +81,7 @@ deca1f97d4f4dc5c2b2f3e5020386fc2a6d89a58285eaa2f148490da351f1b5e.
 Todoslosoldtables/columnasSettings exactos al añadir atributo; nuevo valorpartners en
 singletonQA existente. Authoredmain y restoreDB se conservan con ledger31/sincolumna.
 
-## QA aprobado y estado de activación
+## QA aprobado y estado previo a la autorización
 
 QA independiente aprobó aaa19d40ce578d01a040c36f64d78ff05fd5c400/producto458dec7:
 13casos(7input/6layout),0defectos/pageerrors/fallos deharness. Inputdefault/custom/
@@ -111,3 +111,33 @@ OWNERS_EMAIL_MAIN_MIGRATION=approved, guard exactomain/ledger31/hashes, dumpnuev
 de migrar y comparación de todas columnas/filas antiguas; solo añade owners_email y
 fila ledger32. Después de autorización: aplicar script, FF local del candidato,
 apertura final readonly y conservar datos/envs/cachés. No remoteDB/R2/push/deploy.
+
+
+## Activación local autorizada y entrega final
+
+El usuario respondió «si aplica la migracion local», autorizando0031 en authoredlocalDB.
+Se ejecutó el script preparado con OWNERS_EMAIL_MAIN_MIGRATION=approved y guard
+host/DB/rol exacto neoncontentlocal20261111, ledger31 completo/hash+timestamps y
+0031SHAcongelado. Antes deDDL se preservó dump completo actualizado:
+/private/tmp/central-hill-owners-email/pre-main-migration-1794537249043.dump.
+El ALTER+ledger se aplicó enuna transacción. main-migration.json verifica43tablas de
+negocio y todascolumnas previas exactas; solo nuevoowners_email=partners@centralhill.pt
++fila ledger32. No otra base/rol/remoteDB migrada en esta activación.
+
+MainFFa453543→8b66729 después delDDL. Producto idéntico458dec7 aprobado, con solo
+harness/docs posteriores; no rebuild ni matrizQA repetida. Main mantuvoPID8573 y
+media8524/env/preload/cachés originales sin restart. main-open.json:5aperturas200,
+Settingsinputpartners/typeemail yfooterEN/ES/PT/FR conheadingslocalizados/contactos
+separados/mailtopartners enOwners,0pageerrors/0writesbloqueadas. Solo login local normal,
+sin Save/Publish/upload/Test/envío en main.
+
+main-conservation-final.json después de apertura:43tablas1473filas previas exactas
+(excluye solo nuevoatributo), ledger32hash/timestamps exactos al código. El primer
+assertsololectura comparaba bigintcreated_at deldriver string con number deljournal;
+se normalizó expected astring y se finalizó la lectura, sin repetir browser/capturas
+ni corregir datos. Env/logo/destinosambossymlinks exactos;3untrackedoriginales intactos.
+
+ProducciónQA3087PID87719/parent87713 detenida trasactivación; todosdatasets/checkpoints/
+fixtures/envs/builds/caches/artifactos conservados. RestoreDB sigueledger31. Último
+commit documental resuelve con gitlog-1. Resendconsole, sin correo real ni setup externo,
+remoteDB/R2writes/push/deploy/limpieza de roles/bases o siguiente tarea automática.

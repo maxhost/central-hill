@@ -1,7 +1,7 @@
 # ADR0085 — Owners email y columnas de contacto del footer
 
-2026-11-12. Aceptado para implementación local aislada; migraciónmain pendiente de
-autorización conforme al Working agreement.
+2026-11-12. Aceptado e implementado localmente. El usuario autorizó expresamente la
+migración local0031 después de QA; aplicada en authoredmain, sin migración remota.
 
 El usuario pide email independiente de propietarios, editable en Settings, y agrupar
 visualmente los contactos para huéspedes/propietarios. Se añade owners_email nullable

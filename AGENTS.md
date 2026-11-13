@@ -1,37 +1,47 @@
 # Central Hill agent instructions
 
-## Owners email / Footer — preparado, pendiente autorización DB —2026-11-12
+## Owners email / Footer — activado localmente —2026-11-12
 
-User requests Owners email in Settings Contact and For Guests/For Owners footer columns.
-Code+QA complete in branch owners-email/integration, worktree
-/private/tmp/central-hill-owners-email-integration. Read
-[spec](docs/specs/settings-owners-email-footer.md), [QA](docs/specs/settings-owners-email-footer-qa.md), ADR0085.
-Candidateaaa19d4/product458dec7(rootFooter854fe7b), latestdocs1673e56;13QA cases0defects/
-pageerrors,46pure+6DB/typecheck/lint0(7oldwarn)/dbcheck32/detector[]/build0/215static.
-Preview3087PID87719/session27207 retained for review, ownersemailqa20261112/preload own;
-input/footer showpartners@centralhill.pt andoriginalOwnersphone.41QAprotectedtables+
-allPages/Forms/Leads/media/slugs/nonSettingstranslations/ledger32exact. No mail sent.
+User requested Owners email in Settings Contact +For Guests/For Owners footer columns,
+then explicitly authorized «si aplica la migracion local».0031 applied ONLY authored
+local DB/role neoncontentlocal20261111 and mainFFa453543→8b66729 completed afterQA.
+Read [spec](docs/specs/settings-owners-email-footer.md),
+[QA](docs/specs/settings-owners-email-footer-qa.md), ADR0085. Finaldoccommit via gitlog-1.
 
-MAINCODE stays60c9d69(Back to top), ledger31, NOowners_emailcolumn; onlydocs copied to
-main for handoff. 44business+ledger/1504rows exact to newcheckpoint, env/logo/symlinks
-exact; main3071PID8573/media9081PID8524 retained originalenv/preload.0031 NOT applied
-on authoredmain or restoreDB. Explicit approval requested via async question, not
-received yet: follow Workingagreement requestauthorizationforDBchanges. Do not activate
-newsource before0031; wait for user approval, no timeout-as-approval.
+Nullable owners_email DEFAULTpartners@centralhill.pt supplied by image; optionaloldomit
+preserves, explicitnullhides email row, no defaultrevival forstorednull/blank. Input
+nexttoOwnersphone, shared4locales; SiteGlobals.ownersEmail/v9cache +existingSettings
+Save/global4layoutinvalidations. FooterGroups Guests(Bookings/Checkin/generalemail/WA)
++Owners(phone/email), headings4locales, responsive2columns/stackedmobile/wrappingemail.
+Ownersgrouphidden onlywhenbothdataabsent. Brand/address/social/nav/newsletter retained.
+No changes to notification recipients or other contacts/Forms/Pages integrations.
 
 Checkpointrestore/owners-email-2026-11-12-1794531961066 at60c9d69, private
 /private/tmp/central-hill-owners-email/checkpoint:49tables1522rows inclauth/ledger31,
-2restores exact,1377Gitobjects/183mediaSHAexact. Preserve ownersemailrestore20261112,
-ownersemailqa20261112 and schema-only ownersemailunitqa20261112/alloldartifacts/envs/
-caches/bases/worktrees/logos/symlinks. Migration0031 only adds nullableowners_email
-DEFAULTpartners@centralhill.pt, oldomitpreserves/nullhides. QA/unit alreadymigrated;
-no remoteDB/R2writes/push/deploy/providerSetup/cleanup.
+2restores exact,1377Gitobjects/183mediaSHAexact. RestoreDBownersemailrestore20261112
+stays31/notmigrated. QAcloneownersemailqa20261112ledger32 andschema-only unit DB retained;
+alloldbases/artifacts/envs/caches/worktrees/media/logo/symlinks preserved.
 
-On explicit approval: script /private/tmp/central-hill-owners-email/apply-main.mjs
-requires OWNERS_EMAIL_MAIN_MIGRATION=approved; verifiesexactmain/ledger31/hash, new
-pre-DDLdump and protectedoldcolumns. Then localFF candidate, readonly Settings/footer
-opening4locales+mainconservation ignoring onlynewattribute; no broadQArepeat/mainSave.
-Update this handoff status after activation. All implementation work already complete.
+Two writers A c3b80da/B e442deb, rootFooter854fe7b/product458dec7, QAexactaaa19d4:
+13cases0defects/pageerrors/harnessfailures, onepositioneddesktop/mobilebatchpass.
+46pure/render+6DB/typecheck0/lint0(7oldwarn)/dbcheck32(old0008warn)/detector[]/build0/
+215static2workers (compile10.1s/TS13.7s/static5.2s warmcache), productconfig untouched.
+QA41businessprotectedtables +nonSettingstranslations/ledger32 exact; finalQApartners+
+originalOwnersphone restored byUI. No mainfixtures/Save or provider setup.
+
+Authorized mainmigration guarded exactDB/role/31oldhashes/timestamps, newpre-DDLdump
+/private/tmp/central-hill-owners-email/pre-main-migration-1794537249043.dump. Ledger32
+hash+timestamps exact;43business1473rows oldcolumns EXACT before/after excluding only
+newowners_email. main-open5readonly200(Settings+footer4locales),0pageerrors/blockedwrites,
+partnersmailto inOwners only. Finalconservation43tables1473oldrows exact +ledger32;
+initialreadonlyledgercomparison normalized driverbigintstrings only, no data correction.
+
+Main3071PID8573/session18330/media9081PID8524/session17713 retained withoutrestart,
+original.env.local +REQUIRED NODE_OPTIONS=--require=/private/tmp/central-hill-neon-content-local-copy/runtime.cjs
+onlymainDB→proxy4558. Env/logo/bothsymlinks exact. QA3087PID87719/parent87713 stopped
+postactivation; allbuild/env/fixture/cache/artifacts retained. Resendconsole/unconfigured.
+No remoteDB/R2write/push/deploy/rolecleanup or automaticnexttask. New DB changes need
+their own authorization; this approval applied only local0031.
 
 ## Admin Back to top —2026-11-12
 
