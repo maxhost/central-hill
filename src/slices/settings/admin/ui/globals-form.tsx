@@ -161,6 +161,7 @@ export function GlobalsForm({
       email: state.email.trim(),
       phone: state.phone.trim(),
       owners_phone: orNull(state.owners_phone ?? ""),
+      owners_email: orNull(state.owners_email ?? ""),
       whatsapp: orNull(state.whatsapp),
       checkin_phone: orNull(state.checkin_phone),
       website_url: orNull(state.website_url),
@@ -258,6 +259,23 @@ export function GlobalsForm({
               onChange={(e) => set("owners_phone", e.target.value)}
               disabled={pending || preparing}
               aria-invalid={Boolean(err("owners_phone"))}
+            />
+          </Field>
+          <Field
+            label={t("admin.globals.fields.ownersEmail")}
+            htmlFor="owners-email"
+            hint={t("admin.globals.fields.ownersEmailHint")}
+            error={err("owners_email")}
+          >
+            <TextInput
+              id="owners-email"
+              type="email"
+              autoComplete="email"
+              maxLength={254}
+              value={state.owners_email ?? ""}
+              onChange={(e) => set("owners_email", e.target.value)}
+              disabled={pending || preparing}
+              aria-invalid={Boolean(err("owners_email"))}
             />
           </Field>
           <Field

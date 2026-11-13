@@ -83,12 +83,16 @@ export async function SiteFooter({ locale }: { locale: Locale }) {
         bookingsLabel: t("footer.bookings"),
         ownersPhone: g.ownersPhone?.trim() || undefined,
         ownersLabel: t("footer.ownersPhone"),
+        ownersEmail: g.ownersEmail?.trim() || undefined,
+        guestsTitle: t("footer.guestsContactTitle"),
+        ownersTitle: t("footer.ownersContactTitle"),
         checkinPhone: g.checkinPhone || undefined,
         checkinLabel: t("footer.checkin"),
         phoneIcon: <Icon name="phone" size={18} />,
         emailIcon: <Icon name="mail" size={18} />,
         whatsappLabel: g.whatsapp ? t("footer.whatsapp") : undefined,
         whatsapp: g.whatsapp || undefined,
+        whatsappIcon: g.whatsapp ? <Icon name="whatsapp" size={18} /> : undefined,
       }}
       social={social}
       groups={groups}
