@@ -59,3 +59,24 @@ originales except Settings autorizado y sus traducciones. Formas/capturas/contac
 previos independientes. Unavisualbatchdesktop/mobile, corrección focal solo si defecto.
 Typecheck/lint/dbcheck32/build y pruebas DB/SSR pertinentes antes entrega. Main3071 y
 media9081 retenidos con env/preload original; no activar código main antes de0031.
+
+## Implementación y checks
+
+Contratos7802210; UIe442deb integrado39b94c9, backendc3b80da integrado458dec7,
+Footerkernel854fe7b. Backend4pure+6DB inicialmente pasan; UItypecheck/scopedlint0.
+Root46pure/render integrados (35iniciales+11focales de dos archivos legacy que
+necesitan loader PNG/AsyncLocalStorage/env fuera deNext) y6DBintegrados0skip pasan.
+Primer typecheck detectó3narrowings en testSSR y faltaba next-env.d.ts ignorado;
+se corrigieron solo tests/copia del archivo generado. Typecheck final0, lint0 con
+7warnings antiguos, detectorUI[], dbcheck32(old0008warn). Sin cambio producto por
+esos ajustes del harness. No repetición de35casos aprobados.
+
+Build completo0/215static/2workers:compile10.1s/TS13.7s/static5.2s usando caché clonada
+del checkpoint anterior y preload de build a4queries/worker. Configproducto intacto,
+main/media/env/caché originales retenidos. Candidato listo para QA independiente.
+
+0031 aplicada y verificada SOLO en ownersemailqa20261112 (ledger31→32) y propia
+schema-only ownersemailunitqa20261112 (ledger0→1). SHA256
+deca1f97d4f4dc5c2b2f3e5020386fc2a6d89a58285eaa2f148490da351f1b5e.
+Todoslosoldtables/columnasSettings exactos al añadir atributo; nuevo valorpartners en
+singletonQA existente. Authoredmain y restoreDB se conservan con ledger31/sincolumna.

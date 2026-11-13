@@ -51,12 +51,14 @@ test("Footer contact columns keep guest and owner email/phone destinations separ
 });
 test("Empty Owners email hides just that link and never substitutes guest email", () => {
   const html = render({ ownersEmail: "  " }), owners = group(html, "owners");
+  assert.ok(owners);
   assert.ok(owners?.includes("tel:+351910438062"));
   assert.equal(owners.includes("mailto:"), false);
   assert.ok(group(html, "guests")?.includes("mailto:info@centralhill.pt"));
 });
 test("An email-only Owners group remains independently visible and trimmed", () => {
   const owners = group(render({ ownersPhone: " ", ownersEmail: "  owner@example.test  " }), "owners");
+  assert.ok(owners);
   assert.ok(owners?.includes('href="mailto:owner@example.test"'));
   assert.equal(owners.includes("tel:"), false);
 });
@@ -67,6 +69,7 @@ test("Both absent Owners contacts omit the empty group without losing guest cont
 });
 test("Optional guest rows may be absent without substituting Owners destinations", () => {
   const guests = group(render({ checkinPhone: undefined, whatsapp: undefined }), "guests");
+  assert.ok(guests);
   assert.ok(guests?.includes("tel:+351910075725"));
   assert.equal(guests.includes("+351912310632"), false);
   assert.equal(guests.includes("whatsapp-icon"), false);

@@ -369,6 +369,19 @@ The initial, absent-singleton scaffold uses the widget's existing bk_centralhill
 account so contact settings can be saved without an empty required account error.
 Stored account IDs, widget URLs/scripts and booking behavior remain unchanged.
 
+## Owners email and footer contact groups (ADR0085)
+
+Settings Contact includes optional Owners email beside Owners phone. Migration0031
+adds nullable owners_email with the user-reference default partners@centralhill.pt.
+Omitted save keys preserve the stored value; explicit null hides the email row.
+Only an absent singleton uses defaults. Public ownersEmail is trimmed string|null,
+with cache shapev9; normal Settings Save invalidates all four locale layouts.
+The footer groups bookings/check-in/general email/WhatsApp under For Guests and
+Owners phone/email under For Owners, with localized headings and responsive columns.
+These display contacts do not configure lead/form notification recipients.
+See docs/specs/settings-owners-email-footer.md for isolated implementation and the
+separate authorization required before applying0031 to authored local main.
+
 ## Website URL by language (ADR0072)
 
 Contact exposes Website EN/ES/PT/FR in one Save, no tabs. EN stays in website_url;
