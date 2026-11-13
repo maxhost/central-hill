@@ -1,5 +1,25 @@
 # Central Hill agent instructions
 
+## Plan de salida a producción —2026-11-12
+
+User requests preparing go-live plan, including GitHub push and Neon migrations.
+Read [plan](docs/specs/go-live-plan.md). Planning only: NO push/deploy/remote writes.
+Readonly GitHub confirms remote main f947c4f1, local2ecdd87 ahead82/behind0; Vercel
+status success. Neon endpoint neondb/neondb_owner readonly RepeatableRead confirms
+ledger30 exact hashes/timestamps, pending0030+0031 and their objects absent.
+42business tables1473rows local/remote exact excluding only four new attributes;
+auth excluded. No content import needed as observed; revalidate before execution.
+Evidence /private/tmp/central-hill-go-live, preserve privately. Pasted GitHub token
+not used/stored; revocation advised; existing authenticated GitHub used for reads.
+Neon/Vercel console connections suggested, effective hosting env/domain unverified.
+Blocker: Forms5MiB/file20MiB total conflicts with Vercel4.5MB request cap despite
+Next21mb. Decide limits/transport before full release; no automatic product change.
+Resend localconsole/unconfigured, real receipt pending; production unset disables
+mail. Plan: env+isolated rehearsal/QA, paired verified prod backup, guarded atomic
+0030/31 schema FIRST, then exactrelease main push/Vercel, scoped smoke/monitoring.
+Rollback code first retaining additive schema and legitimate later writes. Preserve
+main3071/media9081/preload/env/logo/symlinks/allbases. No new application QA/build.
+
 ## Owners email / Footer — activado localmente —2026-11-12
 
 User requested Owners email in Settings Contact +For Guests/For Owners footer columns,
