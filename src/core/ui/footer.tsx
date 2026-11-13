@@ -79,6 +79,8 @@ export function Footer({
   localeSwitcher?: ReactNode;
 }) {
   const ownersPhone = contact.ownersPhone?.trim();
+  const ownersEmail = contact.ownersEmail?.trim();
+  const hasOwnersContact = Boolean(ownersPhone || ownersEmail);
   return (
     <footer className="bg-feature text-on-feature">
       <Container className="pb-9 pt-[35px]">
@@ -103,60 +105,67 @@ export function Footer({
           {newsletter}
         </div>
 
-        <div className="grid gap-12 md:grid-cols-[1.6fr_1fr_1fr]">
-          <div>
+        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr]">
+          <div className="min-w-0 sm:col-span-2 lg:col-span-1">
             {brand}
             <div className="mt-[18px] text-sm leading-[1.9] text-on-feature-soft">
               {contact.officeAddress ? (
-                <p className="mb-4 max-w-sm">
+                <p className="mb-5">
                   <strong className="font-semibold text-on-feature">{contact.officeLabel}:</strong>{" "}
                   {contact.officeAddress}
                 </p>
               ) : null}
-              <div className="flex items-start gap-3">
-                {contact.phoneIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.phoneIcon}</span> : null}
-                <span>
-                  {!contact.bookingsLabel ? `${contact.callLabel} ` : null}
-                  <a
-                    href={`tel:${contact.phone.replace(/\s+/g, "")}`}
-                    className="hover:text-on-feature"
-                  >
-                    {contact.phone}
-                  </a>
-                  {contact.bookingsLabel ? ` ${contact.bookingsLabel}` : null}
-                </span>
+              <div data-footer-contacts className={`grid gap-6 ${hasOwnersContact ? "sm:grid-cols-2" : ""}`}>
+                <section data-footer-guests aria-label={contact.guestsTitle} className="min-w-0">
+                  {contact.guestsTitle ? <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-on-feature-soft">{contact.guestsTitle}</h3> : null}
+                  <div className="flex items-start gap-3">
+                    {contact.phoneIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.phoneIcon}</span> : null}
+                    <span className="min-w-0">
+                      {`${contact.bookingsLabel ?? contact.callLabel} `}
+                      <a href={`tel:${contact.phone.replace(/\s+/g, "")}`} className="hover:text-on-feature">{contact.phone}</a>
+                    </span>
+                  </div>
+                  {contact.checkinPhone ? (
+                    <div className="flex items-start gap-3">
+                      {contact.phoneIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.phoneIcon}</span> : null}
+                      <span className="min-w-0">
+                        {contact.checkinLabel ? `${contact.checkinLabel} ` : null}
+                        <a href={`tel:${contact.checkinPhone.replace(/[^\d+]/g, "")}`} className="hover:text-on-feature">{contact.checkinPhone}</a>
+                      </span>
+                    </div>
+                  ) : null}
+                  <div className="flex items-start gap-3">
+                    {contact.emailIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.emailIcon}</span> : null}
+                    <a href={`mailto:${contact.email}`} className="min-w-0 break-words [overflow-wrap:anywhere] hover:text-on-feature">{contact.email}</a>
+                  </div>
+                  {contact.whatsapp ? (
+                    <div className="flex items-start gap-3">
+                      {contact.whatsappIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.whatsappIcon}</span> : null}
+                      <span className="min-w-0">{contact.whatsappLabel} {contact.whatsapp}</span>
+                    </div>
+                  ) : null}
+                </section>
+                {hasOwnersContact ? (
+                  <section data-footer-owners aria-label={contact.ownersTitle} className="min-w-0">
+                    {contact.ownersTitle ? <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-on-feature-soft">{contact.ownersTitle}</h3> : null}
+                    {ownersPhone ? (
+                      <div className="flex items-start gap-3">
+                        {contact.phoneIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.phoneIcon}</span> : null}
+                        <span className="min-w-0">
+                          {contact.ownersLabel ? `${contact.ownersLabel} ` : null}
+                          <a href={`tel:${ownersPhone.replace(/[^\d+]/g, "")}`} className="hover:text-on-feature">{ownersPhone}</a>
+                        </span>
+                      </div>
+                    ) : null}
+                    {ownersEmail ? (
+                      <div className="flex items-start gap-3">
+                        {contact.emailIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.emailIcon}</span> : null}
+                        <a href={`mailto:${ownersEmail}`} className="min-w-0 break-words [overflow-wrap:anywhere] hover:text-on-feature">{ownersEmail}</a>
+                      </div>
+                    ) : null}
+                  </section>
+                ) : null}
               </div>
-              {ownersPhone ? (
-                <div className="flex items-start gap-3">
-                  {contact.phoneIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.phoneIcon}</span> : null}
-                  <span>
-                    <a href={`tel:${ownersPhone.replace(/[^\d+]/g, "")}`} className="hover:text-on-feature">
-                      {ownersPhone}
-                    </a>{" "}{contact.ownersLabel}
-                  </span>
-                </div>
-              ) : null}
-              {contact.checkinPhone ? (
-                <div className="flex items-start gap-3">
-                  {contact.phoneIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.phoneIcon}</span> : null}
-                  <span>
-                    <a href={`tel:${contact.checkinPhone.replace(/[^\d+]/g, "")}`} className="hover:text-on-feature">
-                      {contact.checkinPhone}
-                    </a>{" "}{contact.checkinLabel}
-                  </span>
-                </div>
-              ) : null}
-              <div className="flex items-start gap-3">
-                {contact.emailIcon ? <span className="mt-1 shrink-0" aria-hidden>{contact.emailIcon}</span> : null}
-                <a href={`mailto:${contact.email}`} className="hover:text-on-feature">
-                  {contact.email}
-                </a>
-              </div>
-              {contact.whatsapp ? (
-                <div>
-                  {contact.whatsappLabel} {contact.whatsapp}
-                </div>
-              ) : null}
             </div>
             {social.length ? (
               <div className="mt-5 flex gap-[14px]">
