@@ -10,6 +10,14 @@ import { testNotification } from "../server/notification";
 import type { FormBlueprint } from "../types";
 
 const pdf = Buffer.from("%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF\n");
+const releaseFileBudget = 3 * 1024 * 1024;
+
+function pdfOfSize(size: number): Buffer {
+  const bytes = Buffer.alloc(size, " ");
+  pdf.subarray(0, -6).copy(bytes);
+  Buffer.from("%%EOF\n").copy(bytes, bytes.length - 6);
+  return bytes;
+}
 
 function fileDefinition(count = 1): FormBlueprint {
   let definition = createBlueprint("contact");
@@ -60,17 +68,16 @@ test("genuine JPEG, PNG, GIF, WebP and AVIF files pass with exact byte preservat
   }
 });
 
-test("exactly 5 MiB is accepted and one extra byte is rejected before email construction", async () => {
+test("exactly 3 MiB is accepted and one extra byte is rejected before email construction", async () => {
   const definition = fileDefinition();
-  const bytes = Buffer.alloc(MAX_FILE_BYTES, " ");
-  pdf.subarray(0, -6).copy(bytes);
-  Buffer.from("%%EOF\n").copy(bytes, bytes.length - 6);
+  assert.equal(MAX_FILE_BYTES, releaseFileBudget);
+  const bytes = pdfOfSize(releaseFileBudget);
   const boundary = await validateAttachments(definition, upload(definition, bytes));
   assert.deepEqual(boundary.fieldErrors, {});
   assert.equal(boundary.files[definition.fields[0]!.id]!.size, MAX_FILE_BYTES);
   assert.equal(Buffer.from(boundary.attachments[0]!.content, "base64").length, MAX_FILE_BYTES);
-  const oversized = await validateAttachments(definition, upload(definition, Buffer.alloc(MAX_FILE_BYTES + 1)));
-  assert.match(oversized.fieldErrors[definition.fields[0]!.id]!, /5 MB/);
+  const oversized = await validateAttachments(definition, upload(definition, pdfOfSize(releaseFileBudget + 1)));
+  assert.match(oversized.fieldErrors[definition.fields[0]!.id]!, /3 MiB/);
   assert.deepEqual(oversized.attachments, []);
   assert.deepEqual(oversized.files, {});
 });
@@ -113,22 +120,33 @@ test("duplicate, unknown, non-file fields and invalid multipart payloads are rej
   assert.deepEqual(await validateAttachments(definition), { files: {}, attachments: [], fieldErrors: {} });
 });
 
-test("aggregate attachment limit permits 20 MiB and rejects overflow without partial output", async () => {
-  const definition = fileDefinition(5);
-  const bytes = Buffer.alloc(MAX_FILE_BYTES, " ");
-  pdf.subarray(0, -6).copy(bytes);
-  Buffer.from("%%EOF\n").copy(bytes, bytes.length - 6);
+test("separate files totaling exactly 3 MiB pass; one extra aggregate byte discards all output", async () => {
+  const definition = fileDefinition(2);
+  assert.equal(MAX_TOTAL_FILE_BYTES, releaseFileBudget);
+  const half = releaseFileBudget / 2;
   const form = new FormData();
-  for (const field of definition.fields.slice(0, 4)) form.append(field.id, new File([new Uint8Array(bytes)], `${field.id}.pdf`, { type: "application/pdf" }));
+  for (const field of definition.fields) form.append(field.id, new File([new Uint8Array(pdfOfSize(half))], `${field.id}.pdf`, { type: "application/pdf" }));
   const boundary = await validateAttachments(definition, form);
   assert.deepEqual(boundary.fieldErrors, {});
-  assert.equal(boundary.attachments.length, 4);
-  assert.equal(Object.values(boundary.files).reduce((total, value) => total + value.size, 0), MAX_TOTAL_FILE_BYTES);
-  form.append(definition.fields[4]!.id, new File([pdf], "overflow.pdf", { type: "application/pdf" }));
+  assert.equal(boundary.attachments.length, 2);
+  assert.equal(Object.values(boundary.files).reduce((total, value) => total + value.size, 0), releaseFileBudget);
+  form.set(definition.fields[1]!.id, new File([new Uint8Array(pdfOfSize(half + 1))], "overflow.pdf", { type: "application/pdf" }));
   const overflow = await validateAttachments(definition, form);
-  assert.equal(Object.keys(overflow.fieldErrors).length, 5);
+  assert.equal(Object.keys(overflow.fieldErrors).length, 2);
+  for (const error of Object.values(overflow.fieldErrors)) assert.match(error, /3 MiB/);
   assert.deepEqual(overflow.attachments, []);
   assert.deepEqual(overflow.files, {});
+});
+
+test("a boundary upload leaves multipart and ordinary answer headroom below the request budget", async () => {
+  const form = upload(fileDefinition(), pdfOfSize(releaseFileBudget));
+  form.append("answers", JSON.stringify({ email: "guest@example.test", message: "x".repeat(10_000) }));
+  const request = new Request("https://example.invalid/form", { method: "POST", body: form });
+  assert.match(request.headers.get("content-type")!, /^multipart\/form-data; boundary=/);
+  const wireBytes = (await request.arrayBuffer()).byteLength;
+  assert.ok(wireBytes > releaseFileBudget, "must include real multipart overhead");
+  assert.ok(wireBytes < 4 * 1024 * 1024, `${wireBytes} bytes exceed the Next request budget`);
+  assert.ok(wireBytes < 4_500_000, `${wireBytes} bytes exceed the Vercel request budget`);
 });
 
 test("a later invalid file discards earlier valid metadata and attachments", async () => {

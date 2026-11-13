@@ -30,11 +30,14 @@ never handles credentials or contacts vendor endpoints. No HTML inputs.
 
 Date fields use the browser calendar and store a validated YYYY-MM-DD date without
 timezone conversion. File fields attach one PDF or image (JPEG, PNG, GIF, WebP, AVIF)
-up to 5 MiB per field; all attachments together may total 20 MiB. The server validates
+up to 3 MiB per field; all attachments together may total 3 MiB across every step.
+This production budget leaves multipart/answer headroom below Vercel's request cap.
+The server validates
 the content, type, filename and size before any test capture or email. File bytes
 travel as multipart data and are attached through core/email; only verified file
 name/type/size metadata is retained in the test answer JSON. No asset upload, public
-URL or persistent file storage is created. See ADR0078. Console/disabled email modes
+URL or persistent file storage is created. ADR0086 supersedes ADR0078's original
+5/20 MiB size limits for production. Console/disabled email modes
 retain their existing behavior; they do not deliver attachments to an inbox.
 
 Admin routes are dynamic/authenticated; no public ISR/SEO changes are introduced.

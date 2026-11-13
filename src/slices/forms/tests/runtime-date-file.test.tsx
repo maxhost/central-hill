@@ -13,11 +13,11 @@ import * as filePolicy from "../file-policy";
 import type { FormRuntimeProps } from "../ui/form-runtime";
 
 /** Render the actual runtime with isolated presentation/i18n seams; no auth, DB or provider. */
-function runtime(locale: string) {
+function runtime(locale: string, hooks: Partial<typeof React> = {}) {
   const messages = JSON.parse(readFileSync(new URL(`../messages/${locale}.json`, import.meta.url), "utf8"));
   const control = (tag: string) => function Control({ children, ...props }: Record<string, unknown>) { return React.createElement(tag, props, children as React.ReactNode); };
   const dependencies: Record<string, unknown> = {
-    react: React,
+    react: { ...React, ...hooks },
     "react/jsx-runtime": jsxRuntime,
     "next-intl": { useTranslations: () => (key: string) => messages[key] },
     "./runtime-controls": {
@@ -62,9 +62,100 @@ for (const locale of ["en", "es", "pt", "fr"]) {
     assert.match(upload, /aria-describedby="[^"]*-help [^"]*-file-policy"/);
     assert.doesNotMatch(upload, /(?:multiple|value)=/);
     assert.ok(html.includes(messages.fileHint));
+    assert.match(messages.fileHint, /3 MiB/);
+    assert.match(messages.fileTooLarge, /3 MiB/);
+    assert.match(messages.filesTooLarge, /3 MiB/);
+    assert.doesNotMatch(messages.fileHint, /(?:5|20) (?:MB|MiB|Mo)/);
     assert.ok(messages.types.date && messages.types.file);
   });
 }
+
+/** Invoke the shipped change/submit handlers with stateful hooks; no DOM, DB or network. */
+function interactiveRuntime() {
+  const state: unknown[] = []; let cursor = 0;
+  const hooks = {
+    useId: () => "attachment-test",
+    useState: (initial: unknown) => {
+      const index = cursor++;
+      if (!(index in state)) state[index] = initial;
+      return [state[index], (next: unknown) => {
+        state[index] = typeof next === "function" ? next(state[index]) : next;
+      }];
+    },
+    useRef: (initial: unknown) => {
+      const index = cursor++;
+      if (!(index in state)) state[index] = { current: initial };
+      return state[index];
+    },
+  } as Partial<typeof React>;
+  const { Component, messages } = runtime("en", hooks);
+  type Element = React.ReactElement<Record<string, unknown>>;
+  function nodes(value: unknown): Element[] {
+    if (Array.isArray(value)) return value.flatMap(nodes);
+    if (!React.isValidElement(value)) return [];
+    const element = value as Element;
+    if (typeof element.type === "function") return nodes((element.type as (props: unknown) => unknown)(element.props));
+    return [element, ...nodes(element.props.children)];
+  }
+  const render = (props: FormRuntimeProps) => { cursor = 0; return nodes((Component as (props: FormRuntimeProps) => React.ReactNode)(props)); };
+  const choose = (tree: Element[], id: string, file: File) => {
+    const input = tree.find(element => element.props.name === id && element.props.type === "file");
+    assert.ok(input);
+    const currentTarget = { files: [file], value: file.name };
+    (input.props.onChange as (event: unknown) => void)({ currentTarget });
+    return currentTarget;
+  };
+  const submit = async (tree: Element[]) => {
+    const form = tree.find(element => element.type === "form");
+    assert.ok(form);
+    await (form.props.onSubmit as (event: unknown) => Promise<void>)({ preventDefault() {} });
+  };
+  return { render, choose, submit, messages };
+}
+
+test("browser rejects a 3 MiB + 1 file before sending and accepts an exact-boundary replacement", async () => {
+  const ui = interactiveRuntime();
+  let value = definition();
+  value = addRow(value, value.steps[0]!.id, 1);
+  const document = field("file", "Document");
+  value = addFieldToColumn(value, value.rows[0]!.columns[0]!.id, document);
+  const captured: FormData[] = [];
+  const props = { definition: value, onSubmit: async (_values: unknown, files: FormData) => { captured.push(files); return { ok: true }; } };
+  const limit = 3 * 1024 * 1024;
+  assert.equal(ui.choose(ui.render(props), document.id, new File([new Uint8Array(limit + 1)], "large.pdf", { type: "application/pdf" })).value, "");
+  await ui.submit(ui.render(props));
+  assert.equal(captured.length, 0);
+  assert.ok(ui.render(props).some(element => element.props.role === "alert" && element.props.children === ui.messages.fileTooLarge));
+  ui.choose(ui.render(props), document.id, new File([new Uint8Array(limit)], "fits.pdf", { type: "application/pdf" }));
+  await ui.submit(ui.render(props));
+  assert.equal(captured.length, 1);
+  assert.equal((captured[0]!.get(document.id) as File).size, limit);
+});
+
+test("browser counts retained files across wizard steps and blocks aggregate overflow before sending", async () => {
+  const ui = interactiveRuntime();
+  let value = addStep(definition(), "Second step");
+  const files = [field("file", "First document"), field("file", "Second document")];
+  for (let index = 0; index < files.length; index++) {
+    value = addRow(value, value.steps[index]!.id, 1);
+    value = addFieldToColumn(value, value.rows[index]!.columns[0]!.id, files[index]!);
+  }
+  const captured: FormData[] = [];
+  const props = { definition: value, onSubmit: async (_values: unknown, files: FormData) => { captured.push(files); return { ok: true }; } };
+  const half = 3 * 1024 * 1024 / 2;
+  ui.choose(ui.render(props), files[0]!.id, new File([new Uint8Array(half)], "first.pdf", { type: "application/pdf" }));
+  await ui.submit(ui.render(props));
+  assert.equal(captured.length, 0, "Next must not send the form");
+  assert.equal(ui.choose(ui.render(props), files[1]!.id, new File([new Uint8Array(half + 1)], "overflow.pdf", { type: "application/pdf" })).value, "");
+  await ui.submit(ui.render(props));
+  assert.equal(captured.length, 0);
+  assert.ok(ui.render(props).some(element => element.props.role === "alert" && element.props.children === ui.messages.filesTooLarge));
+  ui.choose(ui.render(props), files[1]!.id, new File([new Uint8Array(half)], "second.pdf", { type: "application/pdf" }));
+  await ui.submit(ui.render(props));
+  assert.equal(captured.length, 1);
+  assert.equal([...captured[0]!.values()].reduce((sum, item) => sum + (item as File).size, 0), 3 * 1024 * 1024);
+  assert.equal((captured[0]!.get(files[0]!.id) as File).name, "first.pdf");
+});
 
 test("wizard keeps inactive file rows mounted, hidden and disabled for native validation", () => {
   const { Component } = runtime("en");
