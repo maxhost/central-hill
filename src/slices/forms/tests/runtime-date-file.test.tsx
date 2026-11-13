@@ -31,7 +31,7 @@ function runtime(locale: string, hooks: Partial<typeof React> = {}) {
   const code = ts.transpileModule(readFileSync(new URL("../ui/form-runtime.tsx", import.meta.url), "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
-  runInNewContext(code, { exports: compiled.exports, module: compiled, require: (name: string) => {
+  runInNewContext(code, { FormData, exports: compiled.exports, module: compiled, require: (name: string) => {
     assert.ok(name in dependencies, `Unexpected runtime dependency ${name}`);
     return dependencies[name];
   } });
