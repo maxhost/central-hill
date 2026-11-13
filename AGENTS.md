@@ -1,24 +1,55 @@
 # Central Hill agent instructions
 
-## Plan de salida a producción —2026-11-12
+## Salida a producción ejecutada; push Git pendiente —2026-11-12/13
 
-User requests preparing go-live plan, including GitHub push and Neon migrations.
-Read [plan](docs/specs/go-live-plan.md). Planning only: NO push/deploy/remote writes.
-Readonly GitHub confirms remote main f947c4f1, local2ecdd87 ahead82/behind0; Vercel
-status success. Neon endpoint neondb/neondb_owner readonly RepeatableRead confirms
-ledger30 exact hashes/timestamps, pending0030+0031 and their objects absent.
-42business tables1473rows local/remote exact excluding only four new attributes;
-auth excluded. No content import needed as observed; revalidate before execution.
-Evidence /private/tmp/central-hill-go-live, preserve privately. Pasted GitHub token
-not used/stored; revocation advised; existing authenticated GitHub used for reads.
-Neon/Vercel console connections suggested, effective hosting env/domain unverified.
-Blocker: Forms5MiB/file20MiB total conflicts with Vercel4.5MB request cap despite
-Next21mb. Decide limits/transport before full release; no automatic product change.
-Resend localconsole/unconfigured, real receipt pending; production unset disables
-mail. Plan: env+isolated rehearsal/QA, paired verified prod backup, guarded atomic
-0030/31 schema FIRST, then exactrelease main push/Vercel, scoped smoke/monitoring.
-Rollback code first retaining additive schema and legitimate later writes. Preserve
-main3071/media9081/preload/env/logo/symlinks/allbases. No new application QA/build.
+User authorized «ok, vamos a live»,3MiB/file+3MiBaggregate and temporary disabled
+email/review in AdminLeads. Read [plan](docs/specs/go-live-plan.md),
+[execution](docs/specs/go-live-execution.md), ADR0086. Product3d35204 independently
+QAapproved and integrated mainFFd69419e→3d35204; finaldocumentation commit via gitlog-1.
+Twoisolatedwriters A f9104af/Bca44fbe; B VMharnessfix65f7b90 integrated3d35204.
+Root51tests/typecheck/lint0(7oldwarn)/dbcheck32(old0008warn); build219routes2workers,
+compile10.9s/TS11.2s/static6.7min. QA17tests+13browsercases/0pageerrors/defects,
+actual3MiB POST3146475B/twofiles3146656B; client/serveroverflow rejected;3ownleads
+disabledmail persist.43originalQA tables+ledger exact excludingonly ownfixtures.
+
+NEON REMOTE0030+0031 APPLIED2026-11-13T03:55:37Z:32hashes/timestamps exact,
+4nullablecols/3constraints/rate0;47oldtables1538rows EXACT inclauth. Endpoint
+ep-polished-boat-aixkv1v4-pooler.c-4.us-east-1.aws.neon.tech neondb/neondb_owner.
+Freshbackup48tables1568rows ledger30 restoredexactintwo localDBs; deployed-code.tar
+atremote f947c4f1 pairedwithDB/1242blobs verified. goliveprodrestore20261113 stays30;
+goliveprodqa20261113 rehearsal32 retained. All artifacts private /private/tmp/central-hill-go-live.
+Localcheckpoint restore/go-live-2026-11-13-1794540578542 code2ecdd87,49tables1524rows,
+ledger32,1385code/183media exact; goliverestore20261113 intact/goliveqa20261113 ownQA.
+
+VERCEL LIVE central-hill-umber.vercel.app now dpl_JCetLbnHeef4GFh4ewb4Aw8qNAui,
+cleanarchive3d352041e9425c0f1c48be9051c4b0b63a973a03/1388blobs SHA256
+4f80ddab3e0a90147960c4eeeb6e76726a2df415f8b4d13a1eabf255c1b7f76e.
+DirectexistingCLI60.0.1 --prod --skip-domain then authenticatedreadchecks andpromote.
+Cloudbuild0/215routes1worker compile36.2s/TS31.7s/static24.6s/~2min.
+Project prj_XgbTMPavHqLQiYx6jC8XwpQKGXnu/team_1g2bepRsIjW2NsHwFk8S7VT3.
+Node24→22, EMAIL_PROVIDERdisabledProduction; allothersecrets preserved/unexportable.
+CLIcurl createdplatformmanagedprotection-bypasstoken forreadchecks; no value exposed.
+Rollback dpl_DHXcvKFfu3y12sFrQCtY8j8PnRyx retained; keepadditiveschema32/newwrites.
+StagedHome/About/Adminredirect/optimizedimage pass, public12readonlybrowserchecks
+4locales/footerdesktopmobile0pageerrors/5xx,0recentVercelerrorlogrecords. Postlive
+Neonreadonly32/42business1473rows hashes exact fromplanbaseline. No prodfixtures,
+Save/contentimport/authcopy/R2write/realmail. Canonicalrelative/en preexisting remains;
+customdomain/DNS not changed, only verifiedVerceldomain published.
+
+GITHUB PUSH NOT DONE: remote main still f947c4f1. Gitcredential55mais denied403,
+no storedmaxhostcredential/SSHidentity; user asked asynchronously to enablecorrectGit
+writecredential, no reply yet. ExistingGitHubconnectoradmin canwritefiles but cannot
+transferlocalhistorypreservingSHAs; no squash/CIworkaround/accesschanges/PATuse.
+Pastedtoken neverused/stored. Afteraccess fixed refreshremote/reviewahead, pushmain
+fastforwardonly; expectGitVercelautobuild (sameproduct aslive; docs maydiffer). Do not
+reapplySQL orrepeatbroadQA, discardownfixtures, forcepush/alltags orloselaterwrites.
+
+Localmain3071 automaticdevreloadPID61227 (no manualrestart); media9081PID8524,
+original.env.local +requiredpreload/runtime unchanged; logo/bothsymlinks exact.
+OwnQA3088PID61007 stoppedafterQA/live; all bases/artifacts/worktrees/caches retained.
+Resendpendingexplicitly; filesonlymetadatawhileproviderdisabled, no downloadbytes.
+Currentpublicinventory1Form/0Filefields/0publishedFormsassignments, noactivefileform.
+First-hour/next-dayoperationalmonitoring remains manual; no scheduledautomation.
 
 ## Owners email / Footer — activado localmente —2026-11-12
 
