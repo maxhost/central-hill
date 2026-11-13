@@ -80,3 +80,34 @@ schema-only ownersemailunitqa20261112 (ledger0→1). SHA256
 deca1f97d4f4dc5c2b2f3e5020386fc2a6d89a58285eaa2f148490da351f1b5e.
 Todoslosoldtables/columnasSettings exactos al añadir atributo; nuevo valorpartners en
 singletonQA existente. Authoredmain y restoreDB se conservan con ledger31/sincolumna.
+
+## QA aprobado y estado de activación
+
+QA independiente aprobó aaa19d40ce578d01a040c36f64d78ff05fd5c400/producto458dec7:
+13casos(7input/6layout),0defectos/pageerrors/fallos deharness. Inputdefault/custom/
+invalid/null/reload y footer4locales actualizan conSave sinPagePublish; Owners vacío
+se oculta, email-only conserva grupo, email largo envuelve en390px. Una tanda visual
+desktop/móvil aprobada también por root, sin correcciones/rebuild. Informe
+[QA](settings-owners-email-footer-qa.md). Todo desdeUIreal, sin seedSQL o capturasmail.
+
+Protección QA:41tablas negocioajenas completas, todasPages/Forms/Leads/media/slugs/
+cuotas y translationfueraSettings exactos; ledger32exacto. Email/phones/WhatsApp/
+Header/retiredSettings exactos salvo timestamps y traduccionesSettings delSave normal.
+Finalclonepartners@centralhill.pt yOwnersphoneoriginal, revisable3087. Ningún datoQA
+pasó a main. No cleanup ni otro testbrowser después del cierre.
+
+Main permanece código60c9d69 (Back to top entregado), ledger31 y sinowners_email.
+Comparaciónreadonly44tablas negocio+ledger/1504filas exactas alcheckpoint, env/logo/
+ambossymlinks exactos; únicos3untrackedoriginales. Main3071PID8573 ymedia9081PID8524
+retenidos sinreinicios/cambioenv/cache. Preview3087PID87719/session27207 retenido para
+revisión del usuario, soloDBownersemailqa20261112/preloadpropio. No activar código
+main antes de0031 o su SELECT incluiría una columna todavía ausente.
+
+Se solicitó confirmación al usuario para aplicar0031 SOLO a authoredlocalDB e integrar
+en3071, conforme AGENTS Workingagreement «request authorization for database changes
+or production actions». Pendiente de respuesta, sin ejecutar DDLmain. Script preparado
+/private/tmp/central-hill-owners-email/apply-main.mjs exige
+OWNERS_EMAIL_MAIN_MIGRATION=approved, guard exactomain/ledger31/hashes, dumpnuevo antes
+de migrar y comparación de todas columnas/filas antiguas; solo añade owners_email y
+fila ledger32. Después de autorización: aplicar script, FF local del candidato,
+apertura final readonly y conservar datos/envs/cachés. No remoteDB/R2/push/deploy.
