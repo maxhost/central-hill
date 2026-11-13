@@ -2264,6 +2264,7 @@
     "shell": {
       "showSidebar": "Mostrar barra lateral",
       "hideSidebar": "Ocultar barra lateral",
+      "backToTop": "Voltar ao topo",
       "signedInAs": "Sessão iniciada como",
       "signOut": "Terminar sessão",
       "roles": {

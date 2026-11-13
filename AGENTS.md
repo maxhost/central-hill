@@ -1,5 +1,17 @@
 # Central Hill agent instructions
 
+## Admin Back to top —2026-11-12
+
+Floating arrow in common AdminWorkspace for all authenticated admin editors/routes.
+Appears after64px document or marked data-admin-editor-scroll inspector scroll;
+returns both to0, previewiframe unchanged. Keyboard/reducedmotion/4locale labels,
+bottompadding/toast spacing. No persistence/core/DB/media changes. Simple root task,
+no delegation. Read [spec](docs/specs/admin-scroll-to-top.md). Base3e74ca0, delivered local
+change: typecheck/lint0(7oldwarn), detector[], isolatedwarmbuild0/217static2workers,
+11readonlybrowserchecks0errors, desktop/mobile visualbatchpass. Main3071/media9081
+retained, originalenv/preload; no Save/Publish/fixtures/push/deploy. Three original
+untracked logo/publicsymlinks preserved. Artifacts /private/tmp/central-hill-admin-scroll-top.
+
 ## Service enquiry Forms assignment —2026-11-12
 
 User resumed service-enquiry-assignment-handoff.md. Delivered per-Service Forms selector

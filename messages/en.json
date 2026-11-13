@@ -2264,6 +2264,7 @@
     "shell": {
       "showSidebar": "Show sidebar",
       "hideSidebar": "Hide sidebar",
+      "backToTop": "Back to top",
       "signedInAs": "Signed in as",
       "signOut": "Sign out",
       "roles": {

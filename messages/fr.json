@@ -2264,6 +2264,7 @@
     "shell": {
       "showSidebar": "Afficher le panneau latéral",
       "hideSidebar": "Masquer le panneau latéral",
+      "backToTop": "Retour en haut",
       "signedInAs": "Connecté en tant que",
       "signOut": "Se déconnecter",
       "roles": {

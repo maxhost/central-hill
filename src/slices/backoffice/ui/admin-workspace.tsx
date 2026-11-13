@@ -4,6 +4,7 @@ import { useId, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { UiIcon } from "@core/ui";
+import { AdminScrollToTop } from "./admin-scroll-to-top";
 
 interface AdminWorkspaceProps {
   sidebar: ReactNode;
@@ -63,10 +64,11 @@ function AdminWorkspaceLayout({
           {actions}
         </header>
 
-        <main className={`mx-auto w-full min-w-0 flex-1 px-6 py-8 ${isPageEditor ? "max-w-none" : "max-w-6xl"}`}>
+        <main className={`mx-auto w-full min-w-0 flex-1 px-6 pt-8 pb-24 ${isPageEditor ? "max-w-none" : "max-w-6xl"}`}>
           {children}
         </main>
       </div>
+      <AdminScrollToTop />
     </div>
   );
 }

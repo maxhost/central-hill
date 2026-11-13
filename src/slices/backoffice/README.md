@@ -1,5 +1,15 @@
 # Slice `backoffice` (S12)
 
+## Back to top
+
+`AdminWorkspace` mounts one floating arrow button for the authenticated admin panel,
+including all entity editors and Settings. It appears after scrolling 64px in the
+document or an explicitly marked `data-admin-editor-scroll` field panel. Clicking
+returns those surfaces to the top while leaving preview iframe scroll unchanged.
+Motion respects `prefers-reduced-motion`; labels exist in EN/ES/PT/FR. Main bottom
+padding and the toast viewport leave room for the control. Login and standalone
+preview routes do not mount it. See `docs/specs/admin-scroll-to-top.md`.
+
 ## Focused page editor workspace
 
 The dedicated `/admin/pages/blog/article-sidebar` editor uses the same focused

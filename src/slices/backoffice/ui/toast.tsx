@@ -176,7 +176,7 @@ function ToastViewport({
     <div
       aria-live="polite"
       aria-relevant="additions"
-      className="pointer-events-none fixed bottom-4 right-4 z-[100] flex w-[min(92vw,360px)] flex-col gap-2"
+      className="pointer-events-none fixed bottom-20 right-4 z-[100] flex w-[min(92vw,360px)] flex-col gap-2"
     >
       {toasts.map((t) => (
         <ToastItem key={t.id} toast={t} onDismiss={onDismiss} />

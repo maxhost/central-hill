@@ -204,7 +204,7 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
             </> : null}
           </div>
           <div className="border-b border-line px-5 py-3 text-xs text-ink-soft" role="status">{adapter.status}</div>
-          <div className="min-w-0 p-5 xl:max-h-[70vh] xl:overflow-y-auto">{adapter.inspector}</div>
+          <div data-admin-editor-scroll className="min-w-0 p-5 xl:max-h-[70vh] xl:overflow-y-auto">{adapter.inspector}</div>
         </aside>
       </div>
     </div>
