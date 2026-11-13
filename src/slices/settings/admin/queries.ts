@@ -37,6 +37,7 @@ export interface GlobalsEditData {
   phone: string;
   whatsapp: string;
   owners_phone?: string;
+  owners_email?: string;
   checkin_phone: string;
   website_url: string;
   website_translations?: import("../website-locale-types").WebsiteTranslations;

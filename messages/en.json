@@ -1079,7 +1079,9 @@
         "success": "Your request has been received. If you receive a confirmation email, follow its link to complete your subscription.",
         "close": "Close"
       },
-      "ownersPhone": "Owners"
+      "ownersPhone": "Owners",
+      "guestsContactTitle": "For Guests",
+      "ownersContactTitle": "For Owners"
     },
     "admin": {
       "errors": {
@@ -1119,7 +1121,9 @@
           "showBuildingLocation": "Show location bar (city / region)",
           "showBuildingCount": "Show total buildings count",
           "ownersPhone": "Owners phone",
-          "ownersPhoneHint": "Shown in the footer. Leave blank to hide the Owners phone row."
+          "ownersPhoneHint": "Shown in the footer. Leave blank to hide the Owners phone row.",
+          "ownersEmail": "Owners email",
+          "ownersEmailHint": "Shown under For Owners in the footer. Leave blank to hide the Owners email row."
         },
         "social": {
           "instagram": "Instagram",

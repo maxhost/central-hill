@@ -1,0 +1,1 @@
+ALTER TABLE "company_settings" ADD COLUMN "owners_email" text DEFAULT 'partners@centralhill.pt';

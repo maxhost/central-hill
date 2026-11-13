@@ -1079,7 +1079,9 @@
         "success": "Votre demande a été reçue. Si vous recevez un email de confirmation, suivez son lien pour finaliser votre inscription.",
         "close": "Fermer"
       },
-      "ownersPhone": "Propriétaires"
+      "ownersPhone": "Propriétaires",
+      "guestsContactTitle": "Pour les voyageurs",
+      "ownersContactTitle": "Pour les propriétaires"
     },
     "admin": {
       "errors": {
@@ -1119,7 +1121,9 @@
           "showBuildingLocation": "Afficher la barre de localisation (ville / région)",
           "showBuildingCount": "Afficher le nombre total d'immeubles",
           "ownersPhone": "Téléphone des propriétaires",
-          "ownersPhoneHint": "Affiché dans le pied de page. Laissez vide pour masquer le téléphone des propriétaires."
+          "ownersPhoneHint": "Affiché dans le pied de page. Laissez vide pour masquer le téléphone des propriétaires.",
+          "ownersEmail": "Email des propriétaires",
+          "ownersEmailHint": "Affiché sous Pour les propriétaires dans le pied de page. Laissez vide pour masquer cet email."
         },
         "social": {
           "instagram": "Instagram",

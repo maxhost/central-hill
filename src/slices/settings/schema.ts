@@ -15,6 +15,8 @@ export const company_settings = pgTable("company_settings", {
   whatsapp: text(),
   /** Optional Owners contact; initial number supplied by user (migration0029). */
   owners_phone: text().default("+351 910 438 062"),
+  /** Separate Owners email supplied in the footer reference (ADR0085). */
+  owners_email: text().default("partners@centralhill.pt"),
   /** About office panel "Check-in" phone (migration 0018); null/blank hides the row. */
   checkin_phone: text(),
   /** Company website, an `https://` URL (migration 0018); null/blank hides the About row. */

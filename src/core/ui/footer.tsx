@@ -25,6 +25,11 @@ export interface FooterContact {
   /** Optional shared Owners phone (ADR0071). */
   ownersPhone?: string;
   ownersLabel?: string;
+  ownersEmail?: string;
+  /** Caller-localized headings for the two contact groups. */
+  guestsTitle?: string;
+  ownersTitle?: string;
+  whatsappIcon?: ReactNode;
   checkinPhone?: string;
   checkinLabel?: string;
   phoneIcon?: ReactNode;
