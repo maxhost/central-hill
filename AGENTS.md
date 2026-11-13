@@ -1,5 +1,38 @@
 # Central Hill agent instructions
 
+## Owners email / Footer — preparado, pendiente autorización DB —2026-11-12
+
+User requests Owners email in Settings Contact and For Guests/For Owners footer columns.
+Code+QA complete in branch owners-email/integration, worktree
+/private/tmp/central-hill-owners-email-integration. Read
+[spec](docs/specs/settings-owners-email-footer.md), [QA](docs/specs/settings-owners-email-footer-qa.md), ADR0085.
+Candidateaaa19d4/product458dec7(rootFooter854fe7b), latestdocs1673e56;13QA cases0defects/
+pageerrors,46pure+6DB/typecheck/lint0(7oldwarn)/dbcheck32/detector[]/build0/215static.
+Preview3087PID87719/session27207 retained for review, ownersemailqa20261112/preload own;
+input/footer showpartners@centralhill.pt andoriginalOwnersphone.41QAprotectedtables+
+allPages/Forms/Leads/media/slugs/nonSettingstranslations/ledger32exact. No mail sent.
+
+MAINCODE stays60c9d69(Back to top), ledger31, NOowners_emailcolumn; onlydocs copied to
+main for handoff. 44business+ledger/1504rows exact to newcheckpoint, env/logo/symlinks
+exact; main3071PID8573/media9081PID8524 retained originalenv/preload.0031 NOT applied
+on authoredmain or restoreDB. Explicit approval requested via async question, not
+received yet: follow Workingagreement requestauthorizationforDBchanges. Do not activate
+newsource before0031; wait for user approval, no timeout-as-approval.
+
+Checkpointrestore/owners-email-2026-11-12-1794531961066 at60c9d69, private
+/private/tmp/central-hill-owners-email/checkpoint:49tables1522rows inclauth/ledger31,
+2restores exact,1377Gitobjects/183mediaSHAexact. Preserve ownersemailrestore20261112,
+ownersemailqa20261112 and schema-only ownersemailunitqa20261112/alloldartifacts/envs/
+caches/bases/worktrees/logos/symlinks. Migration0031 only adds nullableowners_email
+DEFAULTpartners@centralhill.pt, oldomitpreserves/nullhides. QA/unit alreadymigrated;
+no remoteDB/R2writes/push/deploy/providerSetup/cleanup.
+
+On explicit approval: script /private/tmp/central-hill-owners-email/apply-main.mjs
+requires OWNERS_EMAIL_MAIN_MIGRATION=approved; verifiesexactmain/ledger31/hash, new
+pre-DDLdump and protectedoldcolumns. Then localFF candidate, readonly Settings/footer
+opening4locales+mainconservation ignoring onlynewattribute; no broadQArepeat/mainSave.
+Update this handoff status after activation. All implementation work already complete.
+
 ## Admin Back to top —2026-11-12
 
 Floating arrow in common AdminWorkspace for all authenticated admin editors/routes.
