@@ -25,6 +25,10 @@ selected asset's actual S3 bytes with its original fixture SHA256 and dimensions
 the latter rejects an incomplete case/template/gallery/locale matrix.
 When running from a separate writer worktree without the shared Pages helpers, set
 `WELCOME_QA_HELPERS` to that integrated `guests-welcome-media/common.mjs` file.
+For the final Apartment locale supplement, the private compiled helper selects
+origin3094 with the same QA database; all ordinary matrices used3091. The helper
+records bounded RSC stream completion, document reload, exact persisted local
+copy, restored QA names and unchanged EN rows.
 Keep at most two runners active; `galleries.mjs` changes the same fixtures and must
 run after the corresponding main matrices. Incomplete cases are never approved.
 

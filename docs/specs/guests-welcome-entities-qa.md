@@ -112,11 +112,26 @@ con cada fixture seleccionado. `completion-audit.json` solo se produce si todos
 esos resultados están completos. La auditoría de bytes terminó con182 assets seleccionados: todos sus SHA256,
 dimensiones y MIME coinciden con los archivos originales;64/64 rutas del layout
 contienen Organization y LodgingBusiness con el asset guardado. Los16 grupos
-cover→OG y64 comprobaciones de metadata correspondientes están aprobados. Solo
-queda el suplemento Apartment ES/PT/FR: la ruta nested devolvió404 en el dev QA,
-aunque SQL y Drizzle CLI confirman la fila y su Building correctos. Se conserva
-`apartment-locales-error.json`; no se aprueba esa ejecución incompleta. La matriz
-E04 anterior4 ratios/Publish/preview/public card permanece válida.
+cover→OG y64 comprobaciones de metadata correspondientes están aprobados. El suplemento
+Apartment ES/PT/FR terminó en la copia compilada3094 (build fuente `dbdb744`,
+producto contrastado por el orquestador), misma base QA, mediante login normal.
+La ruta nested era200 en compilado y404 en el estado dev/HMR3091; SQL y Drizzle
+confirmaban identidad/parent correctos. No se modificó producto para ese diagnóstico.
+
+`apartment-locales.json` conserva tres destinos públicos D/M, todos con EN íntegro.
+PT/FR incluyen edición/restauración local de Name por UI y cuatro ACK200 cada uno;
+se comprueba cada `draft.content.name` y `published.content.name`. El helper confirma
+el target seleccionado tras cada recarga. El fin del stream RSC tiene límite10s y
+su resultado se registra explícitamente: un ACK no sustituye las comprobaciones de
+persistencia/publicación ni el GET público con imagen decodificada. Las cuatro
+publicaciones conservan finalmente `Welcome QA Entity Apartment`; no queda el
+texto QA temporal. El caso ES completo anterior se preservó sin repetirlo.
+
+Auditoría final `completion-audit.json`: **PASS**,166 entradas primarias y2 extras
+Post,18 tipos activos y E15 N/A, todos los ratios requeridos,9 templates Guide,
+21 variantes repetibles/galería,16 fallbacks cover→OG y64 rutas JSON-LD. Los182
+assets reales tienen SHA256/dimensiones/MIME exactos. No queda caso pendiente de
+entidades. Todos los browsers propios se cerraron. ESLint de los17 scripts:0errores.
 
 ## Incidencias de infraestructura y harness
 
@@ -136,5 +151,11 @@ ahora confirma `aria-selected` antes de Save. La metadata de ES detectó la
 publicación del valor previo; ese caso incompleto se repitió y no se contó como pass.
 El keep-alive HTTP privado fue ampliado por el orquestador tras capturar ECONNRESET;
 no se cambió código de producto para el transporte de QA.
+
+Los archivos `*-error.json` y el historial se conservan como registro de intentos
+fallidos; los recibos completos y `completion-audit.json` determinan el cierre, no
+la ausencia de logs antiguos. Los medios de fixtures se decodifican de verdad;
+las referencias antiguas cuyos bytes ya faltaban en el checkpoint no se rellenan
+ni se declaran reparadas. Las capturas pueden mostrar esos placeholders ajenos.
 
 No se atribuye Safari físico ni otros motores a estas pruebas de Chromium.
