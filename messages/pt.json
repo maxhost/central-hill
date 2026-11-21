@@ -1118,7 +1118,7 @@
           "officeHours": "Horário",
           "officeHoursLabel": "Etiqueta do horário",
           "ogImage": "Imagem social predefinida",
-          "ogImageHint": "Imagem de reserva quando uma entidade não define nenhuma.",
+          "ogImageHint": "Usada nas páginas Blog, Serviços e Guias sem imagem social, e como logótipo da organização nos metadados de pesquisa.",
           "avantioAccount": "ID de conta Avantio",
           "avantioConfig": "Config. do widget Avantio",
           "avantioConfigHint": "Objeto JSON passado ao widget de reservas.",

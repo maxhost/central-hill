@@ -1118,7 +1118,7 @@
           "officeHours": "Office hours",
           "officeHoursLabel": "Office-hours label",
           "ogImage": "Default social image",
-          "ogImageHint": "Fallback image when an entity sets none.",
+          "ogImageHint": "Used for Blog, Services and Guides pages without a social image, and as the organisation logo in search metadata.",
           "avantioAccount": "Avantio account ID",
           "avantioConfig": "Avantio widget config",
           "avantioConfigHint": "JSON object passed to the booking widget.",

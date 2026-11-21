@@ -302,3 +302,7 @@ Puertas de merge: matriz completa del plan, vídeo/Lottie real, typecheck/lint/p
 ### Alcance ampliado por E2E: OG compartido de legales
 
 El ciclo real O10 seleccionó/subió/guardó/publicó OG EN; EN emitió imagen/dimensiones correctas pero ES con publicación propia emitió cero og:image/twitter:image. Evidencia privada og/failure-privacy_policy-cookies_policy-complaints_book.json y og/es-privacy.html. El lector elegía todo el envelope ES, incluido OG obsoleto, aunque sharedEnvelope declara OG compartido y el picker solo admite EN. Se corrige únicamente composición de envelope privado y selección pública legal: copiar OG de EN (working en preview, publicado en público), conservando documento/SEO target íntegros. Sin escrituras GET, migración, backfill ni modificación de Save/Publish. Se añaden contrato focal y E2E de O10–O12 en4locales y aislamiento draft/published.
+
+### Alcance ampliado por inventario: hint de Settings OG
+
+E19 contrastó que Default social image alimenta únicamente los fallbacks de Blog, Services y Guides y el logo Organization de JSON-LD. El hint anterior prometía fallback genérico para entidades, que no existe. Se ajusta solo ese hint en4locales para describir los consumidores reales; no se amplía SEO global ni se cambian sus prioridades. E19 debe comprobar explícitamente los tres fallbacks y JSON-LD mediante upload/Save/reload reales.
