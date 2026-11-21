@@ -71,3 +71,23 @@ test("EN publication updates fallback while independently published ES stays byt
   assert.equal(JSON.stringify(spanish), serialized);
   assert.deepEqual(pickLegalPageSnapshot(rows, "pt"), english);
 });
+
+
+test("legal OG follows the source-only picker without replacing localized copy or SEO", () => {
+  const english = envelope("English");
+  const spanish = envelope("Español");
+  spanish.content.seo.meta_title = "Título propio";
+  const before = structuredClone(spanish);
+  english.ogImageMediaId = "4f9ea77f-021d-4d69-8c47-392b9db260ad";
+  const prepared = prepareTargetEnvelope(english, spanish, legalPageDescriptor("privacy_policy"));
+  assert.deepEqual(prepared.content, before.content);
+  assert.equal(prepared.ogImageMediaId, english.ogImageMediaId);
+  assert.deepEqual(spanish, before);
+  const rows = [{ locale: "en", published: english, draft: { ...english, ogImageMediaId: null } }, { locale: "es", published: spanish }];
+  const publicSpanish = pickLegalPageSnapshot(rows, "es")!;
+  assert.deepEqual(publicSpanish.content, before.content);
+  assert.equal(publicSpanish.ogImageMediaId, english.ogImageMediaId);
+  assert.deepEqual(pickLegalPageSnapshot(rows, "pt"), english);
+  assert.deepEqual(spanish, before);
+  assert.equal(pickLegalPageSnapshot([{locale:"en",published:{...english,ogImageMediaId:null}},{locale:"es",published:{...spanish,ogImageMediaId:english.ogImageMediaId}}],"es")?.ogImageMediaId,null);
+});

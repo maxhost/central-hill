@@ -28,7 +28,12 @@ export function prepareTargetEnvelope<K extends EditorialPageKey = "home">(
   target: PageEnvelope<K> | null,
   descriptor: PageEditorialDescriptor = homeDescriptor,
 ): PageEnvelope<K> {
-  if (descriptor.localeIndependentContent) return structuredClone(target ?? template);
+  if (descriptor.localeIndependentContent) {
+    const next = structuredClone(target ?? template);
+    // Whole documents retain their own copy/SEO, while the source-only OG picker is shared.
+    next.ogImageMediaId = template.ogImageMediaId;
+    return next;
+  }
   const next = structuredClone(template);
   if (target?.mediaAlts !== undefined) next.mediaAlts = structuredClone(target.mediaAlts);
   const texts = new Map<string, string>();

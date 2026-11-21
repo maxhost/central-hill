@@ -298,3 +298,7 @@ Asignación disjunta conforme AGENTS.md:
 - Orquestador: IntroSplit (imageFrame?: 'stretch'|'3:2', predeterminado stretch), guest-page.tsx, schema Welcome/hint/tests, ADR de kernel, infraestructura privada/checkpoint, integración y verificaciones.
 
 Puertas de merge: matriz completa del plan, vídeo/Lottie real, typecheck/lint/pruebas/build/revisión visual/conservación y revisión QA independiente sobre candidato exacto. No push/deploy. Comandos: pnpm typecheck; pnpm lint; pnpm exec tsx --test <pruebas focales explícitas>; pnpm build aislado; scripts E2E inventariados. No se cuentan pnpm test ni boundary:check.
+
+### Alcance ampliado por E2E: OG compartido de legales
+
+El ciclo real O10 seleccionó/subió/guardó/publicó OG EN; EN emitió imagen/dimensiones correctas pero ES con publicación propia emitió cero og:image/twitter:image. Evidencia privada og/failure-privacy_policy-cookies_policy-complaints_book.json y og/es-privacy.html. El lector elegía todo el envelope ES, incluido OG obsoleto, aunque sharedEnvelope declara OG compartido y el picker solo admite EN. Se corrige únicamente composición de envelope privado y selección pública legal: copiar OG de EN (working en preview, publicado en público), conservando documento/SEO target íntegros. Sin escrituras GET, migración, backfill ni modificación de Save/Publish. Se añaden contrato focal y E2E de O10–O12 en4locales y aislamiento draft/published.

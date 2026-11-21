@@ -113,7 +113,7 @@ export function IntroSplit({
       <div
         data-intro-media-frame={imageFrame}
         className={imageFrame === "3:2"
-          ? "relative aspect-[3/2] min-w-0 w-full self-center overflow-hidden bg-surface *:absolute *:inset-0 *:h-full *:w-full *:object-cover"
+          ? "relative aspect-[3/2] min-w-0 w-full self-center overflow-hidden bg-bg *:absolute *:inset-0 *:h-full *:w-full *:object-cover"
           : "min-h-[280px] self-stretch *:h-full *:w-full *:object-cover min-[881px]:min-h-[380px]"}
       >
         {image}

@@ -58,9 +58,14 @@ const publishedEnvelope = z.object({
 }).strict();
 /** Complete document fallback only: never merge translated blocks or consult drafts. */
 export function pickLegalPageSnapshot(rows: readonly { locale: string; published: unknown }[], locale: string): PageEnvelope<LegalPageKey> | null {
+  const english = publishedEnvelope.safeParse(rows.find(row => row.locale === "en")?.published);
   for (const candidate of locale === "en" ? ["en"] : [locale, "en"]) {
     const parsed = publishedEnvelope.safeParse(rows.find(row => row.locale === candidate)?.published);
-    if (parsed.success) return parsed.data;
+    if (parsed.success) return {
+      ...parsed.data,
+      // Shared images follow published EN only; drafts never alter public metadata.
+      ogImageMediaId: english.success ? english.data.ogImageMediaId : parsed.data.ogImageMediaId,
+    };
   }
   return null;
 }
