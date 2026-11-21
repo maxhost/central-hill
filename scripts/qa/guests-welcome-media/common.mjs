@@ -1,20 +1,172 @@
-import assert from 'node:assert/strict';
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import {createRequire} from 'node:module';
-export const req=createRequire(path.join(process.cwd(),'package.json'));
-export const root=process.env.WELCOME_QA_ROOT||'/private/tmp/central-hill-guests-welcome';
-export const base='http://127.0.0.1:3091';
-export async function until(fn,label,timeout=90000){const end=Date.now()+timeout;let last;while(Date.now()<end){try{const x=await fn();if(x)return x;}catch(e){last=e;}await new Promise(r=>setTimeout(r,200));}throw Error(`Timeout ${label}: ${last?.message||''}`);}
-export async function browser(){const {chromium}=req('playwright');return chromium.launch({headless:true});}
-export async function login(context){const p=await context.newPage();const c=JSON.parse(await fs.readFile(root+'/login-private.json','utf8'));await p.goto(base+'/admin/login',{waitUntil:'domcontentloaded',timeout:90000});await p.waitForFunction(()=>Array.from(document.querySelectorAll('form')).some(f=>Object.keys(f).some(k=>k.startsWith('__reactProps')&&typeof f[k]?.onSubmit==='function')),{},{timeout:90000});await p.getByLabel('Email',{exact:true}).fill(c.email);await p.getByLabel('Password',{exact:true}).fill(c.password);const response=p.waitForResponse(r=>new URL(r.url()).pathname==='/api/auth/sign-in/email',{timeout:90000});await p.getByRole('button',{name:/Sign in|Log in/i}).click();assert.equal((await response).status(),200,'normal QA sign in');await p.waitForURL(u=>!u.pathname.includes('/login'),{timeout:90000,waitUntil:'domcontentloaded'});return p;}
-export async function section(p,key){const select=p.locator('select[id$="-binding"]');const values=await select.locator('option').evaluateAll(es=>es.map(e=>e.value));await select.selectOption(values.includes(key)?key:key.split('.')[0]);}
-export async function settle(p){await until(()=>p.getByRole('button',{name:'Save draft',exact:true}).first().isEnabled(),'save settled');}
-export async function action(p,name){const response=p.waitForResponse(r=>r.request().method()==='POST' && r.request().headers()['next-action'] && new URL(r.url()).pathname===new URL(p.url()).pathname,{timeout:90000});await p.getByRole('button',{name,exact:true}).first().click();const r=await response;assert.equal(r.status(),200);await r.finished();await settle(p);assert.equal(await p.locator('[aria-invalid=true]').count(),0,await p.locator('[role=alert]').allTextContents());}
-export async function saveDraft(p){await action(p,'Save draft');}
-export async function publish(p){await action(p,'Publish');}
-export async function fieldUpload(p,key,file){await section(p,key);const input=p.locator('input[type=file]').first();await input.setInputFiles(file);await until(()=>input.locator('xpath=..').locator('img[src^="blob:"]').count(),'local selected file');await settle(p);return input.locator('xpath=..').locator('img').first().getAttribute('src');}
-export async function fixture(name='3-2',dimensions=[2250,1500]){await fs.mkdir(root+'/fixtures',{recursive:true});const sharp=req('sharp');const [w,h]=dimensions;const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="#e6b04d"/><rect x="4" y="4" width="${w-8}" height="${h-8}" fill="none" stroke="#cc1030" stroke-width="24"/><path d="M0 ${h/2}H${w}M${w/2} 0V${h}" stroke="#185a72" stroke-width="16"/><circle cx="${w/2}" cy="${h/2}" r="${Math.min(w,h)/8}" fill="#207837"/><text x="${w/2}" y="${h/2}" text-anchor="middle" font-size="${Math.min(w,h)/16}" fill="white">${name} ${w}x${h}</text></svg>`;const file=root+'/fixtures/'+name+'.png';await sharp(Buffer.from(svg)).png().toFile(file);return file;}
-export async function imageMeasurement(locator){await locator.scrollIntoViewIfNeeded();await locator.evaluate(async e=>{if(e instanceof HTMLImageElement)await e.decode();});return locator.evaluate(e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e),p=e.parentElement,pr=p.getBoundingClientRect();return {tag:e.tagName,src:e.currentSrc||e.src,width:r.width,height:r.height,naturalWidth:e.naturalWidth,naturalHeight:e.naturalHeight,objectFit:s.objectFit,objectPosition:s.objectPosition,parent:{width:pr.width,height:pr.height},overflow:document.documentElement.scrollWidth>innerWidth};});}
-export async function database(){const {parse}=req('dotenv');const e=parse(await fs.readFile(root+'/qa.env.local'));const u=new URL(e.DATABASE_URL);assert.equal(u.hostname,'welcomeqa20261121.local');assert.equal(u.username,'welcomeqa20261121');const {neon}=req('@neondatabase/serverless');const sql=neon(e.DATABASE_URL);assert.deepEqual((await sql`select current_database() as db,current_user as role`)[0],{db:'welcomeqa20261121',role:'welcomeqa20261121'});return sql;}
-export async function pageSnapshot(sql,key){return (await sql`select * from page_locale_content where page_key=${key} and locale='en'`)[0];}
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { createRequire } from "node:module";
+export const req = createRequire(path.join(process.cwd(), "package.json"));
+export const root =
+  process.env.WELCOME_QA_ROOT || "/private/tmp/central-hill-guests-welcome";
+export const base = "http://127.0.0.1:3091";
+export async function until(fn, label, timeout = 90000) {
+  const end = Date.now() + timeout;
+  let last;
+  while (Date.now() < end) {
+    try {
+      const x = await fn();
+      if (x) return x;
+    } catch (e) {
+      last = e;
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  }
+  throw Error(`Timeout ${label}: ${last?.message || ""}`);
+}
+export async function browser() {
+  const { chromium } = req("playwright");
+  return chromium.launch({ headless: true });
+}
+export async function login(context) {
+  const p = await context.newPage();
+  const c = JSON.parse(await fs.readFile(root + "/login-private.json", "utf8"));
+  await p.goto(base + "/admin/login", {
+    waitUntil: "domcontentloaded",
+    timeout: 90000,
+  });
+  await p.waitForFunction(
+    () =>
+      Array.from(document.querySelectorAll("form")).some((f) =>
+        Object.keys(f).some(
+          (k) =>
+            k.startsWith("__reactProps") &&
+            typeof f[k]?.onSubmit === "function",
+        ),
+      ),
+    {},
+    { timeout: 90000 },
+  );
+  await p.getByLabel("Email", { exact: true }).fill(c.email);
+  await p.getByLabel("Password", { exact: true }).fill(c.password);
+  const response = p.waitForResponse(
+    (r) => new URL(r.url()).pathname === "/api/auth/sign-in/email",
+    { timeout: 90000 },
+  );
+  await p.getByRole("button", { name: /Sign in|Log in/i }).click();
+  assert.equal((await response).status(), 200, "normal QA sign in");
+  await p.waitForURL((u) => !u.pathname.includes("/login"), {
+    timeout: 90000,
+    waitUntil: "domcontentloaded",
+  });
+  return p;
+}
+export async function section(p, key) {
+  const select = p.locator('select[id$="-binding"]');
+  const values = await select
+    .locator("option")
+    .evaluateAll((es) => es.map((e) => e.value));
+  await select.selectOption(values.includes(key) ? key : key.split(".")[0]);
+}
+export async function settle(p) {
+  await until(
+    () =>
+      p
+        .getByRole("button", { name: "Save draft", exact: true })
+        .first()
+        .isEnabled(),
+    "save settled",
+  );
+}
+export async function action(p, name) {
+  const response = p.waitForResponse(
+    (r) =>
+      r.request().method() === "POST" &&
+      r.request().headers()["next-action"] &&
+      new URL(r.url()).pathname === new URL(p.url()).pathname,
+    { timeout: 90000 },
+  );
+  await p.getByRole("button", { name, exact: true }).first().click();
+  const r = await response;
+  assert.equal(r.status(), 200);
+  await r.finished();
+  await settle(p);
+  assert.equal(
+    await p.locator("[aria-invalid=true]").count(),
+    0,
+    await p.locator("[role=alert]").allTextContents(),
+  );
+}
+export async function saveDraft(p) {
+  await action(p, "Save draft");
+}
+export async function publish(p) {
+  await action(p, "Publish");
+}
+export async function fieldUpload(p, key, file) {
+  await section(p, key);
+  const input = p.locator("input[type=file]").first();
+  await input.setInputFiles(file);
+  if (/\.(png|jpe?g|webp|avif)$/i.test(file)) {
+    await until(
+      () => input.locator("xpath=..").locator('img[src^="blob:"]').count(),
+      "local selected file",
+    );
+    await settle(p);
+    return input.locator("xpath=..").locator("img").first().getAttribute("src");
+  }
+  await until(
+    async () => !(await p.getByText("Preparing…", { exact: true }).count()),
+    "upload reservation",
+  );
+  await settle(p);
+  return null;
+}
+export async function fixture(name = "3-2", dimensions = [2250, 1500]) {
+  await fs.mkdir(root + "/fixtures", { recursive: true });
+  const sharp = req("sharp");
+  const [w, h] = dimensions;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="#e6b04d"/><rect x="4" y="4" width="${w - 8}" height="${h - 8}" fill="none" stroke="#cc1030" stroke-width="24"/><path d="M0 ${h / 2}H${w}M${w / 2} 0V${h}" stroke="#185a72" stroke-width="16"/><circle cx="${w / 2}" cy="${h / 2}" r="${Math.min(w, h) / 8}" fill="#207837"/><text x="${w / 2}" y="${h / 2}" text-anchor="middle" font-size="${Math.min(w, h) / 16}" fill="white">${name} ${w}x${h}</text></svg>`;
+  const file = root + "/fixtures/" + name + ".png";
+  await sharp(Buffer.from(svg)).png().toFile(file);
+  return file;
+}
+export async function imageMeasurement(locator) {
+  await locator.scrollIntoViewIfNeeded();
+  await locator.evaluate(async (e) => {
+    if (e instanceof HTMLImageElement) await e.decode();
+  });
+  return locator.evaluate((e) => {
+    const r = e.getBoundingClientRect(),
+      s = getComputedStyle(e),
+      p = e.parentElement,
+      pr = p.getBoundingClientRect();
+    return {
+      tag: e.tagName,
+      src: e.currentSrc || e.src,
+      width: r.width,
+      height: r.height,
+      naturalWidth: e.naturalWidth,
+      naturalHeight: e.naturalHeight,
+      objectFit: s.objectFit,
+      objectPosition: s.objectPosition,
+      parent: { width: pr.width, height: pr.height },
+      overflow: document.documentElement.scrollWidth > innerWidth,
+    };
+  });
+}
+export async function database() {
+  const { parse } = req("dotenv");
+  const e = parse(await fs.readFile(root + "/qa.env.local"));
+  const u = new URL(e.DATABASE_URL);
+  assert.equal(u.hostname, "welcomeqa20261121.local");
+  assert.equal(u.username, "welcomeqa20261121");
+  const { neon } = req("@neondatabase/serverless");
+  const sql = neon(e.DATABASE_URL);
+  assert.deepEqual(
+    (await sql`select current_database() as db,current_user as role`)[0],
+    { db: "welcomeqa20261121", role: "welcomeqa20261121" },
+  );
+  return sql;
+}
+export async function pageSnapshot(sql, key) {
+  return (
+    await sql`select * from page_locale_content where page_key=${key} and locale='en'`
+  )[0];
+}
