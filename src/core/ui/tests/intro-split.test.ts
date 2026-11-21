@@ -4,9 +4,17 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { IntroSplit } from "../intro-split";
 
-const render = (extra = {}) => renderToStaticMarkup(createElement(IntroSplit, {
-  headline: "Welcome", image: createElement("img", { src: "/known-3-2.png", alt: "Centre marker" }), ...extra,
-}));
+const render = (extra = {}) =>
+  renderToStaticMarkup(
+    createElement(IntroSplit, {
+      headline: "Welcome",
+      image: createElement("img", {
+        src: "/known-3-2.png",
+        alt: "Centre marker",
+      }),
+      ...extra,
+    }),
+  );
 
 test("existing IntroSplit callers keep stretch and responsive minimum heights", () => {
   const html = render();
@@ -18,8 +26,13 @@ test("existing IntroSplit callers keep stretch and responsive minimum heights", 
 
 test("fixed frame reserves SSR space independently of text and media dimensions", () => {
   const short = render({ imageFrame: "3:2" });
-  const long = render({ imageFrame: "3:2", paragraphs: ["Long copy ".repeat(1000)], imagePosition: "left" });
-  const frame = (html: string) => html.match(/<div data-intro-media-frame="3:2"[^>]*>/)?.[0];
+  const long = render({
+    imageFrame: "3:2",
+    paragraphs: ["Long copy ".repeat(1000)],
+    imagePosition: "left",
+  });
+  const frame = (html: string) =>
+    html.match(/<div data-intro-media-frame="3:2"[^>]*>/)?.[0];
   assert.equal(frame(short), frame(long));
   assert.match(frame(short)!, /relative aspect-\[3\/2\]/);
   assert.match(frame(short)!, /\*:absolute \*:inset-0/);

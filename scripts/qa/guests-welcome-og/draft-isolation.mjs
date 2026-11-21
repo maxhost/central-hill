@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';import {createRequire}from'node:module';
+import {browser,login,root,base,section,saveDraft,publish,fixture,until}from'../guests-welcome-media/common.mjs';
+const req=createRequire(new URL('../../../package.json',import.meta.url)),{neon}=req('@neondatabase/serverless');const uri=new URL(process.env.DATABASE_URL);assert.equal(uri.hostname,'welcomeqa20261121.local');assert.equal(uri.username,'welcomeqa20261121');const sql=neon(uri.href);
+const rows=()=>sql`select locale,published,draft,revision from page_locale_content where page_key='privacy_policy' order by locale`;
+const original=await rows();const source=original.find(r=>r.locale==='en'),spanish=original.find(r=>r.locale==='es');assert.ok(source?.published&&spanish?.published);const oldId=source.published.ogImageMediaId;assert.ok(oldId);
+const b=await browser(),context=await b.newContext({viewport:{width:1440,height:1000}}),p=await login(context);p.setDefaultNavigationTimeout(90000);const evidence=[];
+async function metadata(expected,label){const out=await context.newPage();const r=await out.goto(base+'/es/privacy-policy',{waitUntil:'domcontentloaded'});assert.equal(r.status(),200);await until(()=>out.locator('meta[property="og:image"]').getAttribute('content').then(v=>v?.includes(expected)),label);await out.locator('[data-legal-page="privacy_policy"]').screenshot({path:root+'/og/'+label+'.png'});const text=await out.locator('[data-legal-page="privacy_policy"]').innerText();await out.close();evidence.push({label,expected,text});}
+try{
+ await p.goto(base+'/admin/pages/privacy_policy',{waitUntil:'domcontentloaded'});
+ await p.waitForFunction(()=>Array.from(document.querySelectorAll('button')).some(e=>e.textContent.trim()==='SEO EN'&&Object.keys(e).some(k=>k.startsWith('__reactProps')&&typeof e[k]?.onClick==='function')));
+ await p.getByRole('button',{name:'SEO EN',exact:true}).click();await until(()=>p.locator('input[type=file]').count(),'SEO uploader');await p.locator('input[type=file]').setInputFiles(await fixture('og-private-source-probe',[1200,800]));await until(()=>p.locator('img[src^="blob:"]').count(),'OG private blob');await saveDraft(p);
+ const draft=(await rows()).find(r=>r.locale==='en');const newId=draft.draft.ogImageMediaId;assert.notEqual(newId,oldId);await metadata(oldId,'legal-og-english-draft-private');
+ await p.getByRole('group',{name:'Content language',exact:true}).getByRole('button',{name:'ES',exact:true}).click();await section(p,'title');const targetTitle=p.locator('#page-field-privacy_policy-title');await targetTitle.fill('QA unpublished Spanish draft');await saveDraft(p);
+ const target=(await rows()).find(r=>r.locale==='es');assert.equal(target.draft.content.title,'QA unpublished Spanish draft');assert.deepEqual(target.published,spanish.published);await metadata(oldId,'legal-og-spanish-draft-private');
+ await p.getByRole('group',{name:'Content language',exact:true}).getByRole('button',{name:/^EN/}).click();await publish(p);await metadata(newId,'legal-og-published-source-with-own-spanish');
+ const final=await rows();assert.deepEqual(final.find(r=>r.locale==='es').published.content,spanish.published.content);assert.equal(final.find(r=>r.locale==='es').draft.content.title,'QA unpublished Spanish draft');assert.deepEqual(final.find(r=>r.locale==='en').published.content,source.published.content);
+ await fs.writeFile(root+'/og/draft-isolation.json',JSON.stringify({oldId,newId,evidence,result:'pass',sourceCopyPreserved:true,targetPublishedCopyPreserved:true,targetDraftNeverPublic:true},null,2));console.log('Legal shared OG draft isolation PASS');
+}finally{await b.close();}

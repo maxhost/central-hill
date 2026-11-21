@@ -299,10 +299,18 @@ Asignación disjunta conforme AGENTS.md:
 
 Puertas de merge: matriz completa del plan, vídeo/Lottie real, typecheck/lint/pruebas/build/revisión visual/conservación y revisión QA independiente sobre candidato exacto. No push/deploy. Comandos: pnpm typecheck; pnpm lint; pnpm exec tsx --test <pruebas focales explícitas>; pnpm build aislado; scripts E2E inventariados. No se cuentan pnpm test ni boundary:check.
 
-### Alcance ampliado por E2E: OG compartido de legales
+### Alcance ampliado por E2E: adopción del picker OG en legales
 
-El ciclo real O10 seleccionó/subió/guardó/publicó OG EN; EN emitió imagen/dimensiones correctas pero ES con publicación propia emitió cero og:image/twitter:image. Evidencia privada og/failure-privacy_policy-cookies_policy-complaints_book.json y og/es-privacy.html. El lector elegía todo el envelope ES, incluido OG obsoleto, aunque sharedEnvelope declara OG compartido y el picker solo admite EN. Se corrige únicamente composición de envelope privado y selección pública legal: copiar OG de EN (working en preview, publicado en público), conservando documento/SEO target íntegros. Sin escrituras GET, migración, backfill ni modificación de Save/Publish. Se añaden contrato focal y E2E de O10–O12 en4locales y aislamiento draft/published.
+El uploader OG solo admite EN. prepareTargetEnvelope conservaba el OG antiguo al abrir un documento legal target propio, aunque sharedEnvelope lo declara compartido. Se corrige SOLO la preparación de working: adopta el picker EN mientras conserva content/SEO target íntegros, para que su Save/Publish normal pueda publicar esa selección. El lector público conserva sin cambios el envelope publicado propio completo o el fallback EN completo; EN Publish nunca publica cambios de un target. La expectativa inicial del harnés de activación automática de OG EN en4locales era incorrecta y fue retirada tras contrastar el contrato editorial. Los E2E correspondientes se ejecutan mediante Save/Publish de cada locale y con aislamiento de drafts. Sin modificación de Save/Publish, publicación por locale, GET writes, migración ni backfill.
+
+### Corrección de carga neutra de Welcome
+
+QA retuvo una imagen optimizada: mientras complete=false/naturalWidth=0, el blurhash coloreaba191352de191888píxeles en estado loading. Welcome pasa blurhash:null al renderer para mantener el papel neutro durante carga, conservando dimensiones y optimización. Otros consumidores retienen sus placeholders. Evidencia privada image-loading-observation.json; retest focal requerido.
 
 ### Alcance ampliado por inventario: hint de Settings OG
 
 E19 contrastó que Default social image alimenta únicamente los fallbacks de Blog, Services y Guides y el logo Organization de JSON-LD. El hint anterior prometía fallback genérico para entidades, que no existe. Se ajusta solo ese hint en4locales para describir los consumidores reales; no se amplía SEO global ni se cambian sus prioridades. E19 debe comprobar explícitamente los tres fallbacks y JSON-LD mediante upload/Save/reload reales.
+
+### Alcance ampliado por E2E: Service itinerary
+
+E07 encontró una imagen vertical con caja de imagen108×162 dentro de un frame108×108, recortada desde arriba en lugar del centro. El dato coincide con el código base; no es un fallo de transporte. Se limita la corrección al thumbnail de ServiceItinerary: padre relativo y medio absoluto con ancho/alto explícitos, cover centrado. Fallback numérico y demás destinos sin cambios. Evidencia privada entities/service-error.json; retest de ratios y tres categorías requerido antes del merge.

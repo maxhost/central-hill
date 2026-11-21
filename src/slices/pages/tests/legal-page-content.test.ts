@@ -73,7 +73,7 @@ test("EN publication updates fallback while independently published ES stays byt
 });
 
 
-test("legal OG follows the source-only picker without replacing localized copy or SEO", () => {
+test("legal OG adopts the source-only picker in working state and keeps own publication until Publish", () => {
   const english = envelope("English");
   const spanish = envelope("Español");
   spanish.content.seo.meta_title = "Título propio";
@@ -83,11 +83,9 @@ test("legal OG follows the source-only picker without replacing localized copy o
   assert.deepEqual(prepared.content, before.content);
   assert.equal(prepared.ogImageMediaId, english.ogImageMediaId);
   assert.deepEqual(spanish, before);
-  const rows = [{ locale: "en", published: english, draft: { ...english, ogImageMediaId: null } }, { locale: "es", published: spanish }];
-  const publicSpanish = pickLegalPageSnapshot(rows, "es")!;
-  assert.deepEqual(publicSpanish.content, before.content);
-  assert.equal(publicSpanish.ogImageMediaId, english.ogImageMediaId);
+  const rows = [{ locale: "en", published: english }, { locale: "es", published: spanish, draft: prepared }];
+  assert.deepEqual(pickLegalPageSnapshot(rows, "es"), before);
   assert.deepEqual(pickLegalPageSnapshot(rows, "pt"), english);
-  assert.deepEqual(spanish, before);
-  assert.equal(pickLegalPageSnapshot([{locale:"en",published:{...english,ogImageMediaId:null}},{locale:"es",published:{...spanish,ogImageMediaId:english.ogImageMediaId}}],"es")?.ogImageMediaId,null);
+  assert.deepEqual(pickLegalPageSnapshot([{locale:"en",published:english},{locale:"es",published:prepared}],"es"),prepared);
+  assert.deepEqual(spanish,before);
 });

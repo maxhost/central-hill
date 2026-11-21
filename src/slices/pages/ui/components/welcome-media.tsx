@@ -11,7 +11,9 @@ export function WelcomeMedia({ media, preview, errorLabel }: {
   return (
     <WelcomeMediaFrame key={`${media.mime ?? "image/"}:${media.url}`} preview={preview} errorLabel={errorLabel}>
       {MediaContent({
-        media,
+        // Keep Welcome neutral while the actual image loads; retain intrinsic dimensions
+        // and normal optimization. Other MediaContent consumers keep their blurhash.
+        media: { ...media, blurhash: null },
         className: "absolute inset-0 h-full w-full object-cover object-center",
         sizes: "(max-width: 880px) 100vw, 560px",
       })}

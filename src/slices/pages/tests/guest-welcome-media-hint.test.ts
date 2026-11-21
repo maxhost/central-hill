@@ -7,10 +7,12 @@ test("Welcome upload hint describes the same fixed centred frame on mobile and d
   const root = describe(guestSchema);
   assert.equal(root.kind, "object");
   if (root.kind !== "object") return;
-  const welcome = root.fields.find(field => field.key === "welcome")?.node;
+  const welcome = root.fields.find((field) => field.key === "welcome")?.node;
   assert.equal(welcome?.kind, "object");
   if (welcome?.kind !== "object") return;
-  const media = welcome.fields.find(field => field.key === "image_media_id")?.node;
+  const media = welcome.fields.find(
+    (field) => field.key === "image_media_id",
+  )?.node;
   assert.equal(media?.kind, "media");
   if (media?.kind !== "media") return;
   assert.equal(media.accept, "animated");
