@@ -279,6 +279,8 @@ const result = {
     .reduce((n, r) => n + r.instances.length, 0),
   browserEngine: "Chromium only",
   originalDimensionsReceipt: "natural-dimensions-results.json",
+  visualPaintAudit: "visual-paper-audit.json",
+  visualPaintSupplement: "visual-close-results.json",
   approved: rows.filter((r) => r.status === "approved").length,
   pending: rows.filter((r) => r.status === "pending").map((r) => r.id),
   independentQA: ["P24"],
