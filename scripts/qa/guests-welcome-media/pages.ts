@@ -111,7 +111,6 @@ function expectedRatio(key: string, ps: string) {
       "owners.final_cta",
       "real_estate.capabilities",
       "about.organisation",
-      "buildings.calculator",
       "services.final_cta",
     ].some((x) => (key + "." + ps).startsWith(x))
   )
@@ -267,6 +266,14 @@ async function measure(
       assert.ok(
         Math.abs(m.h - 48) <= 1 && m.w <= 161,
         label + " logo slot 48px/max160px",
+      );
+    }
+    if (label.includes("buildings-calculator-media")) {
+      const expectedHeight =
+        m.layout.columns > 1 ? m.layout.copyHeight : m.w / (4 / 5);
+      assert.ok(
+        Math.abs(m.h - expectedHeight) <= 1,
+        `${label} responsive calculator height ${m.h}, expected ${expectedHeight}`,
       );
     }
     if (ratio)

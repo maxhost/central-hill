@@ -139,7 +139,7 @@ try {
       { waitUntil: "domcontentloaded" },
     );
     publicEvidence.push({
-      width,
+      viewport: width,
       ...(await evidence(p, id, "public-" + width)),
     });
   }

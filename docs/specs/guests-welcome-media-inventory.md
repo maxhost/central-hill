@@ -17,26 +17,26 @@ D=1440×1000; M=390×844; Welcome añade880/881. Cada campo visible requiere cic
 | P07 | owners.journey.steps[].image_media_id; repetible {'min': 5, 'max': 5} | /admin/pages/owners; live preview | /<locale>/owners | StepGallery: cover centrado; min360px, columnas5/2/1, alto contenido; NO3:4 fijo | APROBADO — Owners9instancias/4ratios |
 | P08 | owners.dashboard.image_media_id | /admin/pages/owners; live preview | /<locale>/owners | 4:5 fijo; cover centrado D/M | APROBADO — Owners9instancias/4ratios |
 | P09 | owners.final_cta.image_media_id | /admin/pages/owners; live preview | /<locale>/owners | 4:5 fijo; cover centrado D/M | APROBADO — Owners9instancias/4ratios |
-| P10 | real_estate.hero.image_media_id | /admin/pages/real_estate; live preview | /<locale>/real-estate | Hero: cover centrado; altura contenido/viewport | PENDIENTE |
-| P11 | real_estate.capabilities.image_media_id | /admin/pages/real_estate; live preview | /<locale>/real-estate | 4:5 fijo; cover centrado D/M | PENDIENTE |
-| P12 | real_estate.asset_management.benefits[].image_media_id; repetible {'min': 6, 'max': 6} | /admin/pages/real_estate; live preview | /<locale>/real-estate | PhotoFeatureGrid card: cover centrado; alto según texto/grid | PENDIENTE |
-| P13 | real_estate.market.fundamentals.image_left_media_id | /admin/pages/real_estate; live preview | /<locale>/real-estate | MarketVisualPair: cover centrado; marcos horizontales del bento | PENDIENTE |
-| P14 | real_estate.market.fundamentals.image_right_media_id | /admin/pages/real_estate; live preview | /<locale>/real-estate | MarketVisualPair: cover centrado; marcos horizontales del bento | PENDIENTE |
-| P15 | real_estate.process.steps[].image_media_id; repetible {'min': 3, 'max': 8} | /admin/pages/real_estate; live preview | /<locale>/real-estate | StepGallery: cover centrado; min360px/alto contenido; NO2:3 fijo | PENDIENTE |
-| P16 | about.hero.image_media_id | /admin/pages/about; live preview | /<locale>/about | Hero compacto: cover centrado; altura viewport/contenido | PENDIENTE |
-| P17 | about.story.image_media_id | /admin/pages/about; live preview | /<locale>/about | IntroSplit stretch; imagen intrínseca si no domina texto; cover cuando estira; min380D/280M | PENDIENTE |
-| P18 | about.serve.audiences[].image_media_id; repetible {'min': 1, 'max': 12} | /admin/pages/about; live preview | /<locale>/about | PhotoFeatureGrid: cover centrado; alto según texto/grid | PENDIENTE |
-| P19 | about.organisation.image_media_id | /admin/pages/about; live preview | /<locale>/about | 4:5 fijo; cover centrado D/M | PENDIENTE |
-| P20 | about.certifications.items[].logo_media_id; repetible {'min': 1, 'max': 12} | /admin/pages/about; live preview | /<locale>/about | contain sin deformar; alto48px anchoauto max160px D/M | PENDIENTE |
-| P21 | about.community.image_media_id | /admin/pages/about; live preview | /<locale>/about | IntroSplit stretch; imagen intrínseca si no domina texto; cover cuando estira; min380D/280M | PENDIENTE |
-| P22 | about.contact.cards[].image_media_id; repetible {'min': 1, 'max': 12} | /admin/pages/about; live preview | /<locale>/about | PhotoFeatureGrid: cover centrado; alto según texto/grid | PENDIENTE |
+| P10 | real_estate.hero.image_media_id | /admin/pages/real_estate; live preview | /<locale>/real-estate | Hero: cover centrado; altura contenido/viewport | APROBADO — RE47originales+Processcreado/reemplazado |
+| P11 | real_estate.capabilities.image_media_id | /admin/pages/real_estate; live preview | /<locale>/real-estate | 4:5 fijo; cover centrado D/M | APROBADO — RE47originales+Processcreado/reemplazado |
+| P12 | real_estate.asset_management.benefits[].image_media_id; repetible {'min': 6, 'max': 6} | /admin/pages/real_estate; live preview | /<locale>/real-estate | PhotoFeatureGrid card: cover centrado; alto según texto/grid | APROBADO — RE47originales+Processcreado/reemplazado |
+| P13 | real_estate.market.fundamentals.image_left_media_id | /admin/pages/real_estate; live preview | /<locale>/real-estate | MarketVisualPair: cover centrado; marcos horizontales del bento | APROBADO — RE47originales+Processcreado/reemplazado |
+| P14 | real_estate.market.fundamentals.image_right_media_id | /admin/pages/real_estate; live preview | /<locale>/real-estate | MarketVisualPair: cover centrado; marcos horizontales del bento | APROBADO — RE47originales+Processcreado/reemplazado |
+| P15 | real_estate.process.steps[].image_media_id; repetible {'min': 3, 'max': 8} | /admin/pages/real_estate; live preview | /<locale>/real-estate | StepGallery: cover centrado; min360px/alto contenido; NO2:3 fijo | APROBADO — RE47originales+Processcreado/reemplazado |
+| P16 | about.hero.image_media_id | /admin/pages/about; live preview | /<locale>/about | Hero compacto: cover centrado; altura viewport/contenido | APROBADO — Aboutoriginales+creación/reemplazos |
+| P17 | about.story.image_media_id | /admin/pages/about; live preview | /<locale>/about | IntroSplit stretch; imagen intrínseca si no domina texto; cover cuando estira; min380D/280M | APROBADO — Aboutoriginales+creación/reemplazos |
+| P18 | about.serve.audiences[].image_media_id; repetible {'min': 1, 'max': 12} | /admin/pages/about; live preview | /<locale>/about | PhotoFeatureGrid: cover centrado; alto según texto/grid | APROBADO — Aboutoriginales+creación/reemplazos |
+| P19 | about.organisation.image_media_id | /admin/pages/about; live preview | /<locale>/about | 4:5 fijo; cover centrado D/M | APROBADO — Aboutoriginales+creación/reemplazos |
+| P20 | about.certifications.items[].logo_media_id; repetible {'min': 1, 'max': 12} | /admin/pages/about; live preview | /<locale>/about | contain sin deformar; alto48px anchoauto max160px D/M | APROBADO — Aboutoriginales+creación/reemplazos |
+| P21 | about.community.image_media_id | /admin/pages/about; live preview | /<locale>/about | IntroSplit stretch; imagen intrínseca si no domina texto; cover cuando estira; min380D/280M | APROBADO — Aboutoriginales+creación/reemplazos |
+| P22 | about.contact.cards[].image_media_id; repetible {'min': 1, 'max': 12} | /admin/pages/about; live preview | /<locale>/about | PhotoFeatureGrid: cover centrado; alto según texto/grid | APROBADO — Aboutoriginales+creación/reemplazos |
 | P23 | guest.hero.poster_media_id | /admin/pages/guest; live preview | /<locale>/guests | Hero: cover centrado; altura viewport/contenido | PENDIENTE |
 | P24 | guest.welcome.image_media_id | /admin/pages/guest; live preview | /<locale>/guests | Candidato3:2 fijo D/M/880/881; cover centrado. Base falla esperado. | PENDIENTE |
 | P25 | blog.hero.image_media_id | /admin/pages/blog; live preview | /<locale>/blog | Hero compacto: cover centrado; altura viewport/contenido | PENDIENTE |
 | P26 | guides.hero.poster_media_id | /admin/pages/guides; live preview | /<locale>/guides | Hero compacto: cover centrado; altura viewport/contenido | PENDIENTE |
-| P27 | guides.guide_aside.image_media_id | /admin/pages/guides; live preview | /<locale>/guides/<city>/<slug> | 16:10 fijo D/M; cover centrado en cada guide detail | PENDIENTE |
-| P28 | buildings.hero.image_media_id | /admin/pages/buildings; live preview | /<locale>/buildings | Hero: cover centrado; altura viewport/contenido | PENDIENTE |
-| P29 | buildings.calculator.media_media_id | /admin/pages/buildings; live preview | /<locale>/buildings | 4:5 fijo D/M; cover centrado | PENDIENTE |
+| P27 | guides.guide_aside.image_media_id | /admin/pages/guides; live preview surface=shared_aside | /<locale>/guides/<city>/<slug> | 16:10 fijo D/M; cover centrado en cada guide detail | PENDIENTE |
+| P28 | buildings.hero.image_media_id | /admin/pages/buildings; live preview | /<locale>/buildings | Hero: cover centrado; altura viewport/contenido | APROBADO —4ratiosUI |
+| P29 | buildings.calculator.media_media_id | /admin/pages/buildings; live preview | /<locale>/buildings | Desktop≥981px: altura del formulario; ≤980px:4:5 fijo. Cover centrado en ambos | APROBADO —4ratios y981/980boundary |
 | P30 | services.hero.media_media_id | /admin/pages/services; live preview | /<locale>/services | Hero: cover centrado; altura viewport/contenido | PENDIENTE |
 | P31 | services.hero.poster_media_id | /admin/pages/services; live preview | /<locale>/services | Poster de vídeo/Lottie/WebP reduced motion; mismo frame Hero | PENDIENTE |
 | P32 | services.final_cta.media_media_id | /admin/pages/services; live preview | /<locale>/services | 4:5 fijo D/M; cover centrado | PENDIENTE |
@@ -67,15 +67,15 @@ D=1440×1000; M=390×844; Welcome añade880/881. Cada campo visible requiere cic
 | E02 | building.gallery[] — mismo → Gallery | live detail preview; Building detail MosaicGallery | intrínseco/mosaico según ratios; cubrir creación+sustitución y1/2/3/4/5+ | PENDIENTE |
 | E03 | building.og_image_media_id — mismo → SEO | Building detail metadata4locales | URL/dimensiones; sin marco | PENDIENTE |
 | E04 | apartment.cover_media_id — /admin/buildings/<building-id>/apartments/new + /admin/buildings/<building-id>/apartments/<id> | editor; tarjetas apartamentos en Building detail (no ruta apartment) | 4:3 cover centrado | PENDIENTE |
-| E05 | service.cover_media_id — /admin/services/new + /admin/services/<id> | preview detalle; Home carousel, Guests teaser, Services listing, Service detail galería | Cards4:3 cover; adaptive gallery1/2/3/4/5+ | PENDIENTE |
-| E06 | service.gallery[] — mismo → Media | preview detalle; Service detail galería+Show all dialog | adaptive1/2/3/4/5+; dialog contain/intrínseco; creación+sustitución | PENDIENTE |
+| E05 | service.cover_media_id — /admin/services/new + /admin/services/<id> | preview detalle; Home carousel, Guests teaser, Services listing, Service detail galería | Home carousel3:4; Services listing4:3; Guests teaser background min260px/alto texto; Service detail galería4tiles | PENDIENTE |
+| E06 | service.gallery[] — mismo → Media | preview detalle; Service detail galería+Show all dialog | Service detail siempre4tiles, rellenados con placeholders si faltan; probar1–6selecciones; >4ShowAll dialog contain/intrínseco; creación+sustitución | PENDIENTE |
 | E07 | service.detail.itinerary[].media_id — mismo → Detail/Itinerary | preview detalle; Service detail itinerary | square cover; lista crear+sustituir en cada plantilla que admite itinerary | PENDIENTE |
 | E08 | service.og_image_media_id — mismo → SEO | Service detail metadata4locales | URL/dimensiones; sin marco | PENDIENTE |
 | E09 | guide.hero_media_id — /admin/guides/new + /admin/guides/<id> | guide preview; Guides listing, Guests activities teaser, Guide detail hero/gallery | cards4:3 cover; detail adaptive gallery; todos templates9 | PENDIENTE |
 | E10 | guide.og_image_media_id — mismo → SEO | Guide detail metadata4locales | URL/dimensiones; sin marco | PENDIENTE |
 | E11 | guide.sections[].header_media_id — mismo → section image | guide preview; Guide detail section | 16:9 cover; layouts standard/with_cta/with_media/featured_places según controles visibles; creación+sustitución | PENDIENTE |
 | E12 | guide.sections[].places[].media_id — mismo → section place image | guide preview; Guide detail place/card, Guides recommendations | layouts/presentation variantes; recomendaciones4:3 cover; creación+sustitución | PENDIENTE |
-| E13 | post.cover_media_id — /admin/posts/new + /admin/posts/<id> | live post preview; Blog featured, journal cards, Blog post cover; OG fallback | Cards4:3; featured alto340D/240M cover; post hero layout definido | PENDIENTE |
+| E13 | post.cover_media_id — /admin/posts/new + /admin/posts/<id> | live post preview; Blog featured, journal cards, Blog post cover; OG fallback | Journal4:3 centrado; featured min340D/240M cover centrado; article singlecover adaptiveclamp300–480px con object-position50%62% | PENDIENTE |
 | E14 | post.og_image_media_id — mismo → SEO | Blog post metadata4locales | URL/dimensiones; sin marco | PENDIENTE |
 | E15 | post.body[].image.media_id — BodyEditor/PostForm legacy | NO APLICA: no montado en ruta actual; /admin/posts/new y existente usan PostLocaleEditor→PostRichTextEditor | Control retirado; los documentos legacy se migran al editor rich (E16) | N/A, código consumidor verificado |
 | E16 | post.body.doc.image.attrs.media_id — /admin/posts/new y /admin/posts/<id>, rich editor → Image | live post preview; Blog post body | variantes de alignment/width permitidas; intrínseco/cover según attrs; crear+sustituir | PENDIENTE |
@@ -109,3 +109,15 @@ Durante la ejecución se comprobó `src/app/(admin)/admin/posts/new/page.tsx`: u
 - Owners P05–P09:5tipos/9instancias×4ratios, cero fallos de producto. Evidencia `owners-3-2-results.json`, `owners-2-3-results.json`, `owners-recommended-results.json` (contiene también1:1). Journey es5fijo: no existe creación de sexta fila; se reemplazó cada uno de sus5campos.
 - Incidencias de harness corregidas: selector usa nombre accesible Mobile390px; espera exacta de blob en preview; no guardar antes de reemplazar referencias huérfanas legacy; snapshot publicado tiene draftnull. Infraestructura antigua agotó conexiones53300; casos completos conservados y solo interrumpidos retomados después de gateway/puentePGreal verificado.
 - Exclusión equivalente: `FormsRuntime` tiene input de adjunto del visitante; no es un campo de medio editorial, no produce un frame ni publica una imagen y persiste metadatos privados. No se crearon File fields ni asignaciones de Forms para este plan. La matriz cubre todos los uploads CMS montados.
+
+### P29 — resolución del hint de Calculator
+
+El E2E real mostró568×489.890625px en desktop, igual a la altura del formulario; el diagnóstico inicial había supuesto4:5 también allí. `buildings-sections.tsx` ya documenta explícitamente y aplica desde981px `aspect-auto`/altura del formulario; por debajo conserva4:5. Se conserva ese diseño, se corrige solo el hint inglés y el comentario del schema, y la prueba exige ambas ramas. Los archivos con la aserción inicial universal4:5 se conservan como evidencia de la discrepancia; no se acreditan como P29 aprobado.
+
+- About P16–P22:49ciclos de las13instancias originales;3creaciones conpreview/publicD/M y9reemplazos nuevos.12fotos repetibles verificadas a768px;Story/Community cumplen su regla intrínseca/stretch ylogoscontain48/max160.
+- Real Estate P10–P15:47ciclos de15instancias originales;Process6°creado y reemplazado en2:3/1:1.12fotos repetibles(6Asset+6Process)verificadas a768px.
+- P28HeroBuildings:4ratios aprobados; P29 se retesta solo tras corregirhint, preservando evidencia inicial y la cobertura Hero.
+- P01Homeposter:suplemento `home-poster-visible-results.json` confirmaPNGseleccionadodecodificado y ausencia de fotogramas de vídeo(readyState0/videoWidth0)enD/M. Se induce fallo de descarga del vídeo solo en ese contexto de lectura; la subida exitosa jamás se simula.
+
+- P29retestfinal:4ratios completos condesktopframe=alturaFormulario±1px y móvil4:5. Fuente `buildings-calculator-recommended-results.json`; medidas ycapturas a1440/981/980/768/390en `calculator-contract-results.json`. El cambio de ratio de archivo no cambia la altura del frame desktop, verificado por comparación de medidas.
+- Manifiesto reproducible: `node scripts/qa/guests-welcome-media/manifest.mjs` genera el índice privado `matrix/pages-manifest.json` porP01–P33, instancias concretas, ratios requeridos, IDs/metadatos de archivos propios, recibos y capturas. No acredita un caso sin evidencia; exige creación de listas variables/tablet yvisibilidadrealdeposters. P24remite alrecibo independiente y no se aprueba implícitamente.
