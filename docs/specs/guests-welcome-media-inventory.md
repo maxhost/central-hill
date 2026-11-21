@@ -66,7 +66,7 @@ D=1440×1000; M=390×844; Welcome añade880/881. Cada campo visible requiere cic
 | E01 | building.cover_media_id — /admin/buildings/new + /admin/buildings/<id> | live detail preview; Home portfolio, Guests portfolio, Buildings listing, Building detail hero; OG fallback | Cards4:3 cover; Hero cover viewport/contenido; metadata | PENDIENTE |
 | E02 | building.gallery[] — mismo → Gallery | live detail preview; Building detail MosaicGallery | intrínseco/mosaico según ratios; cubrir creación+sustitución y1/2/3/4/5+ | PENDIENTE |
 | E03 | building.og_image_media_id — mismo → SEO | Building detail metadata4locales | URL/dimensiones; sin marco | PENDIENTE |
-| E04 | apartment.cover_media_id — /admin/apartments/new + /admin/apartments/<id> | editor; tarjetas apartamentos en Building detail (no ruta apartment) | 4:3 cover centrado | PENDIENTE |
+| E04 | apartment.cover_media_id — /admin/buildings/<building-id>/apartments/new + /admin/buildings/<building-id>/apartments/<id> | editor; tarjetas apartamentos en Building detail (no ruta apartment) | 4:3 cover centrado | PENDIENTE |
 | E05 | service.cover_media_id — /admin/services/new + /admin/services/<id> | preview detalle; Home carousel, Guests teaser, Services listing, Service detail galería | Cards4:3 cover; adaptive gallery1/2/3/4/5+ | PENDIENTE |
 | E06 | service.gallery[] — mismo → Media | preview detalle; Service detail galería+Show all dialog | adaptive1/2/3/4/5+; dialog contain/intrínseco; creación+sustitución | PENDIENTE |
 | E07 | service.detail.itinerary[].media_id — mismo → Detail/Itinerary | preview detalle; Service detail itinerary | square cover; lista crear+sustituir en cada plantilla que admite itinerary | PENDIENTE |
@@ -75,11 +75,11 @@ D=1440×1000; M=390×844; Welcome añade880/881. Cada campo visible requiere cic
 | E10 | guide.og_image_media_id — mismo → SEO | Guide detail metadata4locales | URL/dimensiones; sin marco | PENDIENTE |
 | E11 | guide.sections[].header_media_id — mismo → section image | guide preview; Guide detail section | 16:9 cover; layouts standard/with_cta/with_media/featured_places según controles visibles; creación+sustitución | PENDIENTE |
 | E12 | guide.sections[].places[].media_id — mismo → section place image | guide preview; Guide detail place/card, Guides recommendations | layouts/presentation variantes; recomendaciones4:3 cover; creación+sustitución | PENDIENTE |
-| E13 | post.cover_media_id — /admin/blog/posts/new + /admin/blog/posts/<id> | live post preview; Blog featured, journal cards, Blog post cover; OG fallback | Cards4:3; featured alto340D/240M cover; post hero layout definido | PENDIENTE |
+| E13 | post.cover_media_id — /admin/posts/new + /admin/posts/<id> | live post preview; Blog featured, journal cards, Blog post cover; OG fallback | Cards4:3; featured alto340D/240M cover; post hero layout definido | PENDIENTE |
 | E14 | post.og_image_media_id — mismo → SEO | Blog post metadata4locales | URL/dimensiones; sin marco | PENDIENTE |
-| E15 | post.body[].image.media_id — post nuevo BodyEditor → image | legacy post preview/public migrado | legacy imagen3:2 clase+hauto; comprobar resultado real; crear+sustituir | PENDIENTE |
-| E16 | post.body.doc.image.attrs.media_id — post existente rich editor → Image | live post preview; Blog post body | variantes de alignment/width permitidas; intrínseco/cover según attrs; crear+sustituir | PENDIENTE |
-| E17 | author.avatar_media_id — /admin/blog/authors/new + /admin/blog/authors/<id> | Sin destino visual público: blog-post.tsx dibuja inicial del nombre, no avatar; persistencia en editor | Persistencia obligatoria; sin frame público, blog-post.tsx líneas194–198 usa inicial | PENDIENTE |
+| E15 | post.body[].image.media_id — BodyEditor/PostForm legacy | NO APLICA: no montado en ruta actual; /admin/posts/new y existente usan PostLocaleEditor→PostRichTextEditor | Control retirado; los documentos legacy se migran al editor rich (E16) | N/A, código consumidor verificado |
+| E16 | post.body.doc.image.attrs.media_id — /admin/posts/new y /admin/posts/<id>, rich editor → Image | live post preview; Blog post body | variantes de alignment/width permitidas; intrínseco/cover según attrs; crear+sustituir | PENDIENTE |
+| E17 | author.avatar_media_id — /admin/authors/new + /admin/authors/<id> | Sin destino visual público: blog-post.tsx dibuja inicial del nombre, no avatar; persistencia en editor | Persistencia obligatoria; sin frame público, blog-post.tsx líneas194–198 usa inicial | PENDIENTE |
 | E18 | city.hero_media_id — /admin/cities/new + /admin/cities/<id> | Sin destino visual actual: City DTO resuelve hero, guides-listing.tsx solo usa id/name y hero de Pages | Persistencia obligatoria; no hay frame público actual | PENDIENTE |
 | E19 | settings.default_og_image_media_id — /admin/settings → SEO | metadata default de9páginas+3legales+Building/Service/Guide/Post en ausencia override | URL/dimensiones; sin marco; Settings guarda inmediatamente, no Publish separado | PENDIENTE |
 
@@ -97,4 +97,8 @@ D=1440×1000; M=390×844; Welcome añade880/881. Cada campo visible requiere cic
 
 `rg -n "MediaField|MediaGalleryField" src --glob "*.tsx"` cubre todos los controles directos. `inventory.ts` cubre schemas dinámicos incluidos descendientes ocultos. Cruce con `src/slices/pages/admin/ui/schema-fields.tsx`, `page-contextual-editor.tsx` y renderizadores públicos. Los módulos de body legacy/rich y entidades nuevos/existentes se enumeran por separado cuando cambian los controles.
 
-Totales iniciales: 33 campos de imagen de páginas (tipos lógicos; listas expanden instancias),12OG páginas,19campos entidad/compartidos; 64tipos de campo. Consumer avatar/city comprobado: no imagen pública, solo persistencia. Contratos de instancias repetibles se medirán en ejecución. Ningún caso ejecutado todavía.
+Totales iniciales: 33 campos de imagen de páginas (tipos lógicos; listas expanden instancias),12OG páginas,19campos entidad/compartidos; 64entradas iniciales;63tipos activos y1control legacy retirado. Consumer avatar/city comprobado: no imagen pública, solo persistencia. Contratos de instancias repetibles se medirán en ejecución. Ningún caso ejecutado todavía.
+
+## Correcciones del cruce con rutas efectivas
+
+Durante la ejecución se comprobó `src/app/(admin)/admin/posts/new/page.tsx`: usa PostLocaleEditor→PostRichTextEditor también al crear; BodyEditor/PostForm no está montado. E15 queda N/A con motivo, E16 debe acreditar creación y sustitución reales en ambos estados. Las rutas efectivas de Posts/Authors son `/admin/posts` y `/admin/authors`; Apartments están anidados en Buildings. Estas correcciones de inventario no implican cambios de producto ni omisión de un control disponible.
