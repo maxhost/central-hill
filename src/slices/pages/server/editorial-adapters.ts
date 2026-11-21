@@ -3,6 +3,7 @@ import { blogAdapter } from "../adapters/blog";
 import { servicesAdapter } from "../adapters/services";
 import { aboutAdapter } from "../adapters/about";
 import "server-only";
+import { privacyPolicyAdapter, cookiesPolicyAdapter, complaintsBookAdapter } from "../adapters/legal";
 import type { EditorialPageKey } from "../editorial-types";
 import type { PageEditorialAdapter } from "../editorial-adapter-types";
 import { ownersAdapter } from "../adapters/owners";
@@ -12,6 +13,9 @@ import { guestAdapter } from "../adapters/guest";
 import { homeAdapter } from "../adapters/home";
 /** Explicit server registry: consumers cannot accidentally bundle queries/renderers. */
 export function getEditorialAdapter<K extends EditorialPageKey>(key: K): PageEditorialAdapter<K> {
+ if (key === "privacy_policy") return privacyPolicyAdapter as unknown as PageEditorialAdapter<K>;
+ if (key === "cookies_policy") return cookiesPolicyAdapter as unknown as PageEditorialAdapter<K>;
+ if (key === "complaints_book") return complaintsBookAdapter as unknown as PageEditorialAdapter<K>;
  if (key === "guides") return guidesAdapter as unknown as PageEditorialAdapter<K>;
  if (key === "blog") return blogAdapter as unknown as PageEditorialAdapter<K>;
  if (key === "services") return servicesAdapter as unknown as PageEditorialAdapter<K>;

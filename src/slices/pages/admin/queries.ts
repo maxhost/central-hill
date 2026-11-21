@@ -13,6 +13,8 @@ import { loadMedia, mediaUrl } from "@core/media";
 import type { AdminMediaPreview } from "@slices/backoffice/contract";
 import { listFaqGroups } from "@slices/faq/contract";
 import { listServiceCategories } from "@slices/services/contract";
+import { isLegalPageKey } from "../legal-page-content";
+import { page_locale_content } from "../schema";
 import { page_content } from "../schema";
 import { type PageKey, pageKey, pageSchemas } from "../schemas";
 import { guidesEditorDefaults, type GuidesSourceStatus } from "./guides-defaults";
@@ -39,6 +41,8 @@ export interface PageAdminListItem {
 export async function listPagesAdmin(): Promise<PageAdminListItem[]> {
   const rows = await db.select({ key: page_content.key }).from(page_content);
   const present = new Set(rows.map((r) => r.key));
+  const snapshots = await db.select({ key: page_locale_content.page_key, draft: page_locale_content.draft, published: page_locale_content.published }).from(page_locale_content);
+  for (const row of snapshots) if (isLegalPageKey(row.key) && (row.draft || row.published)) present.add(row.key);
   return PAGE_KEYS.map((key) => ({ key, exists: present.has(key) }));
 }
 

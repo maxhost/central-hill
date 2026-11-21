@@ -15,12 +15,19 @@ type Props = {
   value: PostBody; onChange: (next: PostBody) => void;
   previews: Record<string, AdminMediaPreview>; onPreview: (preview: AdminMediaPreview | null) => void;
   errors?: Record<string, string>; disabled?: boolean; localeKey: string;
+  /** Text documents reuse the article editor with a restricted block palette. */
+  textOnly?: boolean;
 };
+function allowedBody(body: PostBody, textOnly: boolean): PostBody {
+  if (textOnly && body.some(block => !["heading", "paragraph", "list", "divider"].includes(block.type)))
+    throw new Error("Unsupported text-document block");
+  return body;
+}
 /** Locale remounts reset undo history; controlled typing echoes never replace the document. */
 export function PostRichTextEditor(props: Props) {
   return <LocaleRichTextEditor key={props.localeKey} {...props} />;
 }
-function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {}, disabled = false }: Props) {
+function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {}, disabled = false, textOnly = false }: Props) {
   const fieldPrefix = useId();
   const t = useTranslations("blog.richText");
   const tb = useTranslations("blog.admin.post.body.fields");
@@ -34,7 +41,7 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
   const initial = useRef<EditorDocument | null>(null);
   const initialInvalid = useRef(false);
   if (!initial.current) {
-    try { initial.current = postBodyToEditorDocument(value); }
+    try { initial.current = postBodyToEditorDocument(allowedBody(value, textOnly)); }
     catch { initial.current = { type: "doc", content: [{ type: "paragraph" }] }; initialInvalid.current = true; }
   }
   const editor = useEditor({
@@ -46,7 +53,7 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
       Extension.create({ name: "articleSafety", addProseMirrorPlugins() { return [new Plugin({
         filterTransaction(transaction) {
           if (!transaction.docChanged) return true;
-          try { editorDocumentToPostBody(transaction.doc.toJSON() as EditorDocument); return true; }
+          try { allowedBody(editorDocumentToPostBody(transaction.doc.toJSON() as EditorDocument), textOnly); return true; }
           catch { queueMicrotask(() => setUnsupported(true)); return false; }
         },
       })]; } }),
@@ -54,7 +61,7 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
     content: initial.current as JSONContent,
     editable: !disabled && !initialInvalid.current,
     editorProps: {
-      attributes: { role: "textbox", "aria-multiline": "true", "aria-label": t("bodyLabel"), "data-post-rich-text": "",
+      attributes: { role: "textbox", "aria-multiline": "true", "aria-label": t("bodyLabel"), "data-post-rich-text": "", ...(textOnly ? { "data-page-rich-text": "" } : {}),
         class: "min-h-[420px] px-5 py-6 text-[17px] leading-relaxed text-ink outline-none sm:px-8 [&_p]:my-4 [&_h2]:mb-4 [&_h2]:mt-8 [&_h2]:font-serif [&_h2]:text-3xl [&_h3]:mb-3 [&_h3]:mt-7 [&_h3]:font-serif [&_h3]:text-2xl [&_h4]:my-4 [&_h4]:font-semibold [&_ul]:my-4 [&_ul]:list-disc [&_ul]:pl-7 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:pl-7 [&_li_p]:my-1 [&_hr]:my-8 [&_hr]:border-line [&_.is-editor-empty]:before:pointer-events-none" },
       // File images must use MediaField's scoped upload queue. HTML nesting/unsupported marks are explicitly refused.
       handlePaste(_view, event) {
@@ -71,7 +78,7 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
     onUpdate({ editor: current, transaction }) {
       if (!transaction.docChanged) return;
       try {
-        const body = editorDocumentToPostBody(current.getJSON() as EditorDocument);
+        const body = allowedBody(editorDocumentToPostBody(current.getJSON() as EditorDocument), textOnly);
         emitted.current = JSON.stringify(body);
         latest.current.onChange(body);
         setUnsupported(false);
@@ -84,10 +91,10 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
     const external = JSON.stringify(value);
     if (!editor || external === emitted.current) return;
     try {
-      editor.commands.setContent(postBodyToEditorDocument(value), { emitUpdate: false });
+      editor.commands.setContent(postBodyToEditorDocument(allowedBody(value, textOnly)), { emitUpdate: false });
       emitted.current = external;
     } catch { setUnsupported(true); }
-  }, [editor, value]);
+  }, [editor, value, textOnly]);
   const locked = disabled || initialInvalid.current || !editor;
   const button = (key: Parameters<typeof t>[0], run: () => void, active = false, unavailable = false) => <button key={key} type="button" title={t(key)} aria-label={t(key)} aria-pressed={active}
     disabled={locked || unavailable} onMouseDown={event => event.preventDefault()} onClick={run}
@@ -104,11 +111,11 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
         {button("unlink", () => editor?.chain().focus().extendMarkRange("link").unsetLink().run(), false, !editor?.isActive("link"))}
         {button("bulletList", () => editor?.chain().focus().toggleBulletList().run(), editor?.isActive("bulletList"))}
         {button("orderedList", () => editor?.chain().focus().toggleOrderedList().run(), editor?.isActive("orderedList"))}
-        {button("quote", () => editor?.chain().focus().toggleNode("articleQuote", "paragraph").run(), editor?.isActive("articleQuote"))}
+        {!textOnly && button("quote", () => editor?.chain().focus().toggleNode("articleQuote", "paragraph").run(), editor?.isActive("articleQuote"))}
         {button("divider", () => editor?.chain().focus().setHorizontalRule().run())}
-        {button("insertImage", () => editor?.chain().focus().insertContent({ type: "articleImage", attrs: { media_id: "" } }).run())}
-        {button("callout", () => editor?.chain().focus().insertContent({ type: "articleCallout", attrs: { variant: "info" } }).run())}
-        {button("button", () => editor?.chain().focus().insertContent({ type: "articleCta", attrs: { label: "", url: "" } }).run())}
+        {!textOnly && button("insertImage", () => editor?.chain().focus().insertContent({ type: "articleImage", attrs: { media_id: "" } }).run())}
+        {!textOnly && button("callout", () => editor?.chain().focus().insertContent({ type: "articleCallout", attrs: { variant: "info" } }).run())}
+        {!textOnly && button("button", () => editor?.chain().focus().insertContent({ type: "articleCta", attrs: { label: "", url: "" } }).run())}
         {button("undo", () => editor?.chain().focus().undo().run(), false, !editor?.can().undo())}
         {button("redo", () => editor?.chain().focus().redo().run(), false, !editor?.can().redo())}
       </div>
@@ -122,7 +129,7 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
         }}>{t("applyLink")}</AdminButton>
         <AdminButton onClick={() => { setLinkOpen(false); editor?.commands.focus(); }}>{t("cancel")}</AdminButton>
       </fieldset> : null}
-      {selectedHeading ? <fieldset disabled={locked} className="border-b border-line px-5 py-3"><Field label={tb("number")} htmlFor={`${fieldPrefix}-heading-number`}><TextInput id={`${fieldPrefix}-heading-number`} value={editor?.getAttributes("heading").number ?? ""} maxLength={12}
+      {selectedHeading && !textOnly ? <fieldset disabled={locked} className="border-b border-line px-5 py-3"><Field label={tb("number")} htmlFor={`${fieldPrefix}-heading-number`}><TextInput id={`${fieldPrefix}-heading-number`} value={editor?.getAttributes("heading").number ?? ""} maxLength={12}
         onChange={event => editor?.commands.updateAttributes("heading", { number: event.target.value })} /></Field></fieldset> : null}
       {unsupported || initialInvalid.current ? <p role="alert" className="m-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{t("unsupported")}</p> : null}
       {Object.entries(errors).filter(([key]) => key.includes("body")).map(([key, error]) => <p key={key} role="alert" className="px-5 pt-3 text-sm text-red-700">{error}</p>)}

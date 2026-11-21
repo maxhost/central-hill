@@ -42,7 +42,7 @@ export function BodyRenderer({
   ids: readonly (string | undefined)[];
   /** Iconoir name before each unordered-list item (the `list_bullet` site icon). */
   bulletIcon: string;
-  callouts: CalloutChrome;
+  callouts?: CalloutChrome;
   className?: string;
 }) {
   return (
@@ -108,7 +108,7 @@ function Block({
   lead: boolean;
   space: string;
   bulletIcon: string;
-  callouts: CalloutChrome;
+  callouts?: CalloutChrome;
 }): ReactNode {
   switch (block.type) {
     case "heading": {
@@ -189,7 +189,8 @@ function Block({
         </blockquote>
       );
     case "callout": {
-      const chrome = callouts[block.variant];
+      const chrome = callouts?.[block.variant];
+      if (!chrome) return null;
       return (
         <Callout
           variant={block.variant}

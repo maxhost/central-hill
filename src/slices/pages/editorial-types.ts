@@ -1,8 +1,9 @@
+import type { LegalPageKey, LegalPageContent } from "./legal-page-content";
 import type { Locale } from "@core/db/columns";
 import type { HomeContent, OwnersContent, BuildingsContent, RealEstateContent, GuestContent, ServicesContent, AboutContent, GuidesContent, BlogContent } from "./schemas";
 import type { PageEditorialDescriptor } from "./editorial-adapter-types";
-export type EditorialPageKey = "home" | "owners" | "buildings" | "real_estate" | "guest" | "services" | "about" | "guides" | "blog";
-export interface PageContentMap { home: HomeContent; owners: OwnersContent; buildings: BuildingsContent; real_estate: RealEstateContent; guest: GuestContent; services: ServicesContent; about: AboutContent; guides: GuidesContent; blog: BlogContent }
+export type EditorialPageKey = "home" | "owners" | "buildings" | "real_estate" | "guest" | "services" | "about" | "guides" | "blog" | LegalPageKey;
+export interface PageContentMap { home: HomeContent; owners: OwnersContent; buildings: BuildingsContent; real_estate: RealEstateContent; guest: GuestContent; services: ServicesContent; about: AboutContent; guides: GuidesContent; blog: BlogContent; privacy_policy: LegalPageContent; cookies_policy: LegalPageContent; complaints_book: LegalPageContent }
 
 import type { PageEditModel } from "./admin/queries";
 

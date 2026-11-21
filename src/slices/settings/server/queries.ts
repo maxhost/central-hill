@@ -125,7 +125,7 @@ export function getGlobals(locale: Locale): Promise<SiteGlobals | null> {
 
 // ── Fixed navigation (header / footer trees, ADR0074) ──────────────────────────
 export function getNav(locale: Locale, location: NavLocation): Promise<NavLink[]> {
-  return unstable_cache(async () => getFixedNav(locale, location), ["settings:getNav", "fixed-v1", locale, location], {
+  return unstable_cache(async () => getFixedNav(locale, location), ["settings:getNav", "fixed-v2", locale, location], {
     tags: [SETTINGS_TAGS.nav],
   })();
 }

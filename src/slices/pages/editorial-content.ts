@@ -28,6 +28,7 @@ export function prepareTargetEnvelope<K extends EditorialPageKey = "home">(
   target: PageEnvelope<K> | null,
   descriptor: PageEditorialDescriptor = homeDescriptor,
 ): PageEnvelope<K> {
+  if (descriptor.localeIndependentContent) return structuredClone(target ?? template);
   const next = structuredClone(template);
   if (target?.mediaAlts !== undefined) next.mediaAlts = structuredClone(target.mediaAlts);
   const texts = new Map<string, string>();
@@ -75,6 +76,10 @@ export function sharedEnvelope<K extends EditorialPageKey = "home">(
   descriptor: PageEditorialDescriptor = homeDescriptor,
 ): string {
   const copy = structuredClone(envelope);
+  if (descriptor.localeIndependentContent) {
+    // Content/SEO belong wholly to this locale; the optional OG reference remains shared.
+    return JSON.stringify({ schemaVersion: copy.schemaVersion, ogImageMediaId: copy.ogImageMediaId });
+  }
   copy.content.seo ??= { meta_title: "", meta_description: "" };
   for (const path of editorialTextPaths(copy.content, descriptor))
     homeSet(copy.content, path, undefined);

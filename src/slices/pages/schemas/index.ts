@@ -6,6 +6,7 @@
  * pipeline must extract per page.
  */
 import { z } from "zod";
+import { legalPageDraftSchema } from "../legal-page-content";
 import { translatablePaths } from "@core/validation/primitives";
 import { homeSchema } from "./home";
 import { ownersSchema } from "./owners";
@@ -18,7 +19,7 @@ import { servicesSchema } from "./services";
 import { buildingsSchema } from "./buildings";
 
 /** `page_content.key` enum — one row per key. */
-export const pageKey = z.enum(["home", "owners", "real_estate", "about", "guest", "blog", "guides", "buildings", "services"]);
+export const pageKey = z.enum(["home", "owners", "real_estate", "about", "guest", "blog", "guides", "buildings", "services", "privacy_policy", "cookies_policy", "complaints_book"]);
 export type PageKey = z.infer<typeof pageKey>;
 
 /** key → the fixed schema that validates that page's `data` jsonb. */
@@ -32,6 +33,9 @@ export const pageSchemas = {
   guides: guidesSchema,
   buildings: buildingsSchema,
   services: servicesSchema,
+  privacy_policy: legalPageDraftSchema,
+  cookies_policy: legalPageDraftSchema,
+  complaints_book: legalPageDraftSchema,
 } as const satisfies Record<PageKey, z.ZodType>;
 
 /** key → translatable leaf paths (with `[]` array wildcards) for the pipeline. */
@@ -45,6 +49,9 @@ export const translatablePathsByPage: Record<PageKey, string[]> = {
   guides: translatablePaths(guidesSchema),
   buildings: translatablePaths(buildingsSchema),
   services: translatablePaths(servicesSchema),
+  privacy_policy: ["title", "body", "seo.meta_title", "seo.meta_description"],
+  cookies_policy: ["title", "body", "seo.meta_title", "seo.meta_description"],
+  complaints_book: ["title", "body", "seo.meta_title", "seo.meta_description"],
 };
 
 export {

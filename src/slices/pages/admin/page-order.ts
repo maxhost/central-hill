@@ -11,4 +11,7 @@ export const PAGE_ADMIN_ORDER = [
   "services",
   "about",
   "blog",
+  "privacy_policy",
+  "cookies_policy",
+  "complaints_book",
 ] as const satisfies readonly PageKey[];

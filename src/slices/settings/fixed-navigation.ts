@@ -31,4 +31,8 @@ export const FIXED_FOOTER: readonly FixedNavEntry[] = [
     ["browseApartments", "/buildings"], ["buildings", "/buildings"], ["about", "/about"],
     ["blog", "/blog"], ["contact", "/about"],
   ] as const).map(([key, url]) => ({ key, labelKey: `footer.${key}`, url })) },
+  { key: "others", labelKey: "footer.othersTitle", url: "/privacy-policy", children: ([
+    ["privacyPolicy", "/privacy-policy"], ["cookiesPolicy", "/cookies-policy"],
+    ["complaintsBook", "/complaints-book"],
+  ] as const).map(([key, url]) => ({ key, labelKey: `footer.${key}`, url })) },
 ];

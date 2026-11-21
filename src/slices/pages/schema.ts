@@ -12,7 +12,7 @@ import { pkUuid, timestamps } from "@core/db/columns";
 export const page_content = pgTable("page_content", {
   id: pkUuid(),
   key: text()
-    .$type<"home" | "owners" | "real_estate" | "about" | "guest" | "blog" | "guides" | "buildings" | "services">()
+    .$type<"home" | "owners" | "real_estate" | "about" | "guest" | "blog" | "guides" | "buildings" | "services" | "privacy_policy" | "cookies_policy" | "complaints_book">()
     .notNull()
     .unique(),
   data: jsonb().$type<Record<string, unknown>>().notNull().default({}),

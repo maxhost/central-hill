@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
 import footerLogo from "../../../../logos/Logo-footer.png";
+import { listAvailableLegalPages, legalPagePaths } from "@slices/pages/legal-public-contract";
 import type { Locale } from "@core/db/columns";
 import { Footer, type FooterNavGroup, type FooterSocialLink } from "@core/ui";
 import { Icon } from "@core/ui/icon";
@@ -26,9 +27,14 @@ const SOCIAL_LABELS: Record<string, string> = {
 export async function SiteFooter({ locale }: { locale: Locale }) {
   const t = await getTranslations("settings");
   const g = (await getGlobals(locale)) ?? DEFAULT_GLOBALS;
-  const navGroups = await getNav(locale, "footer");
+  const [navGroups, availableLegalPages] = await Promise.all([
+    getNav(locale, "footer"), listAvailableLegalPages(locale),
+  ]);
+  const availableLegalPaths = new Set(availableLegalPages.map(key => legalPagePaths[key]));
 
-  const groups: FooterNavGroup[] = navGroups.map((group) => ({
+  const groups: FooterNavGroup[] = navGroups.map(group => group.id === "fixed-footer-others"
+    ? { ...group, children: group.children.filter(child => availableLegalPaths.has(child.url)) }
+    : group).filter(group => group.id !== "fixed-footer-others" || group.children.length > 0).map((group) => ({
     title: group.label,
     links: group.children.map((child) => ({ label: child.label, href: child.url })),
   }));

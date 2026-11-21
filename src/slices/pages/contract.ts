@@ -243,3 +243,7 @@ export type { EditorialPageKey, PageContentMap, PageEditorialModel, PageLivePrev
 export type { PageEditorialDescriptor, PageEditorialAdapter } from "./editorial-adapter-types";
 
 export { blogAsideCta } from "./blog-content";
+
+/** Fixed Rich document pages; publication and locale fallback share the Pages workflow. */
+export { getLegalPage, listAvailableLegalPages, buildLegalPageMetadata } from "./legal-public-contract";
+export type { LegalPageKey, LegalPageContent } from "./legal-page-content";

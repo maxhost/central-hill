@@ -105,7 +105,7 @@ export function Footer({
           {newsletter}
         </div>
 
-        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr]">
+        <div className={`grid gap-12 sm:grid-cols-2 ${groups.length > 2 ? "lg:grid-cols-[2fr_1fr_1fr_1fr]" : "lg:grid-cols-[2fr_1fr_1fr]"}`}>
           <div className="min-w-0 sm:col-span-2 lg:col-span-1">
             {brand}
             <div className="mt-[18px] text-sm leading-[1.9] text-on-feature-soft">

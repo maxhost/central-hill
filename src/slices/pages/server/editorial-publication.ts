@@ -1,4 +1,5 @@
 import "server-only";
+import { isLegalPageKey, pickLegalPageSnapshot } from "../legal-page-content";
 import { and, eq } from "drizzle-orm";
 import { db } from "@core/db/client";
 import type { Locale } from "@core/db/columns";
@@ -30,6 +31,10 @@ export async function getPublishedPageLocale<K extends EditorialPageKey>(
   locale: Locale,
 ): Promise<PageResult<PageContentMap[K]> | null> {
   if (!validEditorialRequest(key, locale)) return null;
+  if (isLegalPageKey(key)) {
+    const rows = await db.select().from(page_locale_content).where(eq(page_locale_content.page_key, key));
+    return resolveEditorialEnvelope(pickLegalPageSnapshot(rows, locale) as PageEnvelope<K> | null, locale);
+  }
   const [row] = await db
     .select()
     .from(page_locale_content)

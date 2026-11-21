@@ -1,5 +1,7 @@
 "use server";
 import { revalidatePath, updateTag } from "next/cache";
+import { cacheTags } from "@core/revalidate";
+import { isLegalPageKey, legalPagePaths } from "../legal-page-content";
 import { LOCALES } from "@core/db/columns";
 import { requireStaff } from "@core/auth";
 import { getEditorialAdapter } from "../server/editorial-adapters";
@@ -25,6 +27,16 @@ export async function publishPageDraft<K extends EditorialPageKey>(
   if (!result.ok) return result;
   try {
     updateTag(pageLocaleTag(input.key, input.locale));
+    if (isLegalPageKey(input.key)) {
+      // EN is also the public fallback for any unpublished target locale.
+      const locales = input.locale === "en" ? LOCALES : [input.locale];
+      for (const locale of locales) {
+        updateTag(pageLocaleTag(input.key, locale));
+        revalidatePath(`/${locale}${legalPagePaths[input.key]}`);
+        revalidatePath(`/${locale}`, "layout");
+      }
+      updateTag(cacheTags.sitemap);
+    }
     if ((input.key === "about" || input.key === "guest" || input.key === "real_estate") && input.locale === "en") {
       for (const locale of LOCALES) {
         updateTag(pageLocaleTag(input.key, locale));

@@ -1,5 +1,60 @@
 # Central Hill agent instructions
 
+## Local admin login simplified —2026-11-21
+
+After legal Pages delivery, user explicitly requested a new simple local test admin.
+Configured test@test.com with admin role ONLY in neoncontentlocal20261111; no other
+users changed and43business table hashes/counts exact before/after. Password provided
+by user remains outside tracked docs. Normal browser sign-in verified200 and Pages200.
+Actual login failure also involved Better Auth rejecting127.0.0.1 while its base URL
+was localhost. ONLY .env.local BETTER_AUTH_URL changed to http://127.0.0.1:3071;
+prior env retained privately at /private/tmp/central-hill-legal-pages/main-before-local-login-origin.env.local.
+This authorized auth/origin change supersedes the preceding task's no-main-auth-write
+and exact-env checkpoint claims for the new state. No business content/schema change.
+Current main3071PID78831/session43167, same strict navbar-logo/runtime.cjs preload;
+media9081 unchanged. Use127.0.0.1:3071 for login. No product code/push/deploy changes.
+
+## Footer legal Pages — implemented locally —2026-11-21
+
+User approved paired return point, two implementers and independent QA with one
+video per page. Read [plan](docs/specs/legal-pages-plan.md),
+[execution](docs/specs/legal-pages-execution.md), [QA](docs/specs/legal-pages-qa.md),
+ADR0087. Privacy/Cookies/Complaints are Pages with title/text-only Blog Rich/SEO,
+live preview, EN/ES/PT/FR tabs and Save Draft/Publish. Whole documents independent;
+EN changes preserve ES. Public own valid publication or complete EN fallback
+(including PT/FR), never drafts. Links ONLY Footer Others, hidden until publication;
+navbar unchanged. No invented legal prose or authored-main fixtures/publications.
+
+Return branch restore/legal-pages-2026-11-21 at29ef542. Private artifact root
+/private/tmp/central-hill-legal-pages: source/bundle/local-state/full DB dump,
+49tables1524rows inclauth+ledger32; two verified restores legalpagesrestore20261121
+(intact) and legalpagesqa20261121 (own QA). Effective schema/constraints/all hashes
+exact; only old dropped-column physical ordinal gaps normalized. RESTORE.md preserves
+later state first and restores in NEW checkout/DB. Media target directories were
+already empty at checkpoint: no claim old183assets survive in this checkpoint.
+
+QA found stale static segment-RSC navigation after EN Publish; closed by force-dynamic
+ONLY3legal routes, explicit tagged getter cache retained. Corrected build0/227generation
+items/2workers, compile10.5s/TS14.5s/static2.7s warm; product config unchanged.
+943src/messages manifest SHA2566355555b9e63900af798e81aa09fe02150a66cfc3fed9a40dc49853408b216f6.
+Independent QA approved20E2Egroups+3stateextras+8checks/0pageerrors/0HTTP5xx;
+3valid WebM videos and8desktop/mobile images retained. Root visual batch reviewed;
+existing floating-CTA overlap is outside scope, no global UI audit claim.
+Root26targeted pass; broader70:62pass/8fail identical on baseline29ef542; lint0errors/
+7oldwarnings, dbcheck32/old0008warning, typecheck0, detector[].
+
+Main49tables1524rows/schema/constraints/hashes exact after readonly opening; QA43old
+business tables1473rows+ledger32 exact (only ownlegal/auth excluded). Env/alllogos/
+both public symlinks exact. No SQL migration, main Save/Publish, remoteDB/R2write,
+mail setup, push/deploy or fixture/data cleanup. User authorized the final commit;
+resolve its SHA with git log -1. Local credentials/env and QA artifacts stay outside Git.
+
+Main3071PID73739/session68996 reopened same original.env.local, REQUIRED current
+NODE_OPTIONS=--require=/private/tmp/central-hill-navbar-logo/runtime.cjs
+(onlyneoncontentlocal20261111 via4558). Media9081PID8524 retained. Owned production
+QA3090 stopped after approval; retain all DBs/artifacts/builds/envs/caches/videos.
+Main login200;3legal EN URLs404 until user authors/publishes real content. No auto next task.
+
 ## Salida a producción ejecutada; push Git pendiente —2026-11-12/13
 
 User authorized «ok, vamos a live»,3MiB/file+3MiBaggregate and temporary disabled

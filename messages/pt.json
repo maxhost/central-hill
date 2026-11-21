@@ -1081,7 +1081,11 @@
       },
       "ownersPhone": "Proprietários",
       "guestsContactTitle": "Para hóspedes",
-      "ownersContactTitle": "Para proprietários"
+      "ownersContactTitle": "Para proprietários",
+      "othersTitle": "Outros",
+      "privacyPolicy": "Política de Privacidade",
+      "cookiesPolicy": "Política de Cookies",
+      "complaintsBook": "Livro de Reclamações"
     },
     "admin": {
       "errors": {
@@ -1639,7 +1643,10 @@
         "blog": "Blog",
         "guides": "Guias",
         "buildings": "Edifícios",
-        "services": "Serviços"
+        "services": "Serviços",
+        "privacy_policy": "Política de Privacidade",
+        "cookies_policy": "Política de Cookies",
+        "complaints_book": "Livro de Reclamações"
       },
       "sections": {
         "publish": "Publicação",

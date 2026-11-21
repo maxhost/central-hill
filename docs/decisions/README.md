@@ -1370,3 +1370,5 @@ small radius") both describe the second look, so `ButtonLink` was the one that d
 - [0082 — Guest owner contact Form assignment](0082-guest-owner-contact-form-assignment.md)
 
 - [0083 — Real Estate Enquiry Forms placement](0083-real-estate-enquiry-form-assignment.md)
+
+- [0087 — Editable legal pages linked from Footer](0087-footer-legal-pages.md)

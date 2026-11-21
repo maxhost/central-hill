@@ -1,0 +1,17 @@
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import { randomBytes } from "node:crypto";
+import { artifactRoot, database, save, sourceRoot, protectedSnapshot } from "./common.mjs";
+const sql = await database();
+const email = "legal-pages-qa-20261121@example.invalid";
+assert.equal((await sql`select count(*)::int n from "user" where email=${email}`)[0].n, 0, "Own QA account must be new");
+await save("business-before", await protectedSnapshot(sql));
+const { auth } = await import(sourceRoot + "/src/core/auth/auth.ts");
+const password = "LegalQA-" + randomBytes(30).toString("base64url");
+const response = await auth.api.signUpEmail({ body: { email, password, name: "Legal Pages QA" } });
+assert.equal(response.user.email, email);
+await sql`insert into staff_role(user_id,role) values(${response.user.id},'admin')`;
+await fs.mkdir(artifactRoot, { recursive: true, mode: 0o700 });
+await fs.writeFile(artifactRoot + "/login-private.json", JSON.stringify({ email, password }), { mode: 0o600 });
+await save("own-admin", { id: response.user.id, email, method: "Better Auth signUpEmail, own staff_role; browser normal login" });
+console.log("Own isolated QA admin provisioned; credential file0600; no sessions copied.");

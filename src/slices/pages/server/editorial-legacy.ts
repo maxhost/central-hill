@@ -1,4 +1,5 @@
 import "server-only";
+import { isLegalPageKey } from "../legal-page-content";
 import { eq } from "drizzle-orm";
 import { db } from "@core/db/client";
 import { loadContent, loadTranslationRows } from "@core/i18n";
@@ -27,6 +28,8 @@ export async function legacyEditorialRows<K extends EditorialPageKey = "home">(
   key: K = "home" as K,
   publicFallback = false,
 ): Promise<EditorialRow<K>[]> {
+  // These pages have no legacy baseline; a missing snapshot is unpublished.
+  if (isLegalPageKey(key)) return [];
   const [source] = await db
     .select()
     .from(page_content)

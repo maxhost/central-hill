@@ -22,6 +22,9 @@ const PAGE_PATH: Record<PageKey, string> = {
   guides: "guides",
   buildings: "buildings",
   services: "services",
+  privacy_policy: "privacy-policy",
+  cookies_policy: "cookies-policy",
+  complaints_book: "complaints-book",
 };
 
 /** Keys whose copy shows on every page under their segment (each post, each guide). */

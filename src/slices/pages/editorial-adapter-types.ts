@@ -13,6 +13,8 @@ export interface PageEditorialDescriptor {
   rootNode: FieldNode;
   /** Schema [T] patterns, including [] wildcards. Never infer translation by names. */
   textPatterns: string[];
+  /** Whole documents have independent structure and text in every language. */
+  localeIndependentContent?: boolean;
   /** Per-language references, distinct from translated text and shared layout/media. */
   localeReferencePaths?: string[];
   /** [] means a parent list; metadata scope uses @parentId, never its position. */

@@ -53,8 +53,9 @@ test("fixed navigation ignores an existing legacy DB item in both header and foo
       const header = await getNav(locale, "header");
       const footer = await getNav(locale, "footer");
       assert.deepEqual(header.map((node) => node.url), ["/owners", "/buildings", "/real-estate", "/guests", "/about", "/blog"]);
-      assert.equal(footer.length, 2);
-      assert.ok(footer.every((group) => group.children.length === 5));
+      assert.equal(footer.length, 3);
+      assert.ok(footer.slice(0, 2).every((group) => group.children.length === 5));
+      assert.deepEqual(footer[2]?.children.map(item => item.url), ["/privacy-policy", "/cookies-policy", "/complaints-book"]);
       for (const item of [...flatten(header), ...flatten(footer)]) {
         assert.notEqual(item.url, legacyUrl);
         assert.ok(!item.label.includes("OWN "));

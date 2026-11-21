@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
+import { RichTextEditor, type PostBody } from "@slices/blog/admin-rich-text-contract";
 import { AdminButton, Field, MediaField, MediaAltProvider, PageEditorShell, TextArea, TextInput, useMediaQueue, type EditorLocale, type AdminMediaPreview } from "@slices/backoffice/contract";
 import type { EditorialPageKey, PageContentMap, PageEditorialModel, PageLocaleEditorialModel } from "../../editorial-types";
 import { prepareTargetEnvelope, sameEditorialSnapshot } from "../../editorial-content";
@@ -237,13 +238,19 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     {state.notice ? <p role={state.conflict || Object.keys(state.errors).length ? "alert" : "status"} className="text-sm text-ink">{state.notice}</p> : null}
     {state.errors._source ? <p role="alert" className="text-sm text-ink">{state.errors._source}</p> : null}
     {model.sourceInvalid ? <p role="alert">{t("admin.contextual.sourceInvalid")}</p> : null}
-    {locale === "en" ? groupContactFields(visible.map(binding => ({ id: binding.id, node: binding.id === "og_image_media_id"
+    {locale === "en" || descriptor.localeIndependentContent ? groupContactFields(visible.map(binding => ({ id: binding.id, node: binding.id === "og_image_media_id"
       ? <Field key={binding.id} label={t("admin.fields.ogImage")} error={state.errors.og_image_media_id}>
-          <MediaField value={og} preview={og ? previews[og] ?? null : null} onChange={(id, preview) => { rememberPreview(preview); setStates(previous => {
+          <MediaField value={og} preview={og ? previews[og] ?? null : null} mediaDisabled={locale !== "en"} onChange={(id, preview) => { if (locale !== "en") return; rememberPreview(preview); setStates(previous => {
             const own = previous.en;
             return { ...previous, en: { ...own, notice: "", model: { ...own.model, working: { ...own.model.working, ogImageMediaId: id } } } };
           }); }} />
         </Field>
+      : descriptor.localeIndependentContent && binding.id === "body"
+      ? <div key={`${locale}-body`} className="min-w-0" data-page-body-inspector>
+          <RichTextEditor value={editorialAt(content, "body") as PostBody} onChange={body => change(["body"], body)}
+            previews={{}} onPreview={() => {}} errors={state.errors} disabled={busy || Boolean(model.sourceInvalid)}
+            localeKey={`${descriptor.key}-${locale}`} textOnly />
+        </div>
       : <NodeField key={`${locale}-${binding.id}`} pageKey={descriptor.key} inlineAltMediaPaths={inlineAltMediaPaths} node={homeNode(descriptor.rootNode, binding.id)!}
           value={editorialAt(content, binding.id)} path={binding.id.split(".")} label={binding.label} depth={0}
           onChange={change} onListChange={listChange} listIds={editorialAt(content, "_list_ids") as Record<string, string[]> | undefined} listPolicy={{ paths: descriptor.listPaths, scope: path => editorialListScope(content, path, descriptor) }} errors={state.errors} previews={previews} options={model.options} />})))

@@ -16,8 +16,9 @@ test("Owners and About preserve all existing section anchors in page order", () 
   assert.deepEqual(FIXED_HEADER.find(row => row.key === "owners")?.children?.map(row => row.url), ["worth","numbers","why","services","plans","journey","technology","testimonials","faq","start"].map(id => `/owners#${id}`));
   assert.deepEqual(FIXED_HEADER.find(row => row.key === "about")?.children?.map(row => row.url), ["who-we-are","story","serve","values","organised","certifications","community","contact"].map(id => `/about#${id}`));
 });
-test("fixed Footer keeps its two groups, five links each and original destinations", () => {
-  assert.equal(FIXED_FOOTER.length, 2);
+test("fixed Footer preserves its existing groups and adds three legal links only to Others", () => {
+  assert.equal(FIXED_FOOTER.length, 3);
+  assert.deepEqual(FIXED_FOOTER[2]?.children?.map(row => row.url), ["/privacy-policy", "/cookies-policy", "/complaints-book"]);
   assert.deepEqual(FIXED_FOOTER[0]?.children?.map(row => row.url), Array(5).fill("/owners"));
   assert.deepEqual(FIXED_FOOTER[1]?.children?.map(row => row.url), ["/buildings","/buildings","/about","/blog","/about"]);
 });

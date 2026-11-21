@@ -7,6 +7,7 @@ import { BUILDING, listBuildingParams } from "@slices/buildings/contract";
 import { BLOG_POST, listPostParams } from "@slices/blog/contract";
 import { SERVICE, listServiceParams } from "@slices/services/contract";
 import { GUIDE_PAGE, listGuideParams } from "@slices/guides/contract";
+import { LEGAL_PAGE_KEYS, legalPagePaths, listAvailableLegalPages } from "@slices/pages/legal-public-contract";
 import { LOCALES, absoluteUrl } from "../config";
 
 /**
@@ -57,6 +58,17 @@ function staticUrls(): SitemapUrl[] {
       alternates: alternatesFor(stem),
     })),
   );
+}
+
+/** New document routes are advertised only when the visitor can read a publication. */
+async function legalUrls(): Promise<SitemapUrl[]> {
+  const available = await Promise.all(LOCALES.map(async locale => ({ locale, keys: await listAvailableLegalPages(locale) })));
+  return LEGAL_PAGE_KEYS.flatMap(key => {
+    const locales = available.filter(row => row.keys.includes(key)).map(row => row.locale);
+    const alternates = locales.map(locale => ({ hreflang: locale as string, href: absoluteUrl(`/${locale}${legalPagePaths[key]}`) }));
+    if (locales.includes("en")) alternates.push({ hreflang: "x-default", href: absoluteUrl(`/en${legalPagePaths[key]}`) });
+    return locales.map(locale => ({ loc: absoluteUrl(`/${locale}${legalPagePaths[key]}`), alternates }));
+  });
 }
 
 interface Param {
@@ -137,7 +149,7 @@ async function _collectSitemap(): Promise<SitemapSection[]> {
     ),
   ]);
 
-  return [{ id: "pages", urls: staticUrls() }, ...sections].filter((s) => s.urls.length > 0);
+  return [{ id: "pages", urls: [...staticUrls(), ...await legalUrls()] }, ...sections].filter((s) => s.urls.length > 0);
 }
 
 /** All sitemap sections (cached; busts on the `sitemap` tag, daily fallback). */
