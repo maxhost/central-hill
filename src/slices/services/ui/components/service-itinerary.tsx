@@ -30,9 +30,9 @@ export function ServiceItinerary({
             key={i}
             className="grid grid-cols-[76px_minmax(0,1fr)] gap-4 border-b border-line py-5 first:pt-1 last:border-b-0 last:pb-0 min-[561px]:grid-cols-[108px_minmax(0,1fr)] min-[561px]:gap-[22px]"
           >
-            <div className="grid size-[76px] place-items-center overflow-hidden rounded-[6px] bg-[color-mix(in_srgb,var(--color-line)_55%,var(--color-bg))] font-serif text-[30px] text-accent-deep min-[561px]:size-[108px]">
+            <div className="relative grid size-[76px] place-items-center overflow-hidden rounded-[6px] bg-[color-mix(in_srgb,var(--color-line)_55%,var(--color-bg))] font-serif text-[30px] text-accent-deep min-[561px]:size-[108px]">
               {img ? (
-                <MediaImage data={img} className="h-full w-full object-cover" sizes="(max-width: 560px) 76px, 108px" />
+                <MediaImage data={img} className="absolute inset-0 h-full w-full object-cover object-center" sizes="(max-width: 560px) 76px, 108px" />
               ) : (
                 <span aria-hidden>{i + 1}</span>
               )}
