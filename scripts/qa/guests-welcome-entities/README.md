@@ -37,3 +37,11 @@ There are no successful-upload mocks, DOM fixtures or direct content SQL writes.
 Generated marked PNG fixtures, measurement JSON and desktop/mobile screenshots are
 private artifacts. Code and documented N/A controls are checked against current
 routes, not historical screenshots or an obsolete editor.
+
+`reveal-paint.mjs` is a read-only final supplement for the six entity destinations
+with reveal/portfolio/carousel presentation. It resumes completed desktop/mobile
+samples, checks current selected media IDs, natural decode, opacity/visibility of
+all ancestors and stable scrolling across frames and screenshot capture. It never
+forces styles or replaces DOM. Own entity/media rows are hashed before and after;
+public browser mutation requests must be empty. Its evidence is separate from the
+upload ratio matrix, so no Save/Publish or uploads are repeated.

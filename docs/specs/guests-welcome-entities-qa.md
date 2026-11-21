@@ -159,3 +159,33 @@ las referencias antiguas cuyos bytes ya faltaban en el checkpoint no se rellenan
 ni se declaran reparadas. Las capturas pueden mostrar esos placeholders ajenos.
 
 No se atribuye Safari físico ni otros motores a estas pruebas de Chromium.
+
+## Suplemento de pintura después de Reveal
+
+La revisión final señaló que el helper original medía geometría/decodificación sin
+comprobar opacity de ancestros. Se conserva aquella matriz de ratios y se añade
+`reveal-paint.mjs`, exclusivamente de lectura:12 capturas de viewport y12 clips
+(Home portfolio/Service carousel, Guests portfolio/Service teaser/Guide teaser,
+Services listing, cada uno D/M). No se repiten uploads, Save, Publish ni ratios.
+
+`entities/reveal-paint-results.json`: **PASS**, IDs actualmente seleccionados y
+bytes decodificados; imagen/fondo CSS y todos sus ancestros tienen opacity1 y
+visibility visible. Se esperan dos animation frames, se comparan dos muestras
+separadas150ms y la muestra posterior al screenshot; posición, dimensiones y
+scroll difieren menos de0,5px. Se utiliza movimiento normal, sin reduced motion,
+sin forzar estilos ni reemplazar DOM. El wheel real centra el target cuando
+scrollIntoViewIfNeeded lo dejaba en el borde y el observer aún no alcanzaba15%.
+
+Los cuatro primeros destinos de portfolio se capturaron en compilado3094 con el
+asset vigente. El build conservaba catálogos Service/Guide anteriores a los
+fixtures; sus ocho capturas restantes se realizaron en3091 con caché renovada.
+Cada muestra registra su runtime. No se cambió categoría ni contenido para hacer
+aparecer fixtures. Las referencias estáticas de detalle permanecen en la matriz
+original y no se ejecutan destinos opcionales adicionales.
+
+Conservación scoped antes/después:21 tablas y296 filas propias, incluyendo medios,
+con SHA256 exactos; cero requests browser mutadores en las navegaciones públicas.
+La autenticación fue login normal. Todos los browsers se cerraron y ESLint focal
+aprobó con0errores. Revisión visual propia de clips Services listing móvil y Home
+carousel escritorio confirma pintura real y marcador central visible. Este
+suplemento reemplaza únicamente la evidencia visual insuficiente de esos destinos.
