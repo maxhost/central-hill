@@ -36,6 +36,9 @@ const requestedRatios = (
   process.env.QA_RATIOS || "3-2,2-3,1-1,recommended"
 ).split(",");
 const output = root + "/matrix";
+const reportKey =
+  requested +
+  (process.env.QA_REPORT_SUFFIX ? "-" + process.env.QA_REPORT_SUFFIX : "");
 await fs.mkdir(output, { recursive: true });
 const sql = await database();
 const b = await browser();
@@ -48,6 +51,18 @@ const publicCtx = await b.newContext({
   viewport: { width: 1440, height: 1000 },
 });
 const pub = await publicCtx.newPage();
+if (["home", "guest"].includes(requested)) {
+  for (const context of [ctx, publicCtx])
+    await context.route("**/*", (route) =>
+      route.request().resourceType() === "media"
+        ? route.abort("failed")
+        : route.continue(),
+    );
+}
+if (requested === "guides") {
+  await p.emulateMedia({ reducedMotion: "reduce" });
+  await pub.emulateMedia({ reducedMotion: "reduce" });
+}
 const report: any = {
   page: requested,
   browser: await b.version(),
@@ -76,6 +91,7 @@ function fields(node: FieldNode, data: any, ps: string[] = []): any[] {
     : [];
 }
 function recommended(f: any) {
+  if (f.hint.includes("900×1350")) return "2-3";
   if (requested === "services" && f.path.startsWith("hero.")) return "16-9";
   if (requested === "services" && f.path.startsWith("final_cta.")) return "4-5";
   if (f.hint.includes("16:10")) return "16-10";
@@ -122,6 +138,24 @@ async function findTargets(frame: any, url: string) {
           .map(({ i }) => i),
       url,
     );
+}
+async function previewFrame(pick: any) {
+  if (requested === "guides") await section(p, pick.path);
+  const surface =
+    requested === "guides" && pick.path.startsWith("guide_aside.")
+      ? "shared_aside"
+      : "page";
+  return until(
+    () =>
+      p
+        .frames()
+        .find(
+          (f) =>
+            f.url().includes("/admin/preview/" + requested + "?") &&
+            new URL(f.url()).searchParams.get("surface") === surface,
+        ),
+    "preview surface " + surface,
+  );
 }
 async function measure(
   frame: any,
@@ -177,11 +211,34 @@ async function measure(
             ? s.objectPosition
             : s.backgroundPosition,
         parent: { w: pr.width, h: pr.height },
+        layout: {
+          minimum: parseFloat(getComputedStyle(par).minHeight) || 0,
+          columns: getComputedStyle(
+            par.parentElement,
+          ).gridTemplateColumns.split(" ").length,
+          copyHeight:
+            par.parentElement.children[0]?.getBoundingClientRect().height || 0,
+        },
+        videoState:
+          e.tagName === "VIDEO"
+            ? {
+                hasSrc: e.hasAttribute("src"),
+                paused: e.paused,
+                readyState: e.readyState,
+                videoWidth: e.videoWidth,
+              }
+            : null,
         overflow: document.documentElement.scrollWidth > innerWidth,
       };
     });
     assert.ok(m.w > 0 && m.h > 0, label + " nonzero");
     assert.equal(m.overflow, false, label + " overflow");
+    if (process.env.QA_POSTER_VIDEO && m.videoState)
+      assert.equal(
+        m.videoState.hasSrc,
+        false,
+        label + " selected poster with reduced motion",
+      );
     if (m.fit === "fill" && m.tag === "IMG")
       assert.ok(
         Math.abs(m.h - m.w / (m.nw / m.nh)) <= 1,
@@ -194,6 +251,24 @@ async function measure(
       );
     if (m.fit === "cover")
       assert.equal(m.position, "50% 50%", label + " centered crop");
+    if (/about-(story|community)-image/.test(label)) {
+      const expectedHeight = Math.max(
+        m.layout.minimum,
+        m.w / (m.nw / m.nh),
+        m.layout.columns > 1 ? m.layout.copyHeight : 0,
+      );
+      assert.ok(
+        Math.abs(m.h - expectedHeight) <= 1,
+        `${label} intrinsic/stretch contract ${m.w}x${m.h}, expected height ${expectedHeight}`,
+      );
+    }
+    if (label.includes("about-certifications-items")) {
+      assert.equal(m.fit, "contain", label + " logo containment");
+      assert.ok(
+        Math.abs(m.h - 48) <= 1 && m.w <= 161,
+        label + " logo slot 48px/max160px",
+      );
+    }
     if (ratio)
       assert.ok(
         Math.abs(m.h - m.w / ratio) <= 1,
@@ -216,6 +291,31 @@ try {
     waitUntil: "domcontentloaded",
   });
   await p.waitForTimeout(1800);
+  if (process.env.QA_POSTER_VIDEO) {
+    assert.equal(requested, "services");
+    await p.emulateMedia({ reducedMotion: "reduce" });
+    await pub.emulateMedia({ reducedMotion: "reduce" });
+    for (const group of ["hero", "final_cta"]) {
+      await section(p, group);
+      const input = p.locator("input[type=file]").first();
+      const reservation = p.waitForResponse(
+        (r) =>
+          r.request().method() === "POST" &&
+          new URL(r.url()).pathname === "/admin/pages/services" &&
+          r.request().headers()["next-action"],
+      );
+      await input.setInputFiles(root + "/fixtures/loop-3-2.mp4");
+      assert.equal((await reservation).status(), 200);
+      await until(
+        () =>
+          input
+            .locator("xpath=..")
+            .getByText("Uploads when you save", { exact: true })
+            .count(),
+        "video queued",
+      );
+    }
+  }
   // Read the existing working snapshot; do not Save before replacing old orphan media references.
   const node = describe(pageSchemas[requested as keyof typeof pageSchemas]);
   let snap = await pageSnapshot(sql, requested);
@@ -273,7 +373,11 @@ try {
         if (pass === "recommended" && requestedRatios.includes(ratioName))
           continue;
         const filename =
-          requested + "-" + f.path.replaceAll(/[._]/g, "-") + "-" + ratioName;
+          requested.replaceAll("_", "-") +
+          "-" +
+          f.path.replaceAll(/[._]/g, "-") +
+          "-" +
+          ratioName;
         const file = await fixture(filename, [dim[1], dim[2]]);
         const index = sectionFields.findIndex((x) => x.path === f.path);
         const input = inputs.nth(index);
@@ -312,17 +416,10 @@ try {
     }
     if (!picks.length) continue;
     // Check each exact blob after debounced live rendering; publication runs real upload+finalize.
-    const frame = await until(
-      () =>
-        p
-          .frames()
-          .find((f) => f.url().includes("/admin/preview/" + requested + "?")),
-      "live frame",
-    );
     for (const pick of picks) {
       try {
         pick.localPreview = await measure(
-          frame,
+          await previewFrame(pick),
           pick.localURL,
           "preview-local-" + pick.filename,
           expectedRatio(requested, pick.path),
@@ -345,7 +442,7 @@ try {
     for (const pick of picks) {
       try {
         pick.localPreviewMobile = await measure(
-          frame,
+          await previewFrame(pick),
           pick.localURL,
           "preview-local-mobile-" + pick.filename,
           expectedRatio(requested, pick.path),
@@ -473,17 +570,10 @@ try {
         }
       }
     }
-    const savedFrame = await until(
-      () =>
-        p
-          .frames()
-          .find((f) => f.url().includes("/admin/preview/" + requested + "?")),
-      "saved live frame",
-    );
     for (const pick of picks) {
       try {
         pick.savedPreview = await measure(
-          savedFrame,
+          await previewFrame(pick),
           pick.url,
           "preview-saved-" + pick.filename,
           expectedRatio(requested, pick.path),
@@ -506,7 +596,7 @@ try {
     for (const pick of picks) {
       try {
         pick.savedPreviewMobile = await measure(
-          savedFrame,
+          await previewFrame(pick),
           pick.url,
           "preview-saved-mobile-" + pick.filename,
           expectedRatio(requested, pick.path),
@@ -525,11 +615,11 @@ try {
       .getByRole("button", { name: "Desktop, 1440 px", exact: true })
       .click();
     await fs.writeFile(
-      output + "/" + requested + "-results.json",
+      output + "/" + reportKey + "-results.json",
       JSON.stringify({ ...report, bodyErrors }, null, 2),
     );
     await fs.writeFile(
-      output + "/" + requested + "-" + pass + "-results.json",
+      output + "/" + reportKey + "-" + pass + "-results.json",
       JSON.stringify({ ...report, bodyErrors }, null, 2),
     );
     console.log(
@@ -552,7 +642,7 @@ try {
     .catch(() => {});
 } finally {
   await fs.writeFile(
-    output + "/" + requested + "-results.json",
+    output + "/" + reportKey + "-results.json",
     JSON.stringify(
       { ...report, bodyErrors, ended: new Date().toISOString() },
       null,

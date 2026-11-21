@@ -8,15 +8,15 @@ D=1440×1000; M=390×844; Welcome añade880/881. Cada campo visible requiere cic
 
 | Caso | Página/campo | Editor/preview | Destino público | Contrato D/M | Estado |
 |---|---|---|---|---|---|
-| P01 | home.hero.poster_media_id | /admin/pages/home; live preview | /<locale> | Hero: cover centrado; altura mínima por Hero, contenido/viewport (sin ratio fijo) | PENDIENTE |
-| P02 | home.guests_pitch.image_media_id | /admin/pages/home; live preview | /<locale> | 4:5 fijo; cover centrado D/M | PENDIENTE |
-| P03 | home.dual_cta.owner.image_media_id | /admin/pages/home; live preview | /<locale> | Panel: cover centrado; alto contenido, D dos columnas/M apilado | PENDIENTE |
-| P04 | home.dual_cta.guest.image_media_id | /admin/pages/home; live preview | /<locale> | Panel: cover centrado; alto contenido, D dos columnas/M apilado | PENDIENTE |
-| P05 | owners.hero.image_media_id | /admin/pages/owners; live preview | /<locale>/owners | Hero: cover centrado; altura contenido/viewport | PENDIENTE |
-| P06 | owners.services.image_media_id | /admin/pages/owners; live preview | /<locale>/owners | 4:5 fijo; cover centrado D/M | PENDIENTE |
-| P07 | owners.journey.steps[].image_media_id; repetible {'min': 5, 'max': 5} | /admin/pages/owners; live preview | /<locale>/owners | StepGallery: cover centrado; min360px, columnas5/2/1, alto contenido; NO3:4 fijo | PENDIENTE |
-| P08 | owners.dashboard.image_media_id | /admin/pages/owners; live preview | /<locale>/owners | 4:5 fijo; cover centrado D/M | PENDIENTE |
-| P09 | owners.final_cta.image_media_id | /admin/pages/owners; live preview | /<locale>/owners | 4:5 fijo; cover centrado D/M | PENDIENTE |
+| P01 | home.hero.poster_media_id | /admin/pages/home; live preview | /<locale> | Hero: cover centrado; altura mínima por Hero, contenido/viewport (sin ratio fijo) | APROBADO — Home4ratios |
+| P02 | home.guests_pitch.image_media_id | /admin/pages/home; live preview | /<locale> | 4:5 fijo; cover centrado D/M | APROBADO — Home4ratios |
+| P03 | home.dual_cta.owner.image_media_id | /admin/pages/home; live preview | /<locale> | Panel: cover centrado; alto contenido, D dos columnas/M apilado | APROBADO — Home4ratios |
+| P04 | home.dual_cta.guest.image_media_id | /admin/pages/home; live preview | /<locale> | Panel: cover centrado; alto contenido, D dos columnas/M apilado | APROBADO — Home4ratios |
+| P05 | owners.hero.image_media_id | /admin/pages/owners; live preview | /<locale>/owners | Hero: cover centrado; altura contenido/viewport | APROBADO — Owners9instancias/4ratios |
+| P06 | owners.services.image_media_id | /admin/pages/owners; live preview | /<locale>/owners | 4:5 fijo; cover centrado D/M | APROBADO — Owners9instancias/4ratios |
+| P07 | owners.journey.steps[].image_media_id; repetible {'min': 5, 'max': 5} | /admin/pages/owners; live preview | /<locale>/owners | StepGallery: cover centrado; min360px, columnas5/2/1, alto contenido; NO3:4 fijo | APROBADO — Owners9instancias/4ratios |
+| P08 | owners.dashboard.image_media_id | /admin/pages/owners; live preview | /<locale>/owners | 4:5 fijo; cover centrado D/M | APROBADO — Owners9instancias/4ratios |
+| P09 | owners.final_cta.image_media_id | /admin/pages/owners; live preview | /<locale>/owners | 4:5 fijo; cover centrado D/M | APROBADO — Owners9instancias/4ratios |
 | P10 | real_estate.hero.image_media_id | /admin/pages/real_estate; live preview | /<locale>/real-estate | Hero: cover centrado; altura contenido/viewport | PENDIENTE |
 | P11 | real_estate.capabilities.image_media_id | /admin/pages/real_estate; live preview | /<locale>/real-estate | 4:5 fijo; cover centrado D/M | PENDIENTE |
 | P12 | real_estate.asset_management.benefits[].image_media_id; repetible {'min': 6, 'max': 6} | /admin/pages/real_estate; live preview | /<locale>/real-estate | PhotoFeatureGrid card: cover centrado; alto según texto/grid | PENDIENTE |
@@ -34,7 +34,7 @@ D=1440×1000; M=390×844; Welcome añade880/881. Cada campo visible requiere cic
 | P24 | guest.welcome.image_media_id | /admin/pages/guest; live preview | /<locale>/guests | Candidato3:2 fijo D/M/880/881; cover centrado. Base falla esperado. | PENDIENTE |
 | P25 | blog.hero.image_media_id | /admin/pages/blog; live preview | /<locale>/blog | Hero compacto: cover centrado; altura viewport/contenido | PENDIENTE |
 | P26 | guides.hero.poster_media_id | /admin/pages/guides; live preview | /<locale>/guides | Hero compacto: cover centrado; altura viewport/contenido | PENDIENTE |
-| P27 | guides.guide_aside.image_media_id | /admin/pages/guides; live preview | /<locale>/guides/<slug> | 16:10 fijo D/M; cover centrado en cada guide detail | PENDIENTE |
+| P27 | guides.guide_aside.image_media_id | /admin/pages/guides; live preview | /<locale>/guides/<city>/<slug> | 16:10 fijo D/M; cover centrado en cada guide detail | PENDIENTE |
 | P28 | buildings.hero.image_media_id | /admin/pages/buildings; live preview | /<locale>/buildings | Hero: cover centrado; altura viewport/contenido | PENDIENTE |
 | P29 | buildings.calculator.media_media_id | /admin/pages/buildings; live preview | /<locale>/buildings | 4:5 fijo D/M; cover centrado | PENDIENTE |
 | P30 | services.hero.media_media_id | /admin/pages/services; live preview | /<locale>/services | Hero: cover centrado; altura viewport/contenido | PENDIENTE |
@@ -81,7 +81,7 @@ D=1440×1000; M=390×844; Welcome añade880/881. Cada campo visible requiere cic
 | E16 | post.body.doc.image.attrs.media_id — /admin/posts/new y /admin/posts/<id>, rich editor → Image | live post preview; Blog post body | variantes de alignment/width permitidas; intrínseco/cover según attrs; crear+sustituir | PENDIENTE |
 | E17 | author.avatar_media_id — /admin/authors/new + /admin/authors/<id> | Sin destino visual público: blog-post.tsx dibuja inicial del nombre, no avatar; persistencia en editor | Persistencia obligatoria; sin frame público, blog-post.tsx líneas194–198 usa inicial | PENDIENTE |
 | E18 | city.hero_media_id — /admin/cities/new + /admin/cities/<id> | Sin destino visual actual: City DTO resuelve hero, guides-listing.tsx solo usa id/name y hero de Pages | Persistencia obligatoria; no hay frame público actual | PENDIENTE |
-| E19 | settings.default_og_image_media_id — /admin/settings → SEO | metadata default de9páginas+3legales+Building/Service/Guide/Post en ausencia override | URL/dimensiones; sin marco; Settings guarda inmediatamente, no Publish separado | PENDIENTE |
+| E19 | settings.default_og_image_media_id — /admin/settings → SEO | metadata default de Blog/Services/Guides sin override propio; SiteJsonLd.logo global en todas las rutas (pages, legales y detalles) | URL/dimensiones; sin marco; Settings guarda inmediatamente, no Publish separado | PENDIENTE |
 
 ## No aplicable / controles de exclusión
 
@@ -95,10 +95,17 @@ D=1440×1000; M=390×844; Welcome añade880/881. Cada campo visible requiere cic
 
 ## Auditoría reproducible
 
-`rg -n "MediaField|MediaGalleryField" src --glob "*.tsx"` cubre todos los controles directos. `inventory.ts` cubre schemas dinámicos incluidos descendientes ocultos. Cruce con `src/slices/pages/admin/ui/schema-fields.tsx`, `page-contextual-editor.tsx` y renderizadores públicos. Los módulos de body legacy/rich y entidades nuevos/existentes se enumeran por separado cuando cambian los controles.
+`rg -n "MediaField|MediaGalleryField" src --glob "*.tsx"` cubre todos los controles directos. `inventory.ts` cubre schemas dinámicos incluidos descendientes ocultos. Cruce con `src/slices/pages/admin/ui/schema-fields.tsx`, `page-contextual-editor.tsx` y renderizadores públicos. El body legacy retirado se marca N/A; los controles rich se verifican en creación y edición, junto con el resto de entidades.
 
-Totales iniciales: 33 campos de imagen de páginas (tipos lógicos; listas expanden instancias),12OG páginas,19campos entidad/compartidos; 64entradas iniciales;63tipos activos y1control legacy retirado. Consumer avatar/city comprobado: no imagen pública, solo persistencia. Contratos de instancias repetibles se medirán en ejecución. Ningún caso ejecutado todavía.
+Totales iniciales: 33 campos de imagen de páginas (tipos lógicos; listas expanden instancias),12OG páginas,19campos entidad/compartidos; 64entradas iniciales;63tipos activos y1control legacy retirado. Consumer avatar/city comprobado: no imagen pública, solo persistencia. Contratos de instancias repetibles se medirán en ejecución. El estado vigente figura en cada fila y en el avance de ejecución.
 
 ## Correcciones del cruce con rutas efectivas
 
 Durante la ejecución se comprobó `src/app/(admin)/admin/posts/new/page.tsx`: usa PostLocaleEditor→PostRichTextEditor también al crear; BodyEditor/PostForm no está montado. E15 queda N/A con motivo, E16 debe acreditar creación y sustitución reales en ambos estados. Las rutas efectivas de Posts/Authors son `/admin/posts` y `/admin/authors`; Apartments están anidados en Buildings. Estas correcciones de inventario no implican cambios de producto ni omisión de un control disponible.
+
+## Avance de ejecución
+
+- Home P01–P04:4campos×4ratios, ciclos UI completos y públicoD/M; preview local y guardada, Mobile explícito adicional en recomendados. Evidencia privada `matrix/home-3-2-results.json`, `home-2-3-1-1-history.json`, `home-recommended-results.json`. Los archivos históricos conservan el fallo posterior de infraestructura/harness; sus casos completos tienen medidas y capturas propias.
+- Owners P05–P09:5tipos/9instancias×4ratios, cero fallos de producto. Evidencia `owners-3-2-results.json`, `owners-2-3-results.json`, `owners-recommended-results.json` (contiene también1:1). Journey es5fijo: no existe creación de sexta fila; se reemplazó cada uno de sus5campos.
+- Incidencias de harness corregidas: selector usa nombre accesible Mobile390px; espera exacta de blob en preview; no guardar antes de reemplazar referencias huérfanas legacy; snapshot publicado tiene draftnull. Infraestructura antigua agotó conexiones53300; casos completos conservados y solo interrumpidos retomados después de gateway/puentePGreal verificado.
+- Exclusión equivalente: `FormsRuntime` tiene input de adjunto del visitante; no es un campo de medio editorial, no produce un frame ni publica una imagen y persiste metadatos privados. No se crearon File fields ni asignaciones de Forms para este plan. La matriz cubre todos los uploads CMS montados.

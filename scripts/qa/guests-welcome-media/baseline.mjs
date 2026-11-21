@@ -94,3 +94,6 @@ await fs.writeFile(
 );
 console.log(JSON.stringify({ preview, measurements, errors }));
 await b.close();
+
+if (measurements.some((x) => Math.abs(x.height - x.width / 1.5) > 1))
+  process.exitCode = 1;

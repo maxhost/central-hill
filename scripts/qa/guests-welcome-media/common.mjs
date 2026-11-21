@@ -59,10 +59,26 @@ export async function login(context) {
 }
 export async function section(p, key) {
   const select = p.locator('select[id$="-binding"]');
+  await until(
+    () =>
+      select.evaluate((e) =>
+        Object.keys(e).some(
+          (k) =>
+            k.startsWith("__reactProps") &&
+            typeof e[k]?.onChange === "function",
+        ),
+      ),
+    "hydrated section selector",
+  );
   const values = await select
     .locator("option")
     .evaluateAll((es) => es.map((e) => e.value));
-  await select.selectOption(values.includes(key) ? key : key.split(".")[0]);
+  const chosen = values.includes(key) ? key : key.split(".")[0];
+  await select.selectOption(chosen);
+  await until(
+    async () => (await select.inputValue()) === chosen,
+    "selected section " + chosen,
+  );
 }
 export async function settle(p) {
   await until(
@@ -75,6 +91,17 @@ export async function settle(p) {
   );
 }
 export async function action(p, name) {
+  const button = p.getByRole("button", { name, exact: true }).first();
+  await until(
+    () =>
+      button.evaluate((e) =>
+        Object.keys(e).some(
+          (k) =>
+            k.startsWith("__reactProps") && typeof e[k]?.onClick === "function",
+        ),
+      ),
+    "hydrated action " + name,
+  );
   const response = p.waitForResponse(
     (r) =>
       r.request().method() === "POST" &&

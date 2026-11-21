@@ -22,6 +22,44 @@ const b = await browser(),
   c = await b.newContext({ viewport: { width: 1440, height: 1000 } }),
   p = await login(c);
 p.on("dialog", (d) => d.accept());
+async function evidence(surface, url, label) {
+  const target = surface
+    .locator(`img[src*="${url}"],[style*="${url}"]`)
+    .first();
+  await until(() => target.count(), "new item rendered " + label);
+  await target.scrollIntoViewIfNeeded();
+  const m = await target.evaluate(async (e) => {
+    const im = e instanceof HTMLImageElement ? e : new Image();
+    if (e instanceof HTMLImageElement) await e.decode();
+    else {
+      im.src = e.style.backgroundImage.slice(5, -2);
+      await im.decode();
+    }
+    const r = e.getBoundingClientRect(),
+      cs = getComputedStyle(e);
+    return {
+      width: r.width,
+      height: r.height,
+      naturalWidth: im.naturalWidth,
+      naturalHeight: im.naturalHeight,
+      fit: e instanceof HTMLImageElement ? cs.objectFit : cs.backgroundSize,
+      position:
+        e instanceof HTMLImageElement
+          ? cs.objectPosition
+          : cs.backgroundPosition,
+      overflow: document.documentElement.scrollWidth > innerWidth,
+    };
+  });
+  assert.ok(m.width > 0 && m.height > 0);
+  assert.equal(m.overflow, false);
+  assert.ok(["cover", "contain"].includes(m.fit));
+  assert.equal(m.position, "50% 50%");
+  await target.screenshot({
+    path: root + "/matrix/" + key + "-" + group + "-created-" + label + ".png",
+    timeout: 15000,
+  });
+  return m;
+}
 try {
   await p.goto(base + "/admin/pages/" + key, { waitUntil: "domcontentloaded" });
   await p.waitForTimeout(1500);
@@ -62,6 +100,22 @@ try {
         .isEnabled(),
     "reservation",
   );
+  const blob = await input
+    .locator("xpath=..")
+    .locator("img")
+    .first()
+    .getAttribute("src");
+  const frame = await until(
+    () =>
+      p.frames().find((f) => f.url().includes("/admin/preview/" + key + "?")),
+    "live frame",
+  );
+  const previewDesktop = await evidence(frame, blob, "preview-desktop");
+  await p.getByRole("button", { name: "Mobile, 390 px", exact: true }).click();
+  const previewMobile = await evidence(frame, blob, "preview-mobile");
+  await p
+    .getByRole("button", { name: "Desktop, 1440 px", exact: true })
+    .click();
   await saveDraft(p);
   let snap = await pageSnapshot(sql, key);
   assert.ok(snap.draft);
@@ -77,6 +131,18 @@ try {
   snap = await pageSnapshot(sql, key);
   items = path.reduce((x, k) => x[k], snap.published.content);
   assert.equal(items.length, before + 1);
+  const publicEvidence = [];
+  for (const width of [1440, 390]) {
+    await p.setViewportSize({ width, height: 1000 });
+    await p.goto(
+      base + "/en/" + (key === "real_estate" ? "real-estate" : key),
+      { waitUntil: "domcontentloaded" },
+    );
+    publicEvidence.push({
+      width,
+      ...(await evidence(p, id, "public-" + width)),
+    });
+  }
   await fs.writeFile(
     root + "/matrix/" + key + "-" + group + "-created.json",
     JSON.stringify(
@@ -88,6 +154,9 @@ try {
         after: items.length,
         id,
         asset,
+        previewDesktop,
+        previewMobile,
+        publicEvidence,
         field:
           list +
           "." +
