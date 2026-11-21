@@ -314,3 +314,15 @@ E19 contrastó que Default social image alimenta únicamente los fallbacks de Bl
 ### Alcance ampliado por E2E: Service itinerary
 
 E07 encontró una imagen vertical con caja de imagen108×162 dentro de un frame108×108, recortada desde arriba en lugar del centro. El dato coincide con el código base; no es un fallo de transporte. Se limita la corrección al thumbnail de ServiceItinerary: padre relativo y medio absoluto con ancho/alto explícitos, cover centrado. Fallback numérico y demás destinos sin cambios. Evidencia privada entities/service-error.json; retest de ratios y tres categorías requerido antes del merge.
+
+### Alcance ampliado por inventario: hint de City hero
+
+E18 confirmó mediante código y navegador que City hero se sube y persiste, pero no tiene consumidor público activo. El hint prometía mostrarla en páginas de ciudad y cabeceras de Guides. Se corrige únicamente el hint en4locales para indicar que se guarda y actualmente no se muestra en público. No se inventa un destino ni se amplían renderizadores. Su ciclo real de subida/guardado/recarga y metadata sigue obligatorio y cubierto por E18.
+
+### Contrato contrastado por E2E: Buildings calculator
+
+P29 contrastó el renderizador original: desde981px el medio está posicionado dentro de una celda que sigue la altura del formulario; por debajo conserva4:5. El diagnóstico aislado y el hint inicial lo trataban erróneamente como4:5 fijo universal. Se conserva ese diseño responsive y se corrige solo el hint inglés del schema. La matriz compara frame/formulario en escritorio y4:5 en móvil con cada sustitución. No se convierte el layout intencional de escritorio a4:5.
+
+### Alcance ampliado por E2E: imagen del cuerpo rich de Blog
+
+E16 reprodujo pérdida del media_id al terminar la reserva: PostLocaleEditor bloqueaba el callback actualizado por queue.isPreparing y el cuerpo volvía al valor anterior. El fix añade únicamente un setter del body que acepta esa finalización, manteniendo lock.current, operaciones, navegación, archivo y disabled del editor; no modifica Save/Publish ni sus guards. Siete pruebas focales cubren completion y bloqueos. El retest real verifica publicación con UUID válido, creación en /admin/posts/new, reemplazos y una imagen propia ES conservando íntegra la fila EN. Evidencia privada entities/post-results.json, post-es-own-body.json y post-new-route.json.

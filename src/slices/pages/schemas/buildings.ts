@@ -30,11 +30,11 @@ import {
 const HERO_IMG_HINT =
   "Full-bleed hero background (a dark overlay is applied). Landscape 16:9 — 1920×1080 px (min 1600×900), JPG or WebP, under 500 KB.";
 /**
- * Calculator side media: photo, animated WebP, MP4/WebM loop or Lottie in the fixed 4:5 frame —
- * the same text as Home's guests pitch and Owners' services/dashboard (`SHOWCASE_MEDIA_HINT`).
+ * Calculator side media: desktop fills the form height; stacked media keeps a 4:5 frame —
+ * format budgets match the shared showcase fields; framing is calculator-specific.
  */
 const CALC_MEDIA_HINT =
-  "Portrait 4:5 — the frame is fixed at 4:5, so other ratios are cropped. Photo: 1200×1500 px (min 960×1200), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1080×1350 or 1200×1500, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×1500, under 5 MB. Lottie (.lottie or .json): 4:5 canvas (e.g. 1200×1500).";
+  "Portrait 4:5 recommended — at desktop widths (981 px and above), the frame follows the form height; on tablet/mobile it stays 4:5. Media fills the frame with a centred cover crop, so keep the subject centred. Photo: 1200×1500 px (min 960×1200), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1080×1350 or 1200×1500, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×1500, under 5 MB. Lottie (.lottie or .json): 4:5 canvas (e.g. 1200×1500).";
 
 /**
  * Stock fallbacks the render uses when no asset is picked (moved here from the slice

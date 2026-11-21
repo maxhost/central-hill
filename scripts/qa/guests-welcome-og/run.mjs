@@ -40,7 +40,11 @@ const routes = {
 const requested = process.argv.slice(2);
 assert.ok(requested.length);
 assert.ok(requested.every((k) => Object.hasOwn(routes, k)));
-const out = root + "/og";
+const out = process.env.WELCOME_OG_ARTIFACT_ROOT || root + "/og";
+assert.ok(
+  out.startsWith(root + "/"),
+  "OG evidence stays under the private QA root",
+);
 await fs.mkdir(out, { recursive: true });
 const b = await browser();
 const context = await b.newContext({ viewport: { width: 1440, height: 1000 } });
@@ -62,18 +66,59 @@ const ratios = [
 async function openSeo() {
   const button = p.getByRole("button", { name: /^SEO EN$/ });
   await button.waitFor();
-  await p.waitForFunction(() => Array.from(document.querySelectorAll("button")).some(element => element.textContent.trim() === "SEO EN" && Object.keys(element).some(key => key.startsWith("__reactProps") && typeof element[key]?.onClick === "function")), undefined, {timeout:90000});
+  await p.waitForFunction(
+    () =>
+      Array.from(document.querySelectorAll("button")).some(
+        (element) =>
+          element.textContent.trim() === "SEO EN" &&
+          Object.keys(element).some(
+            (key) =>
+              key.startsWith("__reactProps") &&
+              typeof element[key]?.onClick === "function",
+          ),
+      ),
+    undefined,
+    { timeout: 90000 },
+  );
   await button.click();
   console.log("SEO CLICK", await button.getAttribute("aria-pressed"));
-  await until(() => button.getAttribute("aria-pressed").then(value => value === "true"), "SEO inspector selected");
-  await p.locator("input[type=file]").first().waitFor({state:"attached"});
+  await until(
+    () => button.getAttribute("aria-pressed").then((value) => value === "true"),
+    "SEO inspector selected",
+  );
+  await p.locator("input[type=file]").first().waitFor({ state: "attached" });
 }
 async function selectLanguage(locale) {
   const name = locale.toUpperCase();
-  await p.waitForFunction(name => Array.from(document.querySelectorAll('[role="group"][aria-label="Content language"] button')).some(element => element.textContent.trim().startsWith(name) && Object.keys(element).some(key => key.startsWith("__reactProps") && typeof element[key]?.onClick === "function")), name, {timeout:90000});
-  const button=p.getByRole("group",{name:"Content language",exact:true}).getByRole("button",{name:locale==="en"?/^EN/:name,exact:locale!=="en"});
+  await p.waitForFunction(
+    (name) =>
+      Array.from(
+        document.querySelectorAll(
+          '[role="group"][aria-label="Content language"] button',
+        ),
+      ).some(
+        (element) =>
+          element.textContent.trim().startsWith(name) &&
+          Object.keys(element).some(
+            (key) =>
+              key.startsWith("__reactProps") &&
+              typeof element[key]?.onClick === "function",
+          ),
+      ),
+    name,
+    { timeout: 90000 },
+  );
+  const button = p
+    .getByRole("group", { name: "Content language", exact: true })
+    .getByRole("button", {
+      name: locale === "en" ? /^EN/ : name,
+      exact: locale !== "en",
+    });
   await button.click();
-  await until(()=>button.getAttribute("aria-pressed").then(value=>value==="true"),"Content locale "+locale);
+  await until(
+    () => button.getAttribute("aria-pressed").then((value) => value === "true"),
+    "Content locale " + locale,
+  );
 }
 async function row(key, locale = "en") {
   return (
@@ -112,7 +157,12 @@ try {
         console.log("RESUME PASS", key, ratio);
         continue;
       }
-      const targetsBefore = (await sql`select locale,published->'content' content from page_locale_content where page_key=${key} and locale<>'en' order by locale`).filter(row => row.content !== null);
+      const targetsBefore = (
+        await sql`select * from page_locale_content where page_key=${key} and locale<>'en' order by locale`
+      ).filter(
+        (row) =>
+          row.published !== null || row.draft !== null || row.revision !== 0,
+      );
       console.log("OG START", key, ratio);
       await openSeo();
       const file = await fixture(`og-${key}-${ratio}`, dims);
@@ -176,25 +226,80 @@ try {
       }, "OG publication");
       assert.deepEqual(
         (
-          await sql`select locale,published->'content' content from page_locale_content where page_key=${key} and locale<>'en' order by locale`
-        ).filter((row) => row.content !== null),
+          await sql`select * from page_locale_content where page_key=${key} and locale<>'en' order by locale`
+        ).filter(
+          (row) =>
+            row.published !== null || row.draft !== null || row.revision !== 0,
+        ),
         targetsBefore,
-        "EN OG preserves all target documents and SEO",
+        "EN Publish preserves every existing target publication, draft and revision",
       );
       const localePublications = [];
-      for(const locale of ["es","pt","fr"]){
-        await p.reload({waitUntil:"domcontentloaded",timeout:90000});
-        const beforeTarget=await row(key,locale);
+      for (const locale of ["es", "pt", "fr"]) {
+        await p.reload({ waitUntil: "domcontentloaded", timeout: 90000 });
+        let beforeTarget = await row(key, locale);
         await selectLanguage(locale);
+        const initialDraft = beforeTarget?.draft;
+        if (initialDraft && initialDraft.ogImageMediaId !== id) {
+          // Existing target drafts intentionally keep their snapshot. Complete that
+          // normal QA publication first, then open a fresh working copy from EN.
+          await publish(p);
+          await until(
+            async () => {
+              const r = await row(key, locale);
+              return r && !r.draft ? r : null;
+            },
+            "Existing target draft completed " + key + "/" + locale,
+          );
+          await p.reload({ waitUntil: "domcontentloaded", timeout: 90000 });
+          beforeTarget = await row(key, locale);
+          await selectLanguage(locale);
+        }
         await saveDraft(p);
-        const targetDraft=await until(async()=>{const r=await row(key,locale);return r?.draft?.ogImageMediaId===id?r:null;},"Target OG draft "+key+"/"+locale);
-        if(["privacy_policy","cookies_policy","complaints_book"].includes(key)&&beforeTarget?.published)assert.deepEqual(targetDraft.draft.content,beforeTarget.published.content,"Legal target copy and SEO remain independent");
-        await p.reload({waitUntil:"domcontentloaded",timeout:90000});
+        const targetDraft = await until(
+          async () => {
+            const r = await row(key, locale);
+            return r?.draft?.ogImageMediaId === id ? r : null;
+          },
+          "Target OG draft " + key + "/" + locale,
+        );
+        if (
+          ["privacy_policy", "cookies_policy", "complaints_book"].includes(
+            key,
+          ) &&
+          beforeTarget?.published
+        )
+          assert.deepEqual(
+            targetDraft.draft.content,
+            beforeTarget.published.content,
+            "Legal target copy and SEO remain independent",
+          );
+        await p.reload({ waitUntil: "domcontentloaded", timeout: 90000 });
         await selectLanguage(locale);
         await publish(p);
-        const targetPublication=await until(async()=>{const r=await row(key,locale);return r?.published?.ogImageMediaId===id&&!r.draft?r:null;},"Target OG Publish "+key+"/"+locale);
-        if(beforeTarget?.published?.content.seo)assert.deepEqual(targetPublication.published.content.seo,beforeTarget.published.content.seo,"Own localized SEO preserved");
-        localePublications.push({locale,draftRevision:targetDraft.revision,publishedRevision:targetPublication.revision,ogImageMediaId:id,ownSaveReloadPublish:true});
+        const targetPublication = await until(
+          async () => {
+            const r = await row(key, locale);
+            return r?.published?.ogImageMediaId === id && !r.draft ? r : null;
+          },
+          "Target OG Publish " + key + "/" + locale,
+        );
+        if (beforeTarget?.published?.content.seo)
+          assert.deepEqual(
+            targetPublication.published.content.seo,
+            beforeTarget.published.content.seo,
+            "Own localized SEO preserved",
+          );
+        localePublications.push({
+          locale,
+          draftRevision: targetDraft.revision,
+          publishedRevision: targetPublication.revision,
+          ogImageMediaId: id,
+          ownSaveReloadPublish: true,
+          completedExistingDraft: Boolean(
+            initialDraft && initialDraft.ogImageMediaId !== id,
+          ),
+        });
       }
       await selectLanguage("en");
       await openSeo();
@@ -260,7 +365,8 @@ try {
         revision: published.revision,
         destinations,
         localePublications,
-        publicationContract:"Each locale uses its own Save/reload/Publish; EN alone does not replace target publications",
+        publicationContract:
+          "Each locale uses its own Save/reload/Publish; EN alone does not replace target publications",
         result: "pass",
       });
       await fs.writeFile(
@@ -287,7 +393,7 @@ try {
     out + "/failure-" + requested.join("-") + ".json",
     JSON.stringify({ records, errors, error: error.stack }, null, 2),
   );
-  await p.screenshot({ path: out + "/failure.png" }).catch(()=>{});
+  await p.screenshot({ path: out + "/failure.png" }).catch(() => {});
   throw error;
 } finally {
   await b.close();

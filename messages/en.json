@@ -2509,7 +2509,7 @@
         "intro": "Intro",
         "introHint": "Short editorial introduction (optional).",
         "hero": "Hero image",
-        "heroHint": "Shown on city-scoped pages and guide headers.",
+        "heroHint": "Saved for this city. It is not currently displayed on public pages.",
         "nbName": "Name",
         "nbSlug": "Slug"
       },

@@ -2509,7 +2509,7 @@
         "intro": "Introducción",
         "introHint": "Breve introducción editorial (opcional).",
         "hero": "Imagen principal",
-        "heroHint": "Se muestra en las páginas de la ciudad y en las cabeceras de las guías.",
+        "heroHint": "Se guarda para esta ciudad. Actualmente no se muestra en las páginas públicas.",
         "nbName": "Nombre",
         "nbSlug": "Slug"
       },
