@@ -1,9 +1,8 @@
 /** Run with pnpm exec tsx scripts/qa/guests-welcome-media/inventory.ts. */
-import fs from 'node:fs';
 import { pageSchemas } from '../../../src/slices/pages/schemas';
 import { describe, type FieldNode } from '../../../src/slices/pages/admin/form-model';
 
-const rows: any[]=[];
+const rows: {page:string;path:string;accept:string;hidden:boolean;hint:string;array?:{min:number;max:number}}[]=[];
 function walk(page:string,node:FieldNode,path:string[]=[],hidden=false,array?:{min:number,max:number}) {
  if(node.kind==='hidden') return walk(page,node.node,path,true,array);
  if(node.kind==='object') for(const {key,node:child} of node.fields) walk(page,child,[...path,key],hidden,array);

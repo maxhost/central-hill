@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';
-import {browser,login,section,fieldUpload,saveDraft,publish,fixture,imageMeasurement,until,root,base} from './common.mjs';
+import {browser,login,fieldUpload,saveDraft,publish,fixture,imageMeasurement,until,root,base} from './common.mjs';
 const b=await browser();const context=await b.newContext({viewport:{width:1440,height:1000}});const p=await login(context);const errors=[];p.on('pageerror',e=>errors.push(e.message));
 await p.goto(base+'/admin/pages/guest',{waitUntil:'domcontentloaded',timeout:90000});
 console.log('editor',await p.locator('select[id$="-binding"] option').allTextContents());
@@ -11,7 +11,6 @@ const preview=await imageMeasurement(frame.locator('[data-editor-binding="welcom
 console.log('baseline preview geometry',JSON.stringify(preview));await fs.mkdir(root+'/baseline',{recursive:true});await frame.locator('[data-editor-binding="welcome"]').screenshot({path:root+'/baseline/preview-local-desktop.png'});
 await saveDraft(p);console.log('saved');await p.reload({waitUntil:'domcontentloaded'});await publish(p);console.log('published');
 const pub=await context.newPage();await pub.goto(base+'/en/guests',{waitUntil:'domcontentloaded',timeout:90000});
-const im=pub.locator('img').filter({hasNot:pub.locator('[none]')});
 const selected=pub.locator('img[src*="9092"],img[srcset*="9092"]');
 console.log('images',await pub.locator('img').evaluateAll(es=>es.map(e=>e.src)));
 const measurements=[];
