@@ -123,7 +123,7 @@ export function FooterNewsletter({ labels }: { labels: FooterNewsletterLabels })
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder={labels.placeholder}
-          className="w-full min-w-0 flex-1 rounded-[3px] border border-white/25 bg-transparent px-4 py-[11px] text-[14px] leading-[1.6] text-on-feature placeholder:text-on-feature-soft/70 focus:border-white focus:outline-none"
+          className="w-full min-w-0 flex-1 rounded-[3px] border border-ink/25 bg-transparent px-4 py-[11px] text-[14px] leading-[1.6] text-on-feature placeholder:text-on-feature-soft/70 focus:border-ink focus:outline-none"
         />
         <button
           type="submit"

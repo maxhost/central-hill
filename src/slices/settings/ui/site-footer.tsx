@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
-import footerLogo from "../../../../logos/Logo footer.png";
+import footerLogo from "../../../../logos/Logo-footer.png";
 import type { Locale } from "@core/db/columns";
 import { Footer, type FooterNavGroup, type FooterSocialLink } from "@core/ui";
 import { Icon } from "@core/ui/icon";

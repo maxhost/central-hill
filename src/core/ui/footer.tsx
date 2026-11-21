@@ -82,21 +82,21 @@ export function Footer({
   const ownersEmail = contact.ownersEmail?.trim();
   const hasOwnersContact = Boolean(ownersPhone || ownersEmail);
   return (
-    <footer className="bg-feature text-on-feature">
-      <Container className="pb-9 pt-[35px]">
-        <div className="mb-[38px] flex flex-col gap-5 border-b border-white/[0.12] pb-[26px] sm:flex-row sm:items-center sm:justify-between">
+    <footer className="bg-[#EFE7DA] text-[#2B2622]">
+      <Container className="pb-9 pt-[35px] [--color-on-feature:#2B2622] [--color-on-feature-soft:#2B2622]">
+        <div className="mb-[38px] flex flex-col gap-5 border-b border-ink/15 pb-[26px] sm:flex-row sm:items-center sm:justify-between">
           <div className="text-[13px] tracking-[0.02em] text-on-feature-soft">
             {toggleLabel}{" "}
             <Link
               href="/owners"
-              className="border-b border-white/40 pb-px text-on-feature transition-colors hover:border-white"
+              className="border-b border-ink/40 pb-px text-on-feature transition-colors hover:border-ink"
             >
               {ownerLabel}
             </Link>{" "}
             ·{" "}
             <Link
               href="/guests"
-              className="border-b border-white/40 pb-px text-on-feature transition-colors hover:border-white"
+              className="border-b border-ink/40 pb-px text-on-feature transition-colors hover:border-ink"
             >
               {guestLabel}
             </Link>
@@ -174,7 +174,7 @@ export function Footer({
                     key={s.key}
                     href={s.url}
                     aria-label={s.key}
-                    className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-full border border-white/20 text-[13px] text-on-feature transition-colors hover:border-white"
+                    className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-full border border-ink/20 text-[13px] text-on-feature transition-colors hover:border-ink"
                   >
                     {s.label}
                   </a>
@@ -204,11 +204,13 @@ export function Footer({
           ))}
         </div>
 
-        <div className="mt-[52px] flex flex-col gap-3 border-t border-white/[0.12] pt-6 text-xs text-on-feature-soft opacity-80 sm:flex-row sm:items-center sm:justify-between">
+      </Container>
+      <div className="bg-[#926C52] text-on-feature">
+        <Container className="flex flex-col gap-3 py-6 text-xs sm:flex-row sm:items-center sm:justify-between">
           <span>{copyrightLabel}</span>
           {localeSwitcher}
-        </div>
-      </Container>
+        </Container>
+      </div>
     </footer>
   );
 }
