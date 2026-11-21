@@ -21,9 +21,9 @@ The original local Neon proxy saturated under parallel E2E and a build; interrup
 ## Verification receipts
 
 - Baseline real image2250×1500:535.8×669.73desktop,334×417.5mobile,4:5. Real WebM and Lottie JSON reproduce the same geometry through upload, draft, reload and publication, with advancing video time and nonempty changing canvas. Evidence: private `baseline/` and `baseline-playback/`.
-- Typecheck passed;18initial focal contracts plus7legal tests passed. Final relevant checks will be recorded after all fixes.
-- The first complete isolated build passed229generationitems/2workers: compile34.6s,TypeScript17.5s,static15.4s. A further build is required for the later neutral-loading/Service-itinerary corrections; private concurrency limits only. Earlier own build was stopped130to avoid competing for DB connections and is not counted as passed.
-- Design detector on all changed UI: `[]`.
-- Authoring database compare:49tables1534rows exact, including auth and ledger, after QA setup. Final compare remains required.
+- Final integrated TypeScript passes. The45 focal tests pass with0failures/0skips, covering frame, supported media, lifecycle, legal draft/publication isolation, Blog upload completion and editor/media locks. ESLint has0errors and the7pre-existing warnings.
+- Final isolated production build passes240generationitems/2workers: compile28.9s,TypeScript35.8s,static5.9s. SHA256 comparison of all950src/messages files against the integrated candidate has no differences. Build-only concurrency limits; product configuration unchanged. Earlier interrupted/intermediate builds are retained and do not substitute for this final build.
+- Design detector: initial changed UI batch has no findings; additional ServiceItinerary/PostLocaleEditor scans also have no findings.
+- Authoring database compare remains exact after the completed Pages/entity matrices:49tables1534rows, including auth and ledger. A final conservation receipt is required before integration.
 
 The per-field inventory and final QA reports are the acceptance record. Incomplete, blocked or missing evidence never counts as approval. Chromium evidence does not claim Safari coverage. Private credentials, files, generated media and database backups remain outside Git.
