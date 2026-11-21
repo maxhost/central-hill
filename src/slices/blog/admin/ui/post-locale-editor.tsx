@@ -133,6 +133,12 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
     if (busy || archived) return;
     setStates(previous => changePostField(previous, locale, key, value));
   }
+  function setBody(body: BlogPostContent["body"]) {
+    // A reserved image completes while the upload queue still marks itself preparing.
+    // Accept that controlled editor update; keep mutation/navigation locks authoritative.
+    if (lock.current || operation !== null || navigating || archived) return;
+    setStates(previous => changePostField(previous, locale, "body", body));
+  }
   function selectLocale(next: EditorLocale) {
     if (busy || (!persisted && next !== "en")) return;
     if (!started.has(next)) {
@@ -329,7 +335,7 @@ export function PostLocaleEditor({ initial, newPostId, initialLocale, categories
               <h2 className="text-sm font-semibold">{te("sectionBody")}</h2>
               {Object.entries(state.errors).filter(([key]) => /^(?:(?:payload\.)?content\.)?body(?:\.|$)/.test(key)).map(([key, message]) =>
                 <p key={key} role="alert" className="text-xs text-red-700">{message}</p>)}
-              <PostRichTextEditor value={content.body} onChange={(body: BlogPostContent["body"]) => set("body", body)} previews={previews}
+              <PostRichTextEditor value={content.body} onChange={setBody} previews={previews}
                 onPreview={remember} errors={state.errors} disabled={busy || archived} localeKey={locale} />
             </div>
           </section>
