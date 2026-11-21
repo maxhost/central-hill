@@ -1,6 +1,6 @@
 # QA independiente — Guests Welcome media
 
-2026-11-21. **En ejecución; no aprobado para merge.** Candidato en `fix/guests-welcome-media`; la matriz general completa, las comprobaciones y la revisión del código final siguen siendo puertas obligatorias.
+2026-11-21. **Aprobado para integración local.** Candidato revisado `a88d536cacd89283fcb392d520c9b2fa8942f4a7`, rama `fix/guests-welcome-media`; este commit de firma solo modifica el informe QA. Sin push ni deploy.
 
 ## Entornos y método
 
@@ -38,10 +38,18 @@ Los44grupos Welcome están aprobados. El suplemento de ocho variantes Lottie ver
 - Post rich image: setter específico de body permite finalizar reservas mientras queue.isPreparing, pero conserva lock/operación/navegación/archivado y UI bloqueada. No cambia Save/Publish. Se revisaron las siete pruebas focales y los runners/resultados E16: IDs reales en draft/publicado, body propio por locale, creación /admin/posts/new y fila EN íntegra tras autoría ES. No se usa HTTP200 como prueba de publicación.
 - OG legal: lector público vuelve exactamente al anterior; mantiene publicación propia completa y draft privado. Solo el working target adopta el picker OG source, conservando texto/SEO. El E2E general debe comprobar publicación propia por locale, sin overlay público automático EN.
 
-Welcome P24 queda aprobado. La aprobación global y el merge siguen pendientes de la matriz general, checks/build, conservación y revisión del candidato exacto final.
+Welcome P24 y la matriz general quedan aprobados tras revisar los recibos completos y el candidato final.
 
 ## Revisión de la matriz general
 
 Inventario activo:63tipos (33Pages,12OG y18entidades); E15 legacy BodyEditor no tiene ruta montada y queda N/A documentado, sin atribuir controles de ancho/alineación al editor rich actual. El manifiesto Pages acredita32tipos propios/55instancias/202ciclos, más Welcome independiente. El recibo de entidades acredita166grupos y2suplementos,182archivos con SHA256 exacto, galerías1–6 y nueve plantillas Guide. Apartment ES/PT/FR se verificó también en el build compilado3094: en PT/FR el stream RSC no finaliza dentro de10s y eso se declara; reload/reselección de locale, contenido draft/publicado SQL real y destinos D/M acreditan persistencia. Se restauró el nombre QA original y se comprobó la fila EN íntegra.
 
-O05 Guest completó4ratios con16destinos de metadata, publicación propia Save/recarga/Publish de ES/PT/FR y0errores. Recibo privado `og-guest/results-guest.json`. El lector legal conserva las publicaciones propias y los drafts siguen privados. Pendientes globales al redactar: suplemento visual readonly B para Reveal, smoke final48destinos, conservación final y revisión del commit exacto.
+O05 Guest completó4ratios con16destinos de metadata, publicación propia Save/recarga/Publish de ES/PT/FR y0errores. Recibo privado `og-guest/results-guest.json`. El lector legal conserva las publicaciones propias y los drafts siguen privados. El suplemento visual B examinó398clips previos y conservó67capturas prematuras de Reveal. Recapturó por lectura36vistas de18instancias/15tipos con UUID actual, ancestros visibles/opacity1 y al menos2304píxeles pintados; snapshots exactos, sin Save/Publish adicional. Se revisó el poster Services como PNG real visible con vídeo sin src/readyState0. El suplemento de entidades aporta12destinos D/M con decode, ancestros opacity1, dos frames y scroll/rect estables. Se revisaron los12clips: mínimo50441píxeles del marcador real;21tablas/296filas scoped exactas y mutations[]. Cuatro muestras usan build3094 y ocho catálogo3091 con caché actual; los intentos con caché compilada obsoleta no se cuentan. Comprobación independiente: los950archivos src/messages actuales son idénticos a la fuente del build. Smoke final:48/48 rutas HTTP200, errors[]/failures[] y snapshots editoriales exactos después de GET. El primer intento404 se conserva y no se cuenta como pass.
+
+## Firma independiente final
+
+Revisado el candidato `a88d536cacd89283fcb392d520c9b2fa8942f4a7`: inventario completo de 63 tipos activos, matrices y suplementos anteriores, 45 pruebas focales, TypeScript, lint sin errores y con siete avisos previos, db-check32 y build final de 240 elementos. La comparación independiente de los 950 archivos src/messages contra el build no encuentra cambios. `next.config.ts` está restaurado y su SHA256 es `60542afdf5bc68899d19db9bb57ad1702aeeb7b6754c8a4e1aede2417ede710d`.
+
+Conservación final revisada: base original de 49 tablas y 1534 filas exacta, incluyendo auth/ledger; QA protege 48 tablas y 1526 filas originales con changed[], excluyendo solo los fixtures Pages y OG/updated_at de Settings. Las 11 entradas de env/logos/symlinks son exactas. Los servidores de aplicación QA propios se detuvieron después del smoke; se conservan DBs, almacenamiento, medios, builds, caches, registros y checkpoint. No hay migración, escritura remota, push ni deploy.
+
+Aprobación independiente para merge local. Las limitaciones documentadas (Chromium, WebP reducido, marcadores internos de carga y streams QA) no se presentan como funcionalidades nuevas ni como pruebas omitidas. Los intentos fallidos y las capturas prematuras permanecen identificados y excluidos del resultado aprobado.
