@@ -19,12 +19,12 @@ import type { GuestContent } from "../schemas/guest";
 import { withoutGuestContactAssignment } from "../guest-contact-content";
 import { listServices } from "@slices/services/contract";
 import { listGuideCityGroups } from "@slices/guides/contract";
-import { getGuestPage, type GuestPage as GuestPageResult, type PageMedia } from "../contract";
+import { getGuestPage, type GuestPage as GuestPageResult } from "../contract";
 import { FaqSection } from "./components/faq-section";
 import { FeaturedPortfolio } from "./components/featured-portfolio";
 import { GuestServiceCards } from "./components/guest-service-cards";
 import { GuestGuideCards } from "./components/guest-guide-cards";
-import { sideMedia } from "./components/side-media";
+import { WelcomeMedia } from "./components/welcome-media";
 import { TestimonialsRow } from "./components/testimonials-row";
 import { heroPosterSrc } from "./hero-poster";
 import { orMessage } from "./or-message";
@@ -42,7 +42,7 @@ import { orMessage } from "./or-message";
  * - Hero: `Hero` (compact, centred) with Buildings' listing-hero configuration, over Home's
  *   `<video>` background (the poster paints first).
  * - "Welcome to Central Hill": `IntroSplit` (copy split into paragraphs on blank lines, optional
- *   guarantee line + icon, `sideMedia()` image / video / animated WebP / Lottie or the approved
+ *   guarantee line + icon, `WelcomeMedia` image / video / animated WebP / Lottie or the approved
  *   mock photo).
  * - "Why Book Directly" (warm `alt` band): a centred `SectionHead`, then `BenefitCards` + CTA.
  * - `#portfolio`: `FeaturedPortfolio` (cards from the buildings slice; the CTA note renders when set).
@@ -99,27 +99,6 @@ function ctaRoutes(locale: Locale) {
     services: `/${locale}/services`,
     guides: `/${locale}/guides`,
   };
-}
-
-/**
- * The Welcome side media (spec guests-admin-editor S3): `sideMedia()` picks image / MP4-WebM
- * loop / animated WebP / Lottie by mime. `IntroSplit`'s cell forces its direct child to cover
- * the full-height cell, so the element sits in a wrapper that passes the same cover rule on
- * and drops `sideMedia`'s radius (this page's photo has always been square-cornered). An
- * image row without dimensions (not renderable by `next/image`) degrades to a plain `<img>`,
- * as before. `null` → the caller's stock photo.
- */
-function welcomeSideMedia(asset: PageMedia | undefined, alt: string) {
-  if (!asset?.url) return null;
-  const isImage = (asset.mime ?? "image/").startsWith("image/");
-  if (isImage && !(asset.width > 0 && asset.height > 0)) {
-    // eslint-disable-next-line @next/next/no-img-element -- dimensionless asset, as before S3
-    return <img src={asset.url} alt={alt} loading="lazy" decoding="async" />;
-  }
-  const node = sideMedia({ ...asset, alt });
-  return node ? (
-    <div className="*:h-full *:w-full *:rounded-none *:object-cover">{node}</div>
-  ) : null;
 }
 
 /**
@@ -228,13 +207,13 @@ export async function GuestPage({ locale, preview = false, page: injectedPage, g
        * "Welcome to Central Hill": `core/ui`'s `IntroSplit` (see its docstring for why
        * `TwoColumnShowcase` doesn't fit) in the plain section shell, one `Reveal`. The guarantee
        * line renders only when set (icon = `guarantee_icon_key` or `percentage-circle`); the media
-       * is `welcomeSideMedia()` or the approved mock photo (lazy), sized by the component to
-       * cover its full-height cell. Alt = `image_alt` → asset alt → `pages.guests.welcomeAlt`.
+       * is `WelcomeMedia` or the approved mock photo (lazy), in a fixed 3:2 frame. Alt = `image_alt` → asset alt → `pages.guests.welcomeAlt`.
        */}
       <section {...binding("welcome")} className={SECTION_SHELL}>
         <div className={SECTION_WRAP}>
           <Reveal label="guests-welcome">
             <IntroSplit
+              imageFrame="3:2"
               headline={welcome.headline}
               lede={welcome.lede || undefined}
               paragraphs={welcome.copy
@@ -252,7 +231,13 @@ export async function GuestPage({ locale, preview = false, page: injectedPage, g
                   : undefined
               }
               image={
-                welcomeSideMedia(welcomeMedia, welcomeAlt) ?? (
+                welcomeMedia?.url ? (
+                  <WelcomeMedia
+                    media={{ ...welcomeMedia, alt: welcomeAlt }}
+                    preview={preview}
+                    errorLabel={t("guests.welcomeMediaError")}
+                  />
+                ) : (
                   // eslint-disable-next-line @next/next/no-img-element -- external TEMP fallback, not an R2 asset
                   <img
                     src={WELCOME_FALLBACK_IMG}

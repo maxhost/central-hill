@@ -1524,7 +1524,8 @@
       "whyEyebrow": "For Guests",
       "servicesEyebrow": "Guest Services",
       "activitiesEyebrow": "What To Do",
-      "welcomeAlt": "Bright, design-led Central Hill apartment interior"
+      "welcomeAlt": "Bright, design-led Central Hill apartment interior",
+      "welcomeMediaError": "This media could not be displayed. Try selecting it again or choose another file."
     },
     "realEstate": {
       "marketImageLeftAlt": "Lisbon rooftops and historic buildings",

@@ -39,6 +39,9 @@ export type IntroSplitBadge = {
  * original `.welcome img{width:100%;height:100%;object-fit:cover;min-height:…}`: the row is as
  * tall as the text column or the min-height, whichever is larger, and the photo covers it.
  *
+ * The opt-in `imageFrame="3:2"` reserves a width-derived box at every viewport and
+ * positions media inside it. Only Guests Welcome opts in; default stretch remains unchanged.
+ *
  * The badge is an `inline-flex` span (not a block), exactly like the original `.guarantee` — so
  * its line box keeps the same trailing baseline space under it. Font-size is the literal
  * `text-[16px]` (not `text-base`, which would also set a 1.5 line-height).
@@ -58,6 +61,7 @@ export function IntroSplit({
   badge,
   image,
   imagePosition = "right",
+  imageFrame = "stretch",
   className,
 }: {
   /** Small uppercase label above the headline (`SectionHead`'s eyebrow); omitted when absent. */
@@ -77,6 +81,8 @@ export function IntroSplit({
    * image also comes first when stacked, as in that page's original `.comm` markup.
    */
   imagePosition?: "left" | "right";
+  /** Fixed width-derived frame; long copy never changes its height. Existing callers stretch. */
+  imageFrame?: "stretch" | "3:2";
   className?: string;
 }) {
   const imageLeft = imagePosition === "left";
@@ -104,7 +110,12 @@ export function IntroSplit({
           </span>
         ) : null}
       </div>
-      <div className="min-h-[280px] self-stretch *:h-full *:w-full *:object-cover min-[881px]:min-h-[380px]">
+      <div
+        data-intro-media-frame={imageFrame}
+        className={imageFrame === "3:2"
+          ? "relative aspect-[3/2] min-w-0 w-full self-center overflow-hidden bg-surface *:absolute *:inset-0 *:h-full *:w-full *:object-cover"
+          : "min-h-[280px] self-stretch *:h-full *:w-full *:object-cover min-[881px]:min-h-[380px]"}
+      >
         {image}
       </div>
     </div>

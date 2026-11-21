@@ -49,13 +49,9 @@ const HERO_VIDEO_HINT =
 /** Home's hero poster hint, verbatim (spec guests-admin-editor S3). */
 const HERO_POSTER_HINT =
   "Shown while the video loads and when it can't play. Use a still from the video. 1920×1080 (16:9), JPG or WebP, under 400 KB.";
-/**
- * Welcome side media (spec guests-admin-editor S3): photo, MP4/WebM loop, animated WebP or
- * Lottie. `IntroSplit`'s media cell is landscape (min-height 380px beside a ~540px column on
- * desktop, a full-width 280px strip at ≤880px) and covers it, so the hint asks for 3:2.
- */
+/** Welcome keeps a width-derived 3:2 frame, including mobile, for every media kind. */
 const WELCOME_MEDIA_HINT =
-  "Landscape 3:2 — the frame is about 540×380 px on desktop and a full-width strip 280 px tall on tablet/mobile, and the media is cropped to fill it, so keep the subject centred. Photo: 1500×1000 px (min 1200×800), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1500×1000 or 1200×800, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×800, under 5 MB. Lottie (.lottie or .json): 3:2 canvas (e.g. 1200×800).";
+  "Landscape 3:2 — the frame stays 3:2 on desktop, tablet and mobile, independent of the file or text length. Media fills it with a centred cover crop; keep subjects, text and logos inside a central safe area. Photo: 1500×1000 px (min 1200×800), JPG/WebP, under 500 KB. Video: MP4 (H.264), 1500×1000 or 1200×800, no audio, 6–15 s loop, under 10 MB. Animated WebP: 1200×800, under 5 MB. Lottie (.lottie or .json): 3:2 canvas (e.g. 1200×800); other canvas ratios are cropped centrally.";
 
 /**
  * Teaser card photo (spec guests-admin-editor S4). `PhotoFeatureGrid` cards are `min-h-[260px]`,

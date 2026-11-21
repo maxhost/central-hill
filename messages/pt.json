@@ -1524,7 +1524,8 @@
       "whyEyebrow": "Para Hóspedes",
       "servicesEyebrow": "Serviços ao Hóspede",
       "activitiesEyebrow": "O Que Fazer",
-      "welcomeAlt": "Interior luminoso e com design de um apartamento Central Hill"
+      "welcomeAlt": "Interior luminoso e com design de um apartamento Central Hill",
+      "welcomeMediaError": "Não foi possível apresentar este ficheiro. Volte a selecioná-lo ou escolha outro."
     },
     "realEstate": {
       "marketImageLeftAlt": "Telhados e edifícios históricos de Lisboa",

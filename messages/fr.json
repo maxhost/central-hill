@@ -1524,7 +1524,8 @@
       "whyEyebrow": "Pour les Voyageurs",
       "servicesEyebrow": "Services aux Voyageurs",
       "activitiesEyebrow": "Que Faire",
-      "welcomeAlt": "Intérieur lumineux et design d’un appartement Central Hill"
+      "welcomeAlt": "Intérieur lumineux et design d’un appartement Central Hill",
+      "welcomeMediaError": "Ce média ne peut pas être affiché. Sélectionnez-le à nouveau ou choisissez un autre fichier."
     },
     "realEstate": {
       "marketImageLeftAlt": "Toits et bâtiments historiques de Lisbonne",
