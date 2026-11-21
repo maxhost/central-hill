@@ -34,6 +34,7 @@ export function StatBand({
   title,
   cells,
   columns = 4,
+  appearance = "default",
 }: {
   /** Centred heading in the band; omitted entirely renders a bare proof band (Owners-style). */
   title?: string;
@@ -42,9 +43,11 @@ export function StatBand({
    *  About's founding/apartments/buildings/guests/reservations band. `1`/`2` added
    *  additively for the Home's variable figures band (spec home-admin-editor S5). */
   columns?: 1 | 2 | 3 | 4 | 5;
+  /** Warm solid surface used by the Home, Owners, Buildings and About figures. */
+  appearance?: "default" | "sand";
 }) {
   return (
-    <section className="bg-feature py-[clamp(56px,8vw,104px)]">
+    <section className={`py-[clamp(56px,8vw,104px)] ${appearance === "sand" ? "bg-[#EFE7DA] [&_h2]:text-[#2B2622] [&_dt]:text-[#B5562D] [&_dd]:text-[#2B2622]" : "bg-feature"}`}>
       <Container>
         {title ? (
           <h2 className="mx-auto max-w-2xl text-center font-serif text-3xl leading-tight text-on-feature md:text-4xl">

@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
-import topBarLogo from "../../../../logos/Logo Barra Topo bg.png";
-import darkTopBarLogo from "../../../../logos/logo-barra-topo-base.png";
+import topBarLogo from "../../../../logos/Logo-bw.png";
+import darkTopBarLogo from "../../../../logos/Logo-base.png";
 import type { Locale } from "@core/db/columns";
 import { PublicContactForm } from "@slices/forms/contract";
 import { readHeaderContactForm } from "@slices/forms/server-contract";

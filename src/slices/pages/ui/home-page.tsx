@@ -123,9 +123,13 @@ export async function HomePage({ locale, preview = false, page: injectedPage }: 
        * the row count (`statBandColumns`); mobile stays 2-up.
        */}
       {statCells.length > 0 ? (
-        <div {...binding("stats")} className="[&_section]:pb-[70px]"><Reveal label="stats">
+        <div
+          {...binding("stats")}
+          className="[&_section]:pb-[70px]"
+        ><Reveal label="stats">
           <StatBand
             title={orMessage(content.stats?.title, t("stats.title"))}
+            appearance="sand"
             cells={statCells}
             columns={statBandColumns(statCells.length)}
           />

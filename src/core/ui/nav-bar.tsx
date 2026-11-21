@@ -72,12 +72,12 @@ export function NavBar({
               <div key={l.href + l.label} data-subnav data-nav-item={l.href} className="group">
                 <Link
                   href={l.href}
-                  className="inline-flex items-center gap-1 py-5 text-sm text-ink-soft transition-colors hover:text-ink"
+                  className="inline-flex items-center gap-1 py-5 text-[1.05rem] font-bold text-ink-soft transition-colors hover:text-ink"
                 >
                   {l.label}
                   <span
                     aria-hidden
-                    className="text-[0.6rem] opacity-70 transition-transform duration-200 group-hover:rotate-180"
+                    className="text-[1.2rem] opacity-70 transition-transform duration-200 group-hover:rotate-180"
                   >
                     ▾
                   </span>
@@ -111,7 +111,7 @@ export function NavBar({
               <Link
                 key={l.href + l.label}
                 href={l.href}
-                className="text-sm text-ink-soft transition-colors hover:text-ink"
+                className="text-[1.05rem] font-bold text-ink-soft transition-colors hover:text-ink"
               >
                 {l.label}
               </Link>

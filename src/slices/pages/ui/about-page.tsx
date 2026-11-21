@@ -257,7 +257,7 @@ export async function AboutPage({ locale, preview = false, page: injectedPage, a
       {/* No empty band; variable figures keep the approved five-column ceiling. */}
       {c.stats.length > 0 ? (
         <PreviewBinding preview={preview} id="stats"><Reveal label="about-stats">
-          <StatBand cells={c.stats} columns={aboutStatColumns(c.stats.length)} />
+          <StatBand appearance="sand" cells={c.stats} columns={aboutStatColumns(c.stats.length)} />
         </Reveal></PreviewBinding>
       ) : null}
 

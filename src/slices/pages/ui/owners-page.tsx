@@ -264,6 +264,7 @@ export async function OwnersPage({ locale, preview = false, page: injectedPage }
           <Reveal label="owners-stats">
             <StatBand
               title={orMessage(content.stats_title, t("owners.statsTitle"))}
+              appearance="sand"
               cells={statCells}
               columns={statBandColumns(statCells.length)}
             />

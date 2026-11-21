@@ -89,7 +89,7 @@ export function MobileDrawer({
                     <Link
                       href={l.href}
                       onClick={close}
-                      className="block flex-1 py-3 text-base text-ink transition-colors hover:text-accent"
+                      className="block flex-1 py-3 text-[1.2rem] font-bold text-ink transition-colors hover:text-accent"
                     >
                       {l.label}
                     </Link>
@@ -104,7 +104,7 @@ export function MobileDrawer({
                       >
                         <UiIcon
                           name="nav-arrow-down"
-                          size={18}
+                          size={36}
                           className={isOpen ? "rotate-180 transition-transform duration-200" : "transition-transform duration-200"}
                         />
                       </button>

@@ -126,6 +126,7 @@ export async function BuildingsStats({ page, locale, preview = false }: SectionP
     <Reveal label="buildings-stats" className="[&_section]:py-[70px]">
       <StatBand
         title={orMessage(page.content.stats?.title, t("buildings.statsTitle"))}
+        appearance="sand"
         columns={statBandColumns(cells.length)}
         cells={cells}
       />
