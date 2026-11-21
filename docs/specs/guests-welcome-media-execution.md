@@ -1,6 +1,6 @@
 # Guests Welcome media — execution
 
-Work in progress on `fix/guests-welcome-media`; no merge before the complete matrix passes. No push or deployment.
+Implemented and validated on `fix/guests-welcome-media`. Local integration remains gated by final independent QA; no push or deployment.
 
 The source checkpoint is `ec7f610f2364683e445060c75374fe71f6bc499e`, reference `restore/guests-welcome-media-2026-11-21`. Private artifacts: `/private/tmp/central-hill-guests-welcome/checkpoint/RESTORE.md`. Complete dump:49 tables1534rows including auth/ledger. Code archive1416regularfiles compared with the new checkout; bundle verified. Restores `welcomerestore20261121` and `welcomeqa20261121` match visible schema, constraints, counts and all row hashes (only dropped-column physical ordinal gaps normalized). Restore base stays intact. Both media target directories are empty at this checkpoint; no recovery claim for older assets. Current untracked plan, env, logo files and symlink definitions preserved privately. Recovery preserves later state first and uses new checkouts/databases.
 
@@ -24,6 +24,16 @@ The original local Neon proxy saturated under parallel E2E and a build; interrup
 - Final integrated TypeScript passes. The45 focal tests pass with0failures/0skips, covering frame, supported media, lifecycle, legal draft/publication isolation, Blog upload completion and editor/media locks. ESLint has0errors and the7pre-existing warnings.
 - Final isolated production build passes240generationitems/2workers: compile28.9s,TypeScript35.8s,static5.9s. SHA256 comparison of all950src/messages files against the integrated candidate has no differences. Build-only concurrency limits; product configuration unchanged. Earlier interrupted/intermediate builds are retained and do not substitute for this final build.
 - Design detector: initial changed UI batch has no findings; additional ServiceItinerary/PostLocaleEditor scans also have no findings.
-- Authoring database compare remains exact after the completed Pages/entity matrices:49tables1534rows, including auth and ledger. A final conservation receipt is required before integration.
+- Authoring database compare remains exact after the completed Pages/entity matrices:49tables1534rows, including auth and ledger. Final conservation is recorded in `final-authored-conservation.log` before integration.
 
 The per-field inventory and final QA reports are the acceptance record. Incomplete, blocked or missing evidence never counts as approval. Chromium evidence does not claim Safari coverage. Private credentials, files, generated media and database backups remain outside Git.
+
+## Complete matrix and final review
+
+The inventory contains64logical entries and63active upload types; E15 is an unmounted legacy control. All33Page types (32writer types/202cycles plus44independent Welcome groups),12OG types (48cycles/192own locale publications), and18entity types pass. Entity supplements cover9Guide templates,21gallery/repeated groups,16cover-fallback groups×4locales,64JSON-LD checks and182exact original asset hashes. Apartment ES/PT/FR passes on the compiled local server, including exact EN preservation and original names restored. Its RSC streams were bounded separately from actual ACK/reload/draft/publication proof; the limitation is explicitly recorded.
+
+Root visual review found one premature blank Owners clip. The PNG audit then found67paper-only clips among398Page public clips. These are preserved, not approved as visual evidence. A readonly supplement verifies36painted targets/18instances/15types after actual Reveal/scroll stability, with snapshots exact; entity destinations add12painted targets and21scoped tables/296rows exact, with no mutations. Root reviewed the Welcome image/video/Lottie/error D/M batch, About Story, corrected Owners section and Service listing/carousel. Geometry/crop is correct; the pre-existing floating CTA overlap is outside this scope.
+
+Next dev changed PID between reads and returned404 for routes previously200. Its task-owned cache/logs were preserved and only QA3091was deliberately restarted. The smoke harness also incorrectly assumed every page had a main element; it now checks the actual h1. Interrupted attempts stay separate, and valid Home checks are retained. Final smoke passes48/48public routes with HTTP200,0page errors/0failures and editorial snapshots exact. The final independent signature records the reviewed candidate. No original authoring process, env, cache or data was changed.
+
+Task-owned application servers3091/3092/3094were stopped after verification; original product next.config.ts restored byte-for-byte before final review. Private cache/config/build/log copies remain intact. Final original49table/1534row comparison passes; protected QA48tables/1526original rows including auth remain exact (Pages fixtures and only Settings OG/updated_at are scoped exclusions). Original env/logos/symlinks11entries remain exact. No SQL migration, authoring content/auth change, remoteDB/R2 write, push or deployment.

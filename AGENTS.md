@@ -1,5 +1,45 @@
 # Central Hill agent instructions
 
+## Guests Welcome media —2026-11-21
+
+User requested docs/specs/guests-welcome-media-plan.md execution: verified paired
+return point first, isolated branch, full upload E2E before local main integration;
+no push/deploy. Read plan, execution, inventory, coverage and independent QA in
+ docs/specs/guests-welcome-media-*.md; entity QA separately; ADR0088.
+
+Restore restore/guests-welcome-media-2026-11-21 at ec7f610. Private root
+/private/tmp/central-hill-guests-welcome/checkpoint:49tables1534rows inclauth/ledger,
+1416regular codefiles/bundle, schema/constraints/count/hash exact in two restores.
+Keep welcomerestore20261121 intact; welcomeqa20261121 owns all fixtures. Original
+media target directories already empty; no claim older assets survive. RESTORE.md
+preserves later state first and restores paired code/data in NEW checkout/DB.
+Original untracked plan/env/logos/symlinks preserved. Keep all artifacts/DBs/caches.
+
+Welcome alone opts into IntroSplit3:2; media MIME selection no longer owns geometry,
+sideMedia4:5/defaultIntroSplit unchanged. Neutral slow/error frame, accessible
+preview notice4locales, lazy Lottie/error cleanup/replacement; original motion
+behavior and animatedWebP limitation retained. Matrix also fixed Service itinerary
+centred square crop and Blog rich-image reservation completion; hints corrected.
+Legal working OG adopts source picker, own publications/drafts preserve semantics;
+EN does not publish target changes. No schema/migration/main content/auth changes.
+
+Coverage63active/64logical (E15unmountedlegacyN/A):32Page types/202cycles plus44
+Welcome groups,12OG types/48cycles/192ownlocale publications,18entity types/166+2
+entries;9Guide templates/21gallerygroups/16fallbacks/64JSONLD/182exactassetSHA.
+Premature Reveal clips67/398 preserved;36Pagepaintchecks and12entitypaintchecks
+close visual evidence with snapshots exact. Final public48routes200/0pageerrors/
+GETsnapshots exact.45focalpass/typecheck0/lint0errors7oldwarnings/dbcheck32old0008
+warning; finalbuild240items2workers compile28.9s/TS35.8s/static5.9s,950src/messages
+hashes exact. Independent QA must sign exact candidate before local merge.
+
+Original authored49tables1534rows exact inclauth/ledger; QA48tables1526originalrows
+protected inclauth exact (only ownPages/SettingsOG+updated_at scoped out),11original
+env/logo/symlink entries exact. Private QA config restored to product original.
+Own QA3091/3092/3094 stopped, baseline/QAbuilds and storage retained. Main3071 was
+absent at initial inspection, not reopened; original media9081 retained. Original
+main env and required navbar-logo/runtime.cjs preload remain unchanged. No remote
+writes/mail/push/deploy/cleanup or automatic next task. Final SHA via git log -1.
+
 ## Local admin login simplified —2026-11-21
 
 After legal Pages delivery, user explicitly requested a new simple local test admin.

@@ -50,6 +50,18 @@ for (const journal of journals) {
       assert.equal(publication.ownSaveReloadPublish, true);
       assert.equal(publication.ogImageMediaId, record.id);
     }
+    assert.equal(record.asset.id, record.id);
+    assert.deepEqual([record.asset.width, record.asset.height], record.dims);
+    for (const destination of record.destinations) {
+      assert.equal(destination.status, 200);
+      const tags = Object.fromEntries(
+        destination.tags.map((tag) => [tag.key, tag.value]),
+      );
+      for (const key of ["og:image", "twitter:image"])
+        assert.ok(tags[key]?.includes(record.id));
+      assert.equal(Number(tags["og:image:width"]), record.asset.width);
+      assert.equal(Number(tags["og:image:height"]), record.asset.height);
+    }
     records.push({ ...record, journal });
   }
 }

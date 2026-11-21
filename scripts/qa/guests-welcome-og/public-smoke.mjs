@@ -29,7 +29,11 @@ const b = await browser(),
   context = await b.newContext({ viewport: { width: 1440, height: 1000 } }),
   page = await context.newPage();
 page.setDefaultNavigationTimeout(120000);
-const cases = [],
+const previous = await fs
+  .readFile(root + "/og/public-smoke.json", "utf8")
+  .then(JSON.parse)
+  .catch(() => ({ cases: [] }));
+const cases = previous.cases || [],
   failures = [],
   errors = [];
 let activeRoute = "";
@@ -52,6 +56,12 @@ try {
         key + "/" + locale + " OG matrix must finish first",
       );
       const expectedId = selected.ogImageMediaId;
+      const passed = cases.find((c) => c.key === key && c.locale === locale);
+      if (passed) {
+        assert.equal(passed.expectedId, expectedId);
+        console.log("RESUME PUBLIC PASS", key, locale);
+        continue;
+      }
       const startErrors = errors.length;
       const response = await page.goto(activeRoute, {
         waitUntil: "domcontentloaded",
@@ -71,7 +81,7 @@ try {
         0,
         "No server error document",
       );
-      await page.locator("main").first().waitFor({ state: "visible" });
+      await page.locator("h1").first().waitFor({ state: "visible" });
       assert.equal(
         await page.locator("[data-editor-binding]").count(),
         0,

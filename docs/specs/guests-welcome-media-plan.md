@@ -1,10 +1,11 @@
 # Plan de encuadre de medios de Welcome en Guests
 
-2026-11-21. Estado: planificación actualizada tras diagnóstico transversal y revisión
-adversarial independiente. El usuario exige trabajar en una rama separada, disponer
-de un punto de restauración verificado y superar E2E de todos los campos de subida
-de imágenes de cada página antes de integrar a main. Esta actualización documenta
-esas condiciones; no crea aún la rama, el respaldo ni ejecuta la implementación.
+2026-11-21. Ejecución completada en rama separada, con punto de restauración
+verificado antes de implementar. Matriz completa y suplementos aprobados; la firma
+independiente del candidato exacto se registra en [QA](guests-welcome-media-qa.md).
+Ver [cobertura](guests-welcome-media-coverage.md) y [ejecución](guests-welcome-media-execution.md).
+Integración exclusivamente local después de esa firma; sin push ni deploy.
+El plan original sin modificaciones permanece en el checkpoint privado.
 
 ## Objetivo y alcance confirmado
 

@@ -1,6 +1,6 @@
 # ADR0088 — Fixed Welcome media frame
 
-Date:2026-11-21. Status: implementation on isolated branch; acceptance pending E2E.
+Date:2026-11-21. Status: implemented on isolated branch; complete E2E and final independent review recorded in the QA report.
 
 Guests Welcome currently passes an aspect4:5 renderer through a stretching IntroSplit cell. A landscape upload increases the cell height and crops its sides. IntroSplit gains opt-in `imageFrame="3:2"`: the cell reserves its own width-derived ratio from SSR, removes stretch/minimum heights, and contains positioned media. Existing callers retain stretch by default. Only Guests Welcome opts in, including the original image used when no media is selected. Text grows independently.
 
