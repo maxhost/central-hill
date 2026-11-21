@@ -36,6 +36,7 @@ const requestedRatios = (
   process.env.QA_RATIOS || "3-2,2-3,1-1,recommended"
 ).split(",");
 const output = root + "/matrix";
+const knownDimensions = new Map<string, { width: number; height: number }>();
 const reportKey =
   requested +
   (process.env.QA_REPORT_SUFFIX ? "-" + process.env.QA_REPORT_SUFFIX : "");
@@ -51,14 +52,27 @@ const publicCtx = await b.newContext({
   viewport: { width: 1440, height: 1000 },
 });
 const pub = await publicCtx.newPage();
-if (["home", "guest"].includes(requested)) {
+const publicNavigationEvents: unknown[] = [];
+pub.on("request", (r) => {
+  if (r.isNavigationRequest())
+    publicNavigationEvents.push({ event: "request", url: r.url() });
+});
+pub.on("requestfailed", (r) => {
+  if (r.isNavigationRequest())
+    publicNavigationEvents.push({
+      event: "failed",
+      url: r.url(),
+      failure: r.failure(),
+    });
+});
+pub.on("domcontentloaded", () =>
+  publicNavigationEvents.push({ event: "domcontentloaded", url: pub.url() }),
+);
+if (["home", "guest"].includes(requested))
   for (const context of [ctx, publicCtx])
-    await context.route("**/*", (route) =>
-      route.request().resourceType() === "media"
-        ? route.abort("failed")
-        : route.continue(),
+    await context.route(/\.(?:mp4|webm)(?:\?|$)/, (route) =>
+      route.abort("failed"),
     );
-}
 if (requested === "guides") {
   await p.emulateMedia({ reducedMotion: "reduce" });
   await pub.emulateMedia({ reducedMotion: "reduce" });
@@ -138,24 +152,26 @@ async function findTargets(frame: any, url: string) {
       url,
     );
 }
-async function previewFrame(pick: any) {
+async function previewFrame(pick: any, saved = false) {
   if (requested === "guides") await section(p, pick.path);
   const surface =
     requested === "guides" && pick.path.startsWith("guide_aside.")
       ? "shared_aside"
       : "page";
-  return until(
-    () =>
-      p
-        .frames()
-        .find(
-          (f) =>
-            f.url().includes("/admin/preview/" + requested + "?") &&
-            new URL(f.url()).searchParams.get("surface") === surface,
-        ),
-    "preview surface " + surface,
-  );
+  const url = saved ? pick.url : pick.localURL;
+  return until(async () => {
+    const frame = p
+      .frames()
+      .find(
+        (f) =>
+          f.url().includes("/admin/preview/" + requested + "?") &&
+          new URL(f.url()).searchParams.get("surface") === surface,
+      );
+    if (!frame || frame.isDetached()) return null;
+    return (await findTargets(frame, url)).length ? frame : null;
+  }, "ready selected preview surface " + surface);
 }
+
 async function measure(
   frame: any,
   url: string,
@@ -184,11 +200,15 @@ async function measure(
           : e.tagName === "VIDEO"
             ? e.poster
             : e.style.backgroundImage.slice(5, -2);
-      if (e.tagName === "IMG") await e.decode();
-      else if (source) {
+      let decodedImage: HTMLImageElement | null = null;
+      if (e.tagName === "IMG") {
+        await e.decode();
+        decodedImage = e;
+      } else if (source) {
         const im = new Image();
         im.src = source;
         await im.decode();
+        decodedImage = im;
       }
       const r = e.getBoundingClientRect(),
         s = getComputedStyle(e),
@@ -199,8 +219,8 @@ async function measure(
         src: source,
         w: r.width,
         h: r.height,
-        nw: e.naturalWidth || null,
-        nh: e.naturalHeight || null,
+        nw: decodedImage?.naturalWidth ?? null,
+        nh: decodedImage?.naturalHeight ?? null,
         fit:
           e.tagName === "IMG" || e.tagName === "VIDEO"
             ? s.objectFit
@@ -231,6 +251,13 @@ async function measure(
       };
     });
     assert.ok(m.w > 0 && m.h > 0, label + " nonzero");
+    const dimensions = knownDimensions.get(url);
+    assert.ok(dimensions, label + " known fixture dimensions");
+    assert.ok(m.nw > 0 && m.nh > 0, label + " actual image decoded dimensions");
+    assert.ok(
+      Math.abs(m.nh - (m.nw * dimensions.height) / dimensions.width) <= 1,
+      label + " visual natural aspect matches fixture",
+    );
     assert.equal(m.overflow, false, label + " overflow");
     if (process.env.QA_POSTER_VIDEO && m.videoState)
       assert.equal(
@@ -330,15 +357,28 @@ try {
     const legacy = (
       await sql`select data,og_image_media_id from page_content where key=${requested}`
     )[0];
-    assert.ok(legacy, "existing QA content baseline");
+    assert.ok(
+      legacy || requested === "services",
+      "existing QA content baseline or Services empty default",
+    );
     snap = {
       revision: 0,
       draft: {
-        content: applyDefaults(node, legacy.data),
-        ogImageMediaId: legacy.og_image_media_id,
+        content: applyDefaults(node, legacy?.data ?? {}),
+        ogImageMediaId: legacy?.og_image_media_id ?? null,
       },
     };
   }
+  if (requested === "guest")
+    assert.equal(
+      snap.draft,
+      null,
+      "Guest handoff has no pending unpublished draft",
+    );
+  const preservedWelcome =
+    requested === "guest"
+      ? structuredClone(snap.published.content.welcome)
+      : null;
   const original = structuredClone(snap);
   await fs.writeFile(
     output + "/" + requested + "-initial.json",
@@ -388,6 +428,17 @@ try {
         const file = await fixture(filename, [dim[1], dim[2]]);
         const index = sectionFields.findIndex((x) => x.path === f.path);
         const input = inputs.nth(index);
+        await until(
+          () =>
+            input.evaluate((e) =>
+              Object.keys(e).some(
+                (k) =>
+                  k.startsWith("__reactProps") &&
+                  typeof e[k]?.onChange === "function",
+              ),
+            ),
+          "hydrated upload control " + f.path,
+        );
         await input.setInputFiles(file);
         await until(
           async () =>
@@ -410,6 +461,7 @@ try {
           .locator("img")
           .first()
           .getAttribute("src");
+        knownDimensions.set(localURL, { width: dim[1], height: dim[2] });
         picks.push({
           ...f,
           ratio: ratioName,
@@ -472,6 +524,12 @@ try {
     snap = await pageSnapshot(sql, requested);
     assert.ok(snap.revision > rev);
     assert.ok(snap.draft);
+    if (requested === "guest")
+      assert.deepEqual(
+        snap.draft.content.welcome,
+        preservedWelcome,
+        "Hero draft preserves Welcome",
+      );
     for (const pick of picks) {
       pick.id = at(snap.draft.content, pick.path.split("."));
       const media = (
@@ -482,6 +540,7 @@ try {
       assert.equal(media.height, pick.h);
       assert.ok(media.r2_key.endsWith("/" + pick.filename + ".png"));
       pick.url = "http://127.0.0.1:9092/welcome-qa/" + media.r2_key;
+      knownDimensions.set(pick.url, { width: pick.w, height: pick.h });
       pick.persisted = {
         id: media.id,
         width: media.width,
@@ -500,6 +559,12 @@ try {
     await publish(p);
     snap = await pageSnapshot(sql, requested);
     assert.equal(snap.draft, null);
+    if (requested === "guest")
+      assert.deepEqual(
+        snap.published.content.welcome,
+        preservedWelcome,
+        "Hero publication preserves Welcome",
+      );
     for (const pick of picks)
       assert.equal(
         at(snap.published.content, pick.path.split(".")),
@@ -580,7 +645,7 @@ try {
     for (const pick of picks) {
       try {
         pick.savedPreview = await measure(
-          await previewFrame(pick),
+          await previewFrame(pick, true),
           pick.url,
           "preview-saved-" + pick.filename,
           expectedRatio(requested, pick.path),
@@ -603,7 +668,7 @@ try {
     for (const pick of picks) {
       try {
         pick.savedPreviewMobile = await measure(
-          await previewFrame(pick),
+          await previewFrame(pick, true),
           pick.url,
           "preview-saved-mobile-" + pick.filename,
           expectedRatio(requested, pick.path),
@@ -623,11 +688,19 @@ try {
       .click();
     await fs.writeFile(
       output + "/" + reportKey + "-results.json",
-      JSON.stringify({ ...report, bodyErrors }, null, 2),
+      JSON.stringify(
+        { ...report, bodyErrors, publicNavigationEvents },
+        null,
+        2,
+      ),
     );
     await fs.writeFile(
       output + "/" + reportKey + "-" + pass + "-results.json",
-      JSON.stringify({ ...report, bodyErrors }, null, 2),
+      JSON.stringify(
+        { ...report, bodyErrors, publicNavigationEvents },
+        null,
+        2,
+      ),
     );
     console.log(
       "pass-completed",

@@ -166,6 +166,10 @@ for (const declaration of declarations) {
       ratio: c.ratio,
       fixture: c.filename,
       mediaId: c.persisted.id,
+      sourceUrl:
+        c.url ||
+        "http://127.0.0.1:9092/welcome-qa/" +
+          (c.persisted.key ?? c.persisted.r2_key),
       metadata: { width: c.persisted.width, height: c.persisted.height },
       receipt: c.receipt,
       screenshots: c.evidence || [],
@@ -269,6 +273,12 @@ const result = {
   artifactRoot: directory,
   inventoryFile: "docs/specs/guests-welcome-media-inventory.md",
   activePageFieldTypes: 33,
+  ownPageFieldTypes: 32,
+  ownConcreteInstances: rows
+    .filter((r) => r.id !== "P24")
+    .reduce((n, r) => n + r.instances.length, 0),
+  browserEngine: "Chromium only",
+  originalDimensionsReceipt: "natural-dimensions-results.json",
   approved: rows.filter((r) => r.status === "approved").length,
   pending: rows.filter((r) => r.status === "pending").map((r) => r.id),
   independentQA: ["P24"],
