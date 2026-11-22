@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import Link from "next/link";
 import { ZodError } from "zod";
 import { isIconName } from "@core/ui/icons/names";
@@ -251,57 +258,81 @@ export function ServiceForm({
     };
   }, [anyDirty, busy, tp]);
 
-  function focusError(path: string, message: string) {
-    requestAnimationFrame(() => {
-      if (focusEditorField(root.current, path)) return;
-      const section = path.startsWith("detail.")
-        ? path.split(".")[1]
-        : undefined;
-      const sectionKeys: Record<string, string> = {
-        highlights: "included",
-        option_groups: "options",
-        notes: "good_to_know",
-      };
-      const scope = section
-        ? (root.current?.querySelector<HTMLElement>(
-            `[data-service-section="${sectionKeys[section] ?? section}"]`,
-          ) ?? root.current)
-        : root.current;
-      const fields = Array.from(
-        scope?.querySelectorAll<HTMLElement>(
-          "[data-service-field], [data-service-error-message]",
-        ) ?? [],
-      );
-      const direct = root.current?.querySelector<HTMLElement>(
-        `[data-service-path="${path}"]`,
-      );
-      const field =
-        fields.find((node) => node.dataset.serviceErrorMessage === message) ??
-        fields.find((node) => node.dataset.serviceError === "true");
-      const directControl = direct?.matches(
-        'input:not([type="file"]):not([type="hidden"]):not([disabled]),textarea:not([disabled]),select:not([disabled]),button:not([disabled])',
-      )
-        ? direct
-        : direct?.querySelector<HTMLElement>(
-            'input:not([type="file"]):not([type="hidden"]):not([disabled]),textarea:not([disabled]),select:not([disabled]),button:not([disabled])',
+  const focusError = useCallback(
+    (path: string, message: string, explicitSourceNavigation = false) => {
+      requestAnimationFrame(() => {
+        if (
+          !explicitSourceNavigation &&
+          locale !== "en" &&
+          (path === "category_id" ||
+            path === "enquiry_form_id" ||
+            path === "_source" ||
+            /^presentation\.icons(?:\.|$)/.test(path) ||
+            /^detail\.facts\.\d+\.icon$/.test(path))
+        ) {
+          const summary = document.getElementById(`${fieldPrefix}-feedback`);
+          summary?.scrollIntoView({ block: "center" });
+          const destination = [
+            ...(summary?.querySelectorAll<HTMLButtonElement>("button") ?? []),
+          ].find((button) =>
+            button.textContent?.startsWith(`${locale.toUpperCase()} →`),
           );
-      const control =
-        directControl ??
-        field?.querySelector<HTMLElement>("input, textarea, select, button") ??
-        scope?.querySelector<HTMLElement>('[aria-invalid="true"]');
-      const target = control ?? field;
-      if (target) {
-        let ancestor: HTMLElement | null = target.parentElement;
-        while (ancestor) {
-          if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
-          ancestor = ancestor.parentElement;
+          destination?.focus();
+          return;
         }
-        target.scrollIntoView({ block: "center" });
-        if (!control) target.tabIndex = -1;
-        target.focus();
-      }
-    });
-  }
+        if (focusEditorField(root.current, path)) return;
+        const section = path.startsWith("detail.")
+          ? path.split(".")[1]
+          : undefined;
+        const sectionKeys: Record<string, string> = {
+          highlights: "included",
+          option_groups: "options",
+          notes: "good_to_know",
+        };
+        const scope = section
+          ? (root.current?.querySelector<HTMLElement>(
+              `[data-service-section="${sectionKeys[section] ?? section}"]`,
+            ) ?? root.current)
+          : root.current;
+        const fields = Array.from(
+          scope?.querySelectorAll<HTMLElement>(
+            "[data-service-field], [data-service-error-message]",
+          ) ?? [],
+        );
+        const direct = root.current?.querySelector<HTMLElement>(
+          `[data-service-path="${path}"]`,
+        );
+        const field =
+          fields.find((node) => node.dataset.serviceErrorMessage === message) ??
+          fields.find((node) => node.dataset.serviceError === "true");
+        const directControl = direct?.matches(
+          'input:not([type="file"]):not([type="hidden"]):not([disabled]),textarea:not([disabled]),select:not([disabled]),button:not([disabled])',
+        )
+          ? direct
+          : direct?.querySelector<HTMLElement>(
+              'input:not([type="file"]):not([type="hidden"]):not([disabled]),textarea:not([disabled]),select:not([disabled]),button:not([disabled])',
+            );
+        const control =
+          directControl ??
+          field?.querySelector<HTMLElement>(
+            "input, textarea, select, button",
+          ) ??
+          scope?.querySelector<HTMLElement>('[aria-invalid="true"]');
+        const target = control ?? field;
+        if (target) {
+          let ancestor: HTMLElement | null = target.parentElement;
+          while (ancestor) {
+            if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
+            ancestor = ancestor.parentElement;
+          }
+          target.scrollIntoView({ block: "center" });
+          if (!control) target.tabIndex = -1;
+          target.focus();
+        }
+      });
+    },
+    [locale, fieldPrefix],
+  );
   function reportErrors(next: Record<string, string>) {
     setErrors(
       Object.fromEntries(
@@ -321,7 +352,7 @@ export function ServiceForm({
       pendingFocus.current = false;
       focusError(...first);
     }
-  }, [errors, busy]);
+  }, [errors, busy, focusError]);
   function receive(
     result: ServiceEditorialResult,
     action: "save" | "publish",
@@ -845,7 +876,11 @@ export function ServiceForm({
                   ?.issues.find((issue) => issue.path === path);
                 const source = issue?.sourceLocale ?? target;
                 selectLocale(source);
-                focusError(path, workspace.locales[target].errors[path] ?? "");
+                focusError(
+                  path,
+                  workspace.locales[target].errors[path] ?? "",
+                  source !== target,
+                );
               }}
             />
           </header>

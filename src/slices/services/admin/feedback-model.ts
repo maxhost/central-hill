@@ -96,7 +96,19 @@ export function serviceFeedbackGroups(
     locale,
     notice: workspace.locales[locale].notice,
     issues: Object.entries(workspace.locales[locale].errors).map(
-      ([path, message]) => ({ path, message, ...serviceFeedbackLabel(path) }),
+      ([path, message]) => ({
+        path,
+        message,
+        ...serviceFeedbackLabel(path),
+        ...(locale !== "en" &&
+        (path === "category_id" ||
+          path === "enquiry_form_id" ||
+          path === "_source" ||
+          /^presentation\.icons(?:\.|$)/.test(path) ||
+          /^detail\.facts\.\d+\.icon$/.test(path))
+          ? { sourceLocale: "en" as const }
+          : {}),
+      }),
     ),
     ...(workspace.locales[locale].uncertain
       ? { uncertain: true, notice: workspace.locales[locale].notice }
@@ -139,7 +151,7 @@ export function retainServiceErrors(
             fieldValue(workspace.locales[locale].working, path),
           ) !== JSON.stringify(fieldValue(form, path));
         if (!changed) return [[path, message]];
-        return /uploaded|existing|shared|reference|source|Save to check/i.test(
+        return /uploaded|available|exist|shared|reference|source|Save to check/i.test(
           message,
         )
           ? [[path, "Selection changed. Save to check it again."]]

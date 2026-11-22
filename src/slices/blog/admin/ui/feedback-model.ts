@@ -101,7 +101,7 @@ export function retainPostErrors(
         JSON.stringify(valueAt(previous.content, key)) !==
           JSON.stringify(valueAt(envelope.content, key));
       if (!changed) return [[path, message]];
-      return /uploaded|existing|shared|reference|source|Save to check/i.test(
+      return /uploaded|available|exist|shared|reference|source|Save to check/i.test(
         message,
       )
         ? [[path, "Selection changed. Save to check it again."]]

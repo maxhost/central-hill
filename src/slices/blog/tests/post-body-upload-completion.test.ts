@@ -5,6 +5,8 @@ import { runInNewContext } from "node:vm";
 import * as jsxRuntime from "react/jsx-runtime";
 import ts from "typescript";
 import * as stateHelpers from "../admin/ui/post-editor-state";
+import * as domainFeedback from "../admin/ui/feedback-model";
+import { feedbackMessage, feedbackTabProps } from "@slices/backoffice/contract-client";
 import { BLOG_EDITOR_LOCALES, type BlogPostEditorialModel } from "../editorial-types";
 import type { PostBody } from "../body";
 
@@ -60,6 +62,13 @@ function harness(archived = false) {
     "next-intl": { useTranslations: () => (key: string) => key },
     "@core/ui": components("UiIcon"),
     "@slices/backoffice/contract": { ...components("AdminButton", "Checkbox", "Field", "MediaField", "MediaAltProvider", "Select", "TextArea", "TextInput"), useMediaQueue: () => h.queue },
+    "@slices/backoffice/contract-client": {
+      ...components("FeedbackScope", "EditorFeedbackSummary"),
+      feedbackMessage, feedbackTabProps,
+      focusEditorField: () => false,
+      useEditorFeedbackToast: () => ({ success: () => {}, error: () => {}, info: () => {}, warning: () => {}, dismiss: () => {}, show: () => "controlled-toast" }),
+    },
+    "./feedback-model": domainFeedback,
     "../editorial-contract": { BLOG_EDITOR_LOCALES },
     "../post-locale-actions": { archivePost: action("archive"), publishPostLocaleDraft: action("publish"), savePostLocaleDraft: action("save-action") },
     "../actions": { deletePost: action("delete") },
@@ -74,7 +83,12 @@ function harness(archived = false) {
   } });
   const render = () => { valueIndex = 0; refIndex = 0; return compiled.exports.PostLocaleEditor!({ initial, categories: [], authors: [], posts: [] }); };
   const rich = () => nodes(render(), "PostRichTextEditor")[0]!.props!;
-  const button = (label: string) => nodes(render(), "AdminButton").find(node => text(node.props?.children) === label)!.props!;
+  const button = (label: string) => {
+    const visibleLabel = label === "saveDraft" ? "Save draft (EN)" : label === "publish" ? "Publish (EN)" : label;
+    const match = nodes(render(), "AdminButton").find(node => text(node.props?.children) === visibleLabel);
+    assert.ok(match, `Visible action ${visibleLabel}`);
+    return match.props!;
+  };
   return {
     ...h, queue: h.queue,
     setNavigating: (value: boolean) => { h.navigating = value; },

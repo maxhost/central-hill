@@ -146,7 +146,7 @@ export function retainGuideErrors(
             fieldValue(workspace.locales[locale].working, path),
           ) !== JSON.stringify(fieldValue(content, path));
         if (!changed) return [[path, message]];
-        return /uploaded|existing|shared|reference|source|Save to check/i.test(
+        return /uploaded|available|exist|shared|reference|source|Save to check/i.test(
           message,
         )
           ? [[path, "Selection changed. Save to check it again."]]

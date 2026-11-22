@@ -9,6 +9,7 @@ import {
 import {
   retainServiceErrors,
   serviceFeedbackLabel,
+  serviceFeedbackGroups,
 } from "../admin/feedback-model";
 const category = "eef10000-0000-4000-8000-000000000001",
   media = "eef10000-0000-4000-8000-000000000002";
@@ -79,4 +80,23 @@ test("Service nested labels identify list entries and the actual field", () => {
     section: "Itinerary",
     label: "Itinerary → Item 3 → Time",
   });
+});
+
+test("target dependency errors identify their English source without marking independent copy as shared", () => {
+  const workspace = createServiceWorkspace(null, category);
+  workspace.locales.es.errors = {
+    category_id: "Category no longer exists.",
+    name: "Name is required.",
+  };
+  const issues = serviceFeedbackGroups(workspace).find(
+    (group) => group.locale === "es",
+  )!.issues;
+  assert.equal(
+    issues.find((issue) => issue.path === "category_id")?.sourceLocale,
+    "en",
+  );
+  assert.equal(
+    issues.find((issue) => issue.path === "name")?.sourceLocale,
+    undefined,
+  );
 });
