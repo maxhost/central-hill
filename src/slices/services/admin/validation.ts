@@ -36,7 +36,13 @@ export const serviceCategorySaveInput = z.object({
   position,
   // [T] source value (en):
   name: tStr({ min: 1, max: 80 }),
-  translations: z.object({ es: tStr({ max: 80 }), pt: tStr({ max: 80 }), fr: tStr({ max: 80 }) }).optional(),
+  translations: z
+    .object({
+      es: tStr({ max: 80 }),
+      pt: tStr({ max: 80 }),
+      fr: tStr({ max: 80 }),
+    })
+    .optional(),
 });
 export type ServiceCategorySaveInput = z.infer<typeof serviceCategorySaveInput>;
 
@@ -54,7 +60,7 @@ export const serviceSaveInput = z.object({
   /** Satisfaction score in tenths (0–50 → 0.0–5.0); null when unrated (ADR 0032). */
   rating_tenths: z.number().int().min(0).max(50).nullable(),
   booking_type: z.enum(["enquiry", "external", "none"]),
-  cta_url: z.url().nullable(),
+  cta_url: z.string().max(2048).nullable(),
   // [T] source values (en):
   name: tStr({ min: 1, max: 160 }),
   excerpt: tStr({ min: 1, max: 400 }),
@@ -107,8 +113,15 @@ export function servicePresentationErrors(
   if (presentation?.price_display === "from" && input.price_from === null)
     errors.price_from = "Enter a starting price.";
   if (input.booking_type === "external") {
-    if (!input.cta_url || !/^https?:\/\//i.test(input.cta_url))
+    try {
+      if (
+        !input.cta_url ||
+        !["http:", "https:"].includes(new URL(input.cta_url).protocol)
+      )
+        throw Error();
+    } catch {
       errors.cta_url = "Enter an http(s) booking URL.";
+    }
     if (!input.cta_label?.trim())
       errors.cta_label = "Enter a booking button label.";
   }

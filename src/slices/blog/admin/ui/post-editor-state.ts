@@ -1,20 +1,60 @@
+import { retainPostErrors } from "./feedback-model";
 import type { Locale } from "@core/db/columns";
-import type { BlogPostContent, BlogPostEnvelopeV1, BlogPostLocaleModel } from "../editorial-contract";
+import type {
+  BlogPostContent,
+  BlogPostEnvelopeV1,
+  BlogPostLocaleModel,
+} from "../editorial-contract";
 
-export const POST_EDITOR_BINDING_IDS = ["article", "header", "body", "cta", "related", "seo"];
-export const POST_SHARED_FIELDS = ["category_id", "author_id", "cover_media_id", "og_image_media_id", "published_at", "is_featured", "related_ids"] as const;
+export const POST_EDITOR_BINDING_IDS = [
+  "article",
+  "header",
+  "body",
+  "cta",
+  "related",
+  "seo",
+];
+export const POST_SHARED_FIELDS = [
+  "category_id",
+  "author_id",
+  "cover_media_id",
+  "og_image_media_id",
+  "published_at",
+  "is_featured",
+  "related_ids",
+] as const;
 
-export function emptyPostEnvelope(categoryId = "", authorId = ""): BlogPostEnvelopeV1 {
-  return { schemaVersion: 1, content: {
-    title: "", excerpt: "", body: [], category_id: categoryId, author_id: authorId,
-    cover_media_id: null, og_image_media_id: null, published_at: null,
-    reading_minutes: 5, is_featured: false, related_ids: [], cta_label: null,
-    cta_url: null, meta_title: null, meta_description: null,
-  } };
+export function emptyPostEnvelope(
+  categoryId = "",
+  authorId = "",
+): BlogPostEnvelopeV1 {
+  return {
+    schemaVersion: 1,
+    content: {
+      title: "",
+      excerpt: "",
+      body: [],
+      category_id: categoryId,
+      author_id: authorId,
+      cover_media_id: null,
+      og_image_media_id: null,
+      published_at: null,
+      reading_minutes: 5,
+      is_featured: false,
+      related_ids: [],
+      cta_label: null,
+      cta_url: null,
+      meta_title: null,
+      meta_description: null,
+    },
+  };
 }
 
 /** Only shared references come from EN; a target body is never merged by index. */
-export function preparePostTarget(source: BlogPostEnvelopeV1, own: BlogPostEnvelopeV1 | null): BlogPostEnvelopeV1 {
+export function preparePostTarget(
+  source: BlogPostEnvelopeV1,
+  own: BlogPostEnvelopeV1 | null,
+): BlogPostEnvelopeV1 {
   if (!own) return structuredClone(source);
   const content = { ...own.content };
   for (const key of POST_SHARED_FIELDS) {
@@ -26,17 +66,36 @@ export function preparePostTarget(source: BlogPostEnvelopeV1, own: BlogPostEnvel
 /** JSONB and the editor can order object keys differently without changing content. */
 function jsonContentEqual(left: unknown, right: unknown): boolean {
   if (left === right) return true;
-  if (left === null || right === null || typeof left !== "object" || typeof right !== "object") return false;
+  if (
+    left === null ||
+    right === null ||
+    typeof left !== "object" ||
+    typeof right !== "object"
+  )
+    return false;
   if (Array.isArray(left) || Array.isArray(right)) {
-    return Array.isArray(left) && Array.isArray(right) && left.length === right.length &&
-      left.every((value, index) => jsonContentEqual(value, right[index]));
+    return (
+      Array.isArray(left) &&
+      Array.isArray(right) &&
+      left.length === right.length &&
+      left.every((value, index) => jsonContentEqual(value, right[index]))
+    );
   }
-  const a = left as Record<string, unknown>, b = right as Record<string, unknown>;
-  const keys = Object.keys(a).filter(key => a[key] !== undefined);
-  return keys.length === Object.keys(b).filter(key => b[key] !== undefined).length &&
-    keys.every(key => Object.hasOwn(b, key) && jsonContentEqual(a[key], b[key]));
+  const a = left as Record<string, unknown>,
+    b = right as Record<string, unknown>;
+  const keys = Object.keys(a).filter((key) => a[key] !== undefined);
+  return (
+    keys.length ===
+      Object.keys(b).filter((key) => b[key] !== undefined).length &&
+    keys.every(
+      (key) => Object.hasOwn(b, key) && jsonContentEqual(a[key], b[key]),
+    )
+  );
 }
-export function postEnvelopeEqual(a: BlogPostEnvelopeV1 | null, b: BlogPostEnvelopeV1 | null): boolean {
+export function postEnvelopeEqual(
+  a: BlogPostEnvelopeV1 | null,
+  b: BlogPostEnvelopeV1 | null,
+): boolean {
   return jsonContentEqual(a, b);
 }
 
@@ -46,9 +105,17 @@ export function postLocaleDirty(model: BlogPostLocaleModel): boolean {
 
 export function postMediaIds(envelope: BlogPostEnvelopeV1): string[] {
   const content = envelope.content;
-  return [...new Set([content.cover_media_id, content.og_image_media_id,
-    ...content.body.flatMap(block => block.type === "image" ? [block.media_id] : []),
-  ].filter((id): id is string => Boolean(id)))];
+  return [
+    ...new Set(
+      [
+        content.cover_media_id,
+        content.og_image_media_id,
+        ...content.body.flatMap((block) =>
+          block.type === "image" ? [block.media_id] : [],
+        ),
+      ].filter((id): id is string => Boolean(id)),
+    ),
+  ];
 }
 
 export interface PostLocaleWorkspace {
@@ -56,27 +123,45 @@ export interface PostLocaleWorkspace {
   errors: Record<string, string>;
   notice: string;
   conflict: boolean;
+  uncertain?: boolean;
 }
 export type PostWorkspace = Record<Locale, PostLocaleWorkspace>;
 
 /** Saved EN changes refresh only derived shared fields, retaining local target copy. */
-export function applyPostLocaleResult(states: PostWorkspace, locale: Locale, model: BlogPostLocaleModel, notice: string): PostWorkspace {
-  const next = { ...states, [locale]: { model, errors: {}, notice, conflict: false } };
+export function applyPostLocaleResult(
+  states: PostWorkspace,
+  locale: Locale,
+  model: BlogPostLocaleModel,
+  notice: string,
+): PostWorkspace {
+  const next = {
+    ...states,
+    [locale]: { model, errors: {}, notice, conflict: false },
+  };
   if (locale !== "en") return next;
   const template = model.draft ?? model.published ?? model.working;
   for (const target of ["es", "pt", "fr"] as const) {
     const own = states[target];
     // A persisted target draft owns its complete document and source provenance.
     if (own.model.draft) continue;
-    next[target] = { ...own, model: { ...own.model,
-      templateRevision: model.revision,
-      working: preparePostTarget(template, own.model.working),
-    } };
+    next[target] = {
+      ...own,
+      model: {
+        ...own.model,
+        templateRevision: model.revision,
+        working: preparePostTarget(template, own.model.working),
+      },
+    };
   }
   return next;
 }
 
-export function changePostField<K extends keyof BlogPostContent>(states: PostWorkspace, locale: Locale, key: K, value: BlogPostContent[K]): PostWorkspace {
+export function changePostField<K extends keyof BlogPostContent>(
+  states: PostWorkspace,
+  locale: Locale,
+  key: K,
+  value: BlogPostContent[K],
+): PostWorkspace {
   const own = states[locale];
   // Editor normalization (e.g. a trailing empty paragraph) is not an authored edit.
   if (jsonContentEqual(own.model.working.content[key], value)) return states;
@@ -84,29 +169,65 @@ export function changePostField<K extends keyof BlogPostContent>(states: PostWor
   // Publishing an existing target draft retains its frozen references. Its next
   // actual edit starts a new draft from the latest saved EN template, without
   // replacing any target-authored text, body, reading time or links.
-  const model = locale !== "en" && !own.model.draft && source ? {
-    ...own.model, working: preparePostTarget(source, own.model.working),
-    templateRevision: states.en.model.revision,
-  } : own.model;
-  return { ...states, [locale]: { ...own, notice: "", model: { ...model,
-    working: { ...model.working, content: { ...model.working.content, [key]: value } },
-  } } };
+  const model =
+    locale !== "en" && !own.model.draft && source
+      ? {
+          ...own.model,
+          working: preparePostTarget(source, own.model.working),
+          templateRevision: states.en.model.revision,
+        }
+      : own.model;
+  const working = {
+    ...model.working,
+    content: { ...model.working.content, [key]: value },
+  };
+  return {
+    ...states,
+    [locale]: {
+      ...own,
+      notice: "",
+      uncertain: false,
+      errors: retainPostErrors(own.errors, working, own.model.working),
+      model: { ...model, working },
+    },
+  };
 }
 
-export function hasNewPostSourceDetails(states: PostWorkspace, locale: Locale): boolean {
+export function hasNewPostSourceDetails(
+  states: PostWorkspace,
+  locale: Locale,
+): boolean {
   const source = states.en.model.draft ?? states.en.model.published;
-  return locale !== "en" && Boolean(source && !postEnvelopeEqual(
-    preparePostTarget(source, states[locale].model.working), states[locale].model.working,
-  ));
+  return (
+    locale !== "en" &&
+    Boolean(
+      source &&
+      !postEnvelopeEqual(
+        preparePostTarget(source, states[locale].model.working),
+        states[locale].model.working,
+      ),
+    )
+  );
 }
 
 /** Explicit local preparation only: the saved target draft/publication stay intact. */
-export function adoptPostSourceDetails(states: PostWorkspace, locale: Locale): PostWorkspace {
+export function adoptPostSourceDetails(
+  states: PostWorkspace,
+  locale: Locale,
+): PostWorkspace {
   const source = states.en.model.draft ?? states.en.model.published;
   if (locale === "en" || !source) return states;
   const own = states[locale];
-  return { ...states, [locale]: { ...own, notice: "", model: { ...own.model,
-    working: preparePostTarget(source, own.model.working),
-    templateRevision: states.en.model.revision,
-  } } };
+  return {
+    ...states,
+    [locale]: {
+      ...own,
+      notice: "",
+      model: {
+        ...own.model,
+        working: preparePostTarget(source, own.model.working),
+        templateRevision: states.en.model.revision,
+      },
+    },
+  };
 }

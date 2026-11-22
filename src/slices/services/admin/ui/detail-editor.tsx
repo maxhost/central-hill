@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
 import { useTranslations } from "next-intl";
 import { UiIcon } from "@core/ui";
 import {
@@ -101,8 +101,13 @@ export function DetailEditor({
   const tp = useTranslations("services.admin.presentation");
   const d = (key: string, values?: Record<string, string | number>) =>
     t(`admin.detail.${key}`, values);
-  const err = (...path: (string | number)[]) =>
-    errors[["detail", ...path].join(".")];
+  const err = (...path: (string | number)[]) => {
+    const key = ["detail", ...path].join(".");
+    return (
+      errors[key] ??
+      Object.entries(errors).find(([path]) => path.startsWith(`${key}.`))?.[1]
+    );
+  };
   const set = <K extends keyof DetailDraft>(key: K, next: DetailDraft[K]) =>
     onChange({ ...value, [key]: next });
   const setGtk = (key: keyof DraftGoodToKnow, next: string[]) =>
@@ -920,17 +925,24 @@ function PricingEditor({
         {value.columns.map((col, i) => (
           <div key={i} className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <TextInput
-                aria-label={d("items.column", { n: i + 1 })}
-                placeholder={d("items.column", { n: i + 1 })}
-                value={col}
-                onChange={(e) =>
-                  onChange({
-                    ...value,
-                    columns: replaceAt(value.columns, i, e.target.value),
-                  })
-                }
-              />
+              <Field
+                label={d("items.column", { n: i + 1 })}
+                required
+                error={err("columns", i)}
+                fieldPath={`detail.pricing.columns.${i}`}
+              >
+                <TextInput
+                  aria-label={d("items.column", { n: i + 1 })}
+                  placeholder={d("items.column", { n: i + 1 })}
+                  value={col}
+                  onChange={(e) =>
+                    onChange({
+                      ...value,
+                      columns: replaceAt(value.columns, i, e.target.value),
+                    })
+                  }
+                />
+              </Field>
               <ItemControls
                 index={i}
                 count={value.columns.length}
@@ -1237,6 +1249,7 @@ function StringList({
   controlsLabels: ControlsLabels;
   multiline?: boolean;
 }) {
+  const prefix = useId();
   return (
     <div className="space-y-3">
       {items.length === 0 ? (
@@ -1249,9 +1262,23 @@ function StringList({
           data-service-error-message={errorAt(i)}
           className="space-y-1.5"
         >
+          <label
+            htmlFor={`${prefix}-${i}`}
+            className="block text-xs font-semibold text-ink-soft"
+          >
+            {addLabel} {i + 1}{" "}
+            <span aria-hidden="true" className="text-accent-deep">
+              *
+            </span>
+          </label>
           <div className="flex items-start gap-2">
             {multiline ? (
               <TextArea
+                id={`${prefix}-${i}`}
+                aria-describedby={
+                  errorAt(i) ? `${prefix}-${i}-error` : undefined
+                }
+                className={errorAt(i) ? "border-red-600" : undefined}
                 rows={2}
                 aria-label={`${addLabel} ${i + 1}`}
                 aria-invalid={Boolean(errorAt(i))}
@@ -1260,6 +1287,11 @@ function StringList({
               />
             ) : (
               <TextInput
+                id={`${prefix}-${i}`}
+                aria-describedby={
+                  errorAt(i) ? `${prefix}-${i}-error` : undefined
+                }
+                className={errorAt(i) ? "border-red-600" : undefined}
                 aria-label={`${addLabel} ${i + 1}`}
                 aria-invalid={Boolean(errorAt(i))}
                 value={item}
@@ -1274,7 +1306,11 @@ function StringList({
               labels={labels}
             />
           </div>
-          <ErrorLine error={errorAt(i)} />
+          {errorAt(i) ? (
+            <p id={`${prefix}-${i}-error`} className="text-xs text-red-700">
+              {errorAt(i)}
+            </p>
+          ) : null}
         </div>
       ))}
       <AdminButton

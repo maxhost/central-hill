@@ -3,6 +3,19 @@ import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import {
+  EditorFeedbackSummary,
+  feedbackMessage,
+  feedbackTabProps,
+  FeedbackScope,
+  useEditorFeedbackToast,
+} from "@slices/backoffice/contract-client";
+import {
+  guideFeedbackGroups,
+  guideFeedbackDestination,
+  retainGuideErrors,
+  guideMediaPath,
+} from "./feedback-model";
 import type { Locale } from "@core/db/columns";
 import { UiIcon } from "@core/ui";
 import {
@@ -16,7 +29,6 @@ import {
   MediaAltProvider,
   MediaQueueProvider,
   useMediaQueue,
-  useToast,
   type AdminMediaPreview,
 } from "@slices/backoffice/contract";
 import {
@@ -79,7 +91,7 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
     tv = useTranslations("propertyEditor");
   const router = useRouter(),
     queue = useMediaQueue(),
-    toast = useToast(),
+    toast = useEditorFeedbackToast(),
     prefix = useId();
   const [workspace, setWorkspace] = useState(() =>
     createGuideWorkspace(initial, draft),
@@ -96,6 +108,7 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
   const [localPreviews, setLocalPreviews] = useState<
     Record<string, AdminMediaPreview>
   >({});
+  const pendingFocus = useRef(false);
   const lock = useRef(false),
     bypass = useRef(false),
     currentUrl = useRef("");
@@ -109,10 +122,47 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
     needsSave = guidePublicationNeedsSave(workspace, locale);
   const anyDirty =
     guideAnyFormDirty(workspace) || queue.hasPending || queue.isPreparing;
-  const errors = guideEntityErrors(page, workspace.id, own.errors),
+  const feedbackWorkspace = {
+    ...workspace,
+    locales: Object.fromEntries(
+      GUIDE_EDITOR_LOCALES.map((key) => [
+        key,
+        {
+          ...workspace.locales[key],
+          errors: {
+            ...workspace.locales[key].errors,
+            ...Object.fromEntries(
+              (queue.failures ?? [])
+                .filter((f) => f.entity === workspace.id && f.locale === key)
+                .flatMap((f) => {
+                  const path = guideMediaPath(
+                    workspace.locales[key].working,
+                    f.id,
+                  );
+                  return path
+                    ? [
+                        [
+                          path,
+                          `Could not upload “${f.name}” for ${key.toUpperCase()}. Retry the upload.`,
+                        ],
+                      ]
+                    : [];
+                }),
+            ),
+          },
+        },
+      ]),
+    ) as typeof workspace.locales,
+  };
+  const errors = guideEntityErrors(
+      page,
+      workspace.id,
+      feedbackWorkspace.locales[locale].errors,
+    ),
     pageErrors = errors[workspace.id] ?? {};
   const previews = { ...workspace.model?.previews, ...localPreviews };
-  const disabled = busy || own.conflict;
+  const groups = guideFeedbackGroups(feedbackWorkspace);
+  const disabled = busy || own.conflict || Boolean(own.reloadRequired);
   const publishedUrl =
     workspace.model?.status === "published" &&
     model?.published &&
@@ -154,11 +204,28 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
       }
       const field = name
         ? document.getElementById(
-            `${id}-${name.replace(/^(source|changes)\./, "").replace(/^slugs\.en$/, "slug")}`,
+            `${id}-${name
+              .replace(/^(source|changes)\./, "")
+              .replace(/^slugs\.en$/, "slug")
+              .replace(/^image$/, "header_media_id")}`,
           )
         : null;
+      const group = name ? document.getElementById(`${id}-${name}`) : null;
+      const registered = document.querySelector<HTMLElement>(
+        `[data-feedback-path="${id}.${name === "image" ? "header_media_id" : name}"]`,
+      );
+      const candidate = field ?? registered;
       const target =
-        field ??
+        (candidate?.matches(
+          'input:not([type="file"]):not([type="hidden"]):not([disabled]),textarea:not([disabled]),select:not([disabled]),button:not([disabled])',
+        )
+          ? candidate
+          : candidate?.querySelector<HTMLElement>(
+              'input:not([type="file"]):not([type="hidden"]):not([disabled]),textarea:not([disabled]),select:not([disabled]),button:not([disabled])',
+            )) ??
+        group?.querySelector<HTMLElement>(
+          "input,textarea,select,button,summary",
+        ) ??
         block?.querySelector<HTMLElement>(
           "input, textarea, select, button, summary",
         );
@@ -234,7 +301,8 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
     };
   }, [anyDirty, busy, t]);
   useEffect(() => {
-    if (busy) return;
+    if (busy || !pendingFocus.current) return;
+    pendingFocus.current = false;
     const first = Object.entries(errors).find(
       ([, fields]) => Object.keys(fields).length,
     );
@@ -245,24 +313,58 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
   function receive(
     result: GuideEditorialResult,
     action: "save" | "publish" | "visibility",
+    attemptLocale: Locale,
+    sharedChanged = false,
   ) {
     if (result.ok) {
+      const message = feedbackMessage({
+        action: action === "publish" ? "publish" : "save",
+        locale: attemptLocale,
+        outcome: "success",
+        refreshWarning: result.refreshWarning,
+        reloadRequired: result.reloadRequired,
+        sharedChanged,
+      });
       setLocalPreviews((previous) => {
         const retained = { ...previous };
         for (const id of Object.keys(result.model.previews))
           delete retained[id];
         return retained;
       });
-      setWorkspace((previous) =>
-        action === "visibility"
-          ? applyGuideVisibilityModel(previous, result.model)
-          : applyGuideModel(
-              previous,
-              locale,
-              result.model,
-              te(action === "publish" ? "publishedNotice" : "savedNotice"),
-            ),
-      );
+      if (result.reloadRequired) {
+        setWorkspace((previous) => ({
+          ...previous,
+          locales: {
+            ...previous.locales,
+            [attemptLocale]: {
+              ...previous.locales[attemptLocale],
+              notice: message,
+              reloadRequired: true,
+            },
+          },
+        }));
+        toast.success(message);
+        return;
+      }
+      setWorkspace((previous) => {
+        if (action === "visibility")
+          return applyGuideVisibilityModel(previous, result.model);
+        const next = applyGuideModel(
+          previous,
+          attemptLocale,
+          result.model,
+          message,
+        );
+        if (action === "save")
+          next.locales[attemptLocale].errors = retainGuideErrors(
+            previous,
+            attemptLocale,
+            next.locales[attemptLocale].working,
+            true,
+          );
+        return next;
+      });
+      if (action !== "visibility") toast.success(message);
       if (!persisted) {
         setOpeningEdit(true);
         bypass.current = true;
@@ -270,34 +372,64 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
       }
       return;
     }
+    const fieldErrors =
+      result.error === "validation"
+        ? { ...workspace.locales[attemptLocale].errors, ...result.fieldErrors }
+        : result.error === "slug_conflict"
+          ? { slug: "Choose an available URL slug." }
+          : workspace.locales[attemptLocale].errors;
+    const outcome =
+      result.error === "validation" || result.error === "slug_conflict"
+        ? "validation"
+        : result.error === "conflict"
+          ? "conflict"
+          : result.error === "no_draft"
+            ? "no_draft"
+            : result.error === "uncertain"
+              ? "uncertain"
+              : "server";
+    const nextGroups = guideFeedbackGroups({
+      ...workspace,
+      locales: {
+        ...workspace.locales,
+        [attemptLocale]: {
+          ...workspace.locales[attemptLocale],
+          errors: fieldErrors,
+        },
+      },
+    });
+    const message = feedbackMessage({
+      action: action === "publish" ? "publish" : "save",
+      locale: attemptLocale,
+      outcome,
+      groups: nextGroups,
+    });
     setWorkspace((previous) => ({
       ...previous,
       locales: {
         ...previous.locales,
-        [locale]: {
-          ...previous.locales[locale],
-          errors:
-            result.error === "validation"
-              ? result.fieldErrors
-              : result.error === "slug_conflict"
-                ? { slug: t("slugConflict") }
-                : {},
+        [attemptLocale]: {
+          ...previous.locales[attemptLocale],
+          errors: fieldErrors,
           conflict:
-            previous.locales[locale].conflict || result.error === "conflict",
-          notice:
-            result.error === "conflict"
-              ? te("conflict")
-              : result.error === "no_draft"
-                ? te("noDraft")
-                : t("error"),
+            previous.locales[attemptLocale].conflict ||
+            result.error === "conflict",
+          uncertain: result.error === "uncertain",
+          notice: message,
         },
       },
     }));
-    toast.error(result.error === "conflict" ? te("conflict") : t("error"));
+    pendingFocus.current = outcome === "validation";
+    toast.error(message);
   }
   async function run(action: "save" | "publish" | "visibility") {
     if (busy || lock.current || (own.conflict && action !== "visibility"))
       return;
+    const attemptLocale = locale;
+    const sharedChanged = !guideValuesEqual(
+      workspace.shared,
+      workspace.savedShared,
+    );
     const archived = workspace.model?.status !== "archived";
     if (
       action === "visibility" &&
@@ -309,8 +441,12 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
     setOperation(action);
     try {
       if (action === "save") {
-        if (!(await queue.flush(guideSharedMediaIds(workspace.shared)))) {
-          toast.error(t("error"));
+        if (
+          !(await queue.flush(guideSharedMediaIds(workspace.shared), {
+            locale: attemptLocale,
+            feedback: true,
+          }))
+        ) {
           return;
         }
         const state = workspace.model?.locales[locale];
@@ -326,6 +462,8 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
             ...(!persisted ? { slug: workspace.slug } : {}),
           }),
           action,
+          attemptLocale,
+          sharedChanged,
         );
       } else if (action === "publish") {
         if (!persisted || dirty || needsSave || !model?.draft) return;
@@ -336,14 +474,34 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
             expectedRevision: model.revision,
           }),
           action,
+          attemptLocale,
+          sharedChanged,
         );
       } else
         receive(
           await setGuideVisibility({ guideId: workspace.id, archived }),
           action,
+          attemptLocale,
+          sharedChanged,
         );
     } catch {
-      toast.error(t("error"));
+      const message = feedbackMessage({
+        action: action === "publish" ? "publish" : "save",
+        locale: attemptLocale,
+        outcome: "uncertain",
+      });
+      setWorkspace((previous) => ({
+        ...previous,
+        locales: {
+          ...previous.locales,
+          [attemptLocale]: {
+            ...previous.locales[attemptLocale],
+            notice: message,
+            uncertain: true,
+          },
+        },
+      }));
+      toast.error(message);
     } finally {
       lock.current = false;
       setOperation(null);
@@ -375,6 +533,7 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
     <GuideTextField
       entityId={workspace.id}
       name={name}
+      required={name === "title"}
       value={page[name]}
       errors={pageErrors}
       maxLength={maxLength}
@@ -385,498 +544,574 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
     />
   );
   return (
-    <MediaAltProvider locale={locale} value={page.media_alts} onChange={value => updatePage("media_alts", value)} disabled={disabled}>
-    <div className="space-y-6">
-      <div className="space-y-4 border-b border-line pb-5">
-        <Link
-          href="/admin/guides"
-          className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-ink"
-        >
-          <UiIcon name="nav-arrow-left" size={16} />
-          {t("back")}
-        </Link>
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 flex-wrap items-center gap-3">
-            <h1 className="font-serif text-2xl leading-tight text-ink">
-              {persisted ? page.title || t("edit") : t("newGuide")}
-            </h1>
-            <StateBadge
-              label={t(
-                workspace.model?.status === "published"
-                  ? "publishedStatus"
-                  : (workspace.model?.status ?? "draft"),
-              )}
-              tone={
-                workspace.model?.status === "published"
-                  ? "approved"
-                  : workspace.model?.status === "archived"
-                    ? "neutral"
-                    : "draft"
-              }
-            />
-          </div>
-          {publishedUrl ? (
-            <a
-              href={publishedUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-ink-soft hover:text-accent-deep"
-            >
-              {t("published")} ↗
-            </a>
-          ) : null}
-        </div>
-      </div>
-      <header className="sticky top-0 z-20 w-full min-w-0 max-w-3xl space-y-3 border-b border-line bg-bg py-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            {persisted ? (
-              <AdminButton
-                className="min-h-11"
-                disabled={busy}
-                onClick={() => run("visibility")}
-              >
-                {tv(
-                  workspace.model?.status === "archived"
-                    ? "restore"
-                    : "archive",
-                )}
-              </AdminButton>
-            ) : null}
-          </div>
-          <div className="ml-auto flex flex-wrap gap-2">
-            <AdminButton
-              className="min-h-11"
-              disabled={disabled}
-              onClick={() => run("save")}
-            >
-              {te(operation === "save" ? "saving" : "saveDraft")}
-            </AdminButton>
-            <AdminButton
-              className="min-h-11"
-              variant="primary"
-              disabled={
-                disabled || !persisted || !model?.draft || dirty || needsSave
-              }
-              onClick={() => run("publish")}
-            >
-              {te(operation === "publish" ? "publishing" : "publish")}
-            </AdminButton>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div
-            role="tablist"
-            aria-label={tb("pageEditor.contentLanguage")}
-            className="flex gap-1 rounded-md border border-line bg-surface p-1"
-          >
-            {GUIDE_EDITOR_LOCALES.map((key) => (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                id={`${prefix}-tab-${key}`}
-                aria-controls={`${prefix}-panel-${key}`}
-                aria-selected={locale === key}
-                tabIndex={locale === key ? 0 : -1}
-                disabled={busy || (!persisted && key !== "en")}
-                onClick={() => setLocale(key)}
-                onKeyDown={(event) => {
-                  if (
-                    busy ||
-                    !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
-                      event.key,
-                    )
-                  )
-                    return;
-                  event.preventDefault();
-                  const available = persisted
-                    ? GUIDE_EDITOR_LOCALES
-                    : (["en"] as const);
-                  const index = available.findIndex((value) => value === key);
-                  const next =
-                    event.key === "Home"
-                      ? available[0]
-                      : event.key === "End"
-                        ? available[available.length - 1]
-                        : available[
-                            (index +
-                              (event.key === "ArrowRight" ? 1 : -1) +
-                              available.length) %
-                              available.length
-                          ];
-                  if (next) {
-                    setLocale(next);
-                    document.getElementById(`${prefix}-tab-${next}`)?.focus();
-                  }
-                }}
-                className={`min-h-9 rounded px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === key ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}
-              >
-                {key.toUpperCase()}
-                {key === "en" ? (
-                  <span className="ml-1 text-[10px] font-normal">
-                    {tb("pageEditor.source")}
-                  </span>
-                ) : null}
-              </button>
-            ))}
-          </div>
-          <p
-            role="status"
-            className={`text-xs ${dirty || needsSave ? "text-accent-deep" : "text-ink-soft"}`}
-          >
-            {locale.toUpperCase()} ·{" "}
-            {te(
-              dirty || needsSave
-                ? "unsaved"
-                : model?.draft
-                  ? "draft"
-                  : model?.published
-                    ? "published"
-                    : "unpublished",
-            )}
-          </p>
-        </div>
-      </header>
-      <div className="max-w-3xl space-y-4">
-        {own.notice ? (
-          <p
-            role="status"
-            className="rounded-md border border-line bg-surface px-4 py-3 text-sm"
-          >
-            {own.notice}
-          </p>
-        ) : null}
-        {own.conflict ? (
-          <div
-            role="alert"
-            className="space-y-3 rounded-md border border-red-200 p-4 text-sm text-red-700"
-          >
-            <p>{te("conflict")}</p>
-            <AdminButton
-              onClick={() => {
-                if (!anyDirty || window.confirm(t("unsaved"))) {
-                  bypass.current = true;
-                  window.location.reload();
-                }
-              }}
-            >
-              {te("reload")}
-            </AdminButton>
-          </div>
-        ) : null}
-        <p className="text-sm text-ink-soft">
-          {!persisted
-            ? te("firstSave")
-            : locale === "en"
-              ? te("sharedHint")
-              : te(
-                  own.mode === "custom" || guideLocalTextDirty(own)
-                    ? "customHint"
-                    : "inheritHint",
-                )}
-        </p>
-        {Object.keys(own.errors).length ? (
-          <div
-            role="alert"
-            className="space-y-2 rounded-md border border-red-200 p-4"
-          >
-            <p className="text-sm font-medium text-red-700">{t("error")}</p>
-            {Object.entries(errors).flatMap(([id, fields]) =>
-              Object.entries(fields).map(([name, message]) => (
-                <button
-                  key={`${id}-${name}`}
-                  type="button"
-                  className="block max-w-full break-words text-left text-sm text-red-700 underline"
-                  onClick={() => focusEntity(id, name)}
-                >
-                  {message}
-                </button>
-              )),
-            )}
-          </div>
-        ) : null}
-      </div>
-      <form
-        id={`entity-${workspace.id}`}
-        onSubmit={(event) => {
-          event.preventDefault();
-          run("save");
-        }}
-        className="max-w-3xl space-y-6"
+    <FeedbackScope locale={locale} entity={workspace.id}>
+      <MediaAltProvider
+        locale={locale}
+        value={page.media_alts}
+        onChange={(value) => updatePage("media_alts", value)}
+        disabled={disabled}
       >
-        <div
-          id={`${prefix}-panel-${locale}`}
-          role="tabpanel"
-          aria-labelledby={`${prefix}-tab-${locale}`}
-        >
-          <fieldset disabled={disabled} className="min-w-0 space-y-6">
-            <AdminCard title={t("general")}>
-              <div className="space-y-4">
-                {text("title", 200)}
-                {text("intro", 1200, true)}
-                <FieldGrid>
-                  <Field
-                    label={t("labels.city_id")}
-                    htmlFor={`${workspace.id}-city_id`}
-                    error={fieldError(pageErrors, "city_id")}
-                  >
-                    <Select
-                      id={`${workspace.id}-city_id`}
-                      value={page.city_id}
-                      onChange={(event) =>
-                        updatePage("city_id", event.target.value)
-                      }
-                    >
-                      <option value="">{t("noCity")}</option>
-                      {cities.map((city) => (
-                        <option key={city.id} value={city.id}>
-                          {city.labels?.[locale] ?? city.name} (
-                          {t(
-                            city.status === "published"
-                              ? "publishedStatus"
-                              : city.status,
-                          )}
-                          )
-                        </option>
-                      ))}
-                    </Select>
-                  </Field>
-                  <Field
-                    label={t("labels.template")}
-                    htmlFor={`${workspace.id}-template`}
-                    error={fieldError(pageErrors, "template")}
-                  >
-                    <Select
-                      id={`${workspace.id}-template`}
-                      value={page.template}
-                      onChange={(event) =>
-                        updatePage(
-                          "template",
-                          event.target.value as GuideContent["template"],
-                        )
-                      }
-                    >
-                      {[
-                        "landing",
-                        "eat",
-                        "beaches",
-                        "events",
-                        "secrets",
-                        "families",
-                        "groups",
-                        "travellers",
-                        "custom",
-                      ].map((value) => (
-                        <option key={value} value={value}>
-                          {t(`templates.${value}`)}
-                        </option>
-                      ))}
-                    </Select>
-                  </Field>
-                  <GuideTextField
-                    entityId={workspace.id}
-                    name="position"
-                    value={page.position}
-                    errors={pageErrors}
-                    type="number"
-                    onChange={(value) => updatePage("position", Number(value))}
-                  />
-                </FieldGrid>
-                {!persisted ? (
-                  <>
-                    <GuideTextField
-                      entityId={workspace.id}
-                      name="slug"
-                      value={workspace.slug}
-                      errors={pageErrors}
-                      maxLength={160}
-                      onChange={(value) =>
-                        setWorkspace((previous) => ({
-                          ...previous,
-                          slug: value,
-                        }))
-                      }
-                    />
-                    <p className="text-xs text-ink-soft">{t("slugWarning")}</p>
-                  </>
-                ) : null}
-                <Field
-                  label={t("labels.hero_media_id")}
-                  error={fieldError(pageErrors, "hero_media_id")}
-                  hint={te("sharedHint")}
-                >
-                  <MediaField
-                    value={page.hero_media_id}
-                    preview={
-                      page.hero_media_id ? previews[page.hero_media_id] : null
-                    }
-                    onChange={(id, preview) => {
-                      onPreview(preview);
-                      updatePage("hero_media_id", id);
-                    }}
-                  />
-                </Field>
-              </div>
-            </AdminCard>
-            <AdminCard title={t("seo")}>
-              <div className="space-y-4">
-                {text("meta_title", 70)}
-                {text("meta_description", 200, true)}
-                <Field
-                  label={t("labels.og_image_media_id")}
-                  error={fieldError(pageErrors, "og_image_media_id")}
-                  hint={te("sharedHint")}
-                >
-                  <MediaField
-                    value={page.og_image_media_id}
-                    preview={
-                      page.og_image_media_id
-                        ? previews[page.og_image_media_id]
-                        : null
-                    }
-                    onChange={(id, preview) => {
-                      onPreview(preview);
-                      updatePage("og_image_media_id", id);
-                    }}
-                  />
-                </Field>
-              </div>
-            </AdminCard>
-            <section
-              className="space-y-4"
-              aria-labelledby={`${prefix}-sections`}
+        <div className="space-y-6">
+          <div className="space-y-4 border-b border-line pb-5">
+            <Link
+              href="/admin/guides"
+              className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-ink"
             >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="max-w-xl space-y-2">
-                  <h2
-                    id={`${prefix}-sections`}
-                    className="font-serif text-xl text-ink"
+              <UiIcon name="nav-arrow-left" size={16} />
+              {t("back")}
+            </Link>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex min-w-0 flex-wrap items-center gap-3">
+                <h1 className="font-serif text-2xl leading-tight text-ink">
+                  {persisted ? page.title || t("edit") : t("newGuide")}
+                </h1>
+                <StateBadge
+                  label={t(
+                    workspace.model?.status === "published"
+                      ? "publishedStatus"
+                      : (workspace.model?.status ?? "draft"),
+                  )}
+                  tone={
+                    workspace.model?.status === "published"
+                      ? "approved"
+                      : workspace.model?.status === "archived"
+                        ? "neutral"
+                        : "draft"
+                  }
+                />
+              </div>
+              {publishedUrl ? (
+                <a
+                  href={publishedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-ink-soft hover:text-accent-deep"
+                >
+                  {t("published")} ↗
+                </a>
+              ) : null}
+            </div>
+          </div>
+          <header className="sticky top-0 z-20 w-full min-w-0 max-w-3xl space-y-3 border-b border-line bg-bg py-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                {persisted ? (
+                  <AdminButton
+                    className="min-h-11"
+                    disabled={busy}
+                    onClick={() => run("visibility")}
                   >
-                    {t("sections")}
-                  </h2>
-                  <p className="text-sm text-ink-soft">{te("sectionsHint")}</p>
-                  <p className="text-xs text-ink-soft">
-                    {te("aggregateSaveHint")}
-                  </p>
-                </div>
-                <AdminButton onClick={addSection}>
-                  {t("addSection")}
+                    {tv(
+                      workspace.model?.status === "archived"
+                        ? "restore"
+                        : "archive",
+                    )}
+                  </AdminButton>
+                ) : null}
+              </div>
+              <div className="ml-auto flex flex-wrap gap-2">
+                <AdminButton
+                  className="min-h-11"
+                  disabled={disabled}
+                  onClick={() => run("save")}
+                >
+                  {operation === "save"
+                    ? "Saving…"
+                    : `Save draft (${locale.toUpperCase()})`}
+                </AdminButton>
+                <AdminButton
+                  className="min-h-11"
+                  variant="primary"
+                  disabled={
+                    disabled ||
+                    !persisted ||
+                    !model?.draft ||
+                    dirty ||
+                    needsSave
+                  }
+                  onClick={() => run("publish")}
+                >
+                  {operation === "publish"
+                    ? "Publishing…"
+                    : `Publish (${locale.toUpperCase()})`}
                 </AdminButton>
               </div>
-              {!page.sections.length ? (
-                <div className="rounded-lg border border-dashed border-line bg-surface p-6">
-                  <p className="mb-4 text-sm text-ink-soft">
-                    {te("sectionsEmpty")}
-                  </p>
-                  <AdminButton onClick={addSection}>
-                    {t("addSection")}
-                  </AdminButton>
-                </div>
-              ) : null}
-              {page.sections.map((section, index) => {
-                const savedSection = saved.sections.find(
-                  (current) => current.id === section.id,
-                );
-                return (
-                  <GuideSectionEditor
-                    key={`${locale}-${section.id}`}
-                    section={section}
-                    previews={previews}
-                    errors={errors[section.id] ?? {}}
-                    dirty={
-                      !guideValuesEqual(
-                        { ...section, places: [] },
-                        savedSection
-                          ? { ...savedSection, places: [] }
-                          : undefined,
-                      )
-                    }
-                    hasPendingChildren={section.places.some(
-                      (place) =>
-                        !guideValuesEqual(
-                          place,
-                          savedSection?.places.find(
-                            (current) => current.id === place.id,
-                          ),
-                        ),
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div
+                role="tablist"
+                aria-label={tb("pageEditor.contentLanguage")}
+                className="flex gap-1 rounded-md border border-line bg-surface p-1"
+              >
+                {GUIDE_EDITOR_LOCALES.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    id={`${prefix}-tab-${key}`}
+                    aria-controls={`${prefix}-panel-${key}`}
+                    {...feedbackTabProps(
+                      groups.find((group) => group.locale === key),
+                      `${prefix}-feedback`,
                     )}
-                    persisted={Boolean(savedSection)}
-                    disabled={disabled}
-                    canOrder={!disabled}
-                    first={index === 0}
-                    last={index === page.sections.length - 1}
-                    placeState={(place) => ({
-                      dirty: !guideValuesEqual(
-                        place,
-                        savedSection?.places.find(
-                          (current) => current.id === place.id,
-                        ),
-                      ),
-                      persisted: Boolean(
-                        savedSection?.places.some(
-                          (current) => current.id === place.id,
-                        ),
-                      ),
-                      errors: errors[place.id] ?? {},
-                    })}
-                    onChange={updateSection}
-                    onPreview={onPreview}
-                    onDelete={() => {
-                      if (window.confirm(t("confirmDelete")))
-                        updatePage(
-                          "sections",
-                          page.sections.filter(
-                            (current) => current.id !== section.id,
-                          ),
-                        );
-                    }}
-                    onMove={(offset) =>
-                      updatePage(
-                        "sections",
-                        moveItem(page.sections, section.id, offset),
+                    aria-selected={locale === key}
+                    tabIndex={locale === key ? 0 : -1}
+                    disabled={busy || (!persisted && key !== "en")}
+                    onClick={() => setLocale(key)}
+                    onKeyDown={(event) => {
+                      if (
+                        busy ||
+                        !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
+                          event.key,
+                        )
                       )
-                    }
-                    onAddPlace={() => addPlace(section)}
-                    onDeletePlace={(id) => {
-                      if (window.confirm(t("confirmDelete")))
-                        updateSection({
-                          ...section,
-                          places: section.places.filter(
-                            (place) => place.id !== id,
-                          ),
-                        });
+                        return;
+                      event.preventDefault();
+                      const available = persisted
+                        ? GUIDE_EDITOR_LOCALES
+                        : (["en"] as const);
+                      const index = available.findIndex(
+                        (value) => value === key,
+                      );
+                      const next =
+                        event.key === "Home"
+                          ? available[0]
+                          : event.key === "End"
+                            ? available[available.length - 1]
+                            : available[
+                                (index +
+                                  (event.key === "ArrowRight" ? 1 : -1) +
+                                  available.length) %
+                                  available.length
+                              ];
+                      if (next) {
+                        setLocale(next);
+                        document
+                          .getElementById(`${prefix}-tab-${next}`)
+                          ?.focus();
+                      }
                     }}
-                    onMovePlace={(id, offset) =>
-                      updateSection({
-                        ...section,
-                        places: moveItem(section.places, id, offset),
-                      })
-                    }
-                  />
+                    className={`${
+                      feedbackTabProps(
+                        groups.find((group) => group.locale === key),
+                        `${prefix}-feedback`,
+                      ).className ?? ""
+                    } min-h-9 rounded px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === key ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}
+                  >
+                    {key.toUpperCase()}
+                    {workspace.locales[key].uncertain
+                      ? " !"
+                      : (groups.find((group) => group.locale === key)?.issues
+                            .length ?? 0)
+                        ? ` (${groups.find((group) => group.locale === key)?.issues.length ?? 0})`
+                        : ""}
+                    {key === "en" ? (
+                      <span className="ml-1 text-[10px] font-normal">
+                        {tb("pageEditor.source")}
+                      </span>
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+              <p
+                role="status"
+                className={`text-xs ${dirty || needsSave ? "text-accent-deep" : "text-ink-soft"}`}
+              >
+                {locale.toUpperCase()} ·{" "}
+                {te(
+                  dirty || needsSave
+                    ? "unsaved"
+                    : model?.draft
+                      ? "draft"
+                      : model?.published
+                        ? "published"
+                        : "unpublished",
+                )}
+              </p>
+            </div>
+            <p className="text-xs text-ink-soft">
+              Only the selected language is published.
+            </p>
+            {dirty || needsSave ? (
+              <p className="text-xs text-ink-soft">
+                Save your changes before publishing.
+              </p>
+            ) : null}
+            <EditorFeedbackSummary
+              id={`${prefix}-feedback`}
+              groups={groups}
+              onNavigate={(target, path) => {
+                const issue = groups
+                  .find((group) => group.locale === target)
+                  ?.issues.find((issue) => issue.path === path);
+                const source = issue?.sourceLocale ?? target;
+                setLocale(source);
+                const destination = guideFeedbackDestination(
+                  workspace.locales[source].working,
+                  workspace.id,
+                  path,
                 );
-              })}
-            </section>
-          </fieldset>
+                focusEntity(destination.id, destination.name);
+              }}
+            />
+          </header>
+          <div className="max-w-3xl space-y-4">
+            {own.notice ? (
+              <p
+                role="status"
+                className="rounded-md border border-line bg-surface px-4 py-3 text-sm"
+              >
+                {own.notice}
+              </p>
+            ) : null}
+            {own.conflict || own.reloadRequired ? (
+              <div
+                role="alert"
+                className="space-y-3 rounded-md border border-red-200 p-4 text-sm text-red-700"
+              >
+                <p>
+                  {own.reloadRequired
+                    ? "Your changes were committed. Reload the latest version before continuing."
+                    : te("conflict")}
+                </p>
+                <AdminButton
+                  onClick={() => {
+                    if (!anyDirty || window.confirm(t("unsaved"))) {
+                      bypass.current = true;
+                      window.location.reload();
+                    }
+                  }}
+                >
+                  {te("reload")}
+                </AdminButton>
+              </div>
+            ) : null}
+            <p className="text-sm text-ink-soft">
+              {!persisted
+                ? te("firstSave")
+                : locale === "en"
+                  ? te("sharedHint")
+                  : te(
+                      own.mode === "custom" || guideLocalTextDirty(own)
+                        ? "customHint"
+                        : "inheritHint",
+                    )}
+            </p>
+          </div>
+          <form
+            id={`entity-${workspace.id}`}
+            onSubmit={(event) => {
+              event.preventDefault();
+              run("save");
+            }}
+            noValidate
+            className="max-w-3xl space-y-6"
+          >
+            <div
+              id={`${prefix}-panel-${locale}`}
+              role="tabpanel"
+              aria-labelledby={`${prefix}-tab-${locale}`}
+            >
+              <fieldset disabled={disabled} className="min-w-0 space-y-6">
+                <p className="text-xs text-ink-soft">
+                  * Required to publish. You can save an incomplete draft.
+                </p>
+                <AdminCard title={t("general")}>
+                  <div className="space-y-4">
+                    {text("title", 200)}
+                    {text("intro", 1200, true)}
+                    <FieldGrid>
+                      <Field
+                        label={t("labels.city_id")}
+                        required
+                        htmlFor={`${workspace.id}-city_id`}
+                        error={fieldError(pageErrors, "city_id")}
+                      >
+                        <Select
+                          id={`${workspace.id}-city_id`}
+                          value={page.city_id}
+                          onChange={(event) =>
+                            updatePage("city_id", event.target.value)
+                          }
+                        >
+                          <option value="">{t("noCity")}</option>
+                          {cities.map((city) => (
+                            <option key={city.id} value={city.id}>
+                              {city.labels?.[locale] ?? city.name} (
+                              {t(
+                                city.status === "published"
+                                  ? "publishedStatus"
+                                  : city.status,
+                              )}
+                              )
+                            </option>
+                          ))}
+                        </Select>
+                      </Field>
+                      <Field
+                        label={t("labels.template")}
+                        htmlFor={`${workspace.id}-template`}
+                        error={fieldError(pageErrors, "template")}
+                      >
+                        <Select
+                          id={`${workspace.id}-template`}
+                          value={page.template}
+                          onChange={(event) =>
+                            updatePage(
+                              "template",
+                              event.target.value as GuideContent["template"],
+                            )
+                          }
+                        >
+                          {[
+                            "landing",
+                            "eat",
+                            "beaches",
+                            "events",
+                            "secrets",
+                            "families",
+                            "groups",
+                            "travellers",
+                            "custom",
+                          ].map((value) => (
+                            <option key={value} value={value}>
+                              {t(`templates.${value}`)}
+                            </option>
+                          ))}
+                        </Select>
+                      </Field>
+                      <GuideTextField
+                        entityId={workspace.id}
+                        name="position"
+                        value={page.position}
+                        errors={pageErrors}
+                        type="number"
+                        onChange={(value) =>
+                          updatePage("position", Number(value))
+                        }
+                      />
+                    </FieldGrid>
+                    {!persisted ? (
+                      <>
+                        <GuideTextField
+                          entityId={workspace.id}
+                          name="slug"
+                          required
+                          value={workspace.slug}
+                          errors={pageErrors}
+                          maxLength={160}
+                          onChange={(value) =>
+                            setWorkspace((previous) => ({
+                              ...previous,
+                              slug: value,
+                            }))
+                          }
+                        />
+                        <p className="text-xs text-ink-soft">
+                          {t("slugWarning")}
+                        </p>
+                      </>
+                    ) : null}
+                    <Field
+                      htmlFor={`${workspace.id}-hero_media_id`}
+                      errorPath={`${workspace.id}.hero_media_id`}
+                      label={t("labels.hero_media_id")}
+                      error={fieldError(pageErrors, "hero_media_id")}
+                      hint={te("sharedHint")}
+                    >
+                      <MediaField
+                        value={page.hero_media_id}
+                        preview={
+                          page.hero_media_id
+                            ? previews[page.hero_media_id]
+                            : null
+                        }
+                        onChange={(id, preview) => {
+                          onPreview(preview);
+                          updatePage("hero_media_id", id);
+                        }}
+                      />
+                    </Field>
+                  </div>
+                </AdminCard>
+                <AdminCard title={t("seo")}>
+                  <div className="space-y-4">
+                    {text("meta_title", 70)}
+                    {text("meta_description", 200, true)}
+                    <Field
+                      htmlFor={`${workspace.id}-og_image_media_id`}
+                      errorPath={`${workspace.id}.og_image_media_id`}
+                      label={t("labels.og_image_media_id")}
+                      error={fieldError(pageErrors, "og_image_media_id")}
+                      hint={te("sharedHint")}
+                    >
+                      <MediaField
+                        value={page.og_image_media_id}
+                        preview={
+                          page.og_image_media_id
+                            ? previews[page.og_image_media_id]
+                            : null
+                        }
+                        onChange={(id, preview) => {
+                          onPreview(preview);
+                          updatePage("og_image_media_id", id);
+                        }}
+                      />
+                    </Field>
+                  </div>
+                </AdminCard>
+                <section
+                  className="space-y-4"
+                  aria-labelledby={`${prefix}-sections`}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div className="max-w-xl space-y-2">
+                      <h2
+                        id={`${prefix}-sections`}
+                        className="font-serif text-xl text-ink"
+                      >
+                        {t("sections")}{" "}
+                        <span aria-hidden="true" className="text-red-700">
+                          *
+                        </span>
+                      </h2>
+                      <p className="text-sm text-ink-soft">
+                        {te("sectionsHint")}
+                      </p>
+                      <p className="text-xs text-ink-soft">
+                        {te("aggregateSaveHint")}
+                      </p>
+                    </div>
+                    <AdminButton
+                      id={`${workspace.id}-sections`}
+                      onClick={addSection}
+                    >
+                      {t("addSection")}
+                    </AdminButton>
+                  </div>
+                  {pageErrors.sections ? (
+                    <p
+                      id={`${workspace.id}-sections-error`}
+                      role="alert"
+                      className="text-sm text-red-700"
+                    >
+                      {pageErrors.sections}
+                    </p>
+                  ) : null}
+                  {!page.sections.length ? (
+                    <div className="rounded-lg border border-dashed border-line bg-surface p-6">
+                      <p className="mb-4 text-sm text-ink-soft">
+                        {te("sectionsEmpty")}
+                      </p>
+                      <AdminButton onClick={addSection}>
+                        {t("addSection")}
+                      </AdminButton>
+                    </div>
+                  ) : null}
+                  {page.sections.map((section, index) => {
+                    const savedSection = saved.sections.find(
+                      (current) => current.id === section.id,
+                    );
+                    return (
+                      <GuideSectionEditor
+                        key={`${locale}-${section.id}`}
+                        section={section}
+                        previews={previews}
+                        errors={errors[section.id] ?? {}}
+                        dirty={
+                          !guideValuesEqual(
+                            { ...section, places: [] },
+                            savedSection
+                              ? { ...savedSection, places: [] }
+                              : undefined,
+                          )
+                        }
+                        hasPendingChildren={section.places.some(
+                          (place) =>
+                            !guideValuesEqual(
+                              place,
+                              savedSection?.places.find(
+                                (current) => current.id === place.id,
+                              ),
+                            ),
+                        )}
+                        persisted={Boolean(savedSection)}
+                        disabled={disabled}
+                        canOrder={!disabled}
+                        first={index === 0}
+                        last={index === page.sections.length - 1}
+                        placeState={(place) => ({
+                          dirty: !guideValuesEqual(
+                            place,
+                            savedSection?.places.find(
+                              (current) => current.id === place.id,
+                            ),
+                          ),
+                          persisted: Boolean(
+                            savedSection?.places.some(
+                              (current) => current.id === place.id,
+                            ),
+                          ),
+                          errors: errors[place.id] ?? {},
+                        })}
+                        onChange={updateSection}
+                        onPreview={onPreview}
+                        onDelete={() => {
+                          if (window.confirm(t("confirmDelete")))
+                            updatePage(
+                              "sections",
+                              page.sections.filter(
+                                (current) => current.id !== section.id,
+                              ),
+                            );
+                        }}
+                        onMove={(offset) =>
+                          updatePage(
+                            "sections",
+                            moveItem(page.sections, section.id, offset),
+                          )
+                        }
+                        onAddPlace={() => addPlace(section)}
+                        onDeletePlace={(id) => {
+                          if (window.confirm(t("confirmDelete")))
+                            updateSection({
+                              ...section,
+                              places: section.places.filter(
+                                (place) => place.id !== id,
+                              ),
+                            });
+                        }}
+                        onMovePlace={(id, offset) =>
+                          updateSection({
+                            ...section,
+                            places: moveItem(section.places, id, offset),
+                          })
+                        }
+                      />
+                    );
+                  })}
+                </section>
+              </fieldset>
+            </div>
+          </form>
+          <p className="max-w-3xl text-xs text-ink-soft">
+            {t("sharedHint")}{" "}
+            <Link
+              href="/admin/pages/guides"
+              className="text-accent-deep underline underline-offset-4"
+            >
+              {t("sharedPagesLink")}
+            </Link>
+            {" · "}
+            <Link
+              href="/admin/settings"
+              className="text-accent-deep underline underline-offset-4"
+            >
+              {t("sharedSettingsLink")}
+            </Link>
+          </p>
         </div>
-      </form>
-      <p className="max-w-3xl text-xs text-ink-soft">
-        {t("sharedHint")}{" "}
-        <Link
-          href="/admin/pages/guides"
-          className="text-accent-deep underline underline-offset-4"
-        >
-          {t("sharedPagesLink")}
-        </Link>
-        {" · "}
-        <Link
-          href="/admin/settings"
-          className="text-accent-deep underline underline-offset-4"
-        >
-          {t("sharedSettingsLink")}
-        </Link>
-      </p>
-    </div>
-    </MediaAltProvider>
+      </MediaAltProvider>
+    </FeedbackScope>
   );
 }

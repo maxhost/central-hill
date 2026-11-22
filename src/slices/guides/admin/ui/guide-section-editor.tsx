@@ -88,6 +88,7 @@ export function GuideSectionEditor({
         <GuideTextField
           entityId={section.id}
           name="title"
+          required={presentation?.enabled !== false}
           value={section.title}
           errors={errors}
           maxLength={200}
@@ -105,23 +106,42 @@ export function GuideSectionEditor({
         />
         <p className="text-xs text-ink-soft">{t("moduleInherited")}</p>
         <p className="text-xs text-ink-soft">{editorial("sharedHint")}</p>
-        <div className="space-y-4">
-          <h3 className="text-sm font-semibold">{t("modules")}</h3>
+        <div id={`${section.id}-presentation`} className="space-y-4">
+          {errors.presentation ? (
+            <p
+              id={`${section.id}-presentation-error`}
+              role="alert"
+              className="text-sm text-red-700"
+            >
+              {errors.presentation}
+            </p>
+          ) : null}
+          <h3 className="text-sm font-semibold">
+            {t("modules")}{" "}
+            {presentation?.enabled !== false ? (
+              <span aria-hidden="true" className="text-red-700">
+                *
+              </span>
+            ) : null}
+          </h3>
           {GUIDE_MODULE_KEYS.map((key) => (
             <div key={key} className="space-y-3 border-t border-line pt-4">
-              <Checkbox
-                label={t(`labels.${key}`)}
-                checked={presentation?.modules?.[key] !== false}
-                onChange={(e) =>
-                  update("presentation", {
-                    ...(presentation ?? { version: 1 }),
-                    modules: {
-                      ...presentation?.modules,
-                      [key]: e.target.checked,
-                    },
-                  })
-                }
-              />
+              <div id={`${section.id}-${key}-module`}>
+                <Checkbox
+                  aria-invalid={Boolean(fieldError(errors, key))}
+                  label={t(`labels.${key}`)}
+                  checked={presentation?.modules?.[key] !== false}
+                  onChange={(e) =>
+                    update("presentation", {
+                      ...(presentation ?? { version: 1 }),
+                      modules: {
+                        ...presentation?.modules,
+                        [key]: e.target.checked,
+                      },
+                    })
+                  }
+                />
+              </div>
               {fieldError(errors, key) ? (
                 <p className="text-sm text-red-700">
                   {fieldError(errors, key)}
@@ -133,6 +153,10 @@ export function GuideSectionEditor({
                     <GuideTextField
                       entityId={section.id}
                       name={key}
+                      required={
+                        presentation?.enabled !== false &&
+                        presentation?.modules?.[key] === true
+                      }
                       value={section[key]}
                       errors={errors}
                       maxLength={key === "body" ? 4000 : 600}
@@ -142,6 +166,12 @@ export function GuideSectionEditor({
                   ) : null}
                   {key === "image" ? (
                     <Field
+                      htmlFor={`${section.id}-header_media_id`}
+                      errorPath={`${section.id}.header_media_id`}
+                      required={
+                        presentation?.enabled !== false &&
+                        presentation?.modules?.image === true
+                      }
                       label={t("labels.header_media_id")}
                       error={fieldError(errors, "header_media_id")}
                       hint={t("photoHint")}
@@ -165,6 +195,12 @@ export function GuideSectionEditor({
                       <GuideTextField
                         entityId={section.id}
                         name="cta_label"
+                        required={
+                          presentation?.enabled !== false &&
+                          (presentation?.modules?.cta === true ||
+                            Boolean(section.cta_url) ||
+                            Boolean(section.cta_label?.trim()))
+                        }
                         value={section.cta_label}
                         errors={errors}
                         maxLength={80}
@@ -173,6 +209,12 @@ export function GuideSectionEditor({
                       <GuideTextField
                         entityId={section.id}
                         name="cta_url"
+                        required={
+                          presentation?.enabled !== false &&
+                          (presentation?.modules?.cta === true ||
+                            Boolean(section.cta_url) ||
+                            Boolean(section.cta_label?.trim()))
+                        }
                         value={section.cta_url}
                         errors={errors}
                         type="url"
@@ -185,7 +227,10 @@ export function GuideSectionEditor({
                     <>
                       <div className="flex flex-wrap justify-between gap-2">
                         <h4 className="text-sm font-medium">{t("places")}</h4>
-                        <AdminButton onClick={onAddPlace}>
+                        <AdminButton
+                          id={`${section.id}-places`}
+                          onClick={onAddPlace}
+                        >
                           {t("addPlace")}
                         </AdminButton>
                       </div>

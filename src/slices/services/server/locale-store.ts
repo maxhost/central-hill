@@ -1,7 +1,11 @@
 import "server-only";
 import { eq, sql } from "drizzle-orm";
 import { db } from "@core/db/client";
-import { getAssignableContactForm, assignableContactFormGuard, HEADER_CONTACT_LOCK } from "@slices/forms/server-contract";
+import {
+  getAssignableContactForm,
+  assignableContactFormGuard,
+  HEADER_CONTACT_LOCK,
+} from "@slices/forms/server-contract";
 import {
   SlugConflictError,
   loadAlternateSlugs,
@@ -16,6 +20,7 @@ import {
   type SaveServiceDraftInput,
   type PublishServiceDraftInput,
   type ServiceEditorialResult,
+  type ServiceEditorialModel,
   type ServiceEnvelope,
   type ServiceSharedContent,
 } from "../editorial-types";
@@ -43,6 +48,30 @@ import {
   type ServiceLocaleRow,
 } from "./locale-bootstrap";
 import { readServiceEditorialModel } from "./locale-model";
+
+async function confirmedServiceResult(
+  id: string,
+  previous: ServiceEditorialModel,
+): Promise<ServiceEditorialResult> {
+  try {
+    const model = await readServiceEditorialModel(id);
+    return model
+      ? { ok: true, model }
+      : {
+          ok: true,
+          model: previous,
+          refreshWarning: true,
+          reloadRequired: true,
+        };
+  } catch {
+    return {
+      ok: true,
+      model: previous,
+      refreshWarning: true,
+      reloadRequired: true,
+    };
+  }
+}
 
 const invalid = (
   fieldErrors: Record<string, string>,
@@ -130,7 +159,10 @@ function sharedPayloadErrors(
 /** All locale/shared mutations serialize on the same graph lock. The following
  * statement sees a fresh READ COMMITTED snapshot after waiting for that lock. */
 const graphLock = () => db.execute(sql`select pg_advisory_xact_lock(7159,1)`);
-const contactLock = () => db.execute(sql`select pg_advisory_xact_lock(hashtextextended(${HEADER_CONTACT_LOCK},0))`);
+const contactLock = () =>
+  db.execute(
+    sql`select pg_advisory_xact_lock(hashtextextended(${HEADER_CONTACT_LOCK},0))`,
+  );
 type AssignedForm = { id: string; revision: number } | null;
 async function reserveIdentity(
   input: SaveServiceDraftInput,
@@ -243,8 +275,13 @@ export async function saveServiceDraft(
     let assignedForm: AssignedForm = null;
     // Validate a new choice before reserving even an unpublished identity.
     if (input.locale === "en" && input.payload.content.enquiry_form_id) {
-      assignedForm = await getAssignableContactForm(input.payload.content.enquiry_form_id);
-      if (!assignedForm) return invalid({ enquiry_form_id: "Select an available form with a valid recipient." });
+      assignedForm = await getAssignableContactForm(
+        input.payload.content.enquiry_form_id,
+      );
+      if (!assignedForm)
+        return invalid({
+          enquiry_form_id: "Select an available form with a valid recipient.",
+        });
     }
     if (input.shared) {
       const errors = sharedPayloadErrors(input.payload, input.shared);
@@ -295,17 +332,30 @@ export async function saveServiceDraft(
     const selected = model.locales[input.locale];
     const previousAssignment = model.locales.en.working.content.enquiry_form_id;
     if (input.locale === "en") {
-      if (!Object.hasOwn(input.payload.content, "enquiry_form_id") && previousAssignment !== undefined)
+      if (
+        !Object.hasOwn(input.payload.content, "enquiry_form_id") &&
+        previousAssignment !== undefined
+      )
         input.payload.content.enquiry_form_id = previousAssignment;
       if (input.payload.content.enquiry_form_id && !assignedForm) {
-        assignedForm = await getAssignableContactForm(input.payload.content.enquiry_form_id);
-        if (!assignedForm) return invalid({ enquiry_form_id: "Select an available form with a valid recipient." });
+        assignedForm = await getAssignableContactForm(
+          input.payload.content.enquiry_form_id,
+        );
+        if (!assignedForm)
+          return invalid({
+            enquiry_form_id: "Select an available form with a valid recipient.",
+          });
       }
     } else {
       const submitted = input.payload.content.enquiry_form_id;
-      if (Object.hasOwn(input.payload.content, "enquiry_form_id")
-        && (submitted?.toLowerCase() ?? null) !== (previousAssignment?.toLowerCase() ?? null))
-        return invalid({ enquiry_form_id: "Choose the service enquiry form in English." });
+      if (
+        Object.hasOwn(input.payload.content, "enquiry_form_id") &&
+        (submitted?.toLowerCase() ?? null) !==
+          (previousAssignment?.toLowerCase() ?? null)
+      )
+        return invalid({
+          enquiry_form_id: "Choose the service enquiry form in English.",
+        });
       delete input.payload.content.enquiry_form_id;
     }
     if (
@@ -365,7 +415,9 @@ export async function saveServiceDraft(
       serviceSharedContent(input.payload.content, model.shared.content);
     // Old callers omit shared; validate the merged retained maps as well.
     if (!serviceSharedSchema.safeParse(shared).success)
-      return invalid({ _shared: "Shared service data is invalid or too large." });
+      return invalid({
+        _shared: "Shared service data is invalid or too large.",
+      });
     const sharedErrors = sharedPayloadErrors(input.payload, shared);
     // A full workspace common document may contain assets for rows belonging to
     // another language. Retain those keys, including currently inactive rows.
@@ -425,8 +477,7 @@ export async function saveServiceDraft(
       ))
     )
       return { ok: false, error: "conflict" };
-    const saved = await readServiceEditorialModel(input.serviceId);
-    return saved ? { ok: true, model: saved } : { ok: false, error: "server" };
+    return confirmedServiceResult(input.serviceId, model);
   } catch (error) {
     if (error instanceof ServiceLegacyError)
       return { ok: false, error: "legacy_invalid" };
@@ -467,10 +518,18 @@ export async function publishServiceDraft(
     const checked = checkServiceEnvelope(publishing, true);
     if (!checked.envelope || Object.keys(checked.errors).length)
       return invalid(checked.errors);
-    const assignedForm = input.locale === "en" && publishing.content.enquiry_form_id
-      ? await getAssignableContactForm(publishing.content.enquiry_form_id) : null;
-    if (input.locale === "en" && publishing.content.enquiry_form_id && !assignedForm)
-      return invalid({ enquiry_form_id: "Select an available form with a valid recipient." });
+    const assignedForm =
+      input.locale === "en" && publishing.content.enquiry_form_id
+        ? await getAssignableContactForm(publishing.content.enquiry_form_id)
+        : null;
+    if (
+      input.locale === "en" &&
+      publishing.content.enquiry_form_id &&
+      !assignedForm
+    )
+      return invalid({
+        enquiry_form_id: "Select an available form with a valid recipient.",
+      });
     const errors = await validateServiceReferences(publishing);
     if (Object.keys(errors).length) return invalid(errors);
     if (!model.slugByLocale[input.locale] && !model.slugByLocale.en)
@@ -492,10 +551,7 @@ export async function publishServiceDraft(
         select id from saved`),
     ]);
     if (!result.rows.length) return { ok: false, error: "conflict" };
-    const published = await readServiceEditorialModel(input.serviceId);
-    return published
-      ? { ok: true, model: published }
-      : { ok: false, error: "server" };
+    return confirmedServiceResult(input.serviceId, model);
   } catch (error) {
     if (error instanceof ServiceLegacyError)
       return { ok: false, error: "legacy_invalid" };

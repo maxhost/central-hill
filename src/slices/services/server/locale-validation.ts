@@ -7,17 +7,6 @@ import {
 import type { ServiceEnvelope } from "../editorial-types";
 import { iconKey } from "@core/validation/icon-key";
 
-const url = z
-  .string()
-  .max(2048)
-  .refine((value) => {
-    try {
-      return ["http:", "https:"].includes(new URL(value).protocol);
-    } catch {
-      return false;
-    }
-  }, "Enter an http(s) booking URL.")
-  .nullable();
 export const serviceDraftContentSchema = serviceSaveInput
   .omit({ id: true, slug: true, status: true })
   .extend({
@@ -25,7 +14,7 @@ export const serviceDraftContentSchema = serviceSaveInput
     excerpt: z.string().trim().max(400),
     body: z.string().trim().max(6000),
     cover_media_id: z.uuid().nullable(),
-    cta_url: url,
+    cta_url: z.string().max(2048).nullable(),
     media_alts: mediaAltsSchema.optional(),
     enquiry_form_id: z.uuid().nullable().optional(),
   });
@@ -115,6 +104,14 @@ export function checkServiceEnvelope(
     if (ids.some((id) => !id) || new Set(ids).size !== ids.length)
       errors[`detail.${key}`] = "Each row needs a unique stable identity.";
   }
+  if (c.booking_type === "external" && c.cta_url) {
+    try {
+      if (!["http:", "https:"].includes(new URL(c.cta_url).protocol))
+        throw Error();
+    } catch {
+      errors.cta_url = "Enter an http(s) booking URL.";
+    }
+  }
   if (publish) {
     const strict = serviceSaveInput.safeParse({
       ...c,
@@ -124,6 +121,10 @@ export function checkServiceEnvelope(
     if (!strict.success)
       Object.assign(errors, serviceFieldErrors(strict.error.issues));
     Object.assign(errors, servicePresentationErrors(c, c.presentation ?? null));
+    if (!c.name.trim()) errors.name = "Name is required.";
+    if (!c.excerpt.trim()) errors.excerpt = "Excerpt is required.";
+    if (!c.body.trim()) errors.body = "Body is required.";
+    if (!c.cover_media_id) errors.cover_media_id = "Cover image is required.";
   }
   return { envelope: parsed.data, errors };
 }

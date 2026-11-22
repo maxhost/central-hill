@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { mediaAltsSchema } from "@core/media/alt";
 import { position, slug } from "@core/validation/primitives";
+import { safeGuideHttpUrl } from "../ui/format";
 import { guideTemplate, guideLayout } from "../validation";
 import {
   pageSource,
@@ -9,7 +10,10 @@ import {
   placeColumns,
   sectionColumns,
 } from "../admin/validation";
-import { guideSectionPresentation } from "../presentation";
+import {
+  isGuideModuleVisible,
+  guideSectionPresentation,
+} from "../presentation";
 import { GUIDE_EDITOR_LOCALES, type GuideEnvelope } from "../editorial-types";
 const nullableId = z.uuid().nullable();
 const place = z.strictObject({
@@ -23,6 +27,7 @@ const section = z.strictObject({
   ...sectionColumns.shape,
   ...sectionSource.shape,
   title: z.string().max(200),
+  cta_url: z.string().trim().max(2000).nullable(),
   id: z.uuid(),
   guide_page_id: z.uuid(),
   layout: guideLayout,
@@ -123,6 +128,13 @@ export function checkGuideEnvelope(
   for (const s of envelope.content.sections) {
     if (ids.has(s.id)) errors.sections = "Duplicate guide identity.";
     ids.add(s.id);
+    if (
+      isGuideModuleVisible(s.presentation, "cta") &&
+      s.cta_url &&
+      !safeGuideHttpUrl(s.cta_url)
+    )
+      errors[`sections.${s.id}.cta_url`] =
+        "Enter an absolute HTTP or HTTPS URL.";
     if (guideId && s.guide_page_id !== guideId)
       errors.sections = "Section belongs to another guide.";
     for (const p of s.places) {

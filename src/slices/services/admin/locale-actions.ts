@@ -31,12 +31,15 @@ export async function saveServiceLocaleDraft(
       error: "validation",
       fieldErrors: serviceFieldErrors(parsed.error.issues),
     };
-  const result = await saveServiceDraft(
-    parsed.data,
-    staff.userId,
-  );
-  if (result.ok) refresh(result.model.id);
-  else if (result.error === "server") refresh(parsed.data.serviceId);
+  const result = await saveServiceDraft(parsed.data, staff.userId);
+  if (result.ok) {
+    try {
+      refresh(result.model.id);
+    } catch {
+      return { ...result, refreshWarning: true };
+    }
+  }
+
   return result;
 }
 export async function publishServiceLocaleDraft(
@@ -51,8 +54,14 @@ export async function publishServiceLocaleDraft(
       fieldErrors: serviceFieldErrors(parsed.error.issues),
     };
   const result = await publishServiceDraft(parsed.data, staff.userId);
-  if (result.ok) refresh(result.model.id);
-  else if (result.error === "server") refresh(parsed.data.serviceId);
+  if (result.ok) {
+    try {
+      refresh(result.model.id);
+    } catch {
+      return { ...result, refreshWarning: true };
+    }
+  }
+
   return result;
 }
 
@@ -76,8 +85,14 @@ export async function setServiceVisibility(
       parsed.data.archived,
       staff.userId,
     );
-    if (result.ok) refresh(result.model.id);
-    else if (result.error === "server") refresh(parsed.data.serviceId);
+    if (result.ok) {
+      try {
+        refresh(result.model.id);
+      } catch {
+        return { ...result, refreshWarning: true };
+      }
+    }
+
     return result;
   } catch {
     refresh(parsed.data.serviceId);

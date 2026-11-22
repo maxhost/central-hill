@@ -19,7 +19,13 @@ export async function saveGuideLocaleDraft(
 ): Promise<GuideEditorialResult> {
   const staff = await requireStaff(["admin", "editor"]);
   const result = await saveGuideDraft(raw, staff.userId);
-  if (result.ok) refresh(result.model.id);
+  if (result.ok) {
+    try {
+      refresh(result.model.id);
+    } catch {
+      return { ...result, refreshWarning: true };
+    }
+  }
   return result;
 }
 export async function publishGuideLocaleDraft(
@@ -27,7 +33,13 @@ export async function publishGuideLocaleDraft(
 ): Promise<GuideEditorialResult> {
   const staff = await requireStaff(["admin", "editor"]);
   const result = await publishGuideDraft(raw, staff.userId);
-  if (result.ok) refresh(result.model.id);
+  if (result.ok) {
+    try {
+      refresh(result.model.id);
+    } catch {
+      return { ...result, refreshWarning: true };
+    }
+  }
   return result;
 }
 export async function setGuideVisibility(
@@ -48,6 +60,12 @@ export async function setGuideVisibility(
     parsed.data.archived,
     staff.userId,
   );
-  if (result.ok) refresh(result.model.id);
+  if (result.ok) {
+    try {
+      refresh(result.model.id);
+    } catch {
+      return { ...result, refreshWarning: true };
+    }
+  }
   return result;
 }

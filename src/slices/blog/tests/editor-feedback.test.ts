@@ -1,0 +1,41 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { emptyPostEnvelope } from "../admin/ui/post-editor-state";
+import { checkBlogEnvelope } from "../server/post-locale-validation";
+import {
+  retainPostErrors,
+  postFeedbackLabel,
+} from "../admin/ui/feedback-model";
+const category = "eef20000-0000-4000-8000-000000000001",
+  author = "eef20000-0000-4000-8000-000000000002";
+test("Blog CTA missing label and URL report the actual missing field independently", () => {
+  const d = emptyPostEnvelope(category, author);
+  d.content.cta_url = "https://example.test";
+  assert.ok(checkBlogEnvelope(d, true).errors.cta_label);
+  assert.equal(checkBlogEnvelope(d, true).errors.cta_url, undefined);
+  d.content.cta_url = null;
+  d.content.cta_label = "Read";
+  assert.ok(checkBlogEnvelope(d, true).errors.cta_url);
+});
+test("Blog correction preserves unchanged server-only references and remaining errors after incomplete Save", () => {
+  const before = emptyPostEnvelope(category, author);
+  before.content.cover_media_id = "eef20000-0000-4000-8000-000000000003";
+  const after = structuredClone(before);
+  after.content.title = "Fixed";
+  const errors = {
+    title: "Title required",
+    excerpt: "Excerpt required",
+    cover_media_id: "Select an uploaded image.",
+  };
+  const retained = retainPostErrors(errors, after, before);
+  assert.equal(retained.title, undefined);
+  assert.ok(retained.excerpt);
+  assert.equal(retained.cover_media_id, "Select an uploaded image.");
+  assert.ok(retainPostErrors(errors, after, undefined, true).excerpt);
+});
+test("Blog body destinations are human-readable", () => {
+  assert.deepEqual(postFeedbackLabel("body.2.text"), {
+    section: "Article body",
+    label: "Article body → Block 3 → Text",
+  });
+});

@@ -115,13 +115,14 @@ export function ServiceSectionControls({
     <section
       id={`service-section-${section}`}
       data-service-section={section}
-      className="space-y-4 border-t border-line pt-5"
+      className={`space-y-4 border-t border-line pt-5 ${error ? "rounded-md outline-1 outline-red-600" : ""}`}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
           <label className="inline-flex items-center gap-2 text-sm font-semibold text-ink">
             <input
               type="checkbox"
+              aria-invalid={error ? true : undefined}
               checked={enabled}
               onChange={(e) => {
                 onChoice(e.target.checked);
@@ -131,6 +132,11 @@ export function ServiceSectionControls({
               className="size-4 accent-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             />
             {title}
+            {choice === true ? (
+              <span aria-hidden="true" className="text-accent-deep">
+                *
+              </span>
+            ) : null}
           </label>
           <p className="text-xs text-ink-soft">
             {enabled ? t("visible") : t("hidden")} · {t("elements", { count })}{" "}

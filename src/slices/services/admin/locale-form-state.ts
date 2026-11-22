@@ -1,3 +1,4 @@
+import { retainServiceErrors } from "./feedback-model";
 import type { Locale } from "@core/db/columns";
 import { iconKey } from "@core/validation/icon-key";
 import {
@@ -37,6 +38,8 @@ export interface ServiceFormLocale {
   errors: Record<string, string>;
   notice: string;
   conflict: boolean;
+  uncertain?: boolean;
+  reloadRequired?: boolean;
 }
 export interface ServiceFormWorkspace {
   model: ServiceEditorialModel | null;
@@ -268,7 +271,13 @@ export function changeServiceForm(
     locales[key] = {
       ...old,
       working: overlayForm(key === locale ? form : old.working, shared),
-      ...(key === locale ? { errors: {}, notice: "" } : {}),
+      ...(key === locale
+        ? {
+            errors: retainServiceErrors(workspace, locale, form),
+            notice: "",
+            uncertain: false,
+          }
+        : {}),
     };
   }
   return { ...workspace, locales, shared, slug: form.slug };

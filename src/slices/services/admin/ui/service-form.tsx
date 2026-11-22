@@ -23,6 +23,20 @@ import {
   TextInput,
   useMediaQueue,
 } from "@slices/backoffice/contract";
+import {
+  EditorFeedbackSummary,
+  feedbackMessage,
+  feedbackTabProps,
+  FeedbackScope,
+  useEditorFeedbackToast,
+  focusEditorField,
+} from "@slices/backoffice/contract-client";
+import {
+  serviceFeedbackGroups,
+  retainServiceErrors,
+  serviceMediaPath,
+} from "../feedback-model";
+import { serviceFormEqual } from "../locale-form-state";
 import { deleteService } from "../actions";
 import {
   saveServiceLocaleDraft,
@@ -94,13 +108,48 @@ export function ServiceForm({
   const [uploading, setUploading] = useState(false);
   const [operation, setOperation] = useState<"save" | "publish" | null>(null);
   const queue = useMediaQueue();
+  const toast = useEditorFeedbackToast();
+  const pendingFocus = useRef(false);
   const preparing = queue.isPreparing;
   const busy = pending || uploading || preparing;
   const persisted = Boolean(workspace.model);
   const own = workspace.locales[locale];
   const state = own.working;
   const saved = own.saved;
-  const errors = own.errors;
+  const feedbackWorkspace = {
+    ...workspace,
+    locales: Object.fromEntries(
+      SERVICE_EDITOR_LOCALES.map((key) => [
+        key,
+        {
+          ...workspace.locales[key],
+          errors: {
+            ...workspace.locales[key].errors,
+            ...Object.fromEntries(
+              (queue.failures ?? [])
+                .filter((f) => f.entity === serviceId && f.locale === key)
+                .flatMap((f) => {
+                  const path = serviceMediaPath(
+                    workspace.locales[key].working,
+                    f.id,
+                  );
+                  return path
+                    ? [
+                        [
+                          path,
+                          `Could not upload “${f.name}” for ${key.toUpperCase()}. Retry the upload.`,
+                        ],
+                      ]
+                    : [];
+                }),
+            ),
+          },
+        },
+      ]),
+    ) as typeof workspace.locales,
+  };
+  const groups = serviceFeedbackGroups(feedbackWorkspace);
+  const errors = feedbackWorkspace.locales[locale].errors;
   const banner = own.notice;
   const model = workspace.model?.locales[locale];
   const previews = { ...initialPreviews, ...workspace.model?.previews };
@@ -204,6 +253,7 @@ export function ServiceForm({
 
   function focusError(path: string, message: string) {
     requestAnimationFrame(() => {
+      if (focusEditorField(root.current, path)) return;
       const section = path.startsWith("detail.")
         ? path.split(".")[1]
         : undefined;
@@ -228,16 +278,24 @@ export function ServiceForm({
       const field =
         fields.find((node) => node.dataset.serviceErrorMessage === message) ??
         fields.find((node) => node.dataset.serviceError === "true");
-      const directControl = direct?.matches("input,textarea,select,button")
+      const directControl = direct?.matches(
+        'input:not([type="file"]):not([type="hidden"]):not([disabled]),textarea:not([disabled]),select:not([disabled]),button:not([disabled])',
+      )
         ? direct
-        : direct?.querySelector<HTMLElement>("input,textarea,select,button");
+        : direct?.querySelector<HTMLElement>(
+            'input:not([type="file"]):not([type="hidden"]):not([disabled]),textarea:not([disabled]),select:not([disabled]),button:not([disabled])',
+          );
       const control =
         directControl ??
         field?.querySelector<HTMLElement>("input, textarea, select, button") ??
         scope?.querySelector<HTMLElement>('[aria-invalid="true"]');
-      const target = control ?? field ?? scope;
+      const target = control ?? field;
       if (target) {
-        target.closest("details")?.setAttribute("open", "");
+        let ancestor: HTMLElement | null = target.parentElement;
+        while (ancestor) {
+          if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
+          ancestor = ancestor.parentElement;
+        }
         target.scrollIntoView({ block: "center" });
         if (!control) target.tabIndex = -1;
         target.focus();
@@ -255,80 +313,185 @@ export function ServiceForm({
         ]),
       ),
     );
-    setBanner(tp("saveError"));
+    pendingFocus.current = true;
   }
   useEffect(() => {
     const first = Object.entries(errors)[0];
-    if (first && !busy) focusError(...first);
+    if (first && !busy && pendingFocus.current) {
+      pendingFocus.current = false;
+      focusError(...first);
+    }
   }, [errors, busy]);
-  function receive(result: ServiceEditorialResult, action: "save" | "publish") {
+  function receive(
+    result: ServiceEditorialResult,
+    action: "save" | "publish",
+    attemptLocale: Locale,
+    sharedChanged = false,
+  ) {
     if (result.ok) {
-      setWorkspace((previous) =>
-        applyServiceModel(
+      const message = feedbackMessage({
+        action,
+        locale: attemptLocale,
+        outcome: "success",
+        refreshWarning: result.refreshWarning,
+        reloadRequired: result.reloadRequired,
+        sharedChanged,
+      });
+      if (result.reloadRequired) {
+        setWorkspace((previous) => ({
+          ...previous,
+          locales: {
+            ...previous.locales,
+            [attemptLocale]: {
+              ...previous.locales[attemptLocale],
+              notice: message,
+              reloadRequired: true,
+            },
+          },
+        }));
+        toast.success(message);
+        return;
+      }
+      setWorkspace((previous) => {
+        const next = applyServiceModel(
           previous,
-          locale,
+          attemptLocale,
           result.model,
-          action === "publish" ? te("publishedNotice") : tb("actions.saved"),
-        ),
-      );
+          message,
+        );
+        if (action === "save")
+          next.locales[attemptLocale].errors = retainServiceErrors(
+            previous,
+            attemptLocale,
+            next.locales[attemptLocale].working,
+            true,
+          );
+        return next;
+      });
+      toast.success(message);
       if (!persisted) {
-        const path = `/admin/services/${result.model.id}`;
-        window.history.replaceState(window.history.state, "", path);
+        window.history.replaceState(
+          window.history.state,
+          "",
+          `/admin/services/${result.model.id}`,
+        );
         currentUrl.current = window.location.href;
       }
-    } else if (result.error === "validation") reportErrors(result.fieldErrors);
-    else if (result.error === "slug_conflict")
-      reportErrors({ slug: t("admin.errors.slugConflict") });
-    else if (result.error === "conflict")
-      setWorkspace((previous) => ({
-        ...previous,
+      return;
+    }
+    const fieldErrors =
+      result.error === "validation"
+        ? { ...workspace.locales[attemptLocale].errors, ...result.fieldErrors }
+        : result.error === "slug_conflict"
+          ? { slug: "Choose an available URL slug." }
+          : workspace.locales[attemptLocale].errors;
+    const outcome =
+      result.error === "validation" || result.error === "slug_conflict"
+        ? "validation"
+        : result.error === "conflict"
+          ? "conflict"
+          : result.error === "no_draft"
+            ? "no_draft"
+            : result.error === "uncertain"
+              ? "uncertain"
+              : "server";
+    const message = feedbackMessage({
+      action,
+      locale: attemptLocale,
+      outcome,
+      groups: serviceFeedbackGroups({
+        ...workspace,
         locales: {
-          ...previous.locales,
-          [locale]: {
-            ...previous.locales[locale],
-            conflict: true,
-            notice: te("conflict"),
+          ...workspace.locales,
+          [attemptLocale]: {
+            ...workspace.locales[attemptLocale],
+            errors: fieldErrors,
           },
         },
-      }));
-    else
-      setBanner(
-        result.error === "legacy_invalid"
-          ? tp("integrity")
-          : result.error === "no_draft"
-            ? te("noDraft")
-            : tp("saveError"),
-      );
+      }),
+    });
+    setWorkspace((previous) => ({
+      ...previous,
+      locales: {
+        ...previous.locales,
+        [attemptLocale]: {
+          ...previous.locales[attemptLocale],
+          errors: fieldErrors,
+          notice: message,
+          conflict:
+            previous.locales[attemptLocale].conflict ||
+            result.error === "conflict",
+          uncertain: result.error === "uncertain",
+        },
+      },
+    }));
+    pendingFocus.current = outcome === "validation";
+    toast.error(message);
+  }
+  function uncertain(action: "save" | "publish", attemptLocale: Locale) {
+    const message = feedbackMessage({
+      action,
+      locale: attemptLocale,
+      outcome: "uncertain",
+    });
+    setWorkspace((previous) => ({
+      ...previous,
+      locales: {
+        ...previous.locales,
+        [attemptLocale]: {
+          ...previous.locales[attemptLocale],
+          notice: message,
+          uncertain: true,
+        },
+      },
+    }));
+    toast.error(message);
   }
   function onSubmit() {
-    if (busy || lock.current || own.conflict) return;
+    if (busy || lock.current || own.conflict || own.reloadRequired) return;
+    const attemptLocale = locale;
+    const sharedChanged = !serviceFormEqual(
+      workspace.shared,
+      workspace.savedShared,
+    );
     setBanner(null);
     let payload: ReturnType<typeof serviceFormEnvelope>;
     try {
       payload = serviceFormEnvelope(workspace, locale);
     } catch (error) {
-      if (error instanceof ZodError)
-        reportErrors(
-          Object.fromEntries(
-            error.issues.map((issue) => [
-              `detail.${issue.path.join(".")}`,
-              issue.message,
-            ]),
-          ),
-        );
-      else reportErrors({ price_from: tp("invalidEuros") });
+      const fieldErrors =
+        error instanceof ZodError
+          ? Object.fromEntries(
+              error.issues.map((issue) => [
+                `detail.${issue.path.join(".")}`,
+                issue.message,
+              ]),
+            )
+          : { price_from: "Enter a valid starting price." };
+      receive(
+        { ok: false, error: "validation", fieldErrors },
+        "save",
+        attemptLocale,
+      );
       return;
     }
     lock.current = true;
-    setErrors({});
     setUploading(true);
     setOperation("save");
     start(async () => {
       try {
-        if (!(await queue.flush())) {
-          setBanner(tp("saveError"));
+        if (
+          !(await queue.flush(
+            [
+              payload.content.cover_media_id,
+              payload.content.og_image_media_id,
+              ...payload.content.gallery,
+              ...payload.content.detail.itinerary.map((step) => step.media_id),
+            ].filter((id): id is string => Boolean(id)),
+            { locale: attemptLocale, feedback: true },
+          ))
+        )
           return;
-        }
         receive(
           await saveServiceLocaleDraft({
             serviceId,
@@ -345,9 +508,11 @@ export function ServiceForm({
             ...(!persisted ? { slug: workspace.slug } : {}),
           }),
           "save",
+          attemptLocale,
+          sharedChanged,
         );
       } catch {
-        setBanner(tp("saveError"));
+        uncertain("save", attemptLocale);
       } finally {
         lock.current = false;
         setUploading(false);
@@ -363,9 +528,11 @@ export function ServiceForm({
       dirty ||
       publicationNeedsSave ||
       !model?.draft ||
-      own.conflict
+      own.conflict ||
+      own.reloadRequired
     )
       return;
+    const attemptLocale = locale;
     lock.current = true;
     setOperation("publish");
     start(async () => {
@@ -377,9 +544,10 @@ export function ServiceForm({
             expectedRevision: model.revision,
           }),
           "publish",
+          attemptLocale,
         );
       } catch {
-        setBanner(tp("saveError"));
+        uncertain("publish", attemptLocale);
       } finally {
         lock.current = false;
         setOperation(null);
@@ -462,664 +630,716 @@ export function ServiceForm({
     know_practical: t("detail.knowPractical"),
   };
   return (
-    <MediaAltProvider locale={locale} value={state.media_alts} onChange={value => set("media_alts", value)} disabled={busy}>
-    <div ref={root} className="space-y-6">
-      <div className="space-y-4 border-b border-line pb-5">
-        <Link
-          href="/admin/services"
-          className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-ink"
-        >
-          <UiIcon name="nav-arrow-left" size={16} />
-          {t("admin.backToList")}
-        </Link>
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex min-w-0 flex-wrap items-center gap-3">
-            <h1 className="font-serif text-2xl leading-tight text-ink">
-              {persisted
-                ? state.name || t("admin.editTitle")
-                : t("admin.newTitle")}
-            </h1>
-            <StateBadge
-              label={t(`admin.status.${workspace.model?.status ?? "draft"}`)}
-              tone={
-                workspace.model?.status === "published"
-                  ? "approved"
-                  : workspace.model?.status === "archived"
-                    ? "neutral"
-                    : "draft"
-              }
-            />
-          </div>
-          {workspace.model?.status === "published" && model?.published ? (
-            <Link
-              href={`/${locale}/services/${workspace.model.slugByLocale[locale] ?? workspace.model.slugByLocale.en ?? ""}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-ink-soft hover:text-accent-deep"
-            >
-              {tp("published")} ↗
-            </Link>
-          ) : null}
-        </div>
-        <p className="text-sm text-ink-soft">{t("admin.formSubtitle")}</p>
-      </div>
-
-      <header className="sticky top-0 z-20 w-full min-w-0 max-w-3xl space-y-3 border-b border-line bg-bg py-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            {persisted ? (
-              <AdminButton
-                className="min-h-11"
-                onClick={onVisibility}
-                disabled={busy}
-              >
-                {tv(
-                  workspace.model?.status === "archived"
-                    ? "restore"
-                    : "archive",
-                )}
-              </AdminButton>
-            ) : null}
-            {persisted ? (
-              <AdminButton
-                className="min-h-11"
-                variant="danger"
-                onClick={onDelete}
-                disabled={pending || uploading}
-              >
-                {tb("actions.delete")}
-              </AdminButton>
-            ) : null}
-          </div>
-          <div className="ml-auto flex flex-wrap gap-2">
-            <AdminButton
-              className="min-h-11"
-              onClick={onSubmit}
-              disabled={busy || own.conflict}
-            >
-              {te(operation === "save" ? "saving" : "saveDraft")}
-            </AdminButton>
-            <AdminButton
-              className="min-h-11"
-              variant="primary"
-              onClick={onPublish}
-              disabled={
-                busy ||
-                own.conflict ||
-                !persisted ||
-                !model?.draft ||
-                dirty ||
-                publicationNeedsSave
-              }
-            >
-              {te(operation === "publish" ? "publishing" : "publish")}
-            </AdminButton>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div
-            role="tablist"
-            aria-label={tb("pageEditor.contentLanguage")}
-            className="flex gap-1 rounded-md border border-line bg-surface p-1"
-          >
-            {SERVICE_EDITOR_LOCALES.map((key) => (
-              <button
-                key={key}
-                type="button"
-                role="tab"
-                id={`${fieldPrefix}-tab-${key}`}
-                aria-controls={`${fieldPrefix}-panel-${key}`}
-                aria-selected={locale === key}
-                tabIndex={locale === key ? 0 : -1}
-                disabled={busy || (!persisted && key !== "en")}
-                onClick={() => selectLocale(key)}
-                onKeyDown={(event) => {
-                  if (
-                    busy ||
-                    !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
-                      event.key,
-                    )
-                  )
-                    return;
-                  event.preventDefault();
-                  const available = persisted
-                    ? SERVICE_EDITOR_LOCALES
-                    : (["en"] as const);
-                  const index = available.findIndex((item) => item === key);
-                  const next =
-                    event.key === "Home"
-                      ? available[0]
-                      : event.key === "End"
-                        ? available[available.length - 1]
-                        : available[
-                            (index +
-                              (event.key === "ArrowRight" ? 1 : -1) +
-                              available.length) %
-                              available.length
-                          ];
-                  if (next) {
-                    selectLocale(next);
-                    document
-                      .getElementById(`${fieldPrefix}-tab-${next}`)
-                      ?.focus();
-                  }
-                }}
-                className={`min-h-9 rounded px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === key ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}
-              >
-                {key.toUpperCase()}
-                {key === "en" ? (
-                  <span className="ml-1 text-[10px] font-normal">
-                    {tb("pageEditor.source")}
-                  </span>
-                ) : null}
-              </button>
-            ))}
-          </div>
-          <p
-            role="status"
-            className={`text-xs ${dirty ? "text-accent-deep" : "text-ink-soft"}`}
-          >
-            {locale.toUpperCase()} ·{" "}
-            {te(
-              dirty || publicationNeedsSave
-                ? "unsaved"
-                : model?.draft
-                  ? "draft"
-                  : model?.published
-                    ? "published"
-                    : "unpublished",
-            )}
-          </p>
-        </div>
-      </header>
-      <div className="max-w-3xl space-y-3">
-        {banner ? (
-          <p
-            role="status"
-            className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink"
-          >
-            {banner}
-          </p>
-        ) : null}
-        {preparing ? (
-          <p role="status" className="text-xs text-ink-soft">
-            {tb("media.waitForMedia")}
-          </p>
-        ) : null}
-        <p className="text-sm text-ink-soft">{te("sharedHint")}</p>
-        {!persisted ? (
-          <p className="text-sm text-ink-soft">{te("firstSave")}</p>
-        ) : null}
-        {locale !== "en" ? (
-          <p className="text-sm text-ink-soft">
-            <strong>
-              {te(
-                own.mode === "custom" || serviceLocalTextDirty(own)
-                  ? "customized"
-                  : "usesEnglish",
-              )}
-            </strong>{" "}
-            ·{" "}
-            {te(
-              own.mode === "custom" || serviceLocalTextDirty(own)
-                ? "customHint"
-                : "inheritHint",
-            )}
-          </p>
-        ) : null}
-        {own.conflict ? (
-          <div className="space-y-2">
-            <p role="alert" className="text-sm text-ink">
-              {te("conflict")}
-            </p>
-            <AdminButton
-              onClick={() => {
-                if (canLeave()) {
-                  bypass.current = true;
-                  window.location.reload();
-                }
-              }}
-              disabled={busy}
-            >
-              {te("reload")}
-            </AdminButton>
-          </div>
-        ) : null}
-      </div>
-      {Object.keys(errors).length ? (
-        <div
-          role="alert"
-          className="max-w-3xl space-y-2 rounded-md border border-line p-4"
-        >
-          <p className="text-sm font-semibold">{tp("saveError")}</p>
-          <ul className="space-y-2">
-            {Object.entries(errors).map(([path, message]) => (
-              <li key={path}>
-                <button
-                  type="button"
-                  onClick={() => focusError(path, message)}
-                  className="text-left text-sm underline underline-offset-4"
-                >
-                  {message}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-      <fieldset
-        role="tabpanel"
-        id={`${fieldPrefix}-panel-${locale}`}
-        aria-labelledby={`${fieldPrefix}-tab-${locale}`}
-        disabled={pending || uploading || own.conflict}
-        className="w-full min-w-0 max-w-3xl space-y-6"
+    <FeedbackScope locale={locale} entity={serviceId}>
+      <MediaAltProvider
+        locale={locale}
+        value={state.media_alts}
+        onChange={(value) => set("media_alts", value)}
+        disabled={busy}
       >
-        <AdminCard title={t("admin.sections.identity")}>
-          <div className="space-y-4">
-            <FieldGrid>
-              <Field
-                label={t("admin.fields.category")}
-                required
-                error={err("category_id")}
-              >
-                <Select
-                  data-service-path="category_id"
-                  disabled={!editableIcons}
-                  value={state.category_id}
-                  onChange={(e) => set("category_id", e.target.value)}
+        <div ref={root} className="space-y-6">
+          <div className="space-y-4 border-b border-line pb-5">
+            <Link
+              href="/admin/services"
+              className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-ink"
+            >
+              <UiIcon name="nav-arrow-left" size={16} />
+              {t("admin.backToList")}
+            </Link>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex min-w-0 flex-wrap items-center gap-3">
+                <h1 className="font-serif text-2xl leading-tight text-ink">
+                  {persisted
+                    ? state.name || t("admin.editTitle")
+                    : t("admin.newTitle")}
+                </h1>
+                <StateBadge
+                  label={t(
+                    `admin.status.${workspace.model?.status ?? "draft"}`,
+                  )}
+                  tone={
+                    workspace.model?.status === "published"
+                      ? "approved"
+                      : workspace.model?.status === "archived"
+                        ? "neutral"
+                        : "draft"
+                  }
+                />
+              </div>
+              {workspace.model?.status === "published" && model?.published ? (
+                <Link
+                  href={`/${locale}/services/${workspace.model.slugByLocale[locale] ?? workspace.model.slugByLocale.en ?? ""}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-ink-soft hover:text-accent-deep"
                 >
-                  <option value="">{t("admin.fields.choose")}</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.names?.[locale] ?? c.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-              <Field
-                label={t("admin.fields.position")}
-                hint={t("admin.fields.positionHint")}
-              >
-                <TextInput
-                  type="number"
-                  data-service-path="position"
-                  value={state.position}
-                  onChange={(e) => set("position", e.target.value)}
-                />
-              </Field>
-            </FieldGrid>
-            <Field label={t("admin.fields.name")} required error={err("name")}>
-              <TextInput
-                data-service-path="name"
-                value={state.name}
-                onChange={(e) => set("name", e.target.value)}
-              />
-            </Field>
-            <Field
-              label={t("admin.fields.slug")}
-              required
-              hint={t("admin.fields.slugHint")}
-              error={err("slug")}
-            >
-              <TextInput
-                data-service-path="slug"
-                disabled={persisted || locale !== "en"}
-                value={state.slug}
-                onChange={(e) => set("slug", e.target.value)}
-              />
-            </Field>
-            <Field
-              label={t("admin.fields.excerpt")}
-              required
-              error={err("excerpt")}
-            >
-              <TextArea
-                data-service-path="excerpt"
-                value={state.excerpt}
-                onChange={(e) => set("excerpt", e.target.value)}
-              />
-            </Field>
-            <FieldGrid>
-              <Field
-                label={t("admin.fields.rating")}
-                hint={t("admin.fields.ratingHint")}
-                error={err("rating_tenths")}
-              >
-                <TextInput
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="5"
-                  data-service-path="rating_tenths"
-                  value={state.rating}
-                  onChange={(e) => set("rating", e.target.value)}
-                />
-              </Field>
-              <Field
-                label={t("admin.fields.durationLabel")}
-                error={err("duration_label")}
-              >
-                <TextInput
-                  data-service-path="duration_label"
-                  value={state.duration_label}
-                  onChange={(e) => set("duration_label", e.target.value)}
-                />
-              </Field>
-            </FieldGrid>
+                  {tp("published")} ↗
+                </Link>
+              ) : null}
+            </div>
+            <p className="text-sm text-ink-soft">{t("admin.formSubtitle")}</p>
           </div>
-        </AdminCard>
 
-        <AdminCard title={t("admin.sections.body")}>
-          <Field label={t("admin.fields.body")} required error={err("body")}>
-            <TextArea
-              rows={8}
-              data-service-path="body"
-              value={state.body}
-              onChange={(e) => set("body", e.target.value)}
-            />
-          </Field>
-        </AdminCard>
-
-        <AdminCard title={t("admin.sections.detail")}>
-          <DetailEditor mode="general" {...detailProps} />
-        </AdminCard>
-        <AdminCard title={t("admin.sections.media")}>
-          <div className="space-y-5">
-            <p className="text-sm text-ink-soft">{tp("mediaAltHint")}</p>
-            <p className="text-sm text-ink-soft">
-              {t("admin.fields.mosaicHint")}
-            </p>
-            <ol className="grid gap-2 rounded-md border border-line bg-bg p-4 text-sm text-ink-soft sm:grid-cols-2">
-              <li>{t("admin.fields.mosaicPosition1")}</li>
-              <li>{t("admin.fields.mosaicPosition2")}</li>
-              <li>{t("admin.fields.mosaicPosition3")}</li>
-              <li>{t("admin.fields.mosaicPosition4")}</li>
-            </ol>
-            <Field
-              label={t("admin.fields.mosaicCover")}
-              required
-              error={err("cover_media_id")}
-              fieldPath="cover_media_id"
-            >
-              <MediaField
-                key={`cover-${workspace.model?.shared.revision ?? 0}`}
-                value={state.cover_media_id || null}
-                preview={previews[state.cover_media_id] ?? null}
-                onChange={(id) => set("cover_media_id", id ?? "")}
-              />
-            </Field>
-            <Field
-              label={t("admin.fields.mosaicGallery")}
-              hint={t("admin.fields.mosaicGalleryHint")}
-              fieldPath="gallery"
-              error={
-                Object.entries(errors).find(([path]) =>
-                  path.startsWith("gallery"),
-                )?.[1]
-              }
-            >
-              <MediaGalleryField
-                key={`gallery-${workspace.model?.shared.revision ?? 0}`}
-                value={state.gallery}
-                previews={previews}
-                onChange={(ids) => set("gallery", ids)}
-              />
-            </Field>
-          </div>
-        </AdminCard>
-
-        <AdminCard title={tp("title")}>
-          <DetailEditor mode="sections" {...detailProps} />
-        </AdminCard>
-
-        <AdminCard title={t("admin.sections.booking")}>
-          <div className="space-y-4">
-            <Field
-              label={tp("priceMode")}
-              hint={
-                state.presentation?.price_display === undefined
-                  ? tp("inherited")
-                  : tp("explicit")
-              }
-            >
-              <Select
-                value={state.presentation?.price_display ?? "auto"}
-                onChange={(event) => {
-                  const next = { ...state.presentation, version: 1 as const };
-                  if (event.target.value === "auto") delete next.price_display;
-                  else
-                    next.price_display = event.target
-                      .value as ServicePriceDisplay;
-                  set(
-                    "presentation",
-                    Object.keys(next).length === 1 ? null : next,
-                  );
-                }}
-              >
-                {SERVICE_PRICE_DISPLAYS.map((mode) => (
-                  <option key={mode} value={mode}>
-                    {tp(`modes.${mode}`)}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            {state.presentation?.price_display !== undefined ? (
-              <AdminButton
-                onClick={() => {
-                  const next = { ...state.presentation, version: 1 as const };
-                  delete next.price_display;
-                  set(
-                    "presentation",
-                    Object.keys(next).length === 1 ? null : next,
-                  );
-                }}
-              >
-                {tp("reset")}
-              </AdminButton>
-            ) : null}
-            <details
-              open={
-                !["hidden", "on_request"].includes(
-                  state.presentation?.price_display ?? "auto",
-                ) || Boolean(err("price_from") || err("price_suffix"))
-              }
-            >
-              <summary className="mb-3 cursor-pointer text-sm font-semibold">
-                {tp("euros")}
-              </summary>
-              <FieldGrid>
-                <Field
-                  label={tp("euros")}
-                  hint={tp("eurosHint")}
-                  error={err("price_from")}
+          <header className="sticky top-0 z-20 w-full min-w-0 max-w-3xl space-y-3 border-b border-line bg-bg py-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                {persisted ? (
+                  <AdminButton
+                    className="min-h-11"
+                    onClick={onVisibility}
+                    disabled={busy}
+                  >
+                    {tv(
+                      workspace.model?.status === "archived"
+                        ? "restore"
+                        : "archive",
+                    )}
+                  </AdminButton>
+                ) : null}
+                {persisted ? (
+                  <AdminButton
+                    className="min-h-11"
+                    variant="danger"
+                    onClick={onDelete}
+                    disabled={pending || uploading}
+                  >
+                    {tb("actions.delete")}
+                  </AdminButton>
+                ) : null}
+              </div>
+              <div className="ml-auto flex flex-wrap gap-2">
+                <AdminButton
+                  className="min-h-11"
+                  onClick={onSubmit}
+                  disabled={busy || own.conflict || own.reloadRequired}
                 >
-                  <TextInput
-                    inputMode="decimal"
-                    data-service-path="price_from"
-                    value={state.price_from}
-                    onChange={(e) => set("price_from", e.target.value)}
-                  />
-                </Field>
-                <Field
-                  label={t("admin.fields.priceSuffix")}
-                  hint={t("admin.fields.priceSuffixHint")}
-                  error={err("price_suffix")}
-                >
-                  <TextInput
-                    data-service-path="price_suffix"
-                    value={state.price_suffix}
-                    onChange={(e) => set("price_suffix", e.target.value)}
-                  />
-                </Field>
-              </FieldGrid>
-            </details>
-            <FieldGrid>
-              <Field label={t("admin.fields.bookingType")}>
-                <Select
-                  data-service-path="booking_type"
-                  value={state.booking_type}
-                  onChange={(e) =>
-                    set("booking_type", e.target.value as BookingType)
+                  {operation === "save"
+                    ? "Saving…"
+                    : `Save draft (${locale.toUpperCase()})`}
+                </AdminButton>
+                <AdminButton
+                  className="min-h-11"
+                  variant="primary"
+                  onClick={onPublish}
+                  disabled={
+                    busy ||
+                    own.conflict ||
+                    own.reloadRequired ||
+                    !persisted ||
+                    !model?.draft ||
+                    dirty ||
+                    publicationNeedsSave
                   }
                 >
-                  {BOOKING_TYPES.map((b) => (
-                    <option key={b} value={b}>
-                      {t(`admin.bookingType.${b}`)}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            </FieldGrid>
-            {state.booking_type !== "none" ? (
-              <FieldGrid>
-                <Field
-                  label={t("admin.fields.ctaLabel")}
-                  error={err("cta_label")}
-                >
-                  <TextInput
-                    data-service-path="cta_label"
-                    value={state.cta_label}
-                    onChange={(e) => set("cta_label", e.target.value)}
-                  />
-                </Field>
-                {state.booking_type === "external" ? (
-                  <Field
-                    label={t("admin.fields.ctaUrl")}
-                    error={err("cta_url")}
+                  {operation === "publish"
+                    ? "Publishing…"
+                    : `Publish (${locale.toUpperCase()})`}
+                </AdminButton>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div
+                role="tablist"
+                aria-label={tb("pageEditor.contentLanguage")}
+                className="flex gap-1 rounded-md border border-line bg-surface p-1"
+              >
+                {SERVICE_EDITOR_LOCALES.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    role="tab"
+                    id={`${fieldPrefix}-tab-${key}`}
+                    aria-controls={`${fieldPrefix}-panel-${key}`}
+                    {...feedbackTabProps(
+                      groups.find((group) => group.locale === key),
+                      `${fieldPrefix}-feedback`,
+                    )}
+                    aria-selected={locale === key}
+                    tabIndex={locale === key ? 0 : -1}
+                    disabled={busy || (!persisted && key !== "en")}
+                    onClick={() => selectLocale(key)}
+                    onKeyDown={(event) => {
+                      if (
+                        busy ||
+                        !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
+                          event.key,
+                        )
+                      )
+                        return;
+                      event.preventDefault();
+                      const available = persisted
+                        ? SERVICE_EDITOR_LOCALES
+                        : (["en"] as const);
+                      const index = available.findIndex((item) => item === key);
+                      const next =
+                        event.key === "Home"
+                          ? available[0]
+                          : event.key === "End"
+                            ? available[available.length - 1]
+                            : available[
+                                (index +
+                                  (event.key === "ArrowRight" ? 1 : -1) +
+                                  available.length) %
+                                  available.length
+                              ];
+                      if (next) {
+                        selectLocale(next);
+                        document
+                          .getElementById(`${fieldPrefix}-tab-${next}`)
+                          ?.focus();
+                      }
+                    }}
+                    className={`${
+                      feedbackTabProps(
+                        groups.find((group) => group.locale === key),
+                        `${fieldPrefix}-feedback`,
+                      ).className ?? ""
+                    } min-h-9 rounded px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${locale === key ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}
                   >
-                    <TextInput
-                      type="url"
-                      data-service-path="cta_url"
-                      value={state.cta_url}
-                      onChange={(e) => set("cta_url", e.target.value)}
-                    />
-                  </Field>
-                ) : null}
-              </FieldGrid>
-            ) : null}
-            <DetailEditor mode="booking" {...detailProps} />
-            <ServiceEnquirySelector
-              value={workspace.locales.en.working.enquiry_form_id}
-              onChange={value => set("enquiry_form_id", value)}
-              readOnly={locale !== "en"}
-              onEnglish={() => selectLocale("en")}
-              error={workspace.locales.en.errors.enquiry_form_id}
-              disabled={busy}
-            />
-          </div>
-        </AdminCard>
-
-        <AdminCard title={t("admin.sections.seo")}>
-          <div className="space-y-4">
-            <Field
-              label={t("admin.fields.ogImage")}
-              hint={t("admin.fields.ogImageHint")}
-              error={err("og_image_media_id")}
-              fieldPath="og_image_media_id"
-            >
-              <MediaField
-                key={`og-${workspace.model?.shared.revision ?? 0}`}
-                value={state.og_image_media_id || null}
-                preview={previews[state.og_image_media_id] ?? null}
-                onChange={(id) => set("og_image_media_id", id ?? "")}
-              />
-            </Field>
-
-            <Field
-              label={t("admin.fields.metaTitle")}
-              error={err("meta_title")}
-            >
-              <TextInput
-                data-service-path="meta_title"
-                value={state.meta_title}
-                onChange={(e) => set("meta_title", e.target.value)}
-              />
-            </Field>
-            <Field
-              label={t("admin.fields.metaDescription")}
-              error={err("meta_description")}
-            >
-              <TextArea
-                data-service-path="meta_description"
-                value={state.meta_description}
-                onChange={(e) => set("meta_description", e.target.value)}
-              />
-            </Field>
-          </div>
-        </AdminCard>
-
-        <AdminCard title={tp("icons")}>
-          <fieldset disabled={!editableIcons}>
-            <details>
-              <summary className="cursor-pointer text-sm font-semibold">
-                {tp("icons")}
-              </summary>
-              <div className="mt-4 space-y-4">
-                {SERVICE_ICON_SLOTS.map((slot) => (
-                  <div key={slot} className="space-y-2">
-                    <Field
-                      label={iconLabels[slot]}
-                      error={err(`presentation.icons.${slot}`)}
-                    >
-                      <IconField
-                        value={state.presentation?.icons?.[slot] ?? ""}
-                        emptyLabel={tp("globalIcon")}
-                        allowEmpty
-                        onChange={(value) => {
-                          const icons = { ...state.presentation?.icons };
-                          if (isIconName(value)) icons[slot] = value;
-                          else delete icons[slot];
-                          const next = {
-                            ...state.presentation,
-                            version: 1 as const,
-                            icons,
-                          };
-                          if (!Object.keys(icons).length)
-                            delete (next as FormState["presentation"])!.icons;
-                          set(
-                            "presentation",
-                            Object.keys(next).length === 1 ? null : next,
-                          );
-                        }}
-                      />
-                    </Field>
-                    {state.presentation?.icons?.[slot] ? (
-                      <AdminButton
-                        onClick={() => {
-                          const icons = { ...state.presentation?.icons };
-                          delete icons[slot];
-                          const next = {
-                            ...state.presentation,
-                            version: 1 as const,
-                            icons,
-                          };
-                          if (!Object.keys(icons).length)
-                            delete (
-                              next as NonNullable<FormState["presentation"]>
-                            ).icons;
-                          set(
-                            "presentation",
-                            Object.keys(next).length === 1 ? null : next,
-                          );
-                        }}
-                      >
-                        {tp("globalIcon")}
-                      </AdminButton>
+                    {key.toUpperCase()}
+                    {workspace.locales[key].uncertain
+                      ? " !"
+                      : (groups.find((group) => group.locale === key)?.issues
+                            .length ?? 0)
+                        ? ` (${groups.find((group) => group.locale === key)?.issues.length ?? 0})`
+                        : ""}
+                    {key === "en" ? (
+                      <span className="ml-1 text-[10px] font-normal">
+                        {tb("pageEditor.source")}
+                      </span>
                     ) : null}
-                  </div>
+                  </button>
                 ))}
               </div>
-            </details>
+              <p
+                role="status"
+                className={`text-xs ${dirty ? "text-accent-deep" : "text-ink-soft"}`}
+              >
+                {locale.toUpperCase()} ·{" "}
+                {te(
+                  dirty || publicationNeedsSave
+                    ? "unsaved"
+                    : model?.draft
+                      ? "draft"
+                      : model?.published
+                        ? "published"
+                        : "unpublished",
+                )}
+              </p>
+            </div>
+            <p className="text-xs text-ink-soft">
+              Only the selected language is published.
+            </p>
+            {dirty || publicationNeedsSave ? (
+              <p className="text-xs text-ink-soft">
+                Save your changes before publishing.
+              </p>
+            ) : null}
+            <EditorFeedbackSummary
+              id={`${fieldPrefix}-feedback`}
+              groups={groups}
+              onNavigate={(target, path) => {
+                const issue = groups
+                  .find((group) => group.locale === target)
+                  ?.issues.find((issue) => issue.path === path);
+                const source = issue?.sourceLocale ?? target;
+                selectLocale(source);
+                focusError(path, workspace.locales[target].errors[path] ?? "");
+              }}
+            />
+          </header>
+          <div className="max-w-3xl space-y-3">
+            {banner ? (
+              <p
+                role="status"
+                className="rounded-md border border-line bg-surface px-4 py-2 text-sm text-ink"
+              >
+                {banner}
+              </p>
+            ) : null}
+            {preparing ? (
+              <p role="status" className="text-xs text-ink-soft">
+                {tb("media.waitForMedia")}
+              </p>
+            ) : null}
+            <p className="text-sm text-ink-soft">{te("sharedHint")}</p>
+            {!persisted ? (
+              <p className="text-sm text-ink-soft">{te("firstSave")}</p>
+            ) : null}
+            {locale !== "en" ? (
+              <p className="text-sm text-ink-soft">
+                <strong>
+                  {te(
+                    own.mode === "custom" || serviceLocalTextDirty(own)
+                      ? "customized"
+                      : "usesEnglish",
+                  )}
+                </strong>{" "}
+                ·{" "}
+                {te(
+                  own.mode === "custom" || serviceLocalTextDirty(own)
+                    ? "customHint"
+                    : "inheritHint",
+                )}
+              </p>
+            ) : null}
+            {own.conflict || own.reloadRequired ? (
+              <div className="space-y-2">
+                <p role="alert" className="text-sm text-ink">
+                  {te("conflict")}
+                </p>
+                <AdminButton
+                  onClick={() => {
+                    if (canLeave()) {
+                      bypass.current = true;
+                      window.location.reload();
+                    }
+                  }}
+                  disabled={busy}
+                >
+                  {te("reload")}
+                </AdminButton>
+              </div>
+            ) : null}
+          </div>
+          <p className="text-xs text-ink-soft">
+            * Required to publish. You can save an incomplete draft.
+          </p>
+          <fieldset
+            role="tabpanel"
+            id={`${fieldPrefix}-panel-${locale}`}
+            aria-labelledby={`${fieldPrefix}-tab-${locale}`}
+            disabled={
+              pending || uploading || own.conflict || own.reloadRequired
+            }
+            className="w-full min-w-0 max-w-3xl space-y-6"
+          >
+            <AdminCard title={t("admin.sections.identity")}>
+              <div className="space-y-4">
+                <FieldGrid>
+                  <Field
+                    label={t("admin.fields.category")}
+                    required
+                    error={err("category_id")}
+                  >
+                    <Select
+                      data-service-path="category_id"
+                      disabled={!editableIcons}
+                      value={state.category_id}
+                      onChange={(e) => set("category_id", e.target.value)}
+                    >
+                      <option value="">{t("admin.fields.choose")}</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.names?.[locale] ?? c.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                  <Field
+                    label={t("admin.fields.position")}
+                    hint={t("admin.fields.positionHint")}
+                  >
+                    <TextInput
+                      type="number"
+                      data-service-path="position"
+                      value={state.position}
+                      onChange={(e) => set("position", e.target.value)}
+                    />
+                  </Field>
+                </FieldGrid>
+                <Field
+                  label={t("admin.fields.name")}
+                  required
+                  error={err("name")}
+                >
+                  <TextInput
+                    data-service-path="name"
+                    value={state.name}
+                    onChange={(e) => set("name", e.target.value)}
+                  />
+                </Field>
+                <Field
+                  label={t("admin.fields.slug")}
+                  required={!persisted}
+                  hint={t("admin.fields.slugHint")}
+                  error={err("slug")}
+                >
+                  <TextInput
+                    data-service-path="slug"
+                    disabled={persisted || locale !== "en"}
+                    value={state.slug}
+                    onChange={(e) => set("slug", e.target.value)}
+                  />
+                </Field>
+                <Field
+                  label={t("admin.fields.excerpt")}
+                  required
+                  error={err("excerpt")}
+                >
+                  <TextArea
+                    data-service-path="excerpt"
+                    value={state.excerpt}
+                    onChange={(e) => set("excerpt", e.target.value)}
+                  />
+                </Field>
+                <FieldGrid>
+                  <Field
+                    label={t("admin.fields.rating")}
+                    hint={t("admin.fields.ratingHint")}
+                    error={err("rating_tenths")}
+                  >
+                    <TextInput
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="5"
+                      data-service-path="rating_tenths"
+                      value={state.rating}
+                      onChange={(e) => set("rating", e.target.value)}
+                    />
+                  </Field>
+                  <Field
+                    label={t("admin.fields.durationLabel")}
+                    error={err("duration_label")}
+                  >
+                    <TextInput
+                      data-service-path="duration_label"
+                      value={state.duration_label}
+                      onChange={(e) => set("duration_label", e.target.value)}
+                    />
+                  </Field>
+                </FieldGrid>
+              </div>
+            </AdminCard>
+
+            <AdminCard title={t("admin.sections.body")}>
+              <Field
+                label={t("admin.fields.body")}
+                required
+                error={err("body")}
+              >
+                <TextArea
+                  rows={8}
+                  data-service-path="body"
+                  value={state.body}
+                  onChange={(e) => set("body", e.target.value)}
+                />
+              </Field>
+            </AdminCard>
+
+            <AdminCard title={t("admin.sections.detail")}>
+              <DetailEditor mode="general" {...detailProps} />
+            </AdminCard>
+            <AdminCard title={t("admin.sections.media")}>
+              <div className="space-y-5">
+                <p className="text-sm text-ink-soft">{tp("mediaAltHint")}</p>
+                <p className="text-sm text-ink-soft">
+                  {t("admin.fields.mosaicHint")}
+                </p>
+                <ol className="grid gap-2 rounded-md border border-line bg-bg p-4 text-sm text-ink-soft sm:grid-cols-2">
+                  <li>{t("admin.fields.mosaicPosition1")}</li>
+                  <li>{t("admin.fields.mosaicPosition2")}</li>
+                  <li>{t("admin.fields.mosaicPosition3")}</li>
+                  <li>{t("admin.fields.mosaicPosition4")}</li>
+                </ol>
+                <Field
+                  label={t("admin.fields.mosaicCover")}
+                  required
+                  error={err("cover_media_id")}
+                  fieldPath="cover_media_id"
+                >
+                  <MediaField
+                    key={`cover-${workspace.model?.shared.revision ?? 0}`}
+                    value={state.cover_media_id || null}
+                    preview={previews[state.cover_media_id] ?? null}
+                    onChange={(id) => set("cover_media_id", id ?? "")}
+                  />
+                </Field>
+                <Field
+                  label={t("admin.fields.mosaicGallery")}
+                  hint={t("admin.fields.mosaicGalleryHint")}
+                  fieldPath="gallery"
+                  error={
+                    Object.entries(errors).find(([path]) =>
+                      path.startsWith("gallery"),
+                    )?.[1]
+                  }
+                >
+                  <MediaGalleryField
+                    key={`gallery-${workspace.model?.shared.revision ?? 0}`}
+                    value={state.gallery}
+                    previews={previews}
+                    onChange={(ids) => set("gallery", ids)}
+                  />
+                </Field>
+              </div>
+            </AdminCard>
+
+            <AdminCard title={tp("title")}>
+              <DetailEditor mode="sections" {...detailProps} />
+            </AdminCard>
+
+            <AdminCard title={t("admin.sections.booking")}>
+              <div className="space-y-4">
+                <Field
+                  label={tp("priceMode")}
+                  hint={
+                    state.presentation?.price_display === undefined
+                      ? tp("inherited")
+                      : tp("explicit")
+                  }
+                >
+                  <Select
+                    value={state.presentation?.price_display ?? "auto"}
+                    onChange={(event) => {
+                      const next = {
+                        ...state.presentation,
+                        version: 1 as const,
+                      };
+                      if (event.target.value === "auto")
+                        delete next.price_display;
+                      else
+                        next.price_display = event.target
+                          .value as ServicePriceDisplay;
+                      set(
+                        "presentation",
+                        Object.keys(next).length === 1 ? null : next,
+                      );
+                    }}
+                  >
+                    {SERVICE_PRICE_DISPLAYS.map((mode) => (
+                      <option key={mode} value={mode}>
+                        {tp(`modes.${mode}`)}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                {state.presentation?.price_display !== undefined ? (
+                  <AdminButton
+                    onClick={() => {
+                      const next = {
+                        ...state.presentation,
+                        version: 1 as const,
+                      };
+                      delete next.price_display;
+                      set(
+                        "presentation",
+                        Object.keys(next).length === 1 ? null : next,
+                      );
+                    }}
+                  >
+                    {tp("reset")}
+                  </AdminButton>
+                ) : null}
+                <details
+                  open={
+                    !["hidden", "on_request"].includes(
+                      state.presentation?.price_display ?? "auto",
+                    ) || Boolean(err("price_from") || err("price_suffix"))
+                  }
+                >
+                  <summary className="mb-3 cursor-pointer text-sm font-semibold">
+                    {tp("euros")}
+                  </summary>
+                  <FieldGrid>
+                    <Field
+                      label={tp("euros")}
+                      required={state.presentation?.price_display === "from"}
+                      hint={tp("eurosHint")}
+                      error={err("price_from")}
+                    >
+                      <TextInput
+                        inputMode="decimal"
+                        data-service-path="price_from"
+                        value={state.price_from}
+                        onChange={(e) => set("price_from", e.target.value)}
+                      />
+                    </Field>
+                    <Field
+                      label={t("admin.fields.priceSuffix")}
+                      hint={t("admin.fields.priceSuffixHint")}
+                      error={err("price_suffix")}
+                    >
+                      <TextInput
+                        data-service-path="price_suffix"
+                        value={state.price_suffix}
+                        onChange={(e) => set("price_suffix", e.target.value)}
+                      />
+                    </Field>
+                  </FieldGrid>
+                </details>
+                <FieldGrid>
+                  <Field label={t("admin.fields.bookingType")}>
+                    <Select
+                      data-service-path="booking_type"
+                      value={state.booking_type}
+                      onChange={(e) =>
+                        set("booking_type", e.target.value as BookingType)
+                      }
+                    >
+                      {BOOKING_TYPES.map((b) => (
+                        <option key={b} value={b}>
+                          {t(`admin.bookingType.${b}`)}
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
+                </FieldGrid>
+                {state.booking_type !== "none" ? (
+                  <FieldGrid>
+                    <Field
+                      label={t("admin.fields.ctaLabel")}
+                      required={state.booking_type === "external"}
+                      error={err("cta_label")}
+                    >
+                      <TextInput
+                        data-service-path="cta_label"
+                        value={state.cta_label}
+                        onChange={(e) => set("cta_label", e.target.value)}
+                      />
+                    </Field>
+                    {state.booking_type === "external" ? (
+                      <Field
+                        label={t("admin.fields.ctaUrl")}
+                        required
+                        error={err("cta_url")}
+                      >
+                        <TextInput
+                          type="url"
+                          data-service-path="cta_url"
+                          value={state.cta_url}
+                          onChange={(e) => set("cta_url", e.target.value)}
+                        />
+                      </Field>
+                    ) : null}
+                  </FieldGrid>
+                ) : null}
+                <DetailEditor mode="booking" {...detailProps} />
+                <ServiceEnquirySelector
+                  value={workspace.locales.en.working.enquiry_form_id}
+                  onChange={(value) => set("enquiry_form_id", value)}
+                  readOnly={locale !== "en"}
+                  onEnglish={() => selectLocale("en")}
+                  error={workspace.locales.en.errors.enquiry_form_id}
+                  disabled={busy}
+                />
+              </div>
+            </AdminCard>
+
+            <AdminCard title={t("admin.sections.seo")}>
+              <div className="space-y-4">
+                <Field
+                  label={t("admin.fields.ogImage")}
+                  hint={t("admin.fields.ogImageHint")}
+                  error={err("og_image_media_id")}
+                  fieldPath="og_image_media_id"
+                >
+                  <MediaField
+                    key={`og-${workspace.model?.shared.revision ?? 0}`}
+                    value={state.og_image_media_id || null}
+                    preview={previews[state.og_image_media_id] ?? null}
+                    onChange={(id) => set("og_image_media_id", id ?? "")}
+                  />
+                </Field>
+
+                <Field
+                  label={t("admin.fields.metaTitle")}
+                  error={err("meta_title")}
+                >
+                  <TextInput
+                    data-service-path="meta_title"
+                    value={state.meta_title}
+                    onChange={(e) => set("meta_title", e.target.value)}
+                  />
+                </Field>
+                <Field
+                  label={t("admin.fields.metaDescription")}
+                  error={err("meta_description")}
+                >
+                  <TextArea
+                    data-service-path="meta_description"
+                    value={state.meta_description}
+                    onChange={(e) => set("meta_description", e.target.value)}
+                  />
+                </Field>
+              </div>
+            </AdminCard>
+
+            <AdminCard title={tp("icons")}>
+              <fieldset disabled={!editableIcons}>
+                <details>
+                  <summary className="cursor-pointer text-sm font-semibold">
+                    {tp("icons")}
+                  </summary>
+                  <div className="mt-4 space-y-4">
+                    {SERVICE_ICON_SLOTS.map((slot) => (
+                      <div key={slot} className="space-y-2">
+                        <Field
+                          label={iconLabels[slot]}
+                          error={err(`presentation.icons.${slot}`)}
+                        >
+                          <IconField
+                            value={state.presentation?.icons?.[slot] ?? ""}
+                            emptyLabel={tp("globalIcon")}
+                            allowEmpty
+                            onChange={(value) => {
+                              const icons = { ...state.presentation?.icons };
+                              if (isIconName(value)) icons[slot] = value;
+                              else delete icons[slot];
+                              const next = {
+                                ...state.presentation,
+                                version: 1 as const,
+                                icons,
+                              };
+                              if (!Object.keys(icons).length)
+                                delete (next as FormState["presentation"])!
+                                  .icons;
+                              set(
+                                "presentation",
+                                Object.keys(next).length === 1 ? null : next,
+                              );
+                            }}
+                          />
+                        </Field>
+                        {state.presentation?.icons?.[slot] ? (
+                          <AdminButton
+                            onClick={() => {
+                              const icons = { ...state.presentation?.icons };
+                              delete icons[slot];
+                              const next = {
+                                ...state.presentation,
+                                version: 1 as const,
+                                icons,
+                              };
+                              if (!Object.keys(icons).length)
+                                delete (
+                                  next as NonNullable<FormState["presentation"]>
+                                ).icons;
+                              set(
+                                "presentation",
+                                Object.keys(next).length === 1 ? null : next,
+                              );
+                            }}
+                          >
+                            {tp("globalIcon")}
+                          </AdminButton>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              </fieldset>
+            </AdminCard>
+            <ServiceCopyEditor
+              data-service-path="copy"
+              value={state.copy}
+              onChange={(copy) => set("copy", copy)}
+              errors={errors}
+            />
           </fieldset>
-        </AdminCard>
-        <ServiceCopyEditor
-          data-service-path="copy"
-          value={state.copy}
-          onChange={(copy) => set("copy", copy)}
-          errors={errors}
-        />
-      </fieldset>
-    </div>
-    </MediaAltProvider>
+        </div>
+      </MediaAltProvider>
+    </FeedbackScope>
   );
 }

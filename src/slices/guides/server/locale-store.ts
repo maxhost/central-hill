@@ -14,6 +14,7 @@ import { guideTreeErrors } from "../admin/validation";
 import {
   GUIDE_EDITOR_LOCALES,
   type GuideEditorialResult,
+  type GuideEditorialModel,
   type GuideEnvelope,
   type GuideSharedContent,
   type SaveGuideDraftInput,
@@ -113,8 +114,23 @@ async function references(
   for (const id of ids)
     if (
       !(IMAGE_MIMES as readonly string[]).includes(assets.get(id)?.mime ?? "")
-    )
-      errors._shared = "Select an uploaded JPEG, PNG, WebP or AVIF image.";
+    ) {
+      const paths = [
+        ...(shared.hero_media_id === id ? ["hero_media_id"] : []),
+        ...(shared.og_image_media_id === id ? ["og_image_media_id"] : []),
+        ...Object.entries(shared.sections)
+          .filter(([, row]) => row.header_media_id === id)
+          .map(([sectionId]) => `sections.${sectionId}.header_media_id`),
+        ...Object.entries(shared.places)
+          .filter(([, row]) => row.media_id === id)
+          .map(
+            ([placeId, row]) =>
+              `sections.${row.section_id}.places.${placeId}.media_id`,
+          ),
+      ];
+      for (const path of paths.length ? paths : ["_shared"])
+        errors[path] = "Select an uploaded JPEG, PNG, WebP or AVIF image.";
+    }
   return errors;
 }
 async function ownsGuideNodes(
@@ -162,9 +178,29 @@ async function commitDraft(
   ]);
   return result.rows.length === 1;
 }
-async function success(id: string): Promise<GuideEditorialResult> {
-  const model = await readGuideEditorialModel(id);
-  return model ? { ok: true, model } : { ok: false, error: "not_found" };
+async function success(
+  id: string,
+  previous: GuideEditorialModel,
+): Promise<GuideEditorialResult> {
+  // The mutation has committed; a failed read cannot turn it into a rejected write.
+  try {
+    const model = await readGuideEditorialModel(id);
+    return model
+      ? { ok: true, model }
+      : {
+          ok: true,
+          model: previous,
+          refreshWarning: true,
+          reloadRequired: true,
+        };
+  } catch {
+    return {
+      ok: true,
+      model: previous,
+      refreshWarning: true,
+      reloadRequired: true,
+    };
+  }
 }
 function failure(error: unknown): GuideEditorialResult {
   if (error instanceof GuideLegacyError)
@@ -326,7 +362,7 @@ export async function saveGuideDraft(
       ))
     )
       return { ok: false, error: "conflict" };
-    return success(input.guideId);
+    return success(input.guideId, model);
   } catch (error) {
     return failure(error);
   }
@@ -383,7 +419,7 @@ export async function publishGuideDraft(
       ),
     ]);
     if (!result.rows.length) return { ok: false, error: "conflict" };
-    return success(input.guideId);
+    return success(input.guideId, model);
   } catch (error) {
     return failure(error);
   }
@@ -406,7 +442,7 @@ export async function setGuideArchived(
         sql`update guide_page set status=${archived ? sql`'archived'` : sql`case when exists(select 1 from guide_locale_content where guide_id=${id}::uuid and published is not null) then 'published' else 'draft' end`},updated_at=now() where id=${id}::uuid`,
       ),
     ]);
-    return success(id);
+    return success(id, model);
   } catch (error) {
     return failure(error);
   }

@@ -43,12 +43,16 @@ export function GuideTextField({
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       onChange(e.target.value),
     maxLength,
-    required,
     "aria-invalid": Boolean(error),
     "aria-describedby": error ? `${id}-error` : undefined,
   };
   return (
-    <Field label={t(`labels.${name}`)} htmlFor={id} required={required}>
+    <Field
+      label={t(`labels.${name}`)}
+      htmlFor={id}
+      required={required}
+      error={error}
+    >
       {multiline ? (
         <TextArea {...props} />
       ) : (
@@ -60,11 +64,6 @@ export function GuideTextField({
           }
         />
       )}
-      {error ? (
-        <p id={`${id}-error`} className="text-sm text-red-700">
-          {error}
-        </p>
-      ) : null}
     </Field>
   );
 }
@@ -118,6 +117,7 @@ export function GuidePlaceEditor({
     <GuideTextField
       entityId={place.id}
       name={name}
+      required={name === "name"}
       value={place[name]}
       errors={errors}
       maxLength={maxLength}
@@ -184,6 +184,8 @@ export function GuidePlaceEditor({
           ))}
         </FieldGrid>
         <Field
+          htmlFor={`${place.id}-media_id`}
+          errorPath={`${place.id}.media_id`}
           label={t("labels.media_id")}
           error={fieldError(errors, "media_id")}
           hint={t("photoHint")}

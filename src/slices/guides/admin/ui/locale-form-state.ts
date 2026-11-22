@@ -1,3 +1,4 @@
+import { retainGuideErrors } from "./feedback-model";
 import type { Locale } from "@core/db/columns";
 import {
   GUIDE_EDITOR_LOCALES,
@@ -21,6 +22,8 @@ export interface GuideFormLocale {
   errors: Record<string, string>;
   notice: string;
   conflict: boolean;
+  uncertain?: boolean;
+  reloadRequired?: boolean;
 }
 export interface GuideFormWorkspace {
   id: string;
@@ -160,7 +163,13 @@ export function changeGuideContent(
     locales[key] = {
       ...locales[key],
       working: overlay(key === locale ? content : locales[key].working, shared),
-      ...(key === locale ? { errors: {}, notice: "" } : {}),
+      ...(key === locale
+        ? {
+            errors: retainGuideErrors(workspace, locale, content),
+            notice: "",
+            uncertain: false,
+          }
+        : {}),
     };
   }
   return { ...workspace, locales, shared };
