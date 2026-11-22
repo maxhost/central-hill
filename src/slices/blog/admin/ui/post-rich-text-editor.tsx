@@ -33,6 +33,9 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
   const fieldPrefix = useId();
   const feedback = useFeedbackScope();
   const richRoot = useRef<HTMLDivElement>(null);
+  const bodyErrors = Object.entries(errors).filter(([key]) => key === "body" || key.startsWith("body."));
+  const errorsVersion = JSON.stringify(errors);
+  const feedbackEnabled = Boolean(feedback);
   const t = useTranslations("blog.richText");
   const tb = useTranslations("blog.admin.post.body.fields");
   const latest = useRef({ onChange, feedbackEnabled: Boolean(feedback), errors, errorId: `${fieldPrefix}-body-errors` });
@@ -66,7 +69,7 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
     content: initial.current as JSONContent,
     editable: !disabled && !initialInvalid.current,
     editorProps: {
-      attributes: { role: "textbox", "aria-multiline": "true", "aria-label": t("bodyLabel"), "data-post-rich-text": "", ...(textOnly ? { "data-page-rich-text": "" } : {}),
+      attributes: { role: "textbox", "aria-multiline": "true", "aria-label": t("bodyLabel"), "data-post-rich-text": "", ...(feedbackEnabled ? { "aria-invalid": String(bodyErrors.length > 0), "aria-describedby": `${fieldPrefix}-body-errors` } : {}), ...(textOnly ? { "data-page-rich-text": "" } : {}),
         class: "min-h-[420px] px-5 py-6 text-[17px] leading-relaxed text-ink outline-none sm:px-8 [&_p]:my-4 [&_h2]:mb-4 [&_h2]:mt-8 [&_h2]:font-serif [&_h2]:text-3xl [&_h3]:mb-3 [&_h3]:mt-7 [&_h3]:font-serif [&_h3]:text-2xl [&_h4]:my-4 [&_h4]:font-semibold [&_ul]:my-4 [&_ul]:list-disc [&_ul]:pl-7 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:pl-7 [&_li_p]:my-1 [&_hr]:my-8 [&_hr]:border-line [&_.is-editor-empty]:before:pointer-events-none" },
       // File images must use MediaField's scoped upload queue. HTML nesting/unsupported marks are explicitly refused.
       handlePaste(_view, event) {
@@ -100,18 +103,10 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
       emitted.current = external;
     } catch { setUnsupported(true); }
   }, [editor, value, textOnly]);
-  const bodyErrors = Object.entries(errors).filter(([key]) => key === "body" || key.startsWith("body."));
-  const errorsVersion = JSON.stringify(errors);
-  const feedbackEnabled = Boolean(feedback);
   useEffect(() => {
     if (!editor || !feedbackEnabled) return;
-    // updateState/setEditable can redraw the editor; owned editor props and node
-    // decorations reapply accessibility rather than mutating transient native DOM.
-    editor.setOptions({ editorProps: { ...editor.options.editorProps, attributes: {
-      ...(typeof editor.options.editorProps.attributes === "object" ? editor.options.editorProps.attributes : {}),
-      "aria-invalid": String(Object.keys(latest.current.errors).some(key => key === "body" || key.startsWith("body."))),
-      "aria-describedby": latest.current.errorId,
-    } } });
+    // Metadata-only redraw updates decorations; root accessibility lives in the
+    // declarative editorProps above so the options manager preserves it as well.
     editor.view.dispatch(editor.state.tr.setMeta(richTextFeedbackKey, errorsVersion));
   }, [editor, feedbackEnabled, errorsVersion]);
   useEffect(() => {
