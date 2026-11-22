@@ -44,7 +44,7 @@ import {
   serviceMediaPath,
   normalizeServiceFieldErrors,
 } from "../feedback-model";
-import { serviceFormEqual } from "../locale-form-state";
+import { serviceSharedNoticeChanged } from "../locale-form-state";
 import { deleteService } from "../actions";
 import {
   saveServiceLocaleDraft,
@@ -488,14 +488,14 @@ export function ServiceForm({
   function onSubmit() {
     if (busy || lock.current || own.conflict || own.reloadRequired) return;
     const attemptLocale = locale;
-    const sharedChanged = !serviceFormEqual(
-      workspace.shared,
-      workspace.savedShared,
-    );
     setBanner(null);
     let payload: ReturnType<typeof serviceFormEnvelope>;
+    let shared: ReturnType<typeof serviceFormSharedContent>;
+    let sharedChanged: boolean;
     try {
       payload = serviceFormEnvelope(workspace, locale);
+      shared = serviceFormSharedContent(workspace, locale, payload.content);
+      sharedChanged = serviceSharedNoticeChanged(workspace, locale, shared);
     } catch (error) {
       const fieldErrors =
         error instanceof ZodError
@@ -546,7 +546,7 @@ export function ServiceForm({
                 : 0,
             expectedSharedRevision: workspace.model?.shared.revision ?? 0,
             payload,
-            shared: serviceFormSharedContent(workspace, locale),
+            shared,
             ...(!persisted ? { slug: workspace.slug } : {}),
           }),
           "save",

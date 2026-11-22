@@ -410,9 +410,11 @@ export function servicePublicationNeedsSave(
 export function serviceFormSharedContent(
   workspace: ServiceFormWorkspace,
   locale: Locale,
+  content: ServiceEnvelope["content"] = serviceFormEnvelope(workspace, locale)
+    .content,
 ): ServiceSharedContent {
   return {
-    ...serviceSharedContent(serviceFormEnvelope(workspace, locale).content),
+    ...serviceSharedContent(content),
     factIcons: Object.fromEntries(
       Object.entries(workspace.shared.factIcons).map(([id, icon]) => [
         id,
@@ -426,4 +428,32 @@ export function serviceFormSharedContent(
       ]),
     ),
   };
+}
+
+/** The shared-save notice compares normalized persisted values, independently of dirty UI guards. */
+export function serviceSharedNoticeChanged(
+  workspace: ServiceFormWorkspace,
+  locale: Locale,
+  shared: ServiceSharedContent = serviceFormSharedContent(workspace, locale),
+): boolean {
+  const baseline =
+    workspace.model?.shared.content ??
+    serviceFormSharedContent(
+      {
+        ...workspace,
+        shared: workspace.savedShared,
+        locales: {
+          ...workspace.locales,
+          [locale]: {
+            ...workspace.locales[locale],
+            working: overlayForm(
+              workspace.locales[locale].saved,
+              workspace.savedShared,
+            ),
+          },
+        },
+      },
+      locale,
+    );
+  return !serviceFormEqual(shared, baseline);
 }

@@ -17,6 +17,7 @@ import {
   serviceFormEnvelope,
   serviceFormSharedContent,
   serviceFormEqual,
+  serviceSharedNoticeChanged,
 } from "../admin/locale-form-state";
 import { detailToDraft, draftToDetail, moveAt } from "../admin/detail-draft";
 
@@ -340,24 +341,35 @@ test("pruning an unused pending row retains another language's unsaved shared sl
   );
 });
 
-
 test("image ALT is localized draft content and survives shared photo changes and EN refresh", () => {
   const source = envelope();
   source.content.cover_media_id = image1;
   source.content.gallery = [image1, image2];
-  source.content.media_alts = { [image1]: "English cover", [image2]: "Second photo" };
+  source.content.media_alts = {
+    [image1]: "English cover",
+    [image2]: "Second photo",
+  };
   let w = createServiceWorkspace(model(source), category);
-  assert.deepEqual(serviceFormEnvelope(w, "es").content.media_alts, source.content.media_alts);
+  assert.deepEqual(
+    serviceFormEnvelope(w, "es").content.media_alts,
+    source.content.media_alts,
+  );
   assert.equal(serviceLocaleFormDirty(w, "es"), false);
   w = changeServiceForm(w, "es", {
     ...w.locales.es.working,
-    media_alts: { ...w.locales.es.working.media_alts, [image1]: "Fachada en español" },
+    media_alts: {
+      ...w.locales.es.working.media_alts,
+      [image1]: "Fachada en español",
+    },
   });
   assert.equal(serviceFormEnvelope(w, "es").localeMode, "custom");
   assert.equal(serviceLocaleFormDirty(w, "es"), true);
   assert.equal(w.locales.en.working.media_alts?.[image1], "English cover");
   assert.equal(w.locales.pt.working.media_alts?.[image1], "English cover");
-  assert.equal(Object.hasOwn(serviceFormSharedContent(w, "es"), "media_alts"), false);
+  assert.equal(
+    Object.hasOwn(serviceFormSharedContent(w, "es"), "media_alts"),
+    false,
+  );
   w = changeServiceForm(w, "en", {
     ...w.locales.en.working,
     cover_media_id: image2,
@@ -373,12 +385,81 @@ test("image ALT is localized draft content and survives shared photo changes and
   incoming.locales.en.revision++;
   w = applyServiceModel(w, "en", incoming);
   assert.equal(w.locales.es.working.media_alts?.[image1], "Fachada en español");
-  assert.equal(w.locales.fr.working.media_alts?.[image1], "New English description");
-  assert.equal(serviceFormEnvelope(w, "es").content.media_alts?.[image1], "Fachada en español");
+  assert.equal(
+    w.locales.fr.working.media_alts?.[image1],
+    "New English description",
+  );
+  assert.equal(
+    serviceFormEnvelope(w, "es").content.media_alts?.[image1],
+    "Fachada en español",
+  );
 });
 
 test("legacy Services omit ALT maps until an actual description is authored", () => {
   const w = createServiceWorkspace(model(envelope()), category);
-  assert.equal(Object.hasOwn(serviceFormEnvelope(w, "en").content, "media_alts"), false);
+  assert.equal(
+    Object.hasOwn(serviceFormEnvelope(w, "en").content, "media_alts"),
+    false,
+  );
   assert.equal(serviceLocaleFormDirty(w, "en"), false);
+});
+
+test("representation-only price and rating edits do not announce changed shared values", () => {
+  const e = envelope();
+  e.content.price_from = 1000;
+  e.content.rating_tenths = 47;
+  const w = createServiceWorkspace(model(e), category);
+  const changed = changeServiceForm(w, "en", {
+    ...w.locales.en.working,
+    price_from: "10.00",
+    rating: "4.70",
+  });
+  assert.deepEqual(
+    serviceFormSharedContent(changed, "en"),
+    w.model!.shared.content,
+    "the actual saved common payload is unchanged",
+  );
+  assert.equal(
+    serviceSharedNoticeChanged(
+      changed,
+      "en",
+      serviceFormSharedContent(changed, "en"),
+    ),
+    false,
+    "no semantic shared-fields warning for display-only numeric formatting",
+  );
+  assert.equal(
+    serviceLocaleFormDirty(changed, "en"),
+    true,
+    "display edits still require an explicit Save before Publish",
+  );
+});
+
+test("shared save notices reflect actual amount changes, not text-only edits or virgin empty formatting", () => {
+  const e = envelope();
+  e.content.price_from = 1000;
+  e.content.rating_tenths = 47;
+  const w = createServiceWorkspace(model(e), category);
+  const copyOnly = changeServiceForm(w, "en", {
+    ...w.locales.en.working,
+    name: "Changed editorial text",
+  });
+  assert.equal(serviceSharedNoticeChanged(copyOnly, "en"), false);
+  const price = changeServiceForm(w, "en", {
+    ...w.locales.en.working,
+    price_from: "10.01",
+  });
+  assert.equal(serviceSharedNoticeChanged(price, "en"), true);
+  const rating = changeServiceForm(w, "en", {
+    ...w.locales.en.working,
+    rating: "4.8",
+  });
+  assert.equal(serviceSharedNoticeChanged(rating, "en"), true);
+  const virgin = createServiceWorkspace(null, category);
+  const blank = changeServiceForm(virgin, "en", {
+    ...virgin.locales.en.working,
+    price_from: " ",
+    rating: " ",
+  });
+  assert.equal(serviceSharedNoticeChanged(blank, "en"), false);
 });
