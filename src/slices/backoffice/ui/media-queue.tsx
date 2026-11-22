@@ -9,8 +9,13 @@ import {
   useReducer,
   useRef,
   useState,
+  useId,
 } from "react";
 import type { ReactNode } from "react";
+import { createPortal } from "react-dom";
+import type { EditorLocale } from "../page-editor-types";
+import { useToast } from "./toast";
+import { uploadFeedback, uploadFailureCause } from "./editor-feedback-copy";
 import { useTranslations } from "next-intl";
 import { UiIcon, cn } from "@core/ui";
 import { AdminButton } from "./form";
@@ -37,7 +42,7 @@ import { reservationCount, trackReservation } from "./media-busy";
  * ends up pointing at bytes that never arrived.
  */
 
-export type QueueStatus = "queued" | "uploading" | "done" | "failed";
+export type QueueStatus = "queued" | "uploading" | "done" | "failed" | "finalizing";
 
 interface QueueItem {
   id: string;
@@ -48,15 +53,18 @@ interface QueueItem {
   /** 0–100, from real upload progress events. */
   progress: number;
   error?: string;
+  locale?: EditorLocale;
+  entity?: string;
 }
 
 export interface MediaQueueApi {
   /** Queue a picked file against a reserved asset id. Replaces any prior entry for it. */
-  enqueue: (id: string, file: File) => void;
+  enqueue: (id: string, file: File, scope?: { locale: EditorLocale; entity: string }) => void;
   /** Drop a queued file (the editor removed or replaced the field's value). */
   dequeue: (id: string) => void;
   /** Upload selected assets, or all queued assets when omitted. */
-  flush: (ids?: readonly string[]) => Promise<boolean>;
+  flush: (ids?: readonly string[], options?: { locale: EditorLocale; feedback: true }) => Promise<boolean>;
+  errorFor?: (id: string) => string | undefined;
   /** True while anything is still queued — used to guard navigation. */
   hasPending: boolean;
   /** Is this asset's file still waiting to be uploaded? Drives the field's note. */
@@ -129,213 +137,153 @@ function putWithProgress(
 
 export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const t = useTranslations("backoffice");
+  const toast = useToast();
+  const dialogTitle = useId();
   const [items, setItems] = useState<QueueItem[]>([]);
+  const itemsRef = useRef<QueueItem[]>([]);
   const [open, setOpen] = useState(false);
   const [running, setRunning] = useState(false);
+  const runningRef = useRef(false);
   const [activeIds, setActiveIds] = useState<readonly string[] | null>(null);
   const activeIdsRef = useRef<readonly string[] | null>(null);
+  const [feedbackLocale, setFeedbackLocale] = useState<EditorLocale | null>(null);
+  const feedbackLocaleRef = useRef<EditorLocale | null>(null);
+  const [retried, setRetried] = useState(false);
   const [preparing, dispatchPreparing] = useReducer(reservationCount, 0);
-  // The upload loop is async and must always see the current queue, but a ref may not
-  // be written during render — mirror the state into it from an effect instead. Safe
-  // for the loop's purposes: items are enqueued when a file is picked and read when the
-  // form is saved, never within the same commit.
-  const itemsRef = useRef<QueueItem[]>([]);
-  useEffect(() => {
-    itemsRef.current = items;
-  }, [items]);
-
+  const background = useRef<HTMLDivElement>(null);
+  const dialog = useRef<HTMLDivElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
+  const update = useCallback((work: (items: QueueItem[]) => QueueItem[]) => {
+    itemsRef.current = work(itemsRef.current);
+    setItems(itemsRef.current);
+  }, []);
   const patch = useCallback((id: string, next: Partial<QueueItem>) => {
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...next } : i)));
-  }, []);
-
-  const enqueue = useCallback((id: string, file: File) => {
-    setItems((prev) => [
-      ...prev.filter((i) => i.id !== id),
-      { id, name: file.name, file, contentType: pickedFileType(file), status: "queued", progress: 0 },
-    ]);
-  }, []);
-
-  const dequeue = useCallback((id: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
-  }, []);
-
-  /** Upload one item: re-sign (the reservation may have aged out), PUT, finalize. */
-  const uploadItem = useCallback(
-    async (item: QueueItem): Promise<boolean> => {
-      patch(item.id, { status: "uploading", progress: 0, error: undefined });
-      try {
-        // Re-sign against the reserved id: the URL minted when the file was picked may
-        // have expired while the editor kept working.
-        const signed = await presignAdminUpload({
-          id: item.id,
-          filename: item.name,
-          contentType: item.contentType,
-          size: item.file.size,
-        });
-        if (!signed.ok) throw new Error(signed.error);
-
-        await putWithProgress(
-          signed.data.uploadUrl,
-          item.file,
-          {
-            "Content-Type": signed.data.contentType,
-            "Cache-Control": signed.data.cacheControl,
-          },
-          (percent) => patch(item.id, { progress: percent }),
-        );
-
-        const done = await finalizeAdminUpload({ id: item.id, r2Key: signed.data.r2Key });
-        if (!done.ok) throw new Error(done.error);
-        patch(item.id, { status: "done", progress: 100 });
-        return true;
-      } catch (e) {
-        patch(item.id, {
-          status: "failed",
-          error: e instanceof Error ? e.message : t("media.uploadError"),
-        });
-        return false;
-      }
-    },
-    [patch, t],
-  );
-
-  /** Upload every unfinished item, one at a time so progress stays legible. */
-  const run = useCallback(async (): Promise<boolean> => {
-    setRunning(true);
-    let allOk = true;
-    for (const item of itemsRef.current) {
-      if (item.status === "done" || (activeIdsRef.current && !activeIdsRef.current.includes(item.id))) continue;
-      const ok = await uploadItem(item);
-      if (!ok) allOk = false;
+    update(current => current.map(item => item.id === id ? { ...item, ...next } : item));
+  }, [update]);
+  const enqueue = useCallback((id: string, file: File, scope?: { locale: EditorLocale; entity: string }) => {
+    update(current => [...current.filter(item => item.id !== id), {
+      id, name: file.name, file, contentType: pickedFileType(file), status: "queued", progress: 0, ...scope,
+    }]);
+  }, [update]);
+  const dequeue = useCallback((id: string) => update(current => current.filter(item => item.id !== id)), [update]);
+  const uploadItem = useCallback(async (item: QueueItem): Promise<boolean> => {
+    let stage: "presign" | "put" | "finalize" = "presign";
+    patch(item.id, { status: "uploading", progress: 0, error: undefined });
+    try {
+      const signed = await presignAdminUpload({ id: item.id, filename: item.name, contentType: item.contentType, size: item.file.size });
+      if (!signed.ok) throw new Error(signed.error);
+      stage = "put";
+      await putWithProgress(signed.data.uploadUrl, item.file, { "Content-Type": signed.data.contentType, "Cache-Control": signed.data.cacheControl }, percent => patch(item.id, { progress: percent }));
+      stage = "finalize";
+      patch(item.id, { status: "finalizing" });
+      const done = await finalizeAdminUpload({ id: item.id, r2Key: signed.data.r2Key });
+      if (!done.ok) throw new Error(done.error);
+      patch(item.id, { status: "done", progress: 100 });
+      return true;
+    } catch (error) {
+      patch(item.id, { status: "failed", error: feedbackLocaleRef.current ? uploadFailureCause(stage) : error instanceof Error ? error.message : "Upload failed." });
+      return false;
     }
-    setRunning(false);
-    return allOk;
-  }, [uploadItem]);
-
-  const flush = useCallback(async (ids?: readonly string[]): Promise<boolean> => {
-    const selected = ids ? [...new Set(ids)] : null;
+  }, [patch]);
+  const run = useCallback(async (): Promise<boolean> => {
+    if (runningRef.current) return false;
+    runningRef.current = true;
+    setRunning(true);
+    try {
+      const selected = activeIdsRef.current;
+      const outstanding = itemsRef.current.filter(item => item.status !== "done" && (!selected || selected.includes(item.id)));
+      let ok = true;
+      for (const item of outstanding) if (!await uploadItem(item)) ok = false;
+      if (!ok && feedbackLocaleRef.current) {
+        const failed = itemsRef.current.filter(item => item.status === "failed" && (!selected || selected.includes(item.id)));
+        toast.error(uploadFeedback(feedbackLocaleRef.current, failed.map(item => item.name)), { duration: 0 });
+      }
+      return ok;
+    } finally { runningRef.current = false; setRunning(false); }
+  }, [uploadItem, toast]);
+  const close = useCallback(() => {
+    if (runningRef.current) return;
+    setOpen(false);
+    requestAnimationFrame(() => returnFocus.current?.focus());
+  }, []);
+  const flush = useCallback(async (ids?: readonly string[], options?: { locale: EditorLocale; feedback: true }): Promise<boolean> => {
+    if (runningRef.current) return false;
+    const selected = ids ? [...new Set(ids)] : options ? itemsRef.current.filter(item => !item.locale || item.locale === options.locale).map(item => item.id) : null;
     activeIdsRef.current = selected;
     setActiveIds(selected);
-    const outstanding = itemsRef.current.filter((i) => i.status !== "done" && (!selected || selected.includes(i.id)));
-    if (outstanding.length === 0) return true;
+    feedbackLocaleRef.current = options?.locale ?? null;
+    setFeedbackLocale(options?.locale ?? null);
+    setRetried(false);
+    const outstanding = itemsRef.current.filter(item => item.status !== "done" && (!selected || selected.includes(item.id)));
+    if (!outstanding.length) return true;
+    returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setOpen(true);
     const ok = await run();
-    // Nothing left to do on success — drop the modal and let the save continue.
     if (ok) {
       setOpen(false);
-      setItems((current) => selected ? current.filter(item => !selected.includes(item.id)) : []);
+      update(current => selected ? current.filter(item => !selected.includes(item.id)) : []);
     }
     return ok;
-  }, [run]);
-
-  const hasPending = items.some((i) => i.status !== "done");
-
-  // Leaving mid-upload strands the form: the value points at bytes that never landed.
+  }, [run, update]);
+  const hasPending = items.some(item => item.status !== "done");
   useEffect(() => {
     if (!running) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [running]);
-
-  // Read from state, not the ref: this one is called during render.
-  const isQueued = useCallback(
-    (id: string) => items.some((i) => i.id === id && i.status !== "done"),
-    [items],
-  );
-
-  const track = useCallback(
-    <T,>(work: () => Promise<T>): Promise<T> => trackReservation(work, dispatchPreparing),
-    [],
-  );
+  // Inert lasts for the full open cycle, including settled errors and successful Retry.
+  useEffect(() => {
+    if (!open) return;
+    const element = background.current;
+    element?.setAttribute("inert", "");
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    dialog.current?.focus();
+    const trap = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); if (!runningRef.current) close(); return; }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]),[href],input:not([disabled]),[tabindex="0"]') ?? []);
+      const first = focusable[0], last = focusable.at(-1);
+      if (!first) { event.preventDefault(); dialog.current?.focus(); }
+      else if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog.current)) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog.current)) { event.preventDefault(); first.focus(); }
+    };
+    const contain = (event: FocusEvent) => { if (!dialog.current?.contains(event.target as Node)) dialog.current?.focus(); };
+    document.addEventListener("keydown", trap, true);
+    document.addEventListener("focusin", contain);
+    return () => { element?.removeAttribute("inert"); document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", trap, true); document.removeEventListener("focusin", contain); };
+  }, [open, close]);
+  const isQueued = useCallback((id: string) => items.some(item => item.id === id && item.status !== "done"), [items]);
+  const errorFor = useCallback((id: string) => items.find(item => item.id === id)?.error, [items]);
+  const track = useCallback(<T,>(work: () => Promise<T>): Promise<T> => trackReservation(work, dispatchPreparing), []);
   const isPreparing = preparing > 0;
-
-  const api = useMemo<MediaQueueApi>(
-    () => ({ enqueue, dequeue, flush, hasPending, isQueued, track, isPreparing }),
-    [enqueue, dequeue, flush, hasPending, isQueued, track, isPreparing],
-  );
-
+  const api = useMemo<MediaQueueApi>(() => ({ enqueue, dequeue, flush, hasPending, isQueued, errorFor, track, isPreparing }), [enqueue, dequeue, flush, hasPending, isQueued, errorFor, track, isPreparing]);
   const visibleItems = activeIds ? items.filter(item => activeIds.includes(item.id)) : items;
-  const settled = !running && visibleItems.every((i) => i.status === "done" || i.status === "failed");
-  const failed = visibleItems.filter((i) => i.status === "failed");
-
-  return (
-    <MediaQueueContext.Provider value={api}>
-      {children}
-      {open ? (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label={t("media.uploadingTitle")}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4"
-        >
-          <div className="w-full max-w-md rounded-lg border border-line bg-surface p-5 shadow-lg">
-            <h2 className="text-sm font-semibold text-ink">{t("media.uploadingTitle")}</h2>
-            <p className="mt-1 text-xs text-ink-soft">{t("media.uploadingHint")}</p>
-
-            <ul className="mt-4 space-y-3">
-              {visibleItems.map((i) => (
-                <li key={i.id} className="space-y-1">
-                  <div className="flex items-center justify-between gap-3 text-xs">
-                    <span className="truncate text-ink" title={i.name}>
-                      {i.name}
-                    </span>
-                    <span
-                      className={cn(
-                        "shrink-0 font-medium",
-                        i.status === "done" && "text-green-600",
-                        i.status === "failed" && "text-red-600",
-                        i.status !== "done" && i.status !== "failed" && "text-ink-soft",
-                      )}
-                    >
-                      {i.status === "done" ? (
-                        <>
-                          <UiIcon name="check" size={14} className="inline-block align-[-0.125em]" /> {t("media.statusDone")}
-                        </>
-                      ) : i.status === "failed" ? (
-                        <>
-                          <UiIcon name="xmark" size={14} className="inline-block align-[-0.125em]" /> {t("media.statusFailed")}
-                        </>
-                      ) : i.status === "uploading" ? (
-                        `${i.progress}%`
-                      ) : (
-                        t("media.statusQueued")
-                      )}
-                    </span>
-                  </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg">
-                    <div
-                      className={cn(
-                        "h-full rounded-full transition-[width] duration-200",
-                        i.status === "failed" ? "bg-red-500" : "bg-accent",
-                      )}
-                      style={{ width: `${i.status === "done" ? 100 : i.progress}%` }}
-                    />
-                  </div>
-                  {i.error ? <p className="text-xs text-red-600">{i.error}</p> : null}
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-5 flex justify-end gap-2">
-              {settled && failed.length > 0 ? (
-                <AdminButton variant="primary" onClick={() => void run()}>
-                  {t("media.retryFailed")}
-                </AdminButton>
-              ) : null}
-              <AdminButton
-                variant={failed.length > 0 ? "ghost" : "primary"}
-                disabled={!settled}
-                onClick={() => setOpen(false)}
-              >
-                {t("media.close")}
-              </AdminButton>
-            </div>
-          </div>
+  const settled = !running && visibleItems.every(item => item.status === "done" || item.status === "failed");
+  const failed = visibleItems.filter(item => item.status === "failed");
+  const english = feedbackLocale !== null;
+  return <MediaQueueContext.Provider value={api}>
+    <div ref={background} className="contents">{children}</div>
+    {open && typeof document !== "undefined" ? createPortal(<div className="fixed inset-0 z-[110] flex items-center justify-center bg-ink/40 p-4">
+      <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby={dialogTitle} tabIndex={-1} className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg border border-line bg-surface p-5 shadow-lg focus:outline-none">
+        <h2 id={dialogTitle} className="text-sm font-semibold text-ink">{english ? `Upload files (${feedbackLocale.toUpperCase()})` : t("media.uploadingTitle")}</h2>
+        <p className="mt-1 text-xs text-ink-soft" role="status">{english ? failed.length ? `Your ${feedbackLocale.toUpperCase()} draft has not been saved. Retry the failed files, then close this dialog and Save draft.` : retried && settled ? "Uploads completed. Close this dialog, then Save draft. Publish remains a separate action." : "Please wait while the selected files are transferred and finalized." : t("media.uploadingHint")}</p>
+        <ul className="mt-4 space-y-3">{visibleItems.map(item => <li key={item.id} data-upload-status={item.status} className={cn("space-y-1 rounded-md border p-2", item.status === "failed" ? "border-red-600 bg-red-50" : "border-transparent")}>
+          <div className="flex items-center justify-between gap-3 text-xs"><span className="min-w-0 break-words text-ink">{item.name}</span>
+            <span className={cn("shrink-0 font-medium", item.status === "done" ? "text-green-700" : item.status === "failed" ? "text-red-700" : "text-ink-soft")}>
+              {item.status === "done" ? <><UiIcon name="check" size={14} className="inline-block" /> {english ? "Ready" : t("media.statusDone")}</> : item.status === "failed" ? english ? "Failed" : t("media.statusFailed") : item.status === "finalizing" ? english ? "Finalizing…" : `${item.progress}%` : item.status === "uploading" ? `${item.progress}%` : english ? "Queued" : t("media.statusQueued")}
+            </span></div>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg" role="progressbar" aria-label={item.name} aria-valuemin={0} aria-valuemax={100} aria-valuenow={item.progress}><div className={cn("h-full rounded-full transition-[width] duration-200", item.status === "failed" ? "bg-red-600" : "bg-accent")} style={{ width: `${item.progress}%` }} /></div>
+          {item.error ? <p className="text-xs text-red-700" role="alert">{item.error}</p> : null}
+        </li>)}</ul>
+        <div className="mt-5 flex flex-wrap justify-end gap-2">
+          {settled && failed.length ? <AdminButton variant="primary" onClick={() => { setRetried(true); void run(); }}>{english ? "Retry failed uploads" : t("media.retryFailed")}</AdminButton> : null}
+          <AdminButton variant={failed.length ? "ghost" : "primary"} disabled={!settled} onClick={close}>{english ? "Close" : t("media.close")}</AdminButton>
         </div>
-      ) : null}
-    </MediaQueueContext.Provider>
-  );
+      </div>
+    </div>, document.body) : null}
+  </MediaQueueContext.Provider>;
 }
 
 /**

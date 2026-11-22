@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useId, useRef } from "react";
+import { useFeedbackScope } from "./editor-feedback";
 import type {
   ButtonHTMLAttributes,
   InputHTMLAttributes,
@@ -26,6 +30,7 @@ export function Field({
   hint,
   error,
   required,
+  errorPath,
   children,
   className,
 }: {
@@ -34,20 +39,40 @@ export function Field({
   hint?: string;
   error?: string;
   required?: boolean;
+  errorPath?: string;
   children: ReactNode;
   className?: string;
 }) {
+  const scope = useFeedbackScope();
+  const fieldRef = useRef<HTMLDivElement>(null);
+  const unique = useId();
+  const messageId = `${unique}-error`;
+  const actualError = error ?? (errorPath ? scope?.errors?.[errorPath] : undefined);
+  const actualRequired = required ?? Boolean(errorPath && scope?.requiredPaths?.includes(errorPath));
+  useEffect(() => {
+    const controls = fieldRef.current?.querySelectorAll<HTMLElement>('input:not([type="hidden"]),textarea,select,[contenteditable="true"],button');
+    if (!actualError || !controls) return;
+    const previous = [...controls].map(control => ({ control, invalid: control.getAttribute("aria-invalid"), described: control.getAttribute("aria-describedby") }));
+    for (const { control, described } of previous) {
+      control.setAttribute("aria-invalid", "true");
+      control.setAttribute("aria-describedby", [described, messageId].filter(Boolean).join(" "));
+    }
+    return () => { for (const { control, invalid, described } of previous) {
+      if (invalid === null) control.removeAttribute("aria-invalid"); else control.setAttribute("aria-invalid", invalid);
+      if (described === null) control.removeAttribute("aria-describedby"); else control.setAttribute("aria-describedby", described);
+    } };
+  }, [actualError, messageId, children]);
   return (
-    <div className={cn("space-y-1.5", className)}>
+    <div ref={fieldRef} data-feedback-path={errorPath} data-field-invalid={actualError ? true : undefined} className={cn("space-y-1.5", actualError && "[&_input]:border-red-600 [&_textarea]:border-red-600 [&_select]:border-red-600 [&_button]:border-red-600 [&_[contenteditable]]:outline-2 [&_[contenteditable]]:outline-red-600", className)}>
       {label ? (
         <label htmlFor={htmlFor} className="block text-xs font-semibold uppercase tracking-wide text-ink-soft">
           {label}
-          {required ? <span className="ml-0.5 text-accent-deep">*</span> : null}
+          {actualRequired ? <span className="ml-0.5 text-accent-deep">*</span> : null}
         </label>
       ) : null}
       {children}
-      {hint && !error ? <p className="text-xs text-ink-soft/80">{hint}</p> : null}
-      {error ? <p className="text-xs font-medium text-red-600">{error}</p> : null}
+      {hint && !actualError ? <p className="text-xs text-ink-soft/80">{hint}</p> : null}
+      {actualError ? <p id={messageId} className="text-xs font-medium text-red-600">{actualError}</p> : null}
     </div>
   );
 }

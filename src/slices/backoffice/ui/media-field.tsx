@@ -15,6 +15,9 @@ import {
   previewLabelKey,
 } from "./media-accept";
 import { reserveUpload, useMediaQueue } from "./media-queue";
+import { useFeedbackScope } from "./editor-feedback";
+import { useToast } from "./toast";
+import { uploadFailureCause } from "./editor-feedback-copy";
 import { MediaAltField } from "./media-alt-field";
 
 /**
@@ -132,6 +135,8 @@ export function MediaField({
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<AdminMediaPreview | null>(initialPreview ?? null);
   const queue = useMediaQueue();
+  const feedback = useFeedbackScope();
+  const toast = useToast();
 
   const shown = preview && preview.id === value ? preview : null;
 
@@ -145,7 +150,9 @@ export function MediaField({
     // The dialog filter is advisory; refuse a file of the wrong kind before reserving.
     // Canonical type: a `.lottie` usually reports none at all (see `pickedFileType`).
     if (!isAcceptedType(accept, pickedFileType(file))) {
-      setError(t("media.wrongType"));
+      const message = feedback ? `Cannot select this file for ${feedback.locale.toUpperCase()}: choose a supported file type.` : t("media.wrongType");
+      setError(message);
+      if (feedback) toast.error(message, { duration: 0 });
       return;
     }
     setPending(true);
@@ -156,11 +163,13 @@ export function MediaField({
         const { id, preview: local } = await reserveUpload(file);
         // Replacing a pick must not leave the previous file queued for upload.
         if (value) queue.dequeue(value);
-        queue.enqueue(id, file);
+        queue.enqueue(id, file, feedback ?? undefined);
         setPreview(local);
         onChange(id, local);
       } catch (e) {
-        setError(e instanceof Error ? e.message : t("media.uploadError"));
+        const message = feedback ? `Cannot select “${file.name}” for ${feedback.locale.toUpperCase()}. ${uploadFailureCause("presign")}` : e instanceof Error ? e.message : t("media.uploadError");
+        setError(message);
+        if (feedback) toast.error(message, { duration: 0 });
       } finally {
         setPending(false);
       }
@@ -168,7 +177,7 @@ export function MediaField({
   }
 
   return (
-    <div className="space-y-2">
+    <div data-field-invalid={error || (value && queue.errorFor?.(value)) ? true : undefined} className={cn("space-y-2", (error || (value && queue.errorFor?.(value))) && "[&_button]:border-red-600 [&_button]:outline-red-600")} >
       {variant === "gallery" && !value ? (
         <button
           type="button"
@@ -235,7 +244,7 @@ export function MediaField({
         <p className="text-xs text-ink-soft">{t("media.queuedNote")}</p>
       ) : null}
       {editAlt && value && (shown ? shown.mime.startsWith("image/") : accept === "image") ? <MediaAltField mediaId={value} /> : null}
-      {error ? <p className="text-xs font-medium text-red-600">{error}</p> : null}
+      {error || (value && queue.errorFor?.(value)) ? <p role="alert" className="text-xs font-medium text-red-600">{error || (value && queue.errorFor?.(value))}</p> : null}
     </div>
   );
 }
@@ -266,6 +275,8 @@ export function MediaGalleryField({
   const [error, setError] = useState<string | null>(null);
   const [previews, setPreviews] = useState<Record<string, AdminMediaPreview>>(initialPreviews ?? {});
   const queue = useMediaQueue();
+  const feedback = useFeedbackScope();
+  const toast = useToast();
 
   function move(index: number, delta: number) {
     const next = [...value];
@@ -297,7 +308,7 @@ export function MediaGalleryField({
         const added: AdminMediaPreview[] = [];
         for (const file of list) {
           const { id, preview } = await reserveUpload(file);
-          queue.enqueue(id, file);
+          queue.enqueue(id, file, feedback ?? undefined);
           added.push(preview);
         }
         setPreviews((prev) => {
