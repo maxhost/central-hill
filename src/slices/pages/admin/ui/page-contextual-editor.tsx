@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, useId, useEffect, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { RichTextEditor, type PostBody } from "@slices/blog/admin-rich-text-contract";
 import { AdminButton, Field, MediaField, MediaAltProvider, PageEditorShell, TextArea, TextInput, useMediaQueue, type EditorLocale, type AdminMediaPreview } from "@slices/backoffice/contract";
+import { FeedbackScope, EditorFeedbackSummary, feedbackMessage, focusEditorField, useEditorFeedbackToast, type FeedbackGroup, type FeedbackIssue } from "@slices/backoffice/contract-client";
+import { knownPageFieldResolved, pageFeedbackPath } from "../page-feedback";
+import { pageSections } from "../home-contextual";
 import type { EditorialPageKey, PageContentMap, PageEditorialModel, PageLocaleEditorialModel } from "../../editorial-types";
 import { prepareTargetEnvelope, sameEditorialSnapshot } from "../../editorial-content";
 import { homeNode, homeButtonFields, pageFieldLabel, descriptorMediaIds, isEditableFieldPath } from "../home-contextual";
@@ -26,6 +29,7 @@ type LocaleState<K extends EditorialPageKey> = {
   notice: string;
   conflict: boolean;
   previewVersion: number;
+  uncertain?: boolean;
 };
 
 function setValue(root: unknown, path: (string | number)[], value: unknown): unknown {
@@ -45,6 +49,12 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   const t = useTranslations("pages");
   const tb = useTranslations("backoffice");
   const labels = useFieldLabels();
+  const toast = useEditorFeedbackToast();
+  const feedbackId = useId();
+  const entity = `page:${model.descriptor.key}`;
+  const editorRoot = useRef<HTMLDivElement>(null);
+  const [focusRequest, setFocusRequest] = useState<{ locale: EditorLocale; path: string; version: number } | null>(null);
+  const [errorView, setErrorView] = useState<PageEditorView | null>(null);
   // Each tab owns its snapshot and revision. A mutation never reinitializes other tabs.
   const [states, setStates] = useState(() => Object.fromEntries(
     Object.entries(model.locales).map(([key, value]) => [key, {
@@ -76,12 +86,64 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
   const unsavedPage = Object.entries(states).some(([key, value]) =>
     startedLocales.has(key as EditorLocale) && isDirty(value.model),
   ) || Object.keys(localPreviews).some(queue.isQueued);
-  const sections = editorViewSections(descriptor, labels.field, content, view);
+  const sections = editorViewSections(descriptor, labels.field, content, errorView ?? view);
   const matchingSection = sections.find(s => s.id === selection || s.bindings.some(b => b.id === selection));
   const section = matchingSection ?? sections[0]!;
   const selected = matchingSection ? selection : section.id;
 
   const surface = descriptor.sectionPreviews?.[section.id] ?? "page";
+
+  function issueFor(path: string, message: string, ownLocale: EditorLocale): FeedbackIssue {
+    path = pageFeedbackPath(path);
+    const ownContent = states[ownLocale].model.working.content;
+    const candidateSections = pageSections(descriptor, labels.field, ownContent);
+    const target = candidateSections.find(section => section.bindings.some(binding => path === binding.id || path.startsWith(`${binding.id}.`))) ?? candidateSections.find(section => section.id === path.split(".")[0]);
+    const node = homeNode(descriptor.rootNode, path);
+    const source = ownLocale !== "en" && !descriptor.localeIndependentContent && path !== "_source" && path !== "og_image_media_id" && !editorialTextPaths(ownContent, descriptor).includes(path) && !(descriptor.localeReferencePaths ?? []).includes(path);
+    const human = path.startsWith("_") || path === "" ? "Shared source" : path === "og_image_media_id" ? "Social image" : pageFieldLabel(path, labels.field);
+    const itemNumbers = path.split(".").filter(part => /^\d+$/.test(part)).map(part => Number(part) + 1);
+    return { path, label: `${human}${itemNumbers.length ? ` (item ${itemNumbers.join(", ")})` : ""}`, message,
+      section: target?.label, required: Boolean(node?.publishRequired), sourceLocale: source ? "en" : undefined };
+  }
+  const feedbackGroups: FeedbackGroup[] = (["en", "es", "pt", "fr"] as EditorLocale[]).map(ownLocale => {
+    const own = states[ownLocale];
+    const issues = Object.entries(own.errors).map(([path, message]) => issueFor(path, message, ownLocale));
+    const ids = descriptorMediaIds(own.model.working.content, own.model.working.ogImageMediaId, descriptor);
+    for (const failure of queue.failures ?? []) {
+      if (failure.entity !== entity || failure.locale !== ownLocale || !ids.includes(failure.id)) continue;
+      const mediaPath = own.model.working.ogImageMediaId === failure.id ? "og_image_media_id" : findMediaPath(own.model.working.content, failure.id) ?? "_upload";
+      if (!issues.some(issue => issue.path === mediaPath)) issues.push(issueFor(mediaPath, `Could not upload “${failure.name}”. ${failure.error ?? "Retry the upload."}`, ownLocale));
+    }
+    return { locale: ownLocale, issues, notice: own.notice, uncertain: own.uncertain };
+  });
+  function findMediaPath(root: unknown, id: string, prefix = ""): string | null {
+    if (!root || typeof root !== "object") return null;
+    for (const [key, value] of Object.entries(root)) {
+      const path = prefix ? `${prefix}.${key}` : key;
+      if (value === id) return path;
+      const nested = findMediaPath(value, id, path);
+      if (nested) return nested;
+    }
+    return null;
+  }
+  function navigateError(ownLocale: EditorLocale, path: string, explicit = true) {
+    if (busy) return;
+    const issue = feedbackGroups.find(group => group.locale === ownLocale)?.issues.find(issue => issue.path === path) ?? issueFor(path, "", ownLocale);
+    const destination = explicit ? issue?.sourceLocale ?? ownLocale : ownLocale;
+    selectLocale(destination);
+    const candidates = pageSections(descriptor, labels.field, states[destination].model.working.content);
+    const target = candidates.flatMap(section => section.bindings).filter(binding => path === binding.id || path.startsWith(`${binding.id}.`)).sort((a, b) => b.id.length - a.id.length)[0];
+    if (descriptor.key === "blog") setErrorView(path.startsWith("post_aside") ? "blog_article" : "page");
+    setSelected(target?.id ?? (path === "og_image_media_id" ? "seo" : path.split(".")[0]!));
+    setFocusRequest({ locale: destination, path, version: Date.now() });
+  }
+  useEffect(() => {
+    if (!focusRequest || locale !== focusRequest.locale || busy) return;
+    const frame = requestAnimationFrame(() => {
+      focusEditorField(editorRoot.current, focusRequest.path);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [focusRequest, locale, selected, busy]);
 
   function selectLocale(nextLocale: EditorLocale) {
     if (busy) return;
@@ -112,7 +174,12 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     setStartedLocales(previous => previous.has(locale) ? previous : new Set([...previous, locale]));
     setStates(previous => {
       const own = previous[locale];
-      return { ...previous, [locale]: { ...own, notice: "", model: { ...own.model, working: {
+      const nextErrors = { ...own.errors };
+      const changedPath = path.join(".");
+      for (const errorPath of Object.keys(nextErrors)) {
+        if ((errorPath === changedPath || errorPath.startsWith(`${changedPath}.`)) && knownPageFieldResolved(homeNode(descriptor.rootNode, errorPath), changedPath === "body" ? value : errorPath === changedPath ? value : editorialAt(value, errorPath.slice(changedPath.length + 1)), errorPath, Boolean(descriptor.localeIndependentContent), nextErrors[errorPath])) delete nextErrors[errorPath];
+      }
+      return { ...previous, [locale]: { ...own, notice: "", errors: nextErrors, model: { ...own.model, working: {
         ...own.model.working, content: setPageField(own.model.working.content, descriptor.rootNode, path, value) as PageContentMap[K],
       } } } };
     });
@@ -145,41 +212,49 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     });
   }
   async function mutate(action: "save" | "publish") {
-    if (lock.current || busy || model.sourceInvalid || state.conflict) return;
+    if (lock.current || busy || model.sourceInvalid || state.conflict || state.uncertain) return;
     if (action === "publish" && (!state.model.draft || dirty)) return;
+    const attemptLocale = locale;
+    const attemptState = state;
     lock.current = true;
     setOperation(action);
-    patchState(locale, { notice: "", errors: {} });
+    patchState(attemptLocale, { notice: "" });
+    const messageFor = (outcome: "success" | "validation" | "conflict" | "server" | "uncertain" | "no_draft", groups = feedbackGroups, refreshWarning = false) => feedbackMessage({ action, locale: attemptLocale, outcome, groups, refreshWarning });
     try {
-      if (action === "save" && locale === "en" && !await queue.flush()) return;
-      const input = { key: descriptor.key as K, locale, expectedRevision: state.model.revision };
+      if (action === "save" && !await queue.flush(attemptLocale === "en" ? descriptorMediaIds(attemptState.model.working.content, attemptState.model.working.ogImageMediaId, descriptor) : [], { locale: attemptLocale, feedback: true, entity })) {
+        patchState(attemptLocale, { notice: `Your ${attemptLocale.toUpperCase()} draft has not been saved. Retry the upload, then Save draft.` });
+        return;
+      }
+      const input = { key: descriptor.key as K, locale: attemptLocale, expectedRevision: attemptState.model.revision };
       const result = action === "save"
-        ? await savePageDraft({ ...input, templateRevision: state.model.templateRevision, payload: state.model.working })
+        ? await savePageDraft({ ...input, templateRevision: attemptState.model.templateRevision, payload: attemptState.model.working })
         : await publishPageDraft(input);
       if (result.ok) {
-        if (action === "publish" && locale !== "en") setStartedLocales(previous => {
-          const next = new Set(previous);
-          next.delete(locale);
-          return next;
+        if (action === "publish" && attemptLocale !== "en") setStartedLocales(previous => {
+          const next = new Set(previous); next.delete(attemptLocale); return next;
         });
-        patchState(locale, {
-          model: result.model, errors: {}, conflict: false,
-          previewVersion: state.previewVersion + 1,
-          notice: result.refreshWarning ? t("admin.editorial.refreshWarning") : t(action === "save" ? "admin.editorial.draft" : "admin.editorial.published"),
-        });
+        const notice = messageFor("success", feedbackGroups, Boolean(result.refreshWarning));
+        const retainedErrors = action === "publish" ? {} : Object.fromEntries(Object.entries(attemptState.errors).filter(([path, message]) => !knownPageFieldResolved(homeNode(descriptor.rootNode, path), path === "body" || path.startsWith("body.") ? editorialAt(result.model.working.content, "body") : editorialAt(result.model.working.content, path), path, Boolean(descriptor.localeIndependentContent), message)));
+        patchState(attemptLocale, { model: result.model, errors: retainedErrors, conflict: false, uncertain: false, previewVersion: attemptState.previewVersion + 1, notice });
+        if (result.refreshWarning) toast.warning(notice, { duration: 0 }); else toast.success(notice);
       } else if (result.error === "validation") {
-        patchState(locale, { errors: result.fieldErrors, notice: t("admin.validationError") });
-      } else if (result.error === "conflict") {
-        patchState(locale, { conflict: true, notice: t("admin.editorial.conflict") });
+        const errors = { ...attemptState.errors, ...result.fieldErrors };
+        const groups = feedbackGroups.map(group => group.locale === attemptLocale ? { ...group, issues: Object.entries(errors).map(([path, message]) => issueFor(path, message, attemptLocale)) } : group);
+        const notice = messageFor("validation", groups);
+        patchState(attemptLocale, { errors, notice });
+        toast.error(notice, { duration: 0 });
+        const firstPath = Object.keys(result.fieldErrors).find(path => !path.startsWith("_") && !(attemptLocale !== "en" && issueFor(path, "", attemptLocale).sourceLocale === "en"));
+        if (firstPath) navigateError(attemptLocale, firstPath, false);
       } else {
-        patchState(locale, { notice: result.error === "no_draft" ? t("admin.editorial.noDraft") : tb("actions.saveError") });
+        const notice = messageFor(result.error);
+        patchState(attemptLocale, { conflict: result.error === "conflict", notice });
+        toast.error(notice, { duration: 0 });
       }
     } catch {
-      patchState(locale, { notice: tb("actions.saveError") });
-    } finally {
-      setOperation(null);
-      lock.current = false;
-    }
+      const notice = messageFor("uncertain");
+      patchState(attemptLocale, { notice, uncertain: true });
+      toast.warning(notice, { duration: 0 });
+    } finally { setOperation(null); lock.current = false; }
   }
 
   const imageFields = pageImageFields(descriptor.rootNode, content);
@@ -239,14 +314,15 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     {state.errors._source ? <p role="alert" className="text-sm text-ink">{state.errors._source}</p> : null}
     {model.sourceInvalid ? <p role="alert">{t("admin.contextual.sourceInvalid")}</p> : null}
     {locale === "en" || descriptor.localeIndependentContent ? groupContactFields(visible.map(binding => ({ id: binding.id, node: binding.id === "og_image_media_id"
-      ? <Field key={binding.id} label={t("admin.fields.ogImage")} error={state.errors.og_image_media_id}>
+      ? <Field key={binding.id} errorPath="og_image_media_id" label={t("admin.fields.ogImage")} hint={locale !== "en" ? "Managed in English" : undefined} error={state.errors.og_image_media_id}>
           <MediaField value={og} preview={og ? previews[og] ?? null : null} mediaDisabled={locale !== "en"} onChange={(id, preview) => { if (locale !== "en") return; rememberPreview(preview); setStates(previous => {
-            const own = previous.en;
-            return { ...previous, en: { ...own, notice: "", model: { ...own.model, working: { ...own.model.working, ogImageMediaId: id } } } };
+            const own = previous[locale];
+            return { ...previous, [locale]: { ...own, notice: "", model: { ...own.model, working: { ...own.model.working, ogImageMediaId: id } } } };
           }); }} />
         </Field>
       : descriptor.localeIndependentContent && binding.id === "body"
       ? <div key={`${locale}-body`} className="min-w-0" data-page-body-inspector>
+          <p className="mb-2 text-sm font-medium">Body <span className="text-accent-deep">*</span></p>
           <RichTextEditor value={editorialAt(content, "body") as PostBody} onChange={body => change(["body"], body)}
             previews={{}} onPreview={() => {}} errors={state.errors} disabled={busy || Boolean(model.sourceInvalid)}
             localeKey={`${descriptor.key}-${locale}`} textOnly />
@@ -273,7 +349,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
         {groupContactFields(targetPaths.filter(path => !pairedAltPaths.has(path)).map(path => {
           const field = editorialTranslationField(content, path, descriptor);
           const source = String(englishText[field] ?? "");
-          return { id: path, node: <Field key={`${locale}-${field}`} label={pageFieldLabel(path, labels.field)} error={state.errors[path]}>
+          return { id: path, node: <Field key={`${locale}-${field}`} errorPath={path} required={Boolean(homeNode(descriptor.rootNode, path)?.publishRequired)} label={pageFieldLabel(path, labels.field)} error={state.errors[path]}>
             <p className="mb-2 text-xs text-ink-soft">EN: {source}</p>
             {((descriptor.key === "home" && (path.endsWith(".url") || path.endsWith(".cta_url"))) || (["guest", "services"].includes(descriptor.key) && path === "hero.cta_url"))
               ? <TextInput type="url" value={String(editorialAt(content, path) ?? "")} onChange={event => change(path.split("."), event.target.value)} />
@@ -282,7 +358,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
         }))}
       </>}
   </fieldset></MediaAltProvider>;
-  return <PageEditorShell adapter={{
+  return <FeedbackScope locale={locale} entity={entity} errors={state.errors}><div ref={editorRoot}><PageEditorShell adapter={{
     pageNavigation: <PageNavigation currentKey={descriptor.key} view={view} hasUnsavedChanges={unsavedPage} busy={busy} onLeave={() => {
       // These previews/queued files belong to this page, never to the destination.
       // Discard only local bytes; saved media and drafts are untouched.
@@ -294,20 +370,24 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
       }
     }} />,
     title: view === "blog_article" ? t("admin.blogEditors.articleTitle") : descriptor.title, sections, seoSectionId: view === "blog_article" ? undefined : "seo", selectedId: section.selectAsGroup ? section.id : selected, onSelect: setSelected,
-    locale, onLocaleChange: selectLocale, previewUrl: `/admin/preview/${descriptor.key}?locale=${locale}&surface=${surface}`,
+    locale, feedbackGroups, feedbackId, feedback: <EditorFeedbackSummary id={feedbackId} groups={feedbackGroups} onNavigate={navigateError} />, onLocaleChange: selectLocale, previewUrl: `/admin/preview/${descriptor.key}?locale=${locale}&surface=${surface}`,
     previewVersion: state.previewVersion * 2 + (surface === "shared_aside" ? 1 : 0), previewPayload, dirty, busy,
     previewDialog: descriptor.key === "guest" ? {
       bindingId: "dual_cta.owner.contact.title", open: contactPreviewOpen && section.id === "dual_cta", onOpenChange: setContactPreviewOpen,
     } : undefined,
     editorialState: `${locale.toUpperCase()} · ${t(dirty ? "admin.editorial.unsaved" : state.model.draft ? "admin.editorial.draft" : "admin.editorial.published")}`,
     status: <span>{t("admin.editorial.livePreview")}</span>, inspector,
-    actions: <div className="flex flex-wrap gap-2">
-      <AdminButton disabled={busy || state.conflict || model.sourceInvalid} onClick={() => void mutate("save")}>
-        {t(operation === "save" ? "admin.editorial.savingDraft" : "admin.editorial.saveDraft")}
+    actions: <div className="space-y-2"><div className="flex flex-wrap gap-2">
+      <AdminButton disabled={busy || state.conflict || state.uncertain || model.sourceInvalid} onClick={() => void mutate("save")}>
+        {operation === "save" ? "Saving…" : `Save draft (${locale.toUpperCase()})`}
       </AdminButton>
-      <AdminButton disabled={busy || state.conflict || model.sourceInvalid || !state.model.draft || dirty} onClick={() => void mutate("publish")}>
-        {t(operation === "publish" ? "admin.editorial.publishing" : "admin.editorial.publish")}
+      <AdminButton disabled={busy || state.conflict || state.uncertain || model.sourceInvalid || !state.model.draft || dirty} onClick={() => void mutate("publish")}>
+        {operation === "publish" ? "Publishing…" : `Publish (${locale.toUpperCase()})`}
       </AdminButton>
+    </div><p className="text-xs text-ink-soft">Only the selected language is published.</p>
+      {dirty || !state.model.draft ? <p className="text-xs text-ink-soft">Save your changes before publishing.</p> : null}
+      <p className="text-xs text-ink-soft">* Required to publish. You can save an incomplete draft.</p>
+      {state.conflict || state.uncertain ? <AdminButton onClick={() => { if (window.confirm("Reload the latest version? Your unsaved edits will be lost.")) window.location.reload(); }}>Reload the latest version</AdminButton> : null}
     </div>,
-  }} />;
+  }} /></div></FeedbackScope>;
 }

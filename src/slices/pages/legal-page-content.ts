@@ -41,8 +41,8 @@ export function legalPageDescriptor(key: LegalPageKey): PageEditorialDescriptor 
   return {
     key, title: legalPageTitles[key], publicPath: legalPagePaths[key], localeIndependentContent: true,
     rootNode: { kind: "object", fields: [
-      { key: "title", node: { kind: "string", multiline: false, optional: false } },
-      { key: "body", node: { kind: "string", multiline: true, optional: false } },
+      { key: "title", node: { kind: "string", multiline: false, optional: false, publishRequired: true } },
+      { key: "body", node: { kind: "string", multiline: true, optional: false, publishRequired: true } },
       { key: "seo", node: { kind: "object", fields: [
         { key: "meta_title", node: { kind: "string", multiline: false, optional: false } },
         { key: "meta_description", node: { kind: "string", multiline: true, optional: false } },

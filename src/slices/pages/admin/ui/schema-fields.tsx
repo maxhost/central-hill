@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useFeedbackScope } from "@slices/backoffice/contract-client";
 import { UiIcon } from "@core/ui";
 import {
   type AdminMediaPreview,
@@ -100,7 +101,9 @@ export function NodeField(props: RenderProps) {
     previews,
     options,
   } = props;
+  const feedback = useFeedbackScope();
   const errorKey = path.join(".");
+  const required = feedback ? Boolean(node.publishRequired) : ("optional" in node ? !node.optional : false);
   const controlId = `page-field-${encodeURIComponent(pageKey ?? "page")}-${path.map((part) => encodeURIComponent(String(part))).join(".")}`;
   const labels = useFieldLabels();
   const t = useTranslations("pages");
@@ -178,7 +181,7 @@ export function NodeField(props: RenderProps) {
     const canRemove = items.length > node.min;
     const itemLabel = labels.item(path, label);
     return (
-      <div className="space-y-3">
+      <div data-feedback-path={errorKey} className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
           {label}
         </p>
@@ -263,8 +266,8 @@ export function NodeField(props: RenderProps) {
   if (node.kind === "media") {
     const id = typeof value === "string" && value ? value : null;
     return (
-      <Field label={label} hint={hint} error={errors[errorKey]}>
-        <div role="group" aria-label={label} aria-describedby={errors[errorKey] || hint ? `${controlId}-description` : undefined}>
+      <Field errorPath={errorKey} required={required} label={label} hint={hint} error={errors[errorKey]}>
+        <div id={controlId} role="group" tabIndex={-1} aria-label={label} aria-describedby={errors[errorKey] || hint ? `${controlId}-description` : undefined}>
           {errors[errorKey] || hint ? <span id={`${controlId}-description`} className="sr-only">{errors[errorKey] || hint}</span> : null}
           <MediaField
             value={id}
@@ -280,7 +283,7 @@ export function NodeField(props: RenderProps) {
 
   if (node.kind === "icon") {
     return (
-      <Field label={label} htmlFor={controlId} required={!node.optional} error={errors[errorKey]}>
+      <Field errorPath={errorKey} label={label} htmlFor={controlId} required={required} error={errors[errorKey]}>
         <IconField
           id={controlId}
           value={typeof value === "string" ? value : ""}
@@ -295,7 +298,7 @@ export function NodeField(props: RenderProps) {
     const opts = options[node.source] ?? [];
     const val = typeof value === "string" ? value : "";
     return (
-      <Field label={label} htmlFor={controlId} hint={hint} error={errors[errorKey]}>
+      <Field errorPath={errorKey} label={label} htmlFor={controlId} hint={hint} error={errors[errorKey]}>
         <Select
           id={controlId}
           aria-invalid={Boolean(errors[errorKey])}
@@ -318,7 +321,7 @@ export function NodeField(props: RenderProps) {
   }
 
   if (pageKey === "about" && path[0] === "contact" && path.at(-1) === "destination") {
-    return <Field label={label} htmlFor={controlId} error={errors[errorKey]} required>
+    return <Field errorPath={errorKey} label={label} htmlFor={controlId} error={errors[errorKey]} required={feedback ? Boolean(node.publishRequired) : true}>
       <Select id={controlId} value={typeof value === "string" ? value : ""}
         aria-invalid={Boolean(errors[errorKey])} aria-description={errors[errorKey]}
         onChange={(event) => onChange(path, event.target.value)}>
@@ -330,7 +333,7 @@ export function NodeField(props: RenderProps) {
   // string
   const str = typeof value === "string" ? value : "";
   return (
-    <Field label={label} htmlFor={controlId} hint={hint} required={!node.optional} error={errors[errorKey]}>
+    <Field errorPath={errorKey} label={label} htmlFor={controlId} hint={hint} required={required} error={errors[errorKey]}>
       {node.multiline ? (
         <TextArea
           id={controlId}

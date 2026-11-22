@@ -8,6 +8,7 @@ import type {
   PageEnvelope,
   PageLocaleEditorialModel,
 } from "../editorial-types";
+import { withFeedbackRules } from "./form-model";
 import { getEditorialAdapter } from "../server/editorial-adapters";
 import { getPageEditModel } from "./queries";
 import {
@@ -77,7 +78,7 @@ export async function getEditorialEditModel<K extends EditorialPageKey>(
     };
   return {
     ...model,
-    descriptor: adapter.descriptor,
+    descriptor: { ...adapter.descriptor, rootNode: withFeedbackRules(adapter.descriptor.rootNode, adapter.publishSchema) },
     sourceInvalid: rows.length === 4 ? false : model.sourceInvalid,
     previews,
     data: locales.en.working.content,

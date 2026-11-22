@@ -21,7 +21,7 @@ export type { MediaAccept };
  * stays in the form state and is submitted unchanged on save.
  */
 
-export type FieldNode =
+export type FieldNode = (
   | { kind: "object"; fields: { key: string; node: FieldNode }[] }
   | { kind: "array"; element: FieldNode; min: number; max: number; fixedOrder?: boolean }
   | { kind: "media"; accept: MediaAccept; hint?: string; optional?: true }
@@ -38,7 +38,7 @@ export type FieldNode =
   | { kind: "boolean"; hint?: string }
   | { kind: "string"; multiline: boolean; optional: boolean; hint?: string; choices?: string[] }
   /** Not rendered; its value round-trips untouched (`node` = what it would have been). */
-  | { kind: "hidden"; node: FieldNode; preserve?: boolean };
+  | { kind: "hidden"; node: FieldNode; preserve?: boolean }) & { publishRequired?: boolean; feedbackRules?: { min?: number; max?: number; pattern?: string; format?: string; protocolPattern?: string } };
 
 function isMediaAccept(v: unknown): v is MediaAccept {
   return typeof v === "string" && (MEDIA_ACCEPTS as readonly string[]).includes(v);
@@ -155,6 +155,33 @@ export function describe(schema: z.ZodType, key = ""): FieldNode {
     return unwrap(schema).base instanceof z.ZodRecord
       ? { kind: "hidden", node, preserve: true }
       : { kind: "hidden", node };
+  }
+
+  return node;
+}
+
+/** Explicit editor-feedback metadata; the legacy describe() contract stays unchanged. */
+export function withFeedbackRules(node: FieldNode, schema: z.ZodType): FieldNode {
+  const base = unwrap(schema).base;
+  if (node.kind === "object" && base instanceof z.ZodObject) return { ...node, fields: node.fields.map(field => ({ ...field, node: base.shape[field.key] ? withFeedbackRules(field.node, base.shape[field.key]) : field.node })) };
+  if (node.kind === "array" && base instanceof z.ZodArray) return { ...node, element: withFeedbackRules(node.element, base.element as z.ZodType) };
+  if (!["object", "array", "hidden", "boolean"].includes(node.kind)) {
+    const base = unwrap(schema).base;
+    const rules: { min?: number; max?: number; pattern?: string; format?: string; protocolPattern?: string } = {};
+    if (base.def.type === "string") {
+      const stringBase = base as z.ZodString;
+      const stringDef = base.def as typeof base.def & { format?: string; protocol?: RegExp };
+      if (stringDef.format) rules.format = stringDef.format;
+      if (stringDef.protocol) rules.protocolPattern = stringDef.protocol.source;
+      if (stringBase.minLength != null) rules.min = stringBase.minLength;
+      if (stringBase.maxLength != null) rules.max = stringBase.maxLength;
+      for (const check of (base.def.checks ?? [])) {
+        const def = (check as { _zod?: { def?: { format?: string; pattern?: RegExp } } })._zod?.def;
+        if (def?.format) rules.format = def.format;
+        if (def?.pattern) rules.pattern = def.pattern.source;
+      }
+    }
+    return { ...node, publishRequired: node.publishRequired ?? (!schema.safeParse("").success && !schema.safeParse(undefined).success), feedbackRules: rules };
   }
   return node;
 }
