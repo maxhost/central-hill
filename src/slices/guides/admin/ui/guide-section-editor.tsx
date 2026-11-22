@@ -106,7 +106,15 @@ export function GuideSectionEditor({
         />
         <p className="text-xs text-ink-soft">{t("moduleInherited")}</p>
         <p className="text-xs text-ink-soft">{editorial("sharedHint")}</p>
-        <div id={`${section.id}-presentation`} className="space-y-4">
+        <div
+          id={`${section.id}-presentation`}
+          role="group"
+          aria-label="Section content"
+          aria-describedby={
+            errors.presentation ? `${section.id}-presentation-error` : undefined
+          }
+          className={`space-y-4 ${errors.presentation ? "rounded-md border border-red-600 p-3" : ""}`}
+        >
           {errors.presentation ? (
             <p
               id={`${section.id}-presentation-error`}

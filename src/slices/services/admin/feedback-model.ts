@@ -27,6 +27,7 @@ const labels: Record<string, string> = {
   enquiry_form_id: "Enquiry form — managed in EN",
   _source: "Shared source — managed in EN",
   _form: "Service",
+  _shared: "Shared fields — managed in EN",
   facts: "Key facts",
   title: "Title",
   icon: "Icon — managed in EN",

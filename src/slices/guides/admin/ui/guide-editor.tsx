@@ -741,6 +741,7 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
               id={`${prefix}-feedback`}
               groups={groups}
               onNavigate={(target, path) => {
+                if (busy) return;
                 const issue = groups
                   .find((group) => group.locale === target)
                   ?.issues.find((issue) => issue.path === path);
