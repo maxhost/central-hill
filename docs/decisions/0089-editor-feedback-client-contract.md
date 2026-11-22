@@ -1,6 +1,6 @@
 # ADR 0089 — Explicit editor feedback and client contract
 
-2026-11-22. Status: implementation candidate; independent acceptance pending.
+2026-11-22. Status: accepted for the isolated local candidate after independent QA. Main integration, push and deployment remain unauthorized.
 
 The Pages, Guide, Service and Blog Post editors need consistent English feedback for Save draft, Publish and uploads, while preserving each domain's draft/publication contract. The existing backoffice contract also exports server entry points. A shared feedback component must not pull those entry points into client code.
 

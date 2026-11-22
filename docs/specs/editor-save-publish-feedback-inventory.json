@@ -5,7 +5,7 @@
   "f03Total": 97,
   "pages": {
     "pages": 12,
-    "leafFields": 417,
+    "leafFields": 416,
     "requiredLeafRules": 25,
     "byPage": {
       "home": 5,
@@ -2236,24 +2236,6 @@
         "validation": "publishSchema leaf.safeParse(\"\")",
         "requiredPhase": "Publish only",
         "e2e": "F03-P-owners-plans.helpers[].cta.label",
-        "uiEvidence": "Clear the actual control, attempt allowed Save/Publish according to phase, verify red field and focus; correct and Save\u2192Publish."
-      },
-      {
-        "id": "P-owners-plans.helpers[].cta.url",
-        "page": "owners",
-        "path": "plans.helpers[].cta.url",
-        "label": "Button URL (each item)",
-        "section": "Plans",
-        "control": "[data-feedback-path=\"plans.helpers.0.cta.url\"] input,textarea,select,button",
-        "required": false,
-        "condition": "Each existing or added list item; cardinality guarded by list controls",
-        "saveEffect": "locale draft only",
-        "source": "publishSchema leaf.safeParse(\"\")",
-        "editable": "EN shared controls; target text patterns/reference paths only",
-        "saveRequirement": false,
-        "validation": "publishSchema leaf.safeParse(\"\")",
-        "requiredPhase": "Publish only",
-        "e2e": "F03-P-owners-plans.helpers[].cta.url",
         "uiEvidence": "Clear the actual control, attempt allowed Save/Publish according to phase, verify red field and focus; correct and Save\u2192Publish."
       },
       {
@@ -7985,10 +7967,11 @@
       "Array repetitions share an identical leaf validator/renderer; each template integration remains required.",
       "Fixed array cardinality/boolean/enum shape are structural, not a requirement to invent blank values.",
       "Legal Title is an object refinement requirement added below, independent whole documents each locale.",
-      "25 F03 rule patterns after QA review: optional enum About destination and optional Owners helper URL excluded because undefined is valid. Source schema still validates nonempty active optional values.",
+      "25 F03 rule patterns after QA review. Optional About destination is not a blank-field requirement; Owners helper URL is adminHidden and is excluded from active UI inventory. Visible optional values retain their schema format rules.",
       "All legal body nested text-block validators share Blog rich-body architecture and have their own focused rule cases in inventory B; legal Title/Body group remain separate F03.",
       "No cross-locale multiply: ENshared nontext requirements verified source controls and target inherited read-only integration; legal Title/Body verified own target as separate contract.",
-      "Fixed list requirement and boolean/enum shape guards are structural; not counted as empty-field F03. No new business rule or HTML required introduced."
+      "Fixed list requirement and boolean/enum shape guards are structural; not counted as empty-field F03. No new business rule or HTML required introduced.",
+      "416 active scalar/icon/media leaf patterns use the original inventory scope. Six booleans and three atomic legal Body controls are tracked by their structural/contract cases; twelve external OG controls and three Forms selectors use explicit integration evidence. Dynamic media alternative text follows its active media control. This is not a claim that those separately scoped controls are absent."
     ],
     "structuralGroups": [
       {
@@ -8238,6 +8221,15 @@
         "max": 8,
         "kind": "bounded variable-list guard",
         "test": "UI Add/Remove guards + focal schema exact count; no synthetic blank checkbox requirement"
+      }
+    ],
+    "visibilityExclusions": [
+      {
+        "page": "owners",
+        "path": "plans.helpers[].cta.url",
+        "reason": "adminHidden(url).optional; descriptor metadata traverses wrappers; not mounted in either Page editor",
+        "source": "src/slices/pages/schemas/owners.ts:35,76",
+        "effect": "Remove one incorrectly listed optional leaf pattern: 417 to 416; all 25 F03 requirements unchanged. F06 invalid optional URL is exercised by Guest hero.cta_url."
       }
     ]
   },
