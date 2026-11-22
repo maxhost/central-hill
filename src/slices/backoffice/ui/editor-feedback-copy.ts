@@ -24,13 +24,27 @@ export function feedbackMessage({ action, locale, outcome, groups = [], refreshW
   const count = own.length;
   return `Cannot ${action} ${language}: fix ${count || "the"} ${count === 1 ? "error" : "errors"} in ${language}.${first ? ` First: ${language} → ${first.section ? `${first.section} → ` : ""}${first.label}.` : ""}${others.length ? ` Other known errors: ${others.join(", ")}.` : ""}`;
 }
-export function uploadFeedback(locale: EditorLocale, names: readonly string[], selectedLocales: readonly (EditorLocale | undefined)[] = []): string {
+/** Known field errors only: file failures are described separately, never added as new counts. */
+export function withOtherKnownErrors(message: string, locale: EditorLocale, groups: readonly FeedbackGroup[] = []): string {
+  const fieldsByLocale = new Map<EditorLocale, Set<string>>();
+  for (const group of groups) {
+    if (group.locale === locale) continue;
+    for (const issue of group.issues) {
+      const fields = fieldsByLocale.get(group.locale) ?? new Set<string>();
+      fields.add(issue.path);
+      fieldsByLocale.set(group.locale, fields);
+    }
+  }
+  const counts = [...fieldsByLocale].filter(([, paths]) => paths.size).map(([key, paths]) => `${key.toUpperCase()} (${paths.size})`);
+  return `${message}${counts.length ? ` Other known errors: ${counts.join(", ")}.` : ""}`;
+}
+export function uploadFeedback(locale: EditorLocale, names: readonly string[], selectedLocales: readonly (EditorLocale | undefined)[] = [], knownGroups: readonly FeedbackGroup[] = []): string {
   const mixedOrigins = selectedLocales.some(selected => selected !== undefined && selected !== locale);
   const files = names.map((name, index) => {
     const origin = selectedLocales[index];
     return `“${name}”${mixedOrigins && origin ? ` (selected in ${origin.toUpperCase()}; required for this ${locale.toUpperCase()} draft)` : ""}`;
   });
-  return `Could not upload ${files.join(", ")} for ${locale.toUpperCase()}. Your ${locale.toUpperCase()} draft has not been saved. Retry the upload.`;
+  return withOtherKnownErrors(`Could not upload ${files.join(", ")} for ${locale.toUpperCase()}. Your ${locale.toUpperCase()} draft has not been saved. Retry the upload.`, locale, knownGroups);
 }
 
 /** Avoid exposing storage responses (signed URLs, headers, stacks) in the editor. */

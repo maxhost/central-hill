@@ -116,6 +116,8 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     }
     return { locale: ownLocale, issues, notice: own.notice, uncertain: own.uncertain };
   });
+  // Upload feedback receives known field errors only, not queue failures merged into the UI summary.
+  const rawFeedbackGroups = feedbackGroups.map(group => ({ ...group, issues: Object.entries(states[group.locale].errors).map(([path, message]) => issueFor(path, message, group.locale)) }));
   function findMediaPath(root: unknown, id: string, prefix = ""): string | null {
     if (!root || typeof root !== "object") return null;
     for (const [key, value] of Object.entries(root)) {
@@ -221,7 +223,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     patchState(attemptLocale, { notice: "" });
     const messageFor = (outcome: "success" | "validation" | "conflict" | "server" | "uncertain" | "no_draft", groups = feedbackGroups, refreshWarning = false) => feedbackMessage({ action, locale: attemptLocale, outcome, groups, refreshWarning });
     try {
-      if (action === "save" && !await queue.flush(attemptLocale === "en" ? descriptorMediaIds(attemptState.model.working.content, attemptState.model.working.ogImageMediaId, descriptor) : [], { locale: attemptLocale, feedback: true, entity })) {
+      if (action === "save" && !await queue.flush(attemptLocale === "en" ? descriptorMediaIds(attemptState.model.working.content, attemptState.model.working.ogImageMediaId, descriptor) : [], { locale: attemptLocale, feedback: true, entity, knownGroups: rawFeedbackGroups })) {
         patchState(attemptLocale, { notice: `Your ${attemptLocale.toUpperCase()} draft has not been saved. Retry the upload, then Save draft.` });
         return;
       }
@@ -358,7 +360,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
         }))}
       </>}
   </fieldset></MediaAltProvider>;
-  return <FeedbackScope locale={locale} entity={entity} errors={state.errors}><div ref={editorRoot}><PageEditorShell adapter={{
+  return <FeedbackScope locale={locale} entity={entity} errors={state.errors} knownGroups={rawFeedbackGroups}><div ref={editorRoot}><PageEditorShell adapter={{
     pageNavigation: <PageNavigation currentKey={descriptor.key} view={view} hasUnsavedChanges={unsavedPage} busy={busy} onLeave={() => {
       // These previews/queued files belong to this page, never to the destination.
       // Discard only local bytes; saved media and drafts are untouched.

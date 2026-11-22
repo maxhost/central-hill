@@ -15,7 +15,7 @@ import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { EditorLocale } from "../page-editor-types";
 import { useToast } from "./toast";
-import { uploadFeedback, uploadFailureCause } from "./editor-feedback-copy";
+import { uploadFeedback, uploadFailureCause, type FeedbackGroup } from "./editor-feedback-copy";
 import { useTranslations } from "next-intl";
 import { UiIcon, cn } from "@core/ui";
 import { AdminButton } from "./form";
@@ -63,7 +63,7 @@ export interface MediaQueueApi {
   /** Drop a queued file (the editor removed or replaced the field's value). */
   dequeue: (id: string) => void;
   /** Upload selected assets, or all queued assets when omitted. */
-  flush: (ids?: readonly string[], options?: { locale: EditorLocale; feedback: true; entity?: string }) => Promise<boolean>;
+  flush: (ids?: readonly string[], options?: { locale: EditorLocale; feedback: true; entity?: string; knownGroups?: FeedbackGroup[] }) => Promise<boolean>;
   errorFor?: (id: string) => string | undefined;
   failures?: readonly { id: string; name: string; locale?: EditorLocale; entity?: string; error?: string }[];
   /** True while anything is still queued — used to guard navigation. */
@@ -150,6 +150,7 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const activeIdsRef = useRef<readonly string[] | null>(null);
   const [feedbackLocale, setFeedbackLocale] = useState<EditorLocale | null>(null);
   const feedbackLocaleRef = useRef<EditorLocale | null>(null);
+  const knownGroupsRef = useRef<FeedbackGroup[]>([]);
   const [retried, setRetried] = useState(false);
   const [preparing, dispatchPreparing] = useReducer(reservationCount, 0);
   const background = useRef<HTMLDivElement>(null);
@@ -199,7 +200,7 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
       if (!ok && feedbackLocaleRef.current) {
         const failed = itemsRef.current.filter(item => item.status === "failed" && (!selected || selected.includes(item.id)));
         if (lastUploadToast.current) toast.dismiss(lastUploadToast.current);
-        lastUploadToast.current = toast.error(uploadFeedback(feedbackLocaleRef.current, failed.map(item => item.name), failed.map(item => item.locale)), { duration: 0 });
+        lastUploadToast.current = toast.error(uploadFeedback(feedbackLocaleRef.current, failed.map(item => item.name), failed.map(item => item.locale), knownGroupsRef.current), { duration: 0 });
       }
       return ok;
     } finally { runningRef.current = false; setRunning(false); }
@@ -209,12 +210,13 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
     setOpen(false);
     requestAnimationFrame(() => returnFocus.current?.focus());
   }, []);
-  const flush = useCallback(async (ids?: readonly string[], options?: { locale: EditorLocale; feedback: true; entity?: string }): Promise<boolean> => {
+  const flush = useCallback(async (ids?: readonly string[], options?: { locale: EditorLocale; feedback: true; entity?: string; knownGroups?: FeedbackGroup[] }): Promise<boolean> => {
     if (runningRef.current) return false;
     const selected = ids ? [...new Set(ids)] : options ? itemsRef.current.filter(item => (!item.locale || item.locale === options.locale) && (!options.entity || item.entity === options.entity)).map(item => item.id) : null;
     activeIdsRef.current = selected;
     setActiveIds(selected);
     feedbackLocaleRef.current = options?.locale ?? null;
+    knownGroupsRef.current = (options?.knownGroups ?? []).map(group => ({ ...group, issues: group.issues.map(issue => ({ ...issue })) }));
     setFeedbackLocale(options?.locale ?? null);
     setRetried(false);
     const outstanding = itemsRef.current.filter(item => item.status !== "done" && (!selected || selected.includes(item.id)));

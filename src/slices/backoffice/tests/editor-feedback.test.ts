@@ -47,3 +47,21 @@ test("same-locale upload copy remains compatible and unknown origins are not inv
   assert.match(mixed, /known.png” \(selected in EN/);
   assert.doesNotMatch(mixed, /unknown.png” \(selected/);
 });
+test("upload errors aggregate other known languages without counting duplicate field paths", () => {
+  const duplicateGroups: FeedbackGroup[] = [
+    ...groups,
+    { locale: "en", issues: [{ path: "title", label: "Title", message: "The same known error." }] },
+    { locale: "pt", issues: [{ path: "body", label: "Body", message: "Enter text." }, { path: "body", label: "Body", message: "Duplicate representation." }] },
+  ];
+  const message = uploadFeedback("es", ["spanish.png"], ["es"], duplicateGroups);
+  assert.match(message, /Other known errors: EN \(1\), PT \(2\), FR \(1\)/);
+  assert.doesNotMatch(message, /ES \(/);
+  assert.equal((message.match(/EN \(1\)/g) ?? []).length, 1);
+});
+test("mixed-origin upload failures preserve origin and known-field context separately", () => {
+  const message = uploadFeedback("es", ["english.png", "spanish.png"], ["en", "es"], groups);
+  assert.match(message, /english.png.*selected in EN; required for this ES draft/);
+  assert.match(message, /spanish.png.*selected in ES; required for this ES draft/);
+  assert.match(message, /Other known errors: EN \(1\), PT \(1\), FR \(1\)/);
+  assert.doesNotMatch(message, /EN \(2\)/, "File failure is not added to known-field counts");
+});

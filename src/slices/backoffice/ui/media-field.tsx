@@ -17,7 +17,7 @@ import {
 import { reserveUpload, useMediaQueue } from "./media-queue";
 import { useFeedbackScope } from "./editor-feedback";
 import { useToast } from "./toast";
-import { uploadFailureCause } from "./editor-feedback-copy";
+import { uploadFailureCause, withOtherKnownErrors } from "./editor-feedback-copy";
 import { MediaAltField } from "./media-alt-field";
 
 /**
@@ -154,7 +154,7 @@ export function MediaField({
     if (!isAcceptedType(accept, pickedFileType(file))) {
       const message = feedback ? `Cannot select this file for ${feedback.locale.toUpperCase()}: choose a supported file type.` : t("media.wrongType");
       setError(message);
-      if (feedback) toast.error(message, { duration: 0 });
+      if (feedback) toast.error(withOtherKnownErrors(message, feedback.locale, feedback.knownGroups), { duration: 0 });
       return;
     }
     setPending(true);
@@ -171,7 +171,7 @@ export function MediaField({
       } catch (e) {
         const message = feedback ? `Cannot select “${file.name}” for ${feedback.locale.toUpperCase()}. ${uploadFailureCause("presign")}` : e instanceof Error ? e.message : t("media.uploadError");
         setError(message);
-        if (feedback) toast.error(message, { duration: 0 });
+        if (feedback) toast.error(withOtherKnownErrors(message, feedback.locale, feedback.knownGroups), { duration: 0 });
       } finally {
         setPending(false);
       }
@@ -309,7 +309,7 @@ export function MediaGalleryField({
     if (list.some((f) => !isAcceptedType(accept, pickedFileType(f)))) {
       const message = feedback ? `Cannot select these files for ${feedback.locale.toUpperCase()}: choose supported file types.` : t("media.wrongType");
       setError(message);
-      if (feedback) toast.error(message, { duration: 0 });
+      if (feedback) toast.error(withOtherKnownErrors(message, feedback.locale, feedback.knownGroups), { duration: 0 });
       return;
     }
     setError(null);
@@ -328,7 +328,7 @@ export function MediaGalleryField({
       } catch (error) {
         const message = feedback ? `Cannot select “${failedName}” for ${feedback.locale.toUpperCase()}. ${uploadFailureCause("presign")}` : error instanceof Error ? error.message : t("media.uploadError");
         setError(message);
-        if (feedback) toast.error(message, { duration: 0 });
+        if (feedback) toast.error(withOtherKnownErrors(message, feedback.locale, feedback.knownGroups), { duration: 0 });
       } finally {
         if (added.length) {
           setPreviews(previous => ({ ...previous, ...Object.fromEntries(added.map(preview => [preview.id, preview])) }));

@@ -5,7 +5,7 @@ import { useToast, type ToastApi, type ToastOptions } from "./toast";
 import type { FeedbackGroup } from "./editor-feedback-copy";
 export { feedbackMessage } from "./editor-feedback-copy";
 export type { FeedbackIssue, FeedbackGroup, FeedbackAction, FeedbackOutcome, FeedbackMessageInput } from "./editor-feedback-copy";
-export interface FeedbackScopeValue { locale: EditorLocale; entity: string; requiredPaths?: readonly string[]; errors?: Record<string, string> }
+export interface FeedbackScopeValue { locale: EditorLocale; entity: string; requiredPaths?: readonly string[]; errors?: Record<string, string>; knownGroups?: FeedbackGroup[] }
 const FeedbackContext = createContext<FeedbackScopeValue | null>(null);
 export function FeedbackScope({ children, ...scope }: FeedbackScopeValue & { children: ReactNode }) {
   return <FeedbackContext.Provider value={scope}>{children}</FeedbackContext.Provider>;
