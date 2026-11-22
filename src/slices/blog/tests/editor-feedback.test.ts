@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { emptyPostEnvelope } from "../admin/ui/post-editor-state";
+import {
+  changePostField,
+  type PostWorkspace,
+  emptyPostEnvelope,
+} from "../admin/ui/post-editor-state";
 import { checkBlogEnvelope } from "../server/post-locale-validation";
 import {
   retainPostErrors,
@@ -55,4 +59,41 @@ test("Blog feedback breadcrumbs name each section once and distinguish list item
   ] as const;
   for (const [path, section, label] of cases)
     assert.deepEqual(postFeedbackLabel(path), { section, label });
+});
+
+test("clearing the optional Blog CTA pair removes only its locally resolved error", () => {
+  const before = emptyPostEnvelope(category, author);
+  before.content.cta_label = "Read";
+  before.content.cover_media_id = "eef20000-0000-4000-8000-000000000003";
+  const states = Object.fromEntries(
+    (["en", "es", "pt", "fr"] as const).map((locale) => [
+      locale,
+      {
+        model: {
+          locale,
+          revision: 1,
+          templateRevision: null,
+          published: null,
+          draft: structuredClone(before),
+          working: structuredClone(before),
+        },
+        errors:
+          locale === "en"
+            ? {
+                cta_url: "Enter a button URL.",
+                cover_media_id: "Select an available image.",
+              }
+            : locale === "es"
+              ? { excerpt: "Other locale stays invalid." }
+              : {},
+        notice: "",
+        conflict: false,
+      },
+    ]),
+  ) as PostWorkspace;
+  const next = changePostField(states, "en", "cta_label", null);
+  assert.equal(next.en.model.working.content.cta_url, null);
+  assert.equal(next.en.errors.cta_url, undefined);
+  assert.equal(next.en.errors.cover_media_id, "Select an available image.");
+  assert.deepEqual(next.es.errors, states.es.errors);
 });

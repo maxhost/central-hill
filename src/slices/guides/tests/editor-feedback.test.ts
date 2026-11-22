@@ -109,3 +109,37 @@ test("Guide error labels use section/place position rather than technical identi
   assert.equal(d.label, "Button URL");
   assert.equal(d.id, sectionId);
 });
+
+test("switching CTA or Places OFF clears only locally revalidated conditional errors", () => {
+  for (const key of ["cta", "places"] as const) {
+    const p = newGuide(id, city);
+    p.title = "Guide";
+    p.sections = [
+      {
+        ...section(),
+        presentation: { version: 1, modules: { [key]: true } },
+        places: [],
+      },
+    ];
+    const w = createGuideWorkspace(null, p),
+      path = `sections.${sectionId}.${key === "cta" ? "cta_url" : "places"}`;
+    w.locales.en.errors = {
+      [path]: "Complete this module.",
+      hero_media_id: "Select an uploaded image.",
+    };
+    w.locales.es.errors = { [path]: "Other locale stays invalid." };
+    const next = changeGuideContent(w, "en", {
+      ...w.locales.en.working,
+      sections: w.locales.en.working.sections.map((s) => ({
+        ...s,
+        presentation: { version: 1, modules: { [key]: false } },
+      })),
+    });
+    assert.equal(next.locales.en.errors[path], undefined);
+    assert.equal(
+      next.locales.en.errors.hero_media_id,
+      "Select an uploaded image.",
+    );
+    assert.deepEqual(next.locales.es.errors, w.locales.es.errors);
+  }
+});

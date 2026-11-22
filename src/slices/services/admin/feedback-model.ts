@@ -141,21 +141,18 @@ export function retainServiceErrors(
   confirmedSave = false,
 ) {
   const errors = serviceCurrentErrors(form);
+  const previousLocal = serviceCurrentErrors(workspace.locales[locale].working);
   return Object.fromEntries(
     Object.entries(workspace.locales[locale].errors).flatMap(
       ([path, message]) => {
         if (Object.hasOwn(errors, path)) return [[path, errors[path]!]];
-        if (confirmedSave) return [];
+        if (confirmedSave || Object.hasOwn(previousLocal, path)) return [];
         const changed =
           JSON.stringify(
             fieldValue(workspace.locales[locale].working, path),
           ) !== JSON.stringify(fieldValue(form, path));
         if (!changed) return [[path, message]];
-        return /uploaded|available|exist|shared|reference|source|Save to check/i.test(
-          message,
-        )
-          ? [[path, "Selection changed. Save to check it again."]]
-          : [];
+        return [[path, "Selection changed. Save to check it again."]];
       },
     ),
   );

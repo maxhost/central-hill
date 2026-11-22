@@ -174,3 +174,31 @@ test("detail-only preflight errors keep nested control paths and do not double-p
     "detail.itinerary.0.time",
   ]);
 });
+
+test("deactivating External clears its local URL error without clearing server references or another locale", () => {
+  for (const booking_type of ["none", "enquiry"] as const) {
+    const w = createServiceWorkspace(null, category);
+    Object.assign(w.locales.en.working, {
+      booking_type: "external",
+      cta_url: "broken",
+      cta_label: "Book",
+      cover_media_id: media,
+    });
+    w.locales.en.errors = {
+      cta_url: "Enter an http(s) booking URL.",
+      cover_media_id: "Select an available image.",
+    };
+    w.locales.es.errors = { cta_url: "Other locale stays invalid." };
+    const next = changeServiceForm(w, "en", {
+      ...w.locales.en.working,
+      booking_type,
+    });
+    assert.equal(next.locales.en.working.cta_url, "broken");
+    assert.equal(next.locales.en.errors.cta_url, undefined);
+    assert.equal(
+      next.locales.en.errors.cover_media_id,
+      "Select an available image.",
+    );
+    assert.deepEqual(next.locales.es.errors, w.locales.es.errors);
+  }
+});

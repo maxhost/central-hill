@@ -962,8 +962,16 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
                   </div>
                 </AdminCard>
                 <section
-                  className="space-y-4"
+                  className={`space-y-4 ${pageErrors.sections ? "rounded-md border border-red-600 p-4" : ""}`}
                   aria-labelledby={`${prefix}-sections`}
+                  aria-describedby={[
+                    `${prefix}-sections-required`,
+                    pageErrors.sections
+                      ? `${workspace.id}-sections-error`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="max-w-xl space-y-2">
@@ -976,6 +984,12 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
                           *
                         </span>
                       </h2>
+                      <p
+                        id={`${prefix}-sections-required`}
+                        className="text-sm text-ink-soft"
+                      >
+                        Keep at least one complete visible section to publish.
+                      </p>
                       <p className="text-sm text-ink-soft">
                         {te("sectionsHint")}
                       </p>
@@ -985,6 +999,19 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
                     </div>
                     <AdminButton
                       id={`${workspace.id}-sections`}
+                      aria-describedby={[
+                        `${prefix}-sections-required`,
+                        pageErrors.sections
+                          ? `${workspace.id}-sections-error`
+                          : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      className={
+                        pageErrors.sections
+                          ? "border-red-600 text-red-700"
+                          : undefined
+                      }
                       onClick={addSection}
                     >
                       {t("addSection")}
@@ -1004,7 +1031,22 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
                       <p className="mb-4 text-sm text-ink-soft">
                         {te("sectionsEmpty")}
                       </p>
-                      <AdminButton onClick={addSection}>
+                      <AdminButton
+                        aria-describedby={[
+                          `${prefix}-sections-required`,
+                          pageErrors.sections
+                            ? `${workspace.id}-sections-error`
+                            : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                        className={
+                          pageErrors.sections
+                            ? "border-red-600 text-red-700"
+                            : undefined
+                        }
+                        onClick={addSection}
+                      >
                         {t("addSection")}
                       </AdminButton>
                     </div>

@@ -61,6 +61,15 @@ export function GuideSectionEditor({
     key: K,
     value: GuideSectionEdit[K],
   ) => onChange({ ...section, [key]: value });
+  const placesRequired =
+    presentation?.enabled !== false && presentation?.modules?.places === true;
+  const placesDescription =
+    [
+      placesRequired ? `${section.id}-places-required` : null,
+      fieldError(errors, "places") ? `${section.id}-places-error` : null,
+    ]
+      .filter(Boolean)
+      .join(" ") || undefined;
   const photos =
     Number(Boolean(section.header_media_id)) +
     section.places.filter((p) => p.media_id).length;
@@ -151,7 +160,11 @@ export function GuideSectionEditor({
                 />
               </div>
               {fieldError(errors, key) ? (
-                <p className="text-sm text-red-700">
+                <p
+                  id={`${section.id}-${key}-error`}
+                  role="alert"
+                  className="text-sm text-red-700"
+                >
                   {fieldError(errors, key)}
                 </p>
               ) : null}
@@ -232,16 +245,53 @@ export function GuideSectionEditor({
                     </>
                   ) : null}
                   {key === "places" ? (
-                    <>
+                    <div
+                      role="group"
+                      aria-labelledby={`${section.id}-places-heading`}
+                      aria-describedby={placesDescription}
+                      className={
+                        fieldError(errors, "places")
+                          ? "space-y-4 rounded-md border border-red-600 p-3"
+                          : "space-y-4"
+                      }
+                    >
                       <div className="flex flex-wrap justify-between gap-2">
-                        <h4 className="text-sm font-medium">{t("places")}</h4>
+                        <h4
+                          id={`${section.id}-places-heading`}
+                          className="text-sm font-medium"
+                        >
+                          {t("places")}
+                          {placesRequired ? (
+                            <span
+                              aria-hidden="true"
+                              className="ml-0.5 text-accent-deep"
+                            >
+                              *
+                            </span>
+                          ) : null}
+                        </h4>
                         <AdminButton
                           id={`${section.id}-places`}
+                          aria-describedby={placesDescription}
+                          className={
+                            fieldError(errors, "places")
+                              ? "border-red-600 text-red-700"
+                              : undefined
+                          }
                           onClick={onAddPlace}
                         >
                           {t("addPlace")}
                         </AdminButton>
                       </div>
+                      {placesRequired ? (
+                        <p
+                          id={`${section.id}-places-required`}
+                          className="text-xs text-ink-soft"
+                        >
+                          Keep at least one place while this module is switched
+                          on.
+                        </p>
+                      ) : null}
                       {!section.places.length ? (
                         <p className="text-sm text-ink-soft">
                           {t("emptyPlaces")}
@@ -270,7 +320,7 @@ export function GuideSectionEditor({
                           onMove={(offset) => onMovePlace(place.id, offset)}
                         />
                       ))}
-                    </>
+                    </div>
                   ) : null}
                 </div>
               ) : null}

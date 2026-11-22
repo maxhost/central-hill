@@ -100,7 +100,17 @@ export function retainPostErrors(
   previous?: BlogPostEnvelopeV1,
   confirmedSave = false,
 ) {
-  const current = checkBlogEnvelope(envelope, true).errors;
+  const localErrors = (document: BlogPostEnvelopeV1) =>
+    Object.fromEntries(
+      Object.entries(checkBlogEnvelope(document, true).errors).map(
+        ([path, message]) => [
+          path.replace(/^(?:payload\.)?content\./, ""),
+          message,
+        ],
+      ),
+    );
+  const current = localErrors(envelope);
+  const previousLocal = previous ? localErrors(previous) : {};
   const valueAt = (value: unknown, path: string): unknown =>
     path
       .split(".")
@@ -115,17 +125,13 @@ export function retainPostErrors(
     Object.entries(errors).flatMap(([path, message]) => {
       const key = path.replace(/^(?:payload\.)?content\./, "");
       if (Object.hasOwn(current, key)) return [[path, current[key]!]];
-      if (confirmedSave) return [];
+      if (confirmedSave || Object.hasOwn(previousLocal, key)) return [];
       const changed =
         previous &&
         JSON.stringify(valueAt(previous.content, key)) !==
           JSON.stringify(valueAt(envelope.content, key));
       if (!changed) return [[path, message]];
-      return /uploaded|available|exist|shared|reference|source|Save to check/i.test(
-        message,
-      )
-        ? [[path, "Selection changed. Save to check it again."]]
-        : [];
+      return [[path, "Selection changed. Save to check it again."]];
     }),
   );
 }
