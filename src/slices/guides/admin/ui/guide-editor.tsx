@@ -207,12 +207,12 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
             `${id}-${name
               .replace(/^(source|changes)\./, "")
               .replace(/^slugs\.en$/, "slug")
-              .replace(/^image$/, "header_media_id")}`,
+              .replace(/^image$/, "image-module")}`,
           )
         : null;
       const group = name ? document.getElementById(`${id}-${name}`) : null;
       const registered = document.querySelector<HTMLElement>(
-        `[data-feedback-path="${id}.${name === "image" ? "header_media_id" : name}"]`,
+        `[data-feedback-path="${id}.${name}"]`,
       );
       const candidate = field ?? registered;
       const target =

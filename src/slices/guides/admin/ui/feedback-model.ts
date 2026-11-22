@@ -1,6 +1,10 @@
 import type { Locale } from "@core/db/columns";
 import type { FeedbackGroup } from "@slices/backoffice/contract-client";
-import type { GuideContent } from "../../editorial-types";
+import {
+  GUIDE_SHARED_ROOT_KEYS,
+  GUIDE_SHARED_PLACE_KEYS,
+  type GuideContent,
+} from "../../editorial-types";
 import { guideTreeErrors } from "../validation";
 import {
   guideEnvelopeSchema,
@@ -16,6 +20,7 @@ const labels: Record<string, string> = {
   presentation: "Section content",
   body: "Body",
   header_media_id: "Section image",
+  image: "Photo",
   local_tip: "Local tip",
   places: "Places",
   cta: "Button",
@@ -79,6 +84,45 @@ export function guideFeedbackDestination(
     section,
   };
 }
+/** Identify only actual shared dependencies; mixed content groups and locale-owned copy stay local. */
+function guideIssueSourceLocale(
+  workspace: GuideFormWorkspace,
+  locale: Locale,
+  path: string,
+): Locale | undefined {
+  if (locale === "en") return undefined;
+  const destination = guideFeedbackDestination(
+    workspace.locales[locale].working,
+    workspace.id,
+    path,
+  );
+  if (destination.id === workspace.id)
+    return (GUIDE_SHARED_ROOT_KEYS as readonly string[]).includes(
+      destination.name,
+    )
+      ? "en"
+      : undefined;
+  const source = workspace.locales.en.working;
+  if (source.sections.some((section) => section.id === destination.id)) {
+    return ["header_media_id", "layout", "image"].includes(destination.name) ||
+      destination.name.startsWith("presentation.")
+      ? "en"
+      : undefined;
+  }
+  if (
+    source.sections.some((section) =>
+      section.places.some((place) => place.id === destination.id),
+    )
+  ) {
+    return (GUIDE_SHARED_PLACE_KEYS as readonly string[]).includes(
+      destination.name,
+    ) || destination.name === "recommendation_type"
+      ? "en"
+      : undefined;
+  }
+  // A target-only section/place has its real editing control in that language.
+  return undefined;
+}
 export function guideFeedbackGroups(
   workspace: GuideFormWorkspace,
 ): FeedbackGroup[] {
@@ -94,6 +138,9 @@ export function guideFeedbackGroups(
           workspace.id,
           path,
         ),
+        ...(guideIssueSourceLocale(workspace, locale, path)
+          ? { sourceLocale: guideIssueSourceLocale(workspace, locale, path) }
+          : {}),
       }),
     ),
     ...(workspace.locales[locale].uncertain

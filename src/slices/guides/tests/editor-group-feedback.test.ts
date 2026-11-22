@@ -271,11 +271,12 @@ test("Places required marker and description follow explicit ON in a visible sec
     enabled: boolean,
     places: boolean | undefined,
     errors: Record<string, string> = {},
+    image?: boolean,
   ) =>
     compiled.exports.GuideSectionEditor({
       section: {
         ...editorModel.newSection(sectionId, guideId, 0),
-        presentation: { version: 1, enabled, modules: { places } },
+        presentation: { version: 1, enabled, modules: { places, image } },
       },
       previews: {},
       errors,
@@ -348,4 +349,52 @@ test("Places required marker and description follow explicit ON in a visible sec
     ),
     false,
   );
+  const photoTree = render(true, undefined, { image: error }, true);
+  const photo = nodes(photoTree, "div").find(
+    (node) => node.props?.["aria-label"] === "Photo",
+  )!;
+  assert.ok(photo);
+  assert.match(String(photo.props?.className), /border-red-600/);
+  const photoControl = nodes(photo, "Checkbox")[0]!;
+  assert.equal(photoControl.props?.["aria-invalid"], true);
+  assert.match(
+    String(photoControl.props?.["aria-describedby"]),
+    new RegExp(`${sectionId}-image-error`),
+  );
+  assert.match(
+    String(photoControl.props?.["aria-describedby"]),
+    new RegExp(`${sectionId}-image-required`),
+  );
+  assert.equal(nodes(photo, "span")[0]?.props?.children, "*");
+  const header = nodes(photoTree, "Field").find(
+    (node) => node.props?.errorPath === `${sectionId}.header_media_id`,
+  )!;
+  assert.ok(header);
+  assert.equal(
+    header.props?.error,
+    undefined,
+    "group error is not fabricated as a header-field rejection",
+  );
+  assert.equal(
+    header.props?.required,
+    true,
+    "the unchanged validator requires the section header when Photo is explicitly ON",
+  );
+  for (const [enabled, image] of [
+    [true, undefined],
+    [true, false],
+    [false, true],
+  ] as const) {
+    const optional = render(enabled, undefined, {}, image);
+    const optionalPhotoGroup = nodes(optional, "div").find(
+      (node) => node.props?.["aria-label"] === "Photo",
+    )!;
+    assert.equal(nodes(optionalPhotoGroup, "span").length, 0);
+    assert.equal(
+      nodes(optional, "p").some(
+        (node) => node.props?.id === `${sectionId}-image-required`,
+      ),
+      false,
+    );
+  }
 });

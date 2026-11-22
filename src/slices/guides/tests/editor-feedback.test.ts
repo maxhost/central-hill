@@ -1,8 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { feedbackMessage } from "@slices/backoffice/contract-client";
 import { guideSectionErrors, guideTreeErrors } from "../admin/validation";
 import type { GuideSectionEdit } from "../admin/model";
-import { newGuide, newSection } from "../admin/ui/editor-model";
+import { newGuide, newSection, newPlace } from "../admin/ui/editor-model";
 import { checkGuideEnvelope } from "../server/locale-validation";
 import {
   createGuideWorkspace,
@@ -10,6 +11,7 @@ import {
 } from "../admin/ui/locale-form-state";
 import {
   guideFeedbackDestination,
+  guideFeedbackGroups,
   retainGuideErrors,
 } from "../admin/ui/feedback-model";
 const id = "eef00000-0000-4000-8000-000000000001",
@@ -142,4 +144,121 @@ test("switching CTA or Places OFF clears only locally revalidated conditional er
     );
     assert.deepEqual(next.locales.es.errors, w.locales.es.errors);
   }
+});
+
+test("Photo module validation and feedback use the real image group contract", () => {
+  const p = newGuide(id, city);
+  p.title = "Guide";
+  p.status = "published";
+  p.slugs.en = "guide";
+  const s = section();
+  s.header_media_id = null;
+  s.presentation = { version: 1, modules: { image: true } };
+  s.places = [
+    {
+      ...newPlace("eef00000-0000-4000-8000-000000000004", sectionId, 0),
+      name: "Place",
+      media_id: "eef00000-0000-4000-8000-000000000005",
+    },
+  ];
+  p.sections = [s];
+  const errors = guideTreeErrors(p, [
+    { id: city, name: "City", status: "published", slug: "city" } as never,
+  ]);
+  assert.ok(
+    errors[`sections.${sectionId}.image`],
+    "a place image does not satisfy the section Photo module",
+  );
+  assert.equal(
+    errors[`sections.${sectionId}.header_media_id`],
+    undefined,
+    "the server reports its actual group path",
+  );
+  const w = createGuideWorkspace(null, p),
+    target = guideFeedbackDestination(
+      w.locales.en.working,
+      id,
+      `sections.${sectionId}.image`,
+    );
+  assert.deepEqual(target, {
+    id: sectionId,
+    name: "image",
+    label: "Photo",
+    section: "Section 1",
+  });
+});
+
+test("Guide shared dependencies point to English while independent and mixed content errors keep their locale", () => {
+  const p = newGuide(id, city);
+  const placeId = "eef00000-0000-4000-8000-000000000004";
+  p.sections = [
+    {
+      ...section(),
+      places: [{ ...newPlace(placeId, sectionId, 0), name: "Cafe" }],
+    },
+  ];
+  const w = createGuideWorkspace(null, p);
+  w.locales.es.errors = {
+    city_id: "Publish the city.",
+    hero_media_id: "Select an available image.",
+    title: "Enter a title.",
+    [`sections.${sectionId}.image`]: "Complete Photo.",
+    [`sections.${sectionId}.presentation`]:
+      "Keep at least one module with content.",
+    [`sections.${sectionId}.body`]: "Enter body.",
+    [`sections.${sectionId}.cta_url`]: "Enter button URL.",
+    [`sections.${sectionId}.places`]: "Add a place.",
+    [`sections.${sectionId}.places.${placeId}.phone`]: "Enter a valid phone.",
+    [`sections.${sectionId}.places.${placeId}.name`]: "Enter a name.",
+  };
+  const groups = guideFeedbackGroups(w),
+    issues = groups.find((group) => group.locale === "es")!.issues;
+  for (const path of [
+    "city_id",
+    "hero_media_id",
+    `sections.${sectionId}.image`,
+    `sections.${sectionId}.places.${placeId}.phone`,
+  ])
+    assert.equal(
+      issues.find((issue) => issue.path === path)?.sourceLocale,
+      "en",
+    );
+  for (const path of [
+    "title",
+    `sections.${sectionId}.presentation`,
+    `sections.${sectionId}.body`,
+    `sections.${sectionId}.cta_url`,
+    `sections.${sectionId}.places`,
+    `sections.${sectionId}.places.${placeId}.name`,
+  ])
+    assert.equal(
+      issues.find((issue) => issue.path === path)?.sourceLocale,
+      undefined,
+    );
+  assert.equal(
+    groups.find((group) => group.locale === "en")!.issues.length,
+    0,
+    "a shared source hint does not invent an English validation error",
+  );
+  const toast = feedbackMessage({
+    action: "publish",
+    locale: "es",
+    outcome: "validation",
+    groups,
+  });
+  assert.match(toast, /Cannot publish ES/);
+  assert.match(toast, /Shared field — managed in EN/);
+  assert.doesNotMatch(toast, /Other known errors: EN/);
+
+  const targetOnly = "eef00000-0000-4000-8000-000000000006";
+  w.locales.es.working.sections = [{ ...section(), id: targetOnly }];
+  w.locales.es.errors = {
+    [`sections.${targetOnly}.header_media_id`]: "Select an image.",
+  };
+  assert.equal(
+    guideFeedbackGroups(w).find((group) => group.locale === "es")!.issues[0]!
+      .sourceLocale,
+    undefined,
+    "do not navigate to a source control that is absent in English",
+  );
 });

@@ -61,6 +61,15 @@ export function GuideSectionEditor({
     key: K,
     value: GuideSectionEdit[K],
   ) => onChange({ ...section, [key]: value });
+  const imageRequired =
+    presentation?.enabled !== false && presentation?.modules?.image === true;
+  const imageDescription =
+    [
+      imageRequired ? `${section.id}-image-required` : null,
+      fieldError(errors, "image") ? `${section.id}-image-error` : null,
+    ]
+      .filter(Boolean)
+      .join(" ") || undefined;
   const placesRequired =
     presentation?.enabled !== false && presentation?.modules?.places === true;
   const placesDescription =
@@ -143,9 +152,28 @@ export function GuideSectionEditor({
           </h3>
           {GUIDE_MODULE_KEYS.map((key) => (
             <div key={key} className="space-y-3 border-t border-line pt-4">
-              <div id={`${section.id}-${key}-module`}>
+              <div
+                id={`${section.id}-${key}-module`}
+                role={key === "image" ? "group" : undefined}
+                aria-label={key === "image" ? "Photo" : undefined}
+                aria-describedby={
+                  key === "image" ? imageDescription : undefined
+                }
+                className={
+                  key === "image" && fieldError(errors, key)
+                    ? "rounded-md border border-red-600 p-3"
+                    : undefined
+                }
+              >
                 <Checkbox
                   aria-invalid={Boolean(fieldError(errors, key))}
+                  aria-describedby={
+                    key === "image"
+                      ? imageDescription
+                      : fieldError(errors, key)
+                        ? `${section.id}-${key}-error`
+                        : undefined
+                  }
                   label={t(`labels.${key}`)}
                   checked={presentation?.modules?.[key] !== false}
                   onChange={(e) =>
@@ -158,6 +186,23 @@ export function GuideSectionEditor({
                     })
                   }
                 />
+                {key === "image" && imageRequired ? (
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="ml-0.5 text-accent-deep"
+                    >
+                      *
+                    </span>
+                    <p
+                      id={`${section.id}-image-required`}
+                      className="mt-2 text-xs text-ink-soft"
+                    >
+                      Choose a section photo while this module is switched on,
+                      or switch it off.
+                    </p>
+                  </>
+                ) : null}
               </div>
               {fieldError(errors, key) ? (
                 <p
