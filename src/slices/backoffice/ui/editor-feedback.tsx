@@ -45,7 +45,7 @@ export function focusEditorField(root: HTMLElement | null, path: string): boolea
   const rich = field.closest<HTMLElement>("[data-post-rich-text-container]");
   const actual = field.matches('input,textarea,select,[contenteditable="true"]') ? field : field.querySelector<HTMLElement>('input:not([type="file"]):not([disabled]),textarea:not([disabled]),select:not([disabled]),[contenteditable="true"],button:not([disabled])');
   field.scrollIntoView({ block: "center", behavior: "auto" });
-  if (rich && (!actual || actual.isContentEditable)) { rich.dispatchEvent(new CustomEvent("editor-feedback-focus", { detail: { path } })); return true; }
+  if (rich && (field === rich || /^body\.\d+\.(?:text|items|body)(?:\.|$)/.test(path) || !actual || actual.isContentEditable)) { rich.dispatchEvent(new CustomEvent("editor-feedback-focus", { detail: { path } })); return true; }
   if (actual) { actual.focus({ preventScroll: true }); return true; }
   return false;
 }

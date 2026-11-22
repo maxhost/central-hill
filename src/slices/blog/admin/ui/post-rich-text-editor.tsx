@@ -10,6 +10,7 @@ import { useFeedbackScope } from "@slices/backoffice/contract-client";
 import { AdminButton, Field, TextInput, type AdminMediaPreview } from "@slices/backoffice/contract";
 import { isSafeInlineHref, type PostBody } from "../../body";
 import { editorDocumentToPostBody, postBodyToEditorDocument, type EditorDocument } from "../rich-text-codec";
+import { richTextFeedbackPlugin, richTextFeedbackKey } from "./post-rich-text-feedback";
 import { ArticleCallout, ArticleCta, ArticleImage, ArticleMetadata, ArticleQuote, FlatListItem, RichTextMediaContext } from "./post-rich-text-nodes";
 
 type Props = {
@@ -34,8 +35,8 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
   const richRoot = useRef<HTMLDivElement>(null);
   const t = useTranslations("blog.richText");
   const tb = useTranslations("blog.admin.post.body.fields");
-  const latest = useRef({ onChange });
-  latest.current = { onChange };
+  const latest = useRef({ onChange, feedbackEnabled: Boolean(feedback), errors, errorId: `${fieldPrefix}-body-errors` });
+  latest.current = { onChange, feedbackEnabled: Boolean(feedback), errors, errorId: `${fieldPrefix}-body-errors` };
   const emitted = useRef(JSON.stringify(value));
   const [unsupported, setUnsupported] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
@@ -53,6 +54,7 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
       StarterKit.configure({ heading: { levels: [2, 3, 4] }, blockquote: false, listItem: false, code: false, codeBlock: false, strike: false, underline: false, hardBreak: false,
         link: { openOnClick: false, autolink: false, linkOnPaste: false, isAllowedUri: href => isSafeInlineHref(href), HTMLAttributes: { class: "underline underline-offset-2" } } }),
       ArticleMetadata, FlatListItem, ArticleImage, ArticleQuote, ArticleCallout, ArticleCta,
+      Extension.create({ name: "articleEditorFeedback", addProseMirrorPlugins() { return [richTextFeedbackPlugin(() => ({ enabled: latest.current.feedbackEnabled, errors: latest.current.errors, errorId: latest.current.errorId }))]; } }),
       Extension.create({ name: "articleSafety", addProseMirrorPlugins() { return [new Plugin({
         filterTransaction(transaction) {
           if (!transaction.docChanged) return true;
@@ -99,34 +101,19 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
     } catch { setUnsupported(true); }
   }, [editor, value, textOnly]);
   const bodyErrors = Object.entries(errors).filter(([key]) => key === "body" || key.startsWith("body."));
+  const errorsVersion = JSON.stringify(errors);
+  const feedbackEnabled = Boolean(feedback);
   useEffect(() => {
-    if (!editor || !feedback) return;
-    editor.view.dom.setAttribute("aria-invalid", String(bodyErrors.length > 0));
-    editor.view.dom.setAttribute("aria-describedby", `${fieldPrefix}-body-errors`);
-    let blockIndex = 0;
-    editor.state.doc.forEach((node, position) => {
-      const dom = editor.view.nodeDOM(position);
-      if (!(dom instanceof HTMLElement)) return;
-      let portable: PostBody;
-      try { portable = editorDocumentToPostBody({ type: "doc", content: [node.toJSON()] }); } catch { return; }
-      if (!portable.length) return;
-      const block = portable[0]!;
-      const path = `body.${blockIndex}`;
-      const field = block.type === "callout" ? "body" : block.type === "list" ? "items" : "text" in block ? "text" : null;
-      if (field) {
-        dom.dataset.feedbackPath = `${path}.${field}`;
-        dom.dataset.postBodyPath = `${path}.${field}`;
-        const invalid = bodyErrors.some(([key]) => key === path || key.startsWith(`${path}.`));
-        dom.setAttribute("aria-invalid", String(invalid));
-        dom.classList.toggle("outline-2", invalid);
-        dom.classList.toggle("outline-red-600", invalid);
-        dom.setAttribute("aria-label", `${block.type === "list" ? "List items" : block.type === "callout" ? "Callout text" : block.type === "heading" ? "Heading text" : "Text"} — required to publish`);
-        dom.setAttribute("data-required-to-publish", "true");
-        if (invalid) dom.setAttribute("aria-describedby", `${fieldPrefix}-body-errors`); else dom.removeAttribute("aria-describedby");
-      }
-      blockIndex++;
-    });
-  });
+    if (!editor || !feedbackEnabled) return;
+    // updateState/setEditable can redraw the editor; owned editor props and node
+    // decorations reapply accessibility rather than mutating transient native DOM.
+    editor.setOptions({ editorProps: { ...editor.options.editorProps, attributes: {
+      ...(typeof editor.options.editorProps.attributes === "object" ? editor.options.editorProps.attributes : {}),
+      "aria-invalid": String(Object.keys(latest.current.errors).some(key => key === "body" || key.startsWith("body."))),
+      "aria-describedby": latest.current.errorId,
+    } } });
+    editor.view.dispatch(editor.state.tr.setMeta(richTextFeedbackKey, errorsVersion));
+  }, [editor, feedbackEnabled, errorsVersion]);
   useEffect(() => {
     const root = richRoot.current;
     if (!root || !editor) return;
