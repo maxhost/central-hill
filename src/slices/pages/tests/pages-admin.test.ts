@@ -303,6 +303,39 @@ const homeRootKeys = homeFieldModel.kind === "object"
 const cardIds = (items: NonNullable<ReturnType<typeof resolveEditorLayout>>) =>
   items.filter((i) => i.kind === "card").map((i) => i.id);
 
+/** Match PageEditor: hidden root metadata is retained in data, never laid out as UI. */
+function visibleRootKeys(schema: z.ZodType): string[] {
+  const node = describe(schema);
+  assert.equal(node.kind, "object");
+  return node.kind === "object"
+    ? node.fields.filter((entry) => entry.node.kind !== "hidden").map((entry) => entry.key)
+    : [];
+}
+
+function assertVisibleLayoutSafety(pageKey: string, schema: z.ZodType) {
+  const keys = visibleRootKeys(schema);
+  const layout = resolveEditorLayout(pageKey, keys);
+  assert.ok(layout);
+  const rendered = layout.flatMap((item) => item.kind === "card" ? item.paths : []);
+  assert.equal(new Set(rendered).size, rendered.length, `${pageKey}: roots rendered uniquely`);
+  const node = describe(schema);
+  assert.equal(node.kind, "object");
+  if (node.kind === "object") {
+    const hidden = node.fields.filter((entry) => entry.node.kind === "hidden").map((entry) => entry.key);
+    assert.deepEqual(hidden, ["_list_ids", "_retired_ids"], `${pageKey}: preserved internal metadata`);
+    for (const key of hidden) assert.ok(!rendered.includes(key), `${pageKey}: ${key} stays out of UI`);
+  }
+  // The safety net still exposes a genuinely visible root added without a layout card.
+  const later = resolveEditorLayout(pageKey, [...keys, "brand_new"]);
+  assert.ok(later);
+  assert.deepEqual(later.at(-1), {
+    kind: "card", id: OTHER_CARD_ID, titleKey: "admin.layout.cards.other", paths: ["brand_new"],
+  });
+  const laterRendered = later.flatMap((item) => item.kind === "card" ? item.paths : []);
+  assert.deepEqual([...laterRendered].sort(), [...keys, "brand_new"].sort());
+  assert.equal(new Set(laterRendered).size, laterRendered.length);
+}
+
 test("home layout lists the 8 stable card ids in page order", () => {
   const layout = resolveEditorLayout("home", homeRootKeys);
   assert.ok(layout);
@@ -450,7 +483,8 @@ test("owners layout: 12 stable ids, all present since S6 (final_cta last), every
     "seo", "hero", "earnings_form", "stats", "why", "services", "plans", "journey", "dashboard",
     "testimonials", "faq", "final_cta",
   ]);
-  const rootKeys = Object.keys(ownersSchema.shape);
+  assertVisibleLayoutSafety("owners", ownersSchema);
+  const rootKeys = visibleRootKeys(ownersSchema);
   const layout = resolveEditorLayout("owners", rootKeys);
   assert.ok(layout);
   // Since S6 every card has its key; `final_cta` is the last card, with the Settings note.
@@ -461,7 +495,7 @@ test("owners layout: 12 stable ids, all present since S6 (final_cta last), every
   assert.equal(finalCta.note?.link?.href, "/admin/settings");
   const seo = layout.find((i) => i.id === "seo");
   assert.ok(seo && seo.kind === "card" && seo.hostsOgImage && seo.paths.join() === "seo");
-  // Every root key is rendered exactly once, and nothing falls into Other.
+  // Every visible root key is rendered exactly once, and nothing falls into Other.
   const rendered = layout.flatMap((i) => (i.kind === "card" ? i.paths : []));
   assert.deepEqual([...rendered].sort(), [...rootKeys].sort());
   assert.ok(!cardIds(layout).includes(OTHER_CARD_ID));
@@ -565,12 +599,20 @@ test("buildingsSchema media accepts: hero image (16:9), calculator animated (4:5
     { "buildings.hero.image_media_id": "image", "buildings.calculator.media_media_id": "animated" },
   );
   assert.match(media["buildings.hero.image_media_id"]?.hint ?? "", /16:9/);
-  assert.match(media["buildings.calculator.media_media_id"]?.hint ?? "", /^Portrait 4:5 — the frame is fixed at 4:5/);
+  const calculatorHint = media["buildings.calculator.media_media_id"]?.hint ?? "";
+  assert.match(calculatorHint, /^Portrait 4:5 recommended/);
+  assert.match(calculatorHint, /desktop widths \(981 px and above\), the frame follows the form height/);
+  assert.match(calculatorHint, /on tablet\/mobile it stays 4:5/);
+  assert.match(calculatorHint, /centred cover crop, so keep the subject centred/);
+  assert.match(calculatorHint, /Photo: 1200×1500 px \(min 960×1200\)/);
+  assert.match(calculatorHint, /Video: MP4 \(H\.264\), 1080×1350 or 1200×1500/);
+  assert.match(calculatorHint, /Lottie \(\.lottie or \.json\): 4:5 canvas/);
 });
 
 test("buildings layout: 5 stable ids, grid info after hero, every key placed once", () => {
   assert.deepEqual([...BUILDINGS_CARD_IDS], ["seo", "hero", "owner_panel", "stats", "calculator"]);
-  const rootKeys = Object.keys(buildingsSchema.shape);
+  assertVisibleLayoutSafety("buildings", buildingsSchema);
+  const rootKeys = visibleRootKeys(buildingsSchema);
   const layout = resolveEditorLayout("buildings", rootKeys);
   assert.ok(layout);
   assert.deepEqual(cardIds(layout), [...BUILDINGS_CARD_IDS]);
@@ -678,7 +720,8 @@ test("real estate layout: 11 stable ids, all 11 cards shown (S5); every key plac
     "seo", "hero", "partners", "capabilities", "asset_management", "deal_structures", "market",
     "track_record", "process", "faq", "deal_enquiry",
   ]);
-  const rootKeys = Object.keys(realEstateSchema.shape);
+  assertVisibleLayoutSafety("real_estate", realEstateSchema);
+  const rootKeys = visibleRootKeys(realEstateSchema);
   const layout = resolveEditorLayout("real_estate", rootKeys);
   assert.ok(layout);
   // `seo` and `faq` (title) exist since S2, `deal_enquiry` since S5 → every card is shown.
@@ -705,7 +748,7 @@ test("real estate layout: 11 stable ids, all 11 cards shown (S5); every key plac
 });
 
 test("real estate layout + labels: every i18n key exists in the 4 locales", () => {
-  const layout = resolveEditorLayout("real_estate", Object.keys(realEstateSchema.shape));
+  const layout = resolveEditorLayout("real_estate", visibleRootKeys(realEstateSchema));
   assert.ok(layout);
   const keys = layout.flatMap((i) => [
     i.titleKey,
@@ -863,7 +906,8 @@ test("guest layout: 10 stable ids in page order, all present since S2; no key lo
     "seo", "hero", "welcome", "why", "portfolio", "services_teaser", "activities_teaser",
     "testimonials", "faq", "dual_cta",
   ]);
-  const rootKeys = Object.keys(guestSchema.shape);
+  assertVisibleLayoutSafety("guest", guestSchema);
+  const rootKeys = visibleRootKeys(guestSchema);
   for (const k of ["seo", "testimonials", "faq"]) assert.ok(rootKeys.includes(k), `S2 key ${k}`);
   const layout = resolveEditorLayout("guest", rootKeys);
   assert.ok(layout);
@@ -887,7 +931,7 @@ test("guest layout: 10 stable ids in page order, all present since S2; no key lo
 });
 
 test("guest layout + labels: every i18n key exists in the 4 locales — S1", () => {
-  const layout = resolveEditorLayout("guest", Object.keys(guestSchema.shape));
+  const layout = resolveEditorLayout("guest", visibleRootKeys(guestSchema));
   assert.ok(layout);
   const keys = layout.flatMap((i) => [
     i.titleKey,
@@ -924,8 +968,13 @@ test("guestSchema media accepts: hero video=video, poster=image, welcome=animate
   assert.match(poster?.hint ?? "", /Use a still from the video\. 1920×1080 \(16:9\)/);
   const welcome = media(["welcome", "image_media_id"]);
   assert.equal(welcome?.accept, "animated");
-  assert.match(welcome?.hint ?? "", /^Landscape 3:2 — the frame is about 540×380/);
-  assert.match(welcome?.hint ?? "", /Lottie/);
+  const welcomeHint = welcome?.hint ?? "";
+  assert.match(welcomeHint, /^Landscape 3:2 — the frame stays 3:2 on desktop, tablet and mobile/);
+  assert.match(welcomeHint, /independent of the file or text length/);
+  assert.match(welcomeHint, /centred cover crop; keep subjects, text and logos inside a central safe area/);
+  assert.match(welcomeHint, /Photo: 1500×1000 px \(min 1200×800\)/);
+  assert.match(welcomeHint, /Lottie \(\.lottie or \.json\): 3:2 canvas/);
+  assert.match(welcomeHint, /other canvas ratios are cropped centrally/);
 });
 
 test("guestSchema S3: guarantee icon is an optional icon picker; image_alt is an optional string", () => {
@@ -974,10 +1023,17 @@ test("guest welcome alt resolution: field → asset alt → i18n — S3", () => 
 
 // ── Guests landing: teaser card photos (spec guests-admin-editor S4) ──────────
 
-test("guestSchema S4: every teaser card has an optional image picker (accept=image, 3:2 hint)", () => {
+test("guestSchema: catalogue teaser controls stay active; preserved manual card photos stay hidden", () => {
   const root = describe(guestSchema);
   for (const section of ["services_teaser", "activities_teaser"]) {
-    const node = nodeAt(root, [section, "items", "[]", "image_media_id"]);
+    // Services/Guides catalogues own the rendered cards. Manual six-card data remains
+    // valid and retains its image contract, but never becomes an active editor list.
+    const items = nodeAt(root, [section, "items"]);
+    assert.equal(items.kind, "hidden", `${section}.items stays hidden`);
+    if (items.kind !== "hidden") throw new Error("legacy list not hidden");
+    assert.equal(items.node.kind, "array");
+    if (items.node.kind !== "array") throw new Error("legacy list not array");
+    const node = nodeAt(items.node, ["[]", "image_media_id"]);
     assert.equal(node.kind, "media", section);
     if (node.kind !== "media") continue;
     assert.equal(node.accept, "image", section);
@@ -985,8 +1041,16 @@ test("guestSchema S4: every teaser card has an optional image picker (accept=ima
       node.hint,
       "Card background (a dark overlay is applied, centre-cropped). Landscape 3:2 — 1200×800 px (min 900×600), JPG or WebP, under 300 KB.",
     );
-    const items = nodeAt(root, [section, "items"]);
-    assert.equal(items.kind === "array" ? `${items.min}/${items.max}` : "", "6/6", `${section} stays fixed at 6`);
+    assert.equal(`${items.node.min}/${items.node.max}`, "6/6", `${section} legacy cards stay fixed at 6`);
+    const teaser = field(root, section);
+    assert.equal(teaser.kind, "object");
+    if (teaser.kind !== "object") throw new Error("teaser not object");
+    assert.deepEqual(teaser.fields.filter((entry) => entry.node.kind !== "hidden").map((entry) => entry.key), ["headline", "intro", "cta"]);
+    assert.equal(field(teaser, "headline").kind, "string");
+    assert.equal(field(teaser, "intro").kind, "string");
+    assert.equal(nodeAt(teaser, ["cta", "label"]).kind, "string");
+    assert.equal(nodeAt(teaser, ["cta", "note"]).kind, "string");
+    assert.equal(nodeAt(teaser, ["cta", "url"]).kind, "hidden");
   }
 });
 
@@ -1161,6 +1225,7 @@ test("aboutSchema media accepts: About two-column slots accept animated media", 
       "about.organisation.image_media_id": "animated",
       "about.certifications.items[].logo_media_id": "image",
       "about.community.image_media_id": "animated",
+      "about.contact.cards[].image_media_id": "image",
     },
   );
   assert.match(media["about.hero.image_media_id"]?.hint ?? "", /Landscape 16:9 — 1920×1080 px \(min 1600×900\)/);
