@@ -181,3 +181,37 @@ export function serviceMediaPath(form: FormState, id: string): string | null {
   const step = form.detail.itinerary.findIndex((step) => step.media_id === id);
   return step >= 0 ? `detail.itinerary.${step}.media_id` : null;
 }
+
+/** Request envelopes/shared maps and detail-only preflight schemas use different roots. */
+export function normalizeServiceFieldErrors(
+  errors: Record<string, string>,
+  form: FormState,
+  origin: "request" | "detail" = "request",
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(errors).map(([raw, message]) => {
+      let path = raw;
+      const rooted = /^(?:payload\.)?content\.|^detail\.|^shared\./.test(path);
+      path = path
+        .replace(/^(?:payload\.)?content\./, "")
+        .replace(/^shared\./, "");
+      if (origin === "detail" && !rooted && path) path = `detail.${path}`;
+      if (path === "factIcons" || path.startsWith("factIcons.")) {
+        const id = path.slice("factIcons.".length);
+        const index = form.detail.facts.findIndex((fact) => fact.id === id);
+        path = index >= 0 ? `detail.facts.${index}.icon` : "detail.facts";
+      } else if (
+        path === "itineraryMedia" ||
+        path.startsWith("itineraryMedia.")
+      ) {
+        const id = path.slice("itineraryMedia.".length);
+        const index = form.detail.itinerary.findIndex((step) => step.id === id);
+        path =
+          index >= 0
+            ? `detail.itinerary.${index}.media_id`
+            : "detail.itinerary";
+      }
+      return [path || "_form", message];
+    }),
+  );
+}

@@ -42,6 +42,7 @@ import {
   serviceFeedbackGroups,
   retainServiceErrors,
   serviceMediaPath,
+  normalizeServiceFieldErrors,
 } from "../feedback-model";
 import { serviceFormEqual } from "../locale-form-state";
 import { deleteService } from "../actions";
@@ -412,7 +413,13 @@ export function ServiceForm({
     }
     const fieldErrors =
       result.error === "validation"
-        ? { ...workspace.locales[attemptLocale].errors, ...result.fieldErrors }
+        ? {
+            ...workspace.locales[attemptLocale].errors,
+            ...normalizeServiceFieldErrors(
+              result.fieldErrors,
+              workspace.locales[attemptLocale].working,
+            ),
+          }
         : result.error === "slug_conflict"
           ? { slug: "Choose an available URL slug." }
           : workspace.locales[attemptLocale].errors;
@@ -492,11 +499,15 @@ export function ServiceForm({
     } catch (error) {
       const fieldErrors =
         error instanceof ZodError
-          ? Object.fromEntries(
-              error.issues.map((issue) => [
-                `detail.${issue.path.join(".")}`,
-                issue.message,
-              ]),
+          ? normalizeServiceFieldErrors(
+              Object.fromEntries(
+                error.issues.map((issue) => [
+                  issue.path.join("."),
+                  issue.message,
+                ]),
+              ),
+              state,
+              "detail",
             )
           : { price_from: "Enter a valid starting price." };
       receive(

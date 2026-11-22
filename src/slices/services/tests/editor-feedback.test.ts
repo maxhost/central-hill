@@ -1,6 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { emptyServiceEnvelope } from "../locale-content";
+import { serviceDetailContent } from "../detail";
+import {
+  saveServiceRequestSchema,
+  serviceFieldErrors,
+} from "../server/locale-validation";
+import {
+  serviceFormEnvelope,
+  serviceFormSharedContent,
+} from "../admin/locale-form-state";
 import { checkServiceEnvelope } from "../server/locale-validation";
 import {
   createServiceWorkspace,
@@ -10,6 +19,7 @@ import {
   retainServiceErrors,
   serviceFeedbackLabel,
   serviceFeedbackGroups,
+  normalizeServiceFieldErrors,
 } from "../admin/feedback-model";
 const category = "eef10000-0000-4000-8000-000000000001",
   media = "eef10000-0000-4000-8000-000000000002";
@@ -99,4 +109,68 @@ test("target dependency errors identify their English source without marking ind
     issues.find((issue) => issue.path === "name")?.sourceLocale,
     undefined,
   );
+});
+
+test("actual blank category shared-request rejection maps to the visible Category control", () => {
+  const w = createServiceWorkspace(null, category);
+  w.locales.en.working.category_id = "";
+  w.shared.category_id = "";
+  const input = {
+    serviceId: media,
+    locale: "en",
+    expectedRevision: 0,
+    templateRevision: null,
+    expectedSharedRevision: 0,
+    payload: serviceFormEnvelope(w, "en"),
+    shared: serviceFormSharedContent(w, "en"),
+    slug: "new-service",
+  };
+  const rejected = saveServiceRequestSchema.safeParse(input);
+  assert.equal(rejected.success, false);
+  if (rejected.success) throw Error("Expected required category failure");
+  const serverErrors = serviceFieldErrors(rejected.error.issues);
+  assert.ok(
+    serverErrors["shared.category_id"],
+    "exercise the actual request-schema root",
+  );
+  const normalized = normalizeServiceFieldErrors(
+    serverErrors,
+    w.locales.en.working,
+  );
+  assert.deepEqual(Object.keys(normalized), ["category_id"]);
+  assert.deepEqual(serviceFeedbackLabel(Object.keys(normalized)[0]!), {
+    section: "General",
+    label: "Category",
+  });
+});
+test("detail-only preflight errors keep nested control paths and do not double-prefix rooted errors", () => {
+  const w = createServiceWorkspace(null, category);
+  const form = w.locales.en.working;
+  const parsed = serviceDetailContent.safeParse({
+    ...doc().content.detail,
+    itinerary: [{ id: "row", time: "", title: "Title", text: "Text" }],
+  });
+  assert.equal(parsed.success, false);
+  if (parsed.success) throw Error("Expected required time failure");
+  const issues = Object.fromEntries(
+    parsed.error.issues.map((issue) => [issue.path.join("."), issue.message]),
+  );
+  assert.deepEqual(
+    Object.keys(normalizeServiceFieldErrors(issues, form, "detail")),
+    ["detail.itinerary.0.time"],
+  );
+  const rooted = normalizeServiceFieldErrors(
+    {
+      "content.category_id": "Choose category",
+      "payload.content.excerpt": "Enter excerpt",
+      "detail.itinerary.0.time": "Enter time",
+    },
+    form,
+    "detail",
+  );
+  assert.deepEqual(Object.keys(rooted), [
+    "category_id",
+    "excerpt",
+    "detail.itinerary.0.time",
+  ]);
 });
