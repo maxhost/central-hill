@@ -99,7 +99,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     const candidateSections = pageSections(descriptor, labels.field, ownContent);
     const target = candidateSections.find(section => section.bindings.some(binding => path === binding.id || path.startsWith(`${binding.id}.`))) ?? candidateSections.find(section => section.id === path.split(".")[0]);
     const node = homeNode(descriptor.rootNode, path);
-    const source = ownLocale !== "en" && !descriptor.localeIndependentContent && path !== "_source" && path !== "og_image_media_id" && !editorialTextPaths(ownContent, descriptor).includes(path) && !(descriptor.localeReferencePaths ?? []).includes(path);
+    const source = ownLocale !== "en" && path !== "_source" && (path === "og_image_media_id" || (!descriptor.localeIndependentContent && !editorialTextPaths(ownContent, descriptor).includes(path) && !(descriptor.localeReferencePaths ?? []).includes(path)));
     const human = path.startsWith("_") || path === "" ? "Shared source" : path === "og_image_media_id" ? "Social image" : pageFieldLabel(path, labels.field);
     const itemNumbers = path.split(".").filter(part => /^\d+$/.test(part)).map(part => Number(part) + 1);
     return { path, label: `${human}${itemNumbers.length ? ` (item ${itemNumbers.join(", ")})` : ""}`, message,
