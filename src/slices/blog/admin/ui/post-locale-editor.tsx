@@ -388,6 +388,7 @@ export function PostLocaleEditor({
     if (action === "publish" && (!state.model.draft || dirty || !persisted))
       return;
     const attemptLocale = locale;
+    const attemptGroups = postFeedbackGroups(states);
     lock.current = true;
     setOperation(action);
     setStates((previous) => ({
@@ -400,6 +401,7 @@ export function PostLocaleEditor({
         !(await queue.flush(postMediaIds(state.model.working), {
           locale: attemptLocale,
           feedback: true,
+          knownGroups: attemptGroups,
         }))
       )
         return;
@@ -458,6 +460,7 @@ export function PostLocaleEditor({
         action,
         locale: attemptLocale,
         outcome: "uncertain",
+        groups: attemptGroups,
       });
       setStates((previous) => ({
         ...previous,
@@ -624,7 +627,11 @@ export function PostLocaleEditor({
   const titleId = `${fieldPrefix}-leave-title`;
   const descriptionId = `${fieldPrefix}-leave-description`;
   return (
-    <FeedbackScope locale={locale} entity={postId}>
+    <FeedbackScope
+      locale={locale}
+      entity={postId}
+      knownGroups={postFeedbackGroups(states)}
+    >
       <MediaAltProvider
         locale={locale}
         value={content.media_alts}

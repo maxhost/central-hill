@@ -426,6 +426,7 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
     if (busy || lock.current || (own.conflict && action !== "visibility"))
       return;
     const attemptLocale = locale;
+    const attemptGroups = guideFeedbackGroups(workspace);
     const sharedChanged = !guideValuesEqual(
       workspace.shared,
       workspace.savedShared,
@@ -445,6 +446,7 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
           !(await queue.flush(guideSharedMediaIds(workspace.shared), {
             locale: attemptLocale,
             feedback: true,
+            knownGroups: attemptGroups,
           }))
         ) {
           return;
@@ -489,6 +491,7 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
         action: action === "publish" ? "publish" : "save",
         locale: attemptLocale,
         outcome: "uncertain",
+        groups: attemptGroups,
       });
       setWorkspace((previous) => ({
         ...previous,
@@ -544,7 +547,11 @@ function Editor({ initial, cities, draft, initialLocale }: EditorProps) {
     />
   );
   return (
-    <FeedbackScope locale={locale} entity={workspace.id}>
+    <FeedbackScope
+      locale={locale}
+      entity={workspace.id}
+      knownGroups={guideFeedbackGroups(workspace)}
+    >
       <MediaAltProvider
         locale={locale}
         value={page.media_alts}

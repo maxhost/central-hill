@@ -466,11 +466,16 @@ export function ServiceForm({
     pendingFocus.current = outcome === "validation";
     toast.error(message);
   }
-  function uncertain(action: "save" | "publish", attemptLocale: Locale) {
+  function uncertain(
+    action: "save" | "publish",
+    attemptLocale: Locale,
+    attemptGroups: ReturnType<typeof serviceFeedbackGroups>,
+  ) {
     const message = feedbackMessage({
       action,
       locale: attemptLocale,
       outcome: "uncertain",
+      groups: attemptGroups,
     });
     setWorkspace((previous) => ({
       ...previous,
@@ -488,6 +493,7 @@ export function ServiceForm({
   function onSubmit() {
     if (busy || lock.current || own.conflict || own.reloadRequired) return;
     const attemptLocale = locale;
+    const attemptGroups = serviceFeedbackGroups(workspace);
     setBanner(null);
     let payload: ReturnType<typeof serviceFormEnvelope>;
     let shared: ReturnType<typeof serviceFormSharedContent>;
@@ -530,7 +536,11 @@ export function ServiceForm({
               ...payload.content.gallery,
               ...payload.content.detail.itinerary.map((step) => step.media_id),
             ].filter((id): id is string => Boolean(id)),
-            { locale: attemptLocale, feedback: true },
+            {
+              locale: attemptLocale,
+              feedback: true,
+              knownGroups: attemptGroups,
+            },
           ))
         )
           return;
@@ -554,7 +564,7 @@ export function ServiceForm({
           sharedChanged,
         );
       } catch {
-        uncertain("save", attemptLocale);
+        uncertain("save", attemptLocale, attemptGroups);
       } finally {
         lock.current = false;
         setUploading(false);
@@ -575,6 +585,7 @@ export function ServiceForm({
     )
       return;
     const attemptLocale = locale;
+    const attemptGroups = serviceFeedbackGroups(workspace);
     lock.current = true;
     setOperation("publish");
     start(async () => {
@@ -589,7 +600,7 @@ export function ServiceForm({
           attemptLocale,
         );
       } catch {
-        uncertain("publish", attemptLocale);
+        uncertain("publish", attemptLocale, attemptGroups);
       } finally {
         lock.current = false;
         setOperation(null);
@@ -672,7 +683,11 @@ export function ServiceForm({
     know_practical: t("detail.knowPractical"),
   };
   return (
-    <FeedbackScope locale={locale} entity={serviceId}>
+    <FeedbackScope
+      locale={locale}
+      entity={serviceId}
+      knownGroups={serviceFeedbackGroups(workspace)}
+    >
       <MediaAltProvider
         locale={locale}
         value={state.media_alts}
