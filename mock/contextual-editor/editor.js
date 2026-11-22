@@ -8,11 +8,10 @@ const base={
  pt:{'hero.eyebrow':'Portugal · Apartamentos mobilados','hero.headline':'Momentos que se tornam memórias','hero.subtitle':'Apartamentos com design e gestão profissional nos locais mais especiais de Portugal.','hero.cta_primary.label':'Reserve o seu apartamento','hero.cta_secondary.label':'Sou proprietário','stats.title':'Uma empresa de confiança','guests_pitch.headline':'O seu lugar no coração de Lisboa.','guests_pitch.subheadline':'Casas acolhedoras, espaço para ficar e uma equipa local que cuida da sua estadia.','portfolio.title':'Encontre um lugar que sinta seu.','services_carousel.headline':'Parceiros e serviços Central Hill','seo.meta_title':'Central Hill · Apartamentos mobilados em Lisboa','seo.meta_description':'Descubra a sua próxima estadia em Lisboa com a Central Hill.'},
  fr:{'hero.eyebrow':'Portugal · Appartements meublés','hero.cta_primary.label':'Réserver votre appartement','hero.cta_secondary.label':'Je suis propriétaire'}
 };
-let saved=structuredClone(base), drafts=structuredClone(base), applied=structuredClone(base), locale='en', selection='hero.headline', viewport=1440, mediaURL=null, mediaDirty=false;
+let drafts=structuredClone(base), applied=structuredClone(base), locale='en', selection='hero.headline', viewport=1440, mediaURL=null, mediaDirty=false;
 const dirtyLocales=new Set();
 const states={en:'source',es:'approved',pt:'needs_review',fr:'missing'};
 const sectionNames={hero:'Hero',stats:'Cifras',guests_pitch:'Para huéspedes',portfolio:'Apartamentos',services_carousel:'Servicios',faq:'Preguntas frecuentes',dual_cta:'Cierre de la página',search_bar:'Buscador Avantio',seo:'SEO y redes sociales',site:'Contenido compartido'};
-const sourceValues=()=>({...drafts.en,...drafts[locale]});
 function send(message){$('#page-preview').contentWindow.postMessage(message,location.origin==='null'?'*':location.origin)}
 function renderPreview(){send({type:'concept:render',locale,values:{...applied.en,...applied[locale]},selection,image:mediaURL});$('#preview-state').textContent=`Vista ${dirtyLocales.has(locale)?'anterior · cambios pendientes':'guardada (demo)'} · ${locale.toUpperCase()}`}
 function resize(){const canvas=$('#canvas'),frame=$('#page-preview'),holder=$('#frame-scaler');const scale=Math.min(1,(canvas.clientWidth-4)/viewport);const height=Math.max(350,Math.floor(canvas.clientHeight/scale));frame.style.width=viewport+'px';frame.style.height=height+'px';frame.style.transform=`scale(${scale})`;holder.style.width=viewport*scale+'px';holder.style.height=height*scale+'px';$('#zoom').textContent=Math.round(scale*100)+'% · Ajustar';$('#viewport-size').textContent=viewport+' px'}
@@ -74,5 +73,5 @@ $('#outline-toggle').onclick=()=>{const open=$('#outline').hidden;$('#outline').
 $('#back-overview').onclick=()=>$('#outline-toggle').click();
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('#outline').hidden=true;$('#outline-toggle').setAttribute('aria-expanded','false')}});
 $('#refresh-preview').onclick=()=>{applied[locale]=structuredClone(drafts[locale]);renderPreview();$('#preview-state').textContent=`Vista de cambios pendientes · ${locale.toUpperCase()} · demo`;toast('Vista actualizada con tus cambios locales. No se ha publicado nada.')};
-$('#save-draft').onclick=()=>{saved=structuredClone(drafts);applied=structuredClone(drafts);dirtyLocales.clear();mediaDirty=false;updateStatus();renderPreview();toast('Guardado simulado en memoria. Recargar el navegador restablece el ejemplo.')};
+$('#save-draft').onclick=()=>{applied=structuredClone(drafts);dirtyLocales.clear();mediaDirty=false;updateStatus();renderPreview();toast('Guardado simulado en memoria. Recargar el navegador restablece el ejemplo.')};
 new ResizeObserver(resize).observe($('#canvas'));inspector();resize();

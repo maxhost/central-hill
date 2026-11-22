@@ -27,6 +27,13 @@ interface JournalEntry {
 
 const problems: string[] = [];
 const warnings: string[] = [];
+const historicalExceptions: string[] = [];
+// Applied SQL is immutable: this exact reviewed file already ran as one query through the
+// current websocket Pool driver. This is not approval for any future driver change.
+const historicalBreakpointException = {
+  tag: "0008_faq_groups_and_page_faq_key",
+  sha256: "73dc6c8dd704099ed5a81d15cb568a2f82950c150e514aee394c7d22d5bb2538",
+};
 const fail = (msg: string) => problems.push(msg);
 const warn = (msg: string) => warnings.push(msg);
 
@@ -90,6 +97,22 @@ for (const entry of journal.entries) {
 // statement after the first.
 for (const entry of journal.entries) {
   const sql = readFileSync(path.join(DRIZZLE_DIR, `${entry.tag}.sql`), "utf8");
+  if (entry.tag === historicalBreakpointException.tag) {
+    const hash = createHash("sha256").update(sql).digest("hex");
+    if (hash !== historicalBreakpointException.sha256) {
+      fail(
+        `drizzle/${entry.tag}.sql has historical exception hash drift: expected ` +
+          `${historicalBreakpointException.sha256}, got ${hash}. Applied SQL must remain immutable.`,
+      );
+    } else {
+      historicalExceptions.push(
+        `drizzle/${entry.tag}.sql: reviewed historical breakpoint exception (SHA256 ${hash}); ` +
+          `four statements already applied through the current websocket Pool driver; SQL unchanged. ` +
+          `A future driver change requires separate review.`,
+      );
+    }
+    continue;
+  }
   if (sql.includes("--> statement-breakpoint")) continue;
 
   // Strip line comments, dollar-quoted bodies ($tag$…$tag$) and single-quoted literals before
@@ -109,6 +132,7 @@ for (const entry of journal.entries) {
 }
 
 // ── report ──────────────────────────────────────────────────────────────────────
+for (const info of historicalExceptions) console.log(`  i ${info}`);
 for (const w of warnings) console.warn(`  ! ${w}`);
 
 if (problems.length > 0) {

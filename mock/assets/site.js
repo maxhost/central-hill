@@ -40,7 +40,7 @@
     var p = PALETTES.filter(function (x) { return x.id === id; })[0] || PALETTES[0];
     body.setAttribute("data-theme", p.id);
     nameEl.textContent = p.name;
-    try { localStorage.setItem("ch-theme", p.id); } catch (e) {}
+    try { localStorage.setItem("ch-theme", p.id); } catch {}
     [].forEach.call(dots.children, function (b) {
       b.setAttribute("aria-pressed", String(b.dataset.id === p.id));
     });
@@ -57,7 +57,7 @@
     dots.appendChild(b);
   });
   var saved;
-  try { saved = localStorage.getItem("ch-theme"); } catch (e) {}
+  try { saved = localStorage.getItem("ch-theme"); } catch {}
   apply(saved || body.getAttribute("data-theme") || "warm-editorial");
 
   /* ---- nav: transparent over a dark hero → frosted on scroll.
@@ -82,7 +82,7 @@
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduce) {
     [].forEach.call(document.querySelectorAll(".hero video"), function (v) {
-      v.removeAttribute("autoplay"); try { v.pause(); } catch (e) {}
+      v.removeAttribute("autoplay"); try { v.pause(); } catch {}
     });
   }
   var els = document.querySelectorAll(".reveal");
