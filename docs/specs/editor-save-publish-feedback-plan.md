@@ -16,6 +16,8 @@ rechazó una acción y dónde corregirla. Incorporar:
 4. Modal de progreso que permanezca abierto y muestre el error si falla una subida.
 5. E2E con datos completos, obligatorios incompletos, opcionales vacíos y fallos reales
    controlados de subida, antes de considerar una integración a `main`.
+6. Idioma explícito en el feedback, errores agrupados por traducción, contorno rojo
+   en las pestañas afectadas y verificación de Publish exclusivo del idioma seleccionado.
 
 La implementación tendrá dos implementadores, un QA independiente y un orquestador.
 Se aislarán código, base de datos y almacenamiento; la rama por sí sola no aísla los datos.
@@ -50,7 +52,9 @@ Alcance funcional:
 
 No añadir migraciones, nuevos campos de contenido ni reglas de negocio ajenas al
 problema; no modificar MIME/límites de archivos, permisos, auth/orígenes, publicación
-por idioma ni contenido existente. No extender la mejora funcional a otros editores.
+por idioma ni contenido existente salvo corregir una desviación comprobada del
+contrato de publicación individual que se exige aquí. No convertir Publish en una
+operación global ni extender la mejora funcional a otros editores.
 Los consumidores de componentes compartidos tendrán una regresión acotada de compatibilidad.
 
 ## Contrato de guardado y publicación
@@ -74,6 +78,95 @@ Se mantiene el flujo de dos pasos y su protección frente a revisiones obsoletas
 - EN no publica automáticamente los documentos de ES/PT/FR. Conservar working,
   draft, publicación, referencias compartidas y reglas legales independientes.
 
+## Idioma de los errores y publicación individual
+
+### Códigos y alcance de cada acción
+
+Los idiomas actuales son **EN, ES, PT y FR**. Portugués se identifica como PT, según
+el contrato del proyecto; no crear una traducción/locale PR.
+
+- Al pulsar Save/Publish, capturar el idioma seleccionado como parte del intento:
+  editor/entidad, locale, acción y revisión. Una respuesta tardía pertenece a ese
+  intento, no a la pestaña que casualmente esté seleccionada al recibirla.
+- La acción visible debe indicar el idioma: `Publish (ES)` y `Save draft (ES)`,
+  actualizados al cambiar de pestaña. Mostrar además: `Only the selected language
+  is published.` No debe parecer un botón de publicar todas las traducciones.
+- Publish desde ES valida y publica la versión ES. No guarda, publica, aprueba,
+  consume drafts ni incrementa revisiones/fechas de publicación de EN/PT/FR.
+  Aplicar la misma regla al publicar EN, PT o FR.
+- Un error conocido de EN/PT/FR no bloquea por sí solo una publicación ES válida.
+  No ejecutar Publish/validaciones de publicación de todos los idiomas para aprobar ES.
+  Conservar las protecciones de busy, uploads en curso, revisión y concurrencia.
+- Se permiten lecturas y comprobaciones necesarias de dependencias compartidas,
+  permisos y revisiones del source. Un dato compartido inválido que realmente necesita
+  ES puede bloquear ES, pero el mensaje debe identificar esa dependencia y dónde
+  corregirla. No tratar una traducción independiente incompleta como dependencia global.
+- Revisar handlers, payloads, acciones, validators y escrituras de los cuatro editores;
+  no limitar la comprobación al botón. La condición locale de las mutaciones debe
+  corresponder al intento y conservar la verificación de revisión.
+
+La exclusividad se acredita sobre las **publicaciones propias por idioma** y sus
+drafts/revisiones. Mantener separados dos comportamientos existentes:
+
+1. Algunos campos compartidos de Guides/Services cambian al **Save**. No disfrazar
+   esos efectos como publicaciones de traducciones ni prometer que Save solo afecta ES.
+2. Una URL sin publicación propia puede mostrar fallback EN. Si EN cambia, puede
+   cambiar ese fallback sin que se haya publicado una traducción ES/PT/FR. No crear
+   publicaciones propias, rellenar textos ni cambiar las reglas de fallback en esta tarea.
+
+QA distingue esos casos de una escritura indebida de otra traducción. El estado
+global de la entidad, bootstrap legacy y cualquier efecto compartido se inventariarán
+por separado; no pueden usarse como exclusión genérica que esconda una publicación
+o un draft de otro idioma modificado por Publish. Una desviación comprobada del
+contrato individual se corrige en la rama aislada antes de aprobarla.
+
+### Errores conocidos de varias traducciones
+
+El estado de errores se conserva por editor/entidad/idioma al cambiar de pestaña o
+sección, sin mezclar entidades o formularios distintos. Solo agregar errores realmente
+conocidos por validación/acción; un idioma no revisado no se considera inválido ni válido.
+
+- Cada error incluye locale de origen y, cuando aplica, campo/grupo, fase Save/Publish,
+  revisión o snapshot validado y destino UI. Las dependencias compartidas también
+  identifican su ámbito y el source que las administra.
+- En un fallo, toast y resumen nombran **todos los idiomas con errores conocidos**
+  de ese formulario. Distinguir el que acaba de fallar de los errores ya conocidos
+  de otras pestañas; no afirmar que todos fueron validados o publicados en ese intento.
+- Agrupar el resumen por idioma y contar errores reales, sin duplicar el mismo error
+  por aparecer en toast, resumen y campo. Una entrada muestra, por ejemplo:
+  `PT → Section 2 → Button URL` y lleva a esa pestaña, sección y control.
+- Un Publish ES exitoso sigue mostrando éxito aunque queden errores conocidos en EN
+  o PT. El resumen y las marcas de esos idiomas permanecen; no emitir un falso error
+  de publicación ES por esos pendientes.
+- Save ES no borra errores de EN/PT/FR. Tampoco un Save de borrador incompleto acredita
+  haber resuelto errores de requisitos de Publish de ES. Mantenerlos mientras sigan
+  aplicando; corregir/validar cada campo o confirmar Publish resuelve sus errores.
+- Al corregir solo un idioma, retirar solo sus errores efectivamente resueltos. Si
+  cambia un valor del que dependía una validación, actualizar o declarar pendiente
+  de revalidación ese resultado, sin presentar errores obsoletos como hechos actuales.
+- Una respuesta de un intento anterior no puede reintroducir errores después de un
+  resultado más reciente ni asignarlos a otro idioma. No persistir errores en la DB.
+
+Ejemplo: existen errores conocidos EN(1), ES(2) y PT(1), y el último Publish fue ES:
+`Cannot publish ES: fix 2 errors in ES. Other known errors: EN (1), PT (1).`
+El resumen conserva los tres grupos y solo ES fue objeto de esa publicación fallida.
+
+### Pestañas con contorno rojo
+
+- Toda pestaña con errores conocidos vigentes tiene contorno rojo, esté activa o no.
+  Conservar por separado su indicador de selección y el foco de teclado.
+- Añadir indicador accesible/textual o contador, por ejemplo `ES — 2 errors`; el color
+  no es la única señal. Asociarlo a su resumen mediante descripción accesible.
+- El contorno persiste tras cerrar/expirar el toast y al navegar entre idiomas.
+  Solo desaparece cuando se resuelven los errores correspondientes; no al seleccionar
+  otra pestaña, al guardar otro idioma ni al recibir un modelo actualizado de otra acción.
+- Una pestaña sin validar, con cambios sin guardar o sin publicación no se marca roja
+  únicamente por ese estado. Ante un resultado incierto, el idioma de la acción
+  conserva contorno de atención y una descripción como `ES — publication not confirmed`;
+  no se afirma que sus campos sean inválidos ni se marcan otras traducciones por deducción.
+- Un fallo de archivo pertenece al idioma/ámbito de su selección. No atribuirlo a
+  todas las traducciones por compartir la misma cola. Mantener el detalle dentro del modal.
+
 ## Inventario de requisitos antes de implementar
 
 Los implementadores prepararán un registro cruzado con los validadores reales, no
@@ -81,10 +174,10 @@ deducido únicamente de `optional()` o de los labels actuales. Por campo/binding
 
 | Dato obligatorio del registro | Contenido |
 | --- | --- |
-| Identidad | Editor/ruta/superficie, campo y ruta estable de error; índice o ID estable en listas. |
+| Identidad | Editor/ruta/superficie, entidad, idioma/ámbito, campo y ruta estable de error; índice o ID estable en listas. |
 | Requisito | Obligatorio para Save inicial, para Publish, condicional u opcional. |
 | Condición | Idioma editable, template, módulo activo, tipo de Booking o dependencia de otro campo. |
-| Destino UI | Label en inglés, sección/pestaña/acordeón y control real al que llevar el foco. |
+| Destino UI | Idioma, label en inglés, sección/pestaña/acordeón y control real al que llevar el foco. |
 | Validación | Fuente de servidor y correspondencia con el requisito visible. |
 | Efecto de Save | Texto/valor en draft por locale frente a dato compartido que puede actualizar vistas publicadas; mensaje y prueba correspondientes. |
 | E2E | Caso que deja vacío el requisito, caso que lo corrige y cobertura del opcional. |
@@ -121,20 +214,23 @@ la notificación ni quedar recortado por el scroll del inspector.
 | Draft confirmado, mensaje base seguro | `Draft saved (EN).` |
 | Draft completamente privado, cuando el contrato lo acredita | `Draft saved (EN). These changes are not published yet.` |
 | Save que actualizó campos compartidos | `Draft saved (EN). Shared fields were also updated for all languages.` |
-| Publish confirmado | `Changes published (EN).` |
-| Faltan requisitos | `Cannot publish: complete 3 required fields. First: Hero → Primary button URL.` |
-| Valor inválido | `Cannot save: enter a valid website URL in Booking → External URL.` |
-| Validación mixta | `Cannot publish: fix 2 fields. First: Section 2 → Button URL.` |
-| Conflicto | `This content changed since you opened it. Reload the latest version before trying again.` |
-| Resultado incierto por transporte | `We could not confirm whether your draft was saved. Your edits are still here. Reload to check before trying again.` |
+| Publish confirmado | `Changes published (ES only).` |
+| Faltan requisitos | `Cannot publish ES: complete 3 required fields. First: ES → Hero → Primary button URL.` |
+| Valor inválido | `Cannot save PT: enter a valid website URL in PT → Booking → External URL.` |
+| Validación mixta | `Cannot publish FR: fix 2 fields. First: FR → Section 2 → Button URL.` |
+| Varios idiomas con errores conocidos | `Cannot publish ES: fix 2 errors in ES. Other known errors: EN (1), PT (1).` |
+| Conflicto | `Cannot continue in ES: this draft or its shared source changed. Reload the latest version.` |
+| Resultado incierto por transporte | `We could not confirm whether your ES draft was saved. Your edits are still here. Reload to check before trying again.` |
 | Commit con refreshWarning | `Published (EN), but the public view could not be refreshed. Please check the page.` |
-| Upload fallido | `Could not upload “cover.png”. Your draft has not been saved. Retry the upload.` |
+| Upload fallido | `Could not upload “cover.png” for ES. Your ES draft has not been saved. Retry the upload.` |
 
 La redacción final se centraliza en un catálogo de feedback en inglés, separado del
 contenido editorial. Debe seguir en inglés aunque el idioma de contenido sea otro,
 sin reemplazar traducciones existentes ni el idioma de los documentos.
 
 - Distinguir `save`, `publish` y `upload` en texto y estado; no llamar “save” al fallo de Publish.
+- Incluir el idioma también en errores de validación, conflicto, transporte y archivos,
+  no solo en los éxitos. En ámbitos compartidos indicar además `Shared field — managed in EN`.
 - Elegir el aviso de cambios compartidos por diferencias semánticas reales, no por
   un incremento de revisión sin cambios de valores. Probar Save de solo texto y
   Save que modifica un valor compartido en Guides/Services.
@@ -161,9 +257,12 @@ Usar los errores reales de la acción y sus rutas estables para:
 2. Dar el mismo tratamiento a inputs, textarea, selects, rich text, MediaField,
    galerías y grupos repetibles; no limitarlo al wrapper o al texto del label.
 3. Mostrar un resumen persistente cerca de las acciones, fuera de regiones que
-   puedan recortarlo. Cada entrada debe llevar al error correspondiente.
+   puedan recortarlo, agrupado por los idiomas con errores conocidos. Cada entrada
+   debe llevar a idioma, sección y error correspondientes.
 4. En Pages seleccionar la sección/superficie correcta; en otros editores abrir
-   acordeones/paneles y hacer scroll/foco al control real. El foco no puede terminar
+   acordeones/paneles y hacer scroll/foco al control real. No cambiar de idioma sin
+   intención del usuario: el fallo enfoca el primer error del idioma de la acción;
+   las entradas de otros idiomas se abren al seleccionarlas expresamente. El foco no puede terminar
    en el DIV raíz sin mostrar el error, como ocurría en Services.
 5. Al corregir y validar un valor, quitar el error de ese campo sin borrar errores
    de otros campos ni declarar éxito de toda la operación antes del servidor.
@@ -279,8 +378,8 @@ en autoría o producción durante implementación y QA. Ningún push ni deploy.
 | Responsable | Propiedad y entregable |
 | --- | --- |
 | Orquestador | Checkpoint/aislamiento, inventario y contrato de interfaz inicial, ramas/worktrees, integración, checks, conservación y revisión visual. Documentación/ADR si cambia contrato compartido. No repartir el mismo archivo entre escritores. |
-| Implementador A | Backoffice compartido: form/Field/controles, MediaField/MediaGalleryField, toast, media-queue/modal, nuevo catálogo/adaptador de feedback y contrato/export client-safe. Único propietario de `blog/admin/ui/post-rich-text-editor.tsx`, por ser RTE compartido con Pages legales: solo presentación/errores/registro/foco. Integración Pages visual, schema-fields/rich fields y mappings; acciones/tipos/resultados Pages para distinguir rechazo, commit confirmado y refreshWarning sin alterar su semántica editorial. Pruebas focales de backoffice/Pages/RTE compartido. |
-| Implementador B | Integración en GuideEditor/GuideSectionEditor, ServiceForm y PostLocaleEditor; mappings/requisitos, schemas draft/publicación y validadores condicionales. Lectores públicos de esos dominios solo cuando la corrección de inactivos los requiera, sin rediseñar renderizadores. Acciones/tipos/resultados para distinguir rechazo, commit confirmado, refreshWarning e incertidumbre. Pruebas focales de esos dominios. No editar RTE compartido, shared UI ni archivos de A. |
+| Implementador A | Backoffice compartido: form/Field/controles, MediaField/MediaGalleryField, toast, media-queue/modal, catálogo/adaptador de feedback, agregado de errores por idioma y contrato/export client-safe. Único propietario de `blog/admin/ui/post-rich-text-editor.tsx`, por ser RTE compartido con Pages legales: solo presentación/errores/registro/foco. Integración Pages visual, tabs con contorno, schema-fields/rich fields y mappings; acciones/tipos/resultados Pages para distinguir rechazo, commit confirmado y refreshWarning, auditando/corrigiendo el aislamiento de Publish por locale. Pruebas focales de backoffice/Pages/RTE compartido. |
+| Implementador B | Integración en GuideEditor/GuideSectionEditor, ServiceForm y PostLocaleEditor: errores por idioma y tabs con contorno, mappings/requisitos, schemas draft/publicación y validadores condicionales. Lectores públicos de esos dominios solo cuando la corrección de inactivos los requiera, sin rediseñar renderizadores. Acciones/tipos/resultados para distinguir rechazo, commit confirmado, refreshWarning e incertidumbre, auditando/corrigiendo Publish por locale. Pruebas focales de esos dominios. No editar RTE compartido, shared UI ni archivos de A. |
 | QA independiente | Scripts E2E, fixtures exclusivamente propios, evidencia, reporte y aprobación del candidato exacto. No corregir producto: devuelve defectos al propietario por medio del orquestador. |
 
 Antes de escribir en paralelo, acordar tipos/imports del adaptador, rutas de error,
@@ -342,6 +441,32 @@ que comparten exactamente contrato y renderer pueden compartir evidencia solo co
 mapping revisado por QA, más una comprobación de integración en cada ruta/template.
 No ampliar ni reducir silenciosamente la matriz durante la ejecución.
 
+### Idiomas, errores acumulados y publicación aislada
+
+Los siguientes grupos se verifican en los cuatro editores y en cada contrato de
+publicación diferente; Pages general y Pages legales se distinguen cuando corresponda.
+Añadirlos al recuento finito antes de implementar, sin multiplicar F03 por todos los
+idiomas/variantes innecesariamente.
+
+| ID | Caso | Resultado exigido |
+| --- | --- | --- |
+| L01 | Un error en ES | Toast/resumen indican ES, campo ES rojo y tab ES con contorno rojo. No marcar EN/PT/FR sin errores conocidos. |
+| L02 | Errores conocidos en EN, ES, PT y FR al navegar entre tabs | Mensaje de error nombra los cuatro idiomas y sus cantidades; resumen por idioma, cuatro contornos rojos y destinos de foco correctos, sin truncar/omitir idiomas en el toast. Mantenerlos tras cerrar el toast o cambiar de sección. |
+| L03 | Publish de cada locale EN/ES/PT/FR por separado | Payload apunta al seleccionado; solo su publicación/draft/revisión cambia. Snapshots completos de los otros tres locales, incluidas fechas y revisión, permanecen exactos. Comprobar SQL y público. |
+| L04 | ES válido con errores conocidos o drafts incompletos en EN/PT/FR | ES se publica y muestra éxito ES; no ejecutar acciones ni exigir completar las otras traducciones. Sus drafts/publicaciones/revisiones y sus errores conocidos se conservan. Dependencias compartidas se mantienen válidas en este fixture. |
+| L05 | Corregir un error ES mientras EN/PT siguen inválidos | Solo se limpian errores ES realmente resueltos y su contorno cuando corresponda; EN/PT permanecen marcados. Save incompleto de ES no elimina falsamente sus errores previos de Publish. |
+| L06 | Idiomas sin comprobar y fallback EN | No inventar errores o validez de tabs no visitadas. Un cambio en fallback no crea ni modifica una publicación propia de otro locale. Separar de un caso con publicación propia previa que debe conservarse. |
+| L07 | Dependencia compartida inválida administrada en EN al publicar ES | Explicar el bloqueo ES y el campo/source EN; no pedir completar textos independientes EN ni cambiar de idioma automáticamente. La entrada del resumen permite navegar explícitamente sin perder cambios. |
+| L08 | Archivo propio de ES pendiente/fallido y otra traducción válida | Modal/toast/error conservan idioma/ámbito del archivo. La cola del otro idioma no mezcla archivos ni bloquea por un error ajeno sin dependencia real; conservar guards mientras haya trabajo en curso. |
+| L09 | Cambio de tab, retorno de respuesta o modelo actualizado | Los resultados se asocian al intento/locale correcto y no borran errores de otros idiomas, ni working ajeno. Una respuesta obsoleta no pisa un resultado nuevo. Si la UI bloquea la navegación durante pending, comprobar ese guard y cubrir la carrera con prueba focal de estado, sin forzar controles deshabilitados. |
+
+En L03/L04, el baseline se toma inmediatamente antes de Publish, después de los Save
+que preparan fixtures. Comparar todas las filas locales, no solo el texto mostrado.
+Comprobar por separado metadatos globales, shared y bootstrap legacy; no excluir otras
+publicaciones de la comparación por considerarlas “compartidas”. La invalidación de
+caché de varias rutas no equivale a publicar varias traducciones y no justifica una
+mutación de sus drafts/revisiones.
+
 ### Subidas: pipeline real y fallos acotados
 
 | ID | Caso | Resultado exigido |
@@ -392,6 +517,9 @@ de cualquier recuperación explícita.
    evidencias fuera de Git. Preservar bases, builds, caches y evidencias anteriores.
 7. QA independiente revisa SHA exacto; fuente que se integra coincide con la validada.
    Si `main` avanzó, integrar su estado en la rama aislada y validar el resultado.
+8. La entrega acredita errores identificados por idioma, tabs con contorno correcto
+   y Publish individual. Una publicación ES que modifica publicaciones/drafts de
+   otros idiomas o se bloquea por textos independientes ajenos es un defecto pendiente.
 
 Ningún caso bloqueado, screenshot sin pintura, fallo de harnés ni resultado HTTP200
 sin confirmación cuenta como aprobado. No atribuir Safari físico a Chromium emulado.
