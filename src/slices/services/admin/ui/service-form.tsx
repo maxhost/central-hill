@@ -700,6 +700,7 @@ export function ServiceForm({
               {workspace.model?.status === "published" && model?.published ? (
                 <Link
                   href={`/${locale}/services/${workspace.model.slugByLocale[locale] ?? workspace.model.slugByLocale.en ?? ""}`}
+                  prefetch={false}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-ink-soft hover:text-accent-deep"
