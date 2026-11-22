@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { EditorLocale, PageEditorShellProps } from "../page-editor-types";
+import { feedbackTabProps } from "./editor-feedback";
 import { AdminButton, Select } from "./form";
 import { PAGE_EDITOR_CHANNEL, pageEditorPreviewUrl, readPageEditorMessage } from "./page-editor-bridge";
 
@@ -127,8 +128,8 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
         <h1 className="font-serif text-3xl text-ink">{adapter.title}</h1>
         <div role="group" aria-label={t("contentLanguage")} className="flex gap-1 rounded-md border border-line bg-surface p-1">
           {LOCALES.map((locale) => (
-            <button key={locale} type="button" aria-pressed={adapter.locale === locale} onClick={() => adapter.onLocaleChange(locale)} disabled={adapter.busy || adapter.disabledLocales?.includes(locale)}
-              className={`${buttonClass} ${adapter.locale === locale ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}>
+            <button key={locale} type="button" aria-label={feedbackTabProps(adapter.feedbackGroups?.find(group => group.locale === locale), adapter.feedbackId)["aria-label"]} aria-describedby={feedbackTabProps(adapter.feedbackGroups?.find(group => group.locale === locale), adapter.feedbackId)["aria-describedby"]} data-feedback-invalid={feedbackTabProps(adapter.feedbackGroups?.find(group => group.locale === locale), adapter.feedbackId)["data-feedback-invalid"]} aria-pressed={adapter.locale === locale} onClick={() => adapter.onLocaleChange(locale)} disabled={adapter.busy || adapter.disabledLocales?.includes(locale)}
+              className={`${buttonClass} ${feedbackTabProps(adapter.feedbackGroups?.find(group => group.locale === locale), adapter.feedbackId).className} ${adapter.locale === locale ? "bg-accent/10 text-accent-deep" : "text-ink-soft"}`}>
               {locale.toUpperCase()}{locale === "en" ? <span className="ml-1 text-[10px] font-normal">{t("source")}</span> : null}
             </button>
           ))}
@@ -138,6 +139,8 @@ export function PageEditorShell({ adapter }: PageEditorShellProps) {
           {adapter.actions}
         </div>
       </header>
+
+      {adapter.feedback ? <div className="mt-4">{adapter.feedback}</div> : null}
 
       {adapter.pageNavigation ? <div className="mt-5 min-w-0">{adapter.pageNavigation}</div> : null}
 

@@ -37,6 +37,10 @@ export interface PageEditorAdapter {
   status?: ReactNode;
   inspector: ReactNode;
   actions: ReactNode;
+  /** Explicit editorial-feedback opt-in; legacy adapters retain their presentation. */
+  feedback?: ReactNode;
+  feedbackId?: string;
+  feedbackGroups?: import("./ui/editor-feedback-copy").FeedbackGroup[];
 }
 export interface PageEditorShellProps { adapter: PageEditorAdapter }
 /** Private same-origin bridge; validate origin, source, instance and known binding IDs. */

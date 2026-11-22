@@ -63,8 +63,9 @@ export interface MediaQueueApi {
   /** Drop a queued file (the editor removed or replaced the field's value). */
   dequeue: (id: string) => void;
   /** Upload selected assets, or all queued assets when omitted. */
-  flush: (ids?: readonly string[], options?: { locale: EditorLocale; feedback: true }) => Promise<boolean>;
+  flush: (ids?: readonly string[], options?: { locale: EditorLocale; feedback: true; entity?: string }) => Promise<boolean>;
   errorFor?: (id: string) => string | undefined;
+  failures?: readonly { id: string; name: string; locale?: EditorLocale; entity?: string; error?: string }[];
   /** True while anything is still queued — used to guard navigation. */
   hasPending: boolean;
   /** Is this asset's file still waiting to be uploaded? Drives the field's note. */
@@ -138,6 +139,7 @@ function putWithProgress(
 export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const t = useTranslations("backoffice");
   const toast = useToast();
+  const lastUploadToast = useRef<string | null>(null);
   const dialogTitle = useId();
   const [items, setItems] = useState<QueueItem[]>([]);
   const itemsRef = useRef<QueueItem[]>([]);
@@ -196,7 +198,8 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
       for (const item of outstanding) if (!await uploadItem(item)) ok = false;
       if (!ok && feedbackLocaleRef.current) {
         const failed = itemsRef.current.filter(item => item.status === "failed" && (!selected || selected.includes(item.id)));
-        toast.error(uploadFeedback(feedbackLocaleRef.current, failed.map(item => item.name)), { duration: 0 });
+        if (lastUploadToast.current) toast.dismiss(lastUploadToast.current);
+        lastUploadToast.current = toast.error(uploadFeedback(feedbackLocaleRef.current, failed.map(item => item.name)), { duration: 0 });
       }
       return ok;
     } finally { runningRef.current = false; setRunning(false); }
@@ -206,9 +209,9 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
     setOpen(false);
     requestAnimationFrame(() => returnFocus.current?.focus());
   }, []);
-  const flush = useCallback(async (ids?: readonly string[], options?: { locale: EditorLocale; feedback: true }): Promise<boolean> => {
+  const flush = useCallback(async (ids?: readonly string[], options?: { locale: EditorLocale; feedback: true; entity?: string }): Promise<boolean> => {
     if (runningRef.current) return false;
-    const selected = ids ? [...new Set(ids)] : options ? itemsRef.current.filter(item => !item.locale || item.locale === options.locale).map(item => item.id) : null;
+    const selected = ids ? [...new Set(ids)] : options ? itemsRef.current.filter(item => (!item.locale || item.locale === options.locale) && (!options.entity || item.entity === options.entity)).map(item => item.id) : null;
     activeIdsRef.current = selected;
     setActiveIds(selected);
     feedbackLocaleRef.current = options?.locale ?? null;
@@ -258,7 +261,8 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const errorFor = useCallback((id: string) => items.find(item => item.id === id)?.error, [items]);
   const track = useCallback(<T,>(work: () => Promise<T>): Promise<T> => trackReservation(work, dispatchPreparing), []);
   const isPreparing = preparing > 0;
-  const api = useMemo<MediaQueueApi>(() => ({ enqueue, dequeue, flush, hasPending, isQueued, errorFor, track, isPreparing }), [enqueue, dequeue, flush, hasPending, isQueued, errorFor, track, isPreparing]);
+  const failures = useMemo(() => items.filter(item => item.status === "failed"), [items]);
+  const api = useMemo<MediaQueueApi>(() => ({ enqueue, dequeue, flush, hasPending, isQueued, errorFor, failures, track, isPreparing }), [enqueue, dequeue, flush, hasPending, isQueued, errorFor, failures, track, isPreparing]);
   const visibleItems = activeIds ? items.filter(item => activeIds.includes(item.id)) : items;
   const settled = !running && visibleItems.every(item => item.status === "done" || item.status === "failed");
   const failed = visibleItems.filter(item => item.status === "failed");

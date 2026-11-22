@@ -6,6 +6,7 @@ import { Plugin } from "@tiptap/pm/state";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useTranslations } from "next-intl";
+import { useFeedbackScope } from "@slices/backoffice/contract-client";
 import { AdminButton, Field, TextInput, type AdminMediaPreview } from "@slices/backoffice/contract";
 import { isSafeInlineHref, type PostBody } from "../../body";
 import { editorDocumentToPostBody, postBodyToEditorDocument, type EditorDocument } from "../rich-text-codec";
@@ -29,6 +30,8 @@ export function PostRichTextEditor(props: Props) {
 }
 function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {}, disabled = false, textOnly = false }: Props) {
   const fieldPrefix = useId();
+  const feedback = useFeedbackScope();
+  const richRoot = useRef<HTMLDivElement>(null);
   const t = useTranslations("blog.richText");
   const tb = useTranslations("blog.admin.post.body.fields");
   const latest = useRef({ onChange });
@@ -95,13 +98,61 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
       emitted.current = external;
     } catch { setUnsupported(true); }
   }, [editor, value, textOnly]);
+  const bodyErrors = Object.entries(errors).filter(([key]) => key === "body" || key.startsWith("body."));
+  useEffect(() => {
+    if (!editor || !feedback) return;
+    editor.view.dom.setAttribute("aria-invalid", String(bodyErrors.length > 0));
+    editor.view.dom.setAttribute("aria-describedby", `${fieldPrefix}-body-errors`);
+    let blockIndex = 0;
+    editor.state.doc.forEach((node, position) => {
+      const dom = editor.view.nodeDOM(position);
+      if (!(dom instanceof HTMLElement)) return;
+      let portable: PostBody;
+      try { portable = editorDocumentToPostBody({ type: "doc", content: [node.toJSON()] }); } catch { return; }
+      if (!portable.length) return;
+      const block = portable[0]!;
+      const path = `body.${blockIndex}`;
+      const field = block.type === "callout" ? "body" : block.type === "list" ? "items" : "text" in block ? "text" : null;
+      if (field) {
+        dom.dataset.feedbackPath = `${path}.${field}`;
+        dom.dataset.postBodyPath = `${path}.${field}`;
+        const invalid = bodyErrors.some(([key]) => key === path || key.startsWith(`${path}.`));
+        dom.setAttribute("aria-invalid", String(invalid));
+        dom.classList.toggle("outline-2", invalid);
+        dom.classList.toggle("outline-red-600", invalid);
+        dom.setAttribute("aria-label", `${block.type === "list" ? "List items" : block.type === "callout" ? "Callout text" : block.type === "heading" ? "Heading text" : "Text"} — required to publish`);
+        dom.setAttribute("data-required-to-publish", "true");
+        if (invalid) dom.setAttribute("aria-describedby", `${fieldPrefix}-body-errors`); else dom.removeAttribute("aria-describedby");
+      }
+      blockIndex++;
+    });
+  });
+  useEffect(() => {
+    const root = richRoot.current;
+    if (!root || !editor) return;
+    const focus = (event: Event) => {
+      const requested = (event as CustomEvent<{ path: string }>).detail?.path;
+      const index = Number(requested?.split(".")[1]);
+      let portableIndex = 0, found = false;
+      editor.state.doc.forEach((node, position) => {
+        if (found) return;
+        let count = 0;
+        try { count = editorDocumentToPostBody({ type: "doc", content: [node.toJSON()] }).length; } catch { return; }
+        if (count && portableIndex === index) { editor.chain().focus().setTextSelection(Math.min(position + 1, editor.state.doc.content.size)).run(); found = true; }
+        portableIndex += count;
+      });
+      if (!found) editor.commands.focus();
+    };
+    root.addEventListener("editor-feedback-focus", focus);
+    return () => root.removeEventListener("editor-feedback-focus", focus);
+  }, [editor]);
   const locked = disabled || initialInvalid.current || !editor;
   const button = (key: Parameters<typeof t>[0], run: () => void, active = false, unavailable = false) => <button key={key} type="button" title={t(key)} aria-label={t(key)} aria-pressed={active}
     disabled={locked || unavailable} onMouseDown={event => event.preventDefault()} onClick={run}
     className={`rounded px-2.5 py-2 text-xs font-medium transition-colors hover:bg-bg disabled:opacity-35 ${active ? "bg-accent/15 text-accent-deep" : "text-ink-soft"}`}>{t(key)}</button>;
   const selectedHeading = editor?.isActive("heading");
-  return <RichTextMediaContext.Provider value={{ previews, onPreview, disabled: locked }}>
-    <div className="overflow-hidden rounded-lg border border-line bg-surface">
+  return <RichTextMediaContext.Provider value={{ previews, onPreview, disabled: locked, errors, feedback: Boolean(feedback) }}>
+    <div ref={richRoot} data-post-rich-text-container data-feedback-path="body" className={`overflow-hidden rounded-lg border bg-surface ${bodyErrors.length ? "border-red-600" : "border-line"}`}>
       <div role="toolbar" aria-label={t("bodyLabel")} className="sticky top-0 z-10 flex flex-wrap gap-0.5 border-b border-line bg-surface p-2">
         {button("paragraph", () => editor?.chain().focus().setParagraph().run(), editor?.isActive("paragraph"))}
         {([2, 3, 4] as const).map(level => button(`heading${level}`, () => editor?.chain().focus().toggleHeading({ level }).run(), editor?.isActive("heading", { level })))}
@@ -132,7 +183,8 @@ function LocaleRichTextEditor({ value, onChange, previews, onPreview, errors = {
       {selectedHeading && !textOnly ? <fieldset disabled={locked} className="border-b border-line px-5 py-3"><Field label={tb("number")} htmlFor={`${fieldPrefix}-heading-number`}><TextInput id={`${fieldPrefix}-heading-number`} value={editor?.getAttributes("heading").number ?? ""} maxLength={12}
         onChange={event => editor?.commands.updateAttributes("heading", { number: event.target.value })} /></Field></fieldset> : null}
       {unsupported || initialInvalid.current ? <p role="alert" className="m-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{t("unsupported")}</p> : null}
-      {Object.entries(errors).filter(([key]) => key.includes("body")).map(([key, error]) => <p key={key} role="alert" className="px-5 pt-3 text-sm text-red-700">{error}</p>)}
+      <div id={`${fieldPrefix}-body-errors`}>{bodyErrors.map(([key, error]) => <p key={key} role="alert" className="px-5 pt-3 text-sm text-red-700">{error}</p>)}</div>
+      {feedback && value.some(block => block.type !== "divider" && block.type !== "image" && block.type !== "cta") ? <p className="px-5 pt-3 text-xs text-ink-soft">* Text in each heading, paragraph, quote, callout and list is required to publish.</p> : null}
       <EditorContent editor={editor} />
       {!value.length ? <p className="pointer-events-none px-5 pb-4 text-sm text-ink-soft">{t("placeholder")}</p> : null}
     </div>

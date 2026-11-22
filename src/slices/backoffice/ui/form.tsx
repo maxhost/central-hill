@@ -51,19 +51,22 @@ export function Field({
   const actualRequired = required ?? Boolean(errorPath && scope?.requiredPaths?.includes(errorPath));
   useEffect(() => {
     const controls = fieldRef.current?.querySelectorAll<HTMLElement>('input:not([type="hidden"]),textarea,select,[contenteditable="true"],button');
-    if (!actualError || !controls) return;
-    const previous = [...controls].map(control => ({ control, invalid: control.getAttribute("aria-invalid"), described: control.getAttribute("aria-describedby") }));
-    for (const { control, described } of previous) {
-      control.setAttribute("aria-invalid", "true");
-      control.setAttribute("aria-describedby", [described, messageId].filter(Boolean).join(" "));
+    if (!controls || !scope) return;
+    for (const control of controls) {
+      const descriptions = (control.getAttribute("aria-describedby") ?? "").split(" ").filter(Boolean).filter(id => id !== messageId);
+      if (actualError) {
+        control.setAttribute("aria-invalid", "true");
+        control.dataset.feedbackAriaOwner = messageId;
+        control.setAttribute("aria-describedby", [...descriptions, messageId].join(" "));
+      } else if (control.dataset.feedbackAriaOwner === messageId) {
+        control.setAttribute("aria-invalid", "false");
+        delete control.dataset.feedbackAriaOwner;
+        if (descriptions.length) control.setAttribute("aria-describedby", descriptions.join(" ")); else control.removeAttribute("aria-describedby");
+      }
     }
-    return () => { for (const { control, invalid, described } of previous) {
-      if (invalid === null) control.removeAttribute("aria-invalid"); else control.setAttribute("aria-invalid", invalid);
-      if (described === null) control.removeAttribute("aria-describedby"); else control.setAttribute("aria-describedby", described);
-    } };
-  }, [actualError, messageId, children]);
+  }, [actualError, messageId, children, scope]);
   return (
-    <div ref={fieldRef} data-feedback-path={errorPath} data-field-invalid={actualError ? true : undefined} className={cn("space-y-1.5", actualError && "[&_input]:border-red-600 [&_textarea]:border-red-600 [&_select]:border-red-600 [&_button]:border-red-600 [&_[contenteditable]]:outline-2 [&_[contenteditable]]:outline-red-600", className)}>
+    <div ref={fieldRef} data-feedback-path={errorPath} data-field-invalid={actualError ? true : undefined} className={cn("space-y-1.5", actualError && scope && "[&_input]:border-red-600 [&_textarea]:border-red-600 [&_select]:border-red-600 [&_button]:border-red-600 [&_[contenteditable]]:outline-2 [&_[contenteditable]]:outline-red-600", className)}>
       {label ? (
         <label htmlFor={htmlFor} className="block text-xs font-semibold uppercase tracking-wide text-ink-soft">
           {label}

@@ -3,18 +3,21 @@ export type FeedbackAction = "save" | "publish";
 export interface FeedbackIssue { path: string; label: string; message: string; section?: string; required?: boolean; sourceLocale?: EditorLocale }
 export interface FeedbackGroup { locale: EditorLocale; issues: FeedbackIssue[]; notice?: string; uncertain?: boolean }
 export type FeedbackOutcome = "success" | "validation" | "conflict" | "server" | "uncertain" | "no_draft";
-export interface FeedbackMessageInput { action: FeedbackAction; locale: EditorLocale; outcome: FeedbackOutcome; groups?: FeedbackGroup[]; refreshWarning?: boolean; sharedChanged?: boolean }
+export interface FeedbackMessageInput { action: FeedbackAction; locale: EditorLocale; outcome: FeedbackOutcome; groups?: FeedbackGroup[]; refreshWarning?: boolean; sharedChanged?: boolean; reloadRequired?: boolean }
 /** Editorial UI copy, independent of the content language and safe in client bundles. */
-export function feedbackMessage({ action, locale, outcome, groups = [], refreshWarning, sharedChanged }: FeedbackMessageInput): string {
+export function feedbackMessage({ action, locale, outcome, groups = [], refreshWarning, sharedChanged, reloadRequired }: FeedbackMessageInput): string {
   const language = locale.toUpperCase();
+  const otherErrors = groups.filter(group => group.locale !== locale && group.issues.length).map(group => `${group.locale.toUpperCase()} (${group.issues.length})`);
+  const withKnown = (message: string) => `${message}${otherErrors.length ? ` Other known errors: ${otherErrors.join(", ")}.` : ""}`;
   if (outcome === "success") {
+    if (reloadRequired) return `${action === "publish" ? "Changes published" : "Draft saved"} (${language}), but the latest editor state could not be loaded. Reload before continuing.`;
     if (refreshWarning) return `${action === "publish" ? "Published" : "Draft saved"} (${language}), but the public view could not be refreshed. Please check the page.`;
     return action === "publish" ? `Changes published (${language} only).` : `Draft saved (${language}).${sharedChanged ? " Shared fields were also updated for all languages." : ""}`;
   }
-  if (outcome === "uncertain") return `We could not confirm whether your ${language} ${action === "publish" ? "changes were published" : "draft was saved"}. Your edits are still here. Reload to check before trying again.`;
-  if (outcome === "conflict") return `Cannot continue in ${language}: this draft or its shared source changed. Reload the latest version.`;
-  if (outcome === "no_draft") return `Cannot publish ${language}: save your changes before publishing.`;
-  if (outcome === "server") return `Cannot ${action} ${language}: the server rejected the action. Your edits are still here.`;
+  if (outcome === "uncertain") return withKnown(`We could not confirm whether your ${language} ${action === "publish" ? "changes were published" : "draft was saved"}. Your edits are still here. Reload to check before trying again.`);
+  if (outcome === "conflict") return withKnown(`Cannot continue in ${language}: this draft or its shared source changed. Reload the latest version.`);
+  if (outcome === "no_draft") return withKnown(`Cannot publish ${language}: save your changes before publishing.`);
+  if (outcome === "server") return withKnown(`Cannot ${action} ${language}: the server rejected the action. Your edits are still here.`);
   const own = groups.find(group => group.locale === locale)?.issues ?? [];
   const others = groups.filter(group => group.locale !== locale && group.issues.length).map(group => `${group.locale.toUpperCase()} (${group.issues.length})`);
   const first = own[0];
