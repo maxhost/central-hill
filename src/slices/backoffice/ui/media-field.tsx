@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { UiIcon, cn } from "@core/ui";
 import type { AdminMediaPreview } from "../server/media-actions";
@@ -137,7 +137,9 @@ export function MediaField({
   const queue = useMediaQueue();
   const feedback = useFeedbackScope();
   const toast = useToast();
+  const errorId = useId();
 
+  const fieldError = error || (value ? queue.errorFor?.(value) : undefined);
   const shown = preview && preview.id === value ? preview : null;
 
   function pick() {
@@ -177,9 +179,10 @@ export function MediaField({
   }
 
   return (
-    <div data-field-invalid={error || (value && queue.errorFor?.(value)) ? true : undefined} className={cn("space-y-2", (error || (value && queue.errorFor?.(value))) && "[&_button]:border-red-600 [&_button]:outline-red-600")} >
+    <div data-field-invalid={fieldError ? true : undefined} className={cn("space-y-2", fieldError && "[&_button]:border-red-600 [&_button]:outline-red-600")} >
       {variant === "gallery" && !value ? (
         <button
+          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
           type="button"
           onClick={pick}
           disabled={pending || mediaDisabled}
@@ -194,6 +197,7 @@ export function MediaField({
           </div>
           <div className={variant === "gallery" ? "flex flex-wrap gap-2 p-2" : "flex flex-wrap gap-2"}>
             <button
+          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
               type="button"
               onClick={pick}
               disabled={pending || mediaDisabled}
@@ -203,6 +207,7 @@ export function MediaField({
             </button>
             {value ? (
               <button
+          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
                 type="button"
                 onClick={() => {
                   if (value) queue.dequeue(value);
@@ -244,7 +249,7 @@ export function MediaField({
         <p className="text-xs text-ink-soft">{t("media.queuedNote")}</p>
       ) : null}
       {editAlt && value && (shown ? shown.mime.startsWith("image/") : accept === "image") ? <MediaAltField mediaId={value} /> : null}
-      {error || (value && queue.errorFor?.(value)) ? <p role="alert" className="text-xs font-medium text-red-600">{error || (value && queue.errorFor?.(value))}</p> : null}
+      {fieldError ? <p id={errorId} role="alert" className="text-xs font-medium text-red-600">{fieldError}</p> : null}
     </div>
   );
 }
@@ -277,6 +282,9 @@ export function MediaGalleryField({
   const queue = useMediaQueue();
   const feedback = useFeedbackScope();
   const toast = useToast();
+  const errorId = useId();
+
+  const fieldError = error || value.map(id => queue.errorFor?.(id)).find(Boolean);
 
   function move(index: number, delta: number) {
     const next = [...value];
@@ -297,36 +305,40 @@ export function MediaGalleryField({
     if (!files || files.length === 0) return;
     const list = Array.from(files);
     if (list.some((f) => !isAcceptedType(accept, pickedFileType(f)))) {
-      setError(t("media.wrongType"));
+      const message = feedback ? `Cannot select these files for ${feedback.locale.toUpperCase()}: choose supported file types.` : t("media.wrongType");
+      setError(message);
+      if (feedback) toast.error(message, { duration: 0 });
       return;
     }
     setError(null);
     setPending(true);
     // Tracked by the queue (`isPreparing`) until `onChange` has run — see `MediaField`.
     void queue.track(async () => {
+      const added: AdminMediaPreview[] = [];
+      let failedName = "file";
       try {
-        const added: AdminMediaPreview[] = [];
         for (const file of list) {
+          failedName = file.name;
           const { id, preview } = await reserveUpload(file);
           queue.enqueue(id, file, feedback ?? undefined);
           added.push(preview);
         }
-        setPreviews((prev) => {
-          const next = { ...prev };
-          for (const p of added) next[p.id] = p;
-          return next;
-        });
-        onChange([...value, ...added.map((p) => p.id)]);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : t("media.uploadError"));
+      } catch (error) {
+        const message = feedback ? `Cannot select “${failedName}” for ${feedback.locale.toUpperCase()}. ${uploadFailureCause("presign")}` : error instanceof Error ? error.message : t("media.uploadError");
+        setError(message);
+        if (feedback) toast.error(message, { duration: 0 });
       } finally {
+        if (added.length) {
+          setPreviews(previous => ({ ...previous, ...Object.fromEntries(added.map(preview => [preview.id, preview])) }));
+          onChange([...value, ...added.map(preview => preview.id)]);
+        }
         setPending(false);
       }
     });
   }
 
   return (
-    <div className="space-y-3">
+    <div data-field-invalid={fieldError ? true : undefined} className={cn("space-y-3", fieldError && "[&_button]:border-red-600")}>
       {value.length > 0 ? (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {value.map((id, index) => (
@@ -338,6 +350,7 @@ export function MediaGalleryField({
                 <span className="text-xs text-ink-soft">{index + 1}</span>
                 <div className="flex items-center gap-1">
                   <button
+          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
                     type="button"
                     onClick={() => move(index, -1)}
                     disabled={index === 0 || pending}
@@ -347,6 +360,7 @@ export function MediaGalleryField({
                     <UiIcon name="arrow-up" size={14} />
                   </button>
                   <button
+          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
                     type="button"
                     onClick={() => move(index, 1)}
                     disabled={index === value.length - 1 || pending}
@@ -356,6 +370,7 @@ export function MediaGalleryField({
                     <UiIcon name="arrow-down" size={14} />
                   </button>
                   <button
+          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
                     type="button"
                     onClick={() => remove(id)}
                     disabled={pending}
@@ -376,6 +391,7 @@ export function MediaGalleryField({
         </p>
       )}
       <button
+          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={pending}
@@ -394,7 +410,7 @@ export function MediaGalleryField({
           e.target.value = "";
         }}
       />
-      {error ? <p className="text-xs font-medium text-red-600">{error}</p> : null}
+      {fieldError ? <p id={errorId} role="alert" className="text-xs font-medium text-red-600">{fieldError}</p> : null}
     </div>
   );
 }

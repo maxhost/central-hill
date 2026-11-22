@@ -15,8 +15,8 @@ export function feedbackTabProps(group?: FeedbackGroup, summaryId = "editor-feed
   const count = group?.issues.length ?? 0;
   const attention = count > 0 || Boolean(group?.uncertain);
   return {
-    className: attention ? "outline-2 outline-offset-2 outline-red-600" : "",
-    "aria-label": group && attention ? `${group.locale.toUpperCase()} — ${group.uncertain ? "publication not confirmed" : `${count} ${count === 1 ? "error" : "errors"}`}` : undefined,
+    className: attention ? "ring-2 ring-red-600 ring-offset-2 ring-offset-surface" : "",
+    "aria-label": group && attention ? `${group.locale.toUpperCase()} — ${group.uncertain ? "action not confirmed" : `${count} ${count === 1 ? "error" : "errors"}`}` : undefined,
     "data-feedback-invalid": attention ? true : undefined,
     "aria-describedby": group && attention ? `${summaryId}-${group.locale}` : undefined,
   };

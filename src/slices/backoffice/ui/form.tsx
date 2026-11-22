@@ -12,9 +12,9 @@ import type {
 import { cn } from "@core/ui";
 
 /**
- * Shared admin form primitives (S12). Presentational only — no `"use client"`, no
- * hooks — so they compose inside each slice's own client form islands (which own
- * the state + the server-action submit). Denser/neutral, on the same tokens as the
+ * Shared admin form primitives (S12). Editorial state and server mutations belong
+ * to each consuming form. Field adds accessible error associations only inside an
+ * explicit FeedbackScope; legacy labels, requirements and messages remain intact. Denser/neutral, on the same tokens as the
  * other admin primitives. The leads inbox predates these (it hand-rolled its few
  * controls); new CRUD screens (pages, buildings, apartments) build on these.
  */
