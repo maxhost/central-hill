@@ -55,11 +55,11 @@ export function Field({
     for (const control of controls) {
       const descriptions = (control.getAttribute("aria-describedby") ?? "").split(" ").filter(Boolean).filter(id => id !== messageId);
       if (actualError) {
-        control.setAttribute("aria-invalid", "true");
+        if (control.matches('input,textarea,select,[contenteditable="true"]')) control.setAttribute("aria-invalid", "true");
         control.dataset.feedbackAriaOwner = messageId;
         control.setAttribute("aria-describedby", [...descriptions, messageId].join(" "));
       } else if (control.dataset.feedbackAriaOwner === messageId) {
-        control.setAttribute("aria-invalid", "false");
+        if (control.matches('input,textarea,select,[contenteditable="true"]')) control.setAttribute("aria-invalid", "false");
         delete control.dataset.feedbackAriaOwner;
         if (descriptions.length) control.setAttribute("aria-describedby", descriptions.join(" ")); else control.removeAttribute("aria-describedby");
       }

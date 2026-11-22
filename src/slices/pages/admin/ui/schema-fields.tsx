@@ -181,12 +181,12 @@ export function NodeField(props: RenderProps) {
     const canRemove = items.length > node.min;
     const itemLabel = labels.item(path, label);
     return (
-      <div role="group" aria-label={label} aria-invalid={Boolean(errors[errorKey])} data-feedback-path={feedback ? errorKey : undefined} className={`space-y-3 ${feedback && errors[errorKey] ? "[&_button]:border-red-600" : ""}`}>
+      <div role="group" aria-label={label} aria-describedby={errors[errorKey] ? `${controlId}-group-error` : undefined} data-field-invalid={Boolean(errors[errorKey])} data-feedback-path={feedback ? errorKey : undefined} className={`space-y-3 ${feedback && errors[errorKey] ? "[&_button]:border-red-600" : ""}`}>
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
           {label}{feedback && node.min > 0 ? <span className="ml-0.5 text-accent-deep">*</span> : null}
         </p>
         {feedback && node.min > 0 ? <p className="text-xs text-ink-soft">{node.min === node.max ? `Keep exactly ${node.min} items in this group.` : `Keep at least ${node.min} items in this group.`} Individual optional fields can remain empty.</p> : null}
-        {errors[errorKey] ? <p role="alert" className="text-xs text-red-700">{errors[errorKey]}</p> : null}
+        {errors[errorKey] ? <p id={`${controlId}-group-error`} role="alert" className="text-xs text-red-700">{errors[errorKey]}</p> : null}
         {hint ? <p className="text-xs text-ink-soft">{hint}</p> : null}
         {items.map((item, i) => (
           <div key={i} className="space-y-3 rounded-md border border-line p-3">

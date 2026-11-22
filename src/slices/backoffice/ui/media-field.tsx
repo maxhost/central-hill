@@ -182,7 +182,7 @@ export function MediaField({
     <div data-field-invalid={fieldError ? true : undefined} className={cn("space-y-2", fieldError && "[&_button]:border-red-600 [&_button]:outline-red-600")} >
       {variant === "gallery" && !value ? (
         <button
-          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
+          aria-describedby={fieldError ? errorId : undefined}
           type="button"
           onClick={pick}
           disabled={pending || mediaDisabled}
@@ -197,7 +197,7 @@ export function MediaField({
           </div>
           <div className={variant === "gallery" ? "flex flex-wrap gap-2 p-2" : "flex flex-wrap gap-2"}>
             <button
-          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
+          aria-describedby={fieldError ? errorId : undefined}
               type="button"
               onClick={pick}
               disabled={pending || mediaDisabled}
@@ -207,7 +207,7 @@ export function MediaField({
             </button>
             {value ? (
               <button
-          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
+          aria-describedby={fieldError ? errorId : undefined}
                 type="button"
                 onClick={() => {
                   if (value) queue.dequeue(value);
@@ -226,6 +226,8 @@ export function MediaField({
       <input
         ref={inputRef}
         type="file"
+        aria-invalid={Boolean(fieldError)}
+        aria-describedby={fieldError ? errorId : undefined}
         disabled={mediaDisabled}
         accept={acceptAttribute(accept)}
         className="hidden"
@@ -350,7 +352,7 @@ export function MediaGalleryField({
                 <span className="text-xs text-ink-soft">{index + 1}</span>
                 <div className="flex items-center gap-1">
                   <button
-          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
+          aria-describedby={fieldError ? errorId : undefined}
                     type="button"
                     onClick={() => move(index, -1)}
                     disabled={index === 0 || pending}
@@ -360,7 +362,7 @@ export function MediaGalleryField({
                     <UiIcon name="arrow-up" size={14} />
                   </button>
                   <button
-          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
+          aria-describedby={fieldError ? errorId : undefined}
                     type="button"
                     onClick={() => move(index, 1)}
                     disabled={index === value.length - 1 || pending}
@@ -370,7 +372,7 @@ export function MediaGalleryField({
                     <UiIcon name="arrow-down" size={14} />
                   </button>
                   <button
-          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
+          aria-describedby={fieldError ? errorId : undefined}
                     type="button"
                     onClick={() => remove(id)}
                     disabled={pending}
@@ -391,7 +393,7 @@ export function MediaGalleryField({
         </p>
       )}
       <button
-          aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? errorId : undefined}
+          aria-describedby={fieldError ? errorId : undefined}
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={pending}
@@ -402,6 +404,8 @@ export function MediaGalleryField({
       <input
         ref={inputRef}
         type="file"
+        aria-invalid={Boolean(fieldError)}
+        aria-describedby={fieldError ? errorId : undefined}
         multiple
         accept={acceptAttribute(accept)}
         className="hidden"

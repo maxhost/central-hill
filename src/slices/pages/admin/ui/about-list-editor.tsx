@@ -30,7 +30,7 @@ export function AboutListEditor({ label, itemLabel, addLabel, items, ids, min, m
     { action: "down", icon: "arrow-down", label: "media.moveDown" },
     { action: "remove", icon: "xmark", label: "media.remove" },
   ] as const;
-  return <div role="group" aria-label={label} aria-invalid={Boolean(error)} aria-describedby={error ? errorId : undefined} data-feedback-path={feedbackPath} className={`space-y-3 ${error && feedbackPath ? "[&_button]:border-red-600" : ""}`}>
+  return <div role="group" aria-label={label} aria-describedby={error ? errorId : undefined} data-feedback-path={feedbackPath} className={`space-y-3 ${error && feedbackPath ? "[&_button]:border-red-600" : ""}`}>
     <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">{label}{required ? <span className="ml-0.5 text-accent-deep">*</span> : null}</p>
     <p className="text-xs text-ink-soft" role="status">{t("admin.aboutListBounds", { count: items.length, min, max })}</p>
     {required ? <p className="text-xs text-ink-soft">{min === max ? `Keep exactly ${min} ${min === 1 ? "item" : "items"} in this group.` : `Keep at least ${min} ${min === 1 ? "item" : "items"} in this group.`} Individual optional fields can remain empty.</p> : null}
@@ -48,7 +48,7 @@ export function AboutListEditor({ label, itemLabel, addLabel, items, ids, min, m
       </div>
       {renderItem(item, index)}
     </div>)}
-    {!fixedOrder && items.length < max ? <button type="button" aria-invalid={Boolean(error)} aria-describedby={error ? errorId : undefined} className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-accent"
+    {!fixedOrder && items.length < max ? <button type="button" aria-describedby={error ? errorId : undefined} className="rounded-md border border-line px-3 py-1.5 text-sm font-medium text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-accent"
       onClick={() => onChange({ action: "add", value: createItem(), id: crypto.randomUUID() })}>+ {addLabel}</button> : null}
   </div>;
 }

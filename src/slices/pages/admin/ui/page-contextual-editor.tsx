@@ -135,7 +135,7 @@ export function PageContextualEditor<K extends EditorialPageKey = "home">({ mode
     const target = candidates.flatMap(section => section.bindings).filter(binding => path === binding.id || path.startsWith(`${binding.id}.`)).sort((a, b) => b.id.length - a.id.length)[0];
     if (descriptor.key === "blog") setErrorView(path.startsWith("post_aside") ? "blog_article" : "page");
     setSelected(target?.id ?? (path === "og_image_media_id" ? "seo" : path.split(".")[0]!));
-    setFocusRequest({ locale: destination, path, version: Date.now() });
+    setFocusRequest(previous => ({ locale: destination, path, version: (previous?.version ?? 0) + 1 }));
   }
   useEffect(() => {
     if (!focusRequest || locale !== focusRequest.locale || busy) return;
