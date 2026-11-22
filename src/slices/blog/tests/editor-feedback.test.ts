@@ -36,6 +36,23 @@ test("Blog correction preserves unchanged server-only references and remaining e
 test("Blog body destinations are human-readable", () => {
   assert.deepEqual(postFeedbackLabel("body.2.text"), {
     section: "Article body",
-    label: "Article body → Block 3 → Text",
+    label: "Block 3 → Text",
   });
+});
+
+test("Blog feedback breadcrumbs name each section once and distinguish list items from blocks", () => {
+  const cases = [
+    ["body", "Article body", "Content"],
+    ["body.0.body", "Article body", "Block 1 → Text"],
+    [
+      "payload.content.body.2.items.1",
+      "Article body",
+      "Block 3 → List items → Item 2",
+    ],
+    ["content.meta_title", "SEO", "Title"],
+    ["meta_description", "SEO", "Description"],
+    ["cta_url", "Button", "URL"],
+  ] as const;
+  for (const [path, section, label] of cases)
+    assert.deepEqual(postFeedbackLabel(path), { section, label });
 });

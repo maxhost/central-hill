@@ -31,20 +31,40 @@ const labels: Record<string, string> = {
 };
 export function postFeedbackLabel(raw: string) {
   const path = raw.replace(/^(?:payload\.)?content\./, "").split(".");
+  if (path[0] === "body") {
+    const contentPath = path.slice(1);
+    return {
+      section: "Article body",
+      label: contentPath.length
+        ? contentPath
+            .map((part, index) =>
+              /^\d+$/.test(part)
+                ? `${index === 0 ? "Block" : "Item"} ${Number(part) + 1}`
+                : part === "body"
+                  ? "Text"
+                  : (labels[part] ?? "Content"),
+            )
+            .join(" → ")
+        : "Content",
+    };
+  }
+  const button = ["cta_label", "cta_url"].includes(path[0]!);
+  const seo = ["meta_title", "meta_description", "og_image_media_id"].includes(
+    path[0]!,
+  );
+  const leafLabels: Record<string, string> = {
+    cta_label: "Label",
+    cta_url: "URL",
+    meta_title: "Title",
+    meta_description: "Description",
+  };
   return {
-    section:
-      path[0] === "body"
-        ? "Article body"
-        : ["cta_label", "cta_url"].includes(path[0]!)
-          ? "Button"
-          : ["meta_title", "meta_description", "og_image_media_id"].includes(
-                path[0]!,
-              )
-            ? "SEO"
-            : "Article details",
+    section: button ? "Button" : seo ? "SEO" : "Article details",
     label: path
-      .map((p) =>
-        /^\d+$/.test(p) ? `Block ${Number(p) + 1}` : (labels[p] ?? "Content"),
+      .map((part) =>
+        /^\d+$/.test(part)
+          ? `Item ${Number(part) + 1}`
+          : (leafLabels[part] ?? labels[part] ?? "Content"),
       )
       .join(" → "),
   };
