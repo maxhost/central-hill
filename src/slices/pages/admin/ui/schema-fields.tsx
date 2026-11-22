@@ -166,7 +166,7 @@ export function NodeField(props: RenderProps) {
     const listScope = listPolicy ? listPolicy.scope(errorKey) : null;
     if (onListChange && (listScope !== null || (!listPolicy && ((pageKey === "about" && (ABOUT_EDITOR_LIST_PATHS as readonly string[]).includes(errorKey)) || (pageKey === "home" && ["stats.figures", "guests_pitch.benefits", "services_carousel.assurances"].includes(errorKey)))))) {
       const itemLabel = labels.item(path, label);
-      return <AboutListEditor label={label} itemLabel={itemLabel} addLabel={labels.add(path, itemLabel)}
+      return <AboutListEditor feedbackPath={feedback ? errorKey : undefined} required={Boolean(feedback && node.min > 0)} label={label} itemLabel={itemLabel} addLabel={labels.add(path, itemLabel)}
         items={items} ids={listIds?.[listScope ?? errorKey] ?? []} fixedOrder={node.fixedOrder} min={node.min} max={node.max} error={errors[errorKey]}
         onChange={(operation) => onListChange(errorKey, operation)}
         createItem={() => {
@@ -181,10 +181,12 @@ export function NodeField(props: RenderProps) {
     const canRemove = items.length > node.min;
     const itemLabel = labels.item(path, label);
     return (
-      <div data-feedback-path={errorKey} className="space-y-3">
+      <div role="group" aria-label={label} aria-invalid={Boolean(errors[errorKey])} data-feedback-path={feedback ? errorKey : undefined} className={`space-y-3 ${feedback && errors[errorKey] ? "[&_button]:border-red-600" : ""}`}>
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
-          {label}
+          {label}{feedback && node.min > 0 ? <span className="ml-0.5 text-accent-deep">*</span> : null}
         </p>
+        {feedback && node.min > 0 ? <p className="text-xs text-ink-soft">{node.min === node.max ? `Keep exactly ${node.min} items in this group.` : `Keep at least ${node.min} items in this group.`} Individual optional fields can remain empty.</p> : null}
+        {errors[errorKey] ? <p role="alert" className="text-xs text-red-700">{errors[errorKey]}</p> : null}
         {hint ? <p className="text-xs text-ink-soft">{hint}</p> : null}
         {items.map((item, i) => (
           <div key={i} className="space-y-3 rounded-md border border-line p-3">
