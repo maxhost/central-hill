@@ -22,7 +22,8 @@ export function feedbackMessage({ action, locale, outcome, groups = [], refreshW
   const others = groups.filter(group => group.locale !== locale && group.issues.length).map(group => `${group.locale.toUpperCase()} (${group.issues.length})`);
   const first = own[0];
   const count = own.length;
-  return `Cannot ${action} ${language}: fix ${count || "the"} ${count === 1 ? "error" : "errors"} in ${language}.${first ? ` First: ${language} → ${first.section ? `${first.section} → ` : ""}${first.label}.` : ""}${others.length ? ` Other known errors: ${others.join(", ")}.` : ""}`;
+  const sourceHint = first?.sourceLocale && first.sourceLocale !== locale ? ` Shared field — managed in ${first.sourceLocale.toUpperCase()}.` : "";
+  return `Cannot ${action} ${language}: fix ${count || "the"} ${count === 1 ? "error" : "errors"} in ${language}.${first ? ` First: ${language} → ${first.section ? `${first.section} → ` : ""}${first.label}.` : ""}${sourceHint}${others.length ? ` Other known errors: ${others.join(", ")}.` : ""}`;
 }
 /** Known field errors only: file failures are described separately, never added as new counts. */
 export function withOtherKnownErrors(message: string, locale: EditorLocale, groups: readonly FeedbackGroup[] = []): string {

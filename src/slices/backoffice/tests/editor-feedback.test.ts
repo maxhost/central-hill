@@ -65,3 +65,12 @@ test("mixed-origin upload failures preserve origin and known-field context separ
   assert.match(message, /Other known errors: EN \(1\), PT \(1\), FR \(1\)/);
   assert.doesNotMatch(message, /EN \(2\)/, "File failure is not added to known-field counts");
 });
+
+test("a shared dependency rejection keeps its attempted locale and identifies the real source", () => {
+  const shared: FeedbackGroup[] = [{ locale: "es", issues: [{ path: "city_id", label: "City", section: "Guide settings", message: "Choose an available city.", sourceLocale: "en" }] }];
+  const message = feedbackMessage({ action: "publish", locale: "es", outcome: "validation", groups: shared });
+  assert.match(message, /^Cannot publish ES: fix 1 error in ES/);
+  assert.match(message, /First: ES → Guide settings → City/);
+  assert.match(message, /Shared field — managed in EN/);
+  assert.doesNotMatch(message, /Other known errors|EN \(1\)/, "The source language is a destination, not an invented error group");
+});
