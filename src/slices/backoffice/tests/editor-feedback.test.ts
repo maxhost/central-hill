@@ -32,3 +32,18 @@ test("upload feedback is localized to the selection and sanitizes failure stages
   assert.match(uploadFailureCause("finalize"), /transferred.*finalized/);
   for (const stage of ["presign", "put", "finalize"] as const) assert.doesNotMatch(uploadFailureCause(stage), /https?:|token|stack/);
 });
+
+test("cross-locale required uploads distinguish selection origins from the attempted draft", () => {
+  const message = uploadFeedback("es", ["shared-cover.png", "spanish-image.png"], ["en", "es"]);
+  assert.match(message, /“shared-cover.png” \(selected in EN; required for this ES draft\)/);
+  assert.match(message, /“spanish-image.png” \(selected in ES; required for this ES draft\)/);
+  assert.match(message, /Your ES draft has not been saved/);
+  assert.doesNotMatch(message, /Your EN draft has not been saved/);
+  assert.doesNotMatch(message, /independent|shared dependency/);
+});
+test("same-locale upload copy remains compatible and unknown origins are not invented", () => {
+  assert.equal(uploadFeedback("es", ["cover.png"], ["es"]), uploadFeedback("es", ["cover.png"]));
+  const mixed = uploadFeedback("es", ["known.png", "unknown.png"], ["en", undefined]);
+  assert.match(mixed, /known.png” \(selected in EN/);
+  assert.doesNotMatch(mixed, /unknown.png” \(selected/);
+});

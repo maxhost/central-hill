@@ -199,7 +199,7 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
       if (!ok && feedbackLocaleRef.current) {
         const failed = itemsRef.current.filter(item => item.status === "failed" && (!selected || selected.includes(item.id)));
         if (lastUploadToast.current) toast.dismiss(lastUploadToast.current);
-        lastUploadToast.current = toast.error(uploadFeedback(feedbackLocaleRef.current, failed.map(item => item.name)), { duration: 0 });
+        lastUploadToast.current = toast.error(uploadFeedback(feedbackLocaleRef.current, failed.map(item => item.name), failed.map(item => item.locale)), { duration: 0 });
       }
       return ok;
     } finally { runningRef.current = false; setRunning(false); }
@@ -267,17 +267,19 @@ export function MediaQueueProvider({ children }: { children: ReactNode }) {
   const settled = !running && visibleItems.every(item => item.status === "done" || item.status === "failed");
   const failed = visibleItems.filter(item => item.status === "failed");
   const english = feedbackLocale !== null;
+  const hasOtherSelectionLocale = feedbackLocale !== null && visibleItems.some(item => item.locale !== undefined && item.locale !== feedbackLocale);
   return <MediaQueueContext.Provider value={api}>
     <div ref={background} className="contents">{children}</div>
     {open && typeof document !== "undefined" ? createPortal(<div className="fixed inset-0 z-[110] flex items-center justify-center bg-ink/40 p-4">
       <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby={dialogTitle} tabIndex={-1} className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-lg border border-line bg-surface p-5 shadow-lg focus:outline-none">
-        <h2 id={dialogTitle} className="text-sm font-semibold text-ink">{english ? `Upload files (${feedbackLocale.toUpperCase()})` : t("media.uploadingTitle")}</h2>
+        <h2 id={dialogTitle} className="text-sm font-semibold text-ink">{english ? hasOtherSelectionLocale ? `Files required for ${feedbackLocale.toUpperCase()} draft` : `Upload files (${feedbackLocale.toUpperCase()})` : t("media.uploadingTitle")}</h2>
         <p className="mt-1 text-xs text-ink-soft" role="status">{english ? failed.length ? `Your ${feedbackLocale.toUpperCase()} draft has not been saved. Retry the failed files, then close this dialog and Save draft.` : retried && settled ? "Uploads completed. Close this dialog, then Save draft. Publish remains a separate action." : "Please wait while the selected files are transferred and finalized." : t("media.uploadingHint")}</p>
         <ul className="mt-4 space-y-3">{visibleItems.map(item => <li key={item.id} data-upload-status={item.status} className={cn("space-y-1 rounded-md border p-2", item.status === "failed" ? "border-red-600 bg-red-50" : "border-transparent")}>
           <div className="flex items-center justify-between gap-3 text-xs"><span className="min-w-0 break-words text-ink">{item.name}</span>
             <span className={cn("shrink-0 font-medium", item.status === "done" ? "text-green-700" : item.status === "failed" ? "text-red-700" : "text-ink-soft")}>
               {item.status === "done" ? <><UiIcon name="check" size={14} className="inline-block" /> {english ? "Ready" : t("media.statusDone")}</> : item.status === "failed" ? english ? "Failed" : t("media.statusFailed") : item.status === "finalizing" ? english ? "Finalizing…" : `${item.progress}%` : item.status === "uploading" ? `${item.progress}%` : english ? "Queued" : t("media.statusQueued")}
             </span></div>
+          {english && hasOtherSelectionLocale && item.locale ? <p className="text-xs text-ink-soft">Selected in {item.locale.toUpperCase()}; required for this {feedbackLocale.toUpperCase()} draft.</p> : null}
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-bg" role="progressbar" aria-label={item.name} aria-valuemin={0} aria-valuemax={100} aria-valuenow={item.progress}><div className={cn("h-full rounded-full transition-[width] duration-200", item.status === "failed" ? "bg-red-600" : "bg-accent")} style={{ width: `${item.progress}%` }} /></div>
           {item.error ? <p className="text-xs text-red-700" role="alert">{item.error}</p> : null}
         </li>)}</ul>

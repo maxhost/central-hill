@@ -24,9 +24,15 @@ export function feedbackMessage({ action, locale, outcome, groups = [], refreshW
   const count = own.length;
   return `Cannot ${action} ${language}: fix ${count || "the"} ${count === 1 ? "error" : "errors"} in ${language}.${first ? ` First: ${language} → ${first.section ? `${first.section} → ` : ""}${first.label}.` : ""}${others.length ? ` Other known errors: ${others.join(", ")}.` : ""}`;
 }
-export function uploadFeedback(locale: EditorLocale, names: readonly string[]): string {
-  return `Could not upload ${names.map(name => `“${name}”`).join(", ")} for ${locale.toUpperCase()}. Your ${locale.toUpperCase()} draft has not been saved. Retry the upload.`;
+export function uploadFeedback(locale: EditorLocale, names: readonly string[], selectedLocales: readonly (EditorLocale | undefined)[] = []): string {
+  const mixedOrigins = selectedLocales.some(selected => selected !== undefined && selected !== locale);
+  const files = names.map((name, index) => {
+    const origin = selectedLocales[index];
+    return `“${name}”${mixedOrigins && origin ? ` (selected in ${origin.toUpperCase()}; required for this ${locale.toUpperCase()} draft)` : ""}`;
+  });
+  return `Could not upload ${files.join(", ")} for ${locale.toUpperCase()}. Your ${locale.toUpperCase()} draft has not been saved. Retry the upload.`;
 }
+
 /** Avoid exposing storage responses (signed URLs, headers, stacks) in the editor. */
 export function uploadFailureCause(stage: "presign" | "put" | "finalize"): string {
   return stage === "presign" ? "Could not start the upload. Try again." : stage === "finalize" ? "The file was transferred, but could not be finalized. Try again." : "The file could not be transferred. Check your connection and try again.";
